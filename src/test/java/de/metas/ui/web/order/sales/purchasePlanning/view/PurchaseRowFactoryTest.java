@@ -101,7 +101,6 @@ public class PurchaseRowFactoryTest
 				.warehouseId(4)
 				.productId(product.getM_Product_ID())
 				.uomId(uom.getC_UOM_ID())
-				.vendorBPartnerId(bPartner.getC_BPartner_ID())
 				.vendorProductInfo(vendorProductInfo)
 				.qtyToPurchase(BigDecimal.ONE)
 				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))

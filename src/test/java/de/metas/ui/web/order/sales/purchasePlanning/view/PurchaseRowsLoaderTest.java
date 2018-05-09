@@ -165,7 +165,6 @@ public class PurchaseRowsLoaderTest
 				.salesOrderId(orderLine.getC_Order_ID())
 				.salesOrderLineId(orderLine.getC_OrderLine_ID())
 				.uomId(orderLine.getM_Product().getC_UOM_ID())
-				.vendorBPartnerId(vendorProductInfo.getVendorBPartnerId())
 				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(30)
 				.build();
