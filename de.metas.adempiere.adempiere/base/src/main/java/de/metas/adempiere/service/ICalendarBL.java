@@ -32,6 +32,8 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 
+import de.metas.calendar.IBusinessDayMatcher;
+
 /**
  * @author RC
  * 

@@ -13,15 +13,14 @@ package de.metas.adempiere.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
@@ -43,9 +42,10 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.X_C_Period;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.service.IBusinessDayMatcher;
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.calendar.ExcludeWeekendBusinessDayMatcher;
+import de.metas.calendar.IBusinessDayMatcher;
 
 public class CalendarBL implements ICalendarBL
 {
@@ -209,9 +209,8 @@ public class CalendarBL implements ICalendarBL
 	@Override
 	public IBusinessDayMatcher createBusinessDayMatcherExcluding(final Set<DayOfWeek> excludeWeekendDays)
 	{
-		// TODO:
-		// NOTE: already return a new instance because IBusinessDayMatcher is configurable (i.e. not immutable)
-		return BusinessDayMatcher.builder()
+		// TODO: consider I_C_NonBusinessDay and compose the matchers using CompositeBusinessDayMatcher
+		return ExcludeWeekendBusinessDayMatcher.builder()
 				.excludeWeekendDays(excludeWeekendDays)
 				.build();
 	}
