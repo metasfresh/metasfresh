@@ -41,5 +41,5 @@ public class DerKurierConstants
 	/** used to join&split the street1 and street2 that we have in {@link Address} into the one "street" field that we have at "Der Kurier" */
 	public static final String STREET_DELIMITER = " - ";
 
-	public static final Charset CSV_DATA_CHARSET = StandardCharsets.UTF_8;
+	public static final Charset CSV_DATA_CHARSET = StandardCharsets.ISO_8859_1;
 }
