@@ -16,6 +16,7 @@ import com.google.common.base.Objects;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -67,11 +68,8 @@ public class PurchaseOrderItem implements PurchaseItem
 	@Getter
 	private final String remotePurchaseOrderId;
 
-	@Getter
+	@Getter(AccessLevel.PRIVATE)
 	private final PurchaseCandidate purchaseCandidate;
-
-	@Getter
-	private final int purchaseCandidateId;
 
 	@Getter
 	private final BigDecimal purchasedQty;
@@ -99,7 +97,6 @@ public class PurchaseOrderItem implements PurchaseItem
 		this.purchaseItemId = purchaseItemId;
 
 		this.purchaseCandidate = purchaseCandidate;
-		this.purchaseCandidateId = purchaseCandidate.getPurchaseCandidateId();
 
 		this.purchasedQty = purchasedQty;
 		this.datePromised = datePromised;
@@ -113,6 +110,12 @@ public class PurchaseOrderItem implements PurchaseItem
 				"If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
 				remotePurchaseOrderId);
 		this.transactionReference = transactionReference;
+	}
+
+	@Override
+	public int getPurchaseCandidateId()
+	{
+		return getPurchaseCandidate().getPurchaseCandidateId();
 	}
 
 	public int getProductId()
@@ -140,16 +143,26 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getVendorProductInfo();
 	}
 
+	public Date getDateRequired()
+	{
+		return getPurchaseCandidate().getDateRequired();
+	}
+
+	public int getSalesOrderId()
+	{
+		return getPurchaseCandidate().getSalesOrderId();
+	}
+
 	private BigDecimal getQtyToPurchase()
 	{
-		return purchaseCandidate.getQtyToPurchase();
+		return getPurchaseCandidate().getQtyToPurchase();
 	}
 
 	public boolean purchaseMatchesRequiredQty()
 	{
 		return getPurchasedQty().compareTo(getQtyToPurchase()) == 0;
 	}
-	
+
 	private boolean purchaseMatchesOrExceedsRequiredQty()
 	{
 		return getPurchasedQty().compareTo(getQtyToPurchase()) >= 0;

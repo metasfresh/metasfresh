@@ -68,7 +68,7 @@ public class PurchaseItemRepository
 
 	private static void validate(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
-		final int purchaseCandidateId = purchaseOrderItem.getPurchaseCandidate().getPurchaseCandidateId();
+		final int purchaseCandidateId = purchaseOrderItem.getPurchaseCandidateId();
 		Check.errorUnless(purchaseCandidateId > 0,
 				"The given purchaseOrderItem needs to have a purchaseCandidate with ID > 0; purchaseOrderItem={}",
 				purchaseOrderItem);
@@ -86,7 +86,7 @@ public class PurchaseItemRepository
 
 		record.setAD_Org_ID(purchaseOrderItem.getOrgId());
 
-		record.setC_PurchaseCandidate_ID(purchaseOrderItem.getPurchaseCandidate().getPurchaseCandidateId());
+		record.setC_PurchaseCandidate_ID(purchaseOrderItem.getPurchaseCandidateId());
 		record.setC_OrderPO_ID(purchaseOrderItem.getPurchaseOrderId());
 		record.setC_OrderLinePO_ID(purchaseOrderItem.getPurchaseOrderLineId());
 		record.setDatePromised(TimeUtil.asTimestamp(purchaseOrderItem.getDatePromised()));
