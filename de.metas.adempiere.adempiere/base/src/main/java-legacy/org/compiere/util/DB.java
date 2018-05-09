@@ -55,6 +55,7 @@ import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.db.AdempiereDatabase;
@@ -2516,73 +2517,44 @@ public final class DB
 	}
 
 	/**
-	 * Retrieves a primite value from given {@link ResultSet}. <br/>
-	 * The value is converted to given type.<br/>
-	 * In case the value is <code>null</code>, a default not null value will be returned (if that type has a default value).
-	 *
-	 * @param rs
-	 * @param columnIndex
-	 * @param returnType
-	 * @return
-	 * @throws SQLException
+	 * @return default value for given <code>returnType</code>
 	 */
 	@SuppressWarnings("unchecked")
-	public static final <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
+	public static final <AT> AT retrieveDefaultValue(final Class<AT> returnType)
 	{
-		AT value = null;
-		AT defaultValue = null;
 		if (returnType.isAssignableFrom(BigDecimal.class))
 		{
-			value = (AT)rs.getBigDecimal(columnIndex);
-			defaultValue = (AT)BigDecimal.ZERO;
+			return (AT)BigDecimal.ZERO;
 		}
 		else if (returnType.isAssignableFrom(Integer.class) || returnType == int.class)
 		{
-			value = (AT)Integer.valueOf(rs.getInt(columnIndex));
-			defaultValue = (AT)Integer.valueOf(0);
+			return (AT)Integer.valueOf(0);
 		}
 		else if (returnType.isAssignableFrom(Timestamp.class))
 		{
-			value = (AT)rs.getTimestamp(columnIndex);
+			return null;
 		}
 		else if (returnType.isAssignableFrom(Boolean.class) || returnType == boolean.class)
 		{
-			value = (AT)DisplayType.toBoolean(rs.getString(columnIndex), false);
-			defaultValue = (AT)Boolean.FALSE;
+			return (AT)Boolean.FALSE;
 		}
 		else if (returnType.isAssignableFrom(String.class))
 		{
-			value = (AT)rs.getString(columnIndex);
-			defaultValue = null;
+			return null;
 		}
 		else if (returnType.isAssignableFrom(Double.class) || returnType == double.class)
 		{
-			value = (AT)Double.valueOf(rs.getDouble(columnIndex));
-			defaultValue = (AT)Double.valueOf(0.00);
+			return (AT)Double.valueOf(0.00);
 		}
 		else
 		{
-			value = (AT)rs.getObject(columnIndex);
+			return null;
 		}
-
-		// If value is null, set returnType's default value
-		if (value == null)
-		{
-			value = defaultValue;
-		}
-
-		return value;
 	}
 
 	/**
 	 * Retrieves a primite value from given {@link ResultSet}. <br/>
 	 * The value is converted to given type.<br/>
-	 *
-	 * @param rs
-	 * @param columnName
-	 * @param returnType
-	 * @return
-	 * @throws SQLException
 	 */
 	@SuppressWarnings("unchecked")
 	public static final <AT> AT retrieveValue(final ResultSet rs, final String columnName, final Class<AT> returnType) throws SQLException
@@ -2611,7 +2583,7 @@ public final class DB
 		}
 		else if (returnType.isAssignableFrom(Boolean.class))
 		{
-			value = (AT)Boolean.valueOf("Y".equals(rs.getString(columnName)));
+			value = (AT)StringUtils.toBoolean(rs.getString(columnName), Boolean.FALSE);
 		}
 		else if (returnType.isAssignableFrom(String.class))
 		{
@@ -2624,6 +2596,64 @@ public final class DB
 
 		return value;
 	}
+	
+	/**
+	 * Retrieves a primite value from given {@link ResultSet}. <br/>
+	 * The value is converted to given type.<br/>
+	 */
+	@SuppressWarnings("unchecked")
+	public static final <AT> AT retrieveValue(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
+	{
+		final AT value;
+		if (returnType.isAssignableFrom(BigDecimal.class))
+		{
+			value = (AT)rs.getBigDecimal(columnIndex);
+		}
+		else if (returnType.isAssignableFrom(Double.class))
+		{
+			value = (AT)Double.valueOf(rs.getDouble(columnIndex));
+		}
+		else if (returnType.isAssignableFrom(Integer.class))
+		{
+			value = (AT)Integer.valueOf(rs.getInt(columnIndex));
+		}
+		else if (returnType.isAssignableFrom(Timestamp.class))
+		{
+			value = (AT)rs.getTimestamp(columnIndex);
+		}
+		else if (returnType.isAssignableFrom(Date.class))
+		{
+			final Timestamp ts = rs.getTimestamp(columnIndex);
+			value = (AT)ts;
+		}
+		else if (returnType.isAssignableFrom(Boolean.class))
+		{
+			value = (AT)StringUtils.toBoolean(rs.getString(columnIndex), Boolean.FALSE);
+		}
+		else if (returnType.isAssignableFrom(String.class))
+		{
+			value = (AT)rs.getString(columnIndex);
+		}
+		else
+		{
+			value = (AT)rs.getObject(columnIndex);
+		}
+
+		return value;
+	}
+
+	
+	public static final <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
+	{
+		final AT value = retrieveValue(rs, columnIndex, returnType);
+		if(value != null)
+		{
+			return value;
+		}
+		
+		return retrieveDefaultValue(returnType);
+	}
+
 
 	@FunctionalInterface
 	public static interface ResultSetConsumer
