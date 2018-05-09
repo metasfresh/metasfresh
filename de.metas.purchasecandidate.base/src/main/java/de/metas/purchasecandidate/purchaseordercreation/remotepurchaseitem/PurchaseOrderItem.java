@@ -117,27 +117,42 @@ public class PurchaseOrderItem implements PurchaseItem
 
 	public int getProductId()
 	{
-		return purchaseCandidate.getProductId();
+		return getPurchaseCandidate().getProductId();
 	}
 
 	public int getUomId()
 	{
-		return purchaseCandidate.getUomId();
+		return getPurchaseCandidate().getUomId();
 	}
 
 	public int getOrgId()
 	{
-		return purchaseCandidate.getOrgId();
+		return getPurchaseCandidate().getOrgId();
 	}
 
 	public int getWarehouseId()
 	{
-		return purchaseCandidate.getWarehouseId();
+		return getPurchaseCandidate().getWarehouseId();
 	}
 
 	public VendorProductInfo getVendorProductInfo()
 	{
-		return purchaseCandidate.getVendorProductInfo();
+		return getPurchaseCandidate().getVendorProductInfo();
+	}
+
+	private BigDecimal getQtyToPurchase()
+	{
+		return purchaseCandidate.getQtyToPurchase();
+	}
+
+	public boolean purchaseMatchesRequiredQty()
+	{
+		return getPurchasedQty().compareTo(getQtyToPurchase()) == 0;
+	}
+	
+	private boolean purchaseMatchesOrExceedsRequiredQty()
+	{
+		return getPurchasedQty().compareTo(getQtyToPurchase()) >= 0;
 	}
 
 	public void setPurchaseOrderLineIdAndMarkProcessed(final int purchaseOrderLineId)
@@ -145,15 +160,9 @@ public class PurchaseOrderItem implements PurchaseItem
 		this.purchaseOrderId = load(purchaseOrderLineId, I_C_OrderLine.class).getC_Order_ID();
 		this.purchaseOrderLineId = purchaseOrderLineId;
 
-		final boolean purchaseMatchesOrExceedsRequiredQty = getPurchasedQty().compareTo(purchaseCandidate.getQtyToPurchase()) >= 0;
-		if (purchaseMatchesOrExceedsRequiredQty)
+		if (purchaseMatchesOrExceedsRequiredQty())
 		{
 			purchaseCandidate.markProcessed();
 		}
-	}
-
-	public boolean pruchaseMatchesRequiredQty()
-	{
-		return getPurchasedQty().compareTo(purchaseCandidate.getQtyToPurchase()) == 0;
 	}
 }

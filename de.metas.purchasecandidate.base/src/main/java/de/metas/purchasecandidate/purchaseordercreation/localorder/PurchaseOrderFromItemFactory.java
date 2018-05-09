@@ -149,7 +149,7 @@ import lombok.NonNull;
 			{
 				deviatingDatePromised = true;
 			}
-			if (!purchaseOrderItem.pruchaseMatchesRequiredQty())
+			if (!purchaseOrderItem.purchaseMatchesRequiredQty())
 			{
 				deviatingQuantity = true;
 			}
