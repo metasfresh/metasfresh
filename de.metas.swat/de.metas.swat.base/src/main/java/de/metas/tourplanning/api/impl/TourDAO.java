@@ -24,6 +24,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.util.time.generator.BusinessDayShifter;
+import org.adempiere.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
 import org.adempiere.util.time.generator.DateSequenceGenerator;
 import org.adempiere.util.time.generator.Frequency;
 import org.adempiere.util.time.generator.FrequencyType;
@@ -32,13 +34,12 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.service.IBusinessDayMatcher;
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.calendar.IBusinessDayMatcher;
 import de.metas.tourplanning.api.ITourDAO;
 import de.metas.tourplanning.api.ITourVersionRange;
-import de.metas.tourplanning.api.impl.TourVersionDeliveryDateShifter.OnNonBussinessDay;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
@@ -304,12 +305,12 @@ public class TourDAO implements ITourDAO
 	{
 		final IBusinessDayMatcher businessDayMatcher = createBusinessDayMatcher(frequency, onNonBusinessDay);
 
-		return TourVersionDeliveryDateShifter.builder()
+		return BusinessDayShifter.builder()
 				.businessDayMatcher(businessDayMatcher)
 				.onNonBussinessDay(onNonBusinessDay != null ? onNonBusinessDay : OnNonBussinessDay.Cancel)
 				.build();
 	}
-	
+
 	private static IBusinessDayMatcher createBusinessDayMatcher(final Frequency frequency, final OnNonBussinessDay onNonBusinessDay)
 	{
 		final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
@@ -336,7 +337,7 @@ public class TourDAO implements ITourDAO
 		}
 		else if (tourVersion.isMoveDeliveryDay())
 		{
-			return OnNonBussinessDay.MoveToNextBusinessDay;
+			return OnNonBussinessDay.MoveToClosestBusinessDay;
 		}
 		else
 		{
