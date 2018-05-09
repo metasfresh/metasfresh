@@ -38,7 +38,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -161,13 +160,11 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			return ImmutableSet.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		final List<Integer> userIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
 				.create()
-				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class)
-				.stream()
-				.filter(Predicates.notNull()) // NOTE: in junit testing this might return null items so we have to ban them
-				.collect(ImmutableSet.toImmutableSet());
+				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class);
+		return ImmutableSet.copyOf(userIds);
 	}
 }
