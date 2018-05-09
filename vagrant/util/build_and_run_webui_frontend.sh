@@ -16,12 +16,12 @@ else
 fi
 
 echo "docker stop container (if it runs)"
-docker stop metasfresh-webui-frontend || true
+sudo docker stop metasfresh-webui-frontend || true
 #docker rm metasfresh-webui-frontend not needed because we run it with --rm
 
 echo "docker build"
-docker build --file ./docker/Dockerfile-dev --tag metasfresh-webui-frontend-dev .
+sudo docker build --file ./docker/Dockerfile-dev --tag metasfresh-webui-frontend-dev .
 
 echo "docker run, connect to webui-api on IP 192.168.1.81"
 # --rm Automatically remove the container when it exits
-docker run --rm --name metasfresh-webui-frontend -p 3000:3000 -e "API_URL=http://192.168.1.81:8080" -d metasfresh-webui-frontend-dev
+sudo docker run --rm --name metasfresh-webui-frontend -p 3000:3000 -e "API_URL=http://192.168.1.81:8080" -d metasfresh-webui-frontend-dev
