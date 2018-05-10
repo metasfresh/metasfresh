@@ -88,4 +88,45 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 	public Timestamp getReceiptPermissionChangeDate();
 	// @formatter:on
 
+	// @formatter:off
+	public static final String COLUMNNAME_SalesResponsible = "SalesResponsible";
+	public void setSalesResponsible(String SalesResponsible);
+	public String getSalesResponsible();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_PurchaseGroup = "PurchaseGroup";
+	public void setPurchaseGroup(String PurchaseGroup);
+	public String getPurchaseGroup();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_AssociationMembership = "AssociationMembership";
+	public void setAssociationMembership(String AssociationMembership);
+	public String getAssociationMembership();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_ShipmentPermissionPharma_Old = "ShipmentPermissionPharma_Old";
+	public void setShipmentPermissionPharma_Old(String ShipmentPermissionPharma_Old);
+	public String getShipmentPermissionPharma_Old();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_PermissionPharmaType = "PermissionPharmaType";
+	public void setPermissionPharmaType(String PermissionPharmaType);
+	public String getPermissionPharmaType();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_ShelfLifeMinDays = "ShelfLifeMinDays";
+	public void setShelfLifeMinDays(int ShelfLifeMinDays);
+	public int getShelfLifeMinDays();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_WeekendOpeningTimes = "WeekendOpeningTimes";
+	public void setWeekendOpeningTimes(String ShelfLifeMinDays);
+	public String getWeekendOpeningTimes();
+	// @formatter:on
 }
