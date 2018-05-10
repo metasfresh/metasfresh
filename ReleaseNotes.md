@@ -19,6 +19,19 @@ Here come the actual release notes:
   * [#4004](https://github.com/metasfresh/metasfresh/issues/4004) WebUI: Adjust new Window Discount Schema Pharma
     * Improved Window for Discount Schema Pharma.
 
+* metasfresh-webui-frontend
+  * [#1613](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1613) Display field changes warnings
+    * New Field notification feature. This allow to add user notifications to fields about infos or error messages.
+  * [#1624](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1624) Material Cockpit Filter Name + switch date = invalid date
+    * Improvement of the Filtering and Navigation in Material Cockpit.
+
+# Fixes
+* metasfresh-webui-frontend
+  * [#1751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1751) HU Editor: selection jumps from your line to first line
+    * Improved behavior of seletion lines in Handling Unit Editor when changing referenced data. Now the selection is not jumping away anymore.
+  * [#1765](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1765) Modal view: editing lookups not working
+    * Fixes the usage of Lookup widgets in modal Overlays. Now accessing the correct endpoints.
+
 ## Fixes
 
 # metasfresh 5.56 (2018-19)
