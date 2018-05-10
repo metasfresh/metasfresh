@@ -14,7 +14,7 @@ public class X_MKTG_Campaign extends org.compiere.model.PO implements I_MKTG_Cam
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1868369521L;
+	private static final long serialVersionUID = 1040934729L;
 
     /** Standard Constructor */
     public X_MKTG_Campaign (Properties ctx, int MKTG_Campaign_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_MKTG_Campaign extends org.compiere.model.PO implements I_MKTG_Cam
       super (ctx, MKTG_Campaign_ID, trxName);
       /** if (MKTG_Campaign_ID == 0)
         {
+			setIsDefaultNewsletter (false); // N
 			setMarketingPlatformGatewayId (null);
 			setMKTG_Campaign_ID (0);
 			setName (null);
@@ -76,6 +77,29 @@ public class X_MKTG_Campaign extends org.compiere.model.PO implements I_MKTG_Cam
 	public java.sql.Timestamp getEndDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EndDate);
+	}
+
+	/** Set IsDefaultNewsletter.
+		@param IsDefaultNewsletter IsDefaultNewsletter	  */
+	@Override
+	public void setIsDefaultNewsletter (boolean IsDefaultNewsletter)
+	{
+		set_Value (COLUMNNAME_IsDefaultNewsletter, Boolean.valueOf(IsDefaultNewsletter));
+	}
+
+	/** Get IsDefaultNewsletter.
+		@return IsDefaultNewsletter	  */
+	@Override
+	public boolean isDefaultNewsletter () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDefaultNewsletter);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** 
