@@ -288,3 +288,18 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,563904,0,541086,541580,551917,TO_TIMESTAMP('2018-05-10 14:42:16','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Paketgewicht',0,270,0,TO_TIMESTAMP('2018-05-10 14:42:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2018-05-10T15:29:18.533
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540961,541581,TO_TIMESTAMP('2018-05-10 15:29:18','YYYY-MM-DD HH24:MI:SS'),100,'Y','flags',10,TO_TIMESTAMP('2018-05-10 15:29:18','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-05-10T15:29:40.888
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540961,541582,TO_TIMESTAMP('2018-05-10 15:29:40','YYYY-MM-DD HH24:MI:SS'),100,'Y','datetime',20,TO_TIMESTAMP('2018-05-10 15:29:40','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-05-10T15:29:46.273
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540961,541583,TO_TIMESTAMP('2018-05-10 15:29:46','YYYY-MM-DD HH24:MI:SS'),100,'Y','org',30,TO_TIMESTAMP('2018-05-10 15:29:46','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
