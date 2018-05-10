@@ -18,7 +18,7 @@ import InboxAll from './containers/InboxAll.js';
 import Login from './containers/Login.js';
 import MasterWindow from './containers/MasterWindow.js';
 import NavigationTree from './containers/NavigationTree.js';
-import PluginContainer from './components/PluginContainer';
+import PluginContainer, { pluginWrapper } from './components/PluginContainer';
 
 let hasTutorial = false;
 
@@ -62,14 +62,16 @@ export const getRoutes = (store, auth, plugins) => {
   const getPluginsRoutes = plugins => {
     if (plugins.length) {
       return plugins.map(plugin => {
-        if (plugin.userDropdownLink) {
-          return {
-            path: plugin.userDropdownLink.url,
-            component: () => (
-              <PluginContainer component={plugin.component} />
-            )
-          };
+        const pluginRoutes = [...plugin.routes];
+        const ParentComponent = pluginRoutes[0].component;
+
+        if (ParentComponent.name !== 'WrappedPlugin') {
+          const wrapped = pluginWrapper(PluginContainer, ParentComponent);
+
+          pluginRoutes[0].component = wrapped;
         }
+
+        return pluginRoutes[0];
       });
     }
 
@@ -85,7 +87,7 @@ export const getRoutes = (store, auth, plugins) => {
           query={nextState.location.query}
           windowType={nextState.params.windowType}
         />
-      )
+      ),
     },
     {
       path: '/window/:windowType/:docId',
@@ -93,7 +95,7 @@ export const getRoutes = (store, auth, plugins) => {
       onEnter: nextState =>
         store.dispatch(
           createWindow(nextState.params.windowType, nextState.params.docId)
-        )
+        ),
     },
     {
       path: '/sitemap',
@@ -106,7 +108,7 @@ export const getRoutes = (store, auth, plugins) => {
           query={nextState.location.query}
           boardId={nextState.params.boardId}
         />
-      )
+      ),
     },
     {
       path: '/inbox',
