@@ -1,7 +1,5 @@
 package de.metas.purchasecandidate;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
 import java.util.OptionalInt;
 
 import org.adempiere.util.Check;
@@ -9,7 +7,6 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
 
 import lombok.Builder;
-// import de.metas.interfaces.I_C_BPartner_Product;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -53,17 +50,13 @@ public class VendorProductInfo
 
 	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProduct, final int bpartnerVendorIdOverride)
 	{
-		final de.metas.interfaces.I_C_BPartner_Product extendedBPartnerProduct = create(
-				bpartnerProduct,
-				de.metas.interfaces.I_C_BPartner_Product.class);
-
 		final String productNo = Util.coalesceSuppliers(
-				() -> extendedBPartnerProduct.getVendorProductNo(),
-				() -> extendedBPartnerProduct.getProductNo(),
+				() -> bpartnerProduct.getVendorProductNo(),
+				() -> bpartnerProduct.getProductNo(),
 				() -> bpartnerProduct.getM_Product().getValue());
 
 		final String productName = Util.coalesceSuppliers(
-				() -> extendedBPartnerProduct.getProductName(),
+				() -> bpartnerProduct.getProductName(),
 				() -> bpartnerProduct.getM_Product().getName());
 
 		final int bpartnerVendorId = Util.firstGreaterThanZero(
