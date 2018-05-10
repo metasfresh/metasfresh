@@ -14,6 +14,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -107,6 +108,8 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		{
 			huQueryBuilder.addOnlyWithProductId(productId);
 		}
+
+		huQueryBuilder.addHUStatusToExclude(X_M_HU.HUSTATUS_Planning);
 
 		return huQueryBuilder
 				.createQuery()
