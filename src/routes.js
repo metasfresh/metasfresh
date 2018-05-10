@@ -82,7 +82,7 @@ export const getRoutes = (store, auth, plugins) => {
   const childRoutes = [
     {
       path: '/window/:windowType',
-      getComponent: nextState => (
+      component: nextState => (
         <DocList
           query={nextState.location.query}
           windowType={nextState.params.windowType}
@@ -92,10 +92,11 @@ export const getRoutes = (store, auth, plugins) => {
     {
       path: '/window/:windowType/:docId',
       component: MasterWindow,
-      onEnter: nextState =>
+      onEnter: ({ params }) => (
         store.dispatch(
-          createWindow(nextState.params.windowType, nextState.params.docId)
-        ),
+          createWindow(params.windowType, params.docId)
+        )
+      ),
     },
     {
       path: '/sitemap',
@@ -103,7 +104,7 @@ export const getRoutes = (store, auth, plugins) => {
     },
     {
       path: '/board/:boardId',
-      getComponent: nextState => (
+      component: nextState => (
         <Board
           query={nextState.location.query}
           boardId={nextState.params.boardId}
