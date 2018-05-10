@@ -528,7 +528,7 @@ public interface I_C_BPartner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
+	 * <br>Virtual Column: true
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -540,10 +540,8 @@ public interface I_C_BPartner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: true
 	 */
-	@Deprecated
 	public java.lang.String getCreditLimitIndicator();
 
     /** Column definition for CreditLimitIndicator */
@@ -1702,35 +1700,6 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_PaymentRulePO = "PaymentRulePO";
 
 	/**
-	 * Set Telefon.
-	 * Beschreibt eine Telefon Nummer
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setPhone (java.lang.String Phone);
-
-	/**
-	 * Get Telefon.
-	 * Beschreibt eine Telefon Nummer
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	public java.lang.String getPhone();
-
-    /** Column definition for Phone */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Phone = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Phone", null);
-    /** Column name Phone */
-    public static final String COLUMNNAME_Phone = "Phone";
-
-	/**
 	 * Set Lieferung.
 	 * Wie der Auftrag geliefert wird
 	 *
@@ -1970,29 +1939,6 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_PotentialLifeTimeValue = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "PotentialLifeTimeValue", null);
     /** Column name PotentialLifeTimeValue */
     public static final String COLUMNNAME_PotentialLifeTimeValue = "PotentialLifeTimeValue";
-
-	/**
-	 * Set Purchase Mode.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setPurchaseMode (java.lang.String PurchaseMode);
-
-	/**
-	 * Get Purchase Mode.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getPurchaseMode();
-
-    /** Column definition for PurchaseMode */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_PurchaseMode = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "PurchaseMode", null);
-    /** Column name PurchaseMode */
-    public static final String COLUMNNAME_PurchaseMode = "PurchaseMode";
 
 	/**
 	 * Set Rating.

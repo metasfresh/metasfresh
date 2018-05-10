@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1022616066L;
+	private static final long serialVersionUID = 2054191448L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -39,7 +39,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			setName (null);
 			setPaymentRule (null); // P
 			setPaymentRulePO (null); // P
-			setPurchaseMode (null); // M
 			setSendEMail (false);
 			setValue (null);
         } */
@@ -1670,24 +1669,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_PaymentRulePO);
 	}
 
-	/** Set Telefon.
-		@param Phone 
-		Beschreibt eine Telefon Nummer
-	  */
-	@Override
-	public void setPhone (java.lang.String Phone)
-	{
-		throw new IllegalArgumentException ("Phone is virtual column");	}
-
-	/** Get Telefon.
-		@return Beschreibt eine Telefon Nummer
-	  */
-	@Override
-	public java.lang.String getPhone () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Phone);
-	}
-
 	/** 
 	 * PO_DeliveryViaRule AD_Reference_ID=152
 	 * Reference name: C_Order DeliveryViaRule
@@ -1940,32 +1921,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** 
-	 * PurchaseMode AD_Reference_ID=540860
-	 * Reference name: C_BPartner_PurchaseMode
-	 */
-	public static final int PURCHASEMODE_AD_Reference_ID=540860;
-	/** Manual = M */
-	public static final String PURCHASEMODE_Manual = "M";
-	/** Purchase Schedule = S */
-	public static final String PURCHASEMODE_PurchaseSchedule = "S";
-	/** Set Purchase Mode.
-		@param PurchaseMode Purchase Mode	  */
-	@Override
-	public void setPurchaseMode (java.lang.String PurchaseMode)
-	{
-
-		set_Value (COLUMNNAME_PurchaseMode, PurchaseMode);
-	}
-
-	/** Get Purchase Mode.
-		@return Purchase Mode	  */
-	@Override
-	public java.lang.String getPurchaseMode () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_PurchaseMode);
 	}
 
 	/** Set Rating.
