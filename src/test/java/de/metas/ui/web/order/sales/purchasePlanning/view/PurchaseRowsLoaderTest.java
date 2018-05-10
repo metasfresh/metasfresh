@@ -22,7 +22,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
-import de.metas.interfaces.I_C_BPartner_Product;
+import org.compiere.model.I_C_BPartner_Product;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
