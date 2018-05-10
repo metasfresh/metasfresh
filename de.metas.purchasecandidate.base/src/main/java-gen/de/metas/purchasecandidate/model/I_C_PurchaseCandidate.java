@@ -284,6 +284,29 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Aggregate Purchase Orders.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAggregatePO (boolean IsAggregatePO);
+
+	/**
+	 * Get Aggregate Purchase Orders.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAggregatePO();
+
+    /** Column definition for IsAggregatePO */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsAggregatePO = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "IsAggregatePO", null);
+    /** Column name IsAggregatePO */
+    public static final String COLUMNNAME_IsAggregatePO = "IsAggregatePO";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -434,6 +457,29 @@ public interface I_C_PurchaseCandidate
     public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_QtyToPurchase = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "QtyToPurchase", null);
     /** Column name QtyToPurchase */
     public static final String COLUMNNAME_QtyToPurchase = "QtyToPurchase";
+
+	/**
+	 * Set Wiedervorlage Datum.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setReminderDate (java.sql.Timestamp ReminderDate);
+
+	/**
+	 * Get Wiedervorlage Datum.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getReminderDate();
+
+    /** Column definition for ReminderDate */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ReminderDate = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "ReminderDate", null);
+    /** Column name ReminderDate */
+    public static final String COLUMNNAME_ReminderDate = "ReminderDate";
 
 	/**
 	 * Get Aktualisiert.

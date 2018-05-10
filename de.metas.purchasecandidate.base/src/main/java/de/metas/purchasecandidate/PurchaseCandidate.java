@@ -207,6 +207,11 @@ public class PurchaseCandidate
 	{
 		return getVendorProductInfo().getBpartnerProductId();
 	}
+	
+	public boolean isAggregatePOs()
+	{
+		return getVendorProductInfo().isAggregatePOs();
+	}
 
 	public VendorProductInfo getVendorProductInfo()
 	{

@@ -1,8 +1,11 @@
 package de.metas.purchasecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.OptionalInt;
 
 import org.adempiere.util.Check;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
 
@@ -43,12 +46,19 @@ public class VendorProductInfo
 	String productNo;
 	String productName;
 
+	boolean aggregatePOs;
+
 	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProduct)
 	{
-		return fromDataRecord(bpartnerProduct, -1);
+		final int bpartnerVendorIdOverride = -1;
+		final Boolean aggregatePOsOverride = null; // N/A
+		return fromDataRecord(bpartnerProduct, bpartnerVendorIdOverride, aggregatePOsOverride);
 	}
 
-	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProduct, final int bpartnerVendorIdOverride)
+	public static VendorProductInfo fromDataRecord(
+			@NonNull final I_C_BPartner_Product bpartnerProduct,
+			final int bpartnerVendorIdOverride,
+			final Boolean aggregatePOsOverride)
 	{
 		final String productNo = Util.coalesceSuppliers(
 				() -> bpartnerProduct.getVendorProductNo(),
@@ -61,8 +71,18 @@ public class VendorProductInfo
 
 		final int bpartnerVendorId = Util.firstGreaterThanZero(
 				bpartnerVendorIdOverride,
-				bpartnerProduct.getC_BPartner_Vendor_ID(),
 				bpartnerProduct.getC_BPartner_ID());
+
+		final boolean aggregatePOs;
+		if (aggregatePOsOverride != null)
+		{
+			aggregatePOs = aggregatePOsOverride;
+		}
+		else
+		{
+			final I_C_BPartner bpartner = loadOutOfTrx(bpartnerVendorId, I_C_BPartner.class);
+			aggregatePOs = bpartner.isAggregatePO();
+		}
 
 		return builder()
 				.bpartnerProductId(bpartnerProduct.getC_BPartner_Product_ID())
@@ -70,6 +90,7 @@ public class VendorProductInfo
 				.productId(bpartnerProduct.getM_Product_ID())
 				.productNo(productNo)
 				.productName(productName)
+				.aggregatePOs(aggregatePOs)
 				.build();
 	}
 
@@ -79,7 +100,8 @@ public class VendorProductInfo
 			final int vendorBPartnerId,
 			final int productId,
 			@NonNull final String productNo,
-			@NonNull final String productName)
+			@NonNull final String productName,
+			final boolean aggregatePOs)
 	{
 		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
 		Check.assume(productId > 0, "productId > 0");
@@ -89,6 +111,7 @@ public class VendorProductInfo
 		this.productId = productId;
 		this.productNo = productNo;
 		this.productName = productName;
+		this.aggregatePOs = aggregatePOs;
 	}
 
 }

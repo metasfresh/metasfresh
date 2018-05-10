@@ -28,12 +28,11 @@ import lombok.Setter;
  */
 
 @Data
-public class PurchaseCandidateState
+class PurchaseCandidateState
 {
-	private boolean processed;
-
 	private final boolean locked;
 
+	private boolean processed;
 	@Setter(AccessLevel.NONE)
 	private boolean processedInitial;
 

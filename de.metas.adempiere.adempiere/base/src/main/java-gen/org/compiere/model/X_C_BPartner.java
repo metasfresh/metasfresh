@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2054191448L;
+	private static final long serialVersionUID = -2085651992L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			setAllowConsolidateInOut (true); // Y
 			setC_BP_Group_ID (0);
 			setC_BPartner_ID (0);
+			setIsAggregatePO (false); // N
 			setIsCreateDefaultPOReference (false); // N
 			setIsCustomer (false);
 			setIsEmployee (false);
@@ -845,6 +846,29 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getInvoiceRule () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InvoiceRule);
+	}
+
+	/** Set Aggregate Purchase Orders.
+		@param IsAggregatePO Aggregate Purchase Orders	  */
+	@Override
+	public void setIsAggregatePO (boolean IsAggregatePO)
+	{
+		set_Value (COLUMNNAME_IsAggregatePO, Boolean.valueOf(IsAggregatePO));
+	}
+
+	/** Get Aggregate Purchase Orders.
+		@return Aggregate Purchase Orders	  */
+	@Override
+	public boolean isAggregatePO () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAggregatePO);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Firma.
@@ -1667,6 +1691,24 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getPaymentRulePO () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PaymentRulePO);
+	}
+
+	/** Set Telefon.
+		@param Phone 
+		Beschreibt eine Telefon Nummer
+	  */
+	@Override
+	public void setPhone (java.lang.String Phone)
+	{
+		throw new IllegalArgumentException ("Phone is virtual column");	}
+
+	/** Get Telefon.
+		@return Beschreibt eine Telefon Nummer
+	  */
+	@Override
+	public java.lang.String getPhone () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Phone);
 	}
 
 	/** 
