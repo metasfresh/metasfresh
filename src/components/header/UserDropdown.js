@@ -82,6 +82,7 @@ class UserDropdown extends Component {
       toggleTooltip,
       tooltipOpen,
       me,
+      plugins,
     } = this.props;
     return (
       <div
@@ -130,6 +131,9 @@ class UserDropdown extends Component {
               <i className="meta-icon-settings" />
               {counterpart.translate('window.settings.caption')}
             </div>
+            {plugins.length && <hr className="context-menu-separator" />}
+            {this.renderPlugins()}
+            {plugins.length && <hr className="context-menu-separator" />}
             <div
               className="user-dropdown-item"
               onClick={() => {
@@ -141,7 +145,6 @@ class UserDropdown extends Component {
               <i className="meta-icon-logout" />
               {counterpart.translate('window.logOut.caption')}
             </div>
-            {this.renderPlugins()}
           </div>
         )}
         {tooltipOpen === shortcut &&
