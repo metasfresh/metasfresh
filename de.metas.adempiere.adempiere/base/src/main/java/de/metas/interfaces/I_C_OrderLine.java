@@ -52,33 +52,12 @@ public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine, IDocume
 	// @formatter:on
 
 	// @formatter:off
-	public static final String COLUMNNAME_IsIndividualDescription = "IsIndividualDescription";
-	@Override
-	public boolean isIndividualDescription();
-	public void setIndividualDescription(boolean individualDescription);
-	// @formatter:on
-
-	// @formatter:off
-	public static final String COLUMNNAME_ProductDescription = "ProductDescription";
-	@Override
-	public String getProductDescription();
-	@Override
-	public void setProductDescription(String productDescription);
-	// @formatter:on
-
-	// @formatter:off
 	public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 	public void setAD_User_ID(int AD_User_ID);
 	@Override
 	public int getAD_User_ID();
 	@Override
 	public I_AD_User getAD_User();
-	// @formatter:on
-
-	// @formatter:off
-	public static final String COLUMNNAME_IsManualPrice = "IsManualPrice";
-	public boolean isManualPrice();
-	public void setIsManualPrice(boolean isManualPrice);
 	// @formatter:on
 
 	// @formatter:off
@@ -100,14 +79,6 @@ public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine, IDocume
 	// @formatter:on
 
 	// @formatter:off
-	public static final String COLUMNNAME_OrderDiscount = "OrderDiscount";
-	@Override
-	public BigDecimal getOrderDiscount();
-	@Override
-	public void setOrderDiscount(BigDecimal OrderDiscount);
-	// @formatter:on
-
-	// @formatter:off
 	public static final String COLUMNNAME_SinglePriceTag = "SinglePriceTag";
 	public I_C_OrderLine getSinglePriceTag();
 	public int getSinglePriceTag_ID();
@@ -124,14 +95,6 @@ public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine, IDocume
 	public static final String COLUMNNAME_IsIncludeInTotal = "IsIncludeInTotal";
 	public String isIncludeInTotal();
 	public void setIsIncludeInTotal(boolean IsIncludeInTotal);
-	// @formatter:on
-
-	// @formatter:off
-	public static final String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
-	@Override
-	public String getBPartnerAddress();
-	@Override
-	public void setBPartnerAddress(String BPartnerAddress);
 	// @formatter:on
 
 	// @formatter:off
