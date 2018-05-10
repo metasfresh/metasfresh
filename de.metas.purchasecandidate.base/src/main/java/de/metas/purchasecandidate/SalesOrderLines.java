@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -100,7 +101,9 @@ public class SalesOrderLines
 
 		final Set<Integer> alreadySeenVendorProductInfoIds = salesOrderLineId2PreExistingPurchaseCandidates.values().stream()
 				.filter(Predicates.not(PurchaseCandidate::isProcessed))
-				.map(purchaseCandidate -> purchaseCandidate.getVendorProductInfo().getBpartnerProductId())
+				.map(PurchaseCandidate::getBpartnerProductId)
+				.filter(OptionalInt::isPresent)
+				.map(OptionalInt::getAsInt)
 				.collect(ImmutableSet.toImmutableSet());
 
 		// create and add new purchase candidates
@@ -169,7 +172,7 @@ public class SalesOrderLines
 		final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = vendorId2VendorProductInfo.values().stream()
 
 				// only if vendor was not already considered (i.e. there was no purchase candidate for it)
-				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getBpartnerProductId()))
+				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getBpartnerProductId().getAsInt()))
 
 				// create and collect them
 				.map(vendorProductInfo -> createPurchaseCandidate(salesOrderLine, vendorProductInfo))

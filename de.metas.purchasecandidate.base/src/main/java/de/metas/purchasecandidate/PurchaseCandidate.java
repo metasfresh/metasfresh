@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalInt;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -15,8 +16,6 @@ import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_OrderLine;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
 
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
@@ -136,13 +135,16 @@ public class PurchaseCandidate
 		this.dateRequired = dateRequired;
 		dateRequiredInitial = dateRequired;
 
-		final ImmutableListMultimap<Boolean, PurchaseItem> purchaseItemsByType;
-		purchaseItemsByType = Multimaps.index(purchaseItems, purchaseItem -> purchaseItem instanceof PurchaseOrderItem);
-
-		purchaseOrderItems = purchaseItemsByType.get(true).stream()
-				.map(PurchaseOrderItem::cast).collect(toCollection(ArrayList::new));
-		purchaseErrorItems = purchaseItemsByType.get(false).stream()
-				.map(PurchaseErrorItem::cast).collect(toCollection(ArrayList::new));
+		purchaseOrderItems = purchaseItems
+				.stream()
+				.filter(purchaseItem -> purchaseItem instanceof PurchaseOrderItem)
+				.map(PurchaseOrderItem::cast)
+				.collect(toCollection(ArrayList::new));
+		purchaseErrorItems = purchaseItems
+				.stream()
+				.filter(purchaseItem -> purchaseItem instanceof PurchaseErrorItem)
+				.map(PurchaseErrorItem::cast)
+				.collect(toCollection(ArrayList::new));
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
@@ -157,8 +159,8 @@ public class PurchaseCandidate
 		identifier = from.identifier;
 		state = from.state.copy();
 
-		purchaseErrorItems = from.purchaseErrorItems;
-		purchaseOrderItems = from.purchaseOrderItems;
+		purchaseOrderItems = new ArrayList<>(from.purchaseOrderItems);
+		purchaseErrorItems = new ArrayList<>(from.purchaseErrorItems);
 	}
 
 	public PurchaseCandidate copy()
@@ -199,6 +201,11 @@ public class PurchaseCandidate
 	public int getVendorBPartnerId()
 	{
 		return getVendorProductInfo().getVendorBPartnerId();
+	}
+
+	public OptionalInt getBpartnerProductId()
+	{
+		return getVendorProductInfo().getBpartnerProductId();
 	}
 
 	public VendorProductInfo getVendorProductInfo()
@@ -388,10 +395,10 @@ public class PurchaseCandidate
 	 */
 	public void addLoadedPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
-		Check.errorIf(this.getPurchaseCandidateId() <= 0,
+		Check.errorIf(getPurchaseCandidateId() <= 0,
 				"This instance needs to have purchaseCandidateId>0; this={}", this);
 
-		Check.errorIf(purchaseOrderItem.getPurchaseCandidateId() != this.getPurchaseCandidateId(),
+		Check.errorIf(purchaseOrderItem.getPurchaseCandidateId() != getPurchaseCandidateId(),
 				"The given purchaseOrderItem's purchaseCandidateId needs to be equan to this instance's id; purchaseOrderItem={}; this={}",
 				purchaseOrderItem, this);
 

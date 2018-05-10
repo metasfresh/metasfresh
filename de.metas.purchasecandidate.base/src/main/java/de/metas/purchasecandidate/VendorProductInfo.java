@@ -2,11 +2,11 @@ package de.metas.purchasecandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
+import java.util.OptionalInt;
+
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
-
-import com.google.common.annotations.VisibleForTesting;
 
 import lombok.Builder;
 // import de.metas.interfaces.I_C_BPartner_Product;
@@ -38,7 +38,7 @@ import lombok.Value;
 @Value
 public class VendorProductInfo
 {
-	int bpartnerProductId;
+	OptionalInt bpartnerProductId;
 
 	int vendorBPartnerId;
 
@@ -80,20 +80,18 @@ public class VendorProductInfo
 				.build();
 	}
 
-	@VisibleForTesting
-	@Builder(toBuilder = true)
-	VendorProductInfo(
-			int bpartnerProductId,
-			int vendorBPartnerId,
-			int productId,
-			@NonNull String productNo,
-			@NonNull String productName)
+	@Builder
+	private VendorProductInfo(
+			final int bpartnerProductId,
+			final int vendorBPartnerId,
+			final int productId,
+			@NonNull final String productNo,
+			@NonNull final String productName)
 	{
-		Check.assume(bpartnerProductId > 0, "bpartnerProductId > 0");
 		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
 		Check.assume(productId > 0, "productId > 0");
 
-		this.bpartnerProductId = bpartnerProductId;
+		this.bpartnerProductId = bpartnerProductId > 0 ? OptionalInt.of(bpartnerProductId) : OptionalInt.empty();
 		this.vendorBPartnerId = vendorBPartnerId;
 		this.productId = productId;
 		this.productNo = productNo;

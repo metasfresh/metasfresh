@@ -208,7 +208,7 @@ public class PurchaseCandidateRepository
 		record.setM_Product_ID(purchaseCandidate.getProductId());
 		record.setC_UOM_ID(purchaseCandidate.getUomId());
 		record.setVendor_ID(purchaseCandidate.getVendorBPartnerId());
-		record.setC_BPartner_Product_ID(purchaseCandidate.getVendorProductInfo().getBpartnerProductId());
+		record.setC_BPartner_Product_ID(purchaseCandidate.getBpartnerProductId().orElse(-1));
 		record.setQtyToPurchase(purchaseCandidate.getQtyToPurchase());
 		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getDateRequired()));
 
