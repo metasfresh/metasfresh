@@ -180,5 +180,18 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 				.create()
 				.deleteDirectly();
 	}
+	
+	@Override
+	public boolean existsDDOrderLineCandidateForHUId(final int huId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		
+		final int existingDDOrderCandidateId = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class)
+				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMN_M_HU_ID, huId)
+				.create()
+				.firstIdOnly();
+		
+		return existingDDOrderCandidateId > 0;
+	}
 
 }
