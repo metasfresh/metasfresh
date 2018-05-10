@@ -1,13 +1,13 @@
-package de.metas.marketing.base.model;
+package de.metas.marketing.base.spi;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
-import lombok.Builder;
-import lombok.Value;
+import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.ContactPerson;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,20 +27,13 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class Campaign implements DataRecord
+public interface PlatformClient
 {
-	public static Campaign cast(@Nullable final DataRecord dataRecord)
-	{
-		return (Campaign)dataRecord;
-	}
+	List<LocalToRemoteSyncResult> syncCampaignsLocalToRemote(List<Campaign> campaigns);
 
-	String name;
+	List<LocalToRemoteSyncResult> syncContactPersonsLocalToRemote(Campaign campaign, List<ContactPerson> contactPersons);
 
-	/** the internal metasfresh-ID (PK) of the underlying record */
-	int repoId;
+	List<RemoteToLocalSyncResult> syncContactPersonsRemoteToLocal(Campaign campaign, List<ContactPerson> contactPersons);
 
-	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
-	String remoteId;
+	List<RemoteToLocalSyncResult> syncCampaignsRemoteToLocal(List<Campaign> campaigns);
 }

@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignRepository;
-import de.metas.marketing.base.model.ContactAddress;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.EmailAddress;
 import lombok.NonNull;
 
 /*
@@ -44,7 +44,7 @@ public class Tools
 		return ContactPerson.builder()
 				.name(adUserRecord.getName())
 				.adUserId(adUserRecord.getAD_User_ID())
-				.address(ContactAddress.ofEmailAddress(adUserRecord.getEMail()))
+				.address(EmailAddress.of(adUserRecord.getEMail()))
 				.build();
 	}
 

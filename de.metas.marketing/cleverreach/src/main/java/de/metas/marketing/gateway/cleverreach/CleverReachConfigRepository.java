@@ -1,13 +1,8 @@
-package de.metas.marketing.base.model;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.marketing.gateway.cleverreach;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-cleverreach
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,20 +22,10 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class Campaign implements DataRecord
+public class CleverReachConfigRepository
 {
-	public static Campaign cast(@Nullable final DataRecord dataRecord)
+	public CleverReachConfig getById(final int id)
 	{
-		return (Campaign)dataRecord;
+		return null;
 	}
-
-	String name;
-
-	/** the internal metasfresh-ID (PK) of the underlying record */
-	int repoId;
-
-	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
-	String remoteId;
 }

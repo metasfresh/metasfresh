@@ -1,14 +1,13 @@
 package de.metas.marketing.gateway.cleverreach.restapi.models;
 
-import java.util.List;
+import org.adempiere.util.Check;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import lombok.Singular;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-cleverreach
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -28,9 +27,19 @@ import lombok.Singular;
  * #L%
  */
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Groups
+@Value
+public class CreateGroupRequest
 {
-	@Singular
-	List<Group> groups;
+	public static CreateGroupRequest ofName(@NonNull final String name)
+	{
+		return new CreateGroupRequest(name);
+	}
+
+	String name;
+
+	private CreateGroupRequest(@NonNull final String name)
+	{
+		this.name = Check.assumeNotEmpty(name, "The given parqameter name may not be empty");
+	}
+
 }

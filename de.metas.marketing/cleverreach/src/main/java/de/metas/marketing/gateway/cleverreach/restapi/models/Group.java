@@ -2,6 +2,10 @@ package de.metas.marketing.gateway.cleverreach.restapi.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.Campaign.CampaignBuilder;
+import de.metas.marketing.base.model.CampaignRemoteUpdate;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -30,10 +34,36 @@ import lombok.Value;
 @Value
 public class Group
 {
+	public Campaign toCampaign()
+	{
+		return finishAndBuild(Campaign.builder());
+	}
+
+	public Campaign updateCampaign(@NonNull final Campaign campaign)
+	{
+		return finishAndBuild(campaign.toBuilder());
+	}
+
+	private Campaign finishAndBuild(@NonNull final CampaignBuilder builder)
+	{
+		return builder
+				.name(name)
+				.remoteId(String.valueOf(id))
+				.build();
+	}
+
 	String name;
 	int id;
 	long stamp;
 	long last_mailing;
 	long last_changed;
 	boolean isLocked;
+
+	public CampaignRemoteUpdate toCampaignUpdate()
+	{
+		return CampaignRemoteUpdate.builder()
+				.remoteId(String.valueOf(id))
+				.name(name)
+				.build();
+	}
 }
