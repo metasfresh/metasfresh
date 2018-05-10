@@ -1,7 +1,5 @@
 package de.metas.ui.web.product.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,11 +9,13 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOut;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -23,7 +23,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.model.I_M_Product_LotNumber_Lock;
+import de.metas.product.LotNumberLock;
+import de.metas.product.LotNumberLockRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
@@ -62,10 +63,14 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 		implements
 		IProcessPrecondition
 {
+	@Autowired
+	private LotNumberLockRepository lotNoLockRepo;
+	
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
+	private final IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 
 	private List<HUToDistribute> husToQuarantine = new ArrayList<>();
 
@@ -105,10 +110,8 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 
 	private void createQuarantineHUsByLotNoLockId(final int lotNoLockId)
 	{
-		final I_M_Product_LotNumber_Lock lotNoLock = load(
-				lotNoLockId,
-				I_M_Product_LotNumber_Lock.class);
-
+		final LotNumberLock lotNoLock = lotNoLockRepo.getById(lotNoLockId);
+		
 		final I_M_Attribute lotNoAttribute = lotNumberDateAttributeDAO.getLotNumberAttribute(getCtx());
 
 		if (lotNoAttribute == null)
@@ -116,9 +119,8 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 			throw new AdempiereException("Not lotNo attribute found.");
 		}
 
-		final int productId = lotNoLock.getM_Product_ID();
-
-		final String lotNoValue = lotNoLock.getLot();
+		final int productId = lotNoLock.getProductId();
+		final String lotNoValue = lotNoLock.getLotNo();
 
 		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(
 				productId,
@@ -127,6 +129,11 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 
 		for (final I_M_HU hu : husForAttributeStringValue)
 		{
+			if(huDDOrderDAO.existsDDOrderLineCandidateForHUId(hu.getM_HU_ID()))
+			{
+				// the HU is already quarantined
+				continue;
+			}
 			final List<de.metas.handlingunits.model.I_M_InOutLine> inOutLinesForHU = huInOutDAO
 					.retrieveInOutLinesForHU(hu);
 
@@ -148,6 +155,8 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 		}
 
 	}
+	
+
 
 	private List<I_M_HU> retrieveHUsForAttributeStringValue(
 			final int productId,
