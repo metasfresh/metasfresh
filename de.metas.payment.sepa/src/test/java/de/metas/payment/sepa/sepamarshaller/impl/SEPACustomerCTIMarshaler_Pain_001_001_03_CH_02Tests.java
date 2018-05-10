@@ -164,4 +164,18 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02Tests
 		return line;
 	}
 
+	@Test
+	public void testReplaceForbiddenChars()
+	{
+		assertReplaceForbiddenCharsWorks("(1020739<-) | (1026@313<-)", "(1020739<-) _ (1026@313<-)");
+		assertReplaceForbiddenCharsWorks("(1020739&lt;-) | (1026313&lt;-)", "(1020739&lt;-) _ (1026313&lt;-)");
+		assertReplaceForbiddenCharsWorks("(1020739&lt;-) - (1026313&lt;-)", "(1020739&lt;-) - (1026313&lt;-)");
+	}
+
+	private void assertReplaceForbiddenCharsWorks(String input, String expected)
+	{
+		String output = SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02.replaceForbiddenChars(input);
+		assertThat(output).isEqualTo(expected);
+	}
+
 }
