@@ -1,6 +1,4 @@
-package de.metas.marketing.base.spi;
-
-import de.metas.marketing.base.model.DataRecord;
+package de.metas.marketing.base.model;
 
 /*
  * #%L

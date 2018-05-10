@@ -1,6 +1,5 @@
 package de.metas.marketing.base.model;
 
-import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -55,9 +54,6 @@ public class ContactPerson implements DataRecord
 
 	/** Doesn't make sense to be null; a contact person needs to have some means of contacting them. */
 	ContactAddress address;
-
-	/** may be empty */
-	List<Label> labels;
 
 	/** the internal metasfresh-ID (PK) of the underlying record */
 	int repoId;

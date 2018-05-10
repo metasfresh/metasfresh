@@ -1,9 +1,7 @@
-package de.metas.marketing.base.spi;
+package de.metas.marketing.base.model;
 
 import javax.annotation.Nullable;
 
-import de.metas.marketing.base.model.ContactPerson;
-import de.metas.marketing.base.model.DataRecord;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

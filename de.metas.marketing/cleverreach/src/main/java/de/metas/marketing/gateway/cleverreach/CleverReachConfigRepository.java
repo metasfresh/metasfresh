@@ -1,5 +1,10 @@
 package de.metas.marketing.gateway.cleverreach;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Services;
+
+import de.metas.marketing.cleverreach.model.I_MKTG_CleverReach_Config;
+
 /*
  * #%L
  * marketing-cleverreach
@@ -26,6 +31,17 @@ public class CleverReachConfigRepository
 {
 	public CleverReachConfig getById(final int id)
 	{
-		return null;
+		final I_MKTG_CleverReach_Config configRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_CleverReach_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_CleverReach_Config.COLUMN_MKTG_Platform_ID, id)
+				.create()
+				.firstOnly(I_MKTG_CleverReach_Config.class);
+
+		return CleverReachConfig.builder()
+				.client_id(configRecord.getCustomerNo())
+				.login(configRecord.getUserName())
+				.password(configRecord.getPassword())
+				.build();
+
 	}
 }

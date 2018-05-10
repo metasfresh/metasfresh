@@ -4,6 +4,8 @@ import java.util.List;
 
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.LocalToRemoteSyncResult;
+import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 
 /*
  * #%L
