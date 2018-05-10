@@ -89,4 +89,6 @@ public interface IBPartnerProductDAO extends ISingletonService
 	List<ProductExclude> retrieveAllProductSalesExcludes();
 
 	Optional<ProductExclude> getExcludedFromSaleToCustomer(int productId, int partnerId);
+
+	Optional<I_C_BPartner_Product> retrieveDefaultVendor(int productId, int orgId);
 }
