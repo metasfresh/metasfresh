@@ -14,7 +14,7 @@ public class X_MKTG_CleverReach_Config extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2011880970L;
+	private static final long serialVersionUID = 1081836065L;
 
     /** Standard Constructor */
     public X_MKTG_CleverReach_Config (Properties ctx, int MKTG_CleverReach_Config_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_MKTG_CleverReach_Config extends org.compiere.model.PO implements 
         {
 			setCustomerNo (null);
 			setMKTG_CleverReach_Config_ID (0);
+			setMKTG_Platform_ID (0);
 			setPassword (null);
 			setUserName (null);
         } */
@@ -77,6 +78,28 @@ public class X_MKTG_CleverReach_Config extends org.compiere.model.PO implements 
 	public int getMKTG_CleverReach_Config_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MKTG_CleverReach_Config_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set MKTG_Platform.
+		@param MKTG_Platform_ID MKTG_Platform	  */
+	@Override
+	public void setMKTG_Platform_ID (int MKTG_Platform_ID)
+	{
+		if (MKTG_Platform_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MKTG_Platform_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MKTG_Platform_ID, Integer.valueOf(MKTG_Platform_ID));
+	}
+
+	/** Get MKTG_Platform.
+		@return MKTG_Platform	  */
+	@Override
+	public int getMKTG_Platform_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MKTG_Platform_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

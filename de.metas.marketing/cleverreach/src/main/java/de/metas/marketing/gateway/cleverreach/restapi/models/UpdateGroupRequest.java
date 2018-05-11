@@ -1,13 +1,13 @@
-package de.metas.marketing.base.model;
+package de.metas.marketing.gateway.cleverreach.restapi.models;
 
-import javax.annotation.Nullable;
+import org.adempiere.util.Check;
 
-import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-cleverreach
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -28,19 +28,18 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class Campaign implements DataRecord
+public class UpdateGroupRequest
 {
-	public static Campaign cast(@Nullable final DataRecord dataRecord)
+	public static UpdateGroupRequest ofName(@NonNull final String name)
 	{
-		return (Campaign)dataRecord;
+		return new UpdateGroupRequest(name);
 	}
 
 	String name;
 
-	/** the internal metasfresh-ID (PK) of the underlying record */
-	int repoId;
+	private UpdateGroupRequest(@NonNull final String name)
+	{
+		this.name = Check.assumeNotEmpty(name, "The given parqameter name may not be empty");
+	}
 
-	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
-	String remoteId;
 }

@@ -14,7 +14,7 @@ public class X_MKTG_Campaign_ContactPerson extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -65933884L;
+	private static final long serialVersionUID = -1230932563L;
 
     /** Standard Constructor */
     public X_MKTG_Campaign_ContactPerson (Properties ctx, int MKTG_Campaign_ContactPerson_ID, String trxName)
@@ -80,6 +80,57 @@ public class X_MKTG_Campaign_ContactPerson extends org.compiere.model.PO impleme
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		throw new IllegalArgumentException ("C_BPartner_ID is virtual column");	}
+
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set eMail.
+		@param EMail 
+		EMail-Adresse
+	  */
+	@Override
+	public void setEMail (java.lang.String EMail)
+	{
+		throw new IllegalArgumentException ("EMail is virtual column");	}
+
+	/** Get eMail.
+		@return EMail-Adresse
+	  */
+	@Override
+	public java.lang.String getEMail () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EMail);
+	}
+
 	/** Set MKTG_Campaign_ContactPerson.
 		@param MKTG_Campaign_ContactPerson_ID MKTG_Campaign_ContactPerson	  */
 	@Override
@@ -120,9 +171,9 @@ public class X_MKTG_Campaign_ContactPerson extends org.compiere.model.PO impleme
 	public void setMKTG_Campaign_ID (int MKTG_Campaign_ID)
 	{
 		if (MKTG_Campaign_ID < 1) 
-			set_Value (COLUMNNAME_MKTG_Campaign_ID, null);
+			set_ValueNoCheck (COLUMNNAME_MKTG_Campaign_ID, null);
 		else 
-			set_Value (COLUMNNAME_MKTG_Campaign_ID, Integer.valueOf(MKTG_Campaign_ID));
+			set_ValueNoCheck (COLUMNNAME_MKTG_Campaign_ID, Integer.valueOf(MKTG_Campaign_ID));
 	}
 
 	/** Get MKTG_Campaign.
@@ -154,9 +205,9 @@ public class X_MKTG_Campaign_ContactPerson extends org.compiere.model.PO impleme
 	public void setMKTG_ContactPerson_ID (int MKTG_ContactPerson_ID)
 	{
 		if (MKTG_ContactPerson_ID < 1) 
-			set_Value (COLUMNNAME_MKTG_ContactPerson_ID, null);
+			set_ValueNoCheck (COLUMNNAME_MKTG_ContactPerson_ID, null);
 		else 
-			set_Value (COLUMNNAME_MKTG_ContactPerson_ID, Integer.valueOf(MKTG_ContactPerson_ID));
+			set_ValueNoCheck (COLUMNNAME_MKTG_ContactPerson_ID, Integer.valueOf(MKTG_ContactPerson_ID));
 	}
 
 	/** Get MKTG_ContactPerson.
@@ -168,5 +219,23 @@ public class X_MKTG_Campaign_ContactPerson extends org.compiere.model.PO impleme
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Name.
+		@param Name 
+		Alphanumeric identifier of the entity
+	  */
+	@Override
+	public void setName (java.lang.String Name)
+	{
+		throw new IllegalArgumentException ("Name is virtual column");	}
+
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
+	@Override
+	public java.lang.String getName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 }
