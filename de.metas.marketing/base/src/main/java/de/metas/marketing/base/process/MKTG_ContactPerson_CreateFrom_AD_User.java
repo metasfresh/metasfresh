@@ -11,6 +11,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 
 import de.metas.marketing.base.misc.Tools;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.process.JavaProcess;
@@ -63,7 +64,9 @@ public class MKTG_ContactPerson_CreateFrom_AD_User extends JavaProcess
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
 				.iterate(I_AD_User.class);
 
-		Adempiere.getBean(Tools.class).addAsContactPersonsToCampaign(adUsersToAdd, campaignId);
+		Adempiere.getBean(Tools.class).addAsContactPersonsToCampaign(
+				adUsersToAdd,
+				CampaignId.ofRepoId(campaignId));
 		return MSG_OK;
 	}
 }

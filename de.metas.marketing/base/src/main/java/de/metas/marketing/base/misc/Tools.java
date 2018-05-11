@@ -8,7 +8,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Service;
 
-import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.EmailAddress;
@@ -50,11 +50,10 @@ public class Tools
 
 	public void addAsContactPersonsToCampaign(
 			@NonNull final Iterator<I_AD_User> adUsersToAdd,
-			final int campaignId)
+			@NonNull final CampaignId campaignId)
 	{
 		final Tools converters = Adempiere.getBean(Tools.class);
 		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
-		final Campaign campaign = campaignRepository.getById(campaignId);
 
 		while (adUsersToAdd.hasNext())
 		{
@@ -66,7 +65,7 @@ public class Tools
 			}
 
 			final ContactPerson contactPerson = converters.createContactPersonForAdUser(adUserToAdd);
-			campaignRepository.addContactPersonToCampaign(contactPerson, campaign);
+			campaignRepository.addContactPersonToCampaign(contactPerson.getContactPersonId(), campaignId);
 		}
 	}
 }

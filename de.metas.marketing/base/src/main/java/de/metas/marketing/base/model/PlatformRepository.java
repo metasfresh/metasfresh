@@ -1,13 +1,12 @@
-package de.metas.marketing.gateway.cleverreach;
+package de.metas.marketing.base.model;
 
-import de.metas.marketing.base.model.PlatformId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import org.springframework.stereotype.Repository;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -26,20 +25,17 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-@Value
-@Builder
-public class CleverReachConfig
+@Repository
+public class PlatformRepository
 {
-	@NonNull
-	String client_id;
+	public Platform getById(final PlatformId plaformId)
+	{
+		final I_MKTG_Platform platformRecord = load(plaformId.getRepoId(), I_MKTG_Platform.class);
 
-	@NonNull
-	String login;
-
-	@NonNull
-	String password;
-
-	@NonNull
-	PlatformId platformId;
+		return Platform.builder()
+				.name(platformRecord.getName())
+				.platformGatewayId(platformRecord.getMarketingPlatformGatewayId())
+				.platformId(PlatformId.ofRepoId(platformRecord.getMKTG_Platform_ID()))
+				.build();
+	}
 }

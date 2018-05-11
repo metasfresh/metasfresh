@@ -204,7 +204,9 @@ public class ManualTest
 					assertThat(contactPerson.getRemoteId()).isNotEmpty();
 
 					final EmailAddress email = EmailAddress.cast(contactPerson.getAddress()).get();
-					assertThat(email.getActiveOnRemotePlatform()).isNotNull().isFalse();
+					assertThat(email.getDeactivatedOnRemotePlatform())
+							.isNotNull()
+							.isTrue();
 				});
 	}
 

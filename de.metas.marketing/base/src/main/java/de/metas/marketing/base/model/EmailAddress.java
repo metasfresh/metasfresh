@@ -57,7 +57,7 @@ public class EmailAddress implements ContactAddress
 	{
 		final Optional<Boolean> boolIfPresent = EmailAddress
 				.cast(contactAddress)
-				.map(EmailAddress::getActiveOnRemotePlatform);
+				.map(EmailAddress::getDeactivatedOnRemotePlatform);
 
 		return boolIfPresent.orElse(null);
 	}
@@ -69,22 +69,22 @@ public class EmailAddress implements ContactAddress
 
 	public static EmailAddress of(
 			@NonNull final String emailAddress,
-			final boolean activeOnRemotePlatform)
+			final boolean deactivatedOnRemotePlatform)
 	{
-		return new EmailAddress(emailAddress, activeOnRemotePlatform);
+		return new EmailAddress(emailAddress, deactivatedOnRemotePlatform);
 	}
 
 	String value;
 
 	/** null means "unknown" */
-	Boolean activeOnRemotePlatform;
+	Boolean deactivatedOnRemotePlatform;
 
 	public EmailAddress(
 			@NonNull final String value,
-			@Nullable final Boolean activeOnRemotePlatform)
+			@Nullable final Boolean deactivatedOnRemotePlatform)
 	{
 		this.value = Check.assumeNotEmpty(value, "The given value may not be empty");
-		this.activeOnRemotePlatform = activeOnRemotePlatform;
+		this.deactivatedOnRemotePlatform = deactivatedOnRemotePlatform;
 	}
 
 	@Override
