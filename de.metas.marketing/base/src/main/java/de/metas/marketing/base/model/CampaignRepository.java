@@ -45,7 +45,7 @@ public class CampaignRepository
 	public Campaign getById(final int campaignId)
 	{
 		final I_MKTG_Campaign campaignRecord = load(campaignId, I_MKTG_Campaign.class);
-		return new Campaign(campaignRecord.getName(), campaignRecord.getMKTG_Campaign_ID(), "TODO-Remote-ID");
+		return new Campaign(campaignRecord.getName(), campaignRecord.getMKTG_Campaign_ID(), "TODO: add column and field for RemoteID");
 	}
 
 	public void addContactPersonToCampaign(

@@ -20,10 +20,10 @@ import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.EmailAddress;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
-import de.metas.marketing.base.model.RemoteToLocalSyncResult;
-import de.metas.marketing.base.model.SyncResult;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult.LocalToRemoteStatus;
+import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult.RemoteToLocalStatus;
+import de.metas.marketing.base.model.SyncResult;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
 import lombok.NonNull;
 
@@ -52,15 +52,16 @@ import lombok.NonNull;
 public class ManualTest
 {
 
+	private static final String MANUAL_GROUP_REMOTE_ID = "";
 	private CleverReachClient cleverReachClient;
 
 	@Before
 	public void init()
 	{
-		CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
-				.client_id("178998")
-				.login("tobias.schoeneberg@metasfresh.com")
-				.password("WkSVa4uE").build();
+		final CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
+				.client_id("")
+				.login("")
+				.password("").build();
 		cleverReachClient = new CleverReachClient(cleverReachConfig);
 	}
 
@@ -100,7 +101,7 @@ public class ManualTest
 	@Ignore
 	public void retrieveAllContactPersonsOfCampagin()
 	{
-		final Campaign campaign = Campaign.builder().remoteId("565397").build();
+		final Campaign campaign = Campaign.builder().remoteId(MANUAL_GROUP_REMOTE_ID).build();
 		final List<Receiver> contactPersons = cleverReachClient.retrieveAllReceivers(campaign);
 
 		assertThat(contactPersons).isNotEmpty();
@@ -110,7 +111,7 @@ public class ManualTest
 	@Ignore
 	public void syncContactPersonsLocalToRemote()
 	{
-		final Campaign campaign = Campaign.builder().remoteId("565397").build();
+		final Campaign campaign = Campaign.builder().remoteId(MANUAL_GROUP_REMOTE_ID).build();
 
 		final ContactPerson newPerson1 = ContactPerson.builder().address(EmailAddress.of("test10@newemail.com")).build();
 		final ContactPerson newPerson2 = ContactPerson.builder().address(EmailAddress.of("test2-invalidmail")).build();
@@ -148,7 +149,7 @@ public class ManualTest
 	@Ignore
 	public void syncContactPersonsRemoteToLocal()
 	{
-		final Campaign campaign = Campaign.builder().remoteId("565397").build();
+		final Campaign campaign = Campaign.builder().remoteId(MANUAL_GROUP_REMOTE_ID).build();
 
 		final ContactPerson newPerson1 = ContactPerson.builder().address(EmailAddress.of("test10@newemail.com")).build();
 		final ContactPerson newPerson3 = ContactPerson.builder().address(EmailAddress.of("test30@newemail.com")).build();
@@ -156,9 +157,9 @@ public class ManualTest
 
 		final ContactPerson person1 = ContactPerson.builder().address(EmailAddress.of("test1@email")).build();
 		final ContactPerson person2 = ContactPerson.builder().address(EmailAddress.of("test2@email")).remoteId("-10").build();
-		final ContactPerson person3 = ContactPerson.builder().address(EmailAddress.of("tobias.schoeneberg@posteo.de")).build();
-		final ContactPerson person4 = ContactPerson.builder().address(EmailAddress.of("tobias.schoeneberg@gmail.com")).build();
-		final ContactPerson person5 = ContactPerson.builder().address(EmailAddress.of("tobias.schoeneber-cleverreachbounceg@metasfresh.com")).remoteId("5").build();
+		final ContactPerson person3 = ContactPerson.builder().address(EmailAddress.of("real-email1")).build();
+		final ContactPerson person4 = ContactPerson.builder().address(EmailAddress.of("real-email2")).build();
+		final ContactPerson person5 = ContactPerson.builder().address(EmailAddress.of("bounce-email1")).remoteId("5").build();
 
 		final List<RemoteToLocalSyncResult> result = cleverReachClient.syncContactPersonsRemoteToLocal(
 				campaign, ImmutableList.of(person1, person2, person3, person4, person5));
@@ -173,13 +174,13 @@ public class ManualTest
 				.containsOnlyOnce(RemoteToLocalStatus.DELETED_ON_REMOTE_PLATFORM);
 
 		assertThat(result)
-				.filteredOn(email("tobias.schoeneberg@posteo.de"))
+				.filteredOn(email("real-email1"))
 				.hasSize(1)
 				.extracting(r -> r.getRemoteToLocalStatus())
 				.contains(RemoteToLocalStatus.OBTAINED_REMOTE_ID);
 
 		assertThat(result)
-				.filteredOn(email("tobias.schoeneberg@gmail.com"))
+				.filteredOn(email("real-email2"))
 				.hasSize(1)
 				.allSatisfy(singleResult -> {
 					assertThat(singleResult.getRemoteToLocalStatus()).isEqualTo(RemoteToLocalStatus.OBTAINED_REMOTE_ID);
@@ -194,7 +195,7 @@ public class ManualTest
 				.contains(RemoteToLocalStatus.OBTAINED_NEW_CONTACT_PERSON);
 
 		assertThat(result)
-				.filteredOn(email("tobias.schoeneber-cleverreachbounceg@metasfresh.com"))
+				.filteredOn(email("bounce-email1"))
 				.hasSize(1)
 				.allSatisfy(singleResult -> {
 					assertThat(singleResult.getRemoteToLocalStatus()).isEqualTo(RemoteToLocalStatus.OBTAINED_EMAIL_BOUNCE_INFO);
