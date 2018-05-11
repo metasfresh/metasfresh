@@ -289,7 +289,7 @@ class RawLookup extends Component {
           mainProperty[0].field,
           this.inputSearch.value
         );
-      } else if (viewId) {
+      } else if (viewId && !filterWidget) {
         typeaheadRequest = autocompleteModalRequest({
           docId: filterWidget ? viewId : dataId,
           docType: windowType,
