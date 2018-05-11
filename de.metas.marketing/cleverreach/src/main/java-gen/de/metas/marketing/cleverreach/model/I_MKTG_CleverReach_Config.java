@@ -170,6 +170,29 @@ public interface I_MKTG_CleverReach_Config
     public static final String COLUMNNAME_MKTG_CleverReach_Config_ID = "MKTG_CleverReach_Config_ID";
 
 	/**
+	 * Set MKTG_Platform.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMKTG_Platform_ID (int MKTG_Platform_ID);
+
+	/**
+	 * Get MKTG_Platform.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getMKTG_Platform_ID();
+
+    /** Column definition for MKTG_Platform_ID */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_CleverReach_Config, Object> COLUMN_MKTG_Platform_ID = new org.adempiere.model.ModelColumn<I_MKTG_CleverReach_Config, Object>(I_MKTG_CleverReach_Config.class, "MKTG_Platform_ID", null);
+    /** Column name MKTG_Platform_ID */
+    public static final String COLUMNNAME_MKTG_Platform_ID = "MKTG_Platform_ID";
+
+	/**
 	 * Set Kennwort.
 	 *
 	 * <br>Type: String
