@@ -1,13 +1,13 @@
-package de.metas.handlingunits.ddorder.api;
+package de.metas.marketing.gateway.cleverreach.restapi.models;
 
-import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.product.LotNumberLock;
+import org.adempiere.util.Check;
+
 import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.handlingunits.base
+ * marketing-cleverreach
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -15,40 +15,31 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 @Value
-public final class QuarantineInOutLine
+public class CreateGroupRequest
 {
-	@NonNull
-	I_M_InOutLine inOutLine;
-
-	@NonNull
-	LotNumberLock lockLotNo;
-
-	public int getBpartnerId()
+	public static CreateGroupRequest ofName(@NonNull final String name)
 	{
-		return inOutLine.getM_InOut().getC_BPartner_ID();
+		return new CreateGroupRequest(name);
 	}
 
-	public int getBpartnerLocationId()
+	String name;
+
+	private CreateGroupRequest(@NonNull final String name)
 	{
-		return inOutLine.getM_InOut().getC_BPartner_Location_ID();
+		this.name = Check.assumeNotEmpty(name, "The given parqameter name may not be empty");
 	}
 
-	public int getReceiptLineId()
-	{
-		return inOutLine.getM_InOutLine_ID();
-	}
 }

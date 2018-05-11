@@ -90,7 +90,7 @@ public class ShipperGatewayServicesRegistry
 		return Check.assumeNotNull(service, "service shall exist for shipperGatewayId={}", shipperGatewayId);
 	}
 
-	public boolean hasServiceSupport(String shipperGatewayId)
+	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)
 	{
 		return servicesByGatewayId.containsKey(shipperGatewayId);
 	}

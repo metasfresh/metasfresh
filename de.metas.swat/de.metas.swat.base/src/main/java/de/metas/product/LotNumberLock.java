@@ -1,13 +1,14 @@
-package de.metas.marketing.base.model;
+package de.metas.product;
 
-import javax.annotation.Nullable;
+import org.adempiere.util.Check;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.marketing
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -28,19 +29,27 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class Campaign implements DataRecord
+public class LotNumberLock
 {
-	public static Campaign cast(@Nullable final DataRecord dataRecord)
+	int id;
+	int productId;
+	String lotNo;
+	String description;
+
+	@Builder
+	public LotNumberLock(
+			final int id,
+			final int productId,
+			@NonNull final String lotNo,
+			final String description)
 	{
-		return (Campaign)dataRecord;
+		Check.assumeGreaterThanZero(id, "id");
+		Check.assumeGreaterThanZero(productId, "productId");
+		Check.assumeNotEmpty(lotNo, "lotNo is not empty");
+
+		this.id = id;
+		this.productId = productId;
+		this.lotNo = lotNo;
+		this.description = description;
 	}
-
-	String name;
-
-	/** the internal metasfresh-ID (PK) of the underlying record */
-	int repoId;
-
-	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
-	String remoteId;
 }

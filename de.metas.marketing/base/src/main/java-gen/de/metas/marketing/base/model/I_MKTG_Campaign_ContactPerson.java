@@ -98,6 +98,38 @@ public interface I_MKTG_Campaign_ContactPerson
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getC_BPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	@Deprecated
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, org.compiere.model.I_C_BPartner>(I_MKTG_Campaign_ContactPerson.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -126,6 +158,33 @@ public interface I_MKTG_Campaign_ContactPerson
     public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, org.compiere.model.I_AD_User>(I_MKTG_Campaign_ContactPerson.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setEMail (java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getEMail();
+
+    /** Column definition for EMail */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_EMail = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "EMail", null);
+    /** Column name EMail */
+    public static final String COLUMNNAME_EMail = "EMail";
 
 	/**
 	 * Set Aktiv.
@@ -228,6 +287,33 @@ public interface I_MKTG_Campaign_ContactPerson
     public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, de.metas.marketing.base.model.I_MKTG_ContactPerson> COLUMN_MKTG_ContactPerson_ID = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, de.metas.marketing.base.model.I_MKTG_ContactPerson>(I_MKTG_Campaign_ContactPerson.class, "MKTG_ContactPerson_ID", de.metas.marketing.base.model.I_MKTG_ContactPerson.class);
     /** Column name MKTG_ContactPerson_ID */
     public static final String COLUMNNAME_MKTG_ContactPerson_ID = "MKTG_ContactPerson_ID";
+
+	/**
+	 * Set Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getName();
+
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Get Aktualisiert.
