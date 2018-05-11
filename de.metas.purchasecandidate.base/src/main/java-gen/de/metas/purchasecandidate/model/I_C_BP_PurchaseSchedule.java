@@ -624,27 +624,27 @@ public interface I_C_BP_PurchaseSchedule
     public static final String COLUMNNAME_PreparationTime_7 = "PreparationTime_7";
 
 	/**
-	 * Set Wiedervorlage.
+	 * Set Wiedervorlage (min).
 	 *
-	 * <br>Type: Time
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setReminderTime (java.sql.Timestamp ReminderTime);
+	public void setReminderTimeInMin (int ReminderTimeInMin);
 
 	/**
-	 * Get Wiedervorlage.
+	 * Get Wiedervorlage (min).
 	 *
-	 * <br>Type: Time
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getReminderTime();
+	public int getReminderTimeInMin();
 
-    /** Column definition for ReminderTime */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_ReminderTime = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "ReminderTime", null);
-    /** Column name ReminderTime */
-    public static final String COLUMNNAME_ReminderTime = "ReminderTime";
+    /** Column definition for ReminderTimeInMin */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_ReminderTimeInMin = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "ReminderTimeInMin", null);
+    /** Column name ReminderTimeInMin */
+    public static final String COLUMNNAME_ReminderTimeInMin = "ReminderTimeInMin";
 
 	/**
 	 * Get Aktualisiert.

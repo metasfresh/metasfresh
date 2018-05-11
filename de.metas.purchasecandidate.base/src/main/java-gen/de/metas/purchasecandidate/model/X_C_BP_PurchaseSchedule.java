@@ -14,7 +14,7 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -153691350L;
+	private static final long serialVersionUID = 960715355L;
 
     /** Standard Constructor */
     public X_C_BP_PurchaseSchedule (Properties ctx, int C_BP_PurchaseSchedule_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 			setC_BPartner_ID (0);
 			setFrequency (0); // 1
 			setFrequencyType (null); // W
+			setReminderTimeInMin (0); // 0
 			setValidFrom (new Timestamp( System.currentTimeMillis() ));
         } */
     }
@@ -508,20 +509,23 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_7);
 	}
 
-	/** Set Wiedervorlage.
-		@param ReminderTime Wiedervorlage	  */
+	/** Set Wiedervorlage (min).
+		@param ReminderTimeInMin Wiedervorlage (min)	  */
 	@Override
-	public void setReminderTime (java.sql.Timestamp ReminderTime)
+	public void setReminderTimeInMin (int ReminderTimeInMin)
 	{
-		set_Value (COLUMNNAME_ReminderTime, ReminderTime);
+		set_Value (COLUMNNAME_ReminderTimeInMin, Integer.valueOf(ReminderTimeInMin));
 	}
 
-	/** Get Wiedervorlage.
-		@return Wiedervorlage	  */
+	/** Get Wiedervorlage (min).
+		@return Wiedervorlage (min)	  */
 	@Override
-	public java.sql.Timestamp getReminderTime () 
+	public int getReminderTimeInMin () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ReminderTime);
+		Integer ii = (Integer)get_Value(COLUMNNAME_ReminderTimeInMin);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Gültig ab.
