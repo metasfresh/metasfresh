@@ -7,7 +7,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.common.collect.ImmutableList;
@@ -38,7 +37,6 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
 public class CleverReachLowLevelClient
 {
 	public static  CleverReachLowLevelClient createAndLogin(@NonNull final CleverReachConfig cleverReachConfig)

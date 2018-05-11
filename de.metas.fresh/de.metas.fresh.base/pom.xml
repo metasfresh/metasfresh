@@ -138,6 +138,11 @@
 			<artifactId>marketing-base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+				<dependency>
+			<groupId>de.metas.marketing</groupId>
+			<artifactId>marketing-cleverreach</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.monitoring</groupId>

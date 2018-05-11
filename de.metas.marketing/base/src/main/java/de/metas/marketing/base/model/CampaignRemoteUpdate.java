@@ -38,9 +38,10 @@ public class CampaignRemoteUpdate
 	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
 	String remoteId;
 
-	public Campaign toCampaign()
+	public Campaign toCampaign(@NonNull final PlatformId platformId)
 	{
 		return Campaign.builder()
+				.platformId(platformId)
 				.name(name)
 				.remoteId(remoteId)
 				.build();
