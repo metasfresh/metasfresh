@@ -55,8 +55,8 @@ public class DerKurierShipperConfig
 			@NonNull final String customerNumber,
 			@Nullable final Mailbox deliveryOrderMailBoxOrNull,
 			@Nullable String deliveryOrderRecipientEmailOrNull,
-			@Nullable String collectorCode,
-			@Nullable String customerCode,
+			@NonNull String collectorCode,
+			@NonNull String customerCode,
 			final int parcelNumberAdSequenceId)
 	{
 		this.customerNumber = Check.assumeNotEmpty(customerNumber, "Parameter customerNumber is not empty");

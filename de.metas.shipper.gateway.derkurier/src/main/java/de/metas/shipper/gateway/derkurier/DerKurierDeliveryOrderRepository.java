@@ -239,6 +239,8 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				.station(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_DesiredStation, lineRecord, previousLineRecord))
 				.customerNumber(assertSameAsPreviousValue(COLUMNNAME_DK_CustomerNumber, lineRecord, previousLineRecord))
 				.parcelNumber(lineRecord.getDK_ParcelNumber())
+				.collectorCode(lineRecord.getCollectorCode())
+				.customerCode(lineRecord.getCustomerCode())
 				.build();
 		deliveryPositionBuilder.customDeliveryData(derKurierDeliveryData);
 		return deliveryPositionBuilder;
@@ -396,8 +398,8 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 			lineRecord.setDK_Reference(deliveryOrder.getCustomerReference());
 			
-			lineRecord.setCollectorCode(deliveryOrder.getCollectorCode());
-			lineRecord.setCustomerCode(deliveryOrder.getCustomerCode());
+			lineRecord.setCollectorCode(derKurierDeliveryData.getCollectorCode());
+			lineRecord.setCustomerCode(derKurierDeliveryData.getCustomerCode());
 
 			lineCounter += lineInterval;
 			lineRecord.setLine(lineCounter);

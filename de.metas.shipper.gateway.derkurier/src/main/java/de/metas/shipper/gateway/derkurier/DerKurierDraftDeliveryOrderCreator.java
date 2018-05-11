@@ -92,6 +92,8 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 				DerKurierDeliveryData.builder()
 						.customerNumber(config.getCustomerNumber())
 						.parcelNumber(parcelNumberGenerator.getNextParcelNumber())
+						.collectorCode(config.getCollectorCode())
+						.customerCode(config.getCustomerCode())
 						.build();
 
 		return DeliveryOrder.builder()
@@ -129,9 +131,6 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 						.customDeliveryData(derKurierDeliveryData)
 						.build())
 				// .customerReference(null)
-				.collectorCode(config.getCollectorCode())
-				.customerCode(config.getCustomerCode())
-
 				.build();
 	}
 

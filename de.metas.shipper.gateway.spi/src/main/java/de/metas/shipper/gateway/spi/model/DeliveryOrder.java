@@ -76,11 +76,6 @@ public class DeliveryOrder
 	@NonNull
 	private ServiceType serviceType;
 	
-	@Nullable
-	private String collectorCode;
-	
-	@Nullable
-	private String customerCode;
 
 	/** ID in external repository */
 	private int repoId;
