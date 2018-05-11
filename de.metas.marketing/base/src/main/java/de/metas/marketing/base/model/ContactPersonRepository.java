@@ -1,10 +1,10 @@
 package de.metas.marketing.base.model;
 
+import org.springframework.stereotype.Repository;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import org.springframework.stereotype.Repository;
 
 import lombok.NonNull;
 

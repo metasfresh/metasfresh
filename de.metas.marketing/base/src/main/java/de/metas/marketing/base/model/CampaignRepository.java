@@ -1,12 +1,13 @@
 package de.metas.marketing.base.model;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
+import org.springframework.stereotype.Repository;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
-import org.springframework.stereotype.Repository;
 
 import lombok.NonNull;
 
@@ -45,7 +46,10 @@ public class CampaignRepository
 	public Campaign getById(final int campaignId)
 	{
 		final I_MKTG_Campaign campaignRecord = load(campaignId, I_MKTG_Campaign.class);
-		return new Campaign(campaignRecord.getName(), campaignRecord.getMKTG_Campaign_ID());
+		return new Campaign(
+				campaignRecord.getName(),
+				campaignRecord.getMKTG_Campaign_ID(),
+				campaignRecord.getMarketingPlatformGatewayId());
 	}
 
 	public void addContactPersonToCampaign(
@@ -91,5 +95,71 @@ public class CampaignRepository
 				.repoId(campaignRecord.getMKTG_Campaign_ID())
 				.build();
 
+	}
+
+	public int getDefaultNewsletterCampaignId(final int orgId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_MKTG_Campaign.COLUMNNAME_AD_Org_ID, orgId, 0)
+				.orderByDescending(I_MKTG_Campaign.COLUMNNAME_AD_Org_ID)
+				.create()
+				.firstId();
+	}
+
+	public void removeContactPersonFromCampaign(
+			@NonNull final ContactPerson contactPerson,
+			@NonNull final Campaign campaign)
+	{
+		Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaign.getRepoId())
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, contactPerson.getRepoId())
+				.create()
+				.delete();
+
+	}
+
+	public void createConsent(
+			@NonNull final ContactPerson contactPerson,
+			@NonNull final Campaign campaign)
+	{
+		final I_MKTG_Consent consent = newInstance(I_MKTG_Consent.class);
+
+		
+		consent.setAD_User_ID(contactPerson.getAdUserId());
+		consent.setC_BPartner_ID(contactPerson.getCBpartnerId());
+		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
+		consent.setMKTG_ContactPerson_ID(contactPerson.getRepoId());
+		consent.setMarketingPlatformGatewayId(campaign.getMarketingPlatformGatewayId());
+
+		save(consent);
+
+	}
+
+	public void revokeConsent(
+			@NonNull final ContactPerson contactPerson,
+			@NonNull final Campaign campaign)
+	{
+		final I_MKTG_Consent consent = getConsentRecord(contactPerson, campaign);
+
+		if(consent != null)
+		{
+			consent.setConsentRevokedOn(SystemTime.asTimestamp());
+			save(consent);
+		}
+	}
+
+	private I_MKTG_Consent getConsentRecord(
+			@NonNull final ContactPerson contactPerson,
+			@NonNull final Campaign campaign)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Consent.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getRepoId())
+				.addEqualsFilter(I_MKTG_Consent.COLUMN_AD_User_ID, contactPerson.getAdUserId())
+				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MarketingPlatformGatewayId, campaign.getMarketingPlatformGatewayId())
+				.create()
+				.firstOnly(I_MKTG_Consent.class);
 	}
 }

@@ -31,4 +31,5 @@ public class Campaign
 {
 	String name;
 	int repoId;
+	String marketingPlatformGatewayId;
 }

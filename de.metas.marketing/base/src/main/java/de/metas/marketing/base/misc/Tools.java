@@ -69,4 +69,57 @@ public class Tools
 			campaignRepository.addContactPersonToCampaign(contactPerson, campaign);
 		}
 	}
+
+	public void addAsContactPersonToCampaign(@NonNull final I_AD_User user, final int campaignId)
+	{
+		
+		Check.assumeGreaterOrEqualToZero(campaignId, "campaignId");
+
+		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
+
+		if (Check.isEmpty(user.getEMail(), true))
+		{
+			Loggables.get().addLog("Skip AD_User because it has no email address; AD_User={}", user);
+			return;
+		}
+
+		final ContactPerson contactPerson = createContactPersonForAdUser(user);
+		final Campaign campaign = campaignRepository.getById(campaignId);
+
+		campaignRepository.addContactPersonToCampaign(contactPerson, campaign);
+
+	}
+
+	public void addToNewsletter(@NonNull I_AD_User user, int campaignId)
+	{
+		if (Check.isEmpty(user.getEMail(), true))
+		{
+			Loggables.get().addLog("Skip AD_User because it has no email address; AD_User={}", user);
+			return;
+		}
+		
+		Check.assumeGreaterOrEqualToZero(campaignId, "campaignId");
+
+		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
+
+		final ContactPerson contactPerson = createContactPersonForAdUser(user);
+		final Campaign campaign = campaignRepository.getById(campaignId);
+
+		campaignRepository.addContactPersonToCampaign(contactPerson, campaign);
+		campaignRepository.createConsent(contactPerson, campaign);
+
+	}
+
+	public void removeFromNewsletter(@NonNull I_AD_User user, int campaignId)
+	{
+		Check.assumeGreaterOrEqualToZero(campaignId, "campaignId");
+		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
+
+		final ContactPerson contactPerson = createContactPersonForAdUser(user);
+		final Campaign campaign = campaignRepository.getById(campaignId);
+
+		campaignRepository.revokeConsent(contactPerson, campaign);
+		campaignRepository.removeContactPersonFromCampaign(contactPerson, campaign);
+
+	}
 }
