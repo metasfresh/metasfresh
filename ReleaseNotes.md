@@ -74,7 +74,9 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#2558](https://github.com/metasfresh/metasfresh/issues/2558) All existing configs available in Gebindekonfiguration in PP_Order
+    * Fixes the available Picking Instructions in manufacturing Order. Now only showing those which fit for the selected Product.
   * [#3916](https://github.com/metasfresh/metasfresh/issues/3916) QtyPicked not updated in shipment schedule after reactivate & unpick in picking terminal
+    * Fixes the Quantity Picked amount after reactivating and unpicking in Picking Terminal.
   * [#3971](https://github.com/metasfresh/metasfresh/issues/3971) New Manufacturing Workflow not saved
     * Adds missing Field to Manufacturing Workflow View in WebUI, allowing to save a workflow record again.
   * [#3977](https://github.com/metasfresh/metasfresh/issues/3977) Pharma: Prices from IFA import are in cents
