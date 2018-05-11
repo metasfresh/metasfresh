@@ -3,6 +3,7 @@ package de.metas.notification;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.security.IRoleDAO;
@@ -70,6 +71,7 @@ public class NotificationSenderTemplate
 	private final IUserDAO usersRepo = Services.get(IUserDAO.class);
 	private final INotificationBL notificationsService = Services.get(INotificationBL.class);
 	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
+	private final IRoleNotificationsConfigRepository roleNotificationsConfigRepository = Services.get(IRoleNotificationsConfigRepository.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
@@ -182,6 +184,14 @@ public class NotificationSenderTemplate
 			return rolesRepo.retrieveUserIdsForRoleId(roleId)
 					.stream()
 					.map(userId -> Recipient.userAndRole(userId, roleId));
+		}
+		else if (recipient.isAllRolesContainingGroup())
+		{
+			final Set<Integer> roleIds = roleNotificationsConfigRepository.getRoleIdsContainingNotificationGroupName(recipient.getNotificationGroupName());
+			return roleIds.stream()
+					.flatMap(roleId -> rolesRepo.retrieveUserIdsForRoleId(roleId)
+							.stream()
+							.map(userId -> Recipient.userAndRole(userId, roleId)));
 		}
 		else
 		{

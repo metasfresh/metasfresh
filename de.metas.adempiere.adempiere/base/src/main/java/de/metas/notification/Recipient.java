@@ -66,40 +66,60 @@ public class Recipient
 				.build();
 	}
 
-	private static final Recipient ALL_USERS = _builder().type(RecipientType.AllUsers).build();
+	public static Recipient allRolesContainingGroup(final NotificationGroupName notificationGroupName)
+	{
+		return _builder()
+				.type(RecipientType.AllRolesContainingGroup)
+				.notificationGroupName(notificationGroupName)
+				.build();
+	}
 
 	public static enum RecipientType
 	{
-		AllUsers, User, Role,
+		AllUsers, User, Role, AllRolesContainingGroup,
 	}
+
+	private static final Recipient ALL_USERS = _builder().type(RecipientType.AllUsers).build();
 
 	private RecipientType type;
 	private int userId;
 	private int roleId;
+	private NotificationGroupName notificationGroupName;
 
 	@Builder(builderMethodName = "_builder")
 	private Recipient(
 			@NonNull final RecipientType type,
 			final int userId,
-			final int roleId)
+			final int roleId,
+			final NotificationGroupName notificationGroupName)
 	{
 		this.type = type;
 		if (type == RecipientType.AllUsers)
 		{
 			this.userId = -1;
 			this.roleId = -1;
+			this.notificationGroupName = null;
 		}
 		else if (type == RecipientType.User)
 		{
 			Check.assumeGreaterOrEqualToZero(userId, "userId");
 			this.userId = userId;
 			this.roleId = roleId >= 0 ? roleId : -1;
+			this.notificationGroupName = null;
 		}
 		else if (type == RecipientType.Role)
 		{
 			Check.assumeGreaterOrEqualToZero(roleId, "roleId");
 			this.userId = -1;
 			this.roleId = roleId;
+			this.notificationGroupName = null;
+		}
+		else if (type == RecipientType.AllRolesContainingGroup)
+		{
+			Check.assumeNotNull(notificationGroupName, "Parameter notificationGroupName is not null");
+			this.userId = -1;
+			this.roleId = -1;
+			this.notificationGroupName = notificationGroupName;
 		}
 		else
 		{
@@ -122,6 +142,11 @@ public class Recipient
 		return type == RecipientType.Role;
 	}
 
+	public boolean isAllRolesContainingGroup()
+	{
+		return type == RecipientType.AllRolesContainingGroup;
+	}
+
 	public int getUserId()
 	{
 		if (type != RecipientType.User)
@@ -134,6 +159,15 @@ public class Recipient
 	public boolean isRoleIdSet()
 	{
 		return roleId >= 0;
+	}
+
+	public NotificationGroupName getNotificationGroupName()
+	{
+		if (type != RecipientType.AllRolesContainingGroup)
+		{
+			throw new AdempiereException("NotificationGroupName not available: " + this);
+		}
+		return notificationGroupName;
 	}
 
 }
