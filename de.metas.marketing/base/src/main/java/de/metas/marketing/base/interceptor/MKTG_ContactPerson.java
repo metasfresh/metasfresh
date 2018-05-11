@@ -48,9 +48,12 @@ public class MKTG_ContactPerson
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+		// note AD_User_ID=0 needs special threatment
+		final Integer newAdUserID = contactPerson.getAD_User_ID() <= 0 ? null : contactPerson.getAD_User_ID();
+
 		final IQueryUpdater<I_MKTG_Campaign_ContactPerson> updater = queryBL
 				.createCompositeQueryUpdater(I_MKTG_Campaign_ContactPerson.class)
-				.addSetColumnValue(I_MKTG_Campaign_ContactPerson.COLUMNNAME_AD_User_ID, contactPerson.getAD_User_ID());
+				.addSetColumnValue(I_MKTG_Campaign_ContactPerson.COLUMNNAME_AD_User_ID, newAdUserID);
 
 		createContactPersonQuery(contactPerson)
 				.update(updater);
