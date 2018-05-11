@@ -33,6 +33,8 @@ Here come the actual release notes:
     * Improved behavior of seletion lines in Handling Unit Editor when changing referenced data. Now the selection is not jumping away anymore.
   * [#1765](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1765) Modal view: editing lookups not working
     * Fixes the usage of Lookup widgets in modal Overlays. Now accessing the correct endpoints.
+  * [#1784](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1784) Search fields in filters are not working
+    * Fixes a Bug in Lookup Filters.
 
 ## Fixes
 
