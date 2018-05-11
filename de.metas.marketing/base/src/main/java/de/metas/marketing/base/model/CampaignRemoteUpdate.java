@@ -1,13 +1,12 @@
 package de.metas.marketing.base.model;
 
-import javax.annotation.Nullable;
-
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,20 +26,31 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Analog to {@link ContactPersonRemoteUpdate}.
+ */
 @Value
-@Builder(toBuilder = true)
-public class Campaign implements DataRecord
+@Builder
+public class CampaignRemoteUpdate
 {
-	public static Campaign cast(@Nullable final DataRecord dataRecord)
-	{
-		return (Campaign)dataRecord;
-	}
-
 	String name;
-
-	/** the internal metasfresh-ID (PK) of the underlying record */
-	int repoId;
 
 	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
 	String remoteId;
+
+	public Campaign toCampaign()
+	{
+		return Campaign.builder()
+				.name(name)
+				.remoteId(remoteId)
+				.build();
+	}
+
+	public Campaign update(@NonNull final Campaign campaignToUpdate)
+	{
+		return campaignToUpdate.toBuilder()
+				.name(name)
+				.remoteId(remoteId)
+				.build();
+	}
 }

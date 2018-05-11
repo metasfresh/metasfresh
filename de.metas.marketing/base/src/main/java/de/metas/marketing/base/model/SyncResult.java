@@ -1,13 +1,8 @@
 package de.metas.marketing.base.model;
 
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -18,29 +13,16 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class Campaign implements DataRecord
+public interface SyncResult
 {
-	public static Campaign cast(@Nullable final DataRecord dataRecord)
-	{
-		return (Campaign)dataRecord;
-	}
-
-	String name;
-
-	/** the internal metasfresh-ID (PK) of the underlying record */
-	int repoId;
-
-	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
-	String remoteId;
+	DataRecord getSynchedDataRecord();
 }

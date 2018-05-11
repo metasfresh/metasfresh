@@ -1,15 +1,13 @@
 package de.metas.marketing.base.model;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
+import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -29,45 +27,34 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Represents some updated record received from a remote platform.<br>
+ * <b>IMPORTANT:</b> the {@link #updateContactPerson(ContactPerson)} method may not overwrite anything that was unspecified in the update.
+ * I.e. when adding further fields in here, please make sure to make a distinction between "empty/null" and "not-specified/leave-it-as-is".
+ */
 @Value
-@Builder(toBuilder = true)
-public class ContactPerson implements DataRecord
+@Builder
+public class ContactPersonRemoteUpdate
 {
-	public static Optional<ContactPerson> cast(@Nullable final DataRecord dataRecord)
-	{
-		if (dataRecord instanceof ContactPerson)
-		{
-			return Optional.ofNullable((ContactPerson)dataRecord);
-		}
-		return Optional.empty();
-	}
-
-	Campaign list;
-
-	String name;
-
-	/** might be <= 0 */
-	int adUserId;
-
-	/** might be <= 0 */
-	int cBpartnerId;
-
-	/** Doesn't make sense to be null; a contact person needs to have some means of contacting them. */
 	ContactAddress address;
-
-	/** the internal metasfresh-ID (PK) of the underlying record */
-	int repoId;
 
 	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
 	String remoteId;
 
-	public String getEmailAddessStringOrNull()
+	public ContactPerson updateContactPerson(@NonNull final ContactPerson contactPerson)
 	{
-		return EmailAddress.getEmailAddessStringOrNull(getAddress());
+		return finishAndBuild(contactPerson.toBuilder());
 	}
 
-	public Boolean getEmailAddessIsActivatedOrNull()
+	public ContactPerson toContactPerson()
 	{
-		return EmailAddress.getActiveOnRemotePlatformOrNull(getAddress());
+		return finishAndBuild(ContactPerson.builder());
+	}
+
+	private ContactPerson finishAndBuild(final ContactPersonBuilder builder)
+	{
+		return builder.address(address)
+				.remoteId(remoteId)
+				.build();
 	}
 }
