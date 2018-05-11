@@ -60,6 +60,15 @@ public class ContactPersonRepository
 		final I_MKTG_ContactPerson contactPersonRecord = loadRecordIfPossible(contactPerson)
 				.orElse(newInstance(I_MKTG_ContactPerson.class));
 
+		if (contactPerson.getAdUserId() > 0)
+		{
+			contactPersonRecord.setAD_User_ID(contactPerson.getAdUserId());
+		}
+		else
+		{
+			contactPersonRecord.setAD_User(null);
+		}
+
 		contactPersonRecord.setC_BPartner_ID(contactPerson.getCBpartnerId());
 		contactPersonRecord.setName(contactPerson.getName());
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());
@@ -84,7 +93,7 @@ public class ContactPersonRepository
 	private static Optional<I_MKTG_ContactPerson> loadRecordIfPossible(
 			@NonNull final ContactPerson contactPerson)
 	{
-		final I_MKTG_ContactPerson contactPersonRecord;
+		I_MKTG_ContactPerson contactPersonRecord = null;
 		if (contactPerson.getContactPersonId() != null)
 		{
 			final ContactPersonId contactPersonId = contactPerson.getContactPersonId();
@@ -92,16 +101,29 @@ public class ContactPersonRepository
 		}
 		else if (!Check.isEmpty(contactPerson.getRemoteId(), true) && contactPerson.getPlatformId() != null)
 		{
-			contactPersonRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_ContactPerson.class).addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_RemoteRecordId, contactPerson.getRemoteId())
+			contactPersonRecord = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_MKTG_ContactPerson.class)
+					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_MKTG_Platform_ID, contactPerson.getPlatformId().getRepoId())
+					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_RemoteRecordId, contactPerson.getRemoteId())
 					.create()
 					.firstOnly(I_MKTG_ContactPerson.class); // might be null, that's ok
 		}
-		else
+
+		if (contactPersonRecord == null)
 		{
-			contactPersonRecord = null;
+			// if it's still null, then see if there is a contact with a matching email
+			contactPersonRecord = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_MKTG_ContactPerson.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_MKTG_Platform_ID, contactPerson.getPlatformId().getRepoId())
+					.orderBy()
+					.addColumn(I_MKTG_ContactPerson.COLUMN_MKTG_ContactPerson_ID).endOrderBy()
+					.create()
+					.first();
+
 		}
+
 		return Optional.ofNullable(contactPersonRecord);
 	}
 

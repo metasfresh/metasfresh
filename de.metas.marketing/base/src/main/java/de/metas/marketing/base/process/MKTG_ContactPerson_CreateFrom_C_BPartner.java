@@ -12,7 +12,9 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.marketing.base.misc.Tools;
+import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.process.JavaProcess;
@@ -45,6 +47,10 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
 	@Param(mandatory = true, parameterName = I_MKTG_Campaign.COLUMNNAME_MKTG_Campaign_ID)
 	private int campaignId;
 
+	private final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
+
+	private final Tools tools = Adempiere.getBean(Tools.class);
+
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -66,9 +72,11 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
 				.iterate(I_AD_User.class);
 
-		Adempiere.getBean(Tools.class).addAsContactPersonsToCampaign(
+		final Campaign campaign = campaignRepository.getById(CampaignId.ofRepoId(campaignId));
+
+		tools.addAsContactPersonsToCampaign(
 				adUsersToAdd,
-				CampaignId.ofRepoId(campaignId));
+				campaign);
 		return MSG_OK;
 	}
 }

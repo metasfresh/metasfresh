@@ -8,10 +8,12 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Service;
 
-import de.metas.marketing.base.model.CampaignId;
+import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.EmailAddress;
+import de.metas.marketing.base.model.PlatformId;
 import lombok.NonNull;
 
 /*
@@ -39,9 +41,19 @@ import lombok.NonNull;
 @Service
 public class Tools
 {
-	public ContactPerson createContactPersonForAdUser(@NonNull final I_AD_User adUserRecord)
+	private final ContactPersonRepository contactPersonRepository;
+
+	public Tools(@NonNull final ContactPersonRepository contactPersonRepository)
+	{
+		this.contactPersonRepository = contactPersonRepository;
+	}
+
+	public ContactPerson createContactPersonForAdUser(
+			@NonNull final I_AD_User adUserRecord,
+			@NonNull final PlatformId platformId)
 	{
 		return ContactPerson.builder()
+				.platformId(platformId)
 				.name(adUserRecord.getName())
 				.adUserId(adUserRecord.getAD_User_ID())
 				.address(EmailAddress.of(adUserRecord.getEMail()))
@@ -50,7 +62,7 @@ public class Tools
 
 	public void addAsContactPersonsToCampaign(
 			@NonNull final Iterator<I_AD_User> adUsersToAdd,
-			@NonNull final CampaignId campaignId)
+			@NonNull final Campaign campaign)
 	{
 		final Tools converters = Adempiere.getBean(Tools.class);
 		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
@@ -64,8 +76,9 @@ public class Tools
 				continue;
 			}
 
-			final ContactPerson contactPerson = converters.createContactPersonForAdUser(adUserToAdd);
-			campaignRepository.addContactPersonToCampaign(contactPerson.getContactPersonId(), campaignId);
+			final ContactPerson contactPerson = converters.createContactPersonForAdUser(adUserToAdd, campaign.getPlatformId());
+			final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
+			campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaign.getCampaignId());
 		}
 	}
 }
