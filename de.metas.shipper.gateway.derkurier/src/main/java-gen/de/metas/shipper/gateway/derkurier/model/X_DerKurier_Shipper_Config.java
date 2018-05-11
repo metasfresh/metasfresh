@@ -14,7 +14,7 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1026064969L;
+	private static final long serialVersionUID = 691937994L;
 
     /** Standard Constructor */
     public X_DerKurier_Shipper_Config (Properties ctx, int DerKurier_Shipper_Config_ID, String trxName)
@@ -24,6 +24,8 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
         {
 			setAD_Sequence_ID (0);
 			setAPIServerBaseURL (null);
+			setCollectorCode (null);
+			setCustomerCode (null);
 			setDerKurier_Shipper_Config_ID (0);
 			setDK_CustomerNumber (null);
 			setM_Shipper_ID (0);
