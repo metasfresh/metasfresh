@@ -14,7 +14,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1051207302L;
+	private static final long serialVersionUID = -1438510408L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -406,6 +406,40 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public org.compiere.model.I_C_DataImport getC_DataImport() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class);
+	}
+
+	@Override
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
+	}
+
+	/** Set Data import.
+		@param C_DataImport_ID Data import	  */
+	@Override
+	public void setC_DataImport_ID (int C_DataImport_ID)
+	{
+		if (C_DataImport_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
+	}
+
+	/** Get Data import.
+		@return Data import	  */
+	@Override
+	public int getC_DataImport_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_Greeting getC_Greeting() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
@@ -589,6 +623,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_ContactDescription);
 	}
 
+	/** Set Kontakt-Name.
+		@param ContactName 
+		Business Partner Contact Name
+	  */
+	@Override
+	public void setContactName (java.lang.String ContactName)
+	{
+		set_Value (COLUMNNAME_ContactName, ContactName);
+	}
+
+	/** Get Kontakt-Name.
+		@return Business Partner Contact Name
+	  */
+	@Override
+	public java.lang.String getContactName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ContactName);
+	}
+
 	/** Set ISO Ländercode.
 		@param CountryCode 
 		Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
@@ -606,6 +659,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getCountryCode () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CountryCode);
+	}
+
+	/** Set Debitoren-Nr.
+		@param DebtorId Debitoren-Nr	  */
+	@Override
+	public void setDebtorId (int DebtorId)
+	{
+		set_Value (COLUMNNAME_DebtorId, Integer.valueOf(DebtorId));
+	}
+
+	/** Get Debitoren-Nr.
+		@return Debitoren-Nr	  */
+	@Override
+	public int getDebtorId () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DebtorId);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Beschreibung.
@@ -1143,6 +1215,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Lastname);
 	}
 
+	/** Set Memo.
+		@param Memo 
+		Memo Text
+	  */
+	@Override
+	public void setMemo (java.lang.String Memo)
+	{
+		set_Value (COLUMNNAME_Memo, Memo);
+	}
+
+	/** Get Memo.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo);
+	}
+
 	/** Set NAICS/SIC.
 		@param NAICS 
 		Standard Industry Code or its successor NAIC - http://www.osha.gov/oshstats/sicser.html
@@ -1239,9 +1330,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	/** Set Kennwort.
-		@param Password 
-		Password of any length (case sensitive)
-	  */
+		@param Password Kennwort	  */
 	@Override
 	public void setPassword (java.lang.String Password)
 	{
@@ -1249,8 +1338,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	/** Get Kennwort.
-		@return Password of any length (case sensitive)
-	  */
+		@return Kennwort	  */
 	@Override
 	public java.lang.String getPassword () 
 	{
@@ -1570,6 +1658,56 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getRegionName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RegionName);
+	}
+
+	/** 
+	 * Salesgroup AD_Reference_ID=540635
+	 * Reference name: C_BPartner_Salesgroup
+	 */
+	public static final int SALESGROUP_AD_Reference_ID=540635;
+	/** Klassischer Detailhandel = 0030 */
+	public static final String SALESGROUP_KlassischerDetailhandel = "0030";
+	/** Discounter = 0010 */
+	public static final String SALESGROUP_Discounter = "0010";
+	/** Gastronomie und Grosshandel = 0020 */
+	public static final String SALESGROUP_GastronomieUndGrosshandel = "0020";
+	/** Set Statistik Gruppe.
+		@param Salesgroup Statistik Gruppe	  */
+	@Override
+	public void setSalesgroup (java.lang.String Salesgroup)
+	{
+
+		set_Value (COLUMNNAME_Salesgroup, Salesgroup);
+	}
+
+	/** Get Statistik Gruppe.
+		@return Statistik Gruppe	  */
+	@Override
+	public java.lang.String getSalesgroup () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Salesgroup);
+	}
+
+	/** Set Mindesthaltbarkeit Tage.
+		@param ShelfLifeMinDays 
+		Mindesthaltbarkeit in Tagen, bezogen auf das Mindesthaltbarkeitsdatum einer Produktinstanz
+	  */
+	@Override
+	public void setShelfLifeMinDays (int ShelfLifeMinDays)
+	{
+		set_Value (COLUMNNAME_ShelfLifeMinDays, Integer.valueOf(ShelfLifeMinDays));
+	}
+
+	/** Get Mindesthaltbarkeit Tage.
+		@return Mindesthaltbarkeit in Tagen, bezogen auf das Mindesthaltbarkeitsdatum einer Produktinstanz
+	  */
+	@Override
+	public int getShelfLifeMinDays () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_ShelfLifeMinDays);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Short Description.

@@ -528,7 +528,7 @@ public interface I_C_BPartner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -540,14 +540,39 @@ public interface I_C_BPartner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getCreditLimitIndicator();
 
     /** Column definition for CreditLimitIndicator */
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CreditLimitIndicator = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CreditLimitIndicator", null);
     /** Column name CreditLimitIndicator */
     public static final String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
+
+	/**
+	 * Set Debitoren-Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDebtorId (int DebtorId);
+
+	/**
+	 * Get Debitoren-Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDebtorId();
+
+    /** Column definition for DebtorId */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_DebtorId = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "DebtorId", null);
+    /** Column name DebtorId */
+    public static final String COLUMNNAME_DebtorId = "DebtorId";
 
 	/**
 	 * Set Lieferart.
@@ -1502,6 +1527,31 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo (java.lang.String Memo);
+
+	/**
+	 * Get Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo();
+
+    /** Column definition for Memo */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo", null);
+    /** Column name Memo */
+    public static final String COLUMNNAME_Memo = "Memo";
+
+	/**
 	 * Set MRP ausschliessen.
 	 *
 	 * <br>Type: List
@@ -2035,6 +2085,29 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_ReminderDateIntern = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "ReminderDateIntern", null);
     /** Column name ReminderDateIntern */
     public static final String COLUMNNAME_ReminderDateIntern = "ReminderDateIntern";
+
+	/**
+	 * Set Statistik Gruppe.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSalesgroup (java.lang.String Salesgroup);
+
+	/**
+	 * Get Statistik Gruppe.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSalesgroup();
+
+    /** Column definition for Salesgroup */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Salesgroup = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Salesgroup", null);
+    /** Column name Salesgroup */
+    public static final String COLUMNNAME_Salesgroup = "Salesgroup";
 
 	/**
 	 * Set Aussendienst.

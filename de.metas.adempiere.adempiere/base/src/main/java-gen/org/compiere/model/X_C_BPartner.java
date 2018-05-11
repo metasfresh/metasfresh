@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2054191448L;
+	private static final long serialVersionUID = -446579365L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -519,6 +519,25 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getCreditLimitIndicator () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreditLimitIndicator);
+	}
+
+	/** Set Debitoren-Nr.
+		@param DebtorId Debitoren-Nr	  */
+	@Override
+	public void setDebtorId (int DebtorId)
+	{
+		set_Value (COLUMNNAME_DebtorId, Integer.valueOf(DebtorId));
+	}
+
+	/** Get Debitoren-Nr.
+		@return Debitoren-Nr	  */
+	@Override
+	public int getDebtorId () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DebtorId);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** 
@@ -1467,6 +1486,25 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
+	/** Set Memo.
+		@param Memo 
+		Memo Text
+	  */
+	@Override
+	public void setMemo (java.lang.String Memo)
+	{
+		set_Value (COLUMNNAME_Memo, Memo);
+	}
+
+	/** Get Memo.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo);
+	}
+
 	/** 
 	 * MRP_Exclude AD_Reference_ID=319
 	 * Reference name: _YesNo
@@ -1991,6 +2029,34 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.sql.Timestamp getReminderDateIntern () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_ReminderDateIntern);
+	}
+
+	/** 
+	 * Salesgroup AD_Reference_ID=540635
+	 * Reference name: C_BPartner_Salesgroup
+	 */
+	public static final int SALESGROUP_AD_Reference_ID=540635;
+	/** Klassischer Detailhandel = 0030 */
+	public static final String SALESGROUP_KlassischerDetailhandel = "0030";
+	/** Discounter = 0010 */
+	public static final String SALESGROUP_Discounter = "0010";
+	/** Gastronomie und Grosshandel = 0020 */
+	public static final String SALESGROUP_GastronomieUndGrosshandel = "0020";
+	/** Set Statistik Gruppe.
+		@param Salesgroup Statistik Gruppe	  */
+	@Override
+	public void setSalesgroup (java.lang.String Salesgroup)
+	{
+
+		set_Value (COLUMNNAME_Salesgroup, Salesgroup);
+	}
+
+	/** Get Statistik Gruppe.
+		@return Statistik Gruppe	  */
+	@Override
+	public java.lang.String getSalesgroup () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Salesgroup);
 	}
 
 	@Override

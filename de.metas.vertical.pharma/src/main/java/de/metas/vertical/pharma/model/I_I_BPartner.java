@@ -11,6 +11,12 @@ public interface I_I_BPartner extends org.compiere.model.I_I_BPartner
 	public java.lang.String getPharmaproductpermlaw52();
 
 	// @formatter:off
+	public static final String COLUMNNAME_Regions = "Region";
+	public void setRegion(String Region);
+	public String getRegion();
+	// @formatter:on
+
+	// @formatter:off
 	public static final String COLUMNNAME_SalesResponsible = "SalesResponsible";
 	public void setSalesResponsible(String SalesResponsible);
 	public String getSalesResponsible();
@@ -42,7 +48,9 @@ public interface I_I_BPartner extends org.compiere.model.I_I_BPartner
 
 	// @formatter:off
 	public static final String COLUMNNAME_ShelfLifeMinDays = "ShelfLifeMinDays";
+	@Override
 	public void setShelfLifeMinDays(int ShelfLifeMinDays);
+	@Override
 	public int getShelfLifeMinDays();
 	// @formatter:on
 

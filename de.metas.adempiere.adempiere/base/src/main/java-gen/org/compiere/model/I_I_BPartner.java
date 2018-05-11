@@ -418,6 +418,33 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
 
 	/**
+	 * Set Data import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DataImport_ID (int C_DataImport_ID);
+
+	/**
+	 * Get Data import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DataImport_ID();
+
+	public org.compiere.model.I_C_DataImport getC_DataImport();
+
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport);
+
+    /** Column definition for C_DataImport_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_DataImport>(I_I_BPartner.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
+    /** Column name C_DataImport_ID */
+    public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
+
+	/**
 	 * Set Anrede.
 	 * Greeting to print on correspondence
 	 *
@@ -603,6 +630,31 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_ContactDescription = "ContactDescription";
 
 	/**
+	 * Set Kontakt-Name.
+	 * Business Partner Contact Name
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setContactName (java.lang.String ContactName);
+
+	/**
+	 * Get Kontakt-Name.
+	 * Business Partner Contact Name
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getContactName();
+
+    /** Column definition for ContactName */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_ContactName = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "ContactName", null);
+    /** Column name ContactName */
+    public static final String COLUMNNAME_ContactName = "ContactName";
+
+	/**
 	 * Set ISO Ländercode.
 	 * Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
 	 *
@@ -656,6 +708,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User>(I_I_BPartner.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Debitoren-Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDebtorId (int DebtorId);
+
+	/**
+	 * Get Debitoren-Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDebtorId();
+
+    /** Column definition for DebtorId */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_DebtorId = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "DebtorId", null);
+    /** Column name DebtorId */
+    public static final String COLUMNNAME_DebtorId = "DebtorId";
 
 	/**
 	 * Set Beschreibung.
@@ -1288,6 +1363,31 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Lastname = "Lastname";
 
 	/**
+	 * Set Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo (java.lang.String Memo);
+
+	/**
+	 * Get Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo();
+
+    /** Column definition for Memo */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Memo", null);
+    /** Column name Memo */
+    public static final String COLUMNNAME_Memo = "Memo";
+
+	/**
 	 * Set NAICS/SIC.
 	 * Standard Industry Code or its successor NAIC - http://www.osha.gov/oshstats/sicser.html
 	 *
@@ -1414,7 +1514,6 @@ public interface I_I_BPartner
 
 	/**
 	 * Set Kennwort.
-	 * Password of any length (case sensitive)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1424,7 +1523,6 @@ public interface I_I_BPartner
 
 	/**
 	 * Get Kennwort.
-	 * Password of any length (case sensitive)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1744,6 +1842,54 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_RegionName = "RegionName";
 
 	/**
+	 * Set Statistik Gruppe.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSalesgroup (java.lang.String Salesgroup);
+
+	/**
+	 * Get Statistik Gruppe.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSalesgroup();
+
+    /** Column definition for Salesgroup */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Salesgroup = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Salesgroup", null);
+    /** Column name Salesgroup */
+    public static final String COLUMNNAME_Salesgroup = "Salesgroup";
+
+	/**
+	 * Set Mindesthaltbarkeit Tage.
+	 * Mindesthaltbarkeit in Tagen, bezogen auf das Mindesthaltbarkeitsdatum einer Produktinstanz
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setShelfLifeMinDays (int ShelfLifeMinDays);
+
+	/**
+	 * Get Mindesthaltbarkeit Tage.
+	 * Mindesthaltbarkeit in Tagen, bezogen auf das Mindesthaltbarkeitsdatum einer Produktinstanz
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getShelfLifeMinDays();
+
+    /** Column definition for ShelfLifeMinDays */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_ShelfLifeMinDays = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "ShelfLifeMinDays", null);
+    /** Column name ShelfLifeMinDays */
+    public static final String COLUMNNAME_ShelfLifeMinDays = "ShelfLifeMinDays";
+
+	/**
 	 * Set Short Description.
 	 *
 	 * <br>Type: String
@@ -1843,7 +1989,7 @@ public interface I_I_BPartner
 
 	/**
 	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false

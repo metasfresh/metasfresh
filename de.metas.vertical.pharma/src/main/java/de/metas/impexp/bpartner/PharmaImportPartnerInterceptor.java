@@ -79,6 +79,11 @@ public class PharmaImportPartnerInterceptor implements IImportInterceptor
 			bpartner.setPharmaproductpermlaw52(ibpartner.getPharmaproductpermlaw52());
 		}
 		//
+		if (!Check.isEmpty(ibpartner.getRegion(),true))
+		{
+			bpartner.setRegion(ibpartner.getRegion());
+		}
+		//
 		if (!Check.isEmpty(ibpartner.getSalesResponsible(),true))
 		{
 			bpartner.setPharmaproductpermlaw52(ibpartner.getPharmaproductpermlaw52());
