@@ -10,12 +10,14 @@ import org.compiere.util.CCache;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.IRoleNotificationsConfigRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.notification.RoleNotificationsConfig;
 import de.metas.notification.UserNotificationsGroup;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,11 +32,11 @@ import de.metas.notification.UserNotificationsGroup;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -86,5 +88,21 @@ public class RoleNotificationsConfigRepository implements IRoleNotificationsConf
 				.groupInternalName(groupInternalName)
 				.notificationTypes(UserNotificationsConfigRepository.toNotificationTypes(record.getNotificationType()))
 				.build();
+	}
+
+	@Override
+	public ImmutableSet<Integer> getRoleIdsContainingNotificationGroupName(@NonNull final NotificationGroupName notificationGroupName)
+	{
+		final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
+		final int notificationGroupId = notificationGroupNamesRepo.getNotificationGroupId(notificationGroupName);
+
+		final List<Integer> roleIds = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Role_NotificationGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Role_NotificationGroup.COLUMN_AD_NotificationGroup_ID, notificationGroupId)
+				.create()
+				.listDistinct(I_AD_Role_NotificationGroup.COLUMNNAME_AD_Role_ID, Integer.class);
+
+		return ImmutableSet.copyOf(roleIds);
 	}
 }

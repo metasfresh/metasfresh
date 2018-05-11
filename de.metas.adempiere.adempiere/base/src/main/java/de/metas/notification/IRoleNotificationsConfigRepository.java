@@ -1,5 +1,7 @@
 package de.metas.notification;
 
+import java.util.Set;
+
 import org.adempiere.util.ISingletonService;
 
 /*
@@ -27,4 +29,6 @@ import org.adempiere.util.ISingletonService;
 public interface IRoleNotificationsConfigRepository extends ISingletonService
 {
 	RoleNotificationsConfig getByRoleId(int adRoleId);
+
+	Set<Integer> getRoleIdsContainingNotificationGroupName(NotificationGroupName notificationGroupName);
 }
