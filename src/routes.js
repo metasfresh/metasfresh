@@ -11,6 +11,7 @@ import {
   logoutSuccess,
 } from './actions/AppActions';
 import { createWindow } from './actions/WindowActions';
+import { setBreadcrumb } from './actions/MenuActions';
 import Board from './containers/Board.js';
 import Dashboard from './containers/Dashboard.js';
 import DocList from './containers/DocList.js';
@@ -59,16 +60,40 @@ export const getRoutes = (store, auth, plugins) => {
       .then(() => store.dispatch(push('/login')));
   };
 
+  function setPluginBreadcrumbHandlers(routesArray, currentBreadcrumb) {
+    routesArray.forEach(route => {
+      const routeBreadcrumb = [
+        ...currentBreadcrumb,
+        {
+          caption: route.breadcrumb.caption,
+          type: route.breadcrumb.type,
+        },
+      ];
+
+      route.onEnter = () => store.dispatch(setBreadcrumb(routeBreadcrumb));
+
+      if (route.childRoutes) {
+        setPluginBreadcrumbHandlers(route.childRoutes, routeBreadcrumb);
+      }
+    });
+  }
+
   const getPluginsRoutes = plugins => {
     if (plugins.length) {
       return plugins.map(plugin => {
         const pluginRoutes = [...plugin.routes];
         const ParentComponent = pluginRoutes[0].component;
 
+        // wrap main plugin component in a HOC that'll render it
+        // inside the app using a Container element
         if (ParentComponent.name !== 'WrappedPlugin') {
           const wrapped = pluginWrapper(PluginContainer, ParentComponent);
 
           pluginRoutes[0].component = wrapped;
+
+          if (pluginRoutes[0].breadcrumb) {
+            setPluginBreadcrumbHandlers(pluginRoutes, []);
+          }
         }
 
         return pluginRoutes[0];
