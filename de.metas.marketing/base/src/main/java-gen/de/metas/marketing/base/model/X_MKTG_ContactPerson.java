@@ -14,7 +14,7 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1708056546L;
+	private static final long serialVersionUID = -979024680L;
 
     /** Standard Constructor */
     public X_MKTG_ContactPerson (Properties ctx, int MKTG_ContactPerson_ID, String trxName)
@@ -22,7 +22,9 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
       super (ctx, MKTG_ContactPerson_ID, trxName);
       /** if (MKTG_ContactPerson_ID == 0)
         {
+			setDeactivatedOnRemotePlatform (null); // Unknown
 			setMKTG_ContactPerson_ID (0);
+			setMKTG_Platform_ID (0);
 			setName (null);
         } */
     }
@@ -116,6 +118,34 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 		return ii.intValue();
 	}
 
+	/** 
+	 * DeactivatedOnRemotePlatform AD_Reference_ID=540861
+	 * Reference name: Yes_No_Unknown
+	 */
+	public static final int DEACTIVATEDONREMOTEPLATFORM_AD_Reference_ID=540861;
+	/** YES = Y */
+	public static final String DEACTIVATEDONREMOTEPLATFORM_YES = "Y";
+	/** NO = N */
+	public static final String DEACTIVATEDONREMOTEPLATFORM_NO = "N";
+	/** UNKNOWN = Unknown */
+	public static final String DEACTIVATEDONREMOTEPLATFORM_UNKNOWN = "Unknown";
+	/** Set Platformseitig deaktiviert.
+		@param DeactivatedOnRemotePlatform Platformseitig deaktiviert	  */
+	@Override
+	public void setDeactivatedOnRemotePlatform (java.lang.String DeactivatedOnRemotePlatform)
+	{
+
+		set_Value (COLUMNNAME_DeactivatedOnRemotePlatform, DeactivatedOnRemotePlatform);
+	}
+
+	/** Get Platformseitig deaktiviert.
+		@return Platformseitig deaktiviert	  */
+	@Override
+	public java.lang.String getDeactivatedOnRemotePlatform () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DeactivatedOnRemotePlatform);
+	}
+
 	/** Set eMail.
 		@param EMail 
 		EMail-Adresse
@@ -133,6 +163,70 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 	public java.lang.String getEMail () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EMail);
+	}
+
+	/** Set Synchronisierungstatus-Detail.
+		@param LastSyncDetailMessage Synchronisierungstatus-Detail	  */
+	@Override
+	public void setLastSyncDetailMessage (java.lang.String LastSyncDetailMessage)
+	{
+		set_Value (COLUMNNAME_LastSyncDetailMessage, LastSyncDetailMessage);
+	}
+
+	/** Get Synchronisierungstatus-Detail.
+		@return Synchronisierungstatus-Detail	  */
+	@Override
+	public java.lang.String getLastSyncDetailMessage () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LastSyncDetailMessage);
+	}
+
+	/** Set Zuletzt auf Platform hochgeladen.
+		@param LastSyncOfLocalToRemote Zuletzt auf Platform hochgeladen	  */
+	@Override
+	public void setLastSyncOfLocalToRemote (java.sql.Timestamp LastSyncOfLocalToRemote)
+	{
+		set_Value (COLUMNNAME_LastSyncOfLocalToRemote, LastSyncOfLocalToRemote);
+	}
+
+	/** Get Zuletzt auf Platform hochgeladen.
+		@return Zuletzt auf Platform hochgeladen	  */
+	@Override
+	public java.sql.Timestamp getLastSyncOfLocalToRemote () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastSyncOfLocalToRemote);
+	}
+
+	/** Set Zuletzt von Platform runtergeladen.
+		@param LastSyncOfRemoteToLocal Zuletzt von Platform runtergeladen	  */
+	@Override
+	public void setLastSyncOfRemoteToLocal (java.sql.Timestamp LastSyncOfRemoteToLocal)
+	{
+		set_Value (COLUMNNAME_LastSyncOfRemoteToLocal, LastSyncOfRemoteToLocal);
+	}
+
+	/** Get Zuletzt von Platform runtergeladen.
+		@return Zuletzt von Platform runtergeladen	  */
+	@Override
+	public java.sql.Timestamp getLastSyncOfRemoteToLocal () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastSyncOfRemoteToLocal);
+	}
+
+	/** Set Letzter Synchronisierungsstatus.
+		@param LastSyncStatus Letzter Synchronisierungsstatus	  */
+	@Override
+	public void setLastSyncStatus (java.lang.String LastSyncStatus)
+	{
+		set_Value (COLUMNNAME_LastSyncStatus, LastSyncStatus);
+	}
+
+	/** Get Letzter Synchronisierungsstatus.
+		@return Letzter Synchronisierungsstatus	  */
+	@Override
+	public java.lang.String getLastSyncStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LastSyncStatus);
 	}
 
 	/** Set MKTG_ContactPerson.
@@ -157,6 +251,40 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 		return ii.intValue();
 	}
 
+	@Override
+	public de.metas.marketing.base.model.I_MKTG_Platform getMKTG_Platform() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_MKTG_Platform_ID, de.metas.marketing.base.model.I_MKTG_Platform.class);
+	}
+
+	@Override
+	public void setMKTG_Platform(de.metas.marketing.base.model.I_MKTG_Platform MKTG_Platform)
+	{
+		set_ValueFromPO(COLUMNNAME_MKTG_Platform_ID, de.metas.marketing.base.model.I_MKTG_Platform.class, MKTG_Platform);
+	}
+
+	/** Set MKTG_Platform.
+		@param MKTG_Platform_ID MKTG_Platform	  */
+	@Override
+	public void setMKTG_Platform_ID (int MKTG_Platform_ID)
+	{
+		if (MKTG_Platform_ID < 1) 
+			set_Value (COLUMNNAME_MKTG_Platform_ID, null);
+		else 
+			set_Value (COLUMNNAME_MKTG_Platform_ID, Integer.valueOf(MKTG_Platform_ID));
+	}
+
+	/** Get MKTG_Platform.
+		@return MKTG_Platform	  */
+	@Override
+	public int getMKTG_Platform_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MKTG_Platform_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -174,5 +302,21 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Externe Datensatz-ID.
+		@param RemoteRecordId Externe Datensatz-ID	  */
+	@Override
+	public void setRemoteRecordId (java.lang.String RemoteRecordId)
+	{
+		set_Value (COLUMNNAME_RemoteRecordId, RemoteRecordId);
+	}
+
+	/** Get Externe Datensatz-ID.
+		@return Externe Datensatz-ID	  */
+	@Override
+	public java.lang.String getRemoteRecordId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_RemoteRecordId);
 	}
 }

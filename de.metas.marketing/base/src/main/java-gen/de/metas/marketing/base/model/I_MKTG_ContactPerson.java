@@ -157,6 +157,29 @@ public interface I_MKTG_ContactPerson
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Platformseitig deaktiviert.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDeactivatedOnRemotePlatform (java.lang.String DeactivatedOnRemotePlatform);
+
+	/**
+	 * Get Platformseitig deaktiviert.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDeactivatedOnRemotePlatform();
+
+    /** Column definition for DeactivatedOnRemotePlatform */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object> COLUMN_DeactivatedOnRemotePlatform = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object>(I_MKTG_ContactPerson.class, "DeactivatedOnRemotePlatform", null);
+    /** Column name DeactivatedOnRemotePlatform */
+    public static final String COLUMNNAME_DeactivatedOnRemotePlatform = "DeactivatedOnRemotePlatform";
+
+	/**
 	 * Set eMail.
 	 * EMail-Adresse
 	 *
@@ -207,6 +230,98 @@ public interface I_MKTG_ContactPerson
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Synchronisierungstatus-Detail.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastSyncDetailMessage (java.lang.String LastSyncDetailMessage);
+
+	/**
+	 * Get Synchronisierungstatus-Detail.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLastSyncDetailMessage();
+
+    /** Column definition for LastSyncDetailMessage */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object> COLUMN_LastSyncDetailMessage = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object>(I_MKTG_ContactPerson.class, "LastSyncDetailMessage", null);
+    /** Column name LastSyncDetailMessage */
+    public static final String COLUMNNAME_LastSyncDetailMessage = "LastSyncDetailMessage";
+
+	/**
+	 * Set Zuletzt auf Platform hochgeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastSyncOfLocalToRemote (java.sql.Timestamp LastSyncOfLocalToRemote);
+
+	/**
+	 * Get Zuletzt auf Platform hochgeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getLastSyncOfLocalToRemote();
+
+    /** Column definition for LastSyncOfLocalToRemote */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object> COLUMN_LastSyncOfLocalToRemote = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object>(I_MKTG_ContactPerson.class, "LastSyncOfLocalToRemote", null);
+    /** Column name LastSyncOfLocalToRemote */
+    public static final String COLUMNNAME_LastSyncOfLocalToRemote = "LastSyncOfLocalToRemote";
+
+	/**
+	 * Set Zuletzt von Platform runtergeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastSyncOfRemoteToLocal (java.sql.Timestamp LastSyncOfRemoteToLocal);
+
+	/**
+	 * Get Zuletzt von Platform runtergeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getLastSyncOfRemoteToLocal();
+
+    /** Column definition for LastSyncOfRemoteToLocal */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object> COLUMN_LastSyncOfRemoteToLocal = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object>(I_MKTG_ContactPerson.class, "LastSyncOfRemoteToLocal", null);
+    /** Column name LastSyncOfRemoteToLocal */
+    public static final String COLUMNNAME_LastSyncOfRemoteToLocal = "LastSyncOfRemoteToLocal";
+
+	/**
+	 * Set Letzter Synchronisierungsstatus.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastSyncStatus (java.lang.String LastSyncStatus);
+
+	/**
+	 * Get Letzter Synchronisierungsstatus.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLastSyncStatus();
+
+    /** Column definition for LastSyncStatus */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object> COLUMN_LastSyncStatus = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object>(I_MKTG_ContactPerson.class, "LastSyncStatus", null);
+    /** Column name LastSyncStatus */
+    public static final String COLUMNNAME_LastSyncStatus = "LastSyncStatus";
+
+	/**
 	 * Set MKTG_ContactPerson.
 	 *
 	 * <br>Type: ID
@@ -228,6 +343,33 @@ public interface I_MKTG_ContactPerson
     public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object> COLUMN_MKTG_ContactPerson_ID = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object>(I_MKTG_ContactPerson.class, "MKTG_ContactPerson_ID", null);
     /** Column name MKTG_ContactPerson_ID */
     public static final String COLUMNNAME_MKTG_ContactPerson_ID = "MKTG_ContactPerson_ID";
+
+	/**
+	 * Set MKTG_Platform.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMKTG_Platform_ID (int MKTG_Platform_ID);
+
+	/**
+	 * Get MKTG_Platform.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getMKTG_Platform_ID();
+
+	public de.metas.marketing.base.model.I_MKTG_Platform getMKTG_Platform();
+
+	public void setMKTG_Platform(de.metas.marketing.base.model.I_MKTG_Platform MKTG_Platform);
+
+    /** Column definition for MKTG_Platform_ID */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, de.metas.marketing.base.model.I_MKTG_Platform> COLUMN_MKTG_Platform_ID = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, de.metas.marketing.base.model.I_MKTG_Platform>(I_MKTG_ContactPerson.class, "MKTG_Platform_ID", de.metas.marketing.base.model.I_MKTG_Platform.class);
+    /** Column name MKTG_Platform_ID */
+    public static final String COLUMNNAME_MKTG_Platform_ID = "MKTG_Platform_ID";
 
 	/**
 	 * Set Name.
@@ -253,6 +395,29 @@ public interface I_MKTG_ContactPerson
     public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object>(I_MKTG_ContactPerson.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Externe Datensatz-ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRemoteRecordId (java.lang.String RemoteRecordId);
+
+	/**
+	 * Get Externe Datensatz-ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getRemoteRecordId();
+
+    /** Column definition for RemoteRecordId */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object> COLUMN_RemoteRecordId = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object>(I_MKTG_ContactPerson.class, "RemoteRecordId", null);
+    /** Column name RemoteRecordId */
+    public static final String COLUMNNAME_RemoteRecordId = "RemoteRecordId";
 
 	/**
 	 * Get Aktualisiert.

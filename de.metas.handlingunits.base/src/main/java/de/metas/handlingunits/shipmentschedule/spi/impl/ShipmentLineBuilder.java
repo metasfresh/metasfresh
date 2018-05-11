@@ -77,11 +77,13 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Capacity;
@@ -253,15 +255,15 @@ import lombok.NonNull;
 
 	private void append(@NonNull final ShipmentScheduleWithHU candidate)
 	{
-		Check.assume(canAdd(candidate), "candidate {} can be added to shipment line builder", candidate);
+		Check.assume(canAdd(candidate), "The given candidate can be added to shipment line builder; candidate={}", candidate);
 		attributeValues.addAll(candidate.getAttributeValues()); // because of canAdd()==true, we may assume that it's all fine
 
-		logger.trace("Adding candidate to {}: {}", this, candidate);
+		logger.trace("Adding candidate to {}: candidate={}", this, candidate);
 
 		final BigDecimal qtyToAdd = candidate.getQtyPicked();
 		if (qtyToAdd.signum() <= 0)
 		{
-			Loggables.get().addLog("IShipmentScheduleWithHU {0} has QtyPicked={1}", candidate, qtyToAdd);
+			Loggables.get().addLog("IShipmentScheduleWithHU {} has QtyPicked={}", candidate, qtyToAdd);
 		}
 		movementQty = movementQty.add(qtyToAdd); // NOTE: we assume qtyToAdd is in stocking UOM
 
@@ -284,15 +286,44 @@ import lombok.NonNull;
 		packingMaterial_huPIItemProducts.add(piip);
 
 		// collect the candidates' QtyTU for the case that we need to create the shipment line without actually picked HUs.
-		final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
+		if (manualPackingMaterial)
+		{
+			final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 
-		final boolean qtTuOverrideIsSet = !isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Override);
-		final BigDecimal qtyTU = qtTuOverrideIsSet ? shipmentSchedule.getQtyTU_Override() : shipmentSchedule.getQtyTU_Calculated();
+			final boolean qtTuOverrideIsSet = !isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Override);
+			final BigDecimal qtyTUtoUse;
+			if (qtTuOverrideIsSet)
+			{
+				qtyTUtoUse = shipmentSchedule.getQtyTU_Override();
+			}
+			else
+			{
+				// https://github.com/metasfresh/metasfresh/issues/4028 Multiple shipment lines for one order line all have the order line's TU-Qty
+				// this is a dirty hack;
+				// note that for "no-HU" shipment we assume a homogeneous PiiP and therefore may simply add up those TU quantities 
+				// TODO if we get to it before we ditch HU-less shipments altogether:
+				// * store the shipment line's TU-qtys in M_ShipmentSchedule_QtyPicked (there is a column for that) even if no HUs were picked
+				// * introduce a column like M_ShipmentSchedule.QtyTUToDeliver, keep it up to date and use that column in here
+				// * note: updating that column should happen from the shipment-schedule-updater
+				final List<I_M_InOutLine> shipmentLinesOfShipmentSchedule = Services.get(IShipmentScheduleAllocDAO.class)
+						.retrieveOnShipmentLineRecordsQuery(candidate.getM_ShipmentSchedule())
+						.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.list(I_M_InOutLine.class);
 
-		piipId2TuQtyFromShipmentSchedule.merge(
-				piip.getM_HU_PI_Item_Product_ID(),
-				qtyTU,
-				(oldQty, newQty) -> oldQty.add(newQty));
+				BigDecimal qtyTU = shipmentSchedule.getQtyTU_Calculated();
+				for (final I_M_InOutLine shipmentLine : shipmentLinesOfShipmentSchedule)
+				{
+					qtyTU = qtyTU.subtract(shipmentLine.getQtyEnteredTU());
+				}
+				qtyTUtoUse = qtyTU;
+			}
+			piipId2TuQtyFromShipmentSchedule.merge(
+					piip.getM_HU_PI_Item_Product_ID(),
+					qtyTUtoUse,
+					(oldQty, newQty) -> oldQty.add(newQty));
+		}
 
 		// Add current candidate to the list of candidates that will compose the generated shipment line
 		candidates.add(candidate);
@@ -483,7 +514,8 @@ import lombok.NonNull;
 	{
 		// Transfer attributes from HU to receipt line's ASI
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(huContext);
-		executor.run((IHUContextProcessor)huContext -> {
+		executor.run((IHUContextProcessor)huContext ->
+			{
 
 				final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
 				final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
