@@ -36,7 +36,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
  * #L%
  */
 
-public class GroupsTests
+public class GroupTests
 {
 	@Test
 	public void deserialize() throws JsonParseException, JsonMappingException, IOException

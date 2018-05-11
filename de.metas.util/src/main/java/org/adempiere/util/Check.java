@@ -534,6 +534,11 @@ public final class Check
 		return isEmpty(str, false);
 	}
 
+	public static boolean isEmptyTrimWhitespaces(final String str)
+	{
+		return isEmpty(str, true);
+	}
+
 	/**
 	 * Is String Empty
 	 *

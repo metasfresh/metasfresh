@@ -1,10 +1,5 @@
 package de.metas.marketing.base.model;
 
-import org.adempiere.util.Check;
-
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.marketing
@@ -27,30 +22,14 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class ContactAddress
+public interface ContactAddress
 {
-	public static ContactAddress ofEmailAddress(@NonNull final String emailAddress)
-	{
-		return new ContactAddress(TYPE.EMAIL, emailAddress);
-	}
-
 	/** additional types in future might be twitter handles, postal addresses etc etc */
 	public enum TYPE
 	{
 		EMAIL;
 	}
 
-	TYPE type;
-
-	String value;
-
-	public ContactAddress(
-			@NonNull final TYPE type,
-			@NonNull final String value)
-	{
-		this.type = type;
-		this.value = Check.assumeNotEmpty(value, "The given value may not be empty");
-	}
+	TYPE getType();
 
 }

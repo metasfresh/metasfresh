@@ -1,14 +1,15 @@
-package de.metas.marketing.gateway.cleverreach.restapi.models;
+package de.metas.marketing.base.spi;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import lombok.Singular;
+import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.LocalToRemoteSyncResult;
+import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -28,9 +29,13 @@ import lombok.Singular;
  * #L%
  */
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Groups
+public interface PlatformClient
 {
-	@Singular
-	List<Group> groups;
+	List<LocalToRemoteSyncResult> syncCampaignsLocalToRemote(List<Campaign> campaigns);
+
+	List<LocalToRemoteSyncResult> syncContactPersonsLocalToRemote(Campaign campaign, List<ContactPerson> contactPersons);
+
+	List<RemoteToLocalSyncResult> syncContactPersonsRemoteToLocal(Campaign campaign, List<ContactPerson> contactPersons);
+
+	List<RemoteToLocalSyncResult> syncCampaignsRemoteToLocal(List<Campaign> campaigns);
 }
