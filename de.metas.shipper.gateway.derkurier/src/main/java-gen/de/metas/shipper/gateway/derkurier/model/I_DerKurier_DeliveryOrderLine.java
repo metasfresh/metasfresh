@@ -101,7 +101,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Set Abholer.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setCollectorCode (java.lang.String CollectorCode);
@@ -110,7 +110,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Get Abholer.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getCollectorCode();
@@ -154,7 +154,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Set Auftraggeber.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setCustomerCode (java.lang.String CustomerCode);
@@ -163,7 +163,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Get Auftraggeber.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getCustomerCode();

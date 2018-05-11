@@ -15,7 +15,7 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 739313865L;
+	private static final long serialVersionUID = 462394306L;
 
     /** Standard Constructor */
     public X_DerKurier_DeliveryOrderLine (Properties ctx, int DerKurier_DeliveryOrderLine_ID, String trxName)
@@ -24,6 +24,8 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
       /** if (DerKurier_DeliveryOrderLine_ID == 0)
         {
 			setC_Country_ID (0);
+			setCollectorCode (null);
+			setCustomerCode (null);
 			setDerKurier_DeliveryOrder_ID (0);
 			setDerKurier_DeliveryOrderLine_ID (0);
 			setDK_Consignee_City (null);
@@ -96,7 +98,7 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 	@Override
 	public void setCollectorCode (java.lang.String CollectorCode)
 	{
-		set_Value (COLUMNNAME_CollectorCode, CollectorCode);
+		set_ValueNoCheck (COLUMNNAME_CollectorCode, CollectorCode);
 	}
 
 	/** Get Abholer.
@@ -112,7 +114,7 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 	@Override
 	public void setCustomerCode (java.lang.String CustomerCode)
 	{
-		set_Value (COLUMNNAME_CustomerCode, CustomerCode);
+		set_ValueNoCheck (COLUMNNAME_CustomerCode, CustomerCode);
 	}
 
 	/** Get Auftraggeber.
