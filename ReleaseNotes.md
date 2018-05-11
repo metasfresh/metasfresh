@@ -47,19 +47,25 @@ Here come the actual release notes:
   * [#3812](https://github.com/metasfresh/metasfresh/issues/3812) Add process for creating missing M_Product_acct records to WebUI
     * New Action added to Product Catregory window, allowing to copy Acctounting Setting to all Products of a Product Category.
   * [#3926](https://github.com/metasfresh/metasfresh/issues/3926) Implement support for `der Kurier` shipper
+    * New Logistic Provider Implementation of "Der Kurier".
   * [#3965](https://github.com/metasfresh/metasfresh/issues/3965) Translate Actions Update Pharma Conditions
     * New Translations for Pharma Condition Parms in Updatte Pharma Permissions Action for de_DE, en_US.
   * [#3967](https://github.com/metasfresh/metasfresh/issues/3967) Translate Process Parm in Update Pharma Conditions for Customers
     * Improved Translations for Action Parms. Languages de_DE, en_US.
   * [#3969](https://github.com/metasfresh/metasfresh/issues/3969) Pharma: If Shipment Auth Type B then show in Order Header
+    * New Feature in Sales Order, now showing The Shipment Auth Type if it's Type B.
   * [#3973](https://github.com/metasfresh/metasfresh/issues/3973) Manufacturing Workflow adjustments in WebUI
     * Improved Manufacturing Workflow Window in WebUI.
   * [#3982](https://github.com/metasfresh/metasfresh/issues/3982) Pharma vertical for Discount Schema Window
-  * [#3989](https://github.com/metasfresh/metasfresh/issues/3989) pharma: repack number attributes
+    * New Window for Discount Schema for Pharma verticals.
+  * [#3989](https://github.com/metasfresh/metasfresh/issues/3989) Pharma: repack number attributes
+    * New Functionality for Pharma Verticals, allowing to define the need of recording repack No in Material Receipt.
 
 * metasfresh-webui-api
   * [#952](https://github.com/metasfresh/metasfresh-webui-api/issues/952) Shorten the ViewIds
+    * New Feature for WebUI that shortens the View IDs.
   * [#954](https://github.com/metasfresh/metasfresh-webui-api/issues/954) Allow configuring lookup cache reset on table record changes
+    * Improved cache resetting. Now it's able to configure the caching behavior for lookups on table record changes.
 
 * metasfresh-webui-frontend
   * [#1772](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1772) Harmonize List widget Icon Look&Feel when not empty
