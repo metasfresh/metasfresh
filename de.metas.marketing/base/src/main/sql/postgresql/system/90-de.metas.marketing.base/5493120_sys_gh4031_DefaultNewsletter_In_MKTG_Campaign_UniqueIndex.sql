@@ -10,7 +10,7 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 
 -- 2018-05-09T18:28:51.794
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Index_Table SET EntityType='de.metas.marketing', IsUnique='Y', WhereClause='IsActive = ''Y''',Updated=TO_TIMESTAMP('2018-05-09 18:28:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540432
+UPDATE AD_Index_Table SET EntityType='de.metas.marketing.base', IsUnique='Y', WhereClause='IsActive = ''Y''',Updated=TO_TIMESTAMP('2018-05-09 18:28:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540432
 ;
 
 -- 2018-05-09T18:39:03.290
@@ -20,7 +20,7 @@ UPDATE AD_Index_Table SET WhereClause='IsActive = ''Y'' and isDefaultNews = ''Y'
 
 -- 2018-05-09T18:39:35.754
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,559911,540855,540432,0,TO_TIMESTAMP('2018-05-09 18:39:35','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing','Y',10,TO_TIMESTAMP('2018-05-09 18:39:35','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,559911,540855,540432,0,TO_TIMESTAMP('2018-05-09 18:39:35','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.base','Y',10,TO_TIMESTAMP('2018-05-09 18:39:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2018-05-09T18:39:50.764

@@ -1,6 +1,6 @@
 -- 2018-05-09T18:17:32.829
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,544049,0,'IsDefaultNewsletter',TO_TIMESTAMP('2018-05-09 18:17:32','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing','Y','IsDefaultNewsletter','IsDefaultNewsletter',TO_TIMESTAMP('2018-05-09 18:17:32','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,544049,0,'IsDefaultNewsletter',TO_TIMESTAMP('2018-05-09 18:17:32','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.base','Y','IsDefaultNewsletter','IsDefaultNewsletter',TO_TIMESTAMP('2018-05-09 18:17:32','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2018-05-09T18:17:32.842
@@ -10,7 +10,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_
 
 -- 2018-05-09T18:23:25.174
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,560056,544049,0,20,540970,'N','IsDefaultNewsletter',TO_TIMESTAMP('2018-05-09 18:23:24','YYYY-MM-DD HH24:MI:SS'),100,'N','N','de.metas.marketing',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','IsDefaultNewsletter',0,0,TO_TIMESTAMP('2018-05-09 18:23:24','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,560056,544049,0,20,540970,'N','IsDefaultNewsletter',TO_TIMESTAMP('2018-05-09 18:23:24','YYYY-MM-DD HH24:MI:SS'),100,'N','N','de.metas.marketing.base',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','IsDefaultNewsletter',0,0,TO_TIMESTAMP('2018-05-09 18:23:24','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2018-05-09T18:23:25.179
@@ -33,7 +33,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2018-05-09T18:42:34.729
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET EntityType='de.metas.marketing',Updated=TO_TIMESTAMP('2018-05-09 18:42:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=564098
+UPDATE AD_Field SET EntityType='de.metas.marketing.base',Updated=TO_TIMESTAMP('2018-05-09 18:42:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=564098
 ;
 
 
