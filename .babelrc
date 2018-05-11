@@ -3,6 +3,7 @@
   "plugins": [
       ["transform-class-properties", { "spec": true }],
       "babel-plugin-syntax-dynamic-import",
+      "dynamic-import-node",
       "transform-es2015-modules-commonjs",
       "transform-object-rest-spread",
       "transform-async-to-generator",

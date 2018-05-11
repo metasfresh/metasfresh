@@ -21,6 +21,7 @@ global.mount = mount;
 global.config = {
   API_URL: 'http://api.test.url',
   WS_URL: 'http://ws.test.url',
+  plugins: [],
 };
 
 Object.defineProperty(document, 'activeElement', {

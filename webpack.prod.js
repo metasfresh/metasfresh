@@ -1,7 +1,7 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
-import config from './config';
+var config = require('./config');
 
 module.exports = {
   mode: 'production',
@@ -22,6 +22,9 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: './index.html',
+    }),
+    new webpack.DefinePlugin({
+      config: JSON.stringify(config),
     }),
   ],
   module: {
