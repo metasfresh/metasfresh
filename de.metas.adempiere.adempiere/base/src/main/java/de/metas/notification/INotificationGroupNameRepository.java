@@ -27,4 +27,6 @@ import org.adempiere.util.ISingletonService;
 public interface INotificationGroupNameRepository extends ISingletonService
 {
 	NotificationGroupName getById(int notificationGroupId);
+	
+	int getNotificationGroupId(final NotificationGroupName notificationGroupName);
 }
