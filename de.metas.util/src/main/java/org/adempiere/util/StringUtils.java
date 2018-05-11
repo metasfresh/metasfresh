@@ -484,11 +484,11 @@ public final class StringUtils
 
 	public static String ofBoolean(
 			@Nullable final Boolean booleanOrNull,
-			@Nullable final String default)
+			@Nullable final String defaultValue)
 	{
 		if (booleanOrNull == null)
 		{
-			return default;
+			return defaultValue;
 		}
 
 		return booleanOrNull ? "Y" : "N";
