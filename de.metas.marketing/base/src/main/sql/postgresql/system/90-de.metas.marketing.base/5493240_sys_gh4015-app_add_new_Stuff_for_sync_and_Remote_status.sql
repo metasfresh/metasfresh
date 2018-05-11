@@ -483,15 +483,6 @@ ALTER TABLE MKTG_Campaign ADD CONSTRAINT MKTGPlatform_MKTGCampaign FOREIGN KEY (
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2018-05-11 08:23:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560093
 ;
 
--- 2018-05-11T08:30:00.994
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('MKTG_ContactPerson','ALTER TABLE public.MKTG_ContactPerson ADD COLUMN MKTG_Platform_ID NUMERIC(10)')
-;
-
--- 2018-05-11T08:30:01.028
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE MKTG_ContactPerson ADD CONSTRAINT MKTGPlatform_MKTGContactPerson FOREIGN KEY (MKTG_Platform_ID) REFERENCES public.MKTG_Platform DEFERRABLE INITIALLY DEFERRED
-;
 
 -- 2018-05-11T08:42:13.171
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -879,7 +870,7 @@ UPDATE AD_Field SET IsSameLine='Y',Updated=TO_TIMESTAMP('2018-05-11 09:06:37','Y
 UPDATE AD_Field SET SpanX=2,Updated=TO_TIMESTAMP('2018-05-11 09:06:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=564165
 ;
 
-alter table MKTG_Campaign drop column marketingplatformgatewayid;
+alter table MKTG_Campaign drop column IF EXISTS marketingplatformgatewayid;
 -- 2018-05-11T09:10:35.669
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ SELECT public.db_alter_table('MKTG_Campaign','ALTER TABLE public.MKTG_Campaign ADD COLUMN LastSyncStatus VARCHAR(50)')
