@@ -14,7 +14,7 @@ public class X_MKTG_Campaign extends org.compiere.model.PO implements I_MKTG_Cam
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1868369521L;
+	private static final long serialVersionUID = 1476330177L;
 
     /** Standard Constructor */
     public X_MKTG_Campaign (Properties ctx, int MKTG_Campaign_ID, String trxName)
@@ -22,8 +22,8 @@ public class X_MKTG_Campaign extends org.compiere.model.PO implements I_MKTG_Cam
       super (ctx, MKTG_Campaign_ID, trxName);
       /** if (MKTG_Campaign_ID == 0)
         {
-			setMarketingPlatformGatewayId (null);
 			setMKTG_Campaign_ID (0);
+			setMKTG_Platform_ID (0);
 			setName (null);
         } */
     }
@@ -78,28 +78,68 @@ public class X_MKTG_Campaign extends org.compiere.model.PO implements I_MKTG_Cam
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EndDate);
 	}
 
-	/** 
-	 * MarketingPlatformGatewayId AD_Reference_ID=540858
-	 * Reference name: MarketingPlatformGatewayId
-	 */
-	public static final int MARKETINGPLATFORMGATEWAYID_AD_Reference_ID=540858;
-	/** CleverReach = CleverReach */
-	public static final String MARKETINGPLATFORMGATEWAYID_CleverReach = "CleverReach";
-	/** Set Marketing Platform GatewayId.
-		@param MarketingPlatformGatewayId Marketing Platform GatewayId	  */
+	/** Set Synchronisierungstatus-Detail.
+		@param LastSyncDetailMessage Synchronisierungstatus-Detail	  */
 	@Override
-	public void setMarketingPlatformGatewayId (java.lang.String MarketingPlatformGatewayId)
+	public void setLastSyncDetailMessage (java.lang.String LastSyncDetailMessage)
 	{
-
-		set_Value (COLUMNNAME_MarketingPlatformGatewayId, MarketingPlatformGatewayId);
+		set_Value (COLUMNNAME_LastSyncDetailMessage, LastSyncDetailMessage);
 	}
 
-	/** Get Marketing Platform GatewayId.
-		@return Marketing Platform GatewayId	  */
+	/** Get Synchronisierungstatus-Detail.
+		@return Synchronisierungstatus-Detail	  */
 	@Override
-	public java.lang.String getMarketingPlatformGatewayId () 
+	public java.lang.String getLastSyncDetailMessage () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_MarketingPlatformGatewayId);
+		return (java.lang.String)get_Value(COLUMNNAME_LastSyncDetailMessage);
+	}
+
+	/** Set Zuletzt auf Platform hochgeladen.
+		@param LastSyncOfLocalToRemote Zuletzt auf Platform hochgeladen	  */
+	@Override
+	public void setLastSyncOfLocalToRemote (java.sql.Timestamp LastSyncOfLocalToRemote)
+	{
+		set_Value (COLUMNNAME_LastSyncOfLocalToRemote, LastSyncOfLocalToRemote);
+	}
+
+	/** Get Zuletzt auf Platform hochgeladen.
+		@return Zuletzt auf Platform hochgeladen	  */
+	@Override
+	public java.sql.Timestamp getLastSyncOfLocalToRemote () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastSyncOfLocalToRemote);
+	}
+
+	/** Set Zuletzt von Platform runtergeladen.
+		@param LastSyncOfRemoteToLocal Zuletzt von Platform runtergeladen	  */
+	@Override
+	public void setLastSyncOfRemoteToLocal (java.sql.Timestamp LastSyncOfRemoteToLocal)
+	{
+		set_Value (COLUMNNAME_LastSyncOfRemoteToLocal, LastSyncOfRemoteToLocal);
+	}
+
+	/** Get Zuletzt von Platform runtergeladen.
+		@return Zuletzt von Platform runtergeladen	  */
+	@Override
+	public java.sql.Timestamp getLastSyncOfRemoteToLocal () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastSyncOfRemoteToLocal);
+	}
+
+	/** Set Letzter Synchronisierungsstatus.
+		@param LastSyncStatus Letzter Synchronisierungsstatus	  */
+	@Override
+	public void setLastSyncStatus (java.lang.String LastSyncStatus)
+	{
+		set_Value (COLUMNNAME_LastSyncStatus, LastSyncStatus);
+	}
+
+	/** Get Letzter Synchronisierungsstatus.
+		@return Letzter Synchronisierungsstatus	  */
+	@Override
+	public java.lang.String getLastSyncStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LastSyncStatus);
 	}
 
 	/** Set MKTG_Campaign.
@@ -124,6 +164,40 @@ public class X_MKTG_Campaign extends org.compiere.model.PO implements I_MKTG_Cam
 		return ii.intValue();
 	}
 
+	@Override
+	public de.metas.marketing.base.model.I_MKTG_Platform getMKTG_Platform() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_MKTG_Platform_ID, de.metas.marketing.base.model.I_MKTG_Platform.class);
+	}
+
+	@Override
+	public void setMKTG_Platform(de.metas.marketing.base.model.I_MKTG_Platform MKTG_Platform)
+	{
+		set_ValueFromPO(COLUMNNAME_MKTG_Platform_ID, de.metas.marketing.base.model.I_MKTG_Platform.class, MKTG_Platform);
+	}
+
+	/** Set MKTG_Platform.
+		@param MKTG_Platform_ID MKTG_Platform	  */
+	@Override
+	public void setMKTG_Platform_ID (int MKTG_Platform_ID)
+	{
+		if (MKTG_Platform_ID < 1) 
+			set_Value (COLUMNNAME_MKTG_Platform_ID, null);
+		else 
+			set_Value (COLUMNNAME_MKTG_Platform_ID, Integer.valueOf(MKTG_Platform_ID));
+	}
+
+	/** Get MKTG_Platform.
+		@return MKTG_Platform	  */
+	@Override
+	public int getMKTG_Platform_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MKTG_Platform_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -141,6 +215,22 @@ public class X_MKTG_Campaign extends org.compiere.model.PO implements I_MKTG_Cam
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Externe Datensatz-ID.
+		@param RemoteRecordId Externe Datensatz-ID	  */
+	@Override
+	public void setRemoteRecordId (java.lang.String RemoteRecordId)
+	{
+		set_Value (COLUMNNAME_RemoteRecordId, RemoteRecordId);
+	}
+
+	/** Get Externe Datensatz-ID.
+		@return Externe Datensatz-ID	  */
+	@Override
+	public java.lang.String getRemoteRecordId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_RemoteRecordId);
 	}
 
 	/** Set Anfangsdatum.
