@@ -49,7 +49,13 @@ public class ContactPersonRepository
 		contactPersonRecord.setAD_User_ID(contactPerson.getAdUserId());
 		contactPersonRecord.setC_BPartner_ID(contactPerson.getCBpartnerId());
 		contactPersonRecord.setName(contactPerson.getName());
-		contactPersonRecord.setEMail(contactPerson.getAddress().getValue());
+
+		// TODO add and set bounced property
+		// TODO add and set last remote2local sync status
+		// TODO add and set last local2remote sync status
+		contactPersonRecord.setEMail(contactPerson.getEmailAddessStringOrNull());
+
+
 		save(contactPersonRecord);
 
 		return contactPerson.toBuilder()
