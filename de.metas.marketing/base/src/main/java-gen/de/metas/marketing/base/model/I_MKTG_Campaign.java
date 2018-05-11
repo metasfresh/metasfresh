@@ -172,27 +172,96 @@ public interface I_MKTG_Campaign
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Marketing Platform GatewayId.
+	 * Set Synchronisierungstatus-Detail.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Type: Text
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMarketingPlatformGatewayId (java.lang.String MarketingPlatformGatewayId);
+	public void setLastSyncDetailMessage (java.lang.String LastSyncDetailMessage);
 
 	/**
-	 * Get Marketing Platform GatewayId.
+	 * Get Synchronisierungstatus-Detail.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Type: Text
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getMarketingPlatformGatewayId();
+	public java.lang.String getLastSyncDetailMessage();
 
-    /** Column definition for MarketingPlatformGatewayId */
-    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object> COLUMN_MarketingPlatformGatewayId = new org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object>(I_MKTG_Campaign.class, "MarketingPlatformGatewayId", null);
-    /** Column name MarketingPlatformGatewayId */
-    public static final String COLUMNNAME_MarketingPlatformGatewayId = "MarketingPlatformGatewayId";
+    /** Column definition for LastSyncDetailMessage */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object> COLUMN_LastSyncDetailMessage = new org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object>(I_MKTG_Campaign.class, "LastSyncDetailMessage", null);
+    /** Column name LastSyncDetailMessage */
+    public static final String COLUMNNAME_LastSyncDetailMessage = "LastSyncDetailMessage";
+
+	/**
+	 * Set Zuletzt auf Platform hochgeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastSyncOfLocalToRemote (java.sql.Timestamp LastSyncOfLocalToRemote);
+
+	/**
+	 * Get Zuletzt auf Platform hochgeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getLastSyncOfLocalToRemote();
+
+    /** Column definition for LastSyncOfLocalToRemote */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object> COLUMN_LastSyncOfLocalToRemote = new org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object>(I_MKTG_Campaign.class, "LastSyncOfLocalToRemote", null);
+    /** Column name LastSyncOfLocalToRemote */
+    public static final String COLUMNNAME_LastSyncOfLocalToRemote = "LastSyncOfLocalToRemote";
+
+	/**
+	 * Set Zuletzt von Platform runtergeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastSyncOfRemoteToLocal (java.sql.Timestamp LastSyncOfRemoteToLocal);
+
+	/**
+	 * Get Zuletzt von Platform runtergeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getLastSyncOfRemoteToLocal();
+
+    /** Column definition for LastSyncOfRemoteToLocal */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object> COLUMN_LastSyncOfRemoteToLocal = new org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object>(I_MKTG_Campaign.class, "LastSyncOfRemoteToLocal", null);
+    /** Column name LastSyncOfRemoteToLocal */
+    public static final String COLUMNNAME_LastSyncOfRemoteToLocal = "LastSyncOfRemoteToLocal";
+
+	/**
+	 * Set Letzter Synchronisierungsstatus.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastSyncStatus (java.lang.String LastSyncStatus);
+
+	/**
+	 * Get Letzter Synchronisierungsstatus.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLastSyncStatus();
+
+    /** Column definition for LastSyncStatus */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object> COLUMN_LastSyncStatus = new org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object>(I_MKTG_Campaign.class, "LastSyncStatus", null);
+    /** Column name LastSyncStatus */
+    public static final String COLUMNNAME_LastSyncStatus = "LastSyncStatus";
 
 	/**
 	 * Set MKTG_Campaign.
@@ -218,6 +287,33 @@ public interface I_MKTG_Campaign
     public static final String COLUMNNAME_MKTG_Campaign_ID = "MKTG_Campaign_ID";
 
 	/**
+	 * Set MKTG_Platform.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMKTG_Platform_ID (int MKTG_Platform_ID);
+
+	/**
+	 * Get MKTG_Platform.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getMKTG_Platform_ID();
+
+	public de.metas.marketing.base.model.I_MKTG_Platform getMKTG_Platform();
+
+	public void setMKTG_Platform(de.metas.marketing.base.model.I_MKTG_Platform MKTG_Platform);
+
+    /** Column definition for MKTG_Platform_ID */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign, de.metas.marketing.base.model.I_MKTG_Platform> COLUMN_MKTG_Platform_ID = new org.adempiere.model.ModelColumn<I_MKTG_Campaign, de.metas.marketing.base.model.I_MKTG_Platform>(I_MKTG_Campaign.class, "MKTG_Platform_ID", de.metas.marketing.base.model.I_MKTG_Platform.class);
+    /** Column name MKTG_Platform_ID */
+    public static final String COLUMNNAME_MKTG_Platform_ID = "MKTG_Platform_ID";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
@@ -241,6 +337,29 @@ public interface I_MKTG_Campaign
     public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object>(I_MKTG_Campaign.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Externe Datensatz-ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRemoteRecordId (java.lang.String RemoteRecordId);
+
+	/**
+	 * Get Externe Datensatz-ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getRemoteRecordId();
+
+    /** Column definition for RemoteRecordId */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object> COLUMN_RemoteRecordId = new org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object>(I_MKTG_Campaign.class, "RemoteRecordId", null);
+    /** Column name RemoteRecordId */
+    public static final String COLUMNNAME_RemoteRecordId = "RemoteRecordId";
 
 	/**
 	 * Set Anfangsdatum.
