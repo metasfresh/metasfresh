@@ -1,8 +1,9 @@
 package de.metas.purchasecandidate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.time.generator.DateSequenceGenerator;
 import org.springframework.stereotype.Service;
 
@@ -18,12 +19,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,15 +34,28 @@ import lombok.NonNull;
 @Service
 public class BPPurchaseScheduleService
 {
-	public LocalDate findPreviousDate(@NonNull final LocalDate date, @NonNull final BPPurchaseSchedule schedule)
+	private final BPPurchaseScheduleRepository bpPurchaseScheduleRepo;
+
+	public BPPurchaseScheduleService(final BPPurchaseScheduleRepository bpPurchaseScheduleRepo)
 	{
-		return DateSequenceGenerator.builder()
+		this.bpPurchaseScheduleRepo = bpPurchaseScheduleRepo;
+	}
+
+	public Optional<BPPurchaseSchedule> getBPPurchaseSchedule(final int bpartnerId, final LocalDate date)
+	{
+		return bpPurchaseScheduleRepo.getByBPartnerIdAndValidFrom(bpartnerId, date);
+	}
+
+	public Optional<LocalDateTime> calculatePurchaseDatePromised(@NonNull final LocalDateTime salesDatePromised, @NonNull final BPPurchaseSchedule schedule)
+	{
+		final Optional<LocalDate> purchaseDate = DateSequenceGenerator.builder()
 				.dateFrom(LocalDate.MIN)
-				.dateTo(date)
+				.dateTo(LocalDate.MAX)
 				// .shifter(shifter) // TODO: non business days aware shifter
 				.frequency(schedule.getFrequency())
 				.build()
-				.generatePrevious()
-				.orElseThrow(() -> new AdempiereException("No previous date found for " + date + " using " + schedule));
+				.generateCurrentPrevious(salesDatePromised.toLocalDate());
+
+		return purchaseDate.map(schedule::applyTimeTo);
 	}
 }

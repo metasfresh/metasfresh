@@ -1,12 +1,14 @@
 package de.metas.purchasecandidate;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,9 +21,9 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.purchasecandidate.BPPurchaseSchedule.BPPurchaseScheduleBuilder;
 import de.metas.purchasecandidate.model.I_C_BP_PurchaseSchedule;
 import de.metas.purchasecandidate.model.X_C_BP_PurchaseSchedule;
 import lombok.Builder;
@@ -56,12 +58,10 @@ public class BPPurchaseScheduleRepository
 	private final CCache<Integer, AllBPPurchaseSchedule> //
 	schedulesByBpartnerId = CCache.<Integer, AllBPPurchaseSchedule> newCache(I_C_BP_PurchaseSchedule.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
-	public Optional<BPPurchaseSchedule> getByBPartnerIdAndValidFrom(final int bpartnerId, final Date date)
+	public Optional<BPPurchaseSchedule> getByBPartnerIdAndValidFrom(final int bpartnerId, final LocalDate date)
 	{
-		final LocalDate dateToMatch = TimeUtil.asLocalDate(date);
-
 		return schedulesByBpartnerId.getOrLoad(bpartnerId, () -> retrieveAllBPPurchaseSchedulesByBPartnerId(bpartnerId))
-				.findByDate(dateToMatch);
+				.findByDate(date);
 	}
 
 	private AllBPPurchaseSchedule retrieveAllBPPurchaseSchedulesByBPartnerId(final int bpartnerId)
@@ -109,21 +109,12 @@ public class BPPurchaseScheduleRepository
 			throw new AdempiereException("Unknown " + FrequencyType.class + ": " + frequencyType);
 		}
 
-		final BPPurchaseScheduleBuilder builder = BPPurchaseSchedule.builder()
+		return BPPurchaseSchedule.builder()
 				.validFrom(TimeUtil.asLocalDate(scheduleRecord.getValidFrom()))
-				.frequency(frequency);
-
-		for (final DayOfWeek dayOfWeek : daysOfWeek)
-		{
-			final LocalTime preparationTime = extractPreparationTime(scheduleRecord, dayOfWeek);
-			if (preparationTime == null)
-			{
-				continue;
-			}
-			builder.dailyPreparationTime(dayOfWeek, preparationTime);
-		}
-
-		return builder.build();
+				.frequency(frequency)
+				.dailyPreparationTimes(extractPreparationTimes(daysOfWeek, scheduleRecord))
+				.reminderTime(Duration.ofMinutes(scheduleRecord.getReminderTimeInMin()))
+				.build();
 	}
 
 	private static FrequencyType toFrequencyType(final String frequencyType)
@@ -176,6 +167,23 @@ public class BPPurchaseScheduleRepository
 		}
 
 		return daysOfWeek.build();
+	}
+
+	private static Map<DayOfWeek, LocalTime> extractPreparationTimes(final Set<DayOfWeek> daysOfWeek, final I_C_BP_PurchaseSchedule scheduleRecord)
+	{
+		final ImmutableMap.Builder<DayOfWeek, LocalTime> preparationTimes = ImmutableMap.builder();
+
+		for (final DayOfWeek dayOfWeek : daysOfWeek)
+		{
+			final LocalTime preparationTime = extractPreparationTime(scheduleRecord, dayOfWeek);
+			if (preparationTime == null)
+			{
+				continue;
+			}
+			preparationTimes.put(dayOfWeek, preparationTime);
+		}
+
+		return preparationTimes.build();
 	}
 
 	private static LocalTime extractPreparationTime(final I_C_BP_PurchaseSchedule schedule, final DayOfWeek dayOfWeek)

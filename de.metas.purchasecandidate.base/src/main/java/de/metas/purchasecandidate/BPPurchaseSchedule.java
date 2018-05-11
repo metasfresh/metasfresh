@@ -1,9 +1,13 @@
 package de.metas.purchasecandidate;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Optional;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.time.generator.Frequency;
 
 import com.google.common.collect.ImmutableMap;
@@ -49,19 +53,42 @@ public class BPPurchaseSchedule
 	private static final LocalTime DEFAULT_PREPARATION_TIME = LocalTime.of(23, 59);
 	private final ImmutableMap<DayOfWeek, LocalTime> dailyPreparationTimes;
 
+	@Getter
+	private final Duration reminderTime;
+
 	@Builder
 	private BPPurchaseSchedule(
 			final LocalDate validFrom,
-			@NonNull Frequency frequency,
-			@Singular @NonNull final ImmutableMap<DayOfWeek, LocalTime> dailyPreparationTimes)
+			@NonNull final Frequency frequency,
+			@Singular @NonNull final ImmutableMap<DayOfWeek, LocalTime> dailyPreparationTimes,
+			@NonNull final Duration reminderTime)
 	{
+		Check.assume(!reminderTime.isNegative(), "reminderTime shall be >= 0 but it was {}", reminderTime);
+
 		this.validFrom = validFrom != null ? validFrom : DEFAULT_VALID_FROM;
 		this.frequency = frequency;
 		this.dailyPreparationTimes = dailyPreparationTimes;
+		this.reminderTime = reminderTime;
 	}
 
-	public LocalTime getPreparationType(final DayOfWeek dayOfWeek)
+	public LocalTime getPreparationTime(final DayOfWeek dayOfWeek)
 	{
 		return dailyPreparationTimes.getOrDefault(dayOfWeek, DEFAULT_PREPARATION_TIME);
+	}
+
+	public LocalDateTime applyTimeTo(@NonNull final LocalDate date)
+	{
+		final LocalTime time = getPreparationTime(date.getDayOfWeek());
+		return LocalDateTime.of(date, time);
+	}
+
+	public Optional<LocalDateTime> calculateReminderDateTime(final LocalDateTime purchaseDate)
+	{
+		if (reminderTime.isZero())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(purchaseDate.minus(reminderTime));
 	}
 }
