@@ -14,12 +14,12 @@ const pluginWrapper = function pluginWrapper(WrappedComponent, ChildComponent) {
 
 class PluginContainer extends Component {
   render() {
-    const { rawModal, modal, component, dispatch } = this.props;
+    const { rawModal, modal, component, dispatch, breadcrumb } = this.props;
     const TagName = component;
     const redirectPush = bindActionCreators(push, dispatch);
 
     return (
-      <Container {...{ modal, rawModal }}>
+      <Container {...{ modal, rawModal }} breadcrumb={breadcrumb}>
         <div className="plugin-container" ref={c => (this.container = c)}>
           {TagName && (
             <TagName
@@ -35,7 +35,7 @@ class PluginContainer extends Component {
 }
 
 function mapStateToProps(state) {
-  const { windowHandler } = state;
+  const { windowHandler, menuHandler } = state;
 
   const { modal, rawModal } = windowHandler || {
     modal: {},
@@ -45,6 +45,7 @@ function mapStateToProps(state) {
   return {
     modal,
     rawModal,
+    breadcrumb: menuHandler.breadcrumb,
   };
 }
 

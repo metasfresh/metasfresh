@@ -95,6 +95,10 @@ class Breadcrumb extends Component {
       docId,
     } = this.props;
 
+    if (menu.type === 'page') {
+      return this.renderSummaryBreadcrumb(menu.caption);
+    }
+
     return (
       <div key={index}>
         {index ? <span className="divider">/</span> : null}
@@ -123,25 +127,39 @@ class Breadcrumb extends Component {
               {index ? menu.caption : <i className="meta-icon-menu" />}
             </span>
           </div>
-          {menuOverlay === menu.nodeId && (
-            <MenuOverlay
-              {...{
-                siteName,
-                handleMenuOverlay,
-                openModal,
-                windowType,
-                docId,
-              }}
-              nodeId={menu.nodeId}
-              node={menu}
-              onClickOutside={e => handleMenuOverlay(e, '')}
-              disableOnClickOutside={menuOverlay !== menu.nodeId}
-            />
-          )}
+          {menuOverlay === menu.nodeId &&
+            typeof menuOverlay !== 'undefined' && (
+              <MenuOverlay
+                {...{
+                  siteName,
+                  handleMenuOverlay,
+                  openModal,
+                  windowType,
+                  docId,
+                }}
+                nodeId={menu.nodeId}
+                node={menu}
+                onClickOutside={e => handleMenuOverlay(e, '')}
+                disableOnClickOutside={menuOverlay !== menu.nodeId}
+              />
+            )}
         </div>
       </div>
     );
   };
+
+  renderSummaryBreadcrumb(text) {
+    return [
+      <div key="summary-1" className="divider">
+        /
+      </div>,
+      <div key="summary-2" className="hidden-xs-down header-breadcrumb-line">
+        <span className="header-breadcrumb-sitename" title={text}>
+          {text}
+        </span>
+      </div>,
+    ];
+  }
 
   render() {
     const { breadcrumb, docSummaryData, siteName } = this.props;
@@ -177,18 +195,7 @@ class Breadcrumb extends Component {
           {breadcrumb &&
             breadcrumb.map((item, index) => this.renderBtn(item, index + 1))}
 
-          {docSummaryData && <div className="divider">/</div>}
-
-          {docSummaryData && (
-            <div className="hidden-xs-down header-breadcrumb-line">
-              <span
-                className="header-breadcrumb-sitename"
-                title={docSummaryData.value}
-              >
-                {docSummaryData.value}
-              </span>
-            </div>
-          )}
+          {docSummaryData && this.renderSummaryBreadcrumb(docSummaryData.value)}
 
           {siteName && <div className="divider">/</div>}
 
