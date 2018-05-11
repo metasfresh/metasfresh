@@ -9,8 +9,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.api.NotificationGroupName;
-import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.springframework.core.io.Resource;

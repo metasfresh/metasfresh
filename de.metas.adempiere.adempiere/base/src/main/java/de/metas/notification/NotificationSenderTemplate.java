@@ -13,12 +13,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.user.api.NotificationGroupName;
-import org.adempiere.user.api.RoleNotificationsConfig;
-import org.adempiere.user.api.UserNotificationsConfig;
-import org.adempiere.user.api.UserNotificationsGroup;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -73,7 +68,7 @@ public class NotificationSenderTemplate
 	private static final Logger logger = LogManager.getLogger(NotificationSenderTemplate.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IUserDAO usersRepo = Services.get(IUserDAO.class);
-	private final IUserBL userBL = Services.get(IUserBL.class);
+	private final INotificationBL notificationsService = Services.get(INotificationBL.class);
 	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -317,11 +312,11 @@ public class NotificationSenderTemplate
 		else if (recipient.isUser())
 		{
 
-			notificationsConfig = userBL.getUserNotificationsConfig(recipient.getUserId());
+			notificationsConfig = notificationsService.getUserNotificationsConfig(recipient.getUserId());
 
 			if (recipient.isRoleIdSet())
 			{
-				final RoleNotificationsConfig roleNotificationsConfig = userBL.getRoleNotificationsConfig(recipient.getRoleId());
+				final RoleNotificationsConfig roleNotificationsConfig = notificationsService.getRoleNotificationsConfig(recipient.getRoleId());
 				notificationsConfig = notificationsConfig.deriveWithNotificationGroups(roleNotificationsConfig.getNotificationGroups());
 			}
 		}
@@ -369,7 +364,7 @@ public class NotificationSenderTemplate
 				break;
 			}
 
-			currentNotificationsConfig = userBL.getUserNotificationsConfig(currentNotificationsConfig.getUserInChargeId());
+			currentNotificationsConfig = notificationsService.getUserNotificationsConfig(currentNotificationsConfig.getUserInChargeId());
 		}
 
 		return result;

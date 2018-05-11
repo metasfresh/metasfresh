@@ -2,9 +2,15 @@ package de.metas.notification.impl;
 
 import java.util.List;
 
+import org.adempiere.util.Services;
+
 import de.metas.notification.INotificationBL;
+import de.metas.notification.IRoleNotificationsConfigRepository;
+import de.metas.notification.IUserNotificationsConfigRepository;
 import de.metas.notification.NotificationSenderTemplate;
+import de.metas.notification.RoleNotificationsConfig;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationsConfig;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.CompositeRecordTextProvider;
 import lombok.NonNull;
@@ -72,4 +78,17 @@ public class NotificationBL implements INotificationBL
 	{
 		ctxProviders.setDefaultCtxProvider(defaultCtxProvider);
 	}
+
+	@Override
+	public UserNotificationsConfig getUserNotificationsConfig(final int adUserId)
+	{
+		return Services.get(IUserNotificationsConfigRepository.class).getByUserId(adUserId);
+	}
+
+	@Override
+	public RoleNotificationsConfig getRoleNotificationsConfig(final int adRoleId)
+	{
+		return Services.get(IRoleNotificationsConfigRepository.class).getByRoleId(adRoleId);
+	}
+
 }

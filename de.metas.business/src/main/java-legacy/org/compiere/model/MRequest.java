@@ -32,7 +32,6 @@ import java.util.Set;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -52,6 +51,7 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationsConfig;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
 
 /**
@@ -779,10 +779,10 @@ public class MRequest extends X_R_Request
 
 		final File pdf = createPDF();
 
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
+		final INotificationBL notifications = Services.get(INotificationBL.class);
 		final List<UserNotificationRequest> notificationRequests = userIdsToNotify.stream()
 				.map(userId -> {
-					final UserNotificationsConfig notificationsConfig = userDAO.getUserNotificationsConfig(userId);
+					final UserNotificationsConfig notificationsConfig = notifications.getUserNotificationsConfig(userId);
 					final String adLanguage = notificationsConfig.getUserADLanguageOrGet(Env::getADLanguageOrBaseLanguage);
 					final UserNotificationRequestBuilder builder = UserNotificationRequest.builder()
 							.notificationsConfig(notificationsConfig)

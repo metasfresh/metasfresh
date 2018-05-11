@@ -7,9 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Set;
 
-import org.adempiere.user.api.IUserBL;
-import org.adempiere.user.api.NotificationType;
-import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -20,7 +17,9 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.spi.IAsyncBatchListener;
 import de.metas.notification.INotificationBL;
+import de.metas.notification.NotificationType;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationsConfig;
 
 /**
  * @author cg
@@ -65,8 +64,8 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 			return null;
 		}
 
-		final IUserBL userBL = Services.get(IUserBL.class);
-		return userBL.getUserNotificationsConfig(recipientUserId).deriveWithNotificationTypes(notificationTypes);
+		final INotificationBL notifications = Services.get(INotificationBL.class);
+		return notifications.getUserNotificationsConfig(recipientUserId).deriveWithNotificationTypes(notificationTypes);
 	}
 
 	private static Set<NotificationType> extractNotificationTypes(final I_C_Async_Batch_Type asyncBatchType)
