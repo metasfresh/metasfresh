@@ -3,6 +3,7 @@ package de.metas.purchasecandidate;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -63,6 +64,7 @@ public class SalesOrderLines
 {
 	// services
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
+	private final BPPurchaseScheduleService bpPurchaseScheduleService;
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
@@ -74,10 +76,12 @@ public class SalesOrderLines
 	@Builder
 	private SalesOrderLines(
 			@NonNull final Collection<Integer> salesOrderLineIds,
-			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
+			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService)
 	{
 		this.salesOrderLineIds = ImmutableList.copyOf(salesOrderLineIds);
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
+		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
 	}
 
 	private ImmutableList<SalesOrderLineWithCandidates> loadOrCreatePurchaseCandidates0()
@@ -181,10 +185,13 @@ public class SalesOrderLines
 		return newPurchaseCandidateForOrderLine;
 	}
 
-	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, VendorProductInfo vendorProductInfo)
+	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, final VendorProductInfo vendorProductInfo)
 	{
+		final LocalDateTime salesDatePromised = TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised());
+		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesDatePromised, vendorProductInfo);
+
 		return PurchaseCandidate.builder()
-				.dateRequired(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
+				.dateRequired(purchaseDatePromised)
 				.orgId(salesOrderLine.getAD_Org_ID())
 				.productId(vendorProductInfo.getProductId())
 				.qtyToPurchase(BigDecimal.ZERO)
@@ -194,6 +201,13 @@ public class SalesOrderLines
 				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(getWarehousePOId(salesOrderLine))
 				.build();
+	}
+
+	private LocalDateTime calculatePurchaseDatePromised(final LocalDateTime salesDatePromised, final VendorProductInfo vendorProductInfo)
+	{
+		return bpPurchaseScheduleService.getBPPurchaseSchedule(vendorProductInfo.getVendorBPartnerId(), salesDatePromised.toLocalDate())
+				.flatMap(bpPurchaseSchedule -> bpPurchaseScheduleService.calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule))
+				.orElse(salesDatePromised);
 	}
 
 	private int getWarehousePOId(final I_C_OrderLine salesOrderLine)
