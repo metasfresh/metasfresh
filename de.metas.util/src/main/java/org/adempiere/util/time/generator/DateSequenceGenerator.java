@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.google.common.collect.ImmutableSet;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -52,7 +54,7 @@ public class DateSequenceGenerator
 
 	public SortedSet<LocalDate> generate()
 	{
-		final SortedSet<LocalDate> result = new TreeSet<>();
+		final SortedSet<LocalDate> result = newSortedSet(ImmutableSet.of());
 
 		LocalDate currentDate = dateFrom;
 		while (currentDate.compareTo(dateTo) <= 0)
@@ -76,7 +78,7 @@ public class DateSequenceGenerator
 		{
 			//
 			// Explode current date using the converter and then shift each exploded date
-			final SortedSet<LocalDate> result = new TreeSet<>();
+			final SortedSet<LocalDate> result = newSortedSet(ImmutableSet.of());
 			doExplodeAndShiftForward(result, currentDate);
 
 			if (!result.isEmpty())
@@ -91,15 +93,30 @@ public class DateSequenceGenerator
 
 		return Optional.empty();
 	}
-	
+
 	public Optional<LocalDate> generatePrevious()
 	{
+		return generateCurrentPrevious(dateTo);
+	}
+
+	public Optional<LocalDate> generateCurrentPrevious(final LocalDate dateTo)
+	{
+		final int MAX_ITERATIONS = 100;
+
+		int iterationNo = 0;
 		LocalDate currentDate = dateTo;
 		while (currentDate.compareTo(dateFrom) >= 0)
 		{
+			iterationNo++;
+			if (iterationNo > MAX_ITERATIONS)
+			{
+				throw new IllegalStateException("Maximum number of iterations(" + MAX_ITERATIONS + ") reached while trying to find a current/previous date for " + dateTo + " using " + this + "."
+						+ "\nCurrent date: " + currentDate);
+			}
+
 			//
 			// Explode current date using the converter and then shift each exploded date
-			final SortedSet<LocalDate> result = new TreeSet<>(Comparator.<LocalDate>naturalOrder().reversed());
+			final SortedSet<LocalDate> result = newReverseSortedSet(ImmutableSet.of());
 			doExplodeAndShiftBackward(result, currentDate);
 
 			if (!result.isEmpty())
@@ -114,7 +131,6 @@ public class DateSequenceGenerator
 
 		return Optional.empty();
 	}
-
 
 	private final void doExplodeAndShiftForward(final SortedSet<LocalDate> result, final LocalDate dateToExplode)
 	{
@@ -132,7 +148,7 @@ public class DateSequenceGenerator
 		if (datesExploded != null && !datesExploded.isEmpty())
 		{
 			LocalDate lastDateConsidered = dateToExplode;
-			for (final LocalDate dateExploded : new TreeSet<>(datesExploded))
+			for (final LocalDate dateExploded : newSortedSet(datesExploded))
 			{
 				// Skip null dates... shall not happen
 				if (dateExploded == null)
@@ -201,7 +217,7 @@ public class DateSequenceGenerator
 		if (datesExploded != null && !datesExploded.isEmpty())
 		{
 			LocalDate lastDateConsidered = dateToExplode;
-			for (final LocalDate dateExploded : new TreeSet<>(datesExploded))
+			for (final LocalDate dateExploded : newReverseSortedSet(datesExploded))
 			{
 				// Skip null dates... shall not happen
 				if (dateExploded == null)
@@ -254,12 +270,35 @@ public class DateSequenceGenerator
 		}
 	}
 
+	private static SortedSet<LocalDate> newSortedSet(final Collection<LocalDate> values)
+	{
+		if (values == null || values.isEmpty())
+		{
+			return new TreeSet<>();
+		}
+		else
+		{
+			return new TreeSet<>(values);
+		}
+	}
+
+	private static SortedSet<LocalDate> newReverseSortedSet(final Collection<LocalDate> values)
+	{
+		final TreeSet<LocalDate> sortedSet = new TreeSet<>(Comparator.<LocalDate> naturalOrder().reversed());
+		if (values != null && !values.isEmpty())
+		{
+			sortedSet.addAll(values);
+		}
+
+		return sortedSet;
+	}
+
 	//
 	//
 	//
 	//
 	//
-	
+
 	public static class DateSequenceGeneratorBuilder
 	{
 		public DateSequenceGeneratorBuilder byDay()
@@ -333,6 +372,5 @@ public class DateSequenceGenerator
 				throw new IllegalArgumentException("Frequency type not supported for " + frequency);
 			}
 		}
-
 	}
 }

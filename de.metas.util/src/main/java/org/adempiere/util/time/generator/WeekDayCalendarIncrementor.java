@@ -45,6 +45,11 @@ public class WeekDayCalendarIncrementor implements ICalendarIncrementor
 	@Override
 	public LocalDate decrement(final LocalDate date)
 	{
+		if (weeksToAdd > 1)
+		{
+			throw new UnsupportedOperationException("Decrementing using a step greater than one is not supported");
+		}
+		
 		if (date.getDayOfWeek().getValue() <= dayOfWeek.getValue())
 		{
 			return date.with(TemporalAdjusters.nextOrSame(dayOfWeek)).minusWeeks(weeksToAdd);
