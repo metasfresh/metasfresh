@@ -172,7 +172,6 @@ public interface I_MKTG_Campaign
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-<<<<<<< HEAD
 	 * Set IsDefaultNewsletter.
 	 *
 	 * <br>Type: YesNo
@@ -196,7 +195,6 @@ public interface I_MKTG_Campaign
     public static final String COLUMNNAME_IsDefaultNewsletter = "IsDefaultNewsletter";
 
 	/**
-	 *
 	 * Set Synchronisierungstatus-Detail.
 	 *
 	 * <br>Type: Text
