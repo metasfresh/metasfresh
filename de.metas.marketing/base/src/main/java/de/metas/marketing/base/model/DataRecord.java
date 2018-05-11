@@ -1,13 +1,8 @@
-package de.metas.handlingunits.ddorder.api;
-
-import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.product.LotNumberLock;
-import lombok.NonNull;
-import lombok.Value;
+package de.metas.marketing.base.model;
 
 /*
  * #%L
- * de.metas.handlingunits.base
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,28 +22,7 @@ import lombok.Value;
  * #L%
  */
 
-
-@Value
-public final class QuarantineInOutLine
+public interface DataRecord
 {
-	@NonNull
-	I_M_InOutLine inOutLine;
 
-	@NonNull
-	LotNumberLock lockLotNo;
-
-	public int getBpartnerId()
-	{
-		return inOutLine.getM_InOut().getC_BPartner_ID();
-	}
-
-	public int getBpartnerLocationId()
-	{
-		return inOutLine.getM_InOut().getC_BPartner_Location_ID();
-	}
-
-	public int getReceiptLineId()
-	{
-		return inOutLine.getM_InOutLine_ID();
-	}
 }

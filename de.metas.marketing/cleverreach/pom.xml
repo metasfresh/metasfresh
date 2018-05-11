@@ -34,6 +34,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.marketing</groupId>
+			<artifactId>marketing-base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+
+		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<version>${metasfresh.version}</version>

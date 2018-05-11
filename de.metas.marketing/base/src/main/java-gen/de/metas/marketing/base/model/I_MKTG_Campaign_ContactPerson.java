@@ -98,6 +98,41 @@ public interface I_MKTG_Campaign_ContactPerson
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getC_BPartner_ID();
+
+	@Deprecated
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	@Deprecated
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, org.compiere.model.I_C_BPartner>(I_MKTG_Campaign_ContactPerson.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -128,6 +163,62 @@ public interface I_MKTG_Campaign_ContactPerson
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Platformseitig deaktiviert.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setDeactivatedOnRemotePlatform (java.lang.String DeactivatedOnRemotePlatform);
+
+	/**
+	 * Get Platformseitig deaktiviert.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.lang.String getDeactivatedOnRemotePlatform();
+
+    /** Column definition for DeactivatedOnRemotePlatform */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_DeactivatedOnRemotePlatform = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "DeactivatedOnRemotePlatform", null);
+    /** Column name DeactivatedOnRemotePlatform */
+    public static final String COLUMNNAME_DeactivatedOnRemotePlatform = "DeactivatedOnRemotePlatform";
+
+	/**
+	 * Set eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setEMail (java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.lang.String getEMail();
+
+    /** Column definition for EMail */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_EMail = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "EMail", null);
+    /** Column name EMail */
+    public static final String COLUMNNAME_EMail = "EMail";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -151,6 +242,114 @@ public interface I_MKTG_Campaign_ContactPerson
     public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Synchronisierungstatus-Detail.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setLastSyncDetailMessage (java.lang.String LastSyncDetailMessage);
+
+	/**
+	 * Get Synchronisierungstatus-Detail.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.lang.String getLastSyncDetailMessage();
+
+    /** Column definition for LastSyncDetailMessage */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_LastSyncDetailMessage = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "LastSyncDetailMessage", null);
+    /** Column name LastSyncDetailMessage */
+    public static final String COLUMNNAME_LastSyncDetailMessage = "LastSyncDetailMessage";
+
+	/**
+	 * Set Zuletzt auf Platform hochgeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setLastSyncOfLocalToRemote (java.sql.Timestamp LastSyncOfLocalToRemote);
+
+	/**
+	 * Get Zuletzt auf Platform hochgeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.sql.Timestamp getLastSyncOfLocalToRemote();
+
+    /** Column definition for LastSyncOfLocalToRemote */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_LastSyncOfLocalToRemote = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "LastSyncOfLocalToRemote", null);
+    /** Column name LastSyncOfLocalToRemote */
+    public static final String COLUMNNAME_LastSyncOfLocalToRemote = "LastSyncOfLocalToRemote";
+
+	/**
+	 * Set Zuletzt von Platform runtergeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setLastSyncOfRemoteToLocal (java.sql.Timestamp LastSyncOfRemoteToLocal);
+
+	/**
+	 * Get Zuletzt von Platform runtergeladen.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.sql.Timestamp getLastSyncOfRemoteToLocal();
+
+    /** Column definition for LastSyncOfRemoteToLocal */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_LastSyncOfRemoteToLocal = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "LastSyncOfRemoteToLocal", null);
+    /** Column name LastSyncOfRemoteToLocal */
+    public static final String COLUMNNAME_LastSyncOfRemoteToLocal = "LastSyncOfRemoteToLocal";
+
+	/**
+	 * Set Letzter Synchronisierungsstatus.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setLastSyncStatus (java.lang.String LastSyncStatus);
+
+	/**
+	 * Get Letzter Synchronisierungsstatus.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.lang.String getLastSyncStatus();
+
+    /** Column definition for LastSyncStatus */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_LastSyncStatus = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "LastSyncStatus", null);
+    /** Column name LastSyncStatus */
+    public static final String COLUMNNAME_LastSyncStatus = "LastSyncStatus";
 
 	/**
 	 * Set MKTG_Campaign_ContactPerson.
@@ -228,6 +427,95 @@ public interface I_MKTG_Campaign_ContactPerson
     public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, de.metas.marketing.base.model.I_MKTG_ContactPerson> COLUMN_MKTG_ContactPerson_ID = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, de.metas.marketing.base.model.I_MKTG_ContactPerson>(I_MKTG_Campaign_ContactPerson.class, "MKTG_ContactPerson_ID", de.metas.marketing.base.model.I_MKTG_ContactPerson.class);
     /** Column name MKTG_ContactPerson_ID */
     public static final String COLUMNNAME_MKTG_ContactPerson_ID = "MKTG_ContactPerson_ID";
+
+	/**
+	 * Set MKTG_Platform.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setMKTG_Platform_ID (int MKTG_Platform_ID);
+
+	/**
+	 * Get MKTG_Platform.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getMKTG_Platform_ID();
+
+	@Deprecated
+	public de.metas.marketing.base.model.I_MKTG_Platform getMKTG_Platform();
+
+	@Deprecated
+	public void setMKTG_Platform(de.metas.marketing.base.model.I_MKTG_Platform MKTG_Platform);
+
+    /** Column definition for MKTG_Platform_ID */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, de.metas.marketing.base.model.I_MKTG_Platform> COLUMN_MKTG_Platform_ID = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, de.metas.marketing.base.model.I_MKTG_Platform>(I_MKTG_Campaign_ContactPerson.class, "MKTG_Platform_ID", de.metas.marketing.base.model.I_MKTG_Platform.class);
+    /** Column name MKTG_Platform_ID */
+    public static final String COLUMNNAME_MKTG_Platform_ID = "MKTG_Platform_ID";
+
+	/**
+	 * Set Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.lang.String getName();
+
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Externe Datensatz-ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setRemoteRecordId (java.lang.String RemoteRecordId);
+
+	/**
+	 * Get Externe Datensatz-ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.lang.String getRemoteRecordId();
+
+    /** Column definition for RemoteRecordId */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object> COLUMN_RemoteRecordId = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, Object>(I_MKTG_Campaign_ContactPerson.class, "RemoteRecordId", null);
+    /** Column name RemoteRecordId */
+    public static final String COLUMNNAME_RemoteRecordId = "RemoteRecordId";
 
 	/**
 	 * Get Aktualisiert.

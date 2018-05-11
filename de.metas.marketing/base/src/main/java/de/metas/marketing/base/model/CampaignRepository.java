@@ -49,7 +49,7 @@ public class CampaignRepository
 		return new Campaign(
 				campaignRecord.getName(),
 				campaignRecord.getMKTG_Campaign_ID(),
-				campaignRecord.getMarketingPlatformGatewayId());
+				campaignRecord.getRemoteRecordId());
 	}
 
 	public void addContactPersonToCampaign(
@@ -131,7 +131,6 @@ public class CampaignRepository
 		consent.setC_BPartner_ID(contactPerson.getCBpartnerId());
 		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
 		consent.setMKTG_ContactPerson_ID(contactPerson.getRepoId());
-		consent.setMarketingPlatformGatewayId(campaign.getMarketingPlatformGatewayId());
 
 		save(consent);
 
@@ -141,6 +140,7 @@ public class CampaignRepository
 			@NonNull final ContactPerson contactPerson,
 			@NonNull final Campaign campaign)
 	{
+		
 		final I_MKTG_Consent consent = getConsentRecord(contactPerson, campaign);
 
 		if(consent != null)
@@ -148,6 +148,7 @@ public class CampaignRepository
 			consent.setConsentRevokedOn(SystemTime.asTimestamp());
 			save(consent);
 		}
+
 	}
 
 	private I_MKTG_Consent getConsentRecord(
@@ -158,7 +159,6 @@ public class CampaignRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getRepoId())
 				.addEqualsFilter(I_MKTG_Consent.COLUMN_AD_User_ID, contactPerson.getAdUserId())
-				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MarketingPlatformGatewayId, campaign.getMarketingPlatformGatewayId())
 				.create()
 				.firstOnly(I_MKTG_Consent.class);
 	}
