@@ -113,6 +113,11 @@ public abstract class SimpleLookupDescriptorTemplate implements LookupDescriptor
 	{
 		return true;
 	}
+	
+	@Override
+	public void cacheInvalidate()
+	{
+	}
 
 	@Override
 	public List<CCacheStats> getCacheStats()

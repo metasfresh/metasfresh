@@ -78,6 +78,12 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	{
 		return true;
 	}
+	
+	@Override
+	public void cacheInvalidate()
+	{
+		allCountriesCache.clear();
+	}
 
 	@Override
 	public Optional<String> getLookupTableName()

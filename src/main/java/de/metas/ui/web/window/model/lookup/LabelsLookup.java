@@ -79,8 +79,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 			@NonNull final String labelsTableName,
 			@NonNull final String labelsValueColumnName,
 			@NonNull final String labelsLinkColumnName,
-			@NonNull final LookupDescriptor labelsValuesLookupDescriptor
-			)
+			@NonNull final LookupDescriptor labelsValuesLookupDescriptor)
 	{
 		this.labelsTableName = labelsTableName;
 		this.labelsValueColumnName = labelsValueColumnName;
@@ -113,7 +112,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		{
 			return LookupValuesList.EMPTY;
 		}
-		
+
 		return labelsValuesLookupDataSource.findByIds(existingItems);
 	}
 
@@ -147,6 +146,12 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	public String getCachePrefix()
 	{
 		return null; // not important because isCached() returns false
+	}
+
+	@Override
+	public void cacheInvalidate()
+	{
+		labelsValuesLookupDataSource.cacheInvalidate();
 	}
 
 	@Override

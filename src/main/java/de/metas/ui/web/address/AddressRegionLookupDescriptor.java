@@ -92,6 +92,12 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	{
 		return true;
 	}
+	
+	@Override
+	public void cacheInvalidate()
+	{
+		regionsByCountryId.clear();
+	}
 
 	@Override
 	public List<CCacheStats> getCacheStats()

@@ -130,6 +130,11 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	{
 		return false;
 	}
+	
+	@Override
+	public void cacheInvalidate()
+	{
+	}
 
 	@Override
 	public List<CCacheStats> getCacheStats()

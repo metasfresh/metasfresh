@@ -139,6 +139,12 @@ final class LookupDataSourceAdapter implements LookupDataSource
 	{
 		return fetcher.getCacheStats();
 	}
+	
+	@Override
+	public void cacheInvalidate()
+	{
+		fetcher.cacheInvalidate();
+	}
 
 	@Override
 	public Optional<WindowId> getZoomIntoWindowId()

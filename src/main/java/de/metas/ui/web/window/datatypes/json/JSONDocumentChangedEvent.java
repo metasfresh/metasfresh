@@ -2,6 +2,7 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
@@ -14,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import io.swagger.annotations.ApiModel;
@@ -125,12 +127,11 @@ public class JSONDocumentChangedEvent
 	{
 		return Values.toBigDecimal(value);
 	}
-	
+
 	public BigDecimal getValueAsBigDecimal(final BigDecimal defaultValueIfNull)
 	{
 		return value != null ? Values.toBigDecimal(value) : defaultValueIfNull;
 	}
-
 
 	public java.util.Date getValueAsDateTime()
 	{
@@ -139,12 +140,29 @@ public class JSONDocumentChangedEvent
 
 	public LookupValue getValueAsIntegerLookupValue()
 	{
-		JSONLookupValue json = (JSONLookupValue)value;
-		if (json == null)
+		if (value == null)
 		{
 			return null;
 		}
-		return json.toIntegerLookupValue();
+		else if (value instanceof Map)
+		{
+			@SuppressWarnings("unchecked")
+			final Map<String, Object> map = (Map<String, Object>)value;
+			return JSONLookupValue.integerLookupValueFromJsonMap(map);
+		}
+		else if (value instanceof JSONLookupValue)
+		{
+			JSONLookupValue json = (JSONLookupValue)value;
+			if (json == null)
+			{
+				return null;
+			}
+			return json.toIntegerLookupValue();
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + IntegerLookupValue.class);
+		}
 	}
 
 }
