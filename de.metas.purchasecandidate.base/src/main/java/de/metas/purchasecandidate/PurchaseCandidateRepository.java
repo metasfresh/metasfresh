@@ -16,6 +16,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner_Product;
@@ -216,7 +217,7 @@ public class PurchaseCandidateRepository
 		record.setVendor_ID(purchaseCandidate.getVendorBPartnerId());
 		record.setC_BPartner_Product_ID(purchaseCandidate.getBpartnerProductId().orElse(-1));
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
-		
+
 		record.setProcessed(purchaseCandidate.isProcessed());
 
 		InterfaceWrapperHelper.save(record);
@@ -286,5 +287,23 @@ public class PurchaseCandidateRepository
 				.addInArrayFilter(I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID, purchaseCandidateIds)
 				.create()
 				.delete();
+	}
+
+	public Set<PurchaseCandidateReminder> retrieveReminders()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false) // not processed
+				.addNotNull(I_C_PurchaseCandidate.COLUMN_Vendor_ID)
+				.addNotNull(I_C_PurchaseCandidate.COLUMN_ReminderDate)
+				.create()
+				.listDistinct(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)
+				.stream()
+				.map(map -> PurchaseCandidateReminder.builder()
+						.vendorBPartnerId(NumberUtils.asInt(map.get(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID), -1))
+						.notificationTime(TimeUtil.asLocalDateTime(map.get(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)))
+						.build())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }
