@@ -54,7 +54,8 @@ public class UserNotificationRequest
 	Recipient recipient;
 	UserNotificationsConfig notificationsConfig;
 
-	Topic topic;
+	private static final NotificationGroupName DEFAULT_NotificationGroupName = NotificationGroupName.of(EventBusConstants.TOPIC_GeneralUserNotifications.getName());
+	NotificationGroupName notificationGroupName;
 
 	boolean important;
 
@@ -86,7 +87,7 @@ public class UserNotificationRequest
 			final Recipient recipient,
 			final UserNotificationsConfig notificationsConfig,
 			//
-			final Topic topic,
+			final NotificationGroupName notificationGroupName,
 			//
 			final boolean important,
 			//
@@ -133,7 +134,7 @@ public class UserNotificationRequest
 			}
 		}
 
-		this.topic = topic != null ? topic : EventBusConstants.TOPIC_GeneralUserNotifications;
+		this.notificationGroupName = notificationGroupName != null ? notificationGroupName : DEFAULT_NotificationGroupName;
 
 		this.important = important;
 
@@ -169,11 +170,6 @@ public class UserNotificationRequest
 		return !Check.isEmpty(subjectADMessage) ? subjectADMessage : defaultValue;
 	}
 
-	public NotificationGroupName getNotificationGroupName()
-	{
-		return NotificationGroupName.of(getTopic().getName());
-	}
-
 	public UserNotificationRequest deriveByNotificationsConfig(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
 		if (Objects.equals(this.notificationsConfig, notificationsConfig))
@@ -205,6 +201,11 @@ public class UserNotificationRequest
 		public UserNotificationRequestBuilder recipientUserId(final int userId)
 		{
 			return recipient(Recipient.user(userId));
+		}
+
+		public UserNotificationRequestBuilder topic(final Topic topic)
+		{
+			return notificationGroupName(NotificationGroupName.of(topic.getName()));
 		}
 	}
 }
