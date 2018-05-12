@@ -325,6 +325,22 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.marketing</groupId>
+			<artifactId>marketing-base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.marketing</groupId>
+			<artifactId>marketing-cleverreach</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		
+		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-cockpit</artifactId>
 			<version>${metasfresh.version}</version>
@@ -469,6 +485,14 @@ note: when adding new records, please roughly order them by alphabet.
 			<type>zip</type>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.derkurier</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.shipper.gateway</groupId>
 			<artifactId>de.metas.shipper.gateway.go</artifactId>
