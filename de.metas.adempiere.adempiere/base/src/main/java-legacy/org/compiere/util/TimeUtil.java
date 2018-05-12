@@ -1202,6 +1202,40 @@ public class TimeUtil
 		}
 		return new Timestamp(gc.getTimeInMillis());
 	}
+	
+	public static Timestamp asTimestamp(final Object obj)
+	{
+		if(obj == null)
+		{
+			return null;
+		}
+		else if(obj instanceof Timestamp)
+		{
+			return (Timestamp)obj;
+		}
+		else if(obj instanceof Date)
+		{
+			return new Timestamp(((Date)obj).getTime());
+		}
+		else if(obj instanceof LocalDateTime)
+		{
+			return Timestamp.valueOf((LocalDateTime)obj);
+		}
+		else if(obj instanceof LocalDate)
+		{
+			final LocalDate localDate = (LocalDate)obj;
+			final Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+			return Timestamp.from(instant);
+		}
+		else if(obj instanceof Instant)
+		{
+			return new Timestamp(Date.from((Instant)obj).getTime());
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Timestamp.class);
+		}
+	}
 
 	/** @return date as timestamp or null if the date is null */
 	public static Timestamp asTimestamp(final Date date)
@@ -1475,9 +1509,43 @@ public class TimeUtil
 
 	public static LocalDateTime asLocalDateTime(final Date date)
 	{
+		if (date == null)
+		{
+			return null;
+		}
 		return date.toInstant()
 				.atZone(ZoneId.systemDefault())
 				.toLocalDateTime();
+	}
+
+	public static LocalDateTime asLocalDateTime(final Object obj)
+	{
+		if (obj == null)
+		{
+			return null;
+		}
+		else if (obj instanceof LocalDateTime)
+		{
+			return (LocalDateTime)obj;
+		}
+		else if (obj instanceof LocalDate)
+		{
+			return ((LocalDate)obj).atStartOfDay();
+		}
+		else if (obj instanceof Timestamp)
+		{
+			return ((Timestamp)obj).toLocalDateTime();
+		}
+		else if (obj instanceof Date)
+		{
+			return ((Date)obj).toInstant()
+					.atZone(ZoneId.systemDefault())
+					.toLocalDateTime();
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + LocalDateTime.class);
+		}
 	}
 
 }	// TimeUtil

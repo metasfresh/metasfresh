@@ -28,6 +28,8 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -782,10 +784,16 @@ public final class DB
 			pstmt.setInt(index, ((Integer)param).intValue());
 		else if (param instanceof BigDecimal)
 			pstmt.setBigDecimal(index, (BigDecimal)param);
+		//
 		else if (param instanceof Timestamp)
 			pstmt.setTimestamp(index, (Timestamp)param);
 		else if (param instanceof java.util.Date) // metas: support for java.util.Date
 			pstmt.setTimestamp(index, new Timestamp(((java.util.Date)param).getTime()));
+		else if(param instanceof LocalDateTime)
+			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDateTime)param));
+		else if (param instanceof LocalDate)
+			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDate)param));
+		//
 		else if (param instanceof Boolean)
 			pstmt.setString(index, ((Boolean)param).booleanValue() ? "Y" : "N");
 		else
