@@ -54,7 +54,11 @@ class Table extends Component {
 
     // from <DocumentList>
     onSelectionChanged: PropTypes.func,
+
+    onRowEdited: PropTypes.func,
   };
+
+  _isMounted = false;
 
   constructor(props) {
     super(props);
@@ -79,11 +83,13 @@ class Table extends Component {
       collapsedParentsRows: [],
       pendingInit: true,
       collapsedArrayMap: [],
+      rowEdited: props.rowEdited,
     };
   }
 
   componentDidMount() {
     //selecting first table elem while getting indent data
+    this._isMounted = true;
     this.getIndentData(true);
 
     if (this.props.autofocus) {
@@ -105,9 +111,14 @@ class Table extends Component {
       viewId,
       isModal,
       hasIncluded,
+      rowEdited,
+      onRowEdited,
     } = this.props;
-
     const { selected, rows } = this.state;
+
+    if (!this._isMounted) {
+      return;
+    }
 
     if (!_.isEqual(prevState.rows, rows)) {
       if (isModal && !hasIncluded) {
@@ -155,7 +166,14 @@ class Table extends Component {
     if (!is(prevProps.rowData, rowData)) {
       // special case for the picking terminal
       const firstLoad = prevProps.rowData.get(1) ? false : true;
-      this.getIndentData(firstLoad);
+
+      // this prevents collapsing rows when table cell was edited, for instance
+      // in purchase orders
+      if (!rowEdited) {
+        this.getIndentData(firstLoad);
+      } else {
+        onRowEdited && onRowEdited(false);
+      }
     }
 
     if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
@@ -170,6 +188,8 @@ class Table extends Component {
       windowType,
       isIncluded,
     } = this.props;
+
+    this._isMounted = false;
 
     this.deselectAllProducts();
     if (showIncludedViewOnSelect && !isIncluded) {
@@ -909,7 +929,7 @@ class Table extends Component {
   };
 
   handleItemChange = (rowId, prop, value) => {
-    const { mainTable, keyProperty } = this.props;
+    const { mainTable, keyProperty, onRowEdited } = this.props;
 
     if (mainTable) {
       const { rows } = this.state;
@@ -924,6 +944,8 @@ class Table extends Component {
         }
       });
     }
+
+    onRowEdited && onRowEdited(true);
   };
 
   renderTableBody = () => {

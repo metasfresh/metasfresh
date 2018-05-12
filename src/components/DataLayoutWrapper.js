@@ -1,4 +1,5 @@
 import React, { cloneElement, Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { patchViewAttributes } from '../actions/ViewAttributesActions';
@@ -36,8 +37,10 @@ class DataLayoutWrapper extends Component {
   };
 
   handlePatch = (prop, value, cb) => {
-    const { windowType: windowId, viewId } = this.props;
+    const { windowType: windowId, viewId, onRowEdited } = this.props;
     const { dataId: rowId } = this.state;
+
+    onRowEdited && onRowEdited(true);
 
     /*eslint-disable */
     patchViewAttributes(windowId, viewId, rowId, prop, value).then(({ data }) => {
@@ -58,10 +61,10 @@ class DataLayoutWrapper extends Component {
           });
         }
       }
+
+      cb && cb();
     });
     /*eslint-enable */
-
-    cb && cb();
   };
 
   setData = (data, dataId, cb) => {
@@ -94,7 +97,7 @@ class DataLayoutWrapper extends Component {
     const { layout, data } = this.state;
     const { children, className } = this.props;
 
-    // sometimes it's a number, and React complaints about wrong type
+    // sometimes it's a number, and React complains about wrong type
     const dataId = this.state.dataId + '';
 
     return (
@@ -116,5 +119,9 @@ class DataLayoutWrapper extends Component {
     );
   }
 }
+
+DataLayoutWrapper.propTypes = {
+  onRowEdited: PropTypes.func,
+};
 
 export default connect()(DataLayoutWrapper);

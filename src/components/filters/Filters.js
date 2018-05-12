@@ -62,8 +62,8 @@ class Filters extends Component {
   setFilterActive = filterToAdd => {
     const { updateDocList } = this.props;
     const { filter } = this.state;
-
     let newFilter;
+
     if (filter) {
       newFilter = filter.filter(item => item.filterId !== filterToAdd.filterId);
       newFilter.push(filterToAdd);
@@ -125,8 +125,11 @@ class Filters extends Component {
         unannotatedFilter.parameters && unannotatedFilter.parameters[0];
       const filterType = parameter && parameter.widgetType;
       const isActive = this.isFilterActive(unannotatedFilter.filterId);
+      const currentFilter = filter
+        ? filter.find(f => f.filterId === unannotatedFilter.filterId)
+        : null;
       const activeParameter =
-        parameter && isActive && filter[0] && filter[0].parameters[0];
+        parameter && isActive && currentFilter && currentFilter.parameters[0];
       const captionValue = activeParameter
         ? TableCell.fieldValueToString(
             activeParameter.valueTo
