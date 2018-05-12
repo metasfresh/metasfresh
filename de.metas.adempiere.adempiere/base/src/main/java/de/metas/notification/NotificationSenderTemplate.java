@@ -385,9 +385,11 @@ public class NotificationSenderTemplate
 		try
 		{
 			final UserNotification notification = notificationsRepo.save(request);
+			
+			final Topic topic = Topic.remote(request.getNotificationGroupName().getValueAsString());
 
 			eventBusFactory
-					.getEventBus(request.getTopic())
+					.getEventBus(topic)
 					.postEvent(UserNotificationUtils.toEvent(notification));
 		}
 		catch (final Exception ex)
