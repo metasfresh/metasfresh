@@ -543,6 +543,16 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+
+	/**
+	 * Does the same as {@link #save(Object)},
+	 * but this method can be static-imported into repository implementations which usually have their own method named "save()".
+	 */
+	public static void saveRecord(final Object model)
+	{
+		save(model);
+	}
+
 	public static void save(final Object model)
 	{
 		final Object modelToSave = extractModelToSave(model);

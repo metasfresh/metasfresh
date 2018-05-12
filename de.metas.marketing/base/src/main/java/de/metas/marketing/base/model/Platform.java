@@ -1,13 +1,15 @@
-package de.metas.marketing.gateway.cleverreach;
+package de.metas.marketing.base.model;
 
-import de.metas.marketing.base.model.PlatformId;
+import java.util.Optional;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -29,17 +31,21 @@ import lombok.Value;
 
 @Value
 @Builder
-public class CleverReachConfig
+public class Platform
 {
-	@NonNull
-	String client_id;
-
-	@NonNull
-	String login;
-
-	@NonNull
-	String password;
-
-	@NonNull
+	String name;
+	String platformGatewayId;
 	PlatformId platformId;
+
+	/** @return existing repository ID or throws exception */
+	public int getRepoId()
+	{
+		final int repoId = Optional.of(this)
+				.map(Platform::getPlatformId)
+				.map(PlatformId::getRepoId)
+				.orElseThrow(() -> new AdempiereException("This platform instance has no repoId")
+						.appendParametersToMessage()
+						.setParameter("platform", this));
+		return repoId;
+	}
 }

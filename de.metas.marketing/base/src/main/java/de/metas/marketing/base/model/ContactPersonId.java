@@ -1,13 +1,12 @@
-package de.metas.marketing.gateway.cleverreach;
+package de.metas.marketing.base.model;
 
-import de.metas.marketing.base.model.PlatformId;
-import lombok.Builder;
-import lombok.NonNull;
+import org.adempiere.util.Check;
+
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -18,28 +17,28 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
-@Builder
-public class CleverReachConfig
+public class ContactPersonId
 {
-	@NonNull
-	String client_id;
+	/** the internal metasfresh-ID (PK) of the underlying record */
+	int repoId;
 
-	@NonNull
-	String login;
+	public static ContactPersonId ofRepoId(final int repoId)
+	{
+		return new ContactPersonId(repoId);
+	}
 
-	@NonNull
-	String password;
-
-	@NonNull
-	PlatformId platformId;
+	private ContactPersonId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 }

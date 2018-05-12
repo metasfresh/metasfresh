@@ -3,6 +3,7 @@ package de.metas.marketing.base.model;
 import javax.annotation.Nullable;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -38,9 +39,12 @@ public class Campaign implements DataRecord
 
 	String name;
 
-	/** the internal metasfresh-ID (PK) of the underlying record */
-	int repoId;
-
 	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
 	String remoteId;
+
+	@NonNull
+	PlatformId platformId;
+
+	/** might be null, if the campaign wasn't stored yet */
+	CampaignId campaignId;
 }
