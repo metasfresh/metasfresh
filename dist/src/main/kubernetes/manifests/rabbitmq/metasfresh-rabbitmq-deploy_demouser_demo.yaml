@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "metasfresh-rabbitmq-demouser-demo"
+  labels:
+    de.metas.deployment.type: metasfresh-rabbitmq
+    de.metas.deployment.user: "demouser"
+    de.metas.deployment.stage: "demo"
+    de.metas.deployment.name: "metasfresh-rabbitmq-demouser-demo"
+  namespace: "default"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        de.metas.deployment.type: metasfresh-rabbitmq
+        de.metas.deployment.user: "demouser"
+        de.metas.deployment.stage: "demo"
+    spec:
+      containers:
+      - env:
+        - name: RABBITMQ_VM_MEMORY_HIGH_WATERMARK
+          value: "0.90"
+        name: db
+        image: docker.metasfresh.com/rabbitmq:3.7.4-management
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 5672
+          - containerPort: 15672
+        resources:
+          limits:
+            memory: 128Mi
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: host-localtime
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone
+          readOnly: true
+      volumes:
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone

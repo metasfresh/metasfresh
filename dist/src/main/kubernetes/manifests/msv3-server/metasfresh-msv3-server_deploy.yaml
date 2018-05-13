@@ -1,0 +1,61 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "metasfresh-msv3-server-%USER-ID%-%STAGE%"
+  labels:
+    de.metas.deployment.type: metasfresh-msv3-server
+    de.metas.deployment.stage: "%STAGE%"
+    de.metas.deployment.user: "%USER-ID%"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        de.metas.deployment.type: metasfresh-msv3-server
+        de.metas.deployment.user: "%USER-ID%"
+        de.metas.deployment.stage: "%STAGE%"
+    spec:
+      containers:
+      - env:
+        - name: DB_HOST
+          value: "localhost"
+        - name: DB_PORT
+          value: '5432'
+        - name: DEBUG_PRINT_BASH_CMDS
+          value: 'y'
+        - name: DB_WAIT_FOR_DBMS
+          value: 'y'
+        - name: JAVA_MAX_HEAP
+          value: '100M'
+        - name: METASFRESH_ADMIN_URL
+          value: 'http://metasfresh-admin:9090'
+        - name: SERVER_PORT
+          value: '8080'
+        - name: DEBUG_PORT
+          value: '8791'
+        name: msv3-server
+        image: docker.metasfresh.com/metasfresh/metasfresh-msv3-server:master_LATEST
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        resources: 
+          requests:
+            memory: 128M
+#            cpu: 500m
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: host-localtime
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone
+          readOnly: true
+      restartPolicy: Always
+      volumes:
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone

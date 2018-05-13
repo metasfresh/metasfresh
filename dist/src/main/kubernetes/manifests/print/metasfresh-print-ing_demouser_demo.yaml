@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "metasfresh-print-demouser-demo"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.org/ssl-services: "hello-world-svc"
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  tls:
+    - hosts:
+      - "demouser-demo.metasfresh.com"
+      secretName: tls-certificate
+  rules:
+  - host: "demouser-demo.metasfresh.com"
+    http:
+      paths:
+      - path: /api/printing
+        backend:
+          serviceName: "metasfresh-print-demouser-demo"
+          servicePort: 8080
