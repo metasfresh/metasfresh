@@ -11,18 +11,17 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.text.MapFormat;
 import org.apache.ecs.StringElement;
 import org.apache.ecs.xhtml.a;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.WebuiURLs;
 import lombok.NonNull;
 
 /*
@@ -59,10 +58,13 @@ final class NotificationMessageFormatter
 		return url + URL_TITLE_SEPARATOR + title;
 	}
 
-	private static final String URL_TITLE_SEPARATOR = "><";
-
+	// Services
 	private static final Logger logger = LogManager.getLogger(NotificationMessageFormatter.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final WebuiURLs webuiURLs = WebuiURLs.newInstance();
+
+	// Constants
+	private static final String URL_TITLE_SEPARATOR = "><";
 
 	//
 	// Params
@@ -70,7 +72,6 @@ final class NotificationMessageFormatter
 	private String adLanguage;
 	private final Map<ITableRecordReference, String> recordDisplayTexts = new HashMap<>();
 	private final Map<ITableRecordReference, Integer> recordWindowId = new HashMap<>();
-	private String webuiDocumentUrl;
 
 	//
 	// State
@@ -116,12 +117,6 @@ final class NotificationMessageFormatter
 	{
 		Check.assumeGreaterThanZero(adWindowId, "adWindowId");
 		recordWindowId.put(record, adWindowId);
-		return this;
-	}
-
-	public NotificationMessageFormatter webuiDocumentUrl(final String webuiDocumentUrl)
-	{
-		this.webuiDocumentUrl = webuiDocumentUrl;
 		return this;
 	}
 
@@ -271,22 +266,13 @@ final class NotificationMessageFormatter
 
 	private String getRecordUrl(@NonNull final ITableRecordReference record)
 	{
-		final String webuiDocumentUrl = this.webuiDocumentUrl;
-		if (Check.isEmpty(webuiDocumentUrl, true))
-		{
-			return null;
-		}
-
 		final int targetWindowId = getRecordWindowId(record);
 		if (targetWindowId <= 0)
 		{
 			return null;
 		}
 
-		return MapFormat.format(webuiDocumentUrl, ImmutableMap.<String, Object> builder()
-				.put("windowId", String.valueOf(targetWindowId))
-				.put("recordId", String.valueOf(record.getRecord_ID()))
-				.build());
+		return webuiURLs.getDocumentUrl(String.valueOf(targetWindowId), String.valueOf(record.getRecord_ID()));
 	}
 
 	private int getRecordWindowId(@NonNull final ITableRecordReference record)
