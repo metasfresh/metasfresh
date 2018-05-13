@@ -54,9 +54,15 @@ final class NotificationMessageFormatter
 		return new NotificationMessageFormatter();
 	}
 
+	public static final String createUrlWithTitle(@NonNull final String url, @NonNull final String title)
+	{
+		return url + URL_TITLE_SEPARATOR + title;
+	}
+
+	private static final String URL_TITLE_SEPARATOR = "><";
+
 	private static final Logger logger = LogManager.getLogger(NotificationMessageFormatter.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	//
 	// Params
@@ -176,6 +182,19 @@ final class NotificationMessageFormatter
 			}
 		}
 
+		if (param instanceof String)
+		{
+			final a link = toLinkOrNull(param.toString());
+			if (link == null)
+			{
+				return param;
+			}
+			else
+			{
+				return replaceAfterFormatCollector.addAndGetKey(link.toString());
+			}
+		}
+
 		return param;
 	}
 
@@ -211,6 +230,11 @@ final class NotificationMessageFormatter
 	{
 		try
 		{
+			// NOTE: the only reason why we have the service here and not declared at the top
+			// it's because the IDocumentBL implementation it's not in this project (but in de.metas.bussiness)
+			// so all unit tests for this class will fail even if they won't use the "recordDisplayText" feature.
+			final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
 			final Object targetRecordModel = record.getModel(PlainContextAware.createUsingOutOfTransaction());
 			final String documentNo = documentBL.getDocumentNo(targetRecordModel);
 			return documentNo;
@@ -268,6 +292,39 @@ final class NotificationMessageFormatter
 	private int getRecordWindowId(@NonNull final ITableRecordReference record)
 	{
 		return recordWindowId.computeIfAbsent(record, RecordZoomWindowFinder::findAD_Window_ID);
+	}
+
+	private static a toLinkOrNull(final String text)
+	{
+		if (text == null)
+		{
+			return null;
+		}
+
+		final String textNorm = text.trim();
+		final String textLC = textNorm.toLowerCase();
+		if (textLC.startsWith("http://") || textLC.startsWith("https://"))
+		{
+			final String href;
+			final String title;
+			final int idx = textNorm.lastIndexOf(URL_TITLE_SEPARATOR);
+			if (idx > 0)
+			{
+				href = textNorm.substring(0, idx);
+				title = textNorm.substring(idx + URL_TITLE_SEPARATOR.length());
+			}
+			else
+			{
+				href = textNorm;
+				title = textNorm;
+			}
+
+			return new a(href, title);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private static final class ReplaceAfterFormatCollector
