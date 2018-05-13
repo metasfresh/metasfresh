@@ -13,7 +13,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -35,6 +34,7 @@ import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.spi.IRecordTextProvider;
@@ -78,11 +78,6 @@ public class NotificationSenderTemplate
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 	private final IMailBL mailBL = Services.get(IMailBL.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	private static final String SYSCONFIG_WEBUI_FRONTEND_URL = "webui.frontend.url";
-	private static final String SYSCONFIG_WEBUI_FRONTEND_DOCUMENT_PATH = "webui.frontend.documentPath";
-	private static final String DEFAULT_WEBUI_FRONTEND_DOCUMENT_PATH = "/window/{windowId}/{recordId}";
 
 	private IRecordTextProvider recordTextProvider = NullRecordTextProvider.instance;
 
@@ -385,7 +380,7 @@ public class NotificationSenderTemplate
 		try
 		{
 			final UserNotification notification = notificationsRepo.save(request);
-			
+
 			final Topic topic = Topic.remote(request.getNotificationGroupName().getValueAsString());
 
 			eventBusFactory
@@ -452,8 +447,7 @@ public class NotificationSenderTemplate
 
 	private NotificationMessageFormatter prepareMessageFormatter(final UserNotificationRequest request)
 	{
-		final NotificationMessageFormatter formatter = NotificationMessageFormatter.newInstance()
-				.webuiDocumentUrl(getDocumentUrl());
+		final NotificationMessageFormatter formatter = NotificationMessageFormatter.newInstance();
 
 		final ITableRecordReference targetRecord = request.getTargetRecord();
 		if (targetRecord != null)
@@ -473,18 +467,4 @@ public class NotificationSenderTemplate
 
 		return formatter;
 	}
-
-	private String getDocumentUrl()
-	{
-		final String url = sysConfigBL.getValue(SYSCONFIG_WEBUI_FRONTEND_URL, "");
-		if (Check.isEmpty(url, true) || "-".equals(url))
-		{
-			return null;
-		}
-
-		final String documentPath = sysConfigBL.getValue(SYSCONFIG_WEBUI_FRONTEND_DOCUMENT_PATH, DEFAULT_WEBUI_FRONTEND_DOCUMENT_PATH);
-
-		return url + documentPath;
-	}
-
 }
