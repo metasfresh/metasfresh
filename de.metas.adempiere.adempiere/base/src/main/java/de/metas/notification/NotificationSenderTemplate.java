@@ -205,7 +205,7 @@ public class NotificationSenderTemplate
 				.map(request::deriveByNotificationsConfig);
 	}
 
-	private TargetAction resolveTargetRecordAction(@NonNull final TargetAction targetAction)
+	private TargetAction resolveTargetRecordAction(final TargetAction targetAction)
 	{
 		if (!(targetAction instanceof TargetRecordAction))
 		{
