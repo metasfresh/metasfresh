@@ -80,6 +80,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				}
 				junit 'jest-test-results.xml'
 				
+				sh "cp config.js.dist ./dist/config.js"
 				sh "webpack --config webpack.prod.js --bail --display-error-details"
 
 				def misc = new de.metas.jenkins.Misc();
