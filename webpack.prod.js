@@ -25,7 +25,7 @@ if (!fs.existsSync(path.join(__dirname, 'plugins.js'))) {
 module.exports = {
   mode: 'production',
   devtool: 'cheap-module-source-map',
-  entry: ['./src/index.jsx', './favicon.png'],
+  entry: ['babel-polyfill', './src/index.jsx', './favicon.png'],
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'bundle[hash].js',
