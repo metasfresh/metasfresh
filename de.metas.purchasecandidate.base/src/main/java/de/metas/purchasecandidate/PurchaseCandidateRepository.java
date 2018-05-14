@@ -214,6 +214,7 @@ public class PurchaseCandidateRepository
 		record.setC_UOM_ID(purchaseCandidate.getUomId());
 		record.setQtyToPurchase(purchaseCandidate.getQtyToPurchase());
 		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getDateRequired()));
+		record.setReminderDate(TimeUtil.asTimestamp(purchaseCandidate.getReminderDate()));
 
 		record.setVendor_ID(purchaseCandidate.getVendorBPartnerId());
 		record.setC_BPartner_Product_ID(purchaseCandidate.getBpartnerProductId().orElse(-1));
@@ -307,7 +308,7 @@ public class PurchaseCandidateRepository
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
 	}
-	
+
 	public static PurchaseCandidateReminder toPurchaseCandidateReminderOrNull(final I_C_PurchaseCandidate record)
 	{
 		final int vendorBPartnerId = record.getVendor_ID();

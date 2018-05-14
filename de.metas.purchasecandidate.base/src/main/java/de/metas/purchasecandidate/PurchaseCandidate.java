@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toCollection;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +78,9 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private LocalDateTime dateRequiredInitial;
 
+	@Getter(AccessLevel.NONE)
+	private final Duration reminderTime;
+
 	@Getter(AccessLevel.PRIVATE)
 	private final PurchaseCandidateImmutableFields identifier;
 
@@ -102,6 +106,7 @@ public class PurchaseCandidate
 			@NonNull final VendorProductInfo vendorProductInfo,
 			@NonNull final BigDecimal qtyToPurchase,
 			@NonNull final LocalDateTime dateRequired,
+			final Duration reminderTime,
 			final boolean processed,
 			final boolean locked,
 			@Singular final List<PurchaseItem> purchaseItems)
@@ -133,6 +138,7 @@ public class PurchaseCandidate
 		this.qtyToPurchase = qtyToPurchase;
 		qtyToPurchaseInitial = qtyToPurchase;
 		this.dateRequired = dateRequired;
+		this.reminderTime = reminderTime;
 		dateRequiredInitial = dateRequired;
 
 		purchaseOrderItems = purchaseItems
@@ -155,6 +161,7 @@ public class PurchaseCandidate
 		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
 		dateRequired = from.dateRequired;
 		dateRequiredInitial = from.dateRequiredInitial;
+		reminderTime = from.reminderTime;
 
 		identifier = from.identifier;
 		state = from.state.copy();
@@ -207,7 +214,7 @@ public class PurchaseCandidate
 	{
 		return getVendorProductInfo().getBpartnerProductId();
 	}
-	
+
 	public boolean isAggregatePOs()
 	{
 		return getVendorProductInfo().isAggregatePOs();
@@ -425,5 +432,15 @@ public class PurchaseCandidate
 	public List<PurchaseErrorItem> getPurchaseErrorItems()
 	{
 		return ImmutableList.copyOf(purchaseErrorItems);
+	}
+
+	public LocalDateTime getReminderDate()
+	{
+		if (reminderTime == null || dateRequired == null)
+		{
+			return null;
+		}
+
+		return dateRequired.minus(reminderTime);
 	}
 }

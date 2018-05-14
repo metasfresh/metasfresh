@@ -3,6 +3,7 @@ package de.metas.purchasecandidate;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
@@ -188,10 +189,25 @@ public class SalesOrderLines
 	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, final VendorProductInfo vendorProductInfo)
 	{
 		final LocalDateTime salesDatePromised = TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised());
-		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesDatePromised, vendorProductInfo);
+
+		LocalDateTime purchaseDatePromised = salesDatePromised;
+		Duration reminderTime = null;
+
+		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(vendorProductInfo.getVendorBPartnerId(), salesDatePromised.toLocalDate()).orElse(null);
+		if (bpPurchaseSchedule != null)
+		{
+			LocalDateTime calculatedPurchaseDatePromised = bpPurchaseScheduleService.calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule).orElse(null);
+			if (calculatedPurchaseDatePromised != null)
+			{
+				purchaseDatePromised = calculatedPurchaseDatePromised;
+			}
+
+			reminderTime = bpPurchaseSchedule.getReminderTime();
+		}
 
 		return PurchaseCandidate.builder()
 				.dateRequired(purchaseDatePromised)
+				.reminderTime(reminderTime)
 				.orgId(salesOrderLine.getAD_Org_ID())
 				.productId(vendorProductInfo.getProductId())
 				.qtyToPurchase(BigDecimal.ZERO)
@@ -201,13 +217,6 @@ public class SalesOrderLines
 				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(getWarehousePOId(salesOrderLine))
 				.build();
-	}
-
-	private LocalDateTime calculatePurchaseDatePromised(final LocalDateTime salesDatePromised, final VendorProductInfo vendorProductInfo)
-	{
-		return bpPurchaseScheduleService.getBPPurchaseSchedule(vendorProductInfo.getVendorBPartnerId(), salesDatePromised.toLocalDate())
-				.flatMap(bpPurchaseSchedule -> bpPurchaseScheduleService.calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule))
-				.orElse(salesDatePromised);
 	}
 
 	private int getWarehousePOId(final I_C_OrderLine salesOrderLine)
