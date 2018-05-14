@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1438510408L;
+	private static final long serialVersionUID = -1878311187L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -659,6 +660,50 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getCountryCode () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CountryCode);
+	}
+
+	/** Set Credit limit.
+		@param CreditLimit 
+		Amount of Credit allowed
+	  */
+	@Override
+	public void setCreditLimit (java.math.BigDecimal CreditLimit)
+	{
+		set_Value (COLUMNNAME_CreditLimit, CreditLimit);
+	}
+
+	/** Get Credit limit.
+		@return Amount of Credit allowed
+	  */
+	@Override
+	public java.math.BigDecimal getCreditLimit () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CreditLimit);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Credit limit 2.
+		@param CreditLimit2 
+		Amount of Credit allowed
+	  */
+	@Override
+	public void setCreditLimit2 (java.math.BigDecimal CreditLimit2)
+	{
+		set_Value (COLUMNNAME_CreditLimit2, CreditLimit2);
+	}
+
+	/** Get Credit limit 2.
+		@return Amount of Credit allowed
+	  */
+	@Override
+	public java.math.BigDecimal getCreditLimit2 () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CreditLimit2);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Debitoren-Nr.

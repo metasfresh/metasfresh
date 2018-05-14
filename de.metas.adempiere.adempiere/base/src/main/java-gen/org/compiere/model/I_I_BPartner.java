@@ -710,6 +710,56 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Credit limit.
+	 * Amount of Credit allowed
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCreditLimit (java.math.BigDecimal CreditLimit);
+
+	/**
+	 * Get Credit limit.
+	 * Amount of Credit allowed
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getCreditLimit();
+
+    /** Column definition for CreditLimit */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_CreditLimit = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "CreditLimit", null);
+    /** Column name CreditLimit */
+    public static final String COLUMNNAME_CreditLimit = "CreditLimit";
+
+	/**
+	 * Set Credit limit 2.
+	 * Amount of Credit allowed
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCreditLimit2 (java.math.BigDecimal CreditLimit2);
+
+	/**
+	 * Get Credit limit 2.
+	 * Amount of Credit allowed
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getCreditLimit2();
+
+    /** Column definition for CreditLimit2 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_CreditLimit2 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "CreditLimit2", null);
+    /** Column name CreditLimit2 */
+    public static final String COLUMNNAME_CreditLimit2 = "CreditLimit2";
+
+	/**
 	 * Set Debitoren-Nr.
 	 *
 	 * <br>Type: Integer
