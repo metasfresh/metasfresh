@@ -43,4 +43,8 @@ public class DerKurierDeliveryData implements CustomDeliveryData
 	String customerNumber;
 
 	String parcelNumber;
+	
+	String customerCode;
+	
+	String collectorCode;
 }

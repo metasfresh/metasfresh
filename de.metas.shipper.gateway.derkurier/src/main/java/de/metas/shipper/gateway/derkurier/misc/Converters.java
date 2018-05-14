@@ -141,13 +141,13 @@ public class Converters
 
 			final String csvLine = Joiner
 					.on(";")
-					.skipNulls()
+					.useForNull("")
 					.join(
 							dateToString(deliveryOrder.getPickupDate().getDate()),
 							derKurierDeliveryData.getCustomerNumber(),
 							deliveryAddress.getCompanyName1(),
 							deliveryAddress.getCompanyName2(),
-							"", // FirmaD3
+							null, // FirmaD3
 							deliveryAddress.getCountry().getAlpha2(),
 							deliveryAddress.getZipCode(),
 							deliveryAddress.getCity(),
@@ -165,12 +165,12 @@ public class Converters
 							derKurierDeliveryData.getParcelNumber(),
 							deliveryOrder.getCustomerReference(),
 							orderId.getOrderIdAsString(),
-							"", // cReferenz
+							null, // cReferenz
 							stringToString(deliveryContact.map(ContactPerson::getPhoneAsStringOrNull)),
-							"", // EA
-							"", // EB
-							"", // EC
-							"", // NN
+							null, // EA
+							null, // EB
+							null, // EC
+							null, // NN
 							intToString(deliveryPosition.getNumberOfPackages()),
 							stringToString(deliveryContact.map(ContactPerson::getEmailAddress)));
 			csv.add(csvLine);
