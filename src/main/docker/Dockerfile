@@ -16,8 +16,8 @@ RUN apt update \
 
 RUN mkdir -p /opt/metasfresh/metasfresh-webui-api
 
-# COPY configs/logback.xml /opt/metasfresh/metasfresh-webui-api/
-COPY configs/metasfresh-webui-api.conf /opt/metasfresh/metasfresh-webui-api/
+COPY configs/logback-spring.xml /opt/metasfresh/metasfresh-webui-api/
+#COPY configs/metasfresh-webui-api.conf /opt/metasfresh/metasfresh-webui-api/
 COPY configs/metasfresh.properties /opt/metasfresh/metasfresh-webui-api/
 
 COPY ./start_metasfresh-webui-api_docker.sh /opt/metasfresh/metasfresh-webui-api/
