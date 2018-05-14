@@ -1,5 +1,7 @@
 package org.adempiere.bpartner.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -71,6 +73,14 @@ public class BPartnerDAO implements IBPartnerDAO
 	private static final Logger logger = LogManager.getLogger(BPartnerDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public I_C_BPartner getById(final int bpartnerId)
+	{
+		Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
+		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		return bpartner;
+	}
 
 	@Override
 	public <T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(final I_C_BPartner bPartner, final Class<T> clazz)

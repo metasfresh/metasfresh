@@ -3,10 +3,13 @@ package de.metas.purchasecandidate;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -18,6 +21,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -27,7 +31,6 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
-import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.purchasecandidate.availability.AvailabilityCheck;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasing.api.IBPartnerProductDAO;
@@ -60,20 +63,26 @@ import lombok.ToString;
 @ToString(exclude = { "purchaseCandidateRepository", "salesOrderLineWithCandidates" })
 public class SalesOrderLines
 {
+	// services
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
+	private final BPPurchaseScheduleService bpPurchaseScheduleService;
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
-	private final ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> salesOrderLineWithCandidates //
-			= ExtendedMemorizingSupplier.of(() -> loadOrCreatePurchaseCandidates0());
+	private final ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> //
+	salesOrderLineWithCandidates = ExtendedMemorizingSupplier.of(() -> loadOrCreatePurchaseCandidates0());
 
 	private final ImmutableList<Integer> salesOrderLineIds;
 
 	@Builder
 	private SalesOrderLines(
 			@NonNull final Collection<Integer> salesOrderLineIds,
-			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
+			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService)
 	{
 		this.salesOrderLineIds = ImmutableList.copyOf(salesOrderLineIds);
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
+		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
 	}
 
 	private ImmutableList<SalesOrderLineWithCandidates> loadOrCreatePurchaseCandidates0()
@@ -97,7 +106,9 @@ public class SalesOrderLines
 
 		final Set<Integer> alreadySeenVendorProductInfoIds = salesOrderLineId2PreExistingPurchaseCandidates.values().stream()
 				.filter(Predicates.not(PurchaseCandidate::isProcessed))
-				.map(purchaseCandidate -> purchaseCandidate.getVendorProductInfo().getBPartnerProductId())
+				.map(PurchaseCandidate::getBpartnerProductId)
+				.filter(OptionalInt::isPresent)
+				.map(OptionalInt::getAsInt)
 				.collect(ImmutableSet.toImmutableSet());
 
 		// create and add new purchase candidates
@@ -159,14 +170,14 @@ public class SalesOrderLines
 
 	private ImmutableList<PurchaseCandidate> createMissingPurchaseCandidates(
 			@NonNull final I_C_OrderLine salesOrderLine,
-			@NonNull final Set<Integer> vendorIdsToExclude)
+			@NonNull final Set<Integer> vendorProductInfoIdsToExclude)
 	{
-		final Map<Integer, I_C_BPartner_Product> vendorId2VendorProductInfo = retriveVendorId2VendorProductInfo(salesOrderLine);
+		final Map<Integer, VendorProductInfo> vendorId2VendorProductInfo = retriveVendorProductInfosIndexedByVendorId(salesOrderLine);
 
 		final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = vendorId2VendorProductInfo.values().stream()
 
 				// only if vendor was not already considered (i.e. there was no purchase candidate for it)
-				.filter(vendorProductInfo -> !vendorIdsToExclude.contains(vendorProductInfo.getC_BPartner_Product_ID()))
+				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getBpartnerProductId().getAsInt()))
 
 				// create and collect them
 				.map(vendorProductInfo -> createPurchaseCandidate(salesOrderLine, vendorProductInfo))
@@ -175,48 +186,74 @@ public class SalesOrderLines
 		return newPurchaseCandidateForOrderLine;
 	}
 
-	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, I_C_BPartner_Product vendorProductInfo)
+	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, final VendorProductInfo vendorProductInfo)
 	{
+		final LocalDateTime salesDatePromised = TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised());
+
+		LocalDateTime purchaseDatePromised = salesDatePromised;
+		Duration reminderTime = null;
+
+		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(vendorProductInfo.getVendorBPartnerId(), salesDatePromised.toLocalDate()).orElse(null);
+		if (bpPurchaseSchedule != null)
+		{
+			LocalDateTime calculatedPurchaseDatePromised = bpPurchaseScheduleService.calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule).orElse(null);
+			if (calculatedPurchaseDatePromised != null)
+			{
+				purchaseDatePromised = calculatedPurchaseDatePromised;
+			}
+
+			reminderTime = bpPurchaseSchedule.getReminderTime();
+		}
+
 		return PurchaseCandidate.builder()
-				.dateRequired(salesOrderLine.getDatePromised())
+				.dateRequired(purchaseDatePromised)
+				.reminderTime(reminderTime)
 				.orgId(salesOrderLine.getAD_Org_ID())
-				.productId(vendorProductInfo.getM_Product_ID())
+				.productId(vendorProductInfo.getProductId())
 				.qtyToPurchase(BigDecimal.ZERO)
 				.salesOrderId(salesOrderLine.getC_Order_ID())
 				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
 				.uomId(salesOrderLine.getC_UOM_ID())
-				.vendorProductInfo(VendorProductInfo.fromDataRecord(vendorProductInfo))
-				.vendorBPartnerId(vendorProductInfo.getC_BPartner_ID())
+				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(getWarehousePOId(salesOrderLine))
 				.build();
 	}
-	
+
 	private int getWarehousePOId(final I_C_OrderLine salesOrderLine)
 	{
-		final int orgWarehousePOId = Services.get(IWarehouseDAO.class).retrieveOrgWarehousePOId(salesOrderLine.getAD_Org_ID());
-		if(orgWarehousePOId > 0)
+		final int orgWarehousePOId = warehouseDAO.retrieveOrgWarehousePOId(salesOrderLine.getAD_Org_ID());
+		if (orgWarehousePOId > 0)
 		{
 			return orgWarehousePOId;
 		}
-		
+
 		return salesOrderLine.getM_Warehouse_ID();
 	}
 
-	private Map<Integer, I_C_BPartner_Product> retriveVendorId2VendorProductInfo(@NonNull final I_C_OrderLine salesOrderLine)
+	private Map<Integer, VendorProductInfo> retriveVendorProductInfosIndexedByVendorId(@NonNull final I_C_OrderLine salesOrderLine)
 	{
 		final int productId = salesOrderLine.getM_Product_ID();
 		final int adOrgId = salesOrderLine.getAD_Org_ID();
 
-		final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 		return partnerProductDAO
 				.retrieveAllVendors(productId, adOrgId)
 				.stream()
-				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(I_C_BPartner_Product::getC_BPartner_ID));
+				.map(VendorProductInfo::fromDataRecord)
+				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(VendorProductInfo::getVendorBPartnerId));
 	}
 
 	public List<SalesOrderLineWithCandidates> getSalesOrderLinesWithCandidates()
 	{
 		return salesOrderLineWithCandidates.get();
+	}
+
+	public List<PurchaseCandidate> getAllPurchaseCandidates()
+	{
+		return getSalesOrderLinesWithCandidates()
+				.stream()
+				.map(SalesOrderLineWithCandidates::getPurchaseCandidates)
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()

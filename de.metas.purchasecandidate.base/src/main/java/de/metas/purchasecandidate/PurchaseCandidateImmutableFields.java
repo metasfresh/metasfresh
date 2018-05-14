@@ -26,8 +26,8 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class PurchaseCandidateImmutableFields
+@Builder
+class PurchaseCandidateImmutableFields
 {
 	int salesOrderId;
 	int salesOrderLineId;
@@ -36,6 +36,5 @@ public class PurchaseCandidateImmutableFields
 	int warehouseId;
 	int productId;
 	int uomId;
-	int vendorBPartnerId;
 	VendorProductInfo vendorProductInfo;
 }

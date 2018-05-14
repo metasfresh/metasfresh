@@ -13,7 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.interfaces.I_C_BPartner_Product;
+import org.compiere.model.I_C_BPartner_Product;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /*

@@ -37,6 +37,8 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 
 public interface IBPartnerDAO extends ISingletonService
 {
+	I_C_BPartner getById(final int bpartnerId);
+	
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
 	 *

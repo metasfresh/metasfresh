@@ -22,6 +22,7 @@ import de.metas.event.Type;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -124,7 +125,7 @@ public class OrderUserNotifications
 						.recipientUserId(recipientUserId)
 						.contentADMessage(adMessageAndParams.getAdMessage())
 						.contentADMessageParams(adMessageAndParams.getParams())
-						.targetRecord(TableRecordReference.of(order))
+						.targetAction(TargetRecordAction.of(TableRecordReference.of(order)))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -154,7 +155,7 @@ public class OrderUserNotifications
 
 	private void postNotifications(final List<UserNotificationRequest> notifications)
 	{
-		Services.get(INotificationBL.class).notifyUserAfterCommit(notifications);
+		Services.get(INotificationBL.class).sendAfterCommit(notifications);
 	}
 
 	@Value

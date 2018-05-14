@@ -112,7 +112,4 @@ public interface IUserBL extends ISingletonService
 			throw new AdempiereException("User cannot send emails: " + errmsg.translate(Env.getAD_Language(Env.getCtx())));
 		}
 	}
-
-	UserNotificationsConfig getUserNotificationsConfig(int adUserId);
-
 }

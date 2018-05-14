@@ -51,6 +51,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -855,7 +856,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		for (final T record : records)
 		{
-			final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orNull();
+			final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName)
+					.or(() -> DB.retrieveDefaultValue(valueType));
 
 			@SuppressWarnings("unchecked")
 			final AT value = (AT)valueObj;
