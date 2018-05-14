@@ -55,18 +55,13 @@ public class AD_User
 
 		if (isNewsletter)
 		{
-
 			if (defaultNewsletterCampaignId <= 0)
 			{
 				final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org, user.getAD_Org().getName());
 
 				throw new AdempiereException(translatableMsgText.translate(Env.getAD_Language()));
-
 			}
-
 			converters.addToNewsletter(user, defaultNewsletterCampaignId);
-			//converters.createConsentForContactPersonAndCampaign(user, defaultNewsletterCampaignId);
-
 		}
 		else
 		{
@@ -76,8 +71,6 @@ public class AD_User
 				return;
 			}
 			converters.removeFromNewsletter(user, defaultNewsletterCampaignId);
-			//converters.revokeConsentForContactPersonAndCampaign(user, defaultNewsletterCampaignId);
-
 		}
 	}
 }
