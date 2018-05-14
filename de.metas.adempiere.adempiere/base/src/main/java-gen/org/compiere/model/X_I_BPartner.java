@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1878311187L;
+	private static final long serialVersionUID = 954628156L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -1277,6 +1277,63 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getMemo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Memo);
+	}
+
+	/** Set Memo1.
+		@param Memo1 
+		Memo Text
+	  */
+	@Override
+	public void setMemo1 (java.lang.String Memo1)
+	{
+		set_Value (COLUMNNAME_Memo1, Memo1);
+	}
+
+	/** Get Memo1.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo1 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo1);
+	}
+
+	/** Set Memo2.
+		@param Memo2 
+		Memo Text
+	  */
+	@Override
+	public void setMemo2 (java.lang.String Memo2)
+	{
+		set_Value (COLUMNNAME_Memo2, Memo2);
+	}
+
+	/** Get Memo2.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo2 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo2);
+	}
+
+	/** Set Memo3.
+		@param Memo3 
+		Memo Text
+	  */
+	@Override
+	public void setMemo3 (java.lang.String Memo3)
+	{
+		set_Value (COLUMNNAME_Memo3, Memo3);
+	}
+
+	/** Get Memo3.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo3 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo3);
 	}
 
 	/** Set NAICS/SIC.

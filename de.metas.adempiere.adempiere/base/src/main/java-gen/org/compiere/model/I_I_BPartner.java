@@ -1438,6 +1438,81 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Memo = "Memo";
 
 	/**
+	 * Set Memo1.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo1 (java.lang.String Memo1);
+
+	/**
+	 * Get Memo1.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo1();
+
+    /** Column definition for Memo1 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Memo1 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Memo1", null);
+    /** Column name Memo1 */
+    public static final String COLUMNNAME_Memo1 = "Memo1";
+
+	/**
+	 * Set Memo2.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo2 (java.lang.String Memo2);
+
+	/**
+	 * Get Memo2.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo2();
+
+    /** Column definition for Memo2 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Memo2 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Memo2", null);
+    /** Column name Memo2 */
+    public static final String COLUMNNAME_Memo2 = "Memo2";
+
+	/**
+	 * Set Memo3.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo3 (java.lang.String Memo3);
+
+	/**
+	 * Get Memo3.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo3();
+
+    /** Column definition for Memo3 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Memo3 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Memo3", null);
+    /** Column name Memo3 */
+    public static final String COLUMNNAME_Memo3 = "Memo3";
+
+	/**
 	 * Set NAICS/SIC.
 	 * Standard Industry Code or its successor NAIC - http://www.osha.gov/oshstats/sicser.html
 	 *
