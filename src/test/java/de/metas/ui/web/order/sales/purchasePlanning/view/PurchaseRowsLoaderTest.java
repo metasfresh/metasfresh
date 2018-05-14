@@ -10,6 +10,7 @@ import java.util.List;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -22,7 +23,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
-import org.compiere.model.I_C_BPartner_Product;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
@@ -96,7 +96,7 @@ public class PurchaseRowsLoaderTest
 		save(orderLine);
 
 		final I_C_BPartner_Product bPartnerProduct = newInstance(I_C_BPartner_Product.class);
-		bPartnerProduct.setC_BPartner_Vendor(bPartnerVendor);
+		bPartnerProduct.setC_BPartner(bPartnerVendor);
 		bPartnerProduct.setM_Product(product);
 		bPartnerProduct.setVendorProductNo("bPartnerProduct.VendorProductNo");
 		bPartnerProduct.setProductName("bPartnerProduct.ProductName");
