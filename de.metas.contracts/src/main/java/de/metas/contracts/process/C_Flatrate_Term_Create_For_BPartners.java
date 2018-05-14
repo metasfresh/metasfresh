@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.process;
+package de.metas.contracts.process;
 
 /*
  * #%L
@@ -45,6 +45,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 
 public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 {
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private int p_flatrateconditionsID;
 
@@ -63,7 +64,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 
 		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.create(getCtx(), p_flatrateconditionsID, I_C_Flatrate_Conditions.class, getTrxName());
 
-		final List<I_C_Flatrate_Matching> matchings = Services.get(IFlatrateDAO.class).retrieveFlatrateMatchings(conditions);
+		final List<I_C_Flatrate_Matching> matchings = flatrateDAO.retrieveFlatrateMatchings(conditions);
 		if (matchings.size() == 1 && matchings.get(0).getM_Product_ID() > 0)
 		{
 			// this is the case for quality-based contracts
@@ -91,7 +92,6 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 
 		final Iterator<I_C_BPartner> it = queryBuilder
 				.filter(selectedPartners)
-				// .filter(customerOrVendorFilter)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.setOrderBy(orderBy)

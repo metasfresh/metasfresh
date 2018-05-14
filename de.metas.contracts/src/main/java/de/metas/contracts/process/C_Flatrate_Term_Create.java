@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.process;
+package de.metas.contracts.process;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
@@ -123,7 +123,15 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 	{
 		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 
-		final I_C_Flatrate_Term newTerm = flatrateBL.createTerm(context, partner, conditions, startDate, userInCharge, product, false);
+		final I_C_Flatrate_Term newTerm = flatrateBL.createTerm(
+				context,
+				partner,
+				conditions,
+				startDate,
+				userInCharge,
+				product,
+				false /* completeIt=false */
+		);
 
 		if (newTerm == null)
 		{
@@ -148,7 +156,7 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 
 		return newTerm;
 	}
-	
+
 	/**
 	 * Implement this method in the subclass to provide all the partners that are about to have terms created.
 	 *

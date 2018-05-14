@@ -13,11 +13,11 @@ package de.metas.contracts.interceptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,7 +48,7 @@ import de.metas.i18n.IMsgBL;
 public class C_Flatrate_Conditions
 {
 	public static C_Flatrate_Conditions INSTANCE = new C_Flatrate_Conditions();
-	
+
 	public static final String MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P = "Conditions_Error_Invalid_Transition";
 	public static final String MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P = "Conditions_Error_AlreadyInUse";
 	public static final String MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P = "Conditions_Error_MatchingMissing";
@@ -58,29 +58,33 @@ public class C_Flatrate_Conditions
 	private C_Flatrate_Conditions()
 	{
 	}
-	
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void onTransitionChange(final I_C_Flatrate_Conditions cond)
 	{
 		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription.equals(cond.getType_Conditions()))
 		{
 			final I_C_Flatrate_Transition trans = cond.getC_Flatrate_Transition();
-			if (trans != null)
+			if (trans == null)
 			{
-				if (Check.isEmpty(trans.getDeliveryIntervalUnit())
-						|| trans.getDeliveryInterval() <= 0)
-				{
-					final Properties ctx = InterfaceWrapperHelper.getCtx(cond);
-					final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-					throw new AdempiereException(Env.getAD_Language(ctx), MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P,
-							new Object[] {
-									msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_C_Flatrate_Transition_ID),
-									msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryIntervalUnit) + ", " +
-											msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryInterval)
-							});
-				}
+				return;
 			}
+
+			final boolean reansRecordHasValidDeliverySetting = !Check.isEmpty(trans.getDeliveryIntervalUnit()) && trans.getDeliveryInterval() > 0;
+			if (reansRecordHasValidDeliverySetting)
+			{
+				return;
+			}
+
+			final Properties ctx = InterfaceWrapperHelper.getCtx(cond);
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+			throw new AdempiereException(Env.getAD_Language(ctx), MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P,
+					new Object[] {
+							msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_C_Flatrate_Transition_ID),
+							msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryIntervalUnit) + ", " +
+									msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryInterval)
+					});
 		}
 	}
 
@@ -94,11 +98,10 @@ public class C_Flatrate_Conditions
 	public void beforeComplete(final I_C_Flatrate_Conditions cond)
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-		final boolean matchingsAreRequired =
-				X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee.equals(cond.getType_Conditions())
-						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(cond.getType_Conditions())
-						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(cond.getType_Conditions())
-						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_QualityBasedInvoicing.equals(cond.getType_Conditions());
+		final boolean matchingsAreRequired = X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee.equals(cond.getType_Conditions())
+				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(cond.getType_Conditions())
+				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(cond.getType_Conditions())
+				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_QualityBasedInvoicing.equals(cond.getType_Conditions());
 		if (matchingsAreRequired)
 		{
 			// 03660 for subscriptions, we don't strictly require mappings anymore,
@@ -110,6 +113,7 @@ public class C_Flatrate_Conditions
 			}
 
 		}
+
 		final boolean hasHoCompletedTransition = cond.getC_Flatrate_Transition_ID() <= 0 || !X_C_Flatrate_Transition.DOCSTATUS_Completed.equals(cond.getC_Flatrate_Transition().getDocStatus());
 		if (hasHoCompletedTransition)
 		{
