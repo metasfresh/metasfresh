@@ -1,17 +1,18 @@
 import cx from 'classnames';
 import counterpart from 'counterpart';
-import React, { Component, Fragment } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import currentDevice from 'current-device';
+
 import FiltersDateStepper from './FiltersDateStepper';
 import FiltersItem from './FiltersItem';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 
 const classes = 'btn btn-filter btn-meta-outline-secondary btn-sm';
 
-class FiltersFrequent extends Component {
+class FiltersFrequent extends PureComponent {
   state = { openFilterId: null };
   deviceType = null;
 
@@ -25,6 +26,12 @@ class FiltersFrequent extends Component {
     this.setState({
       openFilterId: index,
     });
+  };
+
+  findActiveFilter = id => {
+    const { active } = this.props;
+
+    return active ? active.find(item => item.filterId === id) : null;
   };
 
   handleClickOutside = () => {
@@ -51,7 +58,6 @@ class FiltersFrequent extends Component {
       active,
       modalVisible,
     } = this.props;
-
     const { openFilterId } = this.state;
 
     return (
@@ -72,14 +78,14 @@ class FiltersFrequent extends Component {
             <div className="filter-wrapper" key={index}>
               {dateStepper && (
                 <FiltersDateStepper
-                  active={active[index]}
+                  active={this.findActiveFilter(item.filterId)}
                   applyFilters={applyFilters}
                   filter={item}
                 />
               )}
 
               <button
-                onClick={() => this.toggleFilter(index, item)}
+                onClick={() => this.toggleFilter(item.filterId)}
                 className={cx(classes, {
                   ['btn-select']: openFilterId === index,
                   ['btn-active']: item.isActive,
@@ -107,14 +113,14 @@ class FiltersFrequent extends Component {
 
               {dateStepper && (
                 <FiltersDateStepper
-                  active={active[index]}
+                  active={this.findActiveFilter(item.filterId)}
                   applyFilters={applyFilters}
                   filter={item}
                   next
                 />
               )}
 
-              {openFilterId === index && (
+              {openFilterId === item.filterId && (
                 <FiltersItem
                   captionValue={item.captionValue}
                   key={index}
@@ -143,6 +149,7 @@ class FiltersFrequent extends Component {
 FiltersFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   modalVisible: PropTypes.bool.isRequired,
+  active: PropTypes.array,
 };
 
 const mapStateToProps = state => {
