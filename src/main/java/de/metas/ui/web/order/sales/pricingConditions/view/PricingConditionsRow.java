@@ -12,6 +12,7 @@ import org.compiere.util.Evaluatees;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PricingConditionsRowChangeRequestBuilder;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
@@ -121,8 +122,12 @@ public class PricingConditionsRow implements IViewRow
 	@Getter
 	private final int copiedFromDiscountSchemaBreakId;
 
+	@Getter
+	private final PricingConditionsBreakMatchCriteria breakMatchCriteria;
+	
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName;
+
 
 	@Builder(toBuilder = true)
 	private PricingConditionsRow(
@@ -138,7 +143,8 @@ public class PricingConditionsRow implements IViewRow
 			final boolean editable,
 			final int discountSchemaId,
 			final int discountSchemaBreakId,
-			final int copiedFromDiscountSchemaBreakId)
+			final int copiedFromDiscountSchemaBreakId,
+			@NonNull final PricingConditionsBreakMatchCriteria breakMatchCriteria)
 	{
 		id = buildDocumentId(bpartner, customer);
 
@@ -159,6 +165,7 @@ public class PricingConditionsRow implements IViewRow
 		this.discountSchemaId = discountSchemaId;
 		this.discountSchemaBreakId = discountSchemaBreakId;
 		this.copiedFromDiscountSchemaBreakId = copiedFromDiscountSchemaBreakId;
+		this.breakMatchCriteria = breakMatchCriteria;
 	}
 
 	private static final DocumentId buildDocumentId(final LookupValue bpartner, final boolean customer)

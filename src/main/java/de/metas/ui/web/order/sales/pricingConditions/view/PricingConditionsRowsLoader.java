@@ -26,8 +26,9 @@ import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.logging.LogManager;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
-import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
+import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.product.IProductDAO;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
@@ -212,6 +213,7 @@ class PricingConditionsRowsLoader
 				.editable(false)
 				.discountSchemaId(pricingConditionsBreak.getDiscountSchemaId())
 				.discountSchemaBreakId(pricingConditionsBreak.getDiscountSchemaBreakId())
+				.breakMatchCriteria(pricingConditionsBreak.getMatchCriteria())
 				.build();
 	}
 
@@ -269,6 +271,11 @@ class PricingConditionsRowsLoader
 				.paymentTermLookup(paymentTermLookup)
 				.discount(BigDecimal.ZERO)
 				.editable(true)
+				.breakMatchCriteria(PricingConditionsBreakMatchCriteria.builder()
+						.breakValue(BigDecimal.ZERO)
+						.productId(productId)
+						.productCategoryId(productCategoryId)
+						.build())
 				.build();
 	}
 

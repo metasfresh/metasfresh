@@ -61,6 +61,7 @@ public class PricingConditionsRowsSaver
 		final PricingConditionsBreakChangeRequestBuilder requestBuilder = PricingConditionsBreakChangeRequest.builder()
 				.discountSchemaId(discountSchemaId)
 				.discountSchemaBreakId(row.getDiscountSchemaBreakId())
+				.matchCriteria(row.getBreakMatchCriteria())
 				//
 				.updateFromDiscountSchemaBreakId(row.getCopiedFromDiscountSchemaBreakId())
 				//
