@@ -103,7 +103,7 @@ public class ManualTest
 	}
 
 	@Test
-	// @Ignore
+	@Ignore
 	public void retrieveAllContactPersonsOfCampagin()
 	{
 		final Campaign campaign = Campaign.builder()
