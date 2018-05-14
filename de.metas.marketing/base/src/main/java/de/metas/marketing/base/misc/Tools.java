@@ -9,6 +9,7 @@ import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Service;
 
 import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
@@ -84,7 +85,7 @@ public class Tools
 
 	public void addAsContactPersonToCampaign(@NonNull final I_AD_User user, final int campaignId)
 	{
-		
+
 		Check.assumeGreaterOrEqualToZero(campaignId, "campaignId");
 
 		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
@@ -94,11 +95,11 @@ public class Tools
 			Loggables.get().addLog("Skip AD_User because it has no email address; AD_User={}", user);
 			return;
 		}
+		final Campaign campaign = campaignRepository.getById(CampaignId.ofRepoId(campaignId));
 
-		final ContactPerson contactPerson = createContactPersonForAdUser(user);
-		final Campaign campaign = campaignRepository.getById(campaignId);
+		final ContactPerson contactPerson = createContactPersonForAdUser(user, campaign.getPlatformId());
 
-		campaignRepository.addContactPersonToCampaign(contactPerson, campaign);
+		campaignRepository.addContactPersonToCampaign(contactPerson.getContactPersonId(), campaign.getCampaignId());
 
 	}
 
@@ -109,15 +110,15 @@ public class Tools
 			Loggables.get().addLog("Skip AD_User because it has no email address; AD_User={}", user);
 			return;
 		}
-		
+
 		Check.assumeGreaterOrEqualToZero(campaignId, "campaignId");
 
 		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
+		final Campaign campaign = campaignRepository.getById(CampaignId.ofRepoId(campaignId));
 
-		final ContactPerson contactPerson = createContactPersonForAdUser(user);
-		final Campaign campaign = campaignRepository.getById(campaignId);
+		final ContactPerson contactPerson = createContactPersonForAdUser(user, campaign.getPlatformId());
 
-		campaignRepository.addContactPersonToCampaign(contactPerson, campaign);
+		campaignRepository.addContactPersonToCampaign(contactPerson.getContactPersonId(), campaign.getCampaignId());
 		campaignRepository.createConsent(contactPerson, campaign);
 
 	}
@@ -125,11 +126,11 @@ public class Tools
 	public void removeFromNewsletter(@NonNull I_AD_User user, int campaignId)
 	{
 		Check.assumeGreaterOrEqualToZero(campaignId, "campaignId");
-		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
-
-		final ContactPerson contactPerson = createContactPersonForAdUser(user);
-		final Campaign campaign = campaignRepository.getById(campaignId);
-
+		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);		
+		final Campaign campaign = campaignRepository.getById(CampaignId.ofRepoId(campaignId));
+		final ContactPerson contactPerson = createContactPersonForAdUser(user, campaign.getPlatformId());
+		
+		
 		campaignRepository.revokeConsent(contactPerson, campaign);
 		campaignRepository.removeContactPersonFromCampaign(contactPerson, campaign);
 
