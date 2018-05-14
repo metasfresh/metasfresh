@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.email.EmailValidator;
 import org.springframework.core.ParameterizedTypeReference;
 
@@ -27,8 +28,10 @@ import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignRemoteUpdate;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
+import de.metas.marketing.base.model.DataRecord;
 import de.metas.marketing.base.model.EmailAddress;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
+import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 import de.metas.marketing.base.spi.PlatformClient;
 import de.metas.marketing.gateway.cleverreach.restapi.models.CreateGroupRequest;
@@ -65,25 +68,28 @@ import lombok.Value;
 public class CleverReachClient implements PlatformClient
 {
 	// @formatter:off
-	private static final ParameterizedTypeReference<List<Object>> HETEROGENOUS_LIST =  new ParameterizedTypeReference<List<Object>>() {}; // // @formatter:on
+	private static final ParameterizedTypeReference<List<Object>> HETEROGENOUS_LIST =  new ParameterizedTypeReference<List<Object>>() {}; // @formatter:on
 
 	// @formatter:off
-	private static final ParameterizedTypeReference<List<Group>> LIST_OF_GROUPS_TYPE = new ParameterizedTypeReference<List<Group>>() {}; // // @formatter:on
+	private static final ParameterizedTypeReference<List<Group>> LIST_OF_GROUPS_TYPE = new ParameterizedTypeReference<List<Group>>() {}; // @formatter:on
 
 	// @formatter:off
-	private static final ParameterizedTypeReference<Group> SINGLE_GROUP_TYPE = new ParameterizedTypeReference<Group>() {}; // // @formatter:on
+	private static final ParameterizedTypeReference<Group> SINGLE_GROUP_TYPE = new ParameterizedTypeReference<Group>() {}; // @formatter:on
 
 	// @formatter:off
-		private static final ParameterizedTypeReference<List<Receiver>> LIST_OF_RECEIVERS_TYPE = new ParameterizedTypeReference<List<Receiver>>() {}; // // @formatter:on
+	private static final ParameterizedTypeReference<List<Receiver>> LIST_OF_RECEIVERS_TYPE = new ParameterizedTypeReference<List<Receiver>>() {}; // @formatter:on
 
 	private final CleverReachConfig cleverReachConfig;
 
 	@Getter(value = AccessLevel.PRIVATE, lazy = true)
 	private final CleverReachLowLevelClient lowLevelClient = CleverReachLowLevelClient.createAndLogin(cleverReachConfig);
 
+	private PlatformId platformId;
+
 	public CleverReachClient(@NonNull final CleverReachConfig cleverReachConfig)
 	{
 		this.cleverReachConfig = cleverReachConfig;
+		this.platformId = cleverReachConfig.getPlatformId();
 	}
 
 	private Group createGroup(@NonNull final Campaign campaign)
@@ -157,6 +163,27 @@ public class CleverReachClient implements PlatformClient
 	}
 
 	/**
+	 * Note: if something is sorted out by this method, then that's probably some bug.
+	 */
+	private <T extends DataRecord> List<T> filterForRecordsWithCorrectPlatformId(
+			@NonNull final List<T> records,
+			@NonNull final ImmutableList.Builder<LocalToRemoteSyncResult> resultToAddErrorsTo)
+	{
+		final Predicate<T> predicate = r -> Objects.equals(r.getPlatformId(), platformId);
+		final String errorMessage = StringUtils.formatMessage("Data record's platformId={} does not match this client's platFormId={}", platformId);
+
+		final Map<Boolean, List<T>> personsWithAndWithoutEmail = partitionByOkAndNotOk(records, predicate);
+
+		personsWithAndWithoutEmail.get(false)
+				.stream()
+				.map(p -> LocalToRemoteSyncResult.error(p, errorMessage))
+				.forEach(resultToAddErrorsTo::add);
+
+		final List<T> personsWithEmail = personsWithAndWithoutEmail.get(true);
+		return personsWithEmail;
+	}
+
+	/**
 	 * @param resultToAddTo to each contactPerson without an email, and error result is added to this list builder.
 	 * @return the persons that do have a non-empty email
 	 */
@@ -164,7 +191,7 @@ public class CleverReachClient implements PlatformClient
 			@NonNull final List<ContactPerson> contactPersons,
 			@NonNull final ImmutableList.Builder<LocalToRemoteSyncResult> resultToAddErrorsTo)
 	{
-		final Predicate<? super ContactPerson> predicate = c -> EmailValidator.isValid(c.getEmailAddessStringOrNull());
+		final Predicate<ContactPerson> predicate = c -> EmailValidator.isValid(c.getEmailAddessStringOrNull());
 		final String errorMessage = "Contact person has no (valid) email address";
 
 		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmail = partitionByOkAndNotOk(contactPersons, predicate);
@@ -176,14 +203,13 @@ public class CleverReachClient implements PlatformClient
 
 		final List<ContactPerson> personsWithEmail = personsWithAndWithoutEmail.get(true);
 		return personsWithEmail;
-
 	}
 
 	private List<ContactPerson> filterForPersonsWithEmailOrRemoteId(
 			@NonNull final List<ContactPerson> contactPersons,
 			@NonNull final Builder<RemoteToLocalSyncResult> syncResultsToAddErrorsTo)
 	{
-		final Predicate<? super ContactPerson> predicate = c -> c.getEmailAddessStringOrNull() != null;
+		final Predicate<ContactPerson> predicate = c -> c.getEmailAddessStringOrNull() != null;
 		final String errorMessage = "contact person has no email address";
 
 		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmailOrRemoteId = partitionByOkAndNotOk(contactPersons, predicate);
@@ -197,9 +223,11 @@ public class CleverReachClient implements PlatformClient
 		return personsWithEmailOrRemoteId;
 	}
 
-	public static Map<Boolean, List<ContactPerson>> partitionByOkAndNotOk(final List<ContactPerson> contactPersonsToPartition, final Predicate<? super ContactPerson> okPredicate)
+	public static <T extends DataRecord> Map<Boolean, List<T>> partitionByOkAndNotOk(
+			final List<T> contactPersonsToPartition,
+			final Predicate<T> okPredicate)
 	{
-		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmail = contactPersonsToPartition
+		final Map<Boolean, List<T>> personsWithAndWithoutEmail = contactPersonsToPartition
 				.stream()
 				.collect(Collectors.partitioningBy(okPredicate));
 		return personsWithAndWithoutEmail;
@@ -212,7 +240,18 @@ public class CleverReachClient implements PlatformClient
 	{
 		final ImmutableList.Builder<LocalToRemoteSyncResult> syncResults = ImmutableList.builder();
 
-		final List<ContactPerson> personsWithEmail = filterForPersonsWithEmail(contactPersonss, syncResults);
+		if (filterForRecordsWithCorrectPlatformId(ImmutableList.of(campaign), syncResults).isEmpty())
+		{
+			return syncResults.build();
+		}
+
+		// make sure that we only send records that have a syntactically valid email and that have the correct platform-id
+		final List<ContactPerson> personsWithEmail = filterForRecordsWithCorrectPlatformId(
+				filterForPersonsWithEmail(
+						contactPersonss,
+						syncResults),
+				syncResults);
+
 		final ImmutableListMultimap<String, ContactPerson> email2contactPersons = Multimaps.index(personsWithEmail, ContactPerson::getEmailAddessStringOrNull);
 
 		final HashMap<String, Collection<ContactPerson>> email2contactPersonsWithoutErrorResponse = new HashMap<>(email2contactPersons.asMap());
@@ -287,7 +326,9 @@ public class CleverReachClient implements PlatformClient
 	{
 		final ImmutableList.Builder<LocalToRemoteSyncResult> syncResults = ImmutableList.builder();
 
-		for (final Campaign campaign : campaigns)
+		final List<Campaign> campaignsWithCorrectPlatformId = filterForRecordsWithCorrectPlatformId(campaigns, syncResults);
+
+		for (final Campaign campaign : campaignsWithCorrectPlatformId)
 		{
 			syncResults.add(createOrUpdateGroup(campaign));
 		}
@@ -315,7 +356,8 @@ public class CleverReachClient implements PlatformClient
 			final ImmutableList<Campaign> campaignsToUpdate = remoteId2campaigns.get(campaignUpdate.getRemoteId());
 			if (campaignsToUpdate.isEmpty())
 			{
-				syncResults.add(RemoteToLocalSyncResult.obtainedNewDataRecord(campaignUpdate.toCampaign()));
+				final DataRecord newCampaign = campaignUpdate.toCampaign(platformId);
+				syncResults.add(RemoteToLocalSyncResult.obtainedNewDataRecord(newCampaign));
 			}
 			else
 			{
@@ -430,7 +472,7 @@ public class CleverReachClient implements PlatformClient
 
 			if (!email2contactPersons.containsKey(receivedEmailAddress))
 			{
-				syncResults.add(RemoteToLocalSyncResult.obtainedNewDataRecord(contactPersonUpdate.toContactPerson()));
+				syncResults.add(RemoteToLocalSyncResult.obtainedNewDataRecord(contactPersonUpdate.toContactPerson(platformId)));
 			}
 		}
 
