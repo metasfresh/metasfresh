@@ -141,6 +141,12 @@ public final class WebuiRelatedProcessDescriptor
 		final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
 		return preconditionsResolution.isAccepted() || !preconditionsResolution.isInternal();
 	}
+	
+	public boolean isInternal()
+	{
+		final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
+		return preconditionsResolution.isInternal();
+	}
 
 	public String getDisabledReason(final String adLanguage)
 	{
