@@ -50,17 +50,22 @@ public class MKTG_Campaign_ContactPerson
 		updateAdUserId(campaignContactPerson);
 	}
 
-	public void updateAdUserId(final I_MKTG_Campaign_ContactPerson campaignContactPerson)
+	private void updateAdUserId(@NonNull final I_MKTG_Campaign_ContactPerson campaignContactPerson)
 	{
-		final int adUserId;
 		if (campaignContactPerson.getMKTG_ContactPerson_ID() <= 0)
 		{
-			adUserId = -1; // we can't go with 0 that means "system"
+			campaignContactPerson.setAD_User(null);
+			return;
 		}
-		else
+
+		final int adUserId = campaignContactPerson.getMKTG_ContactPerson().getAD_User_ID();
+		if (adUserId <= 0)
 		{
-			adUserId = campaignContactPerson.getMKTG_ContactPerson().getAD_User_ID();
+			campaignContactPerson.setAD_User(null);
+			return;
 		}
+
 		campaignContactPerson.setAD_User_ID(adUserId);
+		return;
 	}
 }

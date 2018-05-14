@@ -1,13 +1,12 @@
-package de.metas.marketing.gateway.cleverreach;
+package de.metas.marketing.base.model;
 
-import de.metas.marketing.base.model.PlatformId;
-import lombok.Builder;
-import lombok.NonNull;
+import org.adempiere.util.Check;
+
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -28,18 +27,17 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class CleverReachConfig
+public class PlatformId
 {
-	@NonNull
-	String client_id;
+	int repoId;
 
-	@NonNull
-	String login;
+	public static PlatformId ofRepoId(final int repoId)
+	{
+		return new PlatformId(repoId);
+	}
 
-	@NonNull
-	String password;
-
-	@NonNull
-	PlatformId platformId;
+	private PlatformId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 }

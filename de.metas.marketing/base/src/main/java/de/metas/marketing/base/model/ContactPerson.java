@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -42,8 +43,6 @@ public class ContactPerson implements DataRecord
 		return Optional.empty();
 	}
 
-	Campaign list;
-
 	String name;
 
 	/** might be <= 0 */
@@ -55,11 +54,15 @@ public class ContactPerson implements DataRecord
 	/** Doesn't make sense to be null; a contact person needs to have some means of contacting them. */
 	ContactAddress address;
 
-	/** the internal metasfresh-ID (PK) of the underlying record */
-	int repoId;
+	/** might be null if the contact person was not stored yet */
+	@Nullable
+	ContactPersonId contactPersonId;
 
 	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
 	String remoteId;
+
+	@NonNull
+	PlatformId platformId;
 
 	public String getEmailAddessStringOrNull()
 	{
@@ -70,4 +73,5 @@ public class ContactPerson implements DataRecord
 	{
 		return EmailAddress.getActiveOnRemotePlatformOrNull(getAddress());
 	}
+
 }

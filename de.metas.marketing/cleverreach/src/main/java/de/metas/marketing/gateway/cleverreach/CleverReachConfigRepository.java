@@ -1,8 +1,11 @@
 package de.metas.marketing.gateway.cleverreach;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.springframework.stereotype.Repository;
 
+import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.cleverreach.model.I_MKTG_CleverReach_Config;
 
 /*
@@ -27,20 +30,28 @@ import de.metas.marketing.cleverreach.model.I_MKTG_CleverReach_Config;
  * #L%
  */
 
+@Repository
 public class CleverReachConfigRepository
 {
-	public CleverReachConfig getById(final int id)
+	public CleverReachConfig getById(final PlatformId plaformId)
 	{
-		final I_MKTG_CleverReach_Config configRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_CleverReach_Config.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final int platformRepoId = plaformId.getRepoId();
+
+		final I_MKTG_CleverReach_Config configRecord = queryBL
+				.createQueryBuilder(I_MKTG_CleverReach_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_CleverReach_Config.COLUMN_MKTG_Platform_ID, id)
+				.addEqualsFilter(I_MKTG_CleverReach_Config.COLUMN_MKTG_Platform_ID, platformRepoId)
 				.create()
 				.firstOnly(I_MKTG_CleverReach_Config.class);
+
+		Check.errorIf(configRecord == null, "Unable to load MKTG_CleverReach_Config for platformRepoId={}", platformRepoId);
 
 		return CleverReachConfig.builder()
 				.client_id(configRecord.getCustomerNo())
 				.login(configRecord.getUserName())
 				.password(configRecord.getPassword())
+				.platformId(plaformId)
 				.build();
 
 	}

@@ -1,13 +1,16 @@
-package de.metas.marketing.gateway.cleverreach;
+package de.metas.marketing.base.process;
 
-import de.metas.marketing.base.model.PlatformId;
-import lombok.Builder;
+import java.util.List;
+
+import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.SyncResult;
+import de.metas.marketing.base.spi.PlatformClient;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,19 +30,14 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class CleverReachConfig
+public class MKTG_ContactPerson_Platform_Import_From extends MKTG_ContactPerson_Platform_Base
 {
-	@NonNull
-	String client_id;
-
-	@NonNull
-	String login;
-
-	@NonNull
-	String password;
-
-	@NonNull
-	PlatformId platformId;
+	@Override
+	protected List<? extends SyncResult> invokeClient(
+			@NonNull final PlatformClient platformClient,
+			@NonNull final Campaign campgain,
+			@NonNull final List<ContactPerson> contactPersons)
+	{
+		return platformClient.syncContactPersonsRemoteToLocal(campgain, contactPersons);
+	}
 }

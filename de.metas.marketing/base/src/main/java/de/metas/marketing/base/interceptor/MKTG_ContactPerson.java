@@ -62,7 +62,8 @@ public class MKTG_ContactPerson
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteCampaignContactPersonAdUserId(@NonNull final I_MKTG_ContactPerson contactPerson)
 	{
-		createContactPersonQuery(contactPerson).delete();
+		createContactPersonQuery(contactPerson)
+				.delete();
 	}
 
 	private IQuery<I_MKTG_Campaign_ContactPerson> createContactPersonQuery(@NonNull final I_MKTG_ContactPerson contactPerson)
