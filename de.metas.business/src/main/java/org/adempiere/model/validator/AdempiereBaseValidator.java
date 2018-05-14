@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.cache.WindowBasedCacheInvalidateRequestInitializer;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.bpartner.process.BPartnerCreditLimit_RequestApproval;
 import org.adempiere.bpartner.product.callout.C_BPartner_Product;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
@@ -74,7 +73,6 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.model.MRequest;
 import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.CacheMgt;
 
@@ -85,6 +83,8 @@ import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
+import de.metas.notification.INotificationGroupNameRepository;
+import de.metas.notification.NotificationGroupName;
 import de.metas.reference.model.interceptor.AD_Ref_Table;
 
 /**
@@ -95,13 +95,14 @@ import de.metas.reference.model.interceptor.AD_Ref_Table;
  */
 public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 {
-
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		return ImmutableList.of(
-				BPartnerCreditLimit_RequestApproval.USER_NOTIFICATIONS_TOPIC,
-				MRequest.TOPIC_Requests);
+		final INotificationGroupNameRepository notificationGroupNameRepo = Services.get(INotificationGroupNameRepository.class);
+		return notificationGroupNameRepo.getAll()
+				.stream()
+				.map(NotificationGroupName::toTopic)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -214,7 +215,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.process.callout.AD_Process_Para()); // FRESH-727
 
 		calloutsRegistry.registerAnnotatedCallout(AD_Column.instance);
-		
+
 		calloutsRegistry.registerAnnotatedCallout(new C_BPartner_Product());
 	}
 

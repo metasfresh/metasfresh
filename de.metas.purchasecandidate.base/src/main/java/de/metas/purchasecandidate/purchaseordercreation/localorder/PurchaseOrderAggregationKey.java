@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
@@ -39,8 +39,8 @@ import lombok.Value;
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseOrderItem.getOrgId())
 				.warehouseId(purchaseOrderItem.getWarehouseId())
-				.vendorBPartnerId(purchaseOrderItem.getVendorProductInfo().getVendorBPartnerId())
-				.datePromisedMillis(purchaseOrderItem.getDatePromised().getTime())
+				.vendorBPartnerId(purchaseOrderItem.getVendorBPartnerId())
+				.datePromised(purchaseOrderItem.getDatePromised())
 				.build();
 	}
 
@@ -52,10 +52,5 @@ import lombok.Value;
 	private final int orgId;
 	private final int warehouseId;
 	private final int vendorBPartnerId;
-	private final long datePromisedMillis;
-
-	public Timestamp getDatePromised()
-	{
-		return new Timestamp(datePromisedMillis);
-	}
+	private final LocalDateTime datePromised;
 }

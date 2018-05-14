@@ -28,6 +28,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IAsyncBatchListener;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
@@ -154,7 +155,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 			final I_C_Queue_WorkPackage_Notified workpackageNotified = asyncBatchDAO.fetchWorkPackagesNotified(notifiableWP);
 			Check.assumeNotNull(workpackageNotified, "Workpackage notified record is null!");
 
-			notificationBL.notifyUser(UserNotificationRequest.builder()
+			notificationBL.send(UserNotificationRequest.builder()
 					.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
 					.recipientUserId(notifiableWP.getCreatedBy())
 					.contentADMessage(MSG_Event_PDFGenerated)
@@ -162,8 +163,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 					.contentADMessageParam(countExpected)
 					.contentADMessageParam(seenPrintPackages.getCounter(printPackageId))
 					.contentADMessageParam(printingQueueItemRef)
-					.targetRecord(printingQueueItemRef)
-					.targetADWindowId(WINDOW_ID_PrintingQueue)
+					.targetAction(TargetRecordAction.ofRecordAndWindow(printingQueueItemRef, WINDOW_ID_PrintingQueue))
 					.build());
 
 			asyncBatchBL.markWorkpackageNotified(workpackageNotified);

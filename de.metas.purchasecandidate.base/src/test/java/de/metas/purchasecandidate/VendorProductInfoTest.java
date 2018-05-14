@@ -10,7 +10,7 @@ import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.interfaces.I_C_BPartner_Product;
+import org.compiere.model.I_C_BPartner_Product;
 
 /*
  * #%L
