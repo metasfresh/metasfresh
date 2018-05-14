@@ -24,6 +24,7 @@ package de.metas.handlingunits.ddorder.spi.impl;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
@@ -42,6 +43,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
  */
 public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 {
+	private final static String SYSCONFIG_DD_OrderLine_Enforce_M_HU_PI_Item_Product = "DD_OrderLine_Enforce_M_HU_PI_Item_Product";
 	/**
 	 * This method assumes that the given document is <code>DD_OrderLine</code> and returns
 	 * <ul>
@@ -88,7 +90,16 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 	@Override
 	public void applyChangesFor(final Object document)
 	{
+
 		final de.metas.handlingunits.model.I_DD_OrderLine ddOrderLine = getDDOrderLine(document);
+		
+		final boolean enforcePIIP = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_DD_OrderLine_Enforce_M_HU_PI_Item_Product, false);
+		
+		if(!enforcePIIP)
+		{
+			return;
+		}
+		
 		final I_M_Product product = ddOrderLine.getM_Product();
 		final I_M_HU_PI_Item_Product piip = getM_HU_PI_ItemProductFor(ddOrderLine, product);
 		ddOrderLine.setM_HU_PI_Item_Product(piip);
