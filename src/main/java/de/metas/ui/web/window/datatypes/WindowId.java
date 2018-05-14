@@ -92,6 +92,7 @@ public final class WindowId
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
 		return toJson();
