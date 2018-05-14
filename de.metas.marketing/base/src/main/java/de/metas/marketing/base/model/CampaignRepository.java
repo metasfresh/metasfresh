@@ -182,8 +182,7 @@ public class CampaignRepository
 	}
 
 	public void createConsent(
-			@NonNull final ContactPerson contactPerson,
-			@NonNull final Campaign campaign)
+			@NonNull final ContactPerson contactPerson)
 	{
 		final I_MKTG_Consent consent = newInstance(I_MKTG_Consent.class);
 
@@ -198,11 +197,10 @@ public class CampaignRepository
 	}
 
 	public void revokeConsent(
-			@NonNull final ContactPerson contactPerson,
-			@NonNull final Campaign campaign)
+			@NonNull final ContactPerson contactPerson)
 	{
 		
-		final I_MKTG_Consent consent = getConsentRecord(contactPerson, campaign);
+		final I_MKTG_Consent consent = getConsentRecord(contactPerson);
 
 		if(consent != null)
 		{
@@ -212,13 +210,11 @@ public class CampaignRepository
 
 	}
 
-	private I_MKTG_Consent getConsentRecord(
-			@NonNull final ContactPerson contactPerson,
-			@NonNull final Campaign campaign)
+	private I_MKTG_Consent getConsentRecord(@NonNull final ContactPerson contactPerson)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Consent.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getContactPersonId())
+				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getContactPersonId().getRepoId())
 				.addEqualsFilter(I_MKTG_Consent.COLUMN_AD_User_ID, contactPerson.getAdUserId())
 				.create()
 				.firstOnly(I_MKTG_Consent.class);

@@ -117,9 +117,9 @@ public class Tools
 		final Campaign campaign = campaignRepository.getById(CampaignId.ofRepoId(campaignId));
 
 		final ContactPerson contactPerson = createContactPersonForAdUser(user, campaign.getPlatformId());
+		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
-		campaignRepository.addContactPersonToCampaign(contactPerson.getContactPersonId(), campaign.getCampaignId());
-		campaignRepository.createConsent(contactPerson, campaign);
+		campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaign.getCampaignId());
 
 	}
 
