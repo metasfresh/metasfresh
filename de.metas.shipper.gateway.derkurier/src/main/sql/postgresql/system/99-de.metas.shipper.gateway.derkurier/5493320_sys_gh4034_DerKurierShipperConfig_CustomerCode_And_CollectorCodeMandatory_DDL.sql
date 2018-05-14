@@ -28,14 +28,21 @@ UPDATE AD_Column SET DefaultValue='', IsMandatory='N',Updated=TO_TIMESTAMP('2018
 UPDATE AD_Column SET FieldLength=3,Updated=TO_TIMESTAMP('2018-05-14 06:54:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560055
 ;
 
--- 2018-05-14T06:54:17.557
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('derkurier_shipper_config','CollectorCode','VARCHAR(3)',null,null)
-;
-
 -- 2018-05-14T06:54:33.565
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET FieldLength=3,Updated=TO_TIMESTAMP('2018-05-14 06:54:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560054
+;
+
+-- 2018-05-14T06:54:43.739
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2018-05-14 06:54:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560055
+;
+
+COMMIT;
+
+-- 2018-05-14T06:54:17.557
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('derkurier_shipper_config','CollectorCode','VARCHAR(3)',null,null)
 ;
 
 -- 2018-05-14T06:54:36.062
@@ -46,11 +53,6 @@ INSERT INTO t_alter_column values('derkurier_shipper_config','CustomerCode','VAR
 -- 2018-05-14T06:54:36.083
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('derkurier_shipper_config','CustomerCode',null,'NOT NULL',null)
-;
-
--- 2018-05-14T06:54:43.739
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2018-05-14 06:54:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560055
 ;
 
 -- 2018-05-14T06:54:46.142
