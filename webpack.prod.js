@@ -1,7 +1,26 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
-var config = require('./dist/config');
+var fs = require('fs');
+
+const plugins = [
+  new webpack.DefinePlugin({
+    'process.env': {
+      NODE_ENV: JSON.stringify('production'),
+    },
+  }),
+  new HtmlWebpackPlugin({
+    template: './index.html',
+  }),
+];
+
+if (!fs.existsSync(path.join(__dirname, 'plugins.js'))) {
+  plugins.push(
+    new webpack.DefinePlugin({
+      PLUGINS: JSON.stringify([]),
+    })
+  );
+}
 
 module.exports = {
   mode: 'production',
@@ -12,21 +31,7 @@ module.exports = {
     filename: 'bundle[hash].js',
     publicPath: '/',
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: JSON.stringify('production'),
-      },
-      API_URL: config.API_URL,
-      WS_URL: config.WS_URL,
-    }),
-    new HtmlWebpackPlugin({
-      template: './index.html',
-    }),
-    new webpack.DefinePlugin({
-      config: JSON.stringify(config),
-    }),
-  ],
+  plugins,
   module: {
     rules: [
       {

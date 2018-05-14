@@ -26,6 +26,7 @@
         "localStorage": true,
         "Promise": true,
         "config": true,
+        "PLUGINS": true,
         "cy": true,
         "context": true,
         "Cypress": true,

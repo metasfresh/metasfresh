@@ -2,9 +2,11 @@ node_modules
 npm-debug.log*
 .DS_Store
 dist
+plugins
 .idea
 /config.js
 /config.js.template.*
+/plugins.js
 /static
 .vscode
 .history

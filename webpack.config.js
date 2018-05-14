@@ -1,7 +1,23 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
-var config = require('./config');
+var fs = require('fs');
+
+const plugins = [
+  new webpack.HotModuleReplacementPlugin(),
+  new webpack.NoEmitOnErrorsPlugin(),
+  new HtmlWebpackPlugin({
+    template: 'index.html',
+  }),
+];
+
+if (!fs.existsSync(path.join(__dirname, 'plugins.js'))) {
+  plugins.push(
+    new webpack.DefinePlugin({
+      PLUGINS: JSON.stringify([]),
+    })
+  );
+}
 
 module.exports = {
   mode: 'development',
@@ -17,16 +33,7 @@ module.exports = {
     filename: 'bundle[hash].js',
     publicPath: '/',
   },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoEmitOnErrorsPlugin(),
-    new HtmlWebpackPlugin({
-      template: 'index.html',
-    }),
-    new webpack.DefinePlugin({
-      config: JSON.stringify(config),
-    }),
-  ],
+  plugins,
   module: {
     rules: [
       {

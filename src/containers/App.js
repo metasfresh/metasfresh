@@ -28,13 +28,14 @@ import configureStore from '../store/configureStore';
 const hotkeys = generateHotkeys({ keymap, blacklist });
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
+const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
 export default class App extends Component {
   constructor() {
     super();
 
     this.state = {
-      pluginsLoading: !!config.plugins.length,
+      pluginsLoading: !!APP_PLUGINS.length,
     };
 
     this.auth = new Auth();
@@ -132,10 +133,10 @@ export default class App extends Component {
 
     counterpart.setMissingEntryGenerator(() => '');
 
-    if (config.plugins.length) {
-      const plugins = config.plugins.map(plugin => {
+    if (APP_PLUGINS.length) {
+      const plugins = APP_PLUGINS.map(plugin => {
         const waitForChunk = () =>
-          import(/* webpackMode: "lazy-once" */ `./../../plugins/${plugin}/plugin.js`).then(
+          import(/* webpackMode: "lazy-once" */ `./../../plugins/${plugin}/index.js`).then(
             module => module
           );
 
