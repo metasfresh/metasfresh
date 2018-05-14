@@ -88,6 +88,10 @@ class PricingConditionsRowsLoader
 	private final BigDecimal amt;
 	private final DocumentFiltersList filters;
 
+	private final BigDecimal orderLinePriceEntered;
+	private final BigDecimal orderLineDiscount;
+	private final int orderLinePaymentTermId;
+
 	private ImmutableSetMultimap<Integer, DiscountSchemaInfo> discountSchemasInfoByDiscountSchemaId; // lazy
 
 	@Builder
@@ -109,10 +113,15 @@ class PricingConditionsRowsLoader
 		productId = salesOrderLine.getM_Product_ID();
 		productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
 		qty = salesOrderLine.getQtyOrdered();
+
 		final BigDecimal price = salesOrderLine.getPriceActual();
 		amt = qty.multiply(price);
 
 		this.filters = filters;
+
+		this.orderLinePriceEntered = salesOrderLine.getPriceEntered();
+		this.orderLineDiscount = salesOrderLine.getDiscount();
+		this.orderLinePaymentTermId = salesOrderLine.getC_PaymentTerm_Override_ID();
 	}
 
 	public PricingConditionsRowData load()
@@ -266,10 +275,10 @@ class PricingConditionsRowsLoader
 				.discountSchemaId(discountSchemaId)
 				.bpartner(lookupBPartner(targetBPartnerId))
 				.customer(isSOTrx)
-				.price(Price.fixedZeroPrice())
-				.paymentTerm(null)
+				.price(Price.fixedPrice(orderLinePriceEntered))
+				.paymentTerm(paymentTermLookup.findById(orderLinePaymentTermId))
 				.paymentTermLookup(paymentTermLookup)
-				.discount(BigDecimal.ZERO)
+				.discount(orderLineDiscount)
 				.editable(true)
 				.breakMatchCriteria(PricingConditionsBreakMatchCriteria.builder()
 						.breakValue(BigDecimal.ZERO)
