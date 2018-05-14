@@ -205,7 +205,7 @@ public class UserNotificationRequest
 
 		public UserNotificationRequestBuilder topic(final Topic topic)
 		{
-			return notificationGroupName(NotificationGroupName.of(topic.getName()));
+			return notificationGroupName(NotificationGroupName.of(topic));
 		}
 	}
 }

@@ -1,5 +1,7 @@
 package de.metas.notification.impl;
 
+import java.util.Set;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_NotificationGroup;
@@ -46,6 +48,12 @@ public class NotificationGroupNameRepository implements INotificationGroupNameRe
 	public int getNotificationGroupId(final NotificationGroupName notificationGroupName)
 	{
 		return getNotificationGroupInternalNamesById().inverse().getOrDefault(notificationGroupName, -1);
+	}
+
+	@Override
+	public Set<NotificationGroupName> getAll()
+	{
+		return getNotificationGroupInternalNamesById().values();
 	}
 
 	private ImmutableBiMap<Integer, NotificationGroupName> getNotificationGroupInternalNamesById()

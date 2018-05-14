@@ -1,5 +1,7 @@
 package de.metas.notification;
 
+import java.util.Set;
+
 import org.adempiere.util.ISingletonService;
 
 /*
@@ -27,6 +29,8 @@ import org.adempiere.util.ISingletonService;
 public interface INotificationGroupNameRepository extends ISingletonService
 {
 	NotificationGroupName getById(int notificationGroupId);
-	
+
 	int getNotificationGroupId(final NotificationGroupName notificationGroupName);
+
+	Set<NotificationGroupName> getAll();
 }

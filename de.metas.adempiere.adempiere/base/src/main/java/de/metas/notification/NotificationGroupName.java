@@ -2,6 +2,7 @@ package de.metas.notification;
 
 import org.adempiere.util.Check;
 
+import de.metas.event.Topic;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -35,11 +36,21 @@ public class NotificationGroupName
 		return new NotificationGroupName(valueAsString);
 	}
 
+	public static NotificationGroupName of(@NonNull final Topic topic)
+	{
+		return NotificationGroupName.of(topic.getName());
+	}
+
 	private final String valueAsString;
 
 	private NotificationGroupName(@NonNull final String valueAsString)
 	{
 		Check.assumeNotEmpty(valueAsString, "valueAsString shall not be empty");
 		this.valueAsString = valueAsString;
+	}
+
+	public Topic toTopic()
+	{
+		return Topic.remote(valueAsString);
 	}
 }

@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -306,4 +307,25 @@ public class PurchaseCandidateRepository
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
 	}
+	
+	public static PurchaseCandidateReminder toPurchaseCandidateReminderOrNull(final I_C_PurchaseCandidate record)
+	{
+		final int vendorBPartnerId = record.getVendor_ID();
+		if (vendorBPartnerId <= 0)
+		{
+			return null;
+		}
+
+		final LocalDateTime reminderDate = TimeUtil.asLocalDateTime(record.getReminderDate());
+		if (reminderDate == null)
+		{
+			return null;
+		}
+
+		return PurchaseCandidateReminder.builder()
+				.vendorBPartnerId(vendorBPartnerId)
+				.notificationTime(reminderDate)
+				.build();
+	}
+
 }
