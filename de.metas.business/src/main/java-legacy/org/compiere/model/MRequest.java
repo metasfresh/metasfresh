@@ -33,7 +33,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -51,8 +50,9 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationsConfig;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
+import de.metas.notification.UserNotificationsConfig;
 
 /**
  * Request Model
@@ -789,7 +789,7 @@ public class MRequest extends X_R_Request
 							.topic(TOPIC_Requests)
 							.subjectPlain(subject.translate(adLanguage))
 							.contentPlain(content.translate(adLanguage))
-							.targetRecord(TableRecordReference.of(I_R_Request.Table_Name, getR_Request_ID()));
+							.targetAction(TargetRecordAction.of(I_R_Request.Table_Name, getR_Request_ID()));
 
 					if (pdf != null)
 					{

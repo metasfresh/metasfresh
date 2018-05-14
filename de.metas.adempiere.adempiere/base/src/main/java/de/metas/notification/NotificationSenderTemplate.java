@@ -17,6 +17,7 @@ import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ecs.ClearElement;
 import org.apache.ecs.xhtml.body;
@@ -37,8 +38,12 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.notification.UserNotificationRequest.TargetAction;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
+import de.metas.ui.web.WebuiURLs;
 import lombok.NonNull;
 
 /*
@@ -150,8 +155,7 @@ public class NotificationSenderTemplate
 	private UserNotificationRequest resolve(@NonNull final UserNotificationRequest request)
 	{
 		return request.toBuilder()
-				.targetRecordDisplayText(resolveTargetRecordDisplayText(request))
-				.targetADWindowId(resolveTargetWindowId(request))
+				.targetAction(resolveTargetRecordAction(request.getTargetAction()))
 				.build();
 	}
 
@@ -201,22 +205,30 @@ public class NotificationSenderTemplate
 				.map(request::deriveByNotificationsConfig);
 	}
 
-	private String resolveTargetRecordDisplayText(@NonNull final UserNotificationRequest request)
+	private TargetAction resolveTargetRecordAction(@NonNull final TargetAction targetAction)
 	{
-		final ITableRecordReference targetRecord = request.getTargetRecord();
-		if (targetRecord == null)
+		if (!(targetAction instanceof TargetRecordAction))
 		{
-			return null;
+			return targetAction;
 		}
 
-		//
-		if (!Check.isEmpty(request.getTargetRecordDisplayText()))
+		final TargetRecordAction targetRecordAction = TargetRecordAction.cast(targetAction);
+		return targetRecordAction.toBuilder()
+				.recordDisplayText(resolveTargetRecordDisplayText(targetRecordAction))
+				.adWindowId(resolveTargetWindowId(targetRecordAction))
+				.build();
+	}
+
+	private String resolveTargetRecordDisplayText(@NonNull final TargetRecordAction targetRecordAction)
+	{
+		if (!Check.isEmpty(targetRecordAction.getRecordDisplayText()))
 		{
-			return request.getTargetRecordDisplayText();
+			return targetRecordAction.getRecordDisplayText();
 		}
 
 		// Provide more specific information to the user, in case there exists a notification context provider (task 09833)
-		final String targetRecordDisplayText = recordTextProvider.getTextMessageIfApplies(targetRecord).orNull();
+		final ITableRecordReference record = targetRecordAction.getRecord();
+		final String targetRecordDisplayText = recordTextProvider.getTextMessageIfApplies(record).orNull();
 		if (!Check.isEmpty(targetRecordDisplayText, true))
 		{
 			return targetRecordDisplayText;
@@ -225,31 +237,31 @@ public class NotificationSenderTemplate
 		//
 		try
 		{
-			final Object targetRecordModel = targetRecord.getModel(PlainContextAware.createUsingOutOfTransaction());
+			final Object targetRecordModel = record.getModel(PlainContextAware.createUsingOutOfTransaction());
 			final String documentNo = documentBL.getDocumentNo(targetRecordModel);
 			return documentNo;
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			logger.info("Failed retrieving record for " + targetRecord, e);
+			logger.info("Failed retrieving record for " + record, ex);
 		}
 
 		//
-		return "#" + targetRecord.getRecord_ID();
+		return "#" + record.getRecord_ID();
 	}
 
-	private int resolveTargetWindowId(final UserNotificationRequest request)
+	private int resolveTargetWindowId(final TargetRecordAction targetRecordAction)
 	{
-		if (request.getTargetADWindowId() > 0)
+		if (targetRecordAction.getAdWindowId() > 0)
 		{
-			return request.getTargetADWindowId();
+			return targetRecordAction.getAdWindowId();
 		}
-		if (request.getTargetRecord() == null)
+		if (targetRecordAction.getRecord() == null)
 		{
 			return -1;
 		}
 
-		final RecordZoomWindowFinder recordWindowFinder = RecordZoomWindowFinder.newInstance(request.getTargetRecord());
+		final RecordZoomWindowFinder recordWindowFinder = RecordZoomWindowFinder.newInstance(targetRecordAction.getRecord());
 		return recordWindowFinder.findAD_Window_ID();
 	}
 
@@ -449,20 +461,28 @@ public class NotificationSenderTemplate
 	{
 		final NotificationMessageFormatter formatter = NotificationMessageFormatter.newInstance();
 
-		final ITableRecordReference targetRecord = request.getTargetRecord();
-		if (targetRecord != null)
+		final TargetAction targetAction = request.getTargetAction();
+		if (targetAction instanceof TargetRecordAction)
 		{
-			final String targetRecordDisplayText = request.getTargetRecordDisplayText();
+			final TargetRecordAction targetRecordAction = TargetRecordAction.cast(targetAction);
+			final TableRecordReference targetRecord = targetRecordAction.getRecord();
+			final String targetRecordDisplayText = targetRecordAction.getRecordDisplayText();
 			if (!Check.isEmpty(targetRecordDisplayText))
 			{
 				formatter.recordDisplayText(targetRecord, targetRecordDisplayText);
 			}
 
-			final int targetWindowId = request.getTargetADWindowId();
+			final int targetWindowId = targetRecordAction.getAdWindowId();
 			if (targetWindowId > 0)
 			{
 				formatter.recordWindowId(targetRecord, targetWindowId);
 			}
+		}
+		else if (targetAction instanceof TargetViewAction)
+		{
+			final TargetViewAction targetViewAction = TargetViewAction.cast(targetAction);
+			final String viewURL = WebuiURLs.newInstance().getViewUrl(targetViewAction.getAdWindowId(), targetViewAction.getViewId());
+			formatter.bottomUrl(viewURL);
 		}
 
 		return formatter;

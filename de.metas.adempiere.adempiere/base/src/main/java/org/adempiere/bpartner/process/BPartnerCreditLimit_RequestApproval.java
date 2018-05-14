@@ -9,6 +9,7 @@ import de.metas.event.Topic;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -60,7 +61,7 @@ public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements 
 						.recipientUserId(approvedByUserId)
 						.contentADMessage(MSG_Event_RequestApproval)
 						.contentADMessageParam(bpartnerRef)
-						.targetRecord(bpartnerRef)
+						.targetAction(TargetRecordAction.of(bpartnerRef))
 						.build());
 
 		return MSG_OK;

@@ -19,6 +19,7 @@ import de.metas.async.spi.IAsyncBatchListener;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.NotificationType;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationsConfig;
 
 /**
@@ -52,7 +53,7 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 						.subjectADMessageParam(asyncBatch.getName())
 						.contentADMessage(MSG_ASYNC_PROCESSED)
 						.contentADMessageParam(asyncBatch.getName())
-						.targetRecord(TableRecordReference.of(asyncBatch))
+						.targetAction(TargetRecordAction.of(TableRecordReference.of(asyncBatch)))
 						.build());
 	}
 

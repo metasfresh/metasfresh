@@ -76,6 +76,7 @@ import de.metas.event.Type;
 import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 
@@ -1376,7 +1377,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						.contentADMessage(MSG_NotApproved)
 						.contentADMessageParam(doc.toTableRecordReference())
 						.contentADMessageParam(docInfo)
-						.targetRecord(doc.toTableRecordReference())
+						.targetAction(TargetRecordAction.of(doc.toTableRecordReference()))
 						.build());
 			}
 		}

@@ -15,6 +15,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.event.Topic;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import lombok.NonNull;
 
 /*
@@ -120,8 +121,7 @@ public class ReturnInOutUserNotificationsProducer
 				.contentADMessageParam(inoutRef)
 				.contentADMessageParam(bpValue)
 				.contentADMessageParam(bpName)
-				.targetRecord(inoutRef)
-				.targetADWindowId(getWindowId(inout))
+				.targetAction(TargetRecordAction.ofRecordAndWindow(inoutRef, getWindowId(inout)))
 				.build();
 	}
 

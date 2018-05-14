@@ -49,7 +49,7 @@ public class UserNotificationTest
 	}
 
 	@Test
-	public void testSerializeDeserialize() throws IOException
+	public void testSerializeDeserialize_TargetType_Window() throws IOException
 	{
 		testSerializeDeserialize(UserNotification.builder()
 				.id(123)
@@ -64,6 +64,25 @@ public class UserNotificationTest
 				.targetType(UserNotificationTargetType.Window)
 				.targetRecord(TableRecordReference.of("MyTable", 444))
 				.targetWindowId(555)
+				.build());
+	}
+
+	@Test
+	public void testSerializeDeserialize_TargetType_View() throws IOException
+	{
+		testSerializeDeserialize(UserNotification.builder()
+				.id(123)
+				.timestamp(456)
+				.important(true)
+				.read(true)
+				.recipientUserId(111)
+				.detailPlain("detailPlain")
+				.detailADMessage("detailADMessage")
+				.detailADMessageParam("value1")
+				.detailADMessageParam("value2")
+				.targetType(UserNotificationTargetType.View)
+				.targetWindowId(555)
+				.targetViewId("555-123")
 				.build());
 	}
 

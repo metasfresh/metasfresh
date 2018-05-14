@@ -65,6 +65,7 @@ final class NotificationMessageFormatter
 
 	// Constants
 	private static final String URL_TITLE_SEPARATOR = "><";
+	private static final String MSG_BottomText = "de.metas.notification.email.BottomText";
 
 	//
 	// Params
@@ -72,6 +73,7 @@ final class NotificationMessageFormatter
 	private String adLanguage;
 	private final Map<ITableRecordReference, String> recordDisplayTexts = new HashMap<>();
 	private final Map<ITableRecordReference, Integer> recordWindowId = new HashMap<>();
+	private String bottomURL;
 
 	//
 	// State
@@ -133,6 +135,12 @@ final class NotificationMessageFormatter
 		}
 
 		result = replaceAfterFormat.replaceAll(result);
+
+		final String bottomText = getBottomText();
+		if (!Check.isEmpty(bottomText, true))
+		{
+			result += "\n" + bottomText;
+		}
 
 		return result;
 	}
@@ -312,6 +320,41 @@ final class NotificationMessageFormatter
 			return null;
 		}
 	}
+
+	public NotificationMessageFormatter bottomUrl(final String bottomURL)
+	{
+		this.bottomURL = bottomURL;
+		return this;
+	}
+
+	private String getBottomText()
+	{
+		if (Check.isEmpty(bottomURL, true))
+		{
+			return null;
+		}
+
+		final String bottomURLText;
+		if (html)
+		{
+			bottomURLText = new a(bottomURL, bottomURL).toString();
+		}
+		else
+		{
+			bottomURLText = bottomURL;
+		}
+
+		String bottomText = msgBL.getTranslatableMsgText(MSG_BottomText, bottomURLText)
+				.translate(getLanguage());
+
+		return bottomText;
+	}
+
+	//
+	//
+	//
+	//
+	//
 
 	private static final class ReplaceAfterFormatCollector
 	{

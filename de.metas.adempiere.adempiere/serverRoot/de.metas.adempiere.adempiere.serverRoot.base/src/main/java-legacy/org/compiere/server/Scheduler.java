@@ -67,6 +67,7 @@ import de.metas.attachments.IAttachmentBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
@@ -678,7 +679,7 @@ public class Scheduler extends AdempiereServer
 							.recipientUserId(supervisorId)
 							.subjectADMessage(MSG_PROCESS_RUN_ERROR)
 							.contentPlain(summary + " " + logInfo)
-							.targetRecord(TableRecordReference.of(adTableId, recordId))
+							.targetAction(TargetRecordAction.of(TableRecordReference.of(adTableId, recordId)))
 							.build());
 				}
 			}
@@ -691,7 +692,7 @@ public class Scheduler extends AdempiereServer
 						.recipientUserId(userId)
 						.subjectADMessage(MSG_PROCESS_OK)
 						.contentPlain(summary + " " + logInfo)
-						.targetRecord(TableRecordReference.of(adTableId, recordId))
+						.targetAction(TargetRecordAction.of(TableRecordReference.of(adTableId, recordId)))
 						.build());
 			}
 		}

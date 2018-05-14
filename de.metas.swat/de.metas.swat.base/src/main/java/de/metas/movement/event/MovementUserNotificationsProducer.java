@@ -15,6 +15,7 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import lombok.NonNull;
 
 /*
@@ -90,7 +91,7 @@ public class MovementUserNotificationsProducer
 				.recipientUserId(recipientUserId)
 				.contentADMessage(MSG_Event_MovementGenerated)
 				.contentADMessageParam(movementRef)
-				.targetRecord(movementRef)
+				.targetAction(TargetRecordAction.of(movementRef))
 				.build();
 	}
 

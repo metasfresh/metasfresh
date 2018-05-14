@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.core.io.Resource;
 
 import com.google.common.collect.ImmutableList;
@@ -73,9 +73,7 @@ public class UserNotificationRequest
 	String contentADMessage;
 	List<Object> contentADMessageParams;
 
-	String targetRecordDisplayText;
-	ITableRecordReference targetRecord;
-	int targetADWindowId;
+	TargetAction targetAction;
 
 	List<Resource> attachments;
 
@@ -99,9 +97,7 @@ public class UserNotificationRequest
 			final String contentADMessage,
 			@Singular final List<Object> contentADMessageParams,
 			//
-			@Nullable String targetRecordDisplayText,
-			@Nullable final ITableRecordReference targetRecord,
-			final int targetADWindowId,
+			@Nullable TargetAction targetAction,
 			//
 			@Singular final List<Resource> attachments,
 			// Options:
@@ -127,11 +123,6 @@ public class UserNotificationRequest
 		else
 		{
 			this.recipient = recipient;
-			if (notificationsConfig != null)
-			{
-				final Recipient expectedRecipient = Recipient.user(notificationsConfig.getUserId());
-				Check.assume(expectedRecipient.equals(recipient), "recipient shall be {} but it was {}", expectedRecipient, recipient);
-			}
 		}
 
 		this.notificationGroupName = notificationGroupName != null ? notificationGroupName : DEFAULT_NotificationGroupName;
@@ -146,9 +137,7 @@ public class UserNotificationRequest
 		this.contentADMessage = contentADMessage;
 		this.contentADMessageParams = copyADMessageParams(contentADMessageParams);
 
-		this.targetRecordDisplayText = targetRecordDisplayText;
-		this.targetRecord = targetRecord;
-		this.targetADWindowId = targetADWindowId;
+		this.targetAction = targetAction;
 
 		this.attachments = ImmutableList.copyOf(attachments);
 
@@ -207,5 +196,53 @@ public class UserNotificationRequest
 		{
 			return notificationGroupName(NotificationGroupName.of(topic));
 		}
+	}
+
+	public static interface TargetAction
+	{
+	}
+
+	@lombok.Value
+	@lombok.Builder(toBuilder = true)
+	public static class TargetRecordAction implements TargetAction
+	{
+		public static TargetRecordAction of(@NonNull final TableRecordReference record)
+		{
+			return builder().record(record).build();
+		}
+
+		public static TargetRecordAction ofRecordAndWindow(@NonNull final TableRecordReference record, final int adWindowId)
+		{
+			return builder().record(record).adWindowId(adWindowId).build();
+		}
+
+		public static TargetRecordAction of(@NonNull final String tableName, final int recordId)
+		{
+			return of(TableRecordReference.of(tableName, recordId));
+		}
+
+		public static TargetRecordAction cast(final TargetAction targetAction)
+		{
+			return (TargetRecordAction)targetAction;
+		}
+
+		int adWindowId;
+		@NonNull
+		TableRecordReference record;
+		String recordDisplayText;
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	public static class TargetViewAction implements TargetAction
+	{
+		public static final TargetViewAction cast(final TargetAction targetAction)
+		{
+			return (TargetViewAction)targetAction;
+		}
+
+		int adWindowId;
+		@NonNull
+		String viewId;
 	}
 }

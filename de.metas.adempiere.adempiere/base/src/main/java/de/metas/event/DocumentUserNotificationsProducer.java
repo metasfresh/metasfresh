@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -127,7 +128,7 @@ public final class DocumentUserNotificationsProducer<ModelType>
 				.recipientUserId(recipientUserIdToUse)
 				.contentADMessage(eventAD_Message)
 				.contentADMessageParams(adMessageParams)
-				.targetRecord(TableRecordReference.of(document))
+				.targetAction(TargetRecordAction.of(TableRecordReference.of(document)))
 				.build();
 	}
 

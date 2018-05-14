@@ -86,6 +86,12 @@ public class WebuiURLs
 		return url + documentPath;
 	}
 
+	public String getViewUrl(final int adWindowId, @NonNull final String viewId)
+	{
+		Check.assumeGreaterThanZero(adWindowId, "adWindowId");
+		return getViewUrl(String.valueOf(adWindowId), viewId);
+	}
+
 	public String getViewUrl(@NonNull final String windowId, @NonNull final String viewId)
 	{
 		final String url = getViewUrl();
