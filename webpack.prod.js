@@ -8,7 +8,7 @@ module.exports = {
   devtool: 'cheap-module-source-map',
   entry: ['./src/index.jsx', './favicon.png'],
   output: {
-    path: './dist',
+    path: path.join(__dirname, 'dist'),
     filename: 'bundle[hash].js',
     publicPath: '/',
   },
