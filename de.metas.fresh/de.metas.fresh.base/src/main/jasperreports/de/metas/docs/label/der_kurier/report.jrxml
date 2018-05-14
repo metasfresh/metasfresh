@@ -166,7 +166,7 @@
 				<textFieldExpression><![CDATA[$R{sender}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="100" y="130" width="110" height="14" uuid="041f741c-1a1d-435c-9cc3-89821f18b974"/>
+				<reportElement x="100" y="130" width="100" height="14" uuid="041f741c-1a1d-435c-9cc3-89821f18b974"/>
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -174,7 +174,7 @@
 ($F{customercode} != null ? $F{customercode} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="210" y="130" width="60" height="14" uuid="8b8a9303-74fb-4020-8aea-b76c76494d0b"/>
+				<reportElement x="200" y="130" width="70" height="14" uuid="8b8a9303-74fb-4020-8aea-b76c76494d0b"/>
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
