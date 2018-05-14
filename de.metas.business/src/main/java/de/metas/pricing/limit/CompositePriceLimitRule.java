@@ -55,7 +55,7 @@ public class CompositePriceLimitRule implements IPriceLimitRule
 		final PriceLimitRuleResult defaultResult = computeDefault(context);
 		return Stream.concat(results.stream(), Stream.of(defaultResult))
 				.filter(result -> result.isBelowPriceLimit(priceActual))
-				.min(Comparator.comparing(PriceLimitRuleResult::getPriceLimit))
+				.max(Comparator.comparing(PriceLimitRuleResult::getPriceLimit))
 				.orElseGet(() -> PriceLimitRuleResult.notApplicable("no price limit enforcement"));
 	}
 
