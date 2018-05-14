@@ -93,6 +93,8 @@ public class DerKurierShipperConfigRepositoryTest
 		configRecord.setAD_Sequence(sequenceRecord);
 		configRecord.setAPIServerBaseURL("https://testurl");
 		configRecord.setM_Shipper_ID(20);
+		configRecord.setCollectorCode("01");
+		configRecord.setCustomerCode("02");
 		save(configRecord);
 		return configRecord;
 	}
