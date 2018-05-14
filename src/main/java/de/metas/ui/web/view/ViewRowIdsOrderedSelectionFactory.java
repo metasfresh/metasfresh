@@ -31,7 +31,7 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 public interface ViewRowIdsOrderedSelectionFactory
 {
-	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys);
+	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys, final boolean applySecurityRestrictions);
 
 	/**
 	 * @return a new {@link ViewRowIdsOrderedSelection} from a given <code>fromSelection</code> ordered by <code>orderBys</code>

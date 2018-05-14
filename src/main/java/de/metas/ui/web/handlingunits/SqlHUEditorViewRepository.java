@@ -567,7 +567,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			final List<DocumentFilter> filters,
 			final List<DocumentQueryOrderBy> orderBys)
 	{
-		return viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys);
+		final boolean applySecurityRestrictions = true;
+		return viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys, applySecurityRestrictions);
 	}
 
 	@Override

@@ -146,6 +146,7 @@ public final class DefaultView implements IEditableView
 		{
 			viewEvaluationCtx = ViewEvaluationCtx.newInstanceFromCurrentContext();
 
+			final boolean applySecurityRestrictions = builder.isApplySecurityRestrictions();
 			selectionsRef = ExtendedMemorizingSupplier.of(() -> {
 				if (defaultSelectionDeleteBeforeCreate.get())
 				{
@@ -154,7 +155,8 @@ public final class DefaultView implements IEditableView
 				final ViewRowIdsOrderedSelection defaultSelection = viewDataRepository.createOrderedSelection(
 						getViewEvaluationCtx(),
 						viewId,
-						ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)));
+						ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)),
+						applySecurityRestrictions);
 
 				return new ViewRowIdsOrderedSelections(defaultSelection);
 			});
@@ -663,6 +665,8 @@ public final class DefaultView implements IEditableView
 
 		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
+		private boolean applySecurityRestrictions = true;
+
 		private Builder(@NonNull final IViewDataRepository viewDataRepository)
 		{
 			this.viewDataRepository = viewDataRepository;
@@ -817,10 +821,21 @@ public final class DefaultView implements IEditableView
 			this.viewInvalidationAdvisor = viewInvalidationAdvisor;
 			return this;
 		}
-		
+
 		private IViewInvalidationAdvisor getViewInvalidationAdvisor()
 		{
 			return viewInvalidationAdvisor;
+		}
+
+		public Builder applySecurityRestrictions(final boolean applySecurityRestrictions)
+		{
+			this.applySecurityRestrictions = applySecurityRestrictions;
+			return this;
+		}
+
+		private boolean isApplySecurityRestrictions()
+		{
+			return applySecurityRestrictions;
 		}
 	}
 }

@@ -164,6 +164,8 @@ public final class CreateViewRequest
 
 	ImmutableMap<String, Object> parameters;
 
+	boolean applySecurityRestrictions;
+
 	private CreateViewRequest(final Builder builder)
 	{
 		viewId = builder.getViewId();
@@ -183,6 +185,8 @@ public final class CreateViewRequest
 		additionalRelatedProcessDescriptors = ImmutableList.copyOf(builder.getAdditionalRelatedProcessDescriptors());
 
 		parameters = builder.getParameters();
+
+		applySecurityRestrictions = builder.isApplySecurityRestrictions();
 	}
 
 	private CreateViewRequest(@NonNull final CreateViewRequest from, @NonNull final DocumentFiltersList filters)
@@ -204,6 +208,8 @@ public final class CreateViewRequest
 		additionalRelatedProcessDescriptors = from.additionalRelatedProcessDescriptors;
 
 		parameters = from.parameters;
+
+		applySecurityRestrictions = from.applySecurityRestrictions;
 	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
@@ -290,6 +296,8 @@ public final class CreateViewRequest
 		private final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = new ArrayList<>();
 
 		private LinkedHashMap<String, Object> parameters;
+
+		private boolean applySecurityRestrictions = true;
 
 		private Builder(
 				@NonNull final ViewId viewId,
@@ -497,6 +505,17 @@ public final class CreateViewRequest
 		private ImmutableMap<String, Object> getParameters()
 		{
 			return parameters != null ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();
+		}
+
+		public Builder applySecurityRestrictions(final boolean applySecurityRestrictions)
+		{
+			this.applySecurityRestrictions = applySecurityRestrictions;
+			return this;
+		}
+
+		private boolean isApplySecurityRestrictions()
+		{
+			return applySecurityRestrictions;
 		}
 	}
 }
