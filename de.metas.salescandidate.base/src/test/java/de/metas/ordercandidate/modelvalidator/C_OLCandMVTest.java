@@ -41,7 +41,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.interfaces.I_C_BPartner_Product;
+import org.compiere.model.I_C_BPartner_Product;
 import de.metas.ordercandidate.AbstractOLCandTestSupport;
 import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.model.I_C_OLCand;

@@ -36,6 +36,7 @@ import de.metas.event.Type;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 
 /**
  * {@link IEventBus} wrapper implementation tailored for sending events about generated invoices.
@@ -103,7 +104,7 @@ public class InvoiceUserNotificationsProducer
 				.contentADMessageParam(invoiceRef)
 				.contentADMessageParam(bpValue)
 				.contentADMessageParam(bpName)
-				.targetRecord(invoiceRef)
+				.targetAction(TargetRecordAction.of(invoiceRef))
 				.build();
 	}
 
@@ -115,6 +116,6 @@ public class InvoiceUserNotificationsProducer
 
 	private void postNotification(final UserNotificationRequest notification)
 	{
-		Services.get(INotificationBL.class).notifyUserAfterCommit(notification);
+		Services.get(INotificationBL.class).sendAfterCommit(notification);
 	}
 }
