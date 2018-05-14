@@ -20,6 +20,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,7 @@ import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.purchasecandidate.PurchaseCandidateReminder;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -87,7 +89,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	private NextDispatch nextDispatch;
 
 	public PurchaseCandidateReminderScheduler(
-			@NonNull final TaskScheduler taskScheduler,
+			@Qualifier(WebRestApiApplication.BEANNAME_WebuiTaskScheduler) @NonNull final TaskScheduler taskScheduler,
 			@NonNull final IViewsRepository viewsRepo,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
 			final Adempiere databaseAvailable)
