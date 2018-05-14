@@ -1,14 +1,19 @@
 package org.adempiere.impexp.bpartner;
 
+import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,6 +39,10 @@ import org.compiere.model.ModelValidationEngine;
 
 /* package */ class BPartnerImportHelper
 {
+	private final int Management_C_CreditLimit_Type_ID = 540001;
+	private final int Insurance_C_CreditLimit_Type_ID = 540000;
+
+
 	public static BPartnerImportHelper newInstance()
 	{
 		return new BPartnerImportHelper();
@@ -89,6 +98,8 @@ import org.compiere.model.ModelValidationEngine;
 		//
 		// Type (Vendor, Customer, Employee)
 		setTypeOfBPartner(importRecord, bpartner);
+
+		createCreditLimit(importRecord);
 
 		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartner, IImportInterceptor.TIMING_AFTER_IMPORT);
 		InterfaceWrapperHelper.save(bpartner);
@@ -241,4 +252,27 @@ import org.compiere.model.ModelValidationEngine;
 			bpartner.setIsCustomer(true);
 		}
 	}	// setTypeOfBPartner
+
+	private final void createCreditLimit(final I_I_BPartner importRecord)
+	{
+		if (importRecord.getCreditLimit().signum() > 0)
+		{
+			createCreditLimit(importRecord.getCreditLimit(), Insurance_C_CreditLimit_Type_ID);
+		}
+		else if (importRecord.getCreditLimit2().signum() > 0)
+		{
+			createCreditLimit(importRecord.getCreditLimit2(), Management_C_CreditLimit_Type_ID);
+		}
+	}
+
+	private final void createCreditLimit(@NonNull final BigDecimal amount, final int typeId)
+	{
+		final I_C_BPartner_CreditLimit bpCreditLimit = InterfaceWrapperHelper.newInstance(I_C_BPartner_CreditLimit.class);
+		bpCreditLimit.setAmount(amount);
+		bpCreditLimit.setC_CreditLimit_Type_ID(typeId);
+		bpCreditLimit.setDateFrom(SystemTime.asDayTimestamp());
+		bpCreditLimit.setProcessed(true);
+		InterfaceWrapperHelper.save(bpCreditLimit);
+	}
+
 }
