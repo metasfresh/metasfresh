@@ -167,16 +167,27 @@ public class CleverReachClient implements PlatformClient
 		final String remoteGroupId = campaign.getRemoteId();
 		final int pageSize = 1000; // according to https://rest.cleverreach.com/explorer/v3/#!/groups-v3/list_groups_get, the maximum page size is 5000
 
+		final PageFetcher<Receiver> pageFetcher = createReceiversPageFetcher(remoteGroupId);
+
+		final PagedIterator<Receiver> pagedIterator = PagedIterator.<Receiver> builder()
+				.pageSize(pageSize)
+				.pageFetcher(pageFetcher)
+				.build();
+		return pagedIterator;
+	}
+
+	private PageFetcher<Receiver> createReceiversPageFetcher(@NonNull final String remoteGroupId)
+	{
 		final String urlPathAndParams = "/groups.json/{group_id}/receivers?pagesize={pagesize}&page={page}";
 
-		final PageFetcher<Receiver> pageFetcher = (currentFirstRow, currentPageSize) -> {
+		final PageFetcher<Receiver> pageFetcher = (firstRow, pageSize) -> {
 
-			final int currentPageNoZeroBased = currentFirstRow / Check.assumeGreaterThanZero(currentPageSize, "currentPageSize");
+			final int zeroBasedPageNo = firstRow / Check.assumeGreaterThanZero(pageSize, "currentPageSize");
 			final List<Receiver> receivers = getLowLevelClient()
 					.get(
 							LIST_OF_RECEIVERS_TYPE,
 							urlPathAndParams,
-							remoteGroupId, currentPageSize, currentPageNoZeroBased);
+							remoteGroupId, pageSize, zeroBasedPageNo);
 
 			if (receivers.isEmpty())
 			{
@@ -184,12 +195,7 @@ public class CleverReachClient implements PlatformClient
 			}
 			return Page.ofRows(receivers);
 		};
-
-		final PagedIterator<Receiver> pagedIterator = PagedIterator.<Receiver> builder()
-				.pageSize(pageSize)
-				.pageFetcher(pageFetcher)
-				.build();
-		return pagedIterator;
+		return pageFetcher;
 	}
 
 	/**
