@@ -9,6 +9,7 @@ import org.compiere.model.I_M_Inventory;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -46,6 +47,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements IProcessPrecondition
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	@Param(parameterName = I_M_Locator.COLUMNNAME_M_Locator_ID)
 	private int locatorId;
@@ -107,6 +109,8 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		{
 			huQueryBuilder.addOnlyWithProductId(productId);
 		}
+
+		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
 
 		return huQueryBuilder
 				.createQuery()

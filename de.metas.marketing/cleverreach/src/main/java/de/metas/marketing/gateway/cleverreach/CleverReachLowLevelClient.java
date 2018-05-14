@@ -70,17 +70,18 @@ public class CleverReachLowLevelClient
 
 	public <T> T get(
 			@NonNull final ParameterizedTypeReference<T> returnType,
-			@NonNull final String url)
+			@NonNull final String urlPathAndParams,
+			@NonNull final Object... paramValues)
 	{
 		final RestTemplate restTemplate = createRestTemplate();
 		final HttpEntity<?> entity = new HttpEntity<>(createHeaders());
 
 		final ResponseEntity<T> groups = restTemplate.exchange(
-				url,
+				urlPathAndParams,
 				HttpMethod.GET,
 				entity,
 				returnType,
-				ImmutableMap.of());
+				paramValues);
 		return groups.getBody();
 	}
 

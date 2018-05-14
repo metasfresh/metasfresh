@@ -2,22 +2,31 @@ package de.metas.marketing.gateway.cleverreach;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
+import org.adempiere.util.collections.PagedIterator;
+import org.adempiere.util.collections.PagedIterator.Page;
+import org.adempiere.util.collections.PagedIterator.PageFetcher;
 import org.adempiere.util.email.EmailValidator;
 import org.springframework.core.ParameterizedTypeReference;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableListMultimap;
@@ -152,14 +161,41 @@ public class CleverReachClient implements PlatformClient
 		return groups;
 	}
 
-	public List<Receiver> retrieveAllReceivers(@NonNull final Campaign campaign)
+	@VisibleForTesting
+	Iterator<Receiver> retrieveAllReceivers(@NonNull final Campaign campaign)
 	{
-		final String url = String.format("/groups.json/%s/receivers", campaign.getRemoteId());
+		final String remoteGroupId = campaign.getRemoteId();
+		final int pageSize = 1000; // according to https://rest.cleverreach.com/explorer/v3/#!/groups-v3/list_groups_get, the maximum page size is 5000
 
-		final List<Receiver> receivers = getLowLevelClient()
-				.get(LIST_OF_RECEIVERS_TYPE, url);
+		final PageFetcher<Receiver> pageFetcher = createReceiversPageFetcher(remoteGroupId);
 
-		return receivers;
+		final PagedIterator<Receiver> pagedIterator = PagedIterator.<Receiver> builder()
+				.pageSize(pageSize)
+				.pageFetcher(pageFetcher)
+				.build();
+		return pagedIterator;
+	}
+
+	private PageFetcher<Receiver> createReceiversPageFetcher(@NonNull final String remoteGroupId)
+	{
+		final String urlPathAndParams = "/groups.json/{group_id}/receivers?pagesize={pagesize}&page={page}";
+
+		final PageFetcher<Receiver> pageFetcher = (firstRow, pageSize) -> {
+
+			final int zeroBasedPageNo = firstRow / Check.assumeGreaterThanZero(pageSize, "currentPageSize");
+			final List<Receiver> receivers = getLowLevelClient()
+					.get(
+							LIST_OF_RECEIVERS_TYPE,
+							urlPathAndParams,
+							remoteGroupId, pageSize, zeroBasedPageNo);
+
+			if (receivers.isEmpty())
+			{
+				return null;
+			}
+			return Page.ofRows(receivers);
+		};
+		return pageFetcher;
 	}
 
 	/**
@@ -421,9 +457,13 @@ public class CleverReachClient implements PlatformClient
 				.index(contactPersonsWithoutRemoteId, ContactPerson::getEmailAddessStringOrNull)
 				.asMap());
 
-		final List<Receiver> allReceivers = retrieveAllReceivers(campaign);
-		final ImmutableList<ContactPersonRemoteUpdate> contactPersonUpdates = allReceivers
-				.stream()
+		final Iterator<Receiver> allReceivers = retrieveAllReceivers(campaign);
+
+		final Stream<Receiver> allReceiversStream = StreamSupport.stream(
+				Spliterators.spliteratorUnknownSize(allReceivers, Spliterator.ORDERED),
+				false);
+
+		final ImmutableList<ContactPersonRemoteUpdate> contactPersonUpdates = allReceiversStream
 				.map(Receiver::toContactPersonUpdate)
 				.collect(ImmutableList.toImmutableList());
 
