@@ -16,6 +16,7 @@ import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -32,7 +33,7 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.purchasecandidate.PurchaseCandidateReminder;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
-import de.metas.ui.web.WebuiURLs;
+import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -78,7 +79,6 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	private final TaskScheduler taskScheduler;
 	private final IViewsRepository viewsRepo;
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
-	private WebuiURLs webuiURLs = WebuiURLs.newInstance();
 
 	private static final NotificationGroupName NOTIFICATION_GROUP_NAME = NotificationGroupName.of("de.metas.purchasecandidate.UserNotifications.Due");
 	private static final String MSG_PurchaseCandidatesDue = "de.metas.purchasecandidates.PurchaseCandidatesDueNotification";
@@ -197,25 +197,21 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 			return;
 		}
 
+		final ViewId viewId = purchaseCandidatesView.getViewId();
 		final long count = purchaseCandidatesView.size();
-		final String viewUrl = createPurchaseCandidatesURL(reminder, purchaseCandidatesView);
 
 		final UserNotificationRequest notification = UserNotificationRequest.builder()
 				.notificationGroupName(NOTIFICATION_GROUP_NAME)
 				.recipient(Recipient.allRolesContainingGroup(NOTIFICATION_GROUP_NAME))
 				.contentADMessage(MSG_PurchaseCandidatesDue)
 				.contentADMessageParam(count)
-				.contentADMessageParam(TableRecordReference.of(org.compiere.model.I_C_BPartner.Table_Name, reminder.getVendorBPartnerId()))
-				.contentADMessageParam(reminder.getNotificationTime())
-				.contentADMessageParam(viewUrl)
+				.contentADMessageParam(TableRecordReference.of(I_C_BPartner.Table_Name, reminder.getVendorBPartnerId()))
+				.targetAction(TargetViewAction.builder()
+						.adWindowId(viewId.getWindowId().toIntOr(-1))
+						.viewId(viewId.toJson())
+						.build())
 				.build();
 		Services.get(INotificationBL.class).send(notification);
-	}
-
-	private String createPurchaseCandidatesURL(final PurchaseCandidateReminder reminder, final IView purchaseCandidatesView)
-	{
-		final ViewId purchaseCandidatesViewId = purchaseCandidatesView.getViewId();
-		return webuiURLs.getViewUrl(purchaseCandidatesViewId.getWindowId().toJson(), purchaseCandidatesViewId.toJson());
 	}
 
 	private final IView createPurchaseCandidatesView(final PurchaseCandidateReminder reminder)
