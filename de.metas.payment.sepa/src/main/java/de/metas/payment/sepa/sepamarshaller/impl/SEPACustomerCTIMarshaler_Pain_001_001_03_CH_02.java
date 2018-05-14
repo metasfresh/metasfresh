@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +52,7 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.StringUtils.TruncateAt;
@@ -60,11 +62,13 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Bank;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.i18n.IMsgBL;
@@ -167,6 +171,8 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 
 	private int endToEndIdCounter = 0;
 	private int pmtInfCounter = 0;
+
+	private static final String FORBIDDEN_CHARS = "([^a-zA-Z0-9\\.,;:'\\+\\-/\\(\\)?\\*\\[\\]\\{\\}\\\\`´~ !\"#%&<>÷=@_$£àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])";
 
 	public SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02()
 	{
@@ -469,11 +475,16 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 			final AmountType3Choice amt = objectFactory.createAmountType3Choice();
 			final ActiveOrHistoricCurrencyAndAmount instdAmt = objectFactory.createActiveOrHistoricCurrencyAndAmount();
 
-			final String currencyIsoCode = line.getC_Currency().getISO_Code();
+			final I_C_Currency currency = line.getC_Currency();
+
+			final String currencyIsoCode = currency.getISO_Code();
 			instdAmt.setCcy(currencyIsoCode);
 
-			final BigDecimal amount = line.getAmt();
-			Check.assume(amount != null && amount.signum() > 0, "Invalid amount {} for {}", amount, line);
+			final BigDecimal amount = NumberUtils.stripTrailingDecimalZeros(line.getAmt());
+			Check.errorIf(amount == null || amount.signum() <= 0, "Invalid amount={} of SEPA_Export_Line={}", amount, line);
+			Check.errorIf(amount.scale() > currency.getStdPrecision(),
+					"Invalid number of decimal points; amount={} has {} decimal points, but the currency {} only allows {}; SEPA_Export_Line={}",
+					amount, currencyIsoCode, currency.getStdPrecision(), line);
 			instdAmt.setValue(amount);
 
 			amt.setInstdAmt(instdAmt);
@@ -522,7 +533,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 			}
 			else
 			{
-				// let the bank see what it can do
+				// // let the bank see what it can do
 				finInstnId.setBIC(BIC_NOTPROVIDED);
 			}
 
@@ -532,13 +543,17 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 					|| paymentType == PAYMENT_TYPE_4
 					|| paymentType == PAYMENT_TYPE_6)
 			{
-				final String bankName = getBankNameIfAny(line);
+				final boolean hasNoBIC = Check.isEmpty(finInstnId.getBIC(), true) || BIC_NOTPROVIDED.equals(finInstnId.getBIC());
+				if (hasNoBIC)
+				{
+					final String bankName = getBankNameIfAny(line);
+					Check.errorIf(Check.isEmpty(bankName, true), SepaMarshallerException.class,
+							"Zahlart={}, but line {} has no information about the bank name",
+							paymentType, createInfo(line));
 
-				Check.errorIf(Check.isEmpty(bankName, true), SepaMarshallerException.class,
-						"Zahlart={}, but line {} has no information about the bank name",
-						paymentType, createInfo(line));
-
-				finInstnId.setNm(bankName);
+					finInstnId.setNm(bankName);
+					finInstnId.setBIC(null); // if we use Nm, then there should be no BIC element
+				}
 			}
 
 			if (paymentType == PAYMENT_TYPE_4
@@ -655,7 +670,8 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 				}
 				else
 				{
-					rmtInf.setUstrd(reference);
+					final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
+					rmtInf.setUstrd(validReference);
 				}
 			}
 			else
@@ -932,5 +948,20 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 			sb.append(line.getC_BP_BankAccount().getDescription());
 		}
 		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
+	}
+	
+	/**
+	 * 
+	 * @param input
+	 * @return
+	 */
+	@VisibleForTesting
+	static String replaceForbiddenChars(@Nullable final String input)
+	{
+		if (input == null)
+		{
+			return null;
+		}
+		return input.replaceAll(FORBIDDEN_CHARS, "_");
 	}
 }

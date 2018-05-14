@@ -200,11 +200,12 @@ public class DerKurierClient implements ShipperGatewayClient
 	{
 		final int adProcessId = retrievePackageLableAdProcessId();
 
+		final ITableRecordReference deliveryOrderTableRecordReference = //
+				derKurierDeliveryOrderRepository.toTableRecordReference(deliveryOrder);
+
 		final ImmutableList<DeliveryPosition> deliveryPositions = deliveryOrder.getDeliveryPositions();
 		for (final DeliveryPosition deliveryPosition : deliveryPositions)
 		{
-			final ITableRecordReference deliveryPositionTableRecordReference = //
-					derKurierDeliveryOrderRepository.toTableRecordReference(deliveryPosition);
 			final DerKurierDeliveryData derKurierDeliveryData = //
 					DerKurierDeliveryData.ofDeliveryPosition(deliveryPosition);
 
@@ -212,20 +213,20 @@ public class DerKurierClient implements ShipperGatewayClient
 					.setTitle("Label-" + derKurierDeliveryData.getParcelNumber())
 					.setCtx(Env.getCtx())
 					.setAD_Process_ID(adProcessId)
-					.setRecord(deliveryPositionTableRecordReference)
+					.setRecord(deliveryOrderTableRecordReference) // we want the jasper to be archived and attached to the delivery order
 					.addParameter(
 							IJasperService.PARAM_PrintCopies,
 							1)
 					.addParameter(
 							I_DerKurier_DeliveryOrderLine.COLUMNNAME_DerKurier_DeliveryOrderLine_ID,
-							deliveryPositionTableRecordReference.getRecord_ID())
+							deliveryOrderTableRecordReference.getRecord_ID())
 					.setPrintPreview(false)
 					// Execute report in a new transaction
 					.buildAndPrepareExecution()
 					.onErrorThrowException(true)
 					.executeSync();
 
-			Loggables.get().addLog("Created package label for {}", deliveryPositionTableRecordReference);
+			Loggables.get().addLog("Created package label for {}", deliveryOrderTableRecordReference);
 		}
 	}
 
