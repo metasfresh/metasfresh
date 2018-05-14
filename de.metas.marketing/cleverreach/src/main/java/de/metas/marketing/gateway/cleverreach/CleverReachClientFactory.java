@@ -2,6 +2,7 @@ package de.metas.marketing.gateway.cleverreach;
 
 import org.springframework.stereotype.Service;
 
+import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.spi.PlatformClient;
 import de.metas.marketing.base.spi.PlatformClientFactory;
 import lombok.NonNull;
@@ -46,7 +47,7 @@ public class CleverReachClientFactory implements PlatformClientFactory
 	}
 
 	@Override
-	public PlatformClient newClientForPlatformId(final int marketingPlatformId)
+	public PlatformClient newClientForPlatformId(@NonNull final PlatformId marketingPlatformId)
 	{
 		final CleverReachConfig cleverReachConfig = cleverReachConfigRepository.getById(marketingPlatformId);
 		return new CleverReachClient(cleverReachConfig);

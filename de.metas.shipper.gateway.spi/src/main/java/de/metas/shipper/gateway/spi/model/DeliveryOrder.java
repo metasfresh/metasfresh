@@ -75,6 +75,7 @@ public class DeliveryOrder
 
 	@NonNull
 	private ServiceType serviceType;
+	
 
 	/** ID in external repository */
 	private int repoId;

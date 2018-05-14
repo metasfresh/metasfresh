@@ -1,13 +1,20 @@
 package de.metas.marketing.base.model;
 
+
+
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ImmutableList;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import lombok.NonNull;
 
@@ -36,33 +43,51 @@ import lombok.NonNull;
 @Repository
 public class CampaignRepository
 {
-	private ContactPersonRepository contactPersonRepository;
-
-	public CampaignRepository(ContactPersonRepository contactPersonRepository)
+	public Campaign getById(final CampaignId campaignId)
 	{
-		this.contactPersonRepository = contactPersonRepository;
+		final I_MKTG_Campaign campaignRecord = load(campaignId.getRepoId(), I_MKTG_Campaign.class);
+		return createFromModel(campaignRecord);
 	}
 
-	public Campaign getById(final int campaignId)
+	public List<Campaign> getByPlatformId(@NonNull final PlatformId platform)
 	{
-		final I_MKTG_Campaign campaignRecord = load(campaignId, I_MKTG_Campaign.class);
+		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign.COLUMN_MKTG_Platform_ID, platform.getRepoId())
+				.orderBy()
+				.addColumn(I_MKTG_Campaign.COLUMN_MKTG_Campaign_ID).endOrderBy()
+				.create()
+				.stream()
+				.map(CampaignRepository::createFromModel)
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	private static Campaign createFromModel(@NonNull final I_MKTG_Campaign campaignRecord)
+	{
+
+		
+		
+
 		return new Campaign(
 				campaignRecord.getName(),
-				campaignRecord.getMKTG_Campaign_ID(),
-				campaignRecord.getRemoteRecordId());
+				campaignRecord.getRemoteRecordId(),
+				PlatformId.ofRepoId(campaignRecord.getMKTG_Platform_ID()),
+				CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
+
 	}
 
 	public void addContactPersonToCampaign(
-			@NonNull final ContactPerson contactPerson,
-			@NonNull final Campaign campaign)
+			@NonNull final ContactPersonId contactPersonId,
+			@NonNull final CampaignId campaignId)
 	{
-		final ContactPerson storedContactPerson = contactPersonRepository.store(contactPerson);
-		final Campaign storedCampaign = store(campaign);
+		final int contactPersonRepoId = contactPersonId.getRepoId();
+		final int campaignRepoId = campaignId.getRepoId();
 
 		final boolean associationAlreadyExists = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaign.getRepoId())
-				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, storedContactPerson.getRepoId())
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignRepoId)
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, contactPersonRepoId)
 				.create()
 				.match();
 		if (associationAlreadyExists)
@@ -71,17 +96,56 @@ public class CampaignRepository
 		}
 
 		final I_MKTG_Campaign_ContactPerson newAssociation = newInstance(I_MKTG_Campaign_ContactPerson.class);
-		newAssociation.setMKTG_Campaign_ID(storedCampaign.getRepoId());
-		newAssociation.setMKTG_ContactPerson_ID(storedContactPerson.getRepoId());
-		save(newAssociation);
+		newAssociation.setMKTG_Campaign_ID(campaignRepoId);
+		newAssociation.setMKTG_ContactPerson_ID(contactPersonRepoId);
+		saveRecord(newAssociation);
 	}
 
-	public Campaign store(@NonNull final Campaign campaign)
+	public Campaign saveCampaign(@NonNull final Campaign campaign)
+	{
+		final I_MKTG_Campaign campaignRecord = createOrUpdateRecordDontSave(campaign);
+		saveRecord(campaignRecord);
+
+		return campaign.toBuilder()
+				.campaignId(CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()))
+				.build();
+	}
+
+	public void saveCampaignSyncResult(@NonNull final SyncResult syncResult)
+	{
+		final Campaign campaign = Campaign.cast(syncResult.getSynchedDataRecord());
+		final I_MKTG_Campaign campaignRecord = createOrUpdateRecordDontSave(campaign);
+
+		if (syncResult instanceof LocalToRemoteSyncResult)
+		{
+			campaignRecord.setLastSyncOfLocalToRemote(SystemTime.asTimestamp());
+
+			final LocalToRemoteSyncResult localToRemoteSyncResult = (LocalToRemoteSyncResult)syncResult;
+			campaignRecord.setLastSyncStatus(localToRemoteSyncResult.getLocalToRemoteStatus().toString());
+			campaignRecord.setLastSyncDetailMessage(localToRemoteSyncResult.getErrorMessage());
+		}
+		else if (syncResult instanceof RemoteToLocalSyncResult)
+		{
+			campaignRecord.setLastSyncOfRemoteToLocal(SystemTime.asTimestamp());
+
+			final RemoteToLocalSyncResult remoteToLocalSyncResult = (RemoteToLocalSyncResult)syncResult;
+			campaignRecord.setLastSyncStatus(remoteToLocalSyncResult.getRemoteToLocalStatus().toString());
+			campaignRecord.setLastSyncDetailMessage(remoteToLocalSyncResult.getErrorMessage());
+		}
+		else
+		{
+			Check.fail("The given syncResult has an unexpected type of {}; syncResult={}", syncResult.getClass(), syncResult);
+		}
+		saveRecord(campaignRecord);
+	}
+
+	private I_MKTG_Campaign createOrUpdateRecordDontSave(@NonNull final Campaign campaign)
 	{
 		final I_MKTG_Campaign campaignRecord;
-		if (campaign.getRepoId() > 0)
+		if (campaign.getCampaignId() != null)
 		{
-			campaignRecord = load(campaign.getRepoId(), I_MKTG_Campaign.class);
+			final int repoId = campaign.getCampaignId().getRepoId();
+			campaignRecord = load(repoId, I_MKTG_Campaign.class);
 		}
 		else
 		{
@@ -89,12 +153,9 @@ public class CampaignRepository
 		}
 
 		campaignRecord.setName(campaign.getName());
-		save(campaignRecord);
-
-		return campaign.toBuilder()
-				.repoId(campaignRecord.getMKTG_Campaign_ID())
-				.build();
-
+		campaignRecord.setRemoteRecordId(campaign.getRemoteId());
+		campaignRecord.setMKTG_Platform_ID(campaign.getPlatformId().getRepoId());
+		return campaignRecord;
 	}
 
 	public int getDefaultNewsletterCampaignId(final int orgId)
@@ -113,8 +174,8 @@ public class CampaignRepository
 	{
 		Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaign.getRepoId())
-				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, contactPerson.getRepoId())
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaign.getCampaignId().getRepoId())
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, contactPerson.getContactPersonId().getRepoId())
 				.create()
 				.delete();
 
@@ -130,9 +191,9 @@ public class CampaignRepository
 		consent.setAD_User_ID(contactPerson.getAdUserId());
 		consent.setC_BPartner_ID(contactPerson.getCBpartnerId());
 		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
-		consent.setMKTG_ContactPerson_ID(contactPerson.getRepoId());
+		consent.setMKTG_ContactPerson_ID(contactPerson.getContactPersonId().getRepoId());
 
-		save(consent);
+		saveRecord(consent);
 
 	}
 
@@ -146,7 +207,7 @@ public class CampaignRepository
 		if(consent != null)
 		{
 			consent.setConsentRevokedOn(SystemTime.asTimestamp());
-			save(consent);
+			saveRecord(consent);
 		}
 
 	}
@@ -157,7 +218,7 @@ public class CampaignRepository
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Consent.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getRepoId())
+				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getContactPersonId())
 				.addEqualsFilter(I_MKTG_Consent.COLUMN_AD_User_ID, contactPerson.getAdUserId())
 				.create()
 				.firstOnly(I_MKTG_Consent.class);

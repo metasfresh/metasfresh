@@ -2,6 +2,7 @@ package de.metas.marketing.gateway.cleverreach;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -21,6 +22,7 @@ import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.EmailAddress;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult.LocalToRemoteStatus;
+import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult.RemoteToLocalStatus;
 import de.metas.marketing.base.model.SyncResult;
@@ -52,16 +54,19 @@ import lombok.NonNull;
 public class ManualTest
 {
 
+	private static final PlatformId PLATFORM_ID = PlatformId.ofRepoId(30);
 	private static final String MANUAL_GROUP_REMOTE_ID = "";
 	private CleverReachClient cleverReachClient;
 
 	@Before
 	public void init()
 	{
-		final CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
+  		final CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
 				.client_id("")
 				.login("")
-				.password("").build();
+				.password("")
+				.platformId(PLATFORM_ID)
+				.build();
 		cleverReachClient = new CleverReachClient(cleverReachConfig);
 	}
 
@@ -98,11 +103,13 @@ public class ManualTest
 	}
 
 	@Test
-	@Ignore
+	// @Ignore
 	public void retrieveAllContactPersonsOfCampagin()
 	{
-		final Campaign campaign = Campaign.builder().remoteId(MANUAL_GROUP_REMOTE_ID).build();
-		final List<Receiver> contactPersons = cleverReachClient.retrieveAllReceivers(campaign);
+		final Campaign campaign = Campaign.builder()
+				.remoteId(MANUAL_GROUP_REMOTE_ID)
+				.platformId(PLATFORM_ID).build();
+		final Iterator<Receiver> contactPersons = cleverReachClient.retrieveAllReceivers(campaign);
 
 		assertThat(contactPersons).isNotEmpty();
 	}
@@ -204,7 +211,9 @@ public class ManualTest
 					assertThat(contactPerson.getRemoteId()).isNotEmpty();
 
 					final EmailAddress email = EmailAddress.cast(contactPerson.getAddress()).get();
-					assertThat(email.getActiveOnRemotePlatform()).isNotNull().isFalse();
+					assertThat(email.getDeactivatedOnRemotePlatform())
+							.isNotNull()
+							.isTrue();
 				});
 	}
 

@@ -10,16 +10,31 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.58 (2018-21)
+
+**release for week 2018-21**
+
+## Features
+* metasfresh
+
+## Fixes
+
 # metasfresh 5.57 (2018-20)
 
 **release for week 2018-20**
 
 ## Features
 * metasfresh
+  * [#3754](https://github.com/metasfresh/metasfresh/issues/3754) Inventory: Allow only "Active" and "Issued" HUs in inventorylines
+  * [#3975](https://github.com/metasfresh/metasfresh/issues/3975) Allow annotating data as personal
+  * [#3991](https://github.com/metasfresh/metasfresh/issues/3991) Implement "Der Kurier" parcel number check digit
+  * [#3993](https://github.com/metasfresh/metasfresh/issues/3993) Eliminate the ampersand from all AD_Messages
   * [#4003](https://github.com/metasfresh/metasfresh/issues/4003) Adjust Window "Der Kurier Versandauftrag"
     * New Window for a new Logistics Partner Order window of "Der Kurier".
   * [#4004](https://github.com/metasfresh/metasfresh/issues/4004) WebUI: Adjust new Window Discount Schema Pharma
     * Improved Window for Discount Schema Pharma.
+  * [#4029](https://github.com/metasfresh/metasfresh/pull/4029) CleverReach Interface generic marketing datamodel
+  * [#4034](https://github.com/metasfresh/metasfresh/issues/4034) Add CustomerCode and CollectorCode to Der Kurier
 
 * metasfresh-webui-frontend
   * [#1613](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1613) Display field changes warnings
@@ -27,12 +42,25 @@ Here come the actual release notes:
   * [#1624](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1624) Material Cockpit Filter Name + switch date = invalid date
     * Improvement of the Filtering and Navigation in Material Cockpit.
 
+* metasfresh-dist
+  * [#41](https://github.com/metasfresh/metasfresh-dist/issues/41) Fix and improvement around picking/shipping
+
 # Fixes
+* metasfresh
+  * [#4013](https://github.com/metasfresh/metasfresh/issues/4013) Lot No Action error when running multiple times
+  * [#4020](https://github.com/metasfresh/metasfresh/issues/4020) eventlog data needs to be stored out-of-trx
+  * [#4027](https://github.com/metasfresh/metasfresh/issues/4027) "To Be Updated" in shipment schedule and "In Verarbeitung" in workpackage getting stuck
+  * [#3980](https://github.com/metasfresh/metasfresh/issues/3980) Notifications in Swing Client show no info
+  * [#4016](https://github.com/metasfresh/metasfresh/issues/4016) Pricing Conditions error when save
+  * [#4028](https://github.com/metasfresh/metasfresh/issues/4028) Multiple shipment lines for one order line all have the order line's TU-Qty
+
 * metasfresh-webui-frontend
   * [#1751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1751) HU Editor: selection jumps from your line to first line
     * Improved behavior of seletion lines in Handling Unit Editor when changing referenced data. Now the selection is not jumping away anymore.
   * [#1765](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1765) Modal view: editing lookups not working
     * Fixes the usage of Lookup widgets in modal Overlays. Now accessing the correct endpoints.
+  * [#1784](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1784) Search fields in filters are not working
+    * Fixes a Bug in Lookup Filters.
 
 ## Fixes
 

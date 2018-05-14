@@ -46,12 +46,15 @@ public class ContactPersonRemoteUpdate
 		return finishAndBuild(contactPerson.toBuilder());
 	}
 
-	public ContactPerson toContactPerson()
+	public ContactPerson toContactPerson(@NonNull final PlatformId platformId)
 	{
-		return finishAndBuild(ContactPerson.builder());
+		final ContactPersonBuilder builder = ContactPerson
+				.builder()
+				.platformId(platformId);
+		return finishAndBuild(builder);
 	}
 
-	private ContactPerson finishAndBuild(final ContactPersonBuilder builder)
+	private ContactPerson finishAndBuild(@NonNull final ContactPersonBuilder builder)
 	{
 		return builder.address(address)
 				.remoteId(remoteId)

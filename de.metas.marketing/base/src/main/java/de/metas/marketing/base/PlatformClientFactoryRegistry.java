@@ -49,13 +49,13 @@ public class PlatformClientFactoryRegistry
 				.collect(GuavaCollectors.toImmutableMapByKey(PlatformClientFactory::getPlatformGatewayId));
 	}
 
-	public PlatformClientFactory getShipperGatewayService(@NonNull final String platformGatewayId)
+	public PlatformClientFactory getPlatformClientFactory(@NonNull final String platformGatewayId)
 	{
 		final PlatformClientFactory service = clientFactoriesByGatewayId.get(platformGatewayId);
 		return Check.assumeNotNull(service, "service shall exist for platformGatewayId={}", platformGatewayId);
 	}
 
-	public boolean hasServiceSupport(@NonNull final String platformGatewayId)
+	public boolean hasGatewaySupport(@NonNull final String platformGatewayId)
 	{
 		return clientFactoriesByGatewayId.containsKey(platformGatewayId);
 	}
