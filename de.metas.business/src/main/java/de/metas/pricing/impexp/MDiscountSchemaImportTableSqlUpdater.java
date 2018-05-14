@@ -125,7 +125,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 		int no;
 
 		sql = new StringBuilder("UPDATE I_DiscountSchema ")
-				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Product, ' ")
+				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No BPartner, ' ")
 				.append("WHERE C_BPartner_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
