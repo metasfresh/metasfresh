@@ -136,9 +136,12 @@ export default class App extends Component {
     if (APP_PLUGINS.length) {
       const plugins = APP_PLUGINS.map(plugin => {
         const waitForChunk = () =>
-          import(/* webpackMode: "lazy-once" */ `./../../plugins/${plugin}/index.js`).then(
-            module => module
-          );
+          import(`./../../plugins/${plugin}/index.js`)
+            .then(module => module)
+            .catch(() => {
+              // eslint-disable-next-line no-console
+              console.error(`Error loading plugin ${plugin}`);
+            });
 
         return new Promise(resolve =>
           waitForChunk().then(file => {
