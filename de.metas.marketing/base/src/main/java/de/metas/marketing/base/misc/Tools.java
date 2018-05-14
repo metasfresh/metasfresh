@@ -120,6 +120,7 @@ public class Tools
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
 		campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaign.getCampaignId());
+		campaignRepository.createConsent(savedContactPerson);
 
 	}
 
@@ -128,11 +129,12 @@ public class Tools
 		Check.assumeGreaterOrEqualToZero(campaignId, "campaignId");
 		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);		
 		final Campaign campaign = campaignRepository.getById(CampaignId.ofRepoId(campaignId));
+		
 		final ContactPerson contactPerson = createContactPersonForAdUser(user, campaign.getPlatformId());
-		
-		
-		campaignRepository.revokeConsent(contactPerson, campaign);
-		campaignRepository.removeContactPersonFromCampaign(contactPerson, campaign);
+		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
+			
+		campaignRepository.revokeConsent(savedContactPerson);
+		campaignRepository.removeContactPersonFromCampaign(savedContactPerson, campaign);
 
 	}
 }
