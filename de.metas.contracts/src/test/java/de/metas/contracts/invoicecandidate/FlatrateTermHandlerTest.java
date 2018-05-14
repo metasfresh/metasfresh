@@ -95,7 +95,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.isAutoRenew(true)
 				.build();
 
-		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
+		final FlatrateTermSubscription_Handler handler = new FlatrateTermSubscription_Handler();
 
 		final boolean resultActual = handler.isCorrectDateForTerm(term);
 		final boolean resultExpected = true;
@@ -124,7 +124,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.isAutoRenew(true)
 				.build();
 
-		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
+		final FlatrateTermSubscription_Handler handler = new FlatrateTermSubscription_Handler();
 
 		final boolean resultActual = handler.isCorrectDateForTerm(term);
 		final boolean resultExpected = true;
@@ -153,7 +153,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.isAutoRenew(true)
 				.build();
 
-		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
+		final FlatrateTermSubscription_Handler handler = new FlatrateTermSubscription_Handler();
 
 		final boolean resultActual = handler.isCorrectDateForTerm(term);
 		final boolean resultExpected = false;
@@ -182,7 +182,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.isAutoRenew(true)
 				.build();
 
-		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
+		final FlatrateTermSubscription_Handler handler = new FlatrateTermSubscription_Handler();
 
 		final boolean resultActual = handler.isCorrectDateForTerm(term);
 		final boolean resultExpected = true;
@@ -207,7 +207,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.isAutoRenew(true)
 				.build();
 
-		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
+		final FlatrateTermSubscription_Handler handler = new FlatrateTermSubscription_Handler();
 		handler.isCorrectDateForTerm(term);
 	}
 
@@ -268,7 +268,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		}};
 		// @formatter:on
 
-		final FlatrateTermInvoiceCandidateHandler flatrateTermHandler = new FlatrateTermInvoiceCandidateHandler();
+		final FlatrateTermSubscription_Handler flatrateTermHandler = new FlatrateTermSubscription_Handler();
 		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));
 		assertInvoiceCandidates(candidates, term1);
 	}

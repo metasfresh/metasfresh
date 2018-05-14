@@ -49,7 +49,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
@@ -62,18 +61,18 @@ import lombok.NonNull;
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_Flatrate_Term}.
  *
- * @author tsa
- *
  */
-public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidateHandler
+public class FlatrateTermSubscription_Handler extends AbstractInvoiceCandidateHandler
 {
 	/**
-	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have a <code>C_OrderLine_Term_ID</code>.
+	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have an invoice candidate referencing them.
 	 */
 	@Override
 	public Iterator<I_C_Flatrate_Term> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
-		return Services.get(IContractsDAO.class).retrieveSubscriptionTermsWithMissingCandidates(limit).iterator();
+		return Services.get(IContractsDAO.class)
+				.retrieveSubscriptionTermsWithMissingCandidates(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, limit)
+				.iterator();
 	}
 
 	@Override
@@ -89,13 +88,7 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 	public void invalidateCandidatesFor(final Object model)
 	{
 		final I_C_Flatrate_Term term = InterfaceWrapperHelper.create(model, I_C_Flatrate_Term.class);
-
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-
-		for (final I_C_Invoice_Candidate cand : invoiceCandDB.retrieveReferencing(term))
-		{
-			invoiceCandDB.invalidateCand(cand);
-		}
+		HandlerTools.invalidateCandidatesFor(term);
 	}
 
 	@Override
@@ -128,12 +121,6 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 	public boolean isUserInChargeUserEditable()
 	{
 		return false;
-	}
-
-	private boolean isCancelledContract(@NonNull final I_C_Flatrate_Term term)
-	{
-		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus())
-				|| X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus());
 	}
 
 	private void setOrderAndOrderLineIfNeeded(@NonNull final I_C_Flatrate_Term term, @NonNull final I_C_Invoice_Candidate ic)
@@ -222,6 +209,12 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 
 		ic.setC_Tax_ID(taxId);
 		return ic;
+	}
+
+	private boolean isCancelledContract(@NonNull final I_C_Flatrate_Term term)
+	{
+		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus())
+				|| X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus());
 	}
 
 	private Timestamp getDateOrdered(final I_C_Flatrate_Term term)

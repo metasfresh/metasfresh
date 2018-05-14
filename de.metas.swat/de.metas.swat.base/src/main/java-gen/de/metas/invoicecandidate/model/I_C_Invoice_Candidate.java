@@ -809,7 +809,7 @@ public interface I_C_Invoice_Candidate
 	 * Set Zahlungsbedingung abw..
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -819,7 +819,7 @@ public interface I_C_Invoice_Candidate
 	 * Get Zahlungsbedingung abw..
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
