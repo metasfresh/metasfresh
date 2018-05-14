@@ -30,10 +30,10 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.NotificationGroupName;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.purchasecandidate.PurchaseCandidateReminder;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
-import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -218,6 +218,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	{
 		final IView view = viewsRepo.createView(CreateViewRequest.builder(getWindowId(I_C_PurchaseCandidate.Table_Name))
 				.addStickyFilters(createViewStickyFilter(reminder))
+				.applySecurityRestrictions(false) // don't apply security restrictions because at this point the AD_Client_ID and AD_Org_ID are ZERO
 				.build());
 		if (view.size() <= 0)
 		{
