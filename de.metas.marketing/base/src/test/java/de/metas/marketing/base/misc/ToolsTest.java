@@ -1,13 +1,14 @@
 package de.metas.marketing.base.misc;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.FixedTimeSource;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import de.metas.StartupListener;
@@ -25,7 +27,7 @@ import de.metas.marketing.base.model.I_AD_User;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Consent;
-import de.metas.marketing.base.model.I_MKTG_ContactPerson;
+import de.metas.marketing.base.model.I_MKTG_Platform;
 
 /*
  * #%L
@@ -50,11 +52,11 @@ import de.metas.marketing.base.model.I_MKTG_ContactPerson;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class,
-		
+
 		Tools.class,
 		CampaignRepository.class,
-		
-		ContactPersonRepository.class})
+
+		ContactPersonRepository.class })
 public class ToolsTest
 {
 	@Before
@@ -64,26 +66,67 @@ public class ToolsTest
 	}
 
 	@Test
-	public void addToNewsletter_noCampaign()
+	public void addToNewsletter()
 	{
 		final Tools converters = Adempiere.getBean(Tools.class);
-		
+
 		final I_AD_User user = createUser("User1", "mail@mail.mail");
 
-		final I_MKTG_Campaign campaign = createCampaign();
-		
-		converters.addToNewsletter(user, campaign.getMKTG_Campaign_ID());
-		
+		final I_MKTG_Campaign campaignRecord = createCampaign();
+
+		converters.addToNewsletter(user, campaignRecord.getMKTG_Campaign_ID());
+
 		final I_MKTG_Consent consentRecord = getConsentRecord();
 		final I_MKTG_Campaign_ContactPerson contactPerson = getContactPerson();
-		List<I_MKTG_ContactPerson> contactPersons = getContactPersons();
-		
+
 		assertNotNull(consentRecord);
 		assertNotNull(contactPerson);
-		assertTrue(contactPersons.size() == 1);
-		
+
 	}
-	
+
+	@Test
+	public void removeFromNewsletter_ExistingConsent()
+	{
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 4, 4));
+		
+		final Tools converters = Adempiere.getBean(Tools.class);
+
+		final I_AD_User user = createUser("User1", "mail@mail.mail");
+
+		final I_MKTG_Campaign campaignRecord = createCampaign();
+		converters.addToNewsletter(user, campaignRecord.getMKTG_Campaign_ID());		
+
+
+		final I_MKTG_Consent consent = getConsentRecord();
+		converters.removeFromNewsletter(user, campaignRecord.getMKTG_Campaign_ID());
+		
+		
+		refresh(consent);
+
+		
+		assertTrue(SystemTime.asTimestamp().equals(consent.getConsentRevokedOn()));
+
+	}
+
+	@Test
+	public void removeFromNewsletter_NoConsent()
+	{
+		final Tools converters = Adempiere.getBean(Tools.class);
+
+		final I_AD_User user = createUser("User1", "mail@mail.mail");
+
+		final I_MKTG_Campaign campaignRecord = createCampaign();
+
+		converters.removeFromNewsletter(user, campaignRecord.getMKTG_Campaign_ID());
+
+		final I_MKTG_Consent consentRecord = getConsentRecord();
+		final I_MKTG_Campaign_ContactPerson contactPerson = getContactPerson();
+
+		assertNull(consentRecord);
+		assertNull(contactPerson);
+
+	}
+
 	private I_MKTG_Consent getConsentRecord()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Consent.class)
@@ -91,21 +134,13 @@ public class ToolsTest
 				.create()
 				.firstOnly(I_MKTG_Consent.class);
 	}
-	
+
 	private I_MKTG_Campaign_ContactPerson getContactPerson()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_MKTG_Campaign_ContactPerson.class);
-	}
-	
-	private List<I_MKTG_ContactPerson> getContactPersons()
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_ContactPerson.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_MKTG_ContactPerson.class);
 	}
 
 	private I_AD_User createUser(final String name, final String mail)
@@ -124,8 +159,23 @@ public class ToolsTest
 	{
 		final I_MKTG_Campaign campaign = newInstance(I_MKTG_Campaign.class);
 
+		final I_MKTG_Platform platform = createPlatform();
+
+		campaign.setMKTG_Platform_ID(platform.getMKTG_Platform_ID());
 		save(campaign);
 
 		return campaign;
 	}
+
+	private I_MKTG_Platform createPlatform()
+	{
+		final I_MKTG_Platform platform = newInstance(I_MKTG_Platform.class);
+
+		save(platform);
+		return platform;
+
+	}
+
+	
+	
 }
