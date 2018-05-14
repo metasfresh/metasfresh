@@ -131,9 +131,9 @@ class UserDropdown extends Component {
               <i className="meta-icon-settings" />
               {counterpart.translate('window.settings.caption')}
             </div>
-            {plugins.length && <hr className="context-menu-separator" />}
+            {plugins.length > 0 && <hr className="context-menu-separator" />}
             {this.renderPlugins()}
-            {plugins.length && <hr className="context-menu-separator" />}
+            {plugins.length > 0 && <hr className="context-menu-separator" />}
             <div
               className="user-dropdown-item"
               onClick={() => {
