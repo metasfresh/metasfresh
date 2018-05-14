@@ -1,4 +1,4 @@
-package de.metas.notification.impl;
+package de.metas.notification;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,18 +11,17 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.text.MapFormat;
 import org.apache.ecs.StringElement;
 import org.apache.ecs.xhtml.a;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.WebuiURLs;
 import lombok.NonNull;
 
 /*
@@ -54,9 +53,19 @@ final class NotificationMessageFormatter
 		return new NotificationMessageFormatter();
 	}
 
+	public static final String createUrlWithTitle(@NonNull final String url, @NonNull final String title)
+	{
+		return url + URL_TITLE_SEPARATOR + title;
+	}
+
+	// Services
 	private static final Logger logger = LogManager.getLogger(NotificationMessageFormatter.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final WebuiURLs webuiURLs = WebuiURLs.newInstance();
+
+	// Constants
+	private static final String URL_TITLE_SEPARATOR = "><";
+	private static final String MSG_BottomText = "de.metas.notification.email.BottomText";
 
 	//
 	// Params
@@ -64,7 +73,7 @@ final class NotificationMessageFormatter
 	private String adLanguage;
 	private final Map<ITableRecordReference, String> recordDisplayTexts = new HashMap<>();
 	private final Map<ITableRecordReference, Integer> recordWindowId = new HashMap<>();
-	private String webuiDocumentUrl;
+	private String bottomURL;
 
 	//
 	// State
@@ -113,12 +122,6 @@ final class NotificationMessageFormatter
 		return this;
 	}
 
-	public NotificationMessageFormatter webuiDocumentUrl(final String webuiDocumentUrl)
-	{
-		this.webuiDocumentUrl = webuiDocumentUrl;
-		return this;
-	}
-
 	public String format(@NonNull final String adMessage, final List<Object> params)
 	{
 		final ReplaceAfterFormatCollector replaceAfterFormat = new ReplaceAfterFormatCollector();
@@ -132,6 +135,12 @@ final class NotificationMessageFormatter
 		}
 
 		result = replaceAfterFormat.replaceAll(result);
+
+		final String bottomText = getBottomText();
+		if (!Check.isEmpty(bottomText, true))
+		{
+			result += "\n" + bottomText;
+		}
 
 		return result;
 	}
@@ -176,6 +185,19 @@ final class NotificationMessageFormatter
 			}
 		}
 
+		if (param instanceof String)
+		{
+			final a link = toLinkOrNull(param.toString());
+			if (link == null)
+			{
+				return param;
+			}
+			else
+			{
+				return replaceAfterFormatCollector.addAndGetKey(link.toString());
+			}
+		}
+
 		return param;
 	}
 
@@ -211,6 +233,11 @@ final class NotificationMessageFormatter
 	{
 		try
 		{
+			// NOTE: the only reason why we have the service here and not declared at the top
+			// it's because the IDocumentBL implementation it's not in this project (but in de.metas.bussiness)
+			// so all unit tests for this class will fail even if they won't use the "recordDisplayText" feature.
+			final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
 			final Object targetRecordModel = record.getModel(PlainContextAware.createUsingOutOfTransaction());
 			final String documentNo = documentBL.getDocumentNo(targetRecordModel);
 			return documentNo;
@@ -247,28 +274,87 @@ final class NotificationMessageFormatter
 
 	private String getRecordUrl(@NonNull final ITableRecordReference record)
 	{
-		final String webuiDocumentUrl = this.webuiDocumentUrl;
-		if (Check.isEmpty(webuiDocumentUrl, true))
-		{
-			return null;
-		}
-
 		final int targetWindowId = getRecordWindowId(record);
 		if (targetWindowId <= 0)
 		{
 			return null;
 		}
 
-		return MapFormat.format(webuiDocumentUrl, ImmutableMap.<String, Object> builder()
-				.put("windowId", String.valueOf(targetWindowId))
-				.put("recordId", String.valueOf(record.getRecord_ID()))
-				.build());
+		return webuiURLs.getDocumentUrl(String.valueOf(targetWindowId), String.valueOf(record.getRecord_ID()));
 	}
 
 	private int getRecordWindowId(@NonNull final ITableRecordReference record)
 	{
 		return recordWindowId.computeIfAbsent(record, RecordZoomWindowFinder::findAD_Window_ID);
 	}
+
+	private static a toLinkOrNull(final String text)
+	{
+		if (text == null)
+		{
+			return null;
+		}
+
+		final String textNorm = text.trim();
+		final String textLC = textNorm.toLowerCase();
+		if (textLC.startsWith("http://") || textLC.startsWith("https://"))
+		{
+			final String href;
+			final String title;
+			final int idx = textNorm.lastIndexOf(URL_TITLE_SEPARATOR);
+			if (idx > 0)
+			{
+				href = textNorm.substring(0, idx);
+				title = textNorm.substring(idx + URL_TITLE_SEPARATOR.length());
+			}
+			else
+			{
+				href = textNorm;
+				title = textNorm;
+			}
+
+			return new a(href, title);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public NotificationMessageFormatter bottomUrl(final String bottomURL)
+	{
+		this.bottomURL = bottomURL;
+		return this;
+	}
+
+	private String getBottomText()
+	{
+		if (Check.isEmpty(bottomURL, true))
+		{
+			return null;
+		}
+
+		final String bottomURLText;
+		if (html)
+		{
+			bottomURLText = new a(bottomURL, bottomURL).toString();
+		}
+		else
+		{
+			bottomURLText = bottomURL;
+		}
+
+		String bottomText = msgBL.getTranslatableMsgText(MSG_BottomText, bottomURLText)
+				.translate(getLanguage());
+
+		return bottomText;
+	}
+
+	//
+	//
+	//
+	//
+	//
 
 	private static final class ReplaceAfterFormatCollector
 	{

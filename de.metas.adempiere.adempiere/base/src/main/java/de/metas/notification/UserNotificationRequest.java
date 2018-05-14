@@ -9,10 +9,8 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.api.NotificationGroupName;
-import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.core.io.Resource;
 
 import com.google.common.collect.ImmutableList;
@@ -53,11 +51,11 @@ import lombok.Value;
 @Value
 public class UserNotificationRequest
 {
-	boolean broadcastToAllUsers;
-	int recipientUserId;
+	Recipient recipient;
 	UserNotificationsConfig notificationsConfig;
 
-	Topic topic;
+	private static final NotificationGroupName DEFAULT_NotificationGroupName = NotificationGroupName.of(EventBusConstants.TOPIC_GeneralUserNotifications.getName());
+	NotificationGroupName notificationGroupName;
 
 	boolean important;
 
@@ -75,9 +73,7 @@ public class UserNotificationRequest
 	String contentADMessage;
 	List<Object> contentADMessageParams;
 
-	String targetRecordDisplayText;
-	ITableRecordReference targetRecord;
-	int targetADWindowId;
+	TargetAction targetAction;
 
 	List<Resource> attachments;
 
@@ -86,11 +82,10 @@ public class UserNotificationRequest
 
 	@Builder(toBuilder = true)
 	private UserNotificationRequest(
-			final boolean broadcastToAllUsers,
-			final Integer recipientUserId,
+			final Recipient recipient,
 			final UserNotificationsConfig notificationsConfig,
 			//
-			final Topic topic,
+			final NotificationGroupName notificationGroupName,
 			//
 			final boolean important,
 			//
@@ -102,35 +97,35 @@ public class UserNotificationRequest
 			final String contentADMessage,
 			@Singular final List<Object> contentADMessageParams,
 			//
-			@Nullable String targetRecordDisplayText,
-			@Nullable final ITableRecordReference targetRecord,
-			final int targetADWindowId,
+			@Nullable TargetAction targetAction,
 			//
 			@Singular final List<Resource> attachments,
 			// Options:
 			final boolean noEmail)
 	{
-		this.broadcastToAllUsers = broadcastToAllUsers;
-		if (broadcastToAllUsers)
+		this.notificationsConfig = notificationsConfig;
+
+		if (recipient == null)
 		{
-			this.notificationsConfig = null;
-			this.recipientUserId = -1;
-		}
-		else
-		{
-			this.notificationsConfig = notificationsConfig;
 			if (notificationsConfig != null)
 			{
-				this.recipientUserId = notificationsConfig.getUserId();
+				this.recipient = Recipient.user(notificationsConfig.getUserId());
 			}
 			else
 			{
-				Check.assume(recipientUserId != null && recipientUserId >= 0, "recipientUserId >= 0 but it was {}", recipientUserId);
-				this.recipientUserId = recipientUserId;
+				throw new AdempiereException("notificationConfig or recipient shall be specified");
 			}
 		}
+		else if (recipient.isAllUsers())
+		{
+			this.recipient = recipient;
+		}
+		else
+		{
+			this.recipient = recipient;
+		}
 
-		this.topic = topic != null ? topic : EventBusConstants.TOPIC_GeneralUserNotifications;
+		this.notificationGroupName = notificationGroupName != null ? notificationGroupName : DEFAULT_NotificationGroupName;
 
 		this.important = important;
 
@@ -142,9 +137,7 @@ public class UserNotificationRequest
 		this.contentADMessage = contentADMessage;
 		this.contentADMessageParams = copyADMessageParams(contentADMessageParams);
 
-		this.targetRecordDisplayText = targetRecordDisplayText;
-		this.targetRecord = targetRecord;
-		this.targetADWindowId = targetADWindowId;
+		this.targetAction = targetAction;
 
 		this.attachments = ImmutableList.copyOf(attachments);
 
@@ -154,15 +147,6 @@ public class UserNotificationRequest
 	private static List<Object> copyADMessageParams(final List<Object> params)
 	{
 		return params != null && !params.isEmpty() ? Collections.unmodifiableList(new ArrayList<>(params)) : ImmutableList.of();
-	}
-
-	public int getRecipientUserId()
-	{
-		if (isBroadcastToAllUsers())
-		{
-			throw new AdempiereException("recipientUserId not available when broadcastToAllUsers is set: " + this);
-		}
-		return recipientUserId;
 	}
 
 	public String getADLanguageOrGet(final Supplier<String> defaultLanguageSupplier)
@@ -175,11 +159,6 @@ public class UserNotificationRequest
 		return !Check.isEmpty(subjectADMessage) ? subjectADMessage : defaultValue;
 	}
 
-	public NotificationGroupName getNotificationGroupName()
-	{
-		return NotificationGroupName.of(getTopic().getName());
-	}
-
 	public UserNotificationRequest deriveByNotificationsConfig(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
 		if (Objects.equals(this.notificationsConfig, notificationsConfig))
@@ -187,17 +166,83 @@ public class UserNotificationRequest
 			return this;
 		}
 
-		return toBuilder().broadcastToAllUsers(false).notificationsConfig(notificationsConfig).build();
+		return toBuilder().notificationsConfig(notificationsConfig).build();
 	}
 
-	public UserNotificationRequest deriveByRecipientUserId(final int recipientUserId)
+	public UserNotificationRequest deriveByRecipient(@NonNull final Recipient recipient)
 	{
-		Check.assumeGreaterOrEqualToZero(recipientUserId, "recipientUserId");
-		if (!broadcastToAllUsers && this.recipientUserId == recipientUserId)
+		if (Objects.equals(this.recipient, recipient))
 		{
 			return this;
 		}
 
-		return toBuilder().broadcastToAllUsers(false).recipientUserId(recipientUserId).notificationsConfig(null).build();
+		return toBuilder().recipient(recipient).notificationsConfig(null).build();
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	public static class UserNotificationRequestBuilder
+	{
+		public UserNotificationRequestBuilder recipientUserId(final int userId)
+		{
+			return recipient(Recipient.user(userId));
+		}
+
+		public UserNotificationRequestBuilder topic(final Topic topic)
+		{
+			return notificationGroupName(NotificationGroupName.of(topic));
+		}
+	}
+
+	public static interface TargetAction
+	{
+	}
+
+	@lombok.Value
+	@lombok.Builder(toBuilder = true)
+	public static class TargetRecordAction implements TargetAction
+	{
+		public static TargetRecordAction of(@NonNull final TableRecordReference record)
+		{
+			return builder().record(record).build();
+		}
+
+		public static TargetRecordAction ofRecordAndWindow(@NonNull final TableRecordReference record, final int adWindowId)
+		{
+			return builder().record(record).adWindowId(adWindowId).build();
+		}
+
+		public static TargetRecordAction of(@NonNull final String tableName, final int recordId)
+		{
+			return of(TableRecordReference.of(tableName, recordId));
+		}
+
+		public static TargetRecordAction cast(final TargetAction targetAction)
+		{
+			return (TargetRecordAction)targetAction;
+		}
+
+		int adWindowId;
+		@NonNull
+		TableRecordReference record;
+		String recordDisplayText;
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	public static class TargetViewAction implements TargetAction
+	{
+		public static final TargetViewAction cast(final TargetAction targetAction)
+		{
+			return (TargetViewAction)targetAction;
+		}
+
+		int adWindowId;
+		@NonNull
+		String viewId;
 	}
 }

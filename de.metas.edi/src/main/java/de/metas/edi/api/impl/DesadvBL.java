@@ -52,7 +52,7 @@ import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.inout.IInOutDAO;
-import de.metas.interfaces.I_C_BPartner_Product;
+import org.compiere.model.I_C_BPartner_Product;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.process.ProcessInfo;

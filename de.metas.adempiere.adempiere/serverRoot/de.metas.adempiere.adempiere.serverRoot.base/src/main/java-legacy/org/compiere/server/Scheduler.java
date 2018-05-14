@@ -67,6 +67,7 @@ import de.metas.attachments.IAttachmentBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
@@ -674,11 +675,11 @@ public class Scheduler extends AdempiereServer
 				final int supervisorId = m_model.getSupervisor_ID();
 				if (supervisorId > 0)
 				{
-					notificationBL.notifyUser(UserNotificationRequest.builder()
+					notificationBL.send(UserNotificationRequest.builder()
 							.recipientUserId(supervisorId)
 							.subjectADMessage(MSG_PROCESS_RUN_ERROR)
 							.contentPlain(summary + " " + logInfo)
-							.targetRecord(TableRecordReference.of(adTableId, recordId))
+							.targetAction(TargetRecordAction.of(TableRecordReference.of(adTableId, recordId)))
 							.build());
 				}
 			}
@@ -687,11 +688,11 @@ public class Scheduler extends AdempiereServer
 		{
 			for (final int userId : m_model.getRecipientAD_User_IDs())
 			{
-				notificationBL.notifyUser(UserNotificationRequest.builder()
+				notificationBL.send(UserNotificationRequest.builder()
 						.recipientUserId(userId)
 						.subjectADMessage(MSG_PROCESS_OK)
 						.contentPlain(summary + " " + logInfo)
-						.targetRecord(TableRecordReference.of(adTableId, recordId))
+						.targetAction(TargetRecordAction.of(TableRecordReference.of(adTableId, recordId)))
 						.build());
 			}
 		}

@@ -1,27 +1,27 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-// import de.metas.adempiere.model.I_C_Order;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
-import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
@@ -68,7 +68,9 @@ import lombok.NonNull;
 	final static String MSG_Different_Quantity_AND_DatePromised = //
 			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised";
 
+	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final OrderFactory orderFactory;
+	
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
 
@@ -143,13 +145,13 @@ import lombok.NonNull;
 		boolean deviatingQuantity = false;
 		for (final PurchaseOrderItem purchaseOrderItem : purchaseItem2OrderLine.keySet())
 		{
-			final Date dateRequired = purchaseOrderItem.getPurchaseCandidate().getDateRequired();
+			final LocalDateTime dateRequired = purchaseOrderItem.getDateRequired();
 
-			if (!Objects.equals(dateRequired, order.getDatePromised()))
+			if (!Objects.equals(dateRequired, TimeUtil.asLocalDateTime(order.getDatePromised())))
 			{
 				deviatingDatePromised = true;
 			}
-			if (!purchaseOrderItem.pruchaseMatchesRequiredQty())
+			if (!purchaseOrderItem.purchaseMatchesRequiredQty())
 			{
 				deviatingQuantity = true;
 			}
@@ -182,7 +184,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private List<Object> createCommonMessageParams(@NonNull final I_C_Order order)
+	private static List<Object> createCommonMessageParams(@NonNull final I_C_Order order)
 	{
 		final I_C_BPartner bpartner = order.getC_BPartner();
 		final String bpValue = bpartner.getValue();
@@ -192,12 +194,11 @@ import lombok.NonNull;
 
 	private Set<Integer> getUserIdsToNotify()
 	{
-		return purchaseItem2OrderLine.keySet().stream()
-				.map(PurchaseOrderItem::getPurchaseCandidate)
-				.map(PurchaseCandidate::getSalesOrderId)
-				.distinct()
-				.map(salesOrderId -> InterfaceWrapperHelper.load(salesOrderId, I_C_Order.class))
-				.map(I_C_Order::getCreatedBy)
+		final ImmutableSet<Integer> salesOrderIds = purchaseItem2OrderLine.keySet()
+				.stream()
+				.map(PurchaseOrderItem::getSalesOrderId)
 				.collect(ImmutableSet.toImmutableSet());
+		
+		return ordersRepo.retriveOrderCreatedByUserIds(salesOrderIds);
 	}
 }

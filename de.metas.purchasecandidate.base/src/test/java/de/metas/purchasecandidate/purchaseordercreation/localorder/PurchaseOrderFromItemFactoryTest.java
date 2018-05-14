@@ -5,7 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
@@ -14,7 +14,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,7 +51,7 @@ import mockit.Verifications;
 
 public class PurchaseOrderFromItemFactoryTest
 {
-	private static final Timestamp PURCHASE_CANDIDATE_DATE_REQUIRED = SystemTime.asDayTimestamp();
+	private static final LocalDateTime PURCHASE_CANDIDATE_DATE_REQUIRED = SystemTime.asLocalDateTime();
 
 	private static final BigDecimal PURCHASE_CANDIDATE_QTY_TO_PURCHASE = BigDecimal.TEN;
 
@@ -68,7 +67,7 @@ public class PurchaseOrderFromItemFactoryTest
 	@Test
 	public void deviatingDatePromised()
 	{
-		final Timestamp deviatingDatePromised = TimeUtil.addDays(PURCHASE_CANDIDATE_DATE_REQUIRED, 1);
+		final LocalDateTime deviatingDatePromised = PURCHASE_CANDIDATE_DATE_REQUIRED.plusDays(1);
 
 		setAndRunMethodUnderTest(deviatingDatePromised, PURCHASE_CANDIDATE_QTY_TO_PURCHASE);
 
@@ -109,7 +108,7 @@ public class PurchaseOrderFromItemFactoryTest
 	public void deviatingPurchasedQtyAndDatePrmised()
 	{
 		final BigDecimal deviatingPurchasedQty = PURCHASE_CANDIDATE_QTY_TO_PURCHASE.subtract(BigDecimal.ONE);
-		final Timestamp deviatingDatePromised = TimeUtil.addDays(PURCHASE_CANDIDATE_DATE_REQUIRED, 1);
+		final LocalDateTime deviatingDatePromised = PURCHASE_CANDIDATE_DATE_REQUIRED.plusDays(1);
 
 		setAndRunMethodUnderTest(deviatingDatePromised, deviatingPurchasedQty);
 
@@ -126,7 +125,7 @@ public class PurchaseOrderFromItemFactoryTest
 		}};	// @formatter:on
 	}
 
-	private void setAndRunMethodUnderTest(final Timestamp deviatingDatePromised, final BigDecimal deviatingPurchasedQty)
+	private void setAndRunMethodUnderTest(final LocalDateTime deviatingDatePromised, final BigDecimal deviatingPurchasedQty)
 	{
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate();
 
@@ -164,7 +163,7 @@ public class PurchaseOrderFromItemFactoryTest
 		save(salesOrderLine);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bPartnerProductId(10)
+				.bpartnerProductId(10)
 				.vendorBPartnerId(vendor.getC_BPartner_ID())
 				.productId(20)
 				.productName("productName")
@@ -177,7 +176,6 @@ public class PurchaseOrderFromItemFactoryTest
 				.warehouseId(4)
 				.productId(5)
 				.uomId(6)
-				.vendorBPartnerId(7)
 				.vendorProductInfo(vendorProductInfo)
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)
 				.dateRequired(PURCHASE_CANDIDATE_DATE_REQUIRED)

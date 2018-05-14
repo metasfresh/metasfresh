@@ -2,8 +2,8 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -213,7 +213,7 @@ public class OrderFactory
 		return this;
 	}
 
-	public OrderFactory datePromised(final Date datePromised)
+	public OrderFactory datePromised(final LocalDateTime datePromised)
 	{
 		assertNotBuilt();
 		order.setDatePromised(TimeUtil.asTimestamp(datePromised));

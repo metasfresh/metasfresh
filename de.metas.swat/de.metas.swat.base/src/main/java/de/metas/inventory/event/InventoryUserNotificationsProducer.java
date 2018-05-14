@@ -15,6 +15,7 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import lombok.NonNull;
 
 /*
@@ -91,8 +92,7 @@ public class InventoryUserNotificationsProducer
 				.recipientUserId(getNotificationRecipientUserId(inventory))
 				.contentADMessage(MSG_Event_InventoryGenerated)
 				.contentADMessageParam(inventoryRef)
-				.targetRecord(inventoryRef)
-				.targetADWindowId(WINDOW_INTERNAL_INVENTORY)
+				.targetAction(TargetRecordAction.ofRecordAndWindow(inventoryRef, WINDOW_INTERNAL_INVENTORY))
 				.build();
 
 	}
@@ -127,6 +127,6 @@ public class InventoryUserNotificationsProducer
 
 	private void postNotifications(final List<UserNotificationRequest> notifications)
 	{
-		Services.get(INotificationBL.class).notifyUserAfterCommit(notifications);
+		Services.get(INotificationBL.class).sendAfterCommit(notifications);
 	}
 }

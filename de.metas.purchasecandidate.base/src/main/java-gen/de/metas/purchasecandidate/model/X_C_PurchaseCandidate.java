@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -44428473L;
+	private static final long serialVersionUID = -2086583543L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 			setC_PurchaseCandidate_ID (0);
 			setC_UOM_ID (0);
 			setDateRequired (new Timestamp( System.currentTimeMillis() ));
+			setIsAggregatePO (false); // N
 			setM_Product_ID (0);
 			setM_WarehousePO_ID (0);
 			setProcessed (false); // N
@@ -235,6 +236,29 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateRequired);
 	}
 
+	/** Set Aggregate Purchase Orders.
+		@param IsAggregatePO Aggregate Purchase Orders	  */
+	@Override
+	public void setIsAggregatePO (boolean IsAggregatePO)
+	{
+		set_Value (COLUMNNAME_IsAggregatePO, Boolean.valueOf(IsAggregatePO));
+	}
+
+	/** Get Aggregate Purchase Orders.
+		@return Aggregate Purchase Orders	  */
+	@Override
+	public boolean isAggregatePO () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAggregatePO);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
@@ -394,6 +418,22 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Wiedervorlage Datum.
+		@param ReminderDate Wiedervorlage Datum	  */
+	@Override
+	public void setReminderDate (java.sql.Timestamp ReminderDate)
+	{
+		set_Value (COLUMNNAME_ReminderDate, ReminderDate);
+	}
+
+	/** Get Wiedervorlage Datum.
+		@return Wiedervorlage Datum	  */
+	@Override
+	public java.sql.Timestamp getReminderDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ReminderDate);
 	}
 
 	@Override

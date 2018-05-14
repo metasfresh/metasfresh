@@ -33,7 +33,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
-import de.metas.interfaces.I_C_BPartner_Product;
+import org.compiere.model.I_C_BPartner_Product;
 
 /**
  * @author cg
@@ -89,4 +89,6 @@ public interface IBPartnerProductDAO extends ISingletonService
 	List<ProductExclude> retrieveAllProductSalesExcludes();
 
 	Optional<ProductExclude> getExcludedFromSaleToCustomer(int productId, int partnerId);
+
+	Optional<I_C_BPartner_Product> retrieveDefaultVendor(int productId, int orgId);
 }

@@ -46,7 +46,6 @@ import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Issue;
@@ -80,6 +79,7 @@ import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 
 /* package */class WorkpackageProcessorTask implements Runnable
 {
@@ -500,14 +500,14 @@ import de.metas.notification.UserNotificationRequest;
 		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
 
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
-		notificationBL.notifyUserAfterCommit(UserNotificationRequest.builder()
+		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 				.topic(Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC)
 				.recipientUserId(userInChargeId)
 				.subjectADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TITLE)
 				.contentADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT)
 				.contentADMessageParam(workpackageId)
 				.contentADMessageParam(errorMsg)
-				.targetRecord(TableRecordReference.of(I_C_Queue_WorkPackage.Table_Name, workpackageId))
+				.targetAction(TargetRecordAction.of(I_C_Queue_WorkPackage.Table_Name, workpackageId))
 				.build());
 	}
 

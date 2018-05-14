@@ -30,7 +30,7 @@ import com.google.common.base.Objects;
 
 public enum UserNotificationTargetType
 {
-	None("none"), Window("window");
+	None("none"), Window("window"), View("view");
 
 	final private String jsonValue;
 
