@@ -217,6 +217,11 @@ public final class DocumentFilter
 			return this;
 		}
 
+		public Builder setCaption(@NonNull final String caption)
+		{
+			return setCaption(ImmutableTranslatableString.constant(caption));
+		}
+
 		public Builder setParameters(final List<DocumentFilterParam> parameters)
 		{
 			this.parameters = parameters;

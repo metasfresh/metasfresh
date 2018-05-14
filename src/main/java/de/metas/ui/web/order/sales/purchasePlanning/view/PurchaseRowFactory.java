@@ -1,5 +1,8 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.translate;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -16,11 +19,9 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
@@ -67,8 +68,10 @@ public class PurchaseRowFactory
 	}
 
 	@Builder(builderMethodName = "rowFromPurchaseCandidateBuilder", builderClassName = "RowFromPurchaseCandidateBuilder")
-	private PurchaseRow buildRowFromPurchaseCandidate(@NonNull final PurchaseCandidate purchaseCandidate,
-			@Nullable final VendorProductInfo vendorProductInfo, @NotNull final Date datePromised)
+	private PurchaseRow buildRowFromPurchaseCandidate(
+			@NonNull final PurchaseCandidate purchaseCandidate,
+			@Nullable final VendorProductInfo vendorProductInfo,
+			@NotNull final Date datePromised)
 	{
 		final int bpartnerId = purchaseCandidate.getVendorBPartnerId();
 		final int productId;
@@ -113,7 +116,7 @@ public class PurchaseRowFactory
 	{
 		final JSONLookupValue product = createProductLookupValue(salesOrderLine.getM_Product_ID());
 		final JSONLookupValue attributeSetInstance = createASILookupValue(salesOrderLine.getM_AttributeSetInstance_ID());
-		
+
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
 		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
 
@@ -122,8 +125,7 @@ public class PurchaseRowFactory
 				.date(salesOrderLine.getC_Order().getPreparationDate())
 				.storageAttributesKey(AttributesKeys
 						.createAttributesKeyFromASIStorageAttributes(salesOrderLine.getM_AttributeSetInstance_ID())
-						.orElse(AttributesKey.ALL)
-						)
+						.orElse(AttributesKey.ALL))
 				.build());
 
 		final PurchaseRow groupRow = PurchaseRow.builder()
@@ -144,7 +146,8 @@ public class PurchaseRowFactory
 	}
 
 	@Builder(builderMethodName = "rowFromAvailabilityResultBuilder", builderClassName = "RowFromAvailabilityResultBuilder")
-	private PurchaseRow buildRowFromFromAvailabilityResult(@NonNull PurchaseRow parentRow,
+	private PurchaseRow buildRowFromFromAvailabilityResult(
+			@NonNull PurchaseRow parentRow,
 			@NonNull final AvailabilityResult availabilityResult)
 	{
 		final String availability = !Check.isEmpty(availabilityResult.getAvailabilityText(), true)
@@ -155,11 +158,12 @@ public class PurchaseRowFactory
 				.rowId(parentRow.getRowId().withAvailability(availabilityResult.getType(), createRandomString()))
 				.salesOrderId(parentRow.getSalesOrderId()).rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(availabilityResult.getQty()).readonly(true).uomOrAvailablility(availability)
-				.datePromised(availabilityResult.getDatePromised()).build();
+				.datePromised(TimeUtil.asTimestamp(availabilityResult.getDatePromised())).build();
 	}
 
 	@Builder(builderMethodName = "rowFromThrowableBuilder", builderClassName = "RowFromThrowableBuilder")
-	private PurchaseRow buildRowFromFromThrowable(@NonNull final PurchaseRow parentRow,
+	private PurchaseRow buildRowFromFromThrowable(
+			@NonNull final PurchaseRow parentRow,
 			@NonNull final Throwable throwable)
 	{
 		return parentRow.toBuilder()
@@ -206,20 +210,20 @@ public class PurchaseRowFactory
 		final String displayName = productValueEffective + "_" + productNameEffective;
 		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
 	}
-	
+
 	private static JSONLookupValue createASILookupValue(final int attributeSetInstanceId)
 	{
-		if(attributeSetInstanceId <= 0)
+		if (attributeSetInstanceId <= 0)
 		{
 			return null;
 		}
-		
+
 		final I_M_AttributeSetInstance asi = loadOutOfTrx(attributeSetInstanceId, I_M_AttributeSetInstance.class);
-		if(asi == null)
+		if (asi == null)
 		{
 			return null;
 		}
-		
+
 		return JSONLookupValue.of(asi.getM_AttributeSetInstance_ID(), asi.getDescription());
 	}
 

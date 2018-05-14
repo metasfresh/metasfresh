@@ -82,7 +82,12 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys)
+	public ViewRowIdsOrderedSelection createOrderedSelection(
+			final ViewEvaluationCtx viewEvalCtx,
+			final ViewId viewId,
+			final List<DocumentFilter> filters,
+			final List<DocumentQueryOrderBy> orderBys,
+			final boolean applySecurityRestrictions)
 	{
 		final UserRolePermissionsKey permissionsKey = viewEvalCtx.getPermissionsKey();
 		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(permissionsKey);
@@ -92,7 +97,9 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 
 		//
 		//
-		final SqlCreateSelection sqlCreates = newSqlViewSelectionQueryBuilder().buildSqlCreateSelectionFrom(viewEvalCtx, viewId, filters, orderBys, queryLimit);
+		final SqlCreateSelection sqlCreates = newSqlViewSelectionQueryBuilder()
+				.applySecurityRestrictions(applySecurityRestrictions)
+				.buildSqlCreateSelectionFrom(viewEvalCtx, viewId, filters, orderBys, queryLimit);
 		logger.trace("Creating selection using {}", sqlCreates);
 
 		//
