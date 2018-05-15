@@ -83,6 +83,10 @@ import lombok.NonNull;
 			{
 				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
 			}
+			if (importRecord.getC_Job_ID() > 0)
+			{
+				user.setC_Job_ID(importRecord.getC_Job_ID());
+			}
 			user.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
 			updateWithAvailableImportRecordFields(importRecord, user);
 
@@ -102,6 +106,10 @@ import lombok.NonNull;
 			if (importRecord.getC_Greeting_ID() > 0)
 			{
 				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
+			}
+			if (importRecord.getC_Job_ID() > 0)
+			{
+				user.setC_Job_ID(importRecord.getC_Job_ID());
 			}
 			user.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
 			updateWithImportRecordFields(importRecord, user);
@@ -139,7 +147,6 @@ import lombok.NonNull;
 		user.setEMail(importRecord.getEMail());
 		user.setBirthday(importRecord.getBirthday());
 		user.setIsDefaultContact(importRecord.isDefaultContact());
-
 		user.setIsBillToContact_Default(importRecord.isBillToContact_Default());
 		user.setIsShipToContact_Default(importRecord.isShipToContact_Default());
 	}

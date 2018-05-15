@@ -60,6 +60,8 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateGreetings(whereClause);
 
+		dbUpdateJobs(whereClause);
+
 		dbUpdateAdUserIdsFromExisting(whereClause);
 
 		dbUpdateCbPartnerIds(whereClause);
@@ -197,6 +199,27 @@ public class BPartnerImportTableSqlUpdater
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid Greeting={}", no);
 	}
+
+	private void dbUpdateJobs(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET C_Job_ID=(SELECT C_Job_ID FROM C_Job j"
+				+ " WHERE i.JobName=j.Name AND j.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set Job={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Job, ' "
+				+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid Job={}", no);
+	}
+
 
 	private void dbUpdateAdUserIdsFromExisting(final String whereClause)
 	{
