@@ -10,12 +10,12 @@ package de.metas.contracts.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,6 +53,10 @@ public class M_InOutLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void updateFLatrateDataEntryQtySubstract(final I_M_InOutLine doc)
 	{
+		if (doc.getM_Product_ID() <= 0)
+		{
+			return; // nothing to do/avoid NPE
+		}
 		flatrateBL.updateFlatrateDataEntryQty(
 				doc.getM_Product(),
 				doc.getMovementQty(),

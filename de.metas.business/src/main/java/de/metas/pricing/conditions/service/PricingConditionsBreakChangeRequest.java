@@ -2,8 +2,8 @@ package de.metas.pricing.conditions.service;
 
 import java.math.BigDecimal;
 
-import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
+import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import lombok.Builder;
 import lombok.Value;
 
@@ -37,6 +37,8 @@ public class PricingConditionsBreakChangeRequest
 	int discountSchemaBreakId;
 
 	int updateFromDiscountSchemaBreakId;
+	
+	PricingConditionsBreakMatchCriteria matchCriteria;
 	
 	//
 	// Price
