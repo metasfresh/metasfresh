@@ -77,4 +77,10 @@ public interface I_I_BPartner extends org.compiere.model.I_I_BPartner
 	public void setIsMultiplier(boolean IsMultiplier);
 	public boolean isMultiplier();
 	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
+	public void setDeliveryViaRule(String DeliveryViaRule);
+	public String getDeliveryViaRule();
+	// @formatter:on
 }
