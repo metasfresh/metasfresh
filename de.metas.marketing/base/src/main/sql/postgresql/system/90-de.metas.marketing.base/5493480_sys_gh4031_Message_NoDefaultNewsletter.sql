@@ -1,6 +1,6 @@
 -- 2018-05-10T17:46:35.595
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544717,0,TO_TIMESTAMP('2018-05-10 17:46:35','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing','Y','Der Organisation {0} wurde noch keine default Newsletter-Gruppe zugeordnet"','E',TO_TIMESTAMP('2018-05-10 17:46:35','YYYY-MM-DD HH24:MI:SS'),100,'MKTG_Campaign_NewsletterGroup_Missing_For_Org')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544717,0,TO_TIMESTAMP('2018-05-10 17:46:35','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.base','Y','Der Organisation {0} wurde noch keine default Newsletter-Gruppe zugeordnet"','E',TO_TIMESTAMP('2018-05-10 17:46:35','YYYY-MM-DD HH24:MI:SS'),100,'MKTG_Campaign_NewsletterGroup_Missing_For_Org')
 ;
 
 -- 2018-05-10T17:46:35.601
