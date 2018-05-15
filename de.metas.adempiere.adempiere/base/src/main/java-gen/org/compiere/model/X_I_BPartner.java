@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 222821683L;
+	private static final long serialVersionUID = -746250711L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -582,6 +582,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getC_InvoiceSchedule_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Job getC_Job() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Job_ID, org.compiere.model.I_C_Job.class);
+	}
+
+	@Override
+	public void setC_Job(org.compiere.model.I_C_Job C_Job)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Job_ID, org.compiere.model.I_C_Job.class, C_Job);
+	}
+
+	/** Set Position.
+		@param C_Job_ID 
+		Position in der Firma
+	  */
+	@Override
+	public void setC_Job_ID (int C_Job_ID)
+	{
+		if (C_Job_ID < 1) 
+			set_Value (COLUMNNAME_C_Job_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Job_ID, Integer.valueOf(C_Job_ID));
+	}
+
+	/** Get Position.
+		@return Position in der Firma
+	  */
+	@Override
+	public int getC_Job_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Job_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1338,6 +1375,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set JobName.
+		@param JobName JobName	  */
+	@Override
+	public void setJobName (java.lang.String JobName)
+	{
+		set_Value (COLUMNNAME_JobName, JobName);
+	}
+
+	/** Get JobName.
+		@return JobName	  */
+	@Override
+	public java.lang.String getJobName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_JobName);
 	}
 
 	/** Set Nachname.

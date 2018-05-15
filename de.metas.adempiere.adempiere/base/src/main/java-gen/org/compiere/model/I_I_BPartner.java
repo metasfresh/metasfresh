@@ -576,6 +576,35 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_C_InvoiceSchedule_ID = "C_InvoiceSchedule_ID";
 
 	/**
+	 * Set Position.
+	 * Position in der Firma
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Job_ID (int C_Job_ID);
+
+	/**
+	 * Get Position.
+	 * Position in der Firma
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Job_ID();
+
+	public org.compiere.model.I_C_Job getC_Job();
+
+	public void setC_Job(org.compiere.model.I_C_Job C_Job);
+
+    /** Column definition for C_Job_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Job> COLUMN_C_Job_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Job>(I_I_BPartner.class, "C_Job_ID", org.compiere.model.I_C_Job.class);
+    /** Column name C_Job_ID */
+    public static final String COLUMNNAME_C_Job_ID = "C_Job_ID";
+
+	/**
 	 * Set Region.
 	 * Identifies a geographical Region
 	 *
@@ -1484,6 +1513,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsVendor = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsVendor", null);
     /** Column name IsVendor */
     public static final String COLUMNNAME_IsVendor = "IsVendor";
+
+	/**
+	 * Set JobName.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setJobName (java.lang.String JobName);
+
+	/**
+	 * Get JobName.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getJobName();
+
+    /** Column definition for JobName */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_JobName = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "JobName", null);
+    /** Column name JobName */
+    public static final String COLUMNNAME_JobName = "JobName";
 
 	/**
 	 * Set Nachname.
