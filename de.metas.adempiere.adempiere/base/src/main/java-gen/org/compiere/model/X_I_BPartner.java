@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -746250711L;
+	private static final long serialVersionUID = -1439211427L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
         {
 			setI_BPartner_ID (0);
 			setI_IsImported (false); // N
+			setIsActiveStatus (true); // Y
 			setIsBillTo (false); // N
 			setIsBillToContact_Default (false); // N
 			setIsBillToDefault (false); // N
@@ -1084,6 +1085,29 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getInvoiceSchedule () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InvoiceSchedule);
+	}
+
+	/** Set Active Status.
+		@param IsActiveStatus Active Status	  */
+	@Override
+	public void setIsActiveStatus (boolean IsActiveStatus)
+	{
+		set_Value (COLUMNNAME_IsActiveStatus, Boolean.valueOf(IsActiveStatus));
+	}
+
+	/** Get Active Status.
+		@return Active Status	  */
+	@Override
+	public boolean isActiveStatus () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsActiveStatus);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Vorbelegung Rechnung.

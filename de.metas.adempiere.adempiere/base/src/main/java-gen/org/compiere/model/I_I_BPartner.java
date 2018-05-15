@@ -1229,6 +1229,29 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Active Status.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActiveStatus (boolean IsActiveStatus);
+
+	/**
+	 * Get Active Status.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActiveStatus();
+
+    /** Column definition for IsActiveStatus */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsActiveStatus = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsActiveStatus", null);
+    /** Column name IsActiveStatus */
+    public static final String COLUMNNAME_IsActiveStatus = "IsActiveStatus";
+
+	/**
 	 * Set Vorbelegung Rechnung.
 	 * Rechnungs-Adresse für diesen Geschäftspartner
 	 *
