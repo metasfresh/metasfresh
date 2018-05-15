@@ -115,6 +115,9 @@ public class PharmaImportPartnerInterceptor implements IImportInterceptor
 		}
 		bpartner.setShelfLifeMinDays(ibpartner.getShelfLifeMinDays());
 
+		de.metas.invoicecandidate.model.I_C_BPartner partner = InterfaceWrapperHelper.create(bpartner, de.metas.invoicecandidate.model.I_C_BPartner.class);
+		partner.setSO_InvoiceLine_Aggregation_ID(ibpartner.getC_Aggregation_ID());
+
 		save(bpartner);
 	}
 
