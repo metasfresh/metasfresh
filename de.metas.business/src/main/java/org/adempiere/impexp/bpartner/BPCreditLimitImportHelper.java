@@ -2,11 +2,13 @@ package org.adempiere.impexp.bpartner;
 
 import java.math.BigDecimal;
 
+import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_I_BPartner;
+import org.compiere.model.ModelValidationEngine;
 
 import lombok.NonNull;
 
@@ -70,6 +72,7 @@ import lombok.NonNull;
 		{
 			final I_C_BPartner bpartner = importRecord.getC_BPartner();
 			bpCreditLimit.setC_BPartner(bpartner);
+			ModelValidationEngine.get().fireImportValidate(process, importRecord, bpCreditLimit, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bpCreditLimit);
 		}
 

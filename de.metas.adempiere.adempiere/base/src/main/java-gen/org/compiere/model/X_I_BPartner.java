@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -127163740L;
+	private static final long serialVersionUID = 1021942369L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -291,6 +291,40 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getC_BP_Group_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_PrintFormat getC_BP_PrintFormat() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_PrintFormat_ID, org.compiere.model.I_C_BP_PrintFormat.class);
+	}
+
+	@Override
+	public void setC_BP_PrintFormat(org.compiere.model.I_C_BP_PrintFormat C_BP_PrintFormat)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_PrintFormat_ID, org.compiere.model.I_C_BP_PrintFormat.class, C_BP_PrintFormat);
+	}
+
+	/** Set Geschäftspartner - Druck - Format.
+		@param C_BP_PrintFormat_ID Geschäftspartner - Druck - Format	  */
+	@Override
+	public void setC_BP_PrintFormat_ID (int C_BP_PrintFormat_ID)
+	{
+		if (C_BP_PrintFormat_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_PrintFormat_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_PrintFormat_ID, Integer.valueOf(C_BP_PrintFormat_ID));
+	}
+
+	/** Get Geschäftspartner - Druck - Format.
+		@return Geschäftspartner - Druck - Format	  */
+	@Override
+	public int getC_BP_PrintFormat_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_PrintFormat_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

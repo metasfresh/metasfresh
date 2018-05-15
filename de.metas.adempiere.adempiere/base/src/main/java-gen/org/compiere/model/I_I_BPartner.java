@@ -331,6 +331,33 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
+	 * Set Geschäftspartner - Druck - Format.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_PrintFormat_ID (int C_BP_PrintFormat_ID);
+
+	/**
+	 * Get Geschäftspartner - Druck - Format.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_PrintFormat_ID();
+
+	public org.compiere.model.I_C_BP_PrintFormat getC_BP_PrintFormat();
+
+	public void setC_BP_PrintFormat(org.compiere.model.I_C_BP_PrintFormat C_BP_PrintFormat);
+
+    /** Column definition for C_BP_PrintFormat_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_PrintFormat> COLUMN_C_BP_PrintFormat_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_PrintFormat>(I_I_BPartner.class, "C_BP_PrintFormat_ID", org.compiere.model.I_C_BP_PrintFormat.class);
+    /** Column name C_BP_PrintFormat_ID */
+    public static final String COLUMNNAME_C_BP_PrintFormat_ID = "C_BP_PrintFormat_ID";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Identifies a Business Partner
 	 *
