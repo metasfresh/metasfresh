@@ -217,3 +217,37 @@ UPDATE AD_Field SET Name='Active Status', Description='', Help='' WHERE AD_Colum
 /* DDL */ SELECT public.db_alter_table('I_BPartner','ALTER TABLE public.I_BPartner DROP COLUMN Status')
 ;
 
+
+
+
+-- 2018-05-15T18:30:44.111
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Element_ID=868, AD_Reference_ID=10, ColumnName='DocumentNote', DefaultValue='', Description='Zusätzliche Information für den Kunden', Help='"Notiz" wird für zusätzliche Informationen zu diesem Produkt verwendet.', IsMandatory='N', Name='Notiz / Zeilentext',Updated=TO_TIMESTAMP('2018-05-15 18:30:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560151
+;
+
+-- 2018-05-15T18:30:44.115
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Notiz / Zeilentext', Description='Zusätzliche Information für den Kunden', Help='"Notiz" wird für zusätzliche Informationen zu diesem Produkt verwendet.' WHERE AD_Column_ID=560151
+;
+
+-- 2018-05-15T18:30:55.506
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_BPartner','ALTER TABLE public.I_BPartner ADD COLUMN DocumentNote VARCHAR(1)')
+;
+
+
+/* DDL */ SELECT public.db_alter_table('I_BPartner','ALTER TABLE public.I_BPartner DROP COLUMN DocumentNote')
+;
+
+
+-- 2018-05-15T18:33:33.186
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Element_ID=544081, AD_Reference_ID=20, ColumnName='IsShowDeliveryNote', DefaultValue='N', Description=NULL, Help=NULL, IsMandatory='Y', Name='Show Delivery Note',Updated=TO_TIMESTAMP('2018-05-15 18:33:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560151
+;
+
+-- 2018-05-15T18:33:33.188
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Show Delivery Note', Description=NULL, Help=NULL WHERE AD_Column_ID=560151
+;
+
+
