@@ -74,6 +74,8 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdatePO_PaymentTerms(whereClause);
 
+		dbUpdateC_Aggregtions(whereClause);
+
 		dbUpdateErrorMessages(whereClause);
 	}
 
@@ -300,6 +302,26 @@ public class BPartnerImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PO_PaymentTerm, ' "
 				+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid PO_PaymentTerm={}", no);
+	}
+
+	private void dbUpdateC_Aggregtions(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET C_Aggregation_ID=(SELECT C_Aggregation_ID FROM C_Aggregation a"
+				+ " WHERE i.AggregationName=a.Name AND a.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set C_Aggregation_ID={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid AggregationName, ' "
+				+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid PO_PaymentTerm={}", no);
