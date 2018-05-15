@@ -223,6 +223,29 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Address4 = "Address4";
 
 	/**
+	 * Set Aggregation Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAggregationName (java.lang.String AggregationName);
+
+	/**
+	 * Get Aggregation Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAggregationName();
+
+    /** Column definition for AggregationName */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_AggregationName = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "AggregationName", null);
+    /** Column name AggregationName */
+    public static final String COLUMNNAME_AggregationName = "AggregationName";
+
+	/**
 	 * Set Geburtstag.
 	 * Birthday or Anniversary day
 	 *
@@ -271,6 +294,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_BPContactGreeting = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "BPContactGreeting", null);
     /** Column name BPContactGreeting */
     public static final String COLUMNNAME_BPContactGreeting = "BPContactGreeting";
+
+	/**
+	 * Set Aggregation Definition.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Aggregation_ID (int C_Aggregation_ID);
+
+	/**
+	 * Get Aggregation Definition.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Aggregation_ID();
+
+    /** Column definition for C_Aggregation_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_C_Aggregation_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "C_Aggregation_ID", null);
+    /** Column name C_Aggregation_ID */
+    public static final String COLUMNNAME_C_Aggregation_ID = "C_Aggregation_ID";
 
 	/**
 	 * Set Bankverbindung.

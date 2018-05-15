@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1021942369L;
+	private static final long serialVersionUID = 222821683L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -184,6 +184,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Address4);
 	}
 
+	/** Set Aggregation Name.
+		@param AggregationName Aggregation Name	  */
+	@Override
+	public void setAggregationName (java.lang.String AggregationName)
+	{
+		set_Value (COLUMNNAME_AggregationName, AggregationName);
+	}
+
+	/** Get Aggregation Name.
+		@return Aggregation Name	  */
+	@Override
+	public java.lang.String getAggregationName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AggregationName);
+	}
+
 	/** Set Geburtstag.
 		@param Birthday 
 		Birthday or Anniversary day
@@ -220,6 +236,28 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getBPContactGreeting () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BPContactGreeting);
+	}
+
+	/** Set Aggregation Definition.
+		@param C_Aggregation_ID Aggregation Definition	  */
+	@Override
+	public void setC_Aggregation_ID (int C_Aggregation_ID)
+	{
+		if (C_Aggregation_ID < 1) 
+			set_Value (COLUMNNAME_C_Aggregation_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Aggregation_ID, Integer.valueOf(C_Aggregation_ID));
+	}
+
+	/** Get Aggregation Definition.
+		@return Aggregation Definition	  */
+	@Override
+	public int getC_Aggregation_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Aggregation_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
