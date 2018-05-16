@@ -42,7 +42,6 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
@@ -50,6 +49,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_C_Print_Job_Detail;
@@ -113,11 +113,11 @@ public class C_Print_Job_Instructions
 
 		// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
-		notificationBL.notifyUserAfterCommit(UserNotificationRequest.builder()
+		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 				.recipientUserId(jobInstructions.getAD_User_ToPrint_ID())
 				.subjectADMessage(MSG_CLIENT_REPORTS_PRINT_ERROR)
 				.contentPlain(jobInstructions.getErrorMsg())
-				.targetRecord(TableRecordReference.of(I_C_Print_Job_Instructions.Table_Name, jobInstructions.getC_Print_Job_Instructions_ID()))
+				.targetAction(TargetRecordAction.of(I_C_Print_Job_Instructions.Table_Name, jobInstructions.getC_Print_Job_Instructions_ID()))
 				.build());
 	}
 
@@ -206,13 +206,13 @@ public class C_Print_Job_Instructions
 								if (status.equals(printJobInstructionsReloaded.getStatus()))
 								{
 									// the status is still unchanged after the specified timeout => notify the user
-									notificationBL.notifyUser(UserNotificationRequest.builder()
+									notificationBL.send(UserNotificationRequest.builder()
 											.recipientUserId(userToPrintId)
 											.subjectADMessage(MSG_CLIENT_PRINT_TIMEOUT)
 											.contentADMessage(MSG_CLIENT_PRINT_TIMEOUT_DETAILS)
 											.contentADMessageParam(printTimeOutSeconds)
 											.contentADMessageParam(adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status))
-											.targetRecord(TableRecordReference.of(I_C_Print_Job_Instructions.Table_Name, printJobInstructionsId))
+											.targetAction(TargetRecordAction.of(I_C_Print_Job_Instructions.Table_Name, printJobInstructionsId))
 											.build());
 								}
 								return null;

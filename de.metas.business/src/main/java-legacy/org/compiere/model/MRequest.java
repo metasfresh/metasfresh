@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -30,9 +32,7 @@ import java.util.Set;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -43,8 +43,6 @@ import org.springframework.core.io.FileSystemResource;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -52,7 +50,9 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
+import de.metas.notification.UserNotificationsConfig;
 
 /**
  * Request Model
@@ -779,18 +779,17 @@ public class MRequest extends X_R_Request
 
 		final File pdf = createPDF();
 
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
+		final INotificationBL notifications = Services.get(INotificationBL.class);
 		final List<UserNotificationRequest> notificationRequests = userIdsToNotify.stream()
 				.map(userId -> {
-					final UserNotificationsConfig notificationsConfig = userDAO.getUserNotificationsConfig(userId);
+					final UserNotificationsConfig notificationsConfig = notifications.getUserNotificationsConfig(userId);
 					final String adLanguage = notificationsConfig.getUserADLanguageOrGet(Env::getADLanguageOrBaseLanguage);
 					final UserNotificationRequestBuilder builder = UserNotificationRequest.builder()
 							.notificationsConfig(notificationsConfig)
 							.topic(TOPIC_Requests)
-							.recipientUserId(userId)
 							.subjectPlain(subject.translate(adLanguage))
 							.contentPlain(content.translate(adLanguage))
-							.targetRecord(TableRecordReference.of(I_R_Request.Table_Name, getR_Request_ID()));
+							.targetAction(TargetRecordAction.of(I_R_Request.Table_Name, getR_Request_ID()));
 
 					if (pdf != null)
 					{
@@ -801,7 +800,7 @@ public class MRequest extends X_R_Request
 				})
 				.collect(ImmutableList.toImmutableList());
 
-		Services.get(INotificationBL.class).notifyUserAfterCommit(notificationRequests);
+		Services.get(INotificationBL.class).sendAfterCommit(notificationRequests);
 	}	// sendNotice
 
 	private ITranslatableString buildEMailNotificationContent(final I_AD_User from, final List<String> changedColumnNames)

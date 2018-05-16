@@ -68,13 +68,15 @@ public class DerKurierClientFactoryTest
 				.restApiBaseUrl(REST_API_BASE_URL)
 				.customerNumber("12345")
 				.parcelNumberAdSequenceId(ParcelNumberGenerator.NO_AD_SEQUENCE_ID_FOR_TESTING)
+				.collectorCode("01")
+				.customerCode("02")
 				.build();
 
 		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
 
 		final MockRestServiceServer mockServer = MockRestServiceServer.createServer(client.getRestTemplate());
 
-		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest();
+		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest_times_with_seconds();
 
 		mockServer.expect(requestTo(REST_API_BASE_URL + "/routing/request"))
 				.andRespond(withSuccess(ROUTING_RESPONSE_JSON, MediaType.APPLICATION_JSON));

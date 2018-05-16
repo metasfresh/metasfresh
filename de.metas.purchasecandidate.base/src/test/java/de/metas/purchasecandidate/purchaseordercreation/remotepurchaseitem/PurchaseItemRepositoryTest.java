@@ -114,7 +114,7 @@ public class PurchaseItemRepositoryTest
 	private PurchaseOrderItem createAndAddPurchaseOrderItem(final PurchaseCandidate purchaseCandidate)
 	{
 		final PurchaseOrderItem orderItem = purchaseCandidate.createOrderItem()
-				.datePromised(SystemTime.asTimestamp())
+				.datePromised(SystemTime.asLocalDateTime())
 				.purchasedQty(ZERO) // doesn't matter
 				.remotePurchaseOrderId("remotePurchaseOrderId")
 				.transactionReference(TableRecordReference.of("someTable", 30))

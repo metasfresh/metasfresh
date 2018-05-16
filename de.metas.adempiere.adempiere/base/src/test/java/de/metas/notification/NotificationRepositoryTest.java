@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.impl.NotificationRepository;
 
 /*
@@ -76,9 +77,11 @@ public class NotificationRepositoryTest
 				.contentADMessageParam(TableRecordReference.of("MyTable", 111))
 				.contentADMessageParam(BigDecimal.valueOf(123.44))
 				//
-				.targetRecord(TableRecordReference.of("MyTable", 111))
-				.targetRecordDisplayText("targetRecordDisplayText")
-				.targetADWindowId(444)
+				.targetAction(TargetRecordAction.builder()
+						.record(TableRecordReference.of("MyTable", 111))
+						.recordDisplayText("targetRecordDisplayText")
+						.adWindowId(444)
+						.build())
 				.build());
 
 		final List<UserNotification> userNotifications = notificationRepo.getByUserId(123, Integer.MAX_VALUE);

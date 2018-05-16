@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -201,14 +202,14 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.warehouseId(4)
 				.productId(5)
 				.uomId(6)
-				.vendorBPartnerId(vendorId)
 				.vendorProductInfo(VendorProductInfo.builder()
-						.bPartnerProductId(10)
-						.vendorBPartnerId(vendorId).productId(20)
+						.bpartnerProductId(10)
+						.vendorBPartnerId(vendorId)
+						.productId(20)
 						.productNo("productNo")
 						.productName("productName").build())
 				.qtyToPurchase(BigDecimal.ONE)
-				.dateRequired(SystemTime.asDayTimestamp())
+				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
 				.locked(false)
 				.build();

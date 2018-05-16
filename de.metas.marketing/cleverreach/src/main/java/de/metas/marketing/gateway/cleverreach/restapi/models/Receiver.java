@@ -76,7 +76,7 @@ public class Receiver
 	{
 		return ContactPersonRemoteUpdate.builder()
 				.remoteId(String.valueOf(id))
-				.address(EmailAddress.of(email, active))
+				.address(EmailAddress.of(email, !active))
 				.build();
 	}
 }

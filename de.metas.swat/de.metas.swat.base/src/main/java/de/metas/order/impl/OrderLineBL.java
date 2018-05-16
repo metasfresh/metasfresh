@@ -58,6 +58,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.PriceAndDiscount;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
@@ -156,42 +157,19 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final int precision)
 	{
-		final BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount).divide(Env.ONEHUNDRED, precision * 3, RoundingMode.HALF_UP);
-		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
-		return result;
+		return PriceAndDiscount.subtractDiscount(baseAmount, discount, precision);
 	}
 
 	@Override
 	public BigDecimal calculateDiscountFromPrices(final BigDecimal priceEntered, final BigDecimal priceActual, final int precision)
 	{
-		if (priceEntered.signum() == 0)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal discount = priceEntered.subtract(priceActual)
-				.divide(priceEntered, 12, RoundingMode.HALF_UP)
-				.multiply(Env.ONEHUNDRED);
-		if (discount.scale() > 2)
-		{
-			discount = discount.setScale(2, BigDecimal.ROUND_HALF_UP);
-		}
-
-		return discount;
+		return PriceAndDiscount.calculateDiscountFromPrices(priceEntered, priceActual, precision);
 	}
 
 	@Override
 	public BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(final BigDecimal priceActual, final BigDecimal discount, final int precision)
 	{
-		final BigDecimal multiplier = Env.ONEHUNDRED.add(discount).divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
-		return priceActual.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
-	}
-
-	@Override
-	public BigDecimal calculatePriceActualFromPriceEnteredAndDiscount(final BigDecimal priceEntered, final BigDecimal discount, final int precision)
-	{
-		Check.assumeGreaterOrEqualToZero(precision, "precision");
-		return subtractDiscount(priceEntered, discount, precision);
+		return PriceAndDiscount.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, precision);
 	}
 
 	@Override
@@ -382,9 +360,9 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updatePriceActual(final I_C_OrderLine orderLine, final int precision)
 	{
-		final BigDecimal discount = orderLine.getDiscount();
-		final BigDecimal priceEntered = orderLine.getPriceEntered();
-		final BigDecimal priceActual = calculatePriceActualFromPriceEnteredAndDiscount(priceEntered, discount, precision);
+		final BigDecimal priceActual = PriceAndDiscount.of(orderLine, precision)
+				.updatePriceActual()
+				.getPriceActual();
 		orderLine.setPriceActual(priceActual);
 	}
 

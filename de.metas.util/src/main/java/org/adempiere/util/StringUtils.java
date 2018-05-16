@@ -198,8 +198,8 @@ public final class StringUtils
 	/**
 	 * Convert given object to ADempiere's boolean value.
 	 *
-	 * @param value
-	 * @param defaultValue
+	 * @param value, may be null
+	 * @param defaultValue, may be null
 	 * @return
 	 *         <ul>
 	 *         <li>true if value is boolean true, "true" or "Y"
@@ -479,7 +479,18 @@ public final class StringUtils
 
 			sb.append(String.valueOf(item));
 		}
-
 		return sb;
+	}
+
+	public static String ofBoolean(
+			@Nullable final Boolean booleanOrNull,
+			@Nullable final String defaultValue)
+	{
+		if (booleanOrNull == null)
+		{
+			return defaultValue;
+		}
+
+		return booleanOrNull ? "Y" : "N";
 	}
 }

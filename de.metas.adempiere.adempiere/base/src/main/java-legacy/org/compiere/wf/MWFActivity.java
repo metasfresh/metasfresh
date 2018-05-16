@@ -76,6 +76,7 @@ import de.metas.event.Type;
 import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 
@@ -1370,13 +1371,13 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						+ (getTextMsg() != null ? getTextMsg() : "");
 				
 				final INotificationBL notificationBL = Services.get(INotificationBL.class);
-				notificationBL.notifyUserAfterCommit(UserNotificationRequest.builder()
+				notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 						.topic(USER_NOTIFICATIONS_TOPIC)
 						.recipientUserId(doc.getDoc_User_ID())
 						.contentADMessage(MSG_NotApproved)
 						.contentADMessageParam(doc.toTableRecordReference())
 						.contentADMessageParam(docInfo)
-						.targetRecord(doc.toTableRecordReference())
+						.targetAction(TargetRecordAction.of(doc.toTableRecordReference()))
 						.build());
 			}
 		}

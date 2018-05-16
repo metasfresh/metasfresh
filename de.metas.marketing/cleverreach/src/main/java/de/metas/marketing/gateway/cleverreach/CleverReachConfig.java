@@ -1,6 +1,8 @@
 package de.metas.marketing.gateway.cleverreach;
 
+import de.metas.marketing.base.model.PlatformId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -29,7 +31,15 @@ import lombok.Value;
 @Builder
 public class CleverReachConfig
 {
+	@NonNull
 	String client_id;
+
+	@NonNull
 	String login;
+
+	@NonNull
 	String password;
+
+	@NonNull
+	PlatformId platformId;
 }

@@ -46,7 +46,7 @@ public class NullVendorGatewayInvokerTest
 		final int vendorBPartnerId = 30;
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bPartnerProductId(10)
+				.bpartnerProductId(10)
 				.productId(productId)
 				.vendorBPartnerId(vendorBPartnerId)
 				.productName("productName")
@@ -54,9 +54,8 @@ public class NullVendorGatewayInvokerTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(10)
-				.dateRequired(SystemTime.asTimestamp())
+				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
-				.vendorBPartnerId(vendorBPartnerId)
 				.productId(productId)
 				.qtyToPurchase(TEN)
 				.salesOrderId(40)
