@@ -1,7 +1,12 @@
 package de.metas.pricing.limit;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 import lombok.ToString;
@@ -43,11 +48,15 @@ public class CompositePriceLimitRule implements IPriceLimitRule
 	{
 		final BigDecimal priceActual = context.getPriceActual();
 
-		return enforcers.stream()
+		final List<PriceLimitRuleResult> results = enforcers.stream()
 				.map(enforcer -> enforcer.compute(context))
+				.collect(ImmutableList.toImmutableList());
+
+		final PriceLimitRuleResult defaultResult = computeDefault(context);
+		return Stream.concat(results.stream(), Stream.of(defaultResult))
 				.filter(result -> result.isBelowPriceLimit(priceActual))
-				.findFirst()
-				.orElseGet(() -> computeDefault(context));
+				.max(Comparator.comparing(PriceLimitRuleResult::getPriceLimit))
+				.orElseGet(() -> PriceLimitRuleResult.notApplicable("no price limit enforcement"));
 	}
 
 	private PriceLimitRuleResult computeDefault(final PriceLimitRuleContext context)

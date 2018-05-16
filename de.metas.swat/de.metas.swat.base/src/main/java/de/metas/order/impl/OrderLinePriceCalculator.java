@@ -13,6 +13,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.order.PriceAndDiscount;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -89,11 +90,7 @@ class OrderLinePriceCalculator
 			orderLine.setC_PaymentTerm_Override_ID(pricingResult.getC_PaymentTerm_ID());
 		}
 
-		final int pricePrecision = pricingResult.getPrecision();
-		final BigDecimal priceEntered = extractPriceEntered(pricingResult);
-		BigDecimal discount = extractDiscount(pricingResult, pricingCtx.isSOTrx());
-		BigDecimal priceActual = orderLineBL.calculatePriceActualFromPriceEnteredAndDiscount(priceEntered, discount, pricePrecision);
-		BigDecimal priceLimit = pricingResult.getPriceLimit();
+		PriceAndDiscount priceAndDiscount = extractPriceAndDiscount(pricingResult, pricingCtx.isSOTrx());
 
 		//
 		// Apply price limit restrictions
@@ -101,31 +98,17 @@ class OrderLinePriceCalculator
 		{
 			final PriceLimitRuleResult priceLimitResult = pricingBL.computePriceLimit(PriceLimitRuleContext.builder()
 					.pricingContext(pricingCtx)
-					.priceLimit(priceLimit)
-					.priceActual(priceActual)
+					.priceLimit(priceAndDiscount.getPriceLimit())
+					.priceActual(priceAndDiscount.getPriceActual())
 					.paymentTermId(orderLineBL.getC_PaymentTerm_ID(orderLine))
 					.build());
-			if (priceLimitResult.isApplicable())
-			{
-				priceLimit = priceLimitResult.getPriceLimit();
-			}
-			if (priceLimitResult.isBelowPriceLimit(priceActual))
-			{
-				priceActual = priceLimit;
-
-				if (priceEntered.signum() != 0)
-				{
-					discount = orderLineBL.calculateDiscountFromPrices(priceEntered, priceActual, pricePrecision);
-				}
-			}
+			
+			priceAndDiscount = priceAndDiscount.enforcePriceLimit(priceLimitResult);
 		}
 
 		//
 		// Prices
-		orderLine.setPriceEntered(priceEntered);
-		orderLine.setDiscount(discount);
-		orderLine.setPriceActual(priceActual);
-		orderLine.setPriceLimit(priceLimit);
+		priceAndDiscount.applyTo(orderLine);
 		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // 07090: when setting a priceActual, we also need to specify a PriceUOM
@@ -267,9 +250,22 @@ class OrderLinePriceCalculator
 
 	private boolean isApplyPriceLimitRestrictions(final IPricingResult pricingResult)
 	{
-		return request.isApplyPriceLimitRestrictions() && pricingResult.isEnforcePriceLimit();
+		return request.isApplyPriceLimitRestrictions()
+				&& request.getOrderLine().getC_Order().isSOTrx() // we enforce price limit only for sales orders
+				&& pricingResult.isEnforcePriceLimit();
 	}
 
+	private PriceAndDiscount extractPriceAndDiscount(final IPricingResult pricingResult, final boolean isSOTrx)
+	{
+		return PriceAndDiscount.builder()
+				.precision(pricingResult.getPrecision())
+				.priceEntered(extractPriceEntered(pricingResult))
+				.priceLimit(pricingResult.getPriceLimit())
+				.discount(extractDiscount(pricingResult, isSOTrx))
+				.build()
+				.updatePriceActual();
+	}
+	
 	private BigDecimal extractPriceEntered(final IPricingResult pricingResult)
 	{
 		if (isAllowChangingPriceEntered())
@@ -319,7 +315,17 @@ class OrderLinePriceCalculator
 		}
 
 		final I_C_OrderLine orderLine = request.getOrderLine();
-		return !orderLine.isManualDiscount();
+		if (orderLine.isManualDiscount())
+		{
+			return false;
+		}
+
+		if (request.isUpdatePriceEnteredAndDiscountOnlyIfNotAlreadySet() && orderLine.getDiscount().signum() != 0) // task 06727
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	public int computeTaxCategoryId()

@@ -3,6 +3,7 @@ package de.metas.pricing.conditions;
 import java.math.BigDecimal;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -31,6 +32,7 @@ import lombok.Value;
 @Builder
 public class PricingConditionsBreakMatchCriteria
 {
+	@NonNull
 	BigDecimal breakValue;
 	int productId;
 	int productCategoryId;
