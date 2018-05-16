@@ -24,6 +24,9 @@ package org.adempiere.util.time;
 
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -67,6 +70,13 @@ public final class SystemTime {
 	public static Timestamp asTimestamp() {
 
 		return new Timestamp(millis());
+	}
+	
+	public static LocalDateTime asLocalDateTime()
+	{
+		return Instant.ofEpochMilli(millis())
+				.atZone(ZoneId.systemDefault())
+				.toLocalDateTime();
 	}
 
 	/**

@@ -7,6 +7,7 @@ import java.util.Map;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -113,7 +114,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 			final PurchaseCandidate correspondingRequestCandidate = requestItem2Candidate.get(correspondingRequestItem);
 
 			final PurchaseOrderItem purchaseOrderItem = correspondingRequestCandidate.createOrderItem()
-					.datePromised(remotePurchaseOrderCreatedItem.getConfirmedDeliveryDate())
+					.datePromised(TimeUtil.asLocalDateTime(remotePurchaseOrderCreatedItem.getConfirmedDeliveryDate()))
 					.purchasedQty(remotePurchaseOrderCreatedItem.getConfirmedOrderQuantity())
 					.remotePurchaseOrderId(remotePurchaseOrderCreatedItem.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)

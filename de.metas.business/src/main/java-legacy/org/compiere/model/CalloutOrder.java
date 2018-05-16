@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.BPartnerStats;
@@ -32,11 +31,11 @@ import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -49,6 +48,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.order.PriceAndDiscount;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductBL;
@@ -865,7 +865,7 @@ public class CalloutOrder extends CalloutEngine
 		orderLine.setQtyOrdered(orderLine.getQtyEntered());
 
 		handleIndividualDescription(orderLine);
-		
+
 		return tax(calloutField);
 	} // product
 
@@ -1046,9 +1046,7 @@ public class CalloutOrder extends CalloutEngine
 		final int pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(order.getM_PriceList_ID());
 
 		//
-		BigDecimal priceEntered;
-		BigDecimal priceActual;
-		BigDecimal discount;
+		PriceAndDiscount priceAndDiscount;
 
 		// Qty changed - recalc price
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
@@ -1057,92 +1055,60 @@ public class CalloutOrder extends CalloutEngine
 					.toBuilder()
 					.applyPriceLimitRestrictions(false)
 					.build());
-			
-			priceEntered = orderLine.getPriceEntered();
-			priceActual = orderLine.getPriceActual();
-			discount = orderLine.getDiscount();
+
+			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision);
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceActual.equals(changedColumnName))
 		{
-			priceActual = orderLine.getPriceActual();
-			priceEntered = MUOMConversion.convertToProductUOM(ctx, productId, priceUOMId, priceActual);
+			final BigDecimal priceActual = orderLine.getPriceActual();
+			BigDecimal priceEntered = MUOMConversion.convertToProductUOM(ctx, productId, priceUOMId, priceActual);
 			if (priceEntered == null)
 			{
 				priceEntered = priceActual;
 			}
-			discount = orderLine.getDiscount();
+
+			priceAndDiscount = PriceAndDiscount.builder()
+					.precision(pricePrecision)
+					.priceEntered(priceEntered)
+					.priceActual(priceActual)
+					.discount(orderLine.getDiscount())
+					.build();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
-			priceEntered = orderLine.getPriceEntered();
-			discount = orderLine.getDiscount();
-			priceActual = orderLineBL.calculatePriceActualFromPriceEnteredAndDiscount(priceEntered, discount, pricePrecision);
+			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision)
+					.updatePriceActual();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName))
 		{
-			priceEntered = orderLine.getPriceEntered();
-			discount = orderLine.getDiscount();
-			if (priceEntered.signum() != 0)
-			{
-				priceActual = orderLineBL.calculatePriceActualFromPriceEnteredAndDiscount(priceEntered, discount, pricePrecision);
-			}
-			else
-			{
-				priceActual = orderLine.getPriceActual();
-			}
+			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision)
+					.updatePriceActualIfPriceEnteredIsNotZero();
 		}
 		// C_UOM_ID, PriceList, S_ResourceAssignment_ID
 		else
 		{
-			priceEntered = orderLine.getPriceEntered();
-			priceActual = orderLine.getPriceActual();
-			discount = orderLine.getDiscount();
+			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision);
 		}
 
 		//
 		// Check PriceActual and enforce PriceLimit.
 		// Also, update Discount or PriceEntered if needed.
-		BigDecimal priceLimit = orderLine.getPriceLimit();
-		boolean underPriceLimit = false;
-		String underPriceLimitExplanation = null;
 		if (isEnforcePriceLimit(orderLine, order.isSOTrx()))
 		{
+			priceAndDiscount.applyTo(orderLine);
 			final PriceLimitRuleResult priceLimitResult = orderLineBL.computePriceLimit(orderLine);
-			if(priceLimitResult.isApplicable())
-			{
-				priceLimit = priceLimitResult.getPriceLimit();
-			}
-
-			if(priceLimitResult.isBelowPriceLimit(priceActual))
-			{
-				underPriceLimit = true;
-				underPriceLimitExplanation = priceLimitResult.getPriceLimitExplanation();
-
-				priceActual = priceLimit;
-
-				if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName) && priceEntered.signum() != 0)
-				{
-					priceEntered = orderLineBL.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, pricePrecision);
-				}
-				else if (priceEntered.signum() != 0)
-				{
-					discount = orderLineBL.calculateDiscountFromPrices(priceEntered, priceActual, pricePrecision);
-				}
-			}
+			priceAndDiscount = priceAndDiscount.enforcePriceLimit(priceLimitResult);
 		}
 
 		//
 		// Update order line
-		orderLine.setPriceEntered(priceEntered);
-		orderLine.setPriceActual(priceActual);
-		orderLine.setDiscount(discount);
-		orderLine.setPriceLimit(priceLimit);
+		priceAndDiscount.applyTo(orderLine);
 		orderLineBL.updateLineNetAmt(orderLine);
 		orderLineBL.setTaxAmtInfo(orderLine);
-		
-		if (underPriceLimit)
+
+		if (!Check.isEmpty(priceAndDiscount.getPriceLimitEnforceExplanation(), true))
 		{
-			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, underPriceLimitExplanation, /* isError */false);
+			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, priceAndDiscount.getPriceLimitEnforceExplanation(), /* isError */false);
 		}
 
 		//
@@ -1562,12 +1528,6 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		if (!orderLine.isEnforcePriceLimit())
-		{
-			return false;
-		}
-
-		// User role allows us to overwrite PriceLimit, so we are not enforcing it
-		if (Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_OverwritePriceLimit))
 		{
 			return false;
 		}

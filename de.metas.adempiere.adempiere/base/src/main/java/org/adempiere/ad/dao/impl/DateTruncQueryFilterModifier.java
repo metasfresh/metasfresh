@@ -157,7 +157,7 @@ public final class DateTruncQueryFilterModifier implements IQueryFilterModifier
 	@Deprecated
 	public Object convertValue(final String columnName, final Object value, final Object model)
 	{
-		return convertValue((java.util.Date)value);
+		return convertValue(TimeUtil.asTimestamp(value));
 	}
 
 	public java.util.Date convertValue(final java.util.Date date)

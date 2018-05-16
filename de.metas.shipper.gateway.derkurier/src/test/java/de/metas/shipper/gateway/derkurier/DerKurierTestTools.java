@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData.DerKurierDeliveryDataBuilder;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
+import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant.RequestParticipantBuilder;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.CountryCode;
@@ -144,13 +145,9 @@ public class DerKurierTestTools
 				.build();
 	}
 
-	public static RoutingRequest createRoutingRequest()
+	public static RoutingRequest createRoutingRequest_times_with_seconds()
 	{
-		final RequestParticipant sender = RequestParticipant.builder()
-				.country("DE")
-				.zip("50969")
-				.timeFrom(LocalTime.of(10, 20, 30, 40)) // here we provide localtime up to the nano-second, but the web-service only wants hour:minute
-				.timeTo(LocalTime.of(11, 21, 31, 41))
+		final RequestParticipant sender = prepareRequestParticipantBuilder()
 				.build();
 
 		final RoutingRequest routingRequest = RoutingRequest.builder()
@@ -158,5 +155,33 @@ public class DerKurierTestTools
 				.sender(sender)
 				.build();
 		return routingRequest;
+	}
+
+	/**
+	 * DerKurier doesn't care for seconds it its times, so for some test cases this method creates the better test-requests.
+	 *
+	 * @return
+	 */
+	public static RoutingRequest createRoutingRequest_times_without_seconds()
+	{
+		final RequestParticipant sender = prepareRequestParticipantBuilder()
+				.timeFrom(LocalTime.of(10, 20, 0, 0))
+				.timeTo(LocalTime.of(11, 21, 0, 0))
+				.build();
+
+		final RoutingRequest routingRequest = RoutingRequest.builder()
+				.sendDate(LocalDate.now())
+				.sender(sender)
+				.build();
+		return routingRequest;
+	}
+
+	private static RequestParticipantBuilder prepareRequestParticipantBuilder()
+	{
+		return RequestParticipant.builder()
+				.country("DE")
+				.zip("50969")
+				.timeFrom(LocalTime.of(10, 20, 30, 40)) // here we provide localtime up to the nano-second, but the web-service only wants hour:minute
+				.timeTo(LocalTime.of(11, 21, 31, 41));
 	}
 }

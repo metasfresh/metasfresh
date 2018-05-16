@@ -113,15 +113,24 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 	private static PricingConditions toPricingConditions(final I_M_DiscountSchema discountSchemaRecord, final List<I_M_DiscountSchemaBreak> schemaBreakRecords)
 	{
-		final List<PricingConditionsBreak> breaks = schemaBreakRecords.stream()
-				.filter(I_M_DiscountSchemaBreak::isActive)
-				.filter(I_M_DiscountSchemaBreak::isValid)
-				.map(schemaBreakRecord -> toPricingConditionsBreak(schemaBreakRecord))
-				.collect(ImmutableList.toImmutableList());
+		final PricingConditionsDiscountType discountType = PricingConditionsDiscountType.forCode(discountSchemaRecord.getDiscountType());
+		final List<PricingConditionsBreak> breaks;
+		if (discountType == PricingConditionsDiscountType.BREAKS)
+		{
+			breaks = schemaBreakRecords.stream()
+					.filter(I_M_DiscountSchemaBreak::isActive)
+					.filter(I_M_DiscountSchemaBreak::isValid)
+					.map(schemaBreakRecord -> toPricingConditionsBreak(schemaBreakRecord))
+					.collect(ImmutableList.toImmutableList());
+		}
+		else
+		{
+			breaks = ImmutableList.of();
+		}
 
 		return PricingConditions.builder()
 				.discountSchemaId(discountSchemaRecord.getM_DiscountSchema_ID())
-				.discountType(PricingConditionsDiscountType.forCode(discountSchemaRecord.getDiscountType()))
+				.discountType(discountType)
 				.bpartnerFlatDiscount(discountSchemaRecord.isBPartnerFlatDiscount())
 				.flatDiscount(discountSchemaRecord.getFlatDiscount())
 				.quantityBased(discountSchemaRecord.isQuantityBased())
@@ -285,6 +294,17 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			schemaBreak = newInstance(I_M_DiscountSchemaBreak.class);
 			schemaBreak.setM_DiscountSchema_ID(discountSchemaId);
 			schemaBreak.setSeqNo(retrieveNextSeqNo(discountSchemaId));
+			schemaBreak.setBreakValue(BigDecimal.ZERO);
+		}
+
+		//
+		final PricingConditionsBreakMatchCriteria matchCriteria = request.getMatchCriteria();
+		if (matchCriteria != null)
+		{
+			schemaBreak.setBreakValue(matchCriteria.getBreakValue());
+			schemaBreak.setM_Product_ID(matchCriteria.getProductId());
+			schemaBreak.setM_Product_Category_ID(matchCriteria.getProductCategoryId());
+			schemaBreak.setM_AttributeValue_ID(matchCriteria.getAttributeValueId());
 		}
 
 		//

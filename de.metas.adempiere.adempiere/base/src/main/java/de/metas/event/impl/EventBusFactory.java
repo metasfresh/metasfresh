@@ -196,7 +196,8 @@ public class EventBusFactory implements IEventBusFactory
 	@Override
 	public void addAvailableUserNotificationsTopic(@NonNull final Topic topic)
 	{
-		availableUserNotificationsTopic.add(topic);
+		final boolean added = availableUserNotificationsTopic.add(topic);
+		logger.info("Registered user notifications topic: {} (already registered: {})", topic, !added);
 	}
 
 	/**
