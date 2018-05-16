@@ -2,13 +2,11 @@ package org.adempiere.impexp.bpartner;
 
 import java.math.BigDecimal;
 
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_I_BPartner;
-import org.compiere.model.ModelValidationEngine;
 
 import lombok.NonNull;
 
@@ -56,27 +54,23 @@ import lombok.NonNull;
 		return this;
 	}
 
-	public final I_C_BPartner_CreditLimit importRecord(final I_I_BPartner importRecord)
+	public final void importRecord(final I_I_BPartner importRecord)
 	{
 		I_C_BPartner_CreditLimit bpCreditLimit = null;
+		final I_C_BPartner bpartner = importRecord.getC_BPartner();
 		if (importRecord.getCreditLimit().signum() > 0)
 		{
 			bpCreditLimit = createBPCreditLimit(importRecord.getCreditLimit(), Insurance_C_CreditLimit_Type_ID);
-		}
-		else if (importRecord.getCreditLimit2().signum() > 0)
-		{
-			bpCreditLimit = createBPCreditLimit(importRecord.getCreditLimit2(), Management_C_CreditLimit_Type_ID);
-		}
-
-		if (bpCreditLimit != null)
-		{
-			final I_C_BPartner bpartner = importRecord.getC_BPartner();
 			bpCreditLimit.setC_BPartner(bpartner);
-			ModelValidationEngine.get().fireImportValidate(process, importRecord, bpCreditLimit, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bpCreditLimit);
 		}
 
-		return bpCreditLimit;
+		if (importRecord.getCreditLimit2().signum() > 0)
+		{
+			bpCreditLimit = createBPCreditLimit(importRecord.getCreditLimit2(), Management_C_CreditLimit_Type_ID);
+			bpCreditLimit.setC_BPartner(bpartner);
+			InterfaceWrapperHelper.save(bpCreditLimit);
+		}
 	}
 
 	private final I_C_BPartner_CreditLimit createBPCreditLimit(@NonNull final BigDecimal amount, final int typeId)
