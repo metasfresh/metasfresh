@@ -195,6 +195,7 @@ import lombok.NonNull;
 			user.setBirthday(importRecord.getBirthday());
 		}
 
+		setUserMemo(user, importRecord.getMemo());
 		setUserMemo(user, importRecord.getMemo1());
 		setUserMemo(user, importRecord.getMemo2());
 		setUserMemo(user, importRecord.getMemo3());
