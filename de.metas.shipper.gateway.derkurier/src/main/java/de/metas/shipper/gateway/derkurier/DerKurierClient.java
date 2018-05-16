@@ -133,7 +133,9 @@ public class DerKurierClient implements ShipperGatewayClient
 		final Routing routing = postRoutingRequest(routingRequest);
 
 		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(routing, deliveryOrder);
-
+		
+		derKurierDeliveryOrderRepository.save(completedDeliveryOrder);
+		
 		final List<String> csvLines = converters.createCsv(completedDeliveryOrder);
 
 		final AttachmentEntry attachmentEntry = derKurierDeliveryOrderRepository
