@@ -154,7 +154,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="80" y="104" width="130" height="30" uuid="5f8eda77-1242-4578-bbc4-49b650a4bc7d"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{desiredstation}]]></textFieldExpression>
 			</textField>
@@ -211,7 +211,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="219" width="250" height="27" uuid="5500328f-4887-4bd0-ab2c-139f5f9c1788"/>
 				<textElement verticalAlignment="Middle">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd.MM.yyyy").format($F{desireddeliverydate}) + 
 " "
@@ -273,6 +273,10 @@
 					<font size="18"/>
 				</textElement>
 			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="30" uuid="82f5560c-8e65-4f32-abe2-77135a1bb14c"/>
+				<text><![CDATA[Static Text]]></text>
+			</staticText>
 		</band>
 	</detail>
 </jasperReport>
