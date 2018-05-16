@@ -1,6 +1,6 @@
 package de.metas.shipper.gateway.derkurier.restapi.models;
 
-import static de.metas.shipper.gateway.derkurier.DerKurierConstants.DATE_FORMAT;
+import static de.metas.shipper.gateway.derkurier.DerKurierConstants.API_DATE_FORMAT;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 import org.adempiere.util.Check;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,27 +42,22 @@ import lombok.Value;
 @Value
 public class RoutingRequest
 {
-	@JsonProperty("sendDate")
-	@JsonFormat(shape = Shape.STRING, pattern = DATE_FORMAT)
 	LocalDate sendDate;
-
-	@JsonProperty("desiredDeliveryDate")
-	@JsonFormat(shape = Shape.STRING, pattern = DATE_FORMAT)
 	LocalDate desiredDeliveryDate;
-
 	int services;
 	BigDecimal weight;
 	RequestParticipant sender;
 	RequestParticipant consignee;
 
+	@JsonCreator
 	@Builder
 	private RoutingRequest(
-			LocalDate sendDate,
-			LocalDate desiredDeliveryDate,
-			int services,
-			BigDecimal weight,
-			RequestParticipant sender,
-			RequestParticipant consignee)
+			@JsonProperty("sendDate") @JsonFormat(shape = Shape.STRING, pattern = API_DATE_FORMAT) final LocalDate sendDate,
+			@JsonProperty("desiredDeliveryDate") @JsonFormat(shape = Shape.STRING, pattern = API_DATE_FORMAT) final LocalDate desiredDeliveryDate,
+			@JsonProperty("services") final int services,
+			@JsonProperty("weight") final BigDecimal weight,
+			@JsonProperty("sender") final RequestParticipant sender,
+			@JsonProperty("consignee") final RequestParticipant consignee)
 	{
 		Check.assumeNotNull(sendDate, "Parameter sendDate may not be null");
 		Check.errorIf(sender == null && consignee == null, "At least one of the given sender and consignee parameters has to be not-null");
