@@ -226,4 +226,14 @@ public final class JSONLookupValue
 				.attributes(getAttributes())
 				.build();
 	}
+
+	public LookupValue toStringLookupValue()
+	{
+		return StringLookupValue.builder()
+				.id(getKey())
+				.displayName(ImmutableTranslatableString.constant(getCaption()))
+				.attributes(getAttributes())
+				.build();
+	}
+
 }
