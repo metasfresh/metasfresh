@@ -140,33 +140,33 @@
 				</graphicElement>
 			</line>
 			<line>
-				<reportElement x="20" y="129" width="250" height="1" uuid="5d9a40e9-bccc-4bc2-ba13-1e2597eaf801"/>
+				<reportElement x="20" y="134" width="250" height="1" uuid="5d9a40e9-bccc-4bc2-ba13-1e2597eaf801"/>
 				<graphicElement>
 					<pen lineWidth="2.0"/>
 				</graphicElement>
 			</line>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="104" width="70" height="25" uuid="cb63da1f-5383-4692-ae91-89ff1e847c25"/>
-				<textElement>
+				<reportElement x="20" y="104" width="70" height="30" uuid="cb63da1f-5383-4692-ae91-89ff1e847c25"/>
+				<textElement verticalAlignment="Middle">
 					<font size="18"/>
 				</textElement>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="90" y="104" width="110" height="25" uuid="5f8eda77-1242-4578-bbc4-49b650a4bc7d"/>
-				<textElement textAlignment="Center">
+				<reportElement x="90" y="104" width="110" height="30" uuid="5f8eda77-1242-4578-bbc4-49b650a4bc7d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{desiredstation}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="130" width="80" height="14" uuid="64f66b35-bac4-41ad-9341-23b2de00d735"/>
+				<reportElement x="20" y="135" width="80" height="14" uuid="64f66b35-bac4-41ad-9341-23b2de00d735"/>
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sender}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="100" y="130" width="100" height="14" uuid="041f741c-1a1d-435c-9cc3-89821f18b974"/>
+				<reportElement x="100" y="135" width="100" height="14" uuid="041f741c-1a1d-435c-9cc3-89821f18b974"/>
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -174,7 +174,7 @@
 ($F{customercode} != null ? $F{customercode} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="200" y="130" width="70" height="14" uuid="8b8a9303-74fb-4020-8aea-b76c76494d0b"/>
+				<reportElement x="200" y="135" width="70" height="14" uuid="8b8a9303-74fb-4020-8aea-b76c76494d0b"/>
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -182,25 +182,25 @@
 ($F{collectorcode} != null ? $F{collectorcode} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="144" width="250" height="14" uuid="8f475902-e4a8-42d3-9e34-f8acd08e6748"/>
+				<reportElement x="20" y="149" width="250" height="14" uuid="8f475902-e4a8-42d3-9e34-f8acd08e6748"/>
 				<textFieldExpression><![CDATA[$F{sender_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="158" width="250" height="14" uuid="1337aa4f-acc4-4566-beda-03c64e956529"/>
+				<reportElement x="20" y="163" width="250" height="14" uuid="1337aa4f-acc4-4566-beda-03c64e956529"/>
 				<textFieldExpression><![CDATA[$F{sender_name2}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="172" width="250" height="14" uuid="26a1ee15-6f19-47b8-92b4-205127919ca8"/>
+				<reportElement x="20" y="177" width="250" height="14" uuid="26a1ee15-6f19-47b8-92b4-205127919ca8"/>
 				<textFieldExpression><![CDATA[$F{sender_name3}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="186" width="250" height="14" uuid="adfd9663-cd31-4d7f-a8b6-b910026cf1ad"/>
+				<reportElement x="20" y="191" width="250" height="14" uuid="adfd9663-cd31-4d7f-a8b6-b910026cf1ad"/>
 				<textFieldExpression><![CDATA[($F{sender_street} != null ? $F{sender_street} : "")
  + " " +
  ($F{sender_housenumber}  != null ? $F{sender_housenumber} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="200" width="250" height="14" uuid="26e4dd01-c9ed-46d2-86b3-1a860af3a329"/>
+				<reportElement x="20" y="205" width="250" height="14" uuid="26e4dd01-c9ed-46d2-86b3-1a860af3a329"/>
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -209,8 +209,8 @@
 ($F{sender_city} != null ? $F{sender_city}  : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="214" width="250" height="25" uuid="5500328f-4887-4bd0-ab2c-139f5f9c1788"/>
-				<textElement>
+				<reportElement x="20" y="219" width="250" height="27" uuid="5500328f-4887-4bd0-ab2c-139f5f9c1788"/>
+				<textElement verticalAlignment="Middle">
 					<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd.MM.yyyy").format($F{desireddeliverydate}) + 
@@ -219,37 +219,37 @@
 + ($F{desireddeliverytime_to}.equals("00:00") ? "" : " - " + $F{desireddeliverytime_to} )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="239" width="250" height="14" uuid="57599e1b-026d-40b4-8522-e109e9e81388"/>
+				<reportElement x="20" y="246" width="250" height="14" uuid="57599e1b-026d-40b4-8522-e109e9e81388"/>
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{receiver}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="253" width="250" height="14" uuid="e207c186-a7dd-4673-9112-be04a400fa87"/>
+				<reportElement x="20" y="260" width="250" height="14" uuid="e207c186-a7dd-4673-9112-be04a400fa87"/>
 				<textFieldExpression><![CDATA[$F{consignee_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="267" width="250" height="14" uuid="1ea7fbbe-5cff-4904-8088-f0e7384e142e"/>
+				<reportElement x="20" y="274" width="250" height="14" uuid="1ea7fbbe-5cff-4904-8088-f0e7384e142e"/>
 				<textFieldExpression><![CDATA[$F{consignee_name2}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="281" width="250" height="14" uuid="c0c37ece-009a-4bd7-8e83-2bdad631ba93"/>
+				<reportElement x="20" y="288" width="250" height="14" uuid="c0c37ece-009a-4bd7-8e83-2bdad631ba93"/>
 				<textFieldExpression><![CDATA[$F{consignee_name3}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="295" width="250" height="14" uuid="5ed0f72b-0788-44c3-a5d0-bfa3ad4bc3b9"/>
+				<reportElement x="20" y="302" width="250" height="14" uuid="5ed0f72b-0788-44c3-a5d0-bfa3ad4bc3b9"/>
 				<textFieldExpression><![CDATA[$R{tel} + " " + ($F{consignee_phone} != null ?  $F{consignee_phone}  : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="309" width="250" height="14" uuid="7cf0cd16-de8b-472a-8b31-1c6b89773df5"/>
+				<reportElement x="20" y="316" width="250" height="14" uuid="7cf0cd16-de8b-472a-8b31-1c6b89773df5"/>
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{consignee_street}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="323" width="250" height="14" uuid="b3a5674f-b91d-4233-a535-e0c43359a203"/>
+				<reportElement x="20" y="330" width="250" height="14" uuid="b3a5674f-b91d-4233-a535-e0c43359a203"/>
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -258,7 +258,7 @@
 ($F{consignee_city} != null ?  $F{consignee_city}  : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="337" width="250" height="14" uuid="19b6b3e6-8c33-4828-8424-9e11b3c9e717"/>
+				<reportElement x="20" y="344" width="250" height="14" uuid="19b6b3e6-8c33-4828-8424-9e11b3c9e717"/>
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
@@ -268,8 +268,8 @@
 				<imageExpression><![CDATA["de/metas/docs/label/der_kurier/der_kurier_logo.png"]]></imageExpression>
 			</image>
 			<textField isBlankWhenNull="true">
-				<reportElement x="200" y="104" width="70" height="25" uuid="7b8fe5dd-8a75-4b59-83e6-c1c5f162e6f3"/>
-				<textElement>
+				<reportElement x="200" y="104" width="70" height="30" uuid="7b8fe5dd-8a75-4b59-83e6-c1c5f162e6f3"/>
+				<textElement verticalAlignment="Middle">
 					<font size="18"/>
 				</textElement>
 			</textField>
