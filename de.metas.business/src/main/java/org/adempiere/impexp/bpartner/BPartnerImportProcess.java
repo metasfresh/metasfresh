@@ -33,6 +33,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_BP_PrintFormat;
@@ -55,6 +56,8 @@ import lombok.NonNull;
  */
 public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 {
+	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormat = "BPartnerImportProcess_BPPrintFormat";
+
 	private final BPartnerImportHelper bpartnerImporter;
 	private final BPartnerLocationImportHelper bpartnerLocationImporter;
 	private final BPartnerContactImportHelper bpartnerContactImporter;
@@ -242,7 +245,10 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
 
+			final int AD_PrintFormat_ID =  Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormat, 1000015);
+
 			final I_C_BP_PrintFormat bpPrintFormat = InterfaceWrapperHelper.newInstance(I_C_BP_PrintFormat.class);
+			bpPrintFormat.setAD_PrintFormat_ID(AD_PrintFormat_ID);
 			bpPrintFormat.setC_BPartner(importRecord.getC_BPartner());
 			bpPrintFormat.setC_DocType_ID(docTypeId);
 			bpPrintFormat.setAD_Table_ID(X_M_InOut.Table_ID);
