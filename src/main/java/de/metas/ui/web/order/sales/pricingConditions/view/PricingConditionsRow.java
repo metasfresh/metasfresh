@@ -84,7 +84,7 @@ public class PricingConditionsRow implements IViewRow
 	private final boolean customer;
 
 	private static final String FIELDNAME_PriceType = "priceType";
-	@ViewColumn(fieldName = FIELDNAME_PriceType, captionKey = "Type", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+	@ViewColumn(fieldName = FIELDNAME_PriceType, captionKey = "Type", widgetType = DocumentFieldWidgetType.List, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 25)
 	})
