@@ -1,5 +1,13 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
+import java.util.NoSuchElementException;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableMap;
+
+import lombok.Getter;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -24,10 +32,38 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 public enum PriceType
 {
-	NONE, BASE_PRICING_SYSTEM, FIXED_PRICED;
+	NONE("N"), BASE_PRICING_SYSTEM("P"), FIXED_PRICE("F");
 
-	public boolean isPriceValueRequired()
+	public static final int AD_Reference_ID = 540862;
+
+	@Getter
+	private final String code;
+
+	PriceType(final String code)
 	{
-		return this == PriceType.FIXED_PRICED;
+		this.code = code;
 	}
+
+	public boolean isFixedPrice()
+	{
+		return this == PriceType.FIXED_PRICE;
+	}
+
+	public boolean isBasePricingSystem()
+	{
+		return this == PriceType.BASE_PRICING_SYSTEM;
+	}
+
+	public static PriceType ofCode(final String code)
+	{
+		final PriceType type = priceTypesByCode.get(code);
+		if (type == null)
+		{
+			throw new NoSuchElementException("No " + PriceType.class + " for " + code);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, PriceType> priceTypesByCode = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(PriceType::getCode, Function.identity()));
 }

@@ -164,10 +164,10 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 				salesOrderLine.setBase_PricingSystem_ID(editableRow.getBasePriceSystemId());
 
 			}
-			else if (priceType == PriceType.FIXED_PRICED)
+			else if (priceType == PriceType.FIXED_PRICE)
 			{
 				salesOrderLine.setIsManualPrice(true);
-				salesOrderLine.setPriceEntered(price.getPriceValue());
+				salesOrderLine.setPriceEntered(price.getFixedPrice());
 			}
 
 			salesOrderLine.setIsManualDiscount(true);
@@ -187,7 +187,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 
 		orderLineBL.updateLineNetAmt(salesOrderLine);
 		orderLineBL.setTaxAmtInfo(salesOrderLine);
-		
+
 		InterfaceWrapperHelper.save(salesOrderLine);
 	}
 }

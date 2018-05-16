@@ -74,6 +74,7 @@ class PricingConditionsRowsLoader
 			.thenComparing(row -> row.isCustomer() ? 0 : 1);
 
 	private final LookupDataSource bpartnerLookup;
+	private final LookupDataSource priceTypeLookup;
 	private final LookupDataSource pricingSystemLookup;
 	private final LookupDataSource paymentTermLookup;
 
@@ -101,6 +102,7 @@ class PricingConditionsRowsLoader
 	{
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 		bpartnerLookup = lookupFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		priceTypeLookup = lookupFactory.listByReferenceId(PriceType.AD_Reference_ID);
 		pricingSystemLookup = lookupFactory.searchInTableLookup(I_M_PricingSystem.Table_Name);
 		paymentTermLookup = lookupFactory.searchInTableLookup(I_C_PaymentTerm.Table_Name);
 
@@ -215,7 +217,11 @@ class PricingConditionsRowsLoader
 		return PricingConditionsRow.builder()
 				.bpartner(lookupBPartner(discountSchemaInfo.getBpartnerId()))
 				.customer(discountSchemaInfo.isSOTrx())
+				//
 				.price(extractPrice(pricingConditionsBreak))
+				.priceTypeLookup(priceTypeLookup)
+				.pricingSystemLookup(pricingSystemLookup)
+				//
 				.discount(pricingConditionsBreak.getDiscount())
 				.paymentTerm(paymentTermLookup.findById(pricingConditionsBreak.getPaymentTermId()))
 				.paymentTermLookup(paymentTermLookup)
@@ -246,7 +252,7 @@ class PricingConditionsRowsLoader
 
 			return Price.basePricingSystem(pricingSystem, basePriceAddAmt);
 		}
-		else if (priceOverride == PriceOverrideType.FIXED_PRICED)
+		else if (priceOverride == PriceOverrideType.FIXED_PRICE)
 		{
 			return Price.fixedPrice(pricingConditionsBreak.getFixedPrice());
 		}
@@ -275,7 +281,11 @@ class PricingConditionsRowsLoader
 				.discountSchemaId(discountSchemaId)
 				.bpartner(lookupBPartner(targetBPartnerId))
 				.customer(isSOTrx)
+				//
 				.price(Price.fixedPrice(orderLinePriceEntered))
+				.priceTypeLookup(priceTypeLookup)
+				.pricingSystemLookup(pricingSystemLookup)
+				//
 				.paymentTerm(paymentTermLookup.findById(orderLinePaymentTermId))
 				.paymentTermLookup(paymentTermLookup)
 				.discount(orderLineDiscount)

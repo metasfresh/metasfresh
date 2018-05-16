@@ -11,6 +11,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.sales.pricingConditions.view.Price;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest;
+import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -82,7 +83,7 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 		final Price price = extractPriceFromTemplate(templateRow);
 
 		return PricingConditionsRowChangeRequest.builder()
-				.price(price).forceChangingPriceType(true)
+				.priceChange(CompletePriceChange.of(price))
 				.discount(templateRow.getDiscount())
 				.paymentTerm(Optional.ofNullable(templateRow.getPaymentTerm()))
 				.sourceDiscountSchemaBreakId(templateRow.getDiscountSchemaBreakId())

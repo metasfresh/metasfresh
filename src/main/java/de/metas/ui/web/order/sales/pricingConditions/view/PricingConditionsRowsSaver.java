@@ -86,10 +86,10 @@ public class PricingConditionsRowsSaver
 			requestBuilder.basePricingSystemId(price.getPricingSystemId());
 			requestBuilder.basePriceAddAmt(price.getBasePriceAddAmt());
 		}
-		else if (priceType == PriceType.FIXED_PRICED)
+		else if (priceType == PriceType.FIXED_PRICE)
 		{
-			requestBuilder.priceOverride(PriceOverrideType.FIXED_PRICED);
-			requestBuilder.fixedPrice(price.getPriceValue());
+			requestBuilder.priceOverride(PriceOverrideType.FIXED_PRICE);
+			requestBuilder.fixedPrice(price.getFixedPrice());
 		}
 		else
 		{

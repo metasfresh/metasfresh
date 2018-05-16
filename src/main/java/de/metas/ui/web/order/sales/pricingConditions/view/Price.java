@@ -46,7 +46,7 @@ public class Price
 
 	public static Price fixedPrice(@NonNull final BigDecimal priceValue)
 	{
-		return new Price(PriceType.FIXED_PRICED, priceValue, /* pricingSystem */null, /* basePriceAddAmt */null);
+		return new Price(PriceType.FIXED_PRICE, priceValue, /* pricingSystem */null, /* basePriceAddAmt */null);
 	}
 
 	public static Price fixedZeroPrice()
@@ -57,34 +57,39 @@ public class Price
 	private static final Price NONE = new Price();
 
 	PriceType priceType;
-	BigDecimal priceValue;
 
-	LookupValue pricingSystem;
+	LookupValue basePricingSystem;
 	BigDecimal basePriceAddAmt;
+
+	BigDecimal fixedPrice;
 
 	private Price()
 	{
 		priceType = PriceType.NONE;
-		priceValue = null;
-		pricingSystem = null;
+		fixedPrice = null;
+		basePricingSystem = null;
 		basePriceAddAmt = null;
 	}
 
 	private Price(
 			@NonNull final PriceType priceType,
-			final BigDecimal priceValue,
-			final LookupValue pricingSystem,
+			final BigDecimal fixedPrice,
+			final LookupValue basePricingSystem,
 			final BigDecimal basePriceAddAmt)
 	{
 		this.priceType = priceType;
 
-		if (priceType.isPriceValueRequired() && priceValue == null)
+		if (priceType.isFixedPrice() && fixedPrice == null)
 		{
 			throw new NullPointerException("priceValue shall not be null when priceType=" + priceType);
 		}
-		this.priceValue = NumberUtils.stripTrailingDecimalZeros(priceValue);
+		this.fixedPrice = NumberUtils.stripTrailingDecimalZeros(fixedPrice);
 
-		this.pricingSystem = pricingSystem;
+		if (priceType.isBasePricingSystem() && basePricingSystem == null)
+		{
+			throw new NullPointerException("pricingSystem shall not be null when priceType=" + priceType);
+		}
+		this.basePricingSystem = basePricingSystem;
 		this.basePriceAddAmt = NumberUtils.stripTrailingDecimalZeros(basePriceAddAmt);
 	}
 
@@ -95,7 +100,7 @@ public class Price
 
 	public int getPricingSystemId()
 	{
-		Check.assumeNotNull(pricingSystem, "No pricing system for {}", this);
-		return pricingSystem.getIdAsInt();
+		Check.assumeNotNull(basePricingSystem, "No pricing system for {}", this);
+		return basePricingSystem.getIdAsInt();
 	}
 }
