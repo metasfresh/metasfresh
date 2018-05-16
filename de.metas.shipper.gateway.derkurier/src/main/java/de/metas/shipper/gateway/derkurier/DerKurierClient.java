@@ -132,7 +132,7 @@ public class DerKurierClient implements ShipperGatewayClient
 		final RoutingRequest routingRequest = converters.createRoutingRequestFrom(deliveryOrder);
 		final Routing routing = postRoutingRequest(routingRequest);
 
-		final DeliveryOrder completedDeliveryOrder = createDeliveryOrderFromResponse(routing, deliveryOrder);
+		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(routing, deliveryOrder);
 
 		final List<String> csvLines = converters.createCsv(completedDeliveryOrder);
 
@@ -147,7 +147,7 @@ public class DerKurierClient implements ShipperGatewayClient
 		return completedDeliveryOrder;
 	}
 
-	private DeliveryOrder createDeliveryOrderFromResponse(
+	private DeliveryOrder updateDeliveryOrderFromResponse(
 			@NonNull final Routing routing,
 			@NonNull final DeliveryOrder originalDeliveryOrder)
 	{
