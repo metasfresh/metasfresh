@@ -177,7 +177,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 		else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
 		{
-			return PriceOverrideType.FIXED_PRICED;
+			return PriceOverrideType.FIXED_PRICE;
 		}
 		else
 		{
@@ -341,7 +341,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			schemaBreak.setStd_AddAmt(request.getBasePriceAddAmt());
 			schemaBreak.setPriceStd(BigDecimal.ZERO);
 		}
-		else if (priceOverride == PriceOverrideType.FIXED_PRICED)
+		else if (priceOverride == PriceOverrideType.FIXED_PRICE)
 		{
 			schemaBreak.setIsPriceOverride(true);
 			schemaBreak.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
