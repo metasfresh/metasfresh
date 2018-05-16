@@ -140,6 +140,7 @@
     "react-translate-component": "~0.14.0",
     "redux": "~3.7.2",
     "redux-actions": "^2.3.0",
+    "redux-dynamic-reducer": "^2.0.2",
     "redux-thunk": "~2.2.0",
     "sockjs-client": "1.0.0",
     "stompjs": "~2.3.3"

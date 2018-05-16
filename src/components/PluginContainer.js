@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import propTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
@@ -15,6 +16,7 @@ const pluginWrapper = function pluginWrapper(WrappedComponent, ChildComponent) {
 class PluginContainer extends Component {
   render() {
     const { rawModal, modal, component, dispatch, breadcrumb } = this.props;
+    const { store } = this.context;
     const TagName = component;
     const redirectPush = bindActionCreators(push, dispatch);
 
@@ -26,6 +28,7 @@ class PluginContainer extends Component {
               {...this.props}
               redirectPush={redirectPush}
               dispatch={dispatch}
+              store={store}
             />
           )}
         </div>
@@ -33,6 +36,8 @@ class PluginContainer extends Component {
     );
   }
 }
+
+PluginContainer.contextTypes = { store: propTypes.object };
 
 function mapStateToProps(state) {
   const { windowHandler, menuHandler } = state;

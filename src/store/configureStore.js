@@ -1,5 +1,6 @@
 import { routerMiddleware } from 'react-router-redux';
-import { applyMiddleware, compose, createStore } from 'redux';
+import { applyMiddleware, compose } from 'redux';
+import { createStore } from 'redux-dynamic-reducer';
 import thunk from 'redux-thunk';
 
 import rootReducer from '../reducers';
