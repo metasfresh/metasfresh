@@ -2572,11 +2572,11 @@ public final class DB
 		{
 			value = (AT)rs.getBigDecimal(columnName);
 		}
-		else if (returnType.isAssignableFrom(Double.class))
+		else if (returnType.isAssignableFrom(Double.class) || returnType == double.class)
 		{
 			value = (AT)Double.valueOf(rs.getDouble(columnName));
 		}
-		else if (returnType.isAssignableFrom(Integer.class))
+		else if (returnType.isAssignableFrom(Integer.class) || returnType == int.class)
 		{
 			value = (AT)Integer.valueOf(rs.getInt(columnName));
 		}
@@ -2589,7 +2589,7 @@ public final class DB
 			final Timestamp ts = rs.getTimestamp(columnName);
 			value = (AT)ts;
 		}
-		else if (returnType.isAssignableFrom(Boolean.class))
+		else if (returnType.isAssignableFrom(Boolean.class) || returnType == boolean.class)
 		{
 			value = (AT)StringUtils.toBoolean(rs.getString(columnName), Boolean.FALSE);
 		}
@@ -2617,11 +2617,11 @@ public final class DB
 		{
 			value = (AT)rs.getBigDecimal(columnIndex);
 		}
-		else if (returnType.isAssignableFrom(Double.class))
+		else if (returnType.isAssignableFrom(Double.class) || returnType == double.class)
 		{
 			value = (AT)Double.valueOf(rs.getDouble(columnIndex));
 		}
-		else if (returnType.isAssignableFrom(Integer.class))
+		else if (returnType.isAssignableFrom(Integer.class) || returnType == int.class)
 		{
 			value = (AT)Integer.valueOf(rs.getInt(columnIndex));
 		}
@@ -2634,7 +2634,7 @@ public final class DB
 			final Timestamp ts = rs.getTimestamp(columnIndex);
 			value = (AT)ts;
 		}
-		else if (returnType.isAssignableFrom(Boolean.class))
+		else if (returnType.isAssignableFrom(Boolean.class) || returnType == boolean.class)
 		{
 			value = (AT)StringUtils.toBoolean(rs.getString(columnIndex), Boolean.FALSE);
 		}

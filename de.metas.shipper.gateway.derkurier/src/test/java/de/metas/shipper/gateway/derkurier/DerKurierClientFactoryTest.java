@@ -76,7 +76,7 @@ public class DerKurierClientFactoryTest
 
 		final MockRestServiceServer mockServer = MockRestServiceServer.createServer(client.getRestTemplate());
 
-		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest();
+		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest_times_with_seconds();
 
 		mockServer.expect(requestTo(REST_API_BASE_URL + "/routing/request"))
 				.andRespond(withSuccess(ROUTING_RESPONSE_JSON, MediaType.APPLICATION_JSON));
