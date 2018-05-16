@@ -155,19 +155,20 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		else
 		{
 			inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
+			inventoryLine.setM_Inventory(inventory);
+			inventoryLine.setAD_Org_ID(inventory.getAD_Org_ID());
+			inventoryLine.setM_Product_ID(huProductStorage.getM_Product_ID());
+			inventoryLine.setM_AttributeSetInstance_ID(0);
+
+			inventoryLine.setM_Locator_ID(hu.getM_Locator_ID());
+			inventoryLine.setM_HU_ID(hu.getM_HU_ID());
+			inventoryLine.setM_HU_PI_Item_Product(null); // TODO
+			inventoryLine.setQtyTU(BigDecimal.ZERO); // TODO
+
+			inventoryLine.setC_UOM(huProductStorage.getC_UOM());
 		}
 
-		inventoryLine.setM_Inventory(inventory);
-		inventoryLine.setAD_Org_ID(inventory.getAD_Org_ID());
-		inventoryLine.setM_Product_ID(huProductStorage.getM_Product_ID());
-		inventoryLine.setM_AttributeSetInstance_ID(0);
 
-		inventoryLine.setM_Locator_ID(hu.getM_Locator_ID());
-		inventoryLine.setM_HU_ID(hu.getM_HU_ID());
-		inventoryLine.setM_HU_PI_Item_Product(null); // TODO
-		inventoryLine.setQtyTU(BigDecimal.ZERO); // TODO
-
-		inventoryLine.setC_UOM(huProductStorage.getC_UOM());
 		inventoryLine.setQtyBook(huProductStorage.getQty());
 		inventoryLine.setQtyCount(huProductStorage.getQty());
 
