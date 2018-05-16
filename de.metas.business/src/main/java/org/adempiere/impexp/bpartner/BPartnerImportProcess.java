@@ -70,7 +70,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		bpartnerLocationImporter = BPartnerLocationImportHelper.newInstance().setProcess(this);
 		bpartnerContactImporter = BPartnerContactImportHelper.newInstance().setProcess(this);
 		bpartnerBankAccountImportHelper = BPartnerBankAccountImportHelper.newInstance().setProcess(this);
-		bpartnerCreditLimitImportHelper = BPCreditLimitImportHelper.newInstance().setProcess(this);
+		bpartnerCreditLimitImportHelper = BPCreditLimitImportHelper.newInstance();
 	}
 
 	@Override

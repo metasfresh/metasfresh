@@ -195,14 +195,16 @@ import lombok.NonNull;
 			user.setBirthday(importRecord.getBirthday());
 		}
 
+		setUserMemoFields(importRecord, user);
+		setDefaultFlagsForContact(importRecord, user);
+	}
+
+	private static void setUserMemoFields(@NonNull final I_I_BPartner importRecord, @NonNull final I_AD_User user)
+	{
 		setUserMemo(user, importRecord.getMemo());
 		setUserMemo(user, importRecord.getMemo1());
 		setUserMemo(user, importRecord.getMemo2());
 		setUserMemo(user, importRecord.getMemo3());
-
-		user.setIsDefaultContact(importRecord.isDefaultContact());
-		user.setIsBillToContact_Default(importRecord.isBillToContact_Default());
-		user.setIsShipToContact_Default(importRecord.isShipToContact_Default());
 	}
 
 	private static void setUserMemo(@NonNull final I_AD_User user, final String newMemoText)
@@ -220,5 +222,12 @@ import lombok.NonNull;
 						.concat(newMemoText));
 			}
 		}
+	}
+
+	private static void setDefaultFlagsForContact(@NonNull final I_I_BPartner importRecord, @NonNull final I_AD_User user)
+	{
+		user.setIsDefaultContact(importRecord.isDefaultContact());
+		user.setIsBillToContact_Default(importRecord.isBillToContact_Default());
+		user.setIsShipToContact_Default(importRecord.isShipToContact_Default());
 	}
 }

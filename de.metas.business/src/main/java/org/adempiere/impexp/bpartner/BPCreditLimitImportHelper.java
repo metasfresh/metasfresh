@@ -42,16 +42,8 @@ import lombok.NonNull;
 		return new BPCreditLimitImportHelper();
 	}
 
-	private BPartnerImportProcess process;
-
 	private BPCreditLimitImportHelper()
 	{
-	}
-
-	public BPCreditLimitImportHelper setProcess(final BPartnerImportProcess process)
-	{
-		this.process = process;
-		return this;
 	}
 
 	public final void importRecord(final I_I_BPartner importRecord)
