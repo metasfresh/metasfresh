@@ -173,7 +173,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		bpartnerBankAccountImportHelper.importRecord(importRecord);
 		bpartnerCreditLimitImportHelper.importRecord(importRecord);
 		createUpdateInterestArea(importRecord);
-		createBPPrintFormatIfNeeded(previousImportRecord);
+		createBPPrintFormatIfNeeded(importRecord);
 
 		context.collectImportRecordForSameBP(importRecord);
 
