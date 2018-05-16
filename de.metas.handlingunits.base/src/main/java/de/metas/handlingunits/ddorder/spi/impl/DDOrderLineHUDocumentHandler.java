@@ -43,7 +43,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
  */
 public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 {
-	private final static String SYSCONFIG_DD_OrderLine_Enforce_M_HU_PI_Item_Product = "DD_OrderLine_Enforce_M_HU_PI_Item_Product";
+	private final static String SYSCONFIG_DD_OrderLine_Enforce_M_HU_PI_Item_Product = "de.metas.handlingunits.DD_OrderLine_Enforce_M_HU_PI_Item_Product";
 	/**
 	 * This method assumes that the given document is <code>DD_OrderLine</code> and returns
 	 * <ul>
