@@ -29,16 +29,19 @@ class Inbox extends Component {
       switch (item.target.targetType) {
         case 'window':
           dispatch(
+            push(`/window/${item.target.windowId}/${item.target.documentId}`)
+          );
+          break;
+        case 'view':
+          dispatch(
             push(
-              '/window/' +
-                item.target.documentType +
-                '/' +
-                item.target.documentId
+              `/window/${item.target.windowId}/?viewId=${item.target.viewId}`
             )
           );
           break;
       }
     }
+
     if (!item.read) {
       markAsRead(item.id);
     }
