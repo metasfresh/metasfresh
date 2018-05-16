@@ -64,6 +64,13 @@ public final class LookupDataSourceFactory
 		return getLookupDataSource(lookupDescriptor);
 	}
 
+	public LookupDataSource listByReferenceId(final int adReferenceId)
+	{
+		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.listByReferenceId(adReferenceId)
+				.provideForScope(LookupScope.DocumentField);
+		return getLookupDataSource(lookupDescriptor);
+	}
+
 	public LookupDataSource getLookupDataSource(final LookupDescriptor lookupDescriptor)
 	{
 		return lookupDataSourcesCache.getOrLoad(lookupDescriptor, () -> createLookupDataSource(lookupDescriptor));
