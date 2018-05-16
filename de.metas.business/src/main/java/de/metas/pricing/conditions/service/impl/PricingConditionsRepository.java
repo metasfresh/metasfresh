@@ -113,15 +113,24 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 	private static PricingConditions toPricingConditions(final I_M_DiscountSchema discountSchemaRecord, final List<I_M_DiscountSchemaBreak> schemaBreakRecords)
 	{
-		final List<PricingConditionsBreak> breaks = schemaBreakRecords.stream()
-				.filter(I_M_DiscountSchemaBreak::isActive)
-				.filter(I_M_DiscountSchemaBreak::isValid)
-				.map(schemaBreakRecord -> toPricingConditionsBreak(schemaBreakRecord))
-				.collect(ImmutableList.toImmutableList());
+		final PricingConditionsDiscountType discountType = PricingConditionsDiscountType.forCode(discountSchemaRecord.getDiscountType());
+		final List<PricingConditionsBreak> breaks;
+		if (discountType == PricingConditionsDiscountType.BREAKS)
+		{
+			breaks = schemaBreakRecords.stream()
+					.filter(I_M_DiscountSchemaBreak::isActive)
+					.filter(I_M_DiscountSchemaBreak::isValid)
+					.map(schemaBreakRecord -> toPricingConditionsBreak(schemaBreakRecord))
+					.collect(ImmutableList.toImmutableList());
+		}
+		else
+		{
+			breaks = ImmutableList.of();
+		}
 
 		return PricingConditions.builder()
 				.discountSchemaId(discountSchemaRecord.getM_DiscountSchema_ID())
-				.discountType(PricingConditionsDiscountType.forCode(discountSchemaRecord.getDiscountType()))
+				.discountType(discountType)
 				.bpartnerFlatDiscount(discountSchemaRecord.isBPartnerFlatDiscount())
 				.flatDiscount(discountSchemaRecord.getFlatDiscount())
 				.quantityBased(discountSchemaRecord.isQuantityBased())
