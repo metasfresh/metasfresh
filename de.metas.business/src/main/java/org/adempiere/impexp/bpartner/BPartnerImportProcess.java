@@ -234,7 +234,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		if (importRecord.isShowDeliveryNote())
 		{
 			int bpPrintFormatId = importRecord.getC_BP_PrintFormat_ID();
-			if (bpPrintFormatId >= 0)
+			if (bpPrintFormatId > 0)
 			{
 				return;
 			}
