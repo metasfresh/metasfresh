@@ -109,7 +109,6 @@ public class ContactPersonRepository
 				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_MKTG_Platform_ID, contactPerson.getPlatformId().getRepoId());
 
 		final int userId = contactPerson.getAdUserId();
-
 		if (userId > 0)
 		{
 			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID, userId);
@@ -222,13 +221,11 @@ public class ContactPersonRepository
 		consent.setMKTG_ContactPerson_ID(contactPerson.getContactPersonId().getRepoId());
 
 		saveRecord(consent);
-
 	}
 
 	public void revokeConsent(
 			@NonNull final ContactPerson contactPerson)
 	{
-
 		final I_MKTG_Consent consent = getConsentRecord(contactPerson);
 
 		if (consent != null)
@@ -236,7 +233,6 @@ public class ContactPersonRepository
 			consent.setConsentRevokedOn(SystemTime.asTimestamp());
 			saveRecord(consent);
 		}
-
 	}
 
 	private I_MKTG_Consent getConsentRecord(@NonNull final ContactPerson contactPerson)
