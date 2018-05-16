@@ -95,7 +95,7 @@ public class Tools
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
 		campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaign.getCampaignId());
-		contactPersonRepository.createConsent(savedContactPerson);
+		contactPersonRepository.createUpdateConsent(savedContactPerson);
 
 	}
 

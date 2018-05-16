@@ -46,7 +46,7 @@ public class ContactPersonRepository
 {
 	public ContactPerson save(@NonNull final ContactPerson contactPerson)
 	{
-		final I_MKTG_ContactPerson contactPersonRecord = cerateOrUpdateRecordDontSave(contactPerson);
+		final I_MKTG_ContactPerson contactPersonRecord = createOrUpdateRecordDontSave(contactPerson);
 		saveRecord(contactPersonRecord);
 
 		return contactPerson.toBuilder()
@@ -54,7 +54,7 @@ public class ContactPersonRepository
 				.build();
 	}
 
-	private static I_MKTG_ContactPerson cerateOrUpdateRecordDontSave(
+	private static I_MKTG_ContactPerson createOrUpdateRecordDontSave(
 			@NonNull final ContactPerson contactPerson)
 	{
 		final I_MKTG_ContactPerson contactPersonRecord = loadRecordIfPossible(contactPerson)
@@ -130,7 +130,7 @@ public class ContactPersonRepository
 	public ContactPerson saveCampaignSyncResult(@NonNull final SyncResult syncResult)
 	{
 		final ContactPerson contactPerson = ContactPerson.cast(syncResult.getSynchedDataRecord()).get();
-		final I_MKTG_ContactPerson contactPersonRecord = cerateOrUpdateRecordDontSave(contactPerson);
+		final I_MKTG_ContactPerson contactPersonRecord = createOrUpdateRecordDontSave(contactPerson);
 
 		if (syncResult instanceof LocalToRemoteSyncResult)
 		{
@@ -196,10 +196,12 @@ public class ContactPersonRepository
 				.build();
 	}
 
-	public void createConsent(
+	public void createUpdateConsent(
 			@NonNull final ContactPerson contactPerson)
 	{
-		final I_MKTG_Consent consent = newInstance(I_MKTG_Consent.class);
+		final I_MKTG_Consent consentExistingRecord = getConsentRecord(contactPerson);
+
+		final I_MKTG_Consent consent = consentExistingRecord != null ? consentExistingRecord : newInstance(I_MKTG_Consent.class);
 
 		consent.setAD_User_ID(contactPerson.getAdUserId());
 		consent.setC_BPartner_ID(contactPerson.getCBpartnerId());
@@ -228,9 +230,8 @@ public class ContactPersonRepository
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Consent.class)
 				.addOnlyActiveRecordsFilter()
-			// TODO
+				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_ConsentRevokedOn, null)
 				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getContactPersonId().getRepoId())
-				.addEqualsFilter(I_MKTG_Consent.COLUMN_AD_User_ID, contactPerson.getAdUserId())
 				.orderByDescending(I_MKTG_Consent.COLUMNNAME_ConsentDeclaredOn)
 				.create()
 				.first(I_MKTG_Consent.class);
