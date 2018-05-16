@@ -367,14 +367,14 @@ public class BPartnerImportTableSqlUpdater
 		//
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET DeliveryViaRule = 'P' "
-				+ "WHERE M_Shipper_ID IS NULL AND ShipperName 'P' "
+				+ "WHERE M_Shipper_ID IS NULL AND ShipperName = 'P' "
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set DeliveryViaRule={}", no);
 		//
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Shipper or DeliveryViaRule, ' "
-				+ "WHERE M_Shipper_ID IS NULL AND DeliveryViaRule IS NULL AND AggregationName IS NOT NULL"
+				+ "WHERE M_Shipper_ID IS NULL AND DeliveryViaRule IS NULL AND ShipperName IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid Invalid Shipper or DeliveryViaRule={}", no);
