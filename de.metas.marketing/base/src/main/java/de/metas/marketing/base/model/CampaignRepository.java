@@ -1,7 +1,5 @@
 package de.metas.marketing.base.model;
 
-
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -65,10 +63,6 @@ public class CampaignRepository
 
 	private static Campaign createFromModel(@NonNull final I_MKTG_Campaign campaignRecord)
 	{
-
-		
-		
-
 		return new Campaign(
 				campaignRecord.getName(),
 				campaignRecord.getRemoteRecordId(),
@@ -158,14 +152,17 @@ public class CampaignRepository
 		return campaignRecord;
 	}
 
-	public int getDefaultNewsletterCampaignId(final int orgId)
+	public CampaignId getDefaultNewsletterCampaignId(final int orgId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign.class)
+		final int defaultCampaignId =  Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign.COLUMN_IsDefaultNewsletter, true)
 				.addInArrayFilter(I_MKTG_Campaign.COLUMNNAME_AD_Org_ID, orgId, 0)
 				.orderByDescending(I_MKTG_Campaign.COLUMNNAME_AD_Org_ID)
 				.create()
 				.firstId();
+		
+		return defaultCampaignId <= 0 ? null : CampaignId.ofRepoId(defaultCampaignId);
 	}
 
 	public void removeContactPersonFromCampaign(
@@ -181,42 +178,6 @@ public class CampaignRepository
 
 	}
 
-	public void createConsent(
-			@NonNull final ContactPerson contactPerson)
-	{
-		final I_MKTG_Consent consent = newInstance(I_MKTG_Consent.class);
+	
 
-		
-		consent.setAD_User_ID(contactPerson.getAdUserId());
-		consent.setC_BPartner_ID(contactPerson.getCBpartnerId());
-		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
-		consent.setMKTG_ContactPerson_ID(contactPerson.getContactPersonId().getRepoId());
-
-		saveRecord(consent);
-
-	}
-
-	public void revokeConsent(
-			@NonNull final ContactPerson contactPerson)
-	{
-		
-		final I_MKTG_Consent consent = getConsentRecord(contactPerson);
-
-		if(consent != null)
-		{
-			consent.setConsentRevokedOn(SystemTime.asTimestamp());
-			saveRecord(consent);
-		}
-
-	}
-
-	private I_MKTG_Consent getConsentRecord(@NonNull final ContactPerson contactPerson)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Consent.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getContactPersonId().getRepoId())
-				.addEqualsFilter(I_MKTG_Consent.COLUMN_AD_User_ID, contactPerson.getAdUserId())
-				.create()
-				.firstOnly(I_MKTG_Consent.class);
-	}
 }

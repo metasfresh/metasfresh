@@ -4,7 +4,6 @@ import java.util.Iterator;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Service;
 
@@ -43,10 +42,13 @@ import lombok.NonNull;
 public class Tools
 {
 	private final ContactPersonRepository contactPersonRepository;
+	private final CampaignRepository campaignRepository;
 
-	public Tools(@NonNull final ContactPersonRepository contactPersonRepository)
+	public Tools(@NonNull final ContactPersonRepository contactPersonRepository,
+			@NonNull final CampaignRepository campaignRepository)
 	{
 		this.contactPersonRepository = contactPersonRepository;
+		this.campaignRepository = campaignRepository;
 	}
 
 	public ContactPerson createContactPersonForAdUser(
@@ -65,9 +67,6 @@ public class Tools
 			@NonNull final Iterator<I_AD_User> adUsersToAdd,
 			@NonNull final Campaign campaign)
 	{
-		final Tools converters = Adempiere.getBean(Tools.class);
-		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
-
 		while (adUsersToAdd.hasNext())
 		{
 			final I_AD_User adUserToAdd = adUsersToAdd.next();
@@ -77,63 +76,37 @@ public class Tools
 				continue;
 			}
 
-			final ContactPerson contactPerson = converters.createContactPersonForAdUser(adUserToAdd, campaign.getPlatformId());
+			final ContactPerson contactPerson = createContactPersonForAdUser(adUserToAdd, campaign.getPlatformId());
 			final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 			campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaign.getCampaignId());
 		}
 	}
 
-	public void addAsContactPersonToCampaign(@NonNull final I_AD_User user, final int campaignId)
-	{
-
-		Check.assumeGreaterOrEqualToZero(campaignId, "campaignId");
-
-		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
-
-		if (Check.isEmpty(user.getEMail(), true))
-		{
-			Loggables.get().addLog("Skip AD_User because it has no email address; AD_User={}", user);
-			return;
-		}
-		final Campaign campaign = campaignRepository.getById(CampaignId.ofRepoId(campaignId));
-
-		final ContactPerson contactPerson = createContactPersonForAdUser(user, campaign.getPlatformId());
-
-		campaignRepository.addContactPersonToCampaign(contactPerson.getContactPersonId(), campaign.getCampaignId());
-
-	}
-
-	public void addToNewsletter(@NonNull I_AD_User user, int campaignId)
+	public void addToNewsletter(@NonNull I_AD_User user, @NonNull final CampaignId campaignId)
 	{
 		if (Check.isEmpty(user.getEMail(), true))
 		{
 			Loggables.get().addLog("Skip AD_User because it has no email address; AD_User={}", user);
 			return;
 		}
-
-		Check.assumeGreaterOrEqualToZero(campaignId, "campaignId");
-
-		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
-		final Campaign campaign = campaignRepository.getById(CampaignId.ofRepoId(campaignId));
+		final Campaign campaign = campaignRepository.getById(campaignId);
 
 		final ContactPerson contactPerson = createContactPersonForAdUser(user, campaign.getPlatformId());
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
 		campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaign.getCampaignId());
-		campaignRepository.createConsent(savedContactPerson);
+		contactPersonRepository.createConsent(savedContactPerson);
 
 	}
 
-	public void removeFromNewsletter(@NonNull I_AD_User user, int campaignId)
+	public void removeFromNewsletter(@NonNull I_AD_User user, @NonNull final CampaignId campaignId)
 	{
-		Check.assumeGreaterOrEqualToZero(campaignId, "campaignId");
-		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);		
-		final Campaign campaign = campaignRepository.getById(CampaignId.ofRepoId(campaignId));
-		
+		final Campaign campaign = campaignRepository.getById(campaignId);
+
 		final ContactPerson contactPerson = createContactPersonForAdUser(user, campaign.getPlatformId());
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
-			
-		campaignRepository.revokeConsent(savedContactPerson);
+
+		contactPersonRepository.revokeConsent(savedContactPerson);
 		campaignRepository.removeContactPersonFromCampaign(savedContactPerson, campaign);
 
 	}

@@ -21,6 +21,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import de.metas.StartupListener;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_AD_User;
@@ -74,7 +75,7 @@ public class ToolsTest
 
 		final I_MKTG_Campaign campaignRecord = createCampaign();
 
-		converters.addToNewsletter(user, campaignRecord.getMKTG_Campaign_ID());
+		converters.addToNewsletter(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
 
 		final I_MKTG_Consent consentRecord = getConsentRecord();
 		final I_MKTG_Campaign_ContactPerson contactPerson = getContactPerson();
@@ -94,11 +95,11 @@ public class ToolsTest
 		final I_AD_User user = createUser("User1", "mail@mail.mail");
 
 		final I_MKTG_Campaign campaignRecord = createCampaign();
-		converters.addToNewsletter(user, campaignRecord.getMKTG_Campaign_ID());		
+		converters.addToNewsletter(user,  CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));		
 
 
 		final I_MKTG_Consent consent = getConsentRecord();
-		converters.removeFromNewsletter(user, campaignRecord.getMKTG_Campaign_ID());
+		converters.removeFromNewsletter(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
 		
 		
 		refresh(consent);
@@ -117,7 +118,7 @@ public class ToolsTest
 
 		final I_MKTG_Campaign campaignRecord = createCampaign();
 
-		converters.removeFromNewsletter(user, campaignRecord.getMKTG_Campaign_ID());
+		converters.removeFromNewsletter(user,  CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
 
 		final I_MKTG_Consent consentRecord = getConsentRecord();
 		final I_MKTG_Campaign_ContactPerson contactPerson = getContactPerson();

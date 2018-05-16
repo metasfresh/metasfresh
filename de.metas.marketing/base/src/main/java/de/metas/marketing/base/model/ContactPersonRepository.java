@@ -195,4 +195,44 @@ public class ContactPersonRepository
 				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
 				.build();
 	}
+
+	public void createConsent(
+			@NonNull final ContactPerson contactPerson)
+	{
+		final I_MKTG_Consent consent = newInstance(I_MKTG_Consent.class);
+
+		consent.setAD_User_ID(contactPerson.getAdUserId());
+		consent.setC_BPartner_ID(contactPerson.getCBpartnerId());
+		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
+		consent.setMKTG_ContactPerson_ID(contactPerson.getContactPersonId().getRepoId());
+
+		saveRecord(consent);
+
+	}
+
+	public void revokeConsent(
+			@NonNull final ContactPerson contactPerson)
+	{
+
+		final I_MKTG_Consent consent = getConsentRecord(contactPerson);
+
+		if (consent != null)
+		{
+			consent.setConsentRevokedOn(SystemTime.asTimestamp());
+			saveRecord(consent);
+		}
+
+	}
+
+	private I_MKTG_Consent getConsentRecord(@NonNull final ContactPerson contactPerson)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Consent.class)
+				.addOnlyActiveRecordsFilter()
+			// TODO
+				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getContactPersonId().getRepoId())
+				.addEqualsFilter(I_MKTG_Consent.COLUMN_AD_User_ID, contactPerson.getAdUserId())
+				.orderByDescending(I_MKTG_Consent.COLUMNNAME_ConsentDeclaredOn)
+				.create()
+				.first(I_MKTG_Consent.class);
+	}
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.marketing.base.misc.Tools;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.I_AD_User;
 
@@ -51,26 +52,27 @@ public class AD_User
 		final Tools converters = Adempiere.getBean(Tools.class);
 
 		final boolean isNewsletter = user.isNewsletter();
-		final int defaultNewsletterCampaignId = campaignRepository.getDefaultNewsletterCampaignId(user.getAD_Org_ID());
+
+		final CampaignId defaultcampaignId = campaignRepository.getDefaultNewsletterCampaignId(user.getAD_Org_ID());
 
 		if (isNewsletter)
 		{
-			if (defaultNewsletterCampaignId <= 0)
+			if (defaultcampaignId == null)
 			{
 				final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org, user.getAD_Org().getName());
 
 				throw new AdempiereException(translatableMsgText.translate(Env.getAD_Language()));
 			}
-			converters.addToNewsletter(user, defaultNewsletterCampaignId);
+			converters.addToNewsletter(user, defaultcampaignId);
 		}
 		else
 		{
-			if (defaultNewsletterCampaignId <= 0)
+			if (defaultcampaignId == null)
 			{
 				// nothing to do
 				return;
 			}
-			converters.removeFromNewsletter(user, defaultNewsletterCampaignId);
+			converters.removeFromNewsletter(user, defaultcampaignId);
 		}
 	}
 }
