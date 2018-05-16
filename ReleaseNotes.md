@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh
   * [#4030](https://github.com/metasfresh/metasfresh/issues/4030) Create webui windows for marketing and cleverreach settings
     * New Windows in WebUI for the new Markiting Ülatform Feature.
+  * [#4056](https://github.com/metasfresh/metasfresh/issues/4056) webui: pimp Partner Pharma - Purchase schedule tab
+    * New Purchase Schedule Tab in Business Partner Pharma Window.
 
 ## Fixes
 

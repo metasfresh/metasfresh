@@ -141,7 +141,7 @@ import lombok.NonNull;
 			result.priceLimitOverride(priceLimit);
 			result.priceStdOverride(priceStd.add(priceStdAddAmt));
 		}
-		else if (priceOverride == PriceOverrideType.FIXED_PRICED)
+		else if (priceOverride == PriceOverrideType.FIXED_PRICE)
 		{
 			result.priceStdOverride(pricingConditionsBreak.getFixedPrice());
 		}
