@@ -133,7 +133,8 @@ public class DerKurierClient implements ShipperGatewayClient
 		final Routing routing = postRoutingRequest(routingRequest);
 
 		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(routing, deliveryOrder);
-
+		derKurierDeliveryOrderRepository.save(completedDeliveryOrder); // need to save the updated DeliveryOrder before we invoke jasper
+		
 		final List<String> csvLines = converters.createCsv(completedDeliveryOrder);
 
 		final AttachmentEntry attachmentEntry = derKurierDeliveryOrderRepository
