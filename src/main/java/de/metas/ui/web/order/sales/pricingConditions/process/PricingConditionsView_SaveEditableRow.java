@@ -65,9 +65,7 @@ public class PricingConditionsView_SaveEditableRow extends PricingConditionsView
 				.build()
 				.save();
 
-		patchEditableRow(PricingConditionsRowChangeRequest.builder()
-				.discountSchemaBreakId(discountSchemaBreakId)
-				.build());
+		patchEditableRow(PricingConditionsRowChangeRequest.saved(discountSchemaBreakId));
 
 		return MSG_OK;
 	}
