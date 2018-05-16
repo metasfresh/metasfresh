@@ -122,7 +122,6 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setIsActive(importRecord.isActiveStatus());
 		bpartner.setDebtorId(importRecord.getDebtorId());
 		bpartner.setMemo(importRecord.getMemo());
-		bpartner.setSalesgroup(importRecord.getSalesgroup());
 		bpartner.setDeliveryRule(importRecord.getDeliveryViaRule());
 		bpartner.setM_Shipper_ID(importRecord.getM_Shipper_ID());
 
@@ -215,7 +214,6 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setIsActive(importRecord.isActiveStatus());
 		bpartner.setDebtorId(importRecord.getDebtorId());
 		bpartner.setMemo(importRecord.getMemo());
-		bpartner.setSalesgroup(importRecord.getSalesgroup());
 
 		if (!Check.isEmpty(importRecord.getDeliveryViaRule(), true))
 		{

@@ -111,3 +111,16 @@ UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2018-05-16 12:34:06','
 UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2018-05-16 12:48:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=541724
 ;
 
+
+
+-- 2018-05-16T13:42:01.167
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=10, AD_Reference_Value_ID=NULL,Updated=TO_TIMESTAMP('2018-05-16 13:42:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560119
+;
+
+-- 2018-05-16T13:42:04.012
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('i_bpartner','Salesgroup','VARCHAR(250)',null,null)
+;
+
+
