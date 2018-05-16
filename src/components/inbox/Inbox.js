@@ -29,9 +29,7 @@ class Inbox extends Component {
       switch (item.target.targetType) {
         case 'window':
           dispatch(
-            push(
-              `/window/${item.target.documentType}/${item.target.documentId}`
-            )
+            push(`/window/${item.target.windowId}/${item.target.documentId}`)
           );
           break;
         case 'view':
