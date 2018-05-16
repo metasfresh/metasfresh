@@ -146,9 +146,9 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 
 		final I_C_OrderLine salesOrderLine = load(getSalesOrderLineId(), I_C_OrderLine.class);
 		salesOrderLine.setC_PaymentTerm_Override_ID(editableRow.getPaymentTermId());
-		salesOrderLine.setIsTempPricingConditions(editableRow.isTemporary());
+		salesOrderLine.setIsTempPricingConditions(editableRow.isTemporaryPricingConditions());
 
-		if (editableRow.isTemporary())
+		if (editableRow.isTemporaryPricingConditions())
 		{
 			salesOrderLine.setM_DiscountSchemaBreak_ID(-1);
 

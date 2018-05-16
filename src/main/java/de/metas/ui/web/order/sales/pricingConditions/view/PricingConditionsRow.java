@@ -3,6 +3,7 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -145,6 +146,8 @@ public class PricingConditionsRow implements IViewRow
 	private final int discountSchemaBreakId;
 	@Getter
 	private final int copiedFromDiscountSchemaBreakId;
+	@Getter
+	private final boolean temporaryPricingConditions;
 
 	@Getter
 	private final PricingConditionsBreakMatchCriteria breakMatchCriteria;
@@ -168,6 +171,7 @@ public class PricingConditionsRow implements IViewRow
 			final boolean editable,
 			final int discountSchemaId,
 			final int discountSchemaBreakId,
+			final Boolean temporaryPricingConditions,
 			final int copiedFromDiscountSchemaBreakId,
 			@NonNull final PricingConditionsBreakMatchCriteria breakMatchCriteria)
 	{
@@ -194,6 +198,16 @@ public class PricingConditionsRow implements IViewRow
 		this.discountSchemaId = discountSchemaId;
 		this.discountSchemaBreakId = discountSchemaBreakId;
 		this.copiedFromDiscountSchemaBreakId = copiedFromDiscountSchemaBreakId;
+
+		if (temporaryPricingConditions != null)
+		{
+			this.temporaryPricingConditions = temporaryPricingConditions;
+		}
+		else
+		{
+			this.temporaryPricingConditions = discountSchemaBreakId <= 0;
+		}
+
 		this.breakMatchCriteria = breakMatchCriteria;
 	}
 
@@ -338,11 +352,21 @@ public class PricingConditionsRow implements IViewRow
 		return builder.build();
 	}
 
+	public PricingConditionsRow copyAndChangeToEditable()
+	{
+		if (editable)
+		{
+			return this;
+		}
+
+		return toBuilder().editable(true).build();
+	}
+
 	public PricingConditionsRow copyAndChange(final PricingConditionsRowChangeRequest request)
 	{
 		assertEditable();
 
-		boolean changed = false;
+		boolean valueChanged = false;
 
 		//
 		// Price
@@ -351,16 +375,17 @@ public class PricingConditionsRow implements IViewRow
 		if (priceChange == null)
 		{
 			price = this.price;
+			// no change
 		}
 		else if (priceChange instanceof CompletePriceChange)
 		{
 			price = ((CompletePriceChange)priceChange).getPrice();
-			changed = true;
+			valueChanged = valueChanged || !Objects.equals(price, this.price);
 		}
 		else if (priceChange instanceof PartialPriceChange)
 		{
 			price = applyPartialPriceChangeTo((PartialPriceChange)priceChange, this.price);
-			changed = true;
+			valueChanged = valueChanged || !Objects.equals(price, this.price);
 		}
 		else
 		{
@@ -372,7 +397,7 @@ public class PricingConditionsRow implements IViewRow
 		if (request.getDiscount() != null)
 		{
 			discount = request.getDiscount();
-			changed = true;
+			valueChanged = valueChanged || !Objects.equals(discount, this.discount);
 		}
 
 		//
@@ -380,24 +405,32 @@ public class PricingConditionsRow implements IViewRow
 		if (request.getPaymentTerm() != null)
 		{
 			paymentTerm = request.getPaymentTerm().orElse(null);
-			changed = true;
+			valueChanged = valueChanged || !Objects.equals(paymentTerm, this.paymentTerm);
 		}
 
+		boolean changed = valueChanged;
+
 		//
+		// ID
 		int discountSchemaBreakId = this.discountSchemaBreakId;
 		if (request.getDiscountSchemaBreakId() != null)
 		{
 			discountSchemaBreakId = request.getDiscountSchemaBreakId();
-			changed = true;
+			changed = changed || !Objects.equals(discountSchemaBreakId, this.discountSchemaBreakId);
 		}
 
 		//
+		// Copied from ID
 		int copiedFromDiscountSchemaBreakId = this.copiedFromDiscountSchemaBreakId;
 		if (request.getSourceDiscountSchemaBreakId() != null)
 		{
 			copiedFromDiscountSchemaBreakId = request.getSourceDiscountSchemaBreakId();
-			changed = true;
+			changed = changed || !Objects.equals(copiedFromDiscountSchemaBreakId, this.copiedFromDiscountSchemaBreakId);
 		}
+
+		//
+		final boolean temporaryPricingConditions = discountSchemaBreakId <= 0 || valueChanged;
+		changed = changed || (temporaryPricingConditions != this.temporaryPricingConditions);
 
 		//
 		if (!changed)
@@ -411,6 +444,7 @@ public class PricingConditionsRow implements IViewRow
 				.paymentTerm(paymentTerm)
 				.discountSchemaBreakId(discountSchemaBreakId)
 				.copiedFromDiscountSchemaBreakId(copiedFromDiscountSchemaBreakId)
+				.temporaryPricingConditions(temporaryPricingConditions)
 				.build();
 	}
 
@@ -500,10 +534,5 @@ public class PricingConditionsRow implements IViewRow
 	{
 		final LookupValue paymentTerm = getPaymentTerm();
 		return paymentTerm != null ? paymentTerm.getIdAsInt() : -1;
-	}
-
-	public boolean isTemporary()
-	{
-		return getDiscountSchemaBreakId() <= 0;
 	}
 }

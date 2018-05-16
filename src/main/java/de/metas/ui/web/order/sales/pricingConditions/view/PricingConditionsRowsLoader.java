@@ -1,10 +1,13 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
@@ -20,7 +23,6 @@ import org.compiere.model.I_M_PricingSystem;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.logging.LogManager;
@@ -128,15 +130,17 @@ class PricingConditionsRowsLoader
 
 	public PricingConditionsRowData load()
 	{
-		final ImmutableList<PricingConditionsRow> rows = getAllDiscountSchemaIds()
+		final ArrayList<PricingConditionsRow> rows = getAllDiscountSchemaIds()
 				.stream()
 				.map(this::findMatchingSchemaBreakOrNull)
 				.filter(Predicates.notNull())
 				.flatMap(this::createPricingConditionsRows)
 				.sorted(ROWS_SORTING)
-				.collect(ImmutableList.toImmutableList());
+				.collect(Collectors.toCollection(ArrayList::new));
 
-		final PricingConditionsRow editableRow = containsCurrentPricingConditionsRow(rows) ? null : createEditablePricingConditionsRow();
+		final PricingConditionsRow editableRow = removeCurrentPricingConditionsRow(rows)
+				.map(PricingConditionsRow::copyAndChangeToEditable)
+				.orElseGet(this::createEditablePricingConditionsRow);
 
 		return PricingConditionsRowData.builder()
 				.editableRow(editableRow)
@@ -263,15 +267,25 @@ class PricingConditionsRowsLoader
 		}
 	}
 
-	private boolean containsCurrentPricingConditionsRow(final Collection<PricingConditionsRow> rows)
+	private Optional<PricingConditionsRow> removeCurrentPricingConditionsRow(final ArrayList<PricingConditionsRow> rows)
 	{
-		return rows.stream().anyMatch(this::isCurrentConditions);
+		for (final Iterator<PricingConditionsRow> it = rows.iterator(); it.hasNext();)
+		{
+			final PricingConditionsRow row = it.next();
+			if (isCurrentConditions(row))
+			{
+				it.remove();
+				return Optional.of(row);
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	private boolean isCurrentConditions(final PricingConditionsRow row)
 	{
 		return row.getBpartnerId() == targetBPartnerId
-				&& row.isCustomer();
+				&& (isSOTrx ? row.isCustomer() : row.isVendor());
 	}
 
 	private PricingConditionsRow createEditablePricingConditionsRow()
