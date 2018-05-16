@@ -26,6 +26,8 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.DateTimeTranslatableString;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.NotificationGroupName;
@@ -239,7 +241,9 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 		final String vendorName = Services.get(IBPartnerBL.class).getBPartnerValueAndName(vendorBPartnerId);
 		final LocalDateTime notificationTime = reminder.getNotificationTime();
 
-		final String caption = vendorName + " / " + notificationTime;
+		final ITranslatableString caption = ITranslatableString.compose(" / ",
+				vendorName,
+				DateTimeTranslatableString.ofDateTime(notificationTime));
 
 		return DocumentFilter.builder()
 				.setFilterId("filterByVendorIdAndReminderDate")
