@@ -3,6 +3,7 @@ package de.metas.marketing.base.model;
 import java.util.List;
 import java.util.Optional;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -93,37 +94,49 @@ public class ContactPersonRepository
 	private static Optional<I_MKTG_ContactPerson> loadRecordIfPossible(
 			@NonNull final ContactPerson contactPerson)
 	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 		I_MKTG_ContactPerson contactPersonRecord = null;
+
 		if (contactPerson.getContactPersonId() != null)
 		{
 			final ContactPersonId contactPersonId = contactPerson.getContactPersonId();
 			contactPersonRecord = load(contactPersonId.getRepoId(), I_MKTG_ContactPerson.class);
 		}
-		else if (!Check.isEmpty(contactPerson.getRemoteId(), true) && contactPerson.getPlatformId() != null)
+
+		final ICompositeQueryFilter<I_MKTG_ContactPerson> baseQueryFilter = queryBL.createCompositeQueryFilter(I_MKTG_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_MKTG_Platform_ID, contactPerson.getPlatformId().getRepoId());
+
+		final int userId = contactPerson.getAdUserId();
+
+		if (userId > 0)
 		{
-			contactPersonRecord = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_MKTG_ContactPerson.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_MKTG_Platform_ID, contactPerson.getPlatformId().getRepoId())
+			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID, userId);
+		}
+
+		if (contactPersonRecord == null && !Check.isEmpty(contactPerson.getRemoteId(), true))
+		{
+			contactPersonRecord = queryBL.createQueryBuilder(I_MKTG_ContactPerson.class)
+					.filter(baseQueryFilter)
 					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_RemoteRecordId, contactPerson.getRemoteId())
 					.create()
 					.firstOnly(I_MKTG_ContactPerson.class); // might be null, that's ok
 		}
 
-		if (contactPersonRecord == null)
+		final String emailAddress = contactPerson.getEmailAddessStringOrNull();
+
+		if (contactPersonRecord == null && emailAddress != null)
 		{
 			// if it's still null, then see if there is a contact with a matching email
-			contactPersonRecord = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_MKTG_ContactPerson.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_MKTG_Platform_ID, contactPerson.getPlatformId().getRepoId())
+			contactPersonRecord = queryBL.createQueryBuilder(I_MKTG_ContactPerson.class)
+					.filter(baseQueryFilter)
+					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_EMail, emailAddress)
 					.orderBy()
 					.addColumn(I_MKTG_ContactPerson.COLUMN_MKTG_ContactPerson_ID).endOrderBy()
 					.create()
 					.first();
-
 		}
-
 		return Optional.ofNullable(contactPersonRecord);
 	}
 
