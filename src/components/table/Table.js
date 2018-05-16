@@ -63,7 +63,7 @@ class Table extends Component {
   constructor(props) {
     super(props);
 
-    const { defaultSelected } = props;
+    const { defaultSelected, rowEdited } = props;
 
     this.state = {
       selected: defaultSelected || [undefined],
@@ -83,7 +83,8 @@ class Table extends Component {
       collapsedParentsRows: [],
       pendingInit: true,
       collapsedArrayMap: [],
-      rowEdited: props.rowEdited,
+      rowEdited: rowEdited,
+      tableRefreshToggle: false,
     };
   }
 
@@ -230,8 +231,10 @@ class Table extends Component {
       keyProperty,
     } = this.props;
 
+    let rowsData = [];
+
     if (indentSupported && rowData.get(`${tabid}`)) {
-      let rowsData = getRowsData(rowData.get(`${tabid}`));
+      rowsData = getRowsData(rowData.get(`${tabid}`));
       let stateChange = {
         rows: rowsData,
         pendingInit: !rowsData,
@@ -277,13 +280,21 @@ class Table extends Component {
         }
       });
     } else {
-      const rowsData = rowData.get(`${tabid}`)
+      rowsData = rowData.get(`${tabid}`)
         ? rowData.get(`${tabid}`).toArray()
         : [];
       this.setState({
         rows: rowsData,
         pendingInit: !rowData.get(`${tabid}`),
       });
+    }
+
+    if (rowsData.length) {
+      setTimeout(() => {
+        this.setState({
+          tableRefreshToggle: !this.state.mounted,
+        });
+      }, 1);
     }
   };
 
@@ -1116,6 +1127,7 @@ class Table extends Component {
       promptOpen,
       isBatchEntry,
       rows,
+      tableRefreshToggle,
     } = this.state;
 
     let showPagination = page && pageLength;
@@ -1203,6 +1215,7 @@ class Table extends Component {
                 {
                   'table-read-only': readonly,
                   'table-fade-out': hasIncluded && blurOnIncludedView,
+                  'layout-fix': tableRefreshToggle,
                 }
               )}
               onKeyDown={this.handleKeyDown}

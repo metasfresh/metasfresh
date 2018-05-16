@@ -1,5 +1,10 @@
 .table {
     margin-bottom: 1px;
+    display: table;
+
+    &.layout-fix {
+        margin-bottom: 1.5px;
+    }
 
     *::selection {
         background-color: transparent;
@@ -104,8 +109,6 @@
 
     /* Table cols sizing */
     .td-lg {
-        width: 225px;
-        max-width: 225px;
         min-width: 225px;
 
         .input-dropdown-list {
@@ -114,14 +117,13 @@
     }
 
     .td-md {
-        width: 144px;
         min-width: 144px;
-        max-width: 144px;
+        max-width: 225px;
     }
 
     .td-sm {
         min-width: 60px;
-        max-width: 100px;
+        max-width: 144px;
     }
 
     .cell-text-wrapper {
