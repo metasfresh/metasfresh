@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#4030](https://github.com/metasfresh/metasfresh/issues/4030) Create webui windows for marketing and cleverreach settings
+    * New Windows in WebUI for the new Markiting Ülatform Feature.
 
 ## Fixes
 
