@@ -33,6 +33,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceSchedule;
@@ -53,7 +54,7 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
-import de.metas.interfaces.I_C_BPartner_Product;
+
 
 public class AbstractTestSupport
 {

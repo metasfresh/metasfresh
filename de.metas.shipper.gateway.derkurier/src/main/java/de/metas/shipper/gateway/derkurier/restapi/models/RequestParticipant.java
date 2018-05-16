@@ -9,6 +9,7 @@ import org.adempiere.util.Check;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Value;
@@ -53,11 +54,11 @@ public class RequestParticipant
 	@Builder
 	@JsonCreator
 	public RequestParticipant(
-			String country,
-			String zip,
-			LocalTime timeFrom,
-			LocalTime timeTo,
-			String desiredStation)
+			@JsonProperty("country") final String country,
+			@JsonProperty("zip") final String zip,
+			@JsonProperty("timeFrom") final LocalTime timeFrom,
+			@JsonProperty("timeTo") final LocalTime timeTo,
+			@JsonProperty("desiredStation") final String desiredStation)
 	{
 		this.country = Check.assumeNotEmpty(country, "Parameter country may not be empty");
 		this.zip = Check.assumeNotEmpty(zip, "Parameter zip may not be empty");

@@ -1,6 +1,6 @@
 package de.metas.shipper.gateway.derkurier.restapi.models;
 
-import static de.metas.shipper.gateway.derkurier.DerKurierConstants.DATE_FORMAT;
+import static de.metas.shipper.gateway.derkurier.DerKurierConstants.API_DATE_FORMAT;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -51,13 +51,13 @@ public class Routing
 	@Builder
 	@JsonCreator
 	public Routing(
-			@JsonProperty("sendDate") @JsonFormat(shape = Shape.STRING, pattern = DATE_FORMAT) LocalDate sendDate,
-			@JsonProperty("deliveryDate") @JsonFormat(shape = Shape.STRING, pattern = DATE_FORMAT) LocalDate deliveryDate,
-			@JsonProperty("sender") Participant sender,
-			@JsonProperty("consignee") Participant consignee,
-			@JsonProperty("viaHubs") List<String> viaHubs,
-			@JsonProperty("labelContent") String labelContent,
-			@JsonProperty("message") String message)
+			@JsonProperty("sendDate") @JsonFormat(shape = Shape.STRING, pattern = API_DATE_FORMAT) final LocalDate sendDate,
+			@JsonProperty("deliveryDate") @JsonFormat(shape = Shape.STRING, pattern = API_DATE_FORMAT) final LocalDate deliveryDate,
+			@JsonProperty("sender") final Participant sender,
+			@JsonProperty("consignee") final Participant consignee,
+			@JsonProperty("viaHubs") final List<String> viaHubs,
+			@JsonProperty("labelContent") final String labelContent,
+			@JsonProperty("message") final String message)
 	{
 		this.sendDate = Check.assumeNotNull(sendDate, "Parameter sendDate may not be null");
 		this.deliveryDate = deliveryDate;

@@ -285,6 +285,17 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			schemaBreak = newInstance(I_M_DiscountSchemaBreak.class);
 			schemaBreak.setM_DiscountSchema_ID(discountSchemaId);
 			schemaBreak.setSeqNo(retrieveNextSeqNo(discountSchemaId));
+			schemaBreak.setBreakValue(BigDecimal.ZERO);
+		}
+
+		//
+		final PricingConditionsBreakMatchCriteria matchCriteria = request.getMatchCriteria();
+		if (matchCriteria != null)
+		{
+			schemaBreak.setBreakValue(matchCriteria.getBreakValue());
+			schemaBreak.setM_Product_ID(matchCriteria.getProductId());
+			schemaBreak.setM_Product_Category_ID(matchCriteria.getProductCategoryId());
+			schemaBreak.setM_AttributeValue_ID(matchCriteria.getAttributeValueId());
 		}
 
 		//

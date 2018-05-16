@@ -50,7 +50,7 @@ import org.compiere.model.X_M_AttributeValue;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.interfaces.I_C_BPartner_Product;
+import org.compiere.model.I_C_BPartner_Product;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.model.I_AD_JavaClass;
