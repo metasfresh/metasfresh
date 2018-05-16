@@ -885,6 +885,31 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_DebtorId = "DebtorId";
 
 	/**
+	 * Set Lieferung.
+	 * Wie der Auftrag geliefert wird
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDeliveryViaRule (java.lang.String DeliveryViaRule);
+
+	/**
+	 * Get Lieferung.
+	 * Wie der Auftrag geliefert wird
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDeliveryViaRule();
+
+    /** Column definition for DeliveryViaRule */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_DeliveryViaRule = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "DeliveryViaRule", null);
+    /** Column name DeliveryViaRule */
+    public static final String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
+
+	/**
 	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
@@ -1584,6 +1609,35 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Lastname = "Lastname";
 
 	/**
+	 * Set Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Shipper_ID();
+
+	public org.compiere.model.I_M_Shipper getM_Shipper();
+
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+
+    /** Column definition for M_Shipper_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_M_Shipper>(I_I_BPartner.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+    /** Column name M_Shipper_ID */
+    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
 	 * Set Memo.
 	 * Memo Text
 	 *
@@ -2184,6 +2238,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_ShelfLifeMinDays = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "ShelfLifeMinDays", null);
     /** Column name ShelfLifeMinDays */
     public static final String COLUMNNAME_ShelfLifeMinDays = "ShelfLifeMinDays";
+
+	/**
+	 * Set Shipper name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setShipperName (java.lang.String ShipperName);
+
+	/**
+	 * Get Shipper name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getShipperName();
+
+    /** Column definition for ShipperName */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_ShipperName = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "ShipperName", null);
+    /** Column name ShipperName */
+    public static final String COLUMNNAME_ShipperName = "ShipperName";
 
 	/**
 	 * Set Short Description.

@@ -78,6 +78,8 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateC_Aggregtions(whereClause);
 
+		dbUpdateM_Shippers(whereClause);
+
 		dbUpdateErrorMessages(whereClause);
 	}
 
@@ -347,7 +349,35 @@ public class BPartnerImportTableSqlUpdater
 				+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid PO_PaymentTerm={}", no);
+		logger.info("Invalid C_Aggregation_ID={}", no);
+	}
+
+	private void dbUpdateM_Shippers(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET M_Shipper_ID=(SELECT M_Shipper_ID FROM M_Shipper s"
+				+ " WHERE i.ShipperName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID)), "
+				+ " DeliveryViaRule = 'S' "
+				+ "WHERE M_Shipper_ID IS NULL AND ShipperName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set M_Shipper_ID={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET DeliveryViaRule = 'P' "
+				+ "WHERE M_Shipper_ID IS NULL AND ShipperName 'P' "
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set DeliveryViaRule={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Shipper or DeliveryViaRule, ' "
+				+ "WHERE M_Shipper_ID IS NULL AND DeliveryViaRule IS NULL AND AggregationName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid Invalid Shipper or DeliveryViaRule={}", no);
 	}
 
 	private void dbUpdateErrorMessages(final String whereClause)

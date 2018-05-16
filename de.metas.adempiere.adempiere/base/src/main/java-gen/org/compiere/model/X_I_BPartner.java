@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1439211427L;
+	private static final long serialVersionUID = -288425655L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -836,6 +836,37 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return ii.intValue();
 	}
 
+	/** 
+	 * DeliveryViaRule AD_Reference_ID=152
+	 * Reference name: C_Order DeliveryViaRule
+	 */
+	public static final int DELIVERYVIARULE_AD_Reference_ID=152;
+	/** Pickup = P */
+	public static final String DELIVERYVIARULE_Pickup = "P";
+	/** Delivery = D */
+	public static final String DELIVERYVIARULE_Delivery = "D";
+	/** Shipper = S */
+	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Set Lieferung.
+		@param DeliveryViaRule 
+		Wie der Auftrag geliefert wird
+	  */
+	@Override
+	public void setDeliveryViaRule (java.lang.String DeliveryViaRule)
+	{
+
+		set_Value (COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
+	}
+
+	/** Get Lieferung.
+		@return Wie der Auftrag geliefert wird
+	  */
+	@Override
+	public java.lang.String getDeliveryViaRule () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DeliveryViaRule);
+	}
+
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -1433,6 +1464,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Lastname);
 	}
 
+	@Override
+	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
+	}
+
+	/** Set Lieferweg.
+		@param M_Shipper_ID 
+		Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public void setM_Shipper_ID (int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+	}
+
+	/** Get Lieferweg.
+		@return Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public int getM_Shipper_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Memo.
 		@param Memo 
 		Memo Text
@@ -1983,6 +2051,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Shipper name.
+		@param ShipperName Shipper name	  */
+	@Override
+	public void setShipperName (java.lang.String ShipperName)
+	{
+		set_Value (COLUMNNAME_ShipperName, ShipperName);
+	}
+
+	/** Get Shipper name.
+		@return Shipper name	  */
+	@Override
+	public java.lang.String getShipperName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ShipperName);
 	}
 
 	/** Set Short Description.
