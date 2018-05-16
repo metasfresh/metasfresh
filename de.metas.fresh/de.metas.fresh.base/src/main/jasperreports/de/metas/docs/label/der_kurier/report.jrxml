@@ -146,15 +146,9 @@
 				</graphicElement>
 			</line>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="104" width="60" height="30" uuid="cb63da1f-5383-4692-ae91-89ff1e847c25"/>
-				<textElement verticalAlignment="Middle">
-					<font size="18"/>
-				</textElement>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="80" y="104" width="130" height="30" uuid="5f8eda77-1242-4578-bbc4-49b650a4bc7d"/>
+				<reportElement x="60" y="104" width="170" height="30" uuid="5f8eda77-1242-4578-bbc4-49b650a4bc7d"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{desiredstation}]]></textFieldExpression>
 			</textField>
@@ -211,7 +205,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="219" width="250" height="27" uuid="5500328f-4887-4bd0-ab2c-139f5f9c1788"/>
 				<textElement verticalAlignment="Middle">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd.MM.yyyy").format($F{desireddeliverydate}) + 
 " "
@@ -267,16 +261,6 @@
 				<reportElement x="20" y="369" width="250" height="30" uuid="f0547670-51db-46fd-86b6-157d6cf4ae20"/>
 				<imageExpression><![CDATA["de/metas/docs/label/der_kurier/der_kurier_logo.png"]]></imageExpression>
 			</image>
-			<textField isBlankWhenNull="true">
-				<reportElement x="210" y="104" width="60" height="30" uuid="7b8fe5dd-8a75-4b59-83e6-c1c5f162e6f3"/>
-				<textElement verticalAlignment="Middle">
-					<font size="18"/>
-				</textElement>
-			</textField>
-			<staticText>
-				<reportElement x="0" y="0" width="100" height="30" uuid="82f5560c-8e65-4f32-abe2-77135a1bb14c"/>
-				<text><![CDATA[Static Text]]></text>
-			</staticText>
 		</band>
 	</detail>
 </jasperReport>
