@@ -91,13 +91,9 @@ export function filterViewRequest(windowId, viewId, filters) {
 
 export function deleteStaticFilter(windowId, viewId, filterId) {
   return del(
-    config.API_URL +
-      '/documentView/' +
-      windowId +
-      '/' +
-      viewId +
-      '/staticFilter/' +
-      filterId
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}/staticFilter/${filterId}`
   );
 }
 
