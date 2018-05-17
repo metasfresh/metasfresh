@@ -53,9 +53,11 @@ class Table extends Component {
     dispatch: PropTypes.func.isRequired,
 
     // from <DocumentList>
+    autofocus: PropTypes.bool,
+    rowEdited: PropTypes.bool,
     onSelectionChanged: PropTypes.func,
-
     onRowEdited: PropTypes.func,
+    defaultSelected: PropTypes.array,
   };
 
   _isMounted = false;
@@ -230,6 +232,7 @@ class Table extends Component {
       expandedDepth,
       keyProperty,
     } = this.props;
+    const { selected } = this.state;
 
     let rowsData = [];
 
@@ -255,7 +258,19 @@ class Table extends Component {
         let updatedRows = [...this.state.collapsedRows];
 
         if (firstRow && selectFirst) {
-          this.selectOneProduct(firstRow.id);
+          let selectedIndex = 0;
+          if (
+            selected.length === 1 &&
+            selected[0] &&
+            firstRow.id !== selected[0]
+          ) {
+            selectedIndex = _.findIndex(rows, row => row.id === selected[0]);
+          }
+
+          if (!selectedIndex) {
+            this.selectOneProduct(rows[0]);
+          }
+
           document.getElementsByClassName('js-table')[0].focus();
         }
 
