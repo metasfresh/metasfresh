@@ -4,11 +4,15 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
+import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
 
 import com.google.common.base.Predicates;
 
+import de.metas.product.ProductAndCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,11 +43,11 @@ import lombok.Value;
 @Builder
 public class PricingConditions
 {
-	private static final Comparator<PricingConditionsBreak> REVERSED_BREAKS_COMPARATOR = Comparator.<PricingConditionsBreak, BigDecimal> comparing(b -> b.getMatchCriteria().getBreakValue())
-			.reversed();
+	private static final Comparator<PricingConditionsBreak> SORT_BY_BREAK_VALUE = Comparator.<PricingConditionsBreak, BigDecimal> comparing(b -> b.getMatchCriteria().getBreakValue());
+	private static final Comparator<PricingConditionsBreak> SORT_BY_BREAK_VALUE_DESC = SORT_BY_BREAK_VALUE.reversed();
 
 	int discountSchemaId;
-	
+
 	PricingConditionsDiscountType discountType;
 
 	boolean bpartnerFlatDiscount;
@@ -52,7 +56,6 @@ public class PricingConditions
 	boolean quantityBased;
 
 	List<PricingConditionsBreak> breaks;
-
 
 	/**
 	 * Pick the first break that applies based on product, category and attribute instance
@@ -81,7 +84,7 @@ public class PricingConditions
 	{
 		return breaks.stream()
 				.filter(schemaBreak -> schemaBreakMatches(schemaBreak, query, attributeValueId))
-				.sorted(REVERSED_BREAKS_COMPARATOR)
+				.sorted(SORT_BY_BREAK_VALUE_DESC)
 				.findFirst()
 				.orElse(null);
 	}
@@ -116,8 +119,16 @@ public class PricingConditions
 
 		final PricingConditionsBreakMatchCriteria matchCriteria = schemaBreak.getMatchCriteria();
 		return matchCriteria.breakValueMatches(breakValue)
-				&& matchCriteria.productMatches(query.getProductId(), query.getProductCategoryId())
+				&& matchCriteria.productMatches(query.getProductAndCategoryId())
 				&& matchCriteria.attributeMatches(attributeValueId);
 	}
 
+	public Stream<PricingConditionsBreak> streamBreaksMatchingAnyOfProducts(final Set<ProductAndCategoryId> productAndCategoryIds)
+	{
+		Check.assumeNotEmpty(productAndCategoryIds, "productAndCategoryIds is not empty");
+
+		return getBreaks()
+				.stream()
+				.filter(schemaBreak -> schemaBreak.getMatchCriteria().productMatchesAnyOf(productAndCategoryIds));
+	}
 }

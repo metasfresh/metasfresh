@@ -33,7 +33,7 @@ public class PricingConditionsBreak
 {
 	public static enum PriceOverrideType
 	{
-		NONE, BASE_PRICING_SYSTEM, FIXED_PRICED;
+		NONE, BASE_PRICING_SYSTEM, FIXED_PRICE;
 	}
 
 	int discountSchemaId;

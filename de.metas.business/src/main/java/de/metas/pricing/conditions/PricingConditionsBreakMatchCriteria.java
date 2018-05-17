@@ -1,8 +1,13 @@
 package de.metas.pricing.conditions;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
+import org.adempiere.util.Check;
+
+import de.metas.product.ProductAndCategoryId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -31,6 +36,7 @@ import lombok.Value;
 @Builder
 public class PricingConditionsBreakMatchCriteria
 {
+	@NonNull
 	BigDecimal breakValue;
 	int productId;
 	int productCategoryId;
@@ -42,18 +48,25 @@ public class PricingConditionsBreakMatchCriteria
 
 	}
 
-	public boolean productMatches(final int productId, final int productCategoryId)
+	public boolean productMatchesAnyOf(@NonNull final Set<ProductAndCategoryId> productAndCategoryIds)
+	{
+		Check.assumeNotEmpty(productAndCategoryIds, "productAndCategoryIds is not empty");
+
+		return productAndCategoryIds.stream().anyMatch(this::productMatches);
+	}
+
+	public boolean productMatches(@NonNull final ProductAndCategoryId productAndCategoryId)
 	{
 		final int breakProductId = this.productId;
 		if (breakProductId > 0)
 		{
-			return breakProductId == productId;
+			return breakProductId == productAndCategoryId.getProductId();
 		}
 
 		final int breakProductCategoryId = this.productCategoryId;
 		if (breakProductCategoryId > 0)
 		{
-			return breakProductCategoryId == productCategoryId;
+			return breakProductCategoryId == productAndCategoryId.getProductCategoryId();
 		}
 
 		return true;
