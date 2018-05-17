@@ -85,7 +85,7 @@ public class MaterialCockpitViewFactory
 				.filters(filtersToUse)
 				.filterDescriptors(filterDescriptors)
 				.rowsData(materialCockpitRowRepository.createRowsData(filtersToUse))
-				.relatedProcessDescriptor(createProcessDescriptor())
+				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_DocumentDetail_Display.class))
 				.build();
 
 		return view;
@@ -122,15 +122,18 @@ public class MaterialCockpitViewFactory
 		return viewlayOutBuilder.build();
 	}
 
-	private RelatedProcessDescriptor createProcessDescriptor()
+	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final int processId = adProcessDAO.retrieveProcessIdByClass(processClass);
+		if (processId <= 0)
+		{
+			throw new AdempiereException("No processId found for " + processClass);
+		}
 
-		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), MD_Cockpit_DocumentDetail_Display.class);
-		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for class %s", MD_Cockpit_DocumentDetail_Display.class);
-
-		final RelatedProcessDescriptor processDescriptor = RelatedProcessDescriptor.builder()
+		return RelatedProcessDescriptor.builder()
 				.processId(processId)
+				.anyTable().anyWindow()
 				.webuiQuickAction(true)
 				.build();
 		return processDescriptor;
