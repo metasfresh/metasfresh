@@ -1,5 +1,7 @@
 package de.metas.shipper.gateway.derkurier;
 
+import java.sql.Timestamp;
+
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import lombok.Builder;
@@ -43,8 +45,12 @@ public class DerKurierDeliveryData implements CustomDeliveryData
 	String customerNumber;
 
 	String parcelNumber;
-	
+
 	String customerCode;
-	
+
 	String collectorCode;
+
+	Timestamp desiredTimeFrom;
+
+	Timestamp desiredTimeTo;
 }

@@ -55,6 +55,8 @@ public class DerKurierShipperConfigRepository
 				.deliveryOrderRecipientEmailOrNull(shipperConfigRecord.getEMail_To())
 				.collectorCode(shipperConfigRecord.getCollectorCode())
 				.customerCode(shipperConfigRecord.getCustomerCode())
+				.desiredTimeFrom(shipperConfigRecord.getDK_DesiredDeliveryTime_From())
+				.desiredTimeTo(shipperConfigRecord.getDK_DesiredDeliveryTime_To())
 				.build();
 
 		return shipperConfig;
