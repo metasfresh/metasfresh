@@ -134,9 +134,9 @@ class DocumentList extends Component {
       refId,
       windowType,
       dispatch,
+      location,
     } = this.props;
     const { page, sort, viewId, staticFilterCleared } = this.state;
-
     const included =
       includedView && includedView.windowType && includedView.viewId;
     const nextIncluded =
@@ -161,9 +161,10 @@ class DocumentList extends Component {
       (nextDefaultViewId === undefined &&
         nextDefaultViewId !== defaultViewId) ||
       (nextWindowType === windowType &&
-        nextDefaultViewId !== defaultViewId &&
-        isIncluded &&
-        nextIsIncluded) ||
+        ((nextDefaultViewId !== defaultViewId &&
+          isIncluded &&
+          nextIsIncluded) ||
+          location.hash === '#notification')) ||
       nextRefId !== refId
     ) {
       this.setState(
@@ -171,15 +172,21 @@ class DocumentList extends Component {
           data: null,
           layout: null,
           filters: null,
-          viewId: null,
+          viewId: location.hash === '#notification' ? this.state.viewId : null,
           staticFilterCleared: false,
         },
         () => {
           if (included) {
             dispatch(closeListIncludedView(includedView));
           }
-
-          this.fetchLayoutAndData();
+          if (
+            !(
+              location.hash === '#notification' &&
+              document.location.hash !== '#notification'
+            )
+          ) {
+            this.fetchLayoutAndData();
+          }
         }
       );
     }
@@ -407,11 +414,14 @@ class DocumentList extends Component {
   browseView = () => {
     const { viewId, page, sort } = this.state;
 
-    this.getData(viewId, page, sort).catch(err => {
-      if (err.response && err.response.status === 404) {
-        this.createView();
-      }
-    });
+    // in case of redirect from a notification, first call will have viewId empty
+    if (viewId) {
+      this.getData(viewId, page, sort).catch(err => {
+        if (err.response && err.response.status === 404) {
+          this.createView();
+        }
+      });
+    }
   };
 
   createView = () => {
@@ -970,6 +980,7 @@ const mapStateToProps = (state, props) => ({
         viewId: props.parentDefaultViewId,
       })
     : NO_SELECTION,
+  location: state.routing.locationBeforeTransitions,
 });
 
 export default connect(mapStateToProps, null, null, { withRef: true })(
