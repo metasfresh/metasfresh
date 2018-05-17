@@ -4,7 +4,10 @@ import { connect } from 'react-redux';
 import { List } from 'immutable';
 import { findKey } from 'lodash';
 
-import { dropdownRequest } from '../../../actions/GenericActions';
+import {
+  dropdownRequest,
+  dropdownModalRequest,
+} from '../../../actions/GenericActions';
 import { getViewAttributeDropdown } from '../../../actions/ViewAttributesActions';
 import RawList from './RawList';
 
@@ -98,20 +101,32 @@ class ListWidget extends Component {
       ? properties[0].parameterName
       : properties[0].field;
 
-    const request = attribute
-      ? getViewAttributeDropdown(windowType, viewId, dataId, propertyName)
-      : dropdownRequest({
-          attribute,
-          docId: dataId,
-          docType: windowType,
-          entity,
-          subentity,
-          subentityId,
-          tabId,
-          viewId,
-          propertyName,
-          rowId,
-        });
+    let request = null;
+
+    if (viewId && !filterWidget) {
+      request = dropdownModalRequest({
+        windowId: windowType,
+        fieldName: propertyName,
+        entity: 'documentView',
+        viewId,
+        rowId,
+      });
+    } else {
+      request = attribute
+        ? getViewAttributeDropdown(windowType, viewId, dataId, propertyName)
+        : dropdownRequest({
+            attribute,
+            docId: dataId,
+            docType: windowType,
+            entity,
+            subentity,
+            subentityId,
+            tabId,
+            viewId,
+            propertyName,
+            rowId,
+          });
+    }
 
     request.then(res => {
       let values = res.data.values || [];
