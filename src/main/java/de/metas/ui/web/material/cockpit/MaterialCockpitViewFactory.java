@@ -2,11 +2,10 @@ package de.metas.ui.web.material.cockpit;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
@@ -136,7 +135,6 @@ public class MaterialCockpitViewFactory
 				.anyTable().anyWindow()
 				.webuiQuickAction(true)
 				.build();
-		return processDescriptor;
 	}
 
 }
