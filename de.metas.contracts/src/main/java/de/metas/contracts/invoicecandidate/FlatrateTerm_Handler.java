@@ -163,14 +163,6 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		return handler.calculatePriceAndTax(ic);
 	}
 
-	private ConditionTypeSpecificInvoiceCandidateHandler getSpecificHandler(@NonNull final I_C_Flatrate_Term term)
-	{
-		final ConditionTypeSpecificInvoiceCandidateHandler handlerOrNull = conditionTypeSpecificInvoiceCandidateHandlers.get(term.getType_Conditions());
-		return Check.assumeNotNull(handlerOrNull,
-				"The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
-				term.getType_Conditions(), term);
-	}
-
 	@Override
 	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
 	{
@@ -181,5 +173,24 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	public void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		HandlerTools.setBPartnerData(ic);
+	}
+
+	@Override
+	public void setInvoiceSchedule(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
+		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
+
+		handler
+				.getSetInvoiceScheduleImplementation(super::setInvoiceSchedule)
+				.accept(ic);
+	}
+
+	private ConditionTypeSpecificInvoiceCandidateHandler getSpecificHandler(@NonNull final I_C_Flatrate_Term term)
+	{
+		final ConditionTypeSpecificInvoiceCandidateHandler handlerOrNull = conditionTypeSpecificInvoiceCandidateHandlers.get(term.getType_Conditions());
+		return Check.assumeNotNull(handlerOrNull,
+				"The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
+				term.getType_Conditions(), term);
 	}
 }

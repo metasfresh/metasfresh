@@ -94,16 +94,6 @@ public class Money
 		return new Money(value.negate(), currency);
 	}
 
-	public Money negateIf(final boolean condition)
-	{
-		return condition ? negate() : this;
-	}
-
-	public Money negateIfNot(final boolean condition)
-	{
-		return !condition ? negate() : this;
-	}
-
 	public Money multiply(@NonNull final BigDecimal multiplicand)
 	{
 		if (BigDecimal.ONE.compareTo(multiplicand) == 0)
@@ -135,23 +125,12 @@ public class Money
 		return new Money(value.add(amtToAdd.value), currency);
 	}
 
-	public Money addPercent(@NonNull final BigDecimal percentToAdd)
-	{
-		final BigDecimal augent = computeFraction(percentToAdd);
-		return new Money(value.add(augent), currency);
-	}
-
-	public Money divide(final BigDecimal divisor, final RoundingMode roundingMode)
+	public Money divide(final BigDecimal divisor)
 	{
 		final int precision = currency.getPrecision();
 
-		final BigDecimal valueNew = value.divide(divisor, precision, roundingMode);
+		final BigDecimal valueNew = value.divide(divisor, precision, RoundingMode.HALF_UP);
 		return new Money(valueNew, currency);
-	}
-
-	public Money divide(final Quantity divisor, final RoundingMode roundingMode)
-	{
-		return divide(divisor.getQty(), roundingMode);
 	}
 
 	public Money roundToPrecisionIfNeeded()
@@ -186,12 +165,6 @@ public class Money
 		return new Money(value.subtract(amtToSubtract), currency);
 	}
 
-	public Money subtractPercent(@NonNull final BigDecimal percentToSubtract)
-	{
-		final BigDecimal subtrahend = computeFraction(percentToSubtract);
-		return subtract(subtrahend);
-	}
-
 	public Money percentage(@NonNull final BigDecimal percentage)
 	{
 		return new Money(computeFraction(percentage), currency);
@@ -211,6 +184,10 @@ public class Money
 
 	public Money toZero()
 	{
+		if (isZero())
+		{
+			return this;
+		}
 		return Money.zero(currency);
 	}
 }

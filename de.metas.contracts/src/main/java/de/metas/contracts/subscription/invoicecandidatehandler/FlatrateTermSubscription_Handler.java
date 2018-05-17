@@ -24,6 +24,7 @@ package de.metas.contracts.subscription.invoicecandidatehandler;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
@@ -109,5 +110,11 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 	{
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(invoiceCandidateRecord);
 		return term.getPlannedQtyPerUnit(); // Set the quantity from the term.
+	}
+
+	@Override
+	public Consumer<I_C_Invoice_Candidate> getSetInvoiceScheduleImplementation(@NonNull final Consumer<I_C_Invoice_Candidate> defaultImplementation)
+	{
+		return defaultImplementation;
 	}
 }

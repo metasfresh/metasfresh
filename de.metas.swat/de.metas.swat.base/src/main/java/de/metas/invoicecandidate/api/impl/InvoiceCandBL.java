@@ -514,9 +514,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * If the ic's invoice rule is "CustomerScheduleAfterDelivery", this method tries to get the BPartner's invoice schedule id.
-	 *
-	 * @param ic
-	 * @return
 	 */
 	private int retrieveInvoiceScheduleId(final I_C_Invoice_Candidate ic)
 	{

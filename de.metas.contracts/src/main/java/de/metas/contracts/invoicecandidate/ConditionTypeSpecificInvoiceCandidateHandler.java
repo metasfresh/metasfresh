@@ -2,6 +2,7 @@ package de.metas.contracts.invoicecandidate;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
+import java.util.function.Consumer;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -40,4 +41,6 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 	BigDecimal calculateQtyQtyOrdered(I_C_Invoice_Candidate invoiceCandidateRecord);
 
 	PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate invoiceCandidateRecord);
+
+	Consumer<I_C_Invoice_Candidate> getSetInvoiceScheduleImplementation(Consumer<I_C_Invoice_Candidate> defaultImplementation);
 }

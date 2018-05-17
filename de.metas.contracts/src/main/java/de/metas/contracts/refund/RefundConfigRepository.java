@@ -13,6 +13,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
@@ -58,7 +59,44 @@ public class RefundConfigRepository
 				.match();
 	}
 
-	public RefundConfig getByConditionsIdAndProductId(
+	public List<RefundConfig> getByConditionsId(
+			@NonNull final ConditionsId conditionsId)
+	{
+		return createRefundConfigQuery(conditionsId)
+				.stream()
+				.map(RefundConfigRepository::ofNullableRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private final CCache<FlatrateTermId, RefundConfig> CACHE = CCache.<FlatrateTermId, RefundConfig> newCache(
+			I_C_Flatrate_RefundConfig.Table_Name + "#by#"
+					+ I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID + "#"
+					+ I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID,
+			0,
+			CCache.EXPIREMINUTES_Never);
+
+	public RefundConfig getByRefundContractId(
+			@NonNull final FlatrateTermId flatrateTermId)
+	{
+		return CACHE.getOrLoad(flatrateTermId, () -> getByRefundContractIdForCache(flatrateTermId));
+	}
+
+	private RefundConfig getByRefundContractIdForCache(
+			@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final I_C_Flatrate_Term term = Check.assumeNotNull(
+				load(flatrateTermId.getRepoId(), I_C_Flatrate_Term.class),
+				"The C_Flatrate_Term record for flatrateTermId={}, is not null",
+				flatrateTermId);
+
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
+		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
+
+		final RefundConfig config = getByConditionsIdAndProductId(conditionsId, productId);
+		return Check.assumeNotNull(config, "The refundConfig for flatrateTermId={} is not null", flatrateTermId);
+	}
+
+	private RefundConfig getByConditionsIdAndProductId(
 			@NonNull final ConditionsId conditionsId,
 			@NonNull final ProductId productId)
 	{
@@ -76,31 +114,6 @@ public class RefundConfigRepository
 				.create()
 				.first();
 		return ofNullableRecord(configRecord);
-	}
-
-	public List<RefundConfig> getByConditionsId(
-			@NonNull final ConditionsId conditionsId)
-	{
-		return createRefundConfigQuery(conditionsId)
-				.stream()
-				.map(RefundConfigRepository::ofNullableRecord)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	public RefundConfig getByRefundContractId(
-			@NonNull final FlatrateTermId flatrateTermId)
-	{
-		final I_C_Flatrate_Term term = Check.assumeNotNull(
-				load(flatrateTermId.getRepoId(), I_C_Flatrate_Term.class),
-				"The C_Flatrate_Term record for flatrateTermId={}, is not null",
-				flatrateTermId);
-
-		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
-		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
-
-		final RefundConfig config = getByConditionsIdAndProductId(conditionsId, productId);
-		return Check.assumeNotNull(config, "The refundConfig for flatrateTermId={} is not null", flatrateTermId);
-
 	}
 
 	private IQuery<I_C_Flatrate_RefundConfig> createRefundConfigQuery(

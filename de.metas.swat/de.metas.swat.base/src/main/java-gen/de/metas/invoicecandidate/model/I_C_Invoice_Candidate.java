@@ -574,7 +574,6 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -584,7 +583,6 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -603,10 +601,8 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID);
 
 	/**
@@ -615,13 +611,12 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
 	public int getC_InvoiceSchedule_ID();
 
 	public org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule();
 
-	@Deprecated
 	public void setC_InvoiceSchedule(org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule);
 
     /** Column definition for C_InvoiceSchedule_ID */

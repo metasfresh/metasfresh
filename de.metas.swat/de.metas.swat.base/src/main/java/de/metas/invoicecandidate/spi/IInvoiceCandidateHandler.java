@@ -233,6 +233,8 @@ public interface IInvoiceCandidateHandler
 	 */
 	void setBPartnerData(I_C_Invoice_Candidate ic);
 
+	void setInvoiceSchedule(I_C_Invoice_Candidate ic);
+
 	/**
 	 * Method sets inherited C_UOM_ID opon IC creation
 	 *

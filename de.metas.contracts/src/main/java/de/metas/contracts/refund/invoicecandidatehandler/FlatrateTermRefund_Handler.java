@@ -4,12 +4,18 @@ import static java.math.BigDecimal.ONE;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
+import java.util.function.Consumer;
+
+import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.RefundConfig;
+import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import lombok.NonNull;
@@ -71,5 +77,16 @@ public class FlatrateTermRefund_Handler
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		return PriceAndTax.NONE; // no changes to be made
+	}
+
+	@Override
+	public Consumer<I_C_Invoice_Candidate> getSetInvoiceScheduleImplementation(Consumer<I_C_Invoice_Candidate> defaultImplementation)
+	{
+		return ic -> {
+			final RefundConfigRepository refundConfigRepository = Adempiere.getBean(RefundConfigRepository.class);
+
+			final RefundConfig refundConfig = refundConfigRepository.getByRefundContractId(FlatrateTermId.ofRepoId(ic.getRecord_ID()));
+			ic.setC_InvoiceSchedule_ID(refundConfig.getInvoiceScheduleId().getRepoId());
+		};
 	}
 }

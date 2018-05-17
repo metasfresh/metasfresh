@@ -24,7 +24,6 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -34,7 +33,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
 import de.metas.money.MoneyFactory;
-import de.metas.product.ProductId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -316,6 +314,7 @@ public class InvoiceCandidateRepository
 
 		final RefundConfig refundConfig = retrieveConfig(refundInvoiceCandidateRecord);
 
+		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(refundConfig.getInvoiceScheduleId().getRepoId());
 		refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(refundConfig.getDocTypeId().getRepoId());
 		final boolean isSOTrx = refundInvoiceCandidateRecord.getC_DocTypeInvoice().isSOTrx();
 
@@ -329,10 +328,8 @@ public class InvoiceCandidateRepository
 	private RefundConfig retrieveConfig(@NonNull final I_C_Invoice_Candidate refundInvoiceCandidateRecord)
 	{
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(refundInvoiceCandidateRecord);
-		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
-		final ProductId productId = ProductId.ofRepoId(refundInvoiceCandidateRecord.getM_Product_ID());
 
-		final RefundConfig config = refundConfigRepository.getByConditionsIdAndProductId(conditionsId, productId);
+		final RefundConfig config = refundConfigRepository.getByRefundContractId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
 		return config;
 	}
 }
