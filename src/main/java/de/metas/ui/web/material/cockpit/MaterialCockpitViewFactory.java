@@ -15,6 +15,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_PricingConditions;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -85,6 +86,7 @@ public class MaterialCockpitViewFactory
 				.filterDescriptors(filterDescriptors)
 				.rowsData(materialCockpitRowRepository.createRowsData(filtersToUse))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_DocumentDetail_Display.class))
+				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_PricingConditions.class))
 				.build();
 
 		return view;
