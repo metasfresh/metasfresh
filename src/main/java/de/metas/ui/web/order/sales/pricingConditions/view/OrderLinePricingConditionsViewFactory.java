@@ -1,0 +1,126 @@
+package de.metas.ui.web.order.sales.pricingConditions.view;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Stream;
+
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.collections.ListUtils;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_AttributeInstance;
+
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.PricingConditionsBreaksExtractor;
+import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.SourceDocumentLine;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.ViewFactory;
+import de.metas.ui.web.window.datatypes.WindowId;
+
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2018 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+@ViewFactory(windowId = OrderLinePricingConditionsViewFactory.WINDOW_ID_STRING)
+public class OrderLinePricingConditionsViewFactory extends PricingConditionsViewFactoryTemplate
+{
+	public static final String WINDOW_ID_STRING = "orderLinePricingConditions";
+	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
+
+	public OrderLinePricingConditionsViewFactory()
+	{
+		super(WINDOW_ID);
+	}
+
+	@Override
+	protected void onViewClosedByUser(final PricingConditionsView view)
+	{
+		view.updateSalesOrderLineIfPossible();
+	}
+
+	@Override
+	protected PricingConditionsRowData createPricingConditionsRowData(final CreateViewRequest request)
+	{
+		final int salesOrderLineId = ListUtils.singleElement(request.getFilterOnlyIds());
+		Check.assumeGreaterThanZero(salesOrderLineId, "salesOrderLineId");
+		final I_C_OrderLine salesOrderLine = InterfaceWrapperHelper.load(salesOrderLineId, I_C_OrderLine.class);
+
+		final PricingConditionsRowData rowsData = preparePricingConditionsRowData()
+				.pricingConditionsBreaksExtractor(createPricingConditionsBreaksExtractor(salesOrderLine))
+				.filters(extractFilters(request))
+				.adClientId(salesOrderLine.getAD_Client_ID())
+				.sourceDocumentLine(createSourceDocumentLine(salesOrderLine))
+				.load();
+		return rowsData;
+	}
+
+	private final PricingConditionsBreaksExtractor createPricingConditionsBreaksExtractor(final I_C_OrderLine salesOrderLine)
+	{
+		final PricingConditionsBreakQuery pricingConditionsBreakQuery = createPricingConditionsBreakQuery(salesOrderLine);
+
+		return pricingConditions -> {
+			final PricingConditionsBreak matchingBreak = pricingConditions.pickApplyingBreak(pricingConditionsBreakQuery);
+			return matchingBreak != null ? Stream.of(matchingBreak) : Stream.empty();
+		};
+	}
+
+	private final PricingConditionsBreakQuery createPricingConditionsBreakQuery(final I_C_OrderLine salesOrderLine)
+	{
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+
+		final int productId = salesOrderLine.getM_Product_ID();
+		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(salesOrderLine.getM_AttributeSetInstance_ID());
+		final BigDecimal qty = salesOrderLine.getQtyOrdered();
+		final BigDecimal price = salesOrderLine.getPriceActual();
+		final BigDecimal amt = qty.multiply(price);
+		return PricingConditionsBreakQuery.builder()
+				.attributeInstances(attributeInstances)
+				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
+				.qty(qty)
+				.amt(amt)
+				.build();
+	}
+
+	private final SourceDocumentLine createSourceDocumentLine(final I_C_OrderLine salesOrderLine)
+	{
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final int productId = salesOrderLine.getM_Product_ID();
+		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+
+		return SourceDocumentLine.builder()
+				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
+				.isSOTrx(true)
+				.bpartnerId(salesOrderLine.getC_BPartner_ID())
+				.productId(productId)
+				.productCategoryId(productCategoryId)
+				.priceEntered(salesOrderLine.getPriceEntered())
+				.discount(salesOrderLine.getDiscount())
+				.paymentTermId(salesOrderLine.getC_PaymentTerm_Override_ID())
+				.build();
+	}
+}

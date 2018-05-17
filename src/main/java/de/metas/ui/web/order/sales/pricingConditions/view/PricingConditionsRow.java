@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.util.Evaluatees;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -34,7 +33,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -84,14 +82,14 @@ public class PricingConditionsRow implements IViewRow
 	@Getter
 	private final boolean customer;
 
-	private static final String FIELDNAME_PriceType = "priceType";
+	public static final String FIELDNAME_PriceType = "priceType";
 	@ViewColumn(fieldName = FIELDNAME_PriceType, captionKey = "Type", widgetType = DocumentFieldWidgetType.List, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 25)
 	})
 	private final LookupValue priceType;
 
-	private static final String FIELDNAME_BasePricingSystem = "basePricingSystem";
+	public static final String FIELDNAME_BasePricingSystem = "basePricingSystem";
 	@ViewColumn(fieldName = FIELDNAME_BasePricingSystem, captionKey = "M_PricingSystem_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
@@ -120,7 +118,7 @@ public class PricingConditionsRow implements IViewRow
 	@Getter
 	private final BigDecimal discount;
 
-	private static final String FIELDNAME_PaymentTerm = "paymentTerm";
+	public static final String FIELDNAME_PaymentTerm = "paymentTerm";
 	@ViewColumn(fieldName = FIELDNAME_PaymentTerm, captionKey = "C_PaymentTerm_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
@@ -129,6 +127,8 @@ public class PricingConditionsRow implements IViewRow
 	private final LookupValue paymentTerm;
 
 	//
+	private final PricingConditionsRowLookups lookups;
+
 	@Getter
 	private final DocumentId id;
 	@Getter
@@ -136,10 +136,7 @@ public class PricingConditionsRow implements IViewRow
 
 	@Getter
 	private final Price price;
-	private final LookupDataSource priceTypeLookup;
-	private final LookupDataSource pricingSystemLookup;
 
-	private final LookupDataSource paymentTermLookup;
 	@Getter
 	final int discountSchemaId;
 	@Getter
@@ -157,16 +154,14 @@ public class PricingConditionsRow implements IViewRow
 
 	@Builder(toBuilder = true)
 	private PricingConditionsRow(
+			@NonNull final PricingConditionsRowLookups lookups,
 			@NonNull final LookupValue bpartner,
 			final boolean customer,
 			//
 			final LookupValue paymentTerm,
-			@NonNull final LookupDataSource paymentTermLookup,
 			@NonNull final BigDecimal discount,
 			//
 			@NonNull final Price price,
-			@NonNull final LookupDataSource priceTypeLookup,
-			@NonNull final LookupDataSource pricingSystemLookup,
 			//
 			final boolean editable,
 			final int discountSchemaId,
@@ -177,17 +172,16 @@ public class PricingConditionsRow implements IViewRow
 	{
 		id = buildDocumentId(bpartner, customer);
 
+		this.lookups = lookups;
+
 		this.bpartner = bpartner;
 		this.customer = customer;
 
 		this.paymentTerm = paymentTerm;
-		this.paymentTermLookup = paymentTermLookup;
 		this.discount = discount;
 
-		this.priceTypeLookup = priceTypeLookup;
-		this.pricingSystemLookup = pricingSystemLookup;
 		this.price = price;
-		this.priceType = priceTypeLookup.findById(price.getPriceType().getCode());
+		this.priceType = lookups.lookupPriceType(price.getPriceType());
 		this.basePricingSystem = price.getBasePricingSystem();
 		this.basePriceAddAmt = price.getBasePriceAddAmt();
 		this.fixedPrice = price.getFixedPrice();
@@ -476,42 +470,12 @@ public class PricingConditionsRow implements IViewRow
 
 	public LookupValuesList getFieldTypeahead(final String fieldName, final String query)
 	{
-		if (FIELDNAME_PaymentTerm.equals(fieldName))
-		{
-			return paymentTermLookup.findEntities(Evaluatees.empty(), query);
-		}
-		else if (FIELDNAME_PriceType.equals(fieldName))
-		{
-			return priceTypeLookup.findEntities(Evaluatees.empty(), query);
-		}
-		else if (FIELDNAME_BasePricingSystem.equals(fieldName))
-		{
-			return pricingSystemLookup.findEntities(Evaluatees.empty(), query);
-		}
-		else
-		{
-			throw new AdempiereException("Field " + fieldName + " does not exist or it's not a lookup field");
-		}
+		return lookups.getFieldTypeahead(fieldName, query);
 	}
 
 	public LookupValuesList getFieldDropdown(final String fieldName)
 	{
-		if (FIELDNAME_PaymentTerm.equals(fieldName))
-		{
-			return paymentTermLookup.findEntities(Evaluatees.empty(), 20);
-		}
-		else if (FIELDNAME_PriceType.equals(fieldName))
-		{
-			return priceTypeLookup.findEntities(Evaluatees.empty(), 20);
-		}
-		else if (FIELDNAME_BasePricingSystem.equals(fieldName))
-		{
-			return pricingSystemLookup.findEntities(Evaluatees.empty(), 20);
-		}
-		else
-		{
-			throw new AdempiereException("Field " + fieldName + " does not exist or it's not a lookup field");
-		}
+		return lookups.getFieldDropdown(fieldName);
 	}
 
 	public int getBpartnerId()
