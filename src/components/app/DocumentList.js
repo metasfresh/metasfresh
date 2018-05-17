@@ -135,7 +135,7 @@ class DocumentList extends Component {
       windowType,
       dispatch,
     } = this.props;
-    const { page, sort, viewId } = this.state;
+    const { page, sort, viewId, staticFilterCleared } = this.state;
 
     const included =
       includedView && includedView.windowType && includedView.viewId;
@@ -156,6 +156,7 @@ class DocumentList extends Component {
          * The reference ID is changed
          */
     if (
+      staticFilterCleared ||
       nextWindowType !== windowType ||
       (nextDefaultViewId === undefined &&
         nextDefaultViewId !== defaultViewId) ||
@@ -171,6 +172,7 @@ class DocumentList extends Component {
           layout: null,
           filters: null,
           viewId: null,
+          staticFilterCleared: false,
         },
         () => {
           if (included) {
@@ -345,7 +347,9 @@ class DocumentList extends Component {
     const { viewId } = this.state;
 
     deleteStaticFilter(windowType, viewId, filterId).then(response => {
-      dispatch(push(`/window/${windowType}?viewId=${response.data.viewId}`));
+      this.setState({ staticFilterCleared: true }, () =>
+        dispatch(push(`/window/${windowType}?viewId=${response.data.viewId}`))
+      );
     });
   };
 
