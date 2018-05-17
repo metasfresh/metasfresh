@@ -124,6 +124,7 @@ import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
 
@@ -2045,11 +2046,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		final BigDecimal amt = ic.getPriceActual().multiply(qty);
 
+		final int productId = ic.getM_Product_ID();
+		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
 		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
 				.attributeInstances(instances)
-				.productId(ic.getM_Product_ID())
-				.productCategoryId(productsRepo.retrieveProductCategoryByProductId(ic.getM_Product_ID()))
+				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
 				.qty(qty)
 				.amt(amt)
 				.build());

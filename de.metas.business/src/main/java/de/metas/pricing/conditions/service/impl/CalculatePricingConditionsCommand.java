@@ -23,6 +23,7 @@ import de.metas.pricing.conditions.service.CalculatePricingConditionsResult.Calc
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
 import lombok.NonNull;
 
 /*
@@ -202,10 +203,12 @@ import lombok.NonNull;
 			return request.getForceSchemaBreak();
 		}
 
+		final int productId = request.getProductId();
+		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+
 		return pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
 				.attributeInstances(request.getAttributeInstances())
-				.productId(request.getProductId())
-				.productCategoryId(productsRepo.retrieveProductCategoryByProductId(request.getProductId()))
+				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
 				.qty(request.getQty())
 				.amt(request.getPrice().multiply(request.getQty()))
 				.build());
