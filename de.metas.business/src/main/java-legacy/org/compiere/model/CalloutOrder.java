@@ -28,7 +28,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
@@ -352,13 +354,14 @@ public class CalloutOrder extends CalloutEngine
 				// #928: The IsDefaultContact is no longer important
 				// + " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
 				+ " , c." + I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
+		final Object[] sqlParams = new Object[] { C_BPartner_ID };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, C_BPartner_ID);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -535,10 +538,9 @@ public class CalloutOrder extends CalloutEngine
 				}
 			}
 		}
-		catch (final SQLException e)
+		catch (final SQLException ex)
 		{
-			log.error(sql, e);
-			return e.getLocalizedMessage();
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -640,9 +642,9 @@ public class CalloutOrder extends CalloutEngine
 				// metas: (2009 0027 G1): making sure that the default billTo
 				// location is used
 				+ " ORDER BY " + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
-
 		// metas end
 		; // #1
+		final Object[] sqlParams = new Object[] { bill_BPartner_ID };
 
 		final boolean IsSOTrx = order.isSOTrx();
 		PreparedStatement pstmt = null;
@@ -650,7 +652,7 @@ public class CalloutOrder extends CalloutEngine
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, bill_BPartner_ID);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -794,10 +796,9 @@ public class CalloutOrder extends CalloutEngine
 				}
 			}
 		}
-		catch (final SQLException e)
+		catch (final SQLException ex)
 		{
-			log.error("bPartnerBill", e);
-			return e.getLocalizedMessage();
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -884,19 +885,20 @@ public class CalloutOrder extends CalloutEngine
 		if (orderLine.getM_Product_ID() > 0)
 		{
 			orderLine.setC_Charge(null);
-			return "ChargeExclusively";
+			throw new AdempiereException("ChargeExclusively");
 		}
 		orderLine.setM_AttributeSetInstance(null);
 		orderLine.setS_ResourceAssignment_ID(-1);
 		orderLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
 
 		final String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
+		final Object[] sqlParams = new Object[] { C_Charge_ID };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, C_Charge_ID);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -912,10 +914,9 @@ public class CalloutOrder extends CalloutEngine
 				// metas: end
 			}
 		}
-		catch (final SQLException e)
+		catch (final SQLException ex)
 		{
-			log.error(sql, e);
-			return e.getLocalizedMessage();
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -1458,10 +1459,9 @@ public class CalloutOrder extends CalloutEngine
 
 			}
 		}
-		catch (final SQLException e)
+		catch (final SQLException ex)
 		{
-			log.error(sql, e);
-			return e.getLocalizedMessage();
+			throw new DBException(ex, sql);
 		}
 		finally
 		{
