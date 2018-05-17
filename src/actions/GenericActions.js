@@ -200,21 +200,27 @@ export function dropdownRequest({
   tabId,
   viewId,
 }) {
-  return axios.get(
-    config.API_URL +
-      '/' +
-      entity +
-      (docType ? '/' + docType : '') +
-      (viewId ? '/' + viewId : '') +
-      (docId ? '/' + docId : '') +
-      (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
-      (subentity ? '/' + subentity : '') +
-      (subentityId ? '/' + subentityId : '') +
-      (attribute ? '/attribute/' : '/field/') +
-      propertyName +
-      '/dropdown'
-  );
+  return axios.get(`
+    ${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${
+    viewId ? `/${viewId}` : ''
+  }${docId ? `/${docId}` : ''}${tabId ? `/${tabId}` : ''}${
+    rowId ? `/${rowId}` : ''
+  }${subentity ? `/${subentity}` : ''}${subentityId ? `/${subentityId}` : ''}${
+    attribute ? '/attribute/' : '/field/'
+  }${propertyName}/dropdown`);
+}
+
+export function dropdownModalRequest({
+  windowId,
+  entity,
+  fieldName,
+  rowId,
+  viewId,
+}) {
+  return axios.get(`
+    ${
+      config.API_URL
+    }/${entity}/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`);
 }
 
 export function deleteRequest(
