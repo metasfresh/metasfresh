@@ -106,8 +106,7 @@ public interface IInvoiceCandidateHandler
 	/**
 	 * Retrieves all models which are eligible for invoicing but they have no invoice candidates.
 	 *
-	 * @param limit how many models shall be retrieved. Note that, at this moment, this is a recommendation which could be respected or not by current implementations.
-	 * @return models
+	 * @param limit advises how many models shall be retrieved. Note that this is an advise which could be respected or not by current implementations.
 	 */
 	Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit);
 

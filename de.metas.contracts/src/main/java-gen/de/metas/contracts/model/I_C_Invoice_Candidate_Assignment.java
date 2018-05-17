@@ -142,29 +142,27 @@ public interface I_C_Invoice_Candidate_Assignment
     public static final String COLUMNNAME_C_Invoice_Candidate_Assignment_ID = "C_Invoice_Candidate_Assignment_ID";
 
 	/**
-	 * Set Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
+	 * Set Vertrag-Rechnungskandidat.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID);
+	public void setC_Invoice_Candidate_Term_ID (int C_Invoice_Candidate_Term_ID);
 
 	/**
-	 * Get Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
+	 * Get Vertrag-Rechnungskandidat.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Invoice_Candidate_ID();
+	public int getC_Invoice_Candidate_Term_ID();
 
-    /** Column definition for C_Invoice_Candidate_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_C_Invoice_Candidate_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "C_Invoice_Candidate_ID", null);
-    /** Column name C_Invoice_Candidate_ID */
-    public static final String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
+    /** Column definition for C_Invoice_Candidate_Term_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_C_Invoice_Candidate_Term_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "C_Invoice_Candidate_Term_ID", null);
+    /** Column name C_Invoice_Candidate_Term_ID */
+    public static final String COLUMNNAME_C_Invoice_Candidate_Term_ID = "C_Invoice_Candidate_Term_ID";
 
 	/**
 	 * Get Erstellt.

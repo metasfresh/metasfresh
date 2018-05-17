@@ -14,7 +14,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -800022948L;
+	private static final long serialVersionUID = -1451023648L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Assignment (Properties ctx, int C_Invoice_Candidate_Assignment_ID, String trxName)
@@ -24,7 +24,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
         {
 			setC_Invoice_Candidate_Assigned_ID (0);
 			setC_Invoice_Candidate_Assignment_ID (0);
-			setC_Invoice_Candidate_ID (0);
+			setC_Invoice_Candidate_Term_ID (0);
         } */
     }
 
@@ -121,26 +121,23 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 		return ii.intValue();
 	}
 
-	/** Set Rechnungskandidat.
-		@param C_Invoice_Candidate_ID 
-		Eindeutige Identifikationsnummer eines Rechnungskandidaten
-	  */
+	/** Set Vertrag-Rechnungskandidat.
+		@param C_Invoice_Candidate_Term_ID Vertrag-Rechnungskandidat	  */
 	@Override
-	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID)
+	public void setC_Invoice_Candidate_Term_ID (int C_Invoice_Candidate_Term_ID)
 	{
-		if (C_Invoice_Candidate_ID < 1) 
-			set_Value (COLUMNNAME_C_Invoice_Candidate_ID, null);
+		if (C_Invoice_Candidate_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_Candidate_Term_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Invoice_Candidate_ID, Integer.valueOf(C_Invoice_Candidate_ID));
+			set_Value (COLUMNNAME_C_Invoice_Candidate_Term_ID, Integer.valueOf(C_Invoice_Candidate_Term_ID));
 	}
 
-	/** Get Rechnungskandidat.
-		@return Eindeutige Identifikationsnummer eines Rechnungskandidaten
-	  */
+	/** Get Vertrag-Rechnungskandidat.
+		@return Vertrag-Rechnungskandidat	  */
 	@Override
-	public int getC_Invoice_Candidate_ID () 
+	public int getC_Invoice_Candidate_Term_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_Term_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

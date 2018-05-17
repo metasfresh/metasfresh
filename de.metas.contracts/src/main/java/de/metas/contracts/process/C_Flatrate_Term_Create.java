@@ -1,21 +1,13 @@
 package de.metas.contracts.process;
 
 import java.sql.Timestamp;
-import java.util.Iterator;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
-import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.TrxRunnableAdapter;
 
-import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.process.FlatrateTermCreator.FlatrateTermCreatorBuilder;
 import de.metas.process.JavaProcess;
 
 /*
@@ -42,119 +34,42 @@ import de.metas.process.JavaProcess;
 
 public abstract class C_Flatrate_Term_Create extends JavaProcess
 {
-
-	// services
-	protected final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-
-	private Timestamp startDate;
-	private Timestamp endDate;
-	private I_C_Flatrate_Conditions conditions;
-	private I_AD_User userInCharge;
-	private I_M_Product product;
+	private final FlatrateTermCreatorBuilder builder = FlatrateTermCreator.builder();
 
 	public void setStartDate(Timestamp startDate)
 	{
-		this.startDate = startDate;
+		builder.startDate(startDate);
 	}
 
 	public void setEndDate(Timestamp endDate)
 	{
-		this.endDate = endDate;
+		builder.endDate(endDate);
 	}
 
 	public void setUserInCharge(I_AD_User userInCharge)
 	{
-		this.userInCharge = userInCharge;
+		builder.userInCharge(userInCharge);
 	}
 
-	public void setProduct(I_M_Product product)
+	public void addProduct(I_M_Product product)
 	{
-		this.product = product;
+		builder.product(product);
 	}
 
 	public void setConditions(I_C_Flatrate_Conditions conditions)
 	{
-		this.conditions = conditions;
+		builder.conditions(conditions);
 	}
 
 	@Override
 	public String doIt() throws Exception
 	{
+		builder
+				.bPartners(getBPartners())
+				.build()
+				.createTermsForBPartners();
 
-		createTermForBPartners();
-
-		return "@Success@";
-	}
-
-	/**
-	 * create terms for all the BPartners iterated from the subclass, each of them in its own transaction
-	 */
-	private void createTermForBPartners()
-	{
-		for (final I_C_BPartner partner : IteratorUtils.asIterable(getBPartners()))
-		{
-			// create each term in its own transaction
-			trxManager.run(new TrxRunnableAdapter()
-			{
-				@Override
-				public void run(final String localTrxName)
-				{
-					createTerm(partner);
-				}
-
-				@Override
-				public boolean doCatch(Throwable ex)
-				{
-					addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
-					log.warn("Failed creating contract for {}", partner, ex);
-					return true; // rollback
-				}
-
-				@Override
-				public void doFinally()
-				{
-					addLog("@Created@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
-				}
-			});
-		}
-	}
-
-	private I_C_Flatrate_Term createTerm(final I_C_BPartner partner)
-	{
-		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
-
-		final I_C_Flatrate_Term newTerm = flatrateBL.createTerm(
-				context,
-				partner,
-				conditions,
-				startDate,
-				userInCharge,
-				product,
-				false /* completeIt=false */
-		);
-
-		if (newTerm == null)
-		{
-			return null;
-		}
-
-		if (product != null)
-		{
-			newTerm.setM_Product_ID(product.getM_Product_ID());
-		}
-
-		if (endDate != null)
-		{
-			newTerm.setEndDate(endDate);
-		}
-
-		InterfaceWrapperHelper.save(newTerm);
-
-		//
-		// Complete it if valid
-		flatrateBL.completeIfValid(newTerm);
-
-		return newTerm;
+		return MSG_OK;
 	}
 
 	/**
@@ -162,6 +77,6 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 	 *
 	 * @return an iterator of the partners.
 	 */
-	public abstract Iterator<I_C_BPartner> getBPartners();
+	public abstract Iterable<I_C_BPartner> getBPartners();
 
 }

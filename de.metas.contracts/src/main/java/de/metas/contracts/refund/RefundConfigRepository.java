@@ -1,12 +1,16 @@
 package de.metas.contracts.refund;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
@@ -14,7 +18,9 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceScheduleId;
@@ -59,30 +65,53 @@ public class RefundConfigRepository
 		final I_C_Flatrate_RefundConfig configRecord = createRefundConfigQueryBuilder(conditionsId)
 				.addInArrayFilter(
 						I_C_Flatrate_RefundConfig.COLUMN_M_Product_ID,
-						null, productId.getRepoId())
+						null,
+						productId.getRepoId())
 				.orderBy()
-				.addColumn(I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.addColumn(
+						I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID,
+						Direction.Descending,
+						Nulls.Last)
 				.endOrderBy()
 				.create()
 				.first();
-		return ofRecord(configRecord);
+		return ofNullableRecord(configRecord);
 	}
 
-	public List<RefundConfig> getByConditionsId(@NonNull final ConditionsId conditionsId)
+	public List<RefundConfig> getByConditionsId(
+			@NonNull final ConditionsId conditionsId)
 	{
 		return createRefundConfigQuery(conditionsId)
 				.stream()
-				.map(RefundConfigRepository::ofRecord)
+				.map(RefundConfigRepository::ofNullableRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private IQuery<I_C_Flatrate_RefundConfig> createRefundConfigQuery(@NonNull final ConditionsId conditionsId)
+	public RefundConfig getByRefundContractId(
+			@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final I_C_Flatrate_Term term = Check.assumeNotNull(
+				load(flatrateTermId.getRepoId(), I_C_Flatrate_Term.class),
+				"The C_Flatrate_Term record for flatrateTermId={}, is not null",
+				flatrateTermId);
+
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
+		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
+
+		final RefundConfig config = getByConditionsIdAndProductId(conditionsId, productId);
+		return Check.assumeNotNull(config, "The refundConfig for flatrateTermId={} is not null", flatrateTermId);
+
+	}
+
+	private IQuery<I_C_Flatrate_RefundConfig> createRefundConfigQuery(
+			@NonNull final ConditionsId conditionsId)
 	{
 		return createRefundConfigQueryBuilder(conditionsId)
 				.create();
 	}
 
-	private IQueryBuilder<I_C_Flatrate_RefundConfig> createRefundConfigQueryBuilder(final ConditionsId conditionsId)
+	private IQueryBuilder<I_C_Flatrate_RefundConfig> createRefundConfigQueryBuilder(
+			@Nullable final ConditionsId conditionsId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
@@ -90,7 +119,8 @@ public class RefundConfigRepository
 				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMN_C_Flatrate_Conditions_ID, conditionsId.getRepoId());
 	}
 
-	private static RefundConfig ofRecord(@Nullable final I_C_Flatrate_RefundConfig record)
+	private static RefundConfig ofNullableRecord(
+			@Nullable final I_C_Flatrate_RefundConfig record)
 	{
 		if (record == null)
 		{

@@ -2,9 +2,12 @@ package de.metas.contracts.refund;
 
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.bpartner.BPartnerId;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,9 +36,14 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class InvoiceCandidate
+@Builder(toBuilder = true)
+public class AssignableInvoiceCandidate implements InvoiceCandidate
 {
+	public static AssignableInvoiceCandidate cast(@NonNull final Object invoiceCandidate)
+	{
+		return (AssignableInvoiceCandidate)invoiceCandidate;
+	}
+
 	@NonNull
 	InvoiceCandidateId id;
 
@@ -47,4 +55,30 @@ public class InvoiceCandidate
 
 	@NonNull
 	LocalDate invoiceableFrom;
+
+	@Nullable
+	RefundInvoiceCandidate refundInvoiceCandidate;
+
+	@NonNull
+	Money money;
+
+	@Nullable
+	Money oldMoney;
+
+	public AssignableInvoiceCandidate withoutRefundInvoiceCandidate()
+	{
+		return toBuilder()
+				.refundInvoiceCandidate(null)
+				.build();
+	}
+
+	public Money getMoneyDelta()
+	{
+		if (oldMoney == null)
+		{
+			return money;
+		}
+
+		return money.subtract(oldMoney);
+	}
 }

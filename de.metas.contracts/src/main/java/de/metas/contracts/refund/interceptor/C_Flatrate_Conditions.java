@@ -5,6 +5,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
@@ -31,6 +32,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
  * #L%
  */
 
+@Component
 @Interceptor(I_C_Flatrate_Conditions.class)
 public class C_Flatrate_Conditions
 {

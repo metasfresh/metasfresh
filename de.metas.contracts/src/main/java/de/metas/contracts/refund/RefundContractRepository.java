@@ -7,7 +7,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
+import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util.ArrayKey;
+import org.springframework.stereotype.Repository;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -37,15 +40,40 @@ import lombok.NonNull;
  * #L%
  */
 
+@Repository
 public class RefundContractRepository
 {
+	private static final CCache<ArrayKey, Integer> CACHE = CCache.<ArrayKey, Integer> newCache(
+			I_C_Flatrate_Term.Table_Name + "#by"
+					+ I_C_Flatrate_Term.COLUMNNAME_Type_Conditions + "#"
+					+ I_C_Flatrate_Term.COLUMNNAME_DocStatus + "#"
+					+ I_C_Flatrate_Term.COLUMNNAME_StartDate + "#"
+					+ I_C_Flatrate_Term.COLUMNNAME_EndDate + "#"
+					+ I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID + "#"
+					+ I_C_Flatrate_Term.COLUMNNAME_M_Product_ID,
+			0,
+			CCache.EXPIREMINUTES_Never);
 
-	public Optional<FlatrateTermId> getIdByInvoiceCandidate(@NonNull final InvoiceCandidate invoiceCandidate)
+	public Optional<FlatrateTermId> getMatchingIdByInvoiceCandidate(@NonNull final AssignableInvoiceCandidate invoiceCandidate)
 	{
 		final Timestamp invoicableFromTimestamp = TimeUtil.asTimestamp(invoiceCandidate.getInvoiceableFrom());
 		final int billPartnerId = invoiceCandidate.getBpartnerId().getRepoId();
 		final int productId = invoiceCandidate.getProductId().getRepoId();
 
+		final ArrayKey key = ArrayKey.of(invoicableFromTimestamp, billPartnerId, productId);
+		final int contractRecordId = CACHE.getOrLoad(
+				key,
+				() -> retrieveIdNoCache(invoicableFromTimestamp, billPartnerId, productId));
+
+		if (contractRecordId > 0)
+		{
+			return Optional.of(FlatrateTermId.ofRepoId(contractRecordId));
+		}
+		return Optional.empty();
+	}
+
+	private int retrieveIdNoCache(final Timestamp invoicableFromTimestamp, final int billPartnerId, final int productId)
+	{
 		final int contractRecordId = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
@@ -60,12 +88,6 @@ public class RefundContractRepository
 				.endOrderBy()
 				.create()
 				.firstId();
-
-		if(contractRecordId>0)
-		{
-			return Optional.of(FlatrateTermId.ofRepoId(contractRecordId));
-		}
-
-		return Optional.empty();
+		return contractRecordId;
 	}
 }
