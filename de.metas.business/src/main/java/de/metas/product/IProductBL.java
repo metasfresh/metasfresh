@@ -113,6 +113,11 @@ public interface IProductBL extends ISingletonService
 	/** @return UOM used in material storage; never return null; */
 	I_C_UOM getStockingUOM(int productId);
 
+	default int getStockingUOMId(final int productId)
+	{
+		return getStockingUOM(productId).getC_UOM_ID();
+	}
+
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.
 	 *
@@ -142,6 +147,5 @@ public interface IProductBL extends ISingletonService
 	boolean isProductInCategory(int productId, int expectedProductCategoryId);
 
 	String getProductValueAndName(int productId);
-	
-	
+
 }

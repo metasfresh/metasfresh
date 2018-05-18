@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
@@ -15,6 +16,7 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.limit.IPriceLimitRestrictionsRepository;
+import de.metas.pricing.limit.IPriceLimitRule;
 import de.metas.pricing.limit.PriceLimitRestrictions;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
@@ -65,8 +67,9 @@ class PharmaPriceLimitRuleInstance
 		{
 			return PriceLimitRuleResult.notApplicable("no PriceLimitRestrictions defined");
 		}
+
 		final IPricingContext pricingContext = context.getPricingContext();
-		if (!isEligibleBPartner(pricingContext.getC_BPartner_ID()))
+		if (!isEligibleBPartner(pricingContext))
 		{
 			return PriceLimitRuleResult.notApplicable("BPartner not eligible");
 		}
@@ -87,15 +90,26 @@ class PharmaPriceLimitRuleInstance
 
 	private boolean hasPriceLimitRestrictions()
 	{
-		final PriceLimitRestrictions priceLimitRestrictions = Services.get(IPriceLimitRestrictionsRepository.class).get();
-		return priceLimitRestrictions != null;
+		return Services.get(IPriceLimitRestrictionsRepository.class)
+				.get()
+				.isPresent();
 	}
 
 	private PriceLimitRestrictions getPriceLimitRestrictions()
 	{
-		final PriceLimitRestrictions priceLimitRestrictions = Services.get(IPriceLimitRestrictionsRepository.class).get();
-		Check.assumeNotNull(priceLimitRestrictions, "priceLimitRestrictions shall not be null");
-		return priceLimitRestrictions;
+		return Services.get(IPriceLimitRestrictionsRepository.class)
+				.get()
+				.orElseThrow(() -> new AdempiereException("No price limit restrictions defined"));
+	}
+
+	private static boolean isEligibleBPartner(final IPricingContext pricingContext)
+	{
+		if (pricingContext.isPropertySet(IPriceLimitRule.OPTION_SkipCheckingBPartnerEligible))
+		{
+			return true;
+		}
+
+		return isEligibleBPartner(pricingContext.getC_BPartner_ID());
 	}
 
 	private static boolean isEligibleBPartner(final int bpartnerId)
