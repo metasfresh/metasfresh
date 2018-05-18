@@ -17,7 +17,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
@@ -365,18 +364,18 @@ public class InvoiceCandidateRepository
 		final boolean soTrx = assignableInvoiceCandidateRecord.isSOTrx();
 		refundInvoiceCandidateRecord.setIsSOTrx(soTrx);
 
-		try
-		{
-			final int docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundConfig);
-			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId);
-		}
-		catch (final RuntimeException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
-					.setParameter("invoiceCandidate", invoiceCandidate)
-					.setParameter("refundConfig", refundConfig)
-					.setParameter("assignableInvoiceCandidateRecord", assignableInvoiceCandidateRecord);
-		}
+//		try
+//		{
+//			final int docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundConfig);
+//			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId);
+//		}
+//		catch (final RuntimeException e)
+//		{
+//			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+//					.setParameter("invoiceCandidate", invoiceCandidate)
+//					.setParameter("refundConfig", refundConfig)
+//					.setParameter("assignableInvoiceCandidateRecord", assignableInvoiceCandidateRecord);
+//		}
 
 		saveRecord(refundInvoiceCandidateRecord);
 
@@ -423,7 +422,8 @@ public class InvoiceCandidateRepository
 		// Check.fail("The current refundConfig has an ussupported invoice type={}", refundConfig.getRefundInvoiceType());
 		// }
 
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQueryBuilder.build());
+		final int docTypeId = Services.get(IDocTypeDAO.class)
+				.getDocTypeIdOrNull(docTypeQueryBuilder.build());
 		return Check.assumeGreaterThanZero(docTypeId, "doctype");
 	}
 
