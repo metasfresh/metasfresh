@@ -1,7 +1,11 @@
-package de.metas.contracts.refund;
+package de.metas.contracts.refund.grossprofit;
 
-import de.metas.contracts.FlatrateTermId;
-import lombok.NonNull;
+import java.time.LocalDate;
+
+import org.adempiere.bpartner.BPartnerId;
+
+import de.metas.product.ProductId;
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -27,11 +31,12 @@ import lombok.Value;
  */
 
 @Value
-public class RefundContract
+@Builder
+public class OrderLine
 {
-	@NonNull
-	FlatrateTermId flatrateTermId;
+	BPartnerId bPartnerId;
 
-	@NonNull
-	RefundConfig refundConfig;
+	ProductId productId;
+
+	LocalDate datePromised;
 }
