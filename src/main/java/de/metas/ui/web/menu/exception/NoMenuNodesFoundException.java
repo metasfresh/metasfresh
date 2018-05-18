@@ -4,6 +4,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import de.metas.i18n.ImmutableTranslatableString;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -38,7 +40,7 @@ public class NoMenuNodesFoundException extends AdempiereException
 {
 	public NoMenuNodesFoundException()
 	{
-		super();
+		super(ImmutableTranslatableString.empty());
 	}
 
 	public NoMenuNodesFoundException(final String message)
