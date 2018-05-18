@@ -2,6 +2,8 @@ package org.adempiere.ad.persistence.po;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.i18n.ImmutableTranslatableString;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -32,12 +34,11 @@ import org.adempiere.exceptions.AdempiereException;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@SuppressWarnings("serial")
 public class NoDataFoundHandlerRetryRequestException extends AdempiereException
 {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 273568070034884347L;
-
+	public NoDataFoundHandlerRetryRequestException()
+	{
+		super(ImmutableTranslatableString.empty());
+	}
 }

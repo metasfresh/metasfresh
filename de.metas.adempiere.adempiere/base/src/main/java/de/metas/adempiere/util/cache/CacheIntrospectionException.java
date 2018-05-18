@@ -13,15 +13,14 @@ package de.metas.adempiere.util.cache;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,6 +31,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 import com.google.common.util.concurrent.UncheckedExecutionException;
+
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 
 /**
  * Exception thrown when an annotated cached method could not be introspected or it's not valid.
@@ -119,20 +121,20 @@ public class CacheIntrospectionException extends AdempiereException
 	}
 
 	@Override
-	protected String buildMessage()
+	protected ITranslatableString buildMessage()
 	{
-		final StringBuilder message = new StringBuilder();
+		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
 
 		message.append(super.buildMessage());
 
 		if (method != null)
 		{
-			message.append("\n Method: ").append(method);
+			message.append("\n Method: ").appendObj(method);
 		}
 
 		if (parameterSet)
 		{
-			message.append("\n Invalid parameter at index ").append(parameterIndex).append(": ").append(parameterType);
+			message.append("\n Invalid parameter at index ").append(parameterIndex).append(": ").appendObj(parameterType);
 		}
 
 		if (!Check.isEmpty(hintsToFix))
@@ -143,6 +145,6 @@ public class CacheIntrospectionException extends AdempiereException
 			}
 		}
 
-		return message.toString();
+		return message.build();
 	}
 }
