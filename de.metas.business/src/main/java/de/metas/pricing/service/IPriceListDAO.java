@@ -25,6 +25,7 @@ package de.metas.pricing.service;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_Location;
@@ -109,4 +110,6 @@ public interface IPriceListDAO extends ISingletonService
 	String getPricingSystemName(final int pricingSystemId);
 
 	String getPriceListName(final int priceListId);
+
+	Set<Integer> retrieveCountryIdsByPricingSystem(final int pricingSystemId);
 }

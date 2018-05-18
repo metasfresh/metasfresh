@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -29,6 +30,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
@@ -88,6 +90,7 @@ public class PriceListDAO implements IPriceListDAO
 		return retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, isSOPriceList)
 				.iterator();
 	}
+	
 
 	@Cached(cacheName = I_M_PriceList.Table_Name + "#by#M_PricingSystem_ID#C_Country_ID#IsSOPriceList")
 	public ImmutableList<I_M_PriceList> retrievePriceLists(
@@ -159,8 +162,7 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		// Order the version by validFrom, descending.
-		queryBuilder.orderBy()
-				.addColumn(I_M_PriceList_Version.COLUMNNAME_ValidFrom, false);
+		queryBuilder.orderByDescending(I_M_PriceList_Version.COLUMNNAME_ValidFrom);
 
 		final IQuery<I_M_PriceList_Version> query = queryBuilder.create();
 		final I_M_PriceList_Version result = query.first();
@@ -293,5 +295,19 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		return priceList.getName();
+	}
+	
+	@Override
+	public Set<Integer> retrieveCountryIdsByPricingSystem(int pricingSystemId)
+	{
+		final List<Integer> countryIds = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_PriceList.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, pricingSystemId)
+				.addNotNull(I_M_PriceList.COLUMN_C_Country_ID)
+				.create()
+				.listDistinct(I_M_PriceList.COLUMNNAME_C_Country_ID, Integer.class);
+
+		return ImmutableSet.copyOf(countryIds);
 	}
 }
