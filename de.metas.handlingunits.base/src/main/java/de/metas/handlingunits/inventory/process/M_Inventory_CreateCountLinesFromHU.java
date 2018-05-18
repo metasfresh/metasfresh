@@ -107,6 +107,7 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		return Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class)
 				.stream()
 				.map(I_M_InventoryLine::getM_HU_ID)
+				.filter(huId -> huId > 0)
 				.collect(ImmutableList.toImmutableList());
 
 	}
@@ -150,7 +151,7 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		final I_M_HU hu = huProductStorage.getM_HU();
 		if (updateLine)
 		{
-			inventoryLine = fetchInventoryLineForHU(hu);
+			inventoryLine = fetchInventoryLineForHU(hu.getM_HU_ID());
 		}
 		else
 		{
@@ -177,12 +178,12 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		return inventoryLine;
 	}
 
-	private I_M_InventoryLine fetchInventoryLineForHU(final I_M_HU hu)
+	private I_M_InventoryLine fetchInventoryLineForHU(final int huId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, getInventory().getM_Inventory_ID())
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_HU_ID, huId)
 				.create()
 				.firstOnly(I_M_InventoryLine.class);
 	}
