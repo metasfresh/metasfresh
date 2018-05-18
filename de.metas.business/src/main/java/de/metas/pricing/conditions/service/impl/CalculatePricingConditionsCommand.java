@@ -15,15 +15,12 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
-import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsDiscountType;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsResult.CalculatePricingConditionsResultBuilder;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
 import lombok.NonNull;
 
 /*
@@ -56,7 +53,6 @@ import lombok.NonNull;
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
-	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
 	final CalculatePricingConditionsRequest request;
 
@@ -202,15 +198,9 @@ import lombok.NonNull;
 		{
 			return request.getForceSchemaBreak();
 		}
-
-		final int productId = request.getProductId();
-		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
-
-		return pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
-				.attributeInstances(request.getAttributeInstances())
-				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
-				.qty(request.getQty())
-				.amt(request.getPrice().multiply(request.getQty()))
-				.build());
+		else
+		{
+			return pricingConditions.pickApplyingBreak(request.getSchemaBreakQuery());
+		}
 	}
 }

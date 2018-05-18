@@ -4,18 +4,15 @@
 package de.metas.pricing.conditions.service;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_AttributeInstance;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -52,26 +49,30 @@ import lombok.Value;
 public class CalculatePricingConditionsRequest
 {
 	private final PricingConditionsId pricingConditionsId;
-	private final PricingConditionsBreak forceSchemaBreak;
 
-	private final BigDecimal qty;
-	private final BigDecimal price;
-	private final int productId;
+	private final PricingConditionsBreak forceSchemaBreak;
+	private final PricingConditionsBreakQuery schemaBreakQuery;
+
 	private final BigDecimal bpartnerFlatDiscount;
-	private final List<I_M_AttributeInstance> attributeInstances;
+
 	private final IPricingContext pricingCtx;
 
 	@Builder
 	private CalculatePricingConditionsRequest(
 			@NonNull final PricingConditionsId pricingConditionsId,
 			final PricingConditionsBreak forceSchemaBreak,
-			final BigDecimal qty,
-			final BigDecimal price,
-			final int productId,
+			final PricingConditionsBreakQuery schemaBreakQuery,
 			final BigDecimal bpartnerFlatDiscount,
-			final List<I_M_AttributeInstance> attributeInstances,
 			final IPricingContext pricingCtx)
 	{
+		if (forceSchemaBreak == null || schemaBreakQuery == null)
+		{
+			throw new AdempiereException("forceSchemaBreak or schemaBreakQuery shall be specified");
+		}
+		else if (forceSchemaBreak != null && schemaBreakQuery != null)
+		{
+			throw new AdempiereException("Only forceSchemaBreak or schemaBreakQuery shall be specified but not both");
+		}
 		if (forceSchemaBreak != null && !PricingConditionsBreakId.matching(pricingConditionsId, forceSchemaBreak.getId()))
 		{
 			throw new AdempiereException("Schema and schema break does not match")
@@ -81,12 +82,11 @@ public class CalculatePricingConditionsRequest
 		}
 
 		this.pricingConditionsId = pricingConditionsId;
+
 		this.forceSchemaBreak = forceSchemaBreak;
-		this.qty = qty;
-		this.price = price;
-		this.productId = productId;
+		this.schemaBreakQuery = schemaBreakQuery;
+
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount != null ? bpartnerFlatDiscount : BigDecimal.ZERO;
-		this.attributeInstances = attributeInstances != null ? ImmutableList.copyOf(attributeInstances) : ImmutableList.of();
 		this.pricingCtx = pricingCtx;
 	}
 }

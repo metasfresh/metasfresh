@@ -194,9 +194,9 @@ public class M_DiscountSchemaBreak
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(pricingConditionsBreak.getId().getPricingConditionsId())
 				.forceSchemaBreak(pricingConditionsBreak)
-				.qty(pricingCtx.getQty())
-				.price(BigDecimal.ZERO) // N/A
-				.productId(pricingCtx.getM_Product_ID())
+//				.qty(pricingCtx.getQty())
+//				.price(BigDecimal.ZERO) // N/A
+//				.productId(pricingCtx.getM_Product_ID())
 				.pricingCtx(pricingCtx)
 				.build();
 		return request;
