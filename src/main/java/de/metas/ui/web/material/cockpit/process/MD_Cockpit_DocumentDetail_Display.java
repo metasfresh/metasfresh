@@ -1,8 +1,10 @@
 package de.metas.ui.web.material.cockpit.process;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -10,13 +12,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.material.cockpit.MaterialCockpitConstants;
 import de.metas.ui.web.material.cockpit.MaterialCockpitView;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -40,9 +38,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class MD_Cockpit_DocumentDetail_Display
-		extends ViewBasedProcessTemplate
-		implements IProcessPrecondition
+public class MD_Cockpit_DocumentDetail_Display extends MaterialCockpitViewBasedProcess
 {
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -52,7 +48,7 @@ public class MD_Cockpit_DocumentDetail_Display
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No MaterialCockpitrows are selected");
 		}
 
-		final ImmutableSet<Integer> cockpitRowIds = retrieveCockpitRecordIds();
+		final Set<Integer> cockpitRowIds = getSelectedCockpitRecordIdsRecursively();
 		if (cockpitRowIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("The selected rows are just dummys with all-zero");
@@ -62,51 +58,40 @@ public class MD_Cockpit_DocumentDetail_Display
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final ImmutableSet<Integer> cockpitRowIds = retrieveCockpitRecordIds();
-
+		final Set<Integer> cockpitRowIds = getSelectedCockpitRecordIdsRecursively();
 		final List<TableRecordReference> cockpitDetailRecords = retrieveCockpitDetailRecordReferences(cockpitRowIds);
 
-		getResult().setRecordsToOpen(
-				cockpitDetailRecords,
-				MaterialCockpitConstants.WINDOWID_MaterialCockpit_Detail_String);
+		getResult().setRecordsToOpen(cockpitDetailRecords, MaterialCockpitConstants.WINDOWID_MaterialCockpit_Detail_String);
+		
 		return MSG_OK;
 	}
 
-	private ImmutableSet<Integer> retrieveCockpitRecordIds()
+	private Set<Integer> getSelectedCockpitRecordIdsRecursively()
 	{
-		final MaterialCockpitView materialCockpitView = (MaterialCockpitView)getView();
+		final MaterialCockpitView materialCockpitView = getView();
 
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		final ImmutableSet<Integer> cockpitRowIds = selectedRowIds.stream()
-				.map(rowId -> {
-					return materialCockpitView.getById(rowId);
-				})
-				.flatMap(row -> {
-					return row.getAllIncludedCockpitRecordIds().stream();
-				})
+		return getSelectedRowIds()
+				.stream()
+				.map(materialCockpitView::getById)
+				.flatMap(row -> row.getAllIncludedCockpitRecordIds().stream())
 				.collect(ImmutableSet.toImmutableSet());
-
-		return cockpitRowIds;
 	}
 
-	private ImmutableList<TableRecordReference> retrieveCockpitDetailRecordReferences(
-			@NonNull final ImmutableSet<Integer> cockpitRowIds)
+	private List<TableRecordReference> retrieveCockpitDetailRecordReferences(final Set<Integer> cockpitRowIds)
 	{
-		final ImmutableList<TableRecordReference> cockpitDetailRecords = Services.get(IQueryBL.class)
+		Check.assumeNotEmpty(cockpitRowIds, "cockpitRowIds is not empty");
+
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Cockpit_DocumentDetail.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_MD_Cockpit_DocumentDetail.COLUMN_MD_Cockpit_ID, cockpitRowIds)
 				.create()
 				.listIds()
 				.stream()
-				.map(cockpitDetailRecordId -> TableRecordReference.of(
-						I_MD_Cockpit_DocumentDetail.Table_Name,
-						cockpitDetailRecordId))
+				.map(cockpitDetailRecordId -> TableRecordReference.of(I_MD_Cockpit_DocumentDetail.Table_Name, cockpitDetailRecordId))
 				.collect(ImmutableList.toImmutableList());
-
-		return cockpitDetailRecords;
 	}
 
 }

@@ -41,11 +41,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(code = HttpStatus.NOT_IMPLEMENTED)
 public class NotImplementedException extends AdempiereException
 {
-	public NotImplementedException()
-	{
-		super();
-	}
-
 	public NotImplementedException(final String message)
 	{
 		super(message);

@@ -4,6 +4,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import de.metas.i18n.ImmutableTranslatableString;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -38,6 +40,6 @@ public class DeprecatedRestAPINotAllowedException extends AdempiereException
 {
 	public DeprecatedRestAPINotAllowedException()
 	{
-		super();
+		super(ImmutableTranslatableString.empty());
 	}
 }

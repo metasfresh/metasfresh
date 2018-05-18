@@ -14,7 +14,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsViewFactory;
+import de.metas.ui.web.order.sales.pricingConditions.view.OrderLinePricingConditionsViewFactory;
 
 /*
  * #%L
@@ -85,7 +85,7 @@ public class WEBUI_SalesOrder_PricingConditionsView_Launcher extends JavaProcess
 				.collect(ImmutableSet.toImmutableSet());
 		ListUtils.singleElement(salesOrderLineRefs);
 
-		getResult().setRecordsToOpen(salesOrderLineRefs, PricingConditionsViewFactory.WINDOW_ID_STRING);
+		getResult().setRecordsToOpen(salesOrderLineRefs, OrderLinePricingConditionsViewFactory.WINDOW_ID_STRING);
 
 		return MSG_OK;
 	}

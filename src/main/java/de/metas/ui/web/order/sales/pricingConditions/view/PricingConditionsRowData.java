@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
@@ -73,7 +72,7 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 			@Nullable final PricingConditionsRow editableRow,
 			@NonNull final List<PricingConditionsRow> rows)
 	{
-		Check.assumeGreaterThanZero(salesOrderLineId, "salesOrderLineId");
+		// Check.assumeGreaterThanZero(salesOrderLineId, "salesOrderLineId"); // OK to not be set
 
 		this.salesOrderLineId = salesOrderLineId;
 		this.allRowsData = null;

@@ -4,9 +4,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.util.CCache;
-import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -15,18 +13,17 @@ import com.google.common.cache.RemovalNotification;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.sales.pricingConditions.process.PricingConditionsView_CopyRowToEditable;
 import de.metas.ui.web.order.sales.pricingConditions.process.PricingConditionsView_SaveEditableRow;
 import de.metas.ui.web.order.sales.pricingConditions.process.WEBUI_SalesOrder_PricingConditionsView_Launcher;
+import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.PricingConditionsRowsLoaderBuilder;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.ViewCloseReason;
-import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -57,46 +54,50 @@ import lombok.NonNull;
  * #L%
  */
 
-@ViewFactory(windowId = PricingConditionsViewFactory.WINDOW_ID_STRING)
-public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexStorage
+public abstract class PricingConditionsViewFactoryTemplate implements IViewFactory, IViewsIndexStorage
 {
-	public static final String WINDOW_ID_STRING = "soPricingConditions";
-	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
+	private final WindowId windowId;
 
-	private final CCache<ArrayKey, ViewLayout> //
-	viewLayoutCache = CCache.newCache(PricingConditionsViewFactory.class + "#ViewLayout", 1, 0);
+	private final CCache<ViewLayoutKey, ViewLayout> //
+	viewLayoutCache = CCache.newCache(OrderLinePricingConditionsViewFactory.class + "#ViewLayout", 1, 0);
 
 	private final Cache<ViewId, PricingConditionsView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.removalListener(notification -> onViewRemoved(notification))
 			.build();
 
+	private final PricingConditionsRowLookups lookups = PricingConditionsRowLookups.newInstance();
 	private final PricingConditionsViewFilters filtersFactory = new PricingConditionsViewFilters();
 
-	@Override
-	public WindowId getWindowId()
+	protected PricingConditionsViewFactoryTemplate(@NonNull final WindowId windowId)
 	{
-		return WINDOW_ID;
+		this.windowId = windowId;
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
+	public final WindowId getWindowId()
 	{
-		final ArrayKey key = ArrayKey.of(windowId, viewDataType);
-		return viewLayoutCache.getOrLoad(key, () -> createViewLayout(windowId, viewDataType));
+		return windowId;
 	}
 
-	private ViewLayout createViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	@Override
+	public final ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
+	{
+		final ViewLayoutKey key = ViewLayoutKey.of(windowId, viewDataType);
+		return viewLayoutCache.getOrLoad(key, this::createViewLayout);
+	}
+
+	private ViewLayout createViewLayout(final ViewLayoutKey key)
 	{
 		final ITranslatableString caption = Services.get(IADProcessDAO.class)
 				.retrieveProcessNameByClassIfUnique(WEBUI_SalesOrder_PricingConditionsView_Launcher.class)
 				.orElse(null);
 
 		return ViewLayout.builder()
-				.setWindowId(windowId)
+				.setWindowId(key.getWindowId())
 				.setCaption(caption)
 				.setFilters(filtersFactory.getFilterDescriptors())
-				.addElementsFromViewRowClass(PricingConditionsRow.class, viewDataType)
+				.addElementsFromViewRowClass(PricingConditionsRow.class, key.getViewDataType())
 				.build();
 	}
 
@@ -108,23 +109,28 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 
 		if (closeReason == ViewCloseReason.USER_REQUEST)
 		{
-			view.updateSalesOrderLineIfPossible();
+			onViewClosedByUser(view);
 		}
 	}
 
+	protected void onViewClosedByUser(final PricingConditionsView view)
+	{
+		// nothing on tihs level
+	}
+
 	@Override
-	public void put(final IView view)
+	public final void put(final IView view)
 	{
 		views.put(view.getViewId(), PricingConditionsView.cast(view));
 	}
 
 	@Override
-	public PricingConditionsView getByIdOrNull(final ViewId viewId)
+	public final PricingConditionsView getByIdOrNull(final ViewId viewId)
 	{
 		return views.getIfPresent(viewId);
 	}
 
-	public PricingConditionsView getById(final ViewId viewId)
+	public final PricingConditionsView getById(final ViewId viewId)
 	{
 		final PricingConditionsView view = getByIdOrNull(viewId);
 		if (view == null)
@@ -135,22 +141,22 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 	}
 
 	@Override
-	public void removeById(final ViewId viewId)
+	public final void removeById(final ViewId viewId)
 	{
 		views.invalidate(viewId);
 		views.cleanUp(); // also cleanup to prevent views cache to grow.
 	}
 
 	@Override
-	public Stream<IView> streamAllViews()
+	public final Stream<IView> streamAllViews()
 	{
 		return Stream.empty();
 	}
 
 	@Override
-	public void invalidateView(final ViewId viewId)
+	public final void invalidateView(final ViewId viewId)
 	{
-		final IView view = getByIdOrNull(viewId);
+		final PricingConditionsView view = getByIdOrNull(viewId);
 		if (view == null)
 		{
 			return;
@@ -160,19 +166,18 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 	}
 
 	@Override
-	public IView createView(final CreateViewRequest request)
+	public final PricingConditionsView createView(final CreateViewRequest request)
 	{
-		final ViewId viewId = ViewId.random(WINDOW_ID);
+		final PricingConditionsRowData rowsData = createPricingConditionsRowData(request);
+		return createView(rowsData);
+	}
 
-		final int salesOrderLineId = ListUtils.singleElement(request.getFilterOnlyIds());
-		final PricingConditionsRowData rowsData = PricingConditionsRowsLoader.builder()
-				.salesOrderLineId(salesOrderLineId)
-				.filters(filtersFactory.extractFilters(request))
-				.build()
-				.load();
+	protected abstract PricingConditionsRowData createPricingConditionsRowData(CreateViewRequest request);
 
+	private PricingConditionsView createView(final PricingConditionsRowData rowsData)
+	{
 		return PricingConditionsView.builder()
-				.viewId(viewId)
+				.viewId(ViewId.random(windowId))
 				.rowsData(rowsData)
 				.relatedProcessDescriptor(createProcessDescriptor(PricingConditionsView_CopyRowToEditable.class))
 				.relatedProcessDescriptor(createProcessDescriptor(PricingConditionsView_SaveEditableRow.class))
@@ -180,14 +185,17 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 				.build();
 	}
 
-	@Override
-	public IView filterView(final IView viewObj, final JSONFilterViewRequest filterViewRequest)
+	protected final PricingConditionsRowsLoaderBuilder preparePricingConditionsRowData()
 	{
-		final DocumentFilterDescriptorsProvider filtersDescriptors = filtersFactory.getFilterDescriptorsProvider();
-		final DocumentFiltersList filters = DocumentFiltersList.ofJSONFilters(filterViewRequest.getFilters())
-				.unwrapAndCopy(filtersDescriptors);
+		return PricingConditionsRowsLoader.builder()
+				.lookups(lookups);
+	}
 
-		return PricingConditionsView.cast(viewObj).filter(filters);
+	@Override
+	public final PricingConditionsView filterView(final IView viewObj, final JSONFilterViewRequest filterViewRequest)
+	{
+		return PricingConditionsView.cast(viewObj)
+				.filter(filtersFactory.extractFilters(filterViewRequest));
 	}
 
 	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
@@ -198,5 +206,17 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 				.anyTable().anyWindow()
 				.webuiQuickAction(true)
 				.build();
+	}
+
+	protected final DocumentFiltersList extractFilters(final CreateViewRequest request)
+	{
+		return filtersFactory.extractFilters(request);
+	}
+
+	@lombok.Value(staticConstructor = "of")
+	private static final class ViewLayoutKey
+	{
+		WindowId windowId;
+		JSONViewDataType viewDataType;
 	}
 }

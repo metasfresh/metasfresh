@@ -18,6 +18,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
@@ -50,8 +51,8 @@ class PricingConditionsViewFilters
 	private static String FILTERID_IsVendor = "IsVendor";
 	private static String PARAM_IsVendor = "IsVendor";
 
-	private ImmutableDocumentFilterDescriptorsProvider filterDescriptorsProvider;
-	private DocumentFiltersList defaultFilters;
+	private ImmutableDocumentFilterDescriptorsProvider filterDescriptorsProvider; // lazy
+	private DocumentFiltersList defaultFilters; // lazy
 
 	public DocumentFilterDescriptorsProvider getFilterDescriptorsProvider()
 	{
@@ -108,13 +109,20 @@ class PricingConditionsViewFilters
 		final boolean showCustomers = filters.getParamValueAsBoolean(FILTERID_IsCustomer, PARAM_IsCustomer, false);
 		final boolean showVendors = filters.getParamValueAsBoolean(FILTERID_IsVendor, PARAM_IsVendor, false);
 		final boolean showAll = !showCustomers && !showVendors;
-		if(showAll)
+		if (showAll)
 		{
 			return Predicates.alwaysTrue();
 		}
 
 		return row -> row.isEditable()
 				|| ((showCustomers && row.isCustomer()) || (showVendors && row.isVendor()));
+	}
+
+	public DocumentFiltersList extractFilters(final JSONFilterViewRequest filterViewRequest)
+	{
+		final DocumentFilterDescriptorsProvider filtersDescriptors = getFilterDescriptorsProvider();
+		return DocumentFiltersList.ofJSONFilters(filterViewRequest.getFilters())
+				.unwrapAndCopy(filtersDescriptors);
 	}
 
 	public DocumentFiltersList extractFilters(final CreateViewRequest request)
@@ -132,5 +140,4 @@ class PricingConditionsViewFilters
 		}
 		return defaultFilters;
 	}
-
 }
