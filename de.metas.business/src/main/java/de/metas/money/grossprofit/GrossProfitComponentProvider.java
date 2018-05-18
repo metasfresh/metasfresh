@@ -1,8 +1,4 @@
-package de.metas.order;
-
-import org.adempiere.util.Check;
-
-import lombok.Value;
+package de.metas.money.grossprofit;
 
 /*
  * #%L
@@ -26,18 +22,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class OrderLineId
+public interface GrossProfitComponentProvider
 {
-	int repoId;
-
-	public static OrderLineId ofRepoId(final int repoId)
-	{
-		return new OrderLineId(repoId);
-	}
-
-	private OrderLineId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
+	GrossProfitComponent provideForOrderLine(GrossProfitComputeRequest grossProfitAware);
 }

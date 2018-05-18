@@ -1,6 +1,12 @@
-package de.metas.order.grossprofit;
+package de.metas.money.grossprofit;
+
+import java.util.List;
 
 import de.metas.money.Money;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -24,12 +30,26 @@ import de.metas.money.Money;
  * #L%
  */
 
-/**
- * Note: might be stateful.
- */
-public interface GrossProfitComponent
+@Value
+@Builder
+public class GrossProfitPrice
 {
-	String getName();
+	boolean soTrx;
 
-	Money applyToInput(Money input);
+	@NonNull
+	Money basePrice;
+
+	@Singular
+	List<GrossProfitComponent> profitCompponents;
+
+	public Money computeProfitPrice()
+	{
+		Money intermediateResult = basePrice;
+		for (final GrossProfitComponent profitComponent : profitCompponents)
+		{
+			intermediateResult = profitComponent.applyToInput(intermediateResult);
+		}
+
+		return intermediateResult;
+	}
 }
