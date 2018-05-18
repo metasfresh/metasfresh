@@ -1,12 +1,11 @@
 package de.metas.handlingunits.inventory.process;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Inventory;
 
@@ -62,7 +61,7 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 
 	private I_M_Inventory _inventory;
 
-	private Map<Integer, Integer> inventoryLinesByHU = new HashMap<>();
+	private Map<Integer, I_M_InventoryLine> inventoryLinesByHU;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -87,10 +86,10 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		inventoryLinesByHU = Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(getInventory().getM_Inventory_ID(), I_M_InventoryLine.class)
 				.stream()
 				.filter(line -> line.getM_HU_ID() > 0)
-				.collect(Collectors.toMap(I_M_InventoryLine::getM_HU_ID, I_M_InventoryLine::getM_InventoryLine_ID));
+				.collect(GuavaCollectors.toImmutableMapByKey(I_M_InventoryLine::getM_HU_ID));
 
 		final long countInventoryLines = streamHUs()
-				.flatMap(hu -> createUpdateInventoryLines(hu))
+				.flatMap(this::createUpdateInventoryLines)
 				.count();
 
 		return "@Created@/@Updated@ #" + countInventoryLines;
@@ -134,7 +133,7 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		return Services.get(IHandlingUnitsBL.class)
 				.getStorageFactory()
 				.streamHUProductStorages(hu)
-				.map(huProductStorage -> createUpdateInventoryLine(huProductStorage));
+				.map(this::createUpdateInventoryLine);
 	}
 
 	private I_M_InventoryLine createUpdateInventoryLine(@NonNull final IHUProductStorage huProductStorage)
@@ -146,8 +145,7 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		//update line
 		if (inventoryLinesByHU.containsKey(hu.getM_HU_ID()))
 		{
-			final int inventoryLineId = inventoryLinesByHU.get(hu.getM_HU_ID());
-			inventoryLine = InterfaceWrapperHelper.load(inventoryLineId, I_M_InventoryLine.class);
+			inventoryLine = inventoryLinesByHU.get(hu.getM_HU_ID());
 		}
 		// create line
 		else
