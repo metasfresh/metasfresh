@@ -1,12 +1,14 @@
-package de.metas.contracts.refund;
+package de.metas.order;
 
-import de.metas.contracts.FlatrateTermId;
+import org.adempiere.util.Check;
+
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,11 +29,18 @@ import lombok.Value;
  */
 
 @Value
-public class RefundContract
+@Builder
+public class OrderLineId
 {
-	@NonNull
-	FlatrateTermId flatrateTermId;
+	OrderId orderId;
 
-	@NonNull
-	RefundConfig refundConfig;
+	int repoId;
+
+	private OrderLineId(
+			@NonNull final OrderId orderId,
+			final int repoId)
+	{
+		this.orderId = orderId;
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 }

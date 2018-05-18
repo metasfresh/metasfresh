@@ -1,12 +1,10 @@
-package de.metas.contracts.refund;
+package de.metas.order.grossprofit;
 
-import de.metas.contracts.FlatrateTermId;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.order.OrderLineId;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -26,12 +24,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class RefundContract
+public interface GrossProfitComponentProvider
 {
-	@NonNull
-	FlatrateTermId flatrateTermId;
-
-	@NonNull
-	RefundConfig refundConfig;
+	GrossProfitComponent provideForOrderLine(OrderLineId orderLineId);
 }
