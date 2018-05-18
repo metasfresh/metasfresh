@@ -250,88 +250,9 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		else
 		{
 			sh "docker run -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\" ${dbInitDockerImageName}"
+			sh "docker rmi ${dbInitDockerImageName}"
 		}
 	}
 } // node
-/*
-// we need this one for both "Test-SQL" and "Deployment
-def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
 
-	final packagingPart=packaging ? ":${packaging}" : ""
-	final classifierPart=classifier ? ":${classifier}" : ""
-	final artifact = "${groupId}:${artifactId}:${version}${packagingPart}${classifierPart}"
-
-	// we need configFileProvider because in mvn get -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored.
-	// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom"
-	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
-	{
-		final MvnConf mvnDeployConf = new MvnConf(
-			'pom.xml', // pomFile
-			MAVEN_SETTINGS, // settingsFile
-			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
-			'https://repo.metasfresh.com' // mvnRepoBaseURL - resolve and deploy
-		)
-		echo "mvnDeployConf=${mvnDeployConf}"
-
-		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
-		{
-			sh "mvn --settings ${mvnDeployConf.settingsFile} org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact} ${mvnDeployConf.resolveParams}"
-
-			// copy the artifact to a deploy folder.
-			sh "mvn --settings ${mvnDeployConf.settingsFile} org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=false -Dmdep.stripVersion=false ${mvnDeployConf.resolveParams}"
-		}
-	}
-	sh "scp ${WORKSPACE}/deploy/${artifactId}-${version}-${classifier}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${version}-${classifier}.${packaging}"
-}
-
-// we need this one for both "Test-SQL" and "Deployment
-def invokeRemote = { String sshTargetHost, String sshTargetUser, String directory, String shellScript ->
-
-// no echo needed: the log already shows what's done via the sh step
-//	echo "Going to invoke the following as user ${sshTargetUser} on host ${sshTargetHost} in directory ${directory}:";
-//	echo "${shellScript}"
-	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\""
-}
-
-stage('Test SQL-Migration')
-{
-	if(params.MF_SKIP_SQL_MIGRATION_TEST)
-	{
-		echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
-	}
-	else
-	{
-		node('linux')
-		{
-			sshagent(['jenkins-ssh-key'])
-			{
-				final distArtifactId='metasfresh-dist-dist';
-				final classifier='sql-only';
-				final packaging='tar.gz';
-				final sshTargetHost='mf15cloudit'; // we made sure the mf15cloudit can be resolved on every jenkins node labeled with 'linux'
-				final sshTargetUser='metasfresh'
-
-				downloadForDeployment('de.metas.dist', distArtifactId, MF_VERSION, packaging, classifier, sshTargetHost, sshTargetUser);
-
-				final fileAndDirName="${distArtifactId}-${MF_VERSION}-${classifier}"
-				final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
-
-				// Look Ma, I'm currying!!
-				final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");
-				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xf ${fileAndDirName}.${packaging}")
-
-				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");
-				final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
-				final VALIDATE_MIGRATION_TEST_DB="tmp-metasfresh-dist-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${MF_VERSION}"
-						.replaceAll('[^a-zA-Z0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in its DB names
-						.toLowerCase(); // also, DB names are generally in lowercase
-
-				invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
-
-				invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
-			}
-		}
-	} // if(params.MF_SKIP_SQL_MIGRATION_TEST)
-} // stage
-*/
 } // timestamps
