@@ -67,8 +67,9 @@ class PharmaPriceLimitRuleInstance
 		{
 			return PriceLimitRuleResult.notApplicable("no PriceLimitRestrictions defined");
 		}
+
 		final IPricingContext pricingContext = context.getPricingContext();
-		if (!isEligibleBPartner(pricingContext.getC_BPartner_ID()))
+		if (!isEligibleBPartner(pricingContext))
 		{
 			return PriceLimitRuleResult.notApplicable("BPartner not eligible");
 		}
@@ -100,6 +101,15 @@ class PharmaPriceLimitRuleInstance
 				.get()
 				.orElseThrow(() -> new AdempiereException("No price limit restrictions defined"));
 	}
+
+	private static boolean isEligibleBPartner(final IPricingContext pricingContext)
+	{
+		if (pricingContext.isPropertySet(IPriceLimitRule.OPTION_SkipCheckingBPartnerEligible))
+		{
+			return true;
+		}
+
+		return isEligibleBPartner(pricingContext.getC_BPartner_ID());
 	}
 
 	private static boolean isEligibleBPartner(final int bpartnerId)
