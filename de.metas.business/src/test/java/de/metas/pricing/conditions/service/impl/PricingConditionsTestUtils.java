@@ -97,7 +97,7 @@ class PricingConditionsTestUtils
 		return PricingConditionsBreakQuery.builder()
 				.productAndCategoryId(extractProductAndCategoryId(product))
 				.qty(BigDecimal.valueOf(qty))
-				.amt(BigDecimal.valueOf(qty * 2)) // does not matter
+				.price(BigDecimal.valueOf(2)) // does not matter
 				.build();
 	}
 
@@ -111,7 +111,7 @@ class PricingConditionsTestUtils
 				.productAndCategoryId(extractProductAndCategoryId(product))
 				.attributeInstances(attributeInstances)
 				.qty(BigDecimal.valueOf(qty))
-				.amt(BigDecimal.valueOf(qty * 2)) // does not matter
+				.price(BigDecimal.valueOf(2)) // does not matter
 				.build();
 	}
 

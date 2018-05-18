@@ -1,12 +1,10 @@
-package de.metas.contracts.refund;
+package de.metas.order.grossprofit;
 
-import de.metas.contracts.FlatrateTermId;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.money.Money;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -26,12 +24,12 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class RefundContract
+/**
+ * Note: might be stateful.
+ */
+public interface GrossProfitComponent
 {
-	@NonNull
-	FlatrateTermId flatrateTermId;
+	String getName();
 
-	@NonNull
-	RefundConfig refundConfig;
+	Money applyToInput(Money input);
 }

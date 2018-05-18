@@ -56,7 +56,7 @@ public class CalculatePricingConditionsResult
 	@NonNull
 	BigDecimal discount = BigDecimal.ZERO;
 	@Default
-	int C_PaymentTerm_ID = -1;
+	int paymentTermId = -1;
 	BigDecimal priceListOverride;
 	BigDecimal priceStdOverride;
 	BigDecimal priceLimitOverride;
@@ -64,5 +64,5 @@ public class CalculatePricingConditionsResult
 	PricingConditionsBreakId pricingConditionsBreakId;
 
 	@Default
-	int discountSchemaBreak_BasePricingSystem_Id = -1;
+	int basePricingSystemId = -1;
 }

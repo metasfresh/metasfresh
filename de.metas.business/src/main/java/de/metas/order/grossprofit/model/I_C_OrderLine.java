@@ -1,12 +1,10 @@
-package de.metas.contracts.refund;
+package de.metas.order.grossprofit.model;
 
-import de.metas.contracts.FlatrateTermId;
-import lombok.NonNull;
-import lombok.Value;
+import java.math.BigDecimal;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -26,12 +24,11 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class RefundContract
+public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine
 {
-	@NonNull
-	FlatrateTermId flatrateTermId;
+	void setPriceGrossProfit(BigDecimal PriceGrossProfit);
+	BigDecimal getPriceGrossProfit();
 
-	@NonNull
-	RefundConfig refundConfig;
+	static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceGrossProfit = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "PriceGrossProfit", null);
+	static final String COLUMNNAME_PriceGrossProfit = "PriceGrossProfit";
 }

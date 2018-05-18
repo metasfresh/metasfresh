@@ -41,6 +41,7 @@ public class PricingConditionsBreakQuery
 	ProductAndCategoryId productAndCategoryId;
 	List<I_M_AttributeInstance> attributeInstances;
 	BigDecimal qty;
+	BigDecimal price;
 	BigDecimal amt;
 
 	@Builder
@@ -48,11 +49,12 @@ public class PricingConditionsBreakQuery
 			@NonNull ProductAndCategoryId productAndCategoryId,
 			@Singular final List<I_M_AttributeInstance> attributeInstances,
 			@NonNull final BigDecimal qty,
-			@NonNull final BigDecimal amt)
+			@NonNull final BigDecimal price)
 	{
 		this.productAndCategoryId = productAndCategoryId;
 		this.attributeInstances = attributeInstances != null ? ImmutableList.copyOf(attributeInstances) : ImmutableList.of();
 		this.qty = qty;
-		this.amt = amt;
+		this.price = price;
+		this.amt = qty.multiply(price);
 	}
 }
