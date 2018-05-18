@@ -49,8 +49,8 @@ public class CalculatePricingConditionsRequest
 {
 	private final PricingConditionsId pricingConditionsId;
 
-	private final PricingConditionsBreak forceSchemaBreak;
-	private final PricingConditionsBreakQuery schemaBreakQuery;
+	private final PricingConditionsBreak forcePricingConditionsBreak;
+	private final PricingConditionsBreakQuery pricingConditionsBreakQuery;
 
 	private final BigDecimal bpartnerFlatDiscount;
 
@@ -59,47 +59,50 @@ public class CalculatePricingConditionsRequest
 	@Builder
 	private CalculatePricingConditionsRequest(
 			final PricingConditionsId pricingConditionsId,
-			final PricingConditionsBreak forceSchemaBreak,
-			final PricingConditionsBreakQuery schemaBreakQuery,
+			final PricingConditionsBreak forcePricingConditionsBreak,
+			final PricingConditionsBreakQuery pricingConditionsBreakQuery,
 			final BigDecimal bpartnerFlatDiscount,
 			final IPricingContext pricingCtx)
 	{
-		assertValid(pricingConditionsId, forceSchemaBreak, schemaBreakQuery);
+		assertValid(pricingConditionsId, forcePricingConditionsBreak, pricingConditionsBreakQuery);
 
-		this.pricingConditionsId = extractPricingConditionsId(pricingConditionsId, forceSchemaBreak);
+		this.pricingConditionsId = extractPricingConditionsId(pricingConditionsId, forcePricingConditionsBreak);
 
-		this.forceSchemaBreak = forceSchemaBreak;
-		this.schemaBreakQuery = schemaBreakQuery;
+		this.forcePricingConditionsBreak = forcePricingConditionsBreak;
+		this.pricingConditionsBreakQuery = pricingConditionsBreakQuery;
 
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount != null ? bpartnerFlatDiscount : BigDecimal.ZERO;
 		this.pricingCtx = pricingCtx;
 	}
 
-	private static void assertValid(final PricingConditionsId pricingConditionsId, final PricingConditionsBreak forceSchemaBreak, final PricingConditionsBreakQuery schemaBreakQuery)
+	private static void assertValid(
+			final PricingConditionsId pricingConditionsId,
+			final PricingConditionsBreak forcePricingConditionsBreak,
+			final PricingConditionsBreakQuery pricingConditionsBreakQuery)
 	{
-		if (forceSchemaBreak == null && schemaBreakQuery == null)
+		if (forcePricingConditionsBreak == null && pricingConditionsBreakQuery == null)
 		{
-			throw new AdempiereException("forceSchemaBreak or schemaBreakQuery shall be specified");
+			throw new AdempiereException("forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified");
 		}
-		else if (forceSchemaBreak != null && schemaBreakQuery != null)
+		else if (forcePricingConditionsBreak != null && pricingConditionsBreakQuery != null)
 		{
-			throw new AdempiereException("Only forceSchemaBreak or schemaBreakQuery shall be specified but not both");
+			throw new AdempiereException("Only forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified but not both");
 		}
-		if (forceSchemaBreak != null && pricingConditionsId != null)
+		if (forcePricingConditionsBreak != null && pricingConditionsId != null)
 		{
-			PricingConditionsBreakId.assertMatching(pricingConditionsId, forceSchemaBreak.getId());
+			PricingConditionsBreakId.assertMatching(pricingConditionsId, forcePricingConditionsBreak.getId());
 		}
 	}
 
-	private static final PricingConditionsId extractPricingConditionsId(final PricingConditionsId pricingConditionsId, final PricingConditionsBreak forceSchemaBreak)
+	private static final PricingConditionsId extractPricingConditionsId(final PricingConditionsId pricingConditionsId, final PricingConditionsBreak forcePricingConditionsBreak)
 	{
 		if (pricingConditionsId != null)
 		{
 			return pricingConditionsId;
 		}
-		else if (forceSchemaBreak != null)
+		else if (forcePricingConditionsBreak != null)
 		{
-			return forceSchemaBreak.getPricingConditionsId();
+			return forcePricingConditionsBreak.getPricingConditionsId();
 		}
 		else
 		{

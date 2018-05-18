@@ -193,7 +193,7 @@ public class M_DiscountSchemaBreak
 
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(pricingConditionsBreak.getId().getPricingConditionsId())
-				.forceSchemaBreak(pricingConditionsBreak)
+				.forcePricingConditionsBreak(pricingConditionsBreak)
 //				.qty(pricingCtx.getQty())
 //				.price(BigDecimal.ZERO) // N/A
 //				.productId(pricingCtx.getM_Product_ID())

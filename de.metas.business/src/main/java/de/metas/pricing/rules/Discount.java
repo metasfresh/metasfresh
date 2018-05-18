@@ -119,7 +119,7 @@ public class Discount implements IPricingRule
 
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(pricingConditionsId)
-				.schemaBreakQuery(PricingConditionsBreakQuery.builder()
+				.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
 						.qty(pricingCtx.getQty())
 						.price(result.getPriceStd())
 						.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))

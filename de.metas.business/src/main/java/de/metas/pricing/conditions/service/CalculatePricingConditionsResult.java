@@ -43,7 +43,7 @@ public class CalculatePricingConditionsResult
 {
 	public static CalculatePricingConditionsResult discount(@NonNull final BigDecimal discount)
 	{
-		if (BigDecimal.ZERO.equals(ZERO.getDiscount()))
+		if (BigDecimal.ZERO.compareTo(ZERO.getDiscount()) == 0)
 		{
 			return ZERO;
 		}
