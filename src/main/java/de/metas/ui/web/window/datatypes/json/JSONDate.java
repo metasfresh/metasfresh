@@ -1,8 +1,9 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -42,8 +44,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class JSONDate implements Serializable
+@UtilityClass
+public final class JSONDate
 {
 	private static final transient Logger logger = LogManager.getLogger(JSONDate.class);
 
@@ -56,6 +58,18 @@ public final class JSONDate implements Serializable
 	public static String toJson(final Date date)
 	{
 		return toJson(date.getTime());
+	}
+
+	public static String toJson(final LocalDate date)
+	{
+		final long millis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		return toJson(millis);
+	}
+
+	public static String toJson(final LocalDateTime date)
+	{
+		final long millis = date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		return toJson(millis);
 	}
 
 	public static String toJson(final long millis)
@@ -82,7 +96,7 @@ public final class JSONDate implements Serializable
 		{
 			return null;
 		}
-		if(value instanceof Date)
+		if (value instanceof Date)
 		{
 			return (Date)value;
 		}
@@ -175,10 +189,5 @@ public final class JSONDate implements Serializable
 		final Date now = SystemTime.asDate();
 		final String timeZone = TIMEZONE_FORMAT.format(now);
 		return timeZone;
-	}
-
-	private JSONDate()
-	{
-		super();
 	}
 }
