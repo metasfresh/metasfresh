@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/yearly_bonus/report" uuid="f7b5bb11-0918-4657-89a0-7709e7ce61a0">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
+	<parameter name="DateFrom" class="java.util.Date"/>
+	<parameter name="DateTo" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[select 
+	p.manufacturer, 
+	bp.Name, --Manufacturer, Businesspartner
+	p.Value, --Product No.
+	SUM(ic.qtyOrdered) as qty_ordered_sum, --Purchased Quantity
+	isch.Name as schedule, 
+	--ic.DateToInvoice, --Invoicing Schedule, Invoiceing Date
+	(ft.startdate || '-' || ft.enddate) as contract_details, --Contract details
+	to_char(ic.DateToInvoice, 'MM.YYYY') AS month, --month
+	--revenue
+	SUM(ic.netamttoinvoice) as netamttoinvoice_sum,
+	SUM(icn.netamtinvoiced) as netamtinvoiced_sum
+	
+
+FROM C_Invoice_Candidate ic
+
+JOIN C_Flatrate_Term ft ON ic.AD_Table_ID = Get_Table_ID('C_Flatrate_Term') AND ic.Record_ID = ft.C_Flatrate_Term_ID
+JOIN C_Flatrate_Conditions fc ON ft.C_Flatrate_Conditions_ID = fc.C_Flatrate_Conditions_ID
+JOIN M_Product p ON ic.M_Product_ID = ft.M_Product_ID
+JOIN C_BPartner bp ON ic.Bill_BPartner_ID = bp.C_BPartner_ID
+JOIN C_InvoiceSchedule isch ON bp.C_InvoiceSchedule_ID = isch.C_InvoiceSchedule_ID
+--joining normal ics
+JOIN C_Invoice_Candidate_Assignment ica ON ic.C_Invoice_Candidate_ID = ica.C_Invoice_Candidate_Term_ID
+JOIN C_Invoice_Candidate icn ON ica.C_Invoice_Candidate_Assigned_ID = icn.C_Invoice_Candidate_ID
+
+WHERE fc.type_conditions='Refund' 
+AND (CASE WHEN $P{C_BPartner_ID} IS NOT NULL THEN bp.c_bpartner_id = $P{C_BPartner_ID} ELSE TRUE END)
+AND (CASE WHEN $P{M_Product_ID} IS NOT NULL THEN p.M_Product_ID = $P{M_Product_ID} ELSE TRUE END)
+AND (CASE WHEN $P{DateFrom} IS NOT NULL THEN ic.DateToInvoice >= $P{DateFrom} ELSE TRUE END)
+AND (CASE WHEN $P{DateTo} IS NOT NULL THEN ic.DateToInvoice <= $P{DateTo} ELSE TRUE END)
+
+GROUP BY p.manufacturer, 
+	bp.Name,
+	p.Value, 
+	isch.Name, 
+	--ic.DateToInvoice,
+	(ft.startdate || '-' || ft.enddate), 
+	to_char(ic.DateToInvoice, 'MM.YYYY')
+
+ORDER BY bp.Name, p.manufacturer, month, p.Value]]>
+	</queryString>
+	<field name="manufacturer" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="manufacturer"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="value"/>
+	</field>
+	<field name="qty_ordered_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qty_ordered_sum"/>
+	</field>
+	<field name="schedule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="schedule"/>
+	</field>
+	<field name="contract_details" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="contract_details"/>
+	</field>
+	<field name="month" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="month"/>
+	</field>
+	<field name="netamttoinvoice_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="netamttoinvoice_sum"/>
+	</field>
+	<field name="netamtinvoiced_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="netamtinvoiced_sum"/>
+	</field>
+	<group name="Bpartner" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{name}]]></groupExpression>
+		<groupHeader>
+			<band height="70">
+				<textField>
+					<reportElement x="0" y="56" width="80" height="14" uuid="b6447f7c-4a8d-47c6-9ec1-38c69d3205c2"/>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{manufacturer}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="80" y="56" width="80" height="14" uuid="ca866056-17c7-43db-9c6b-0f9b66423023"/>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{product_no}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="240" y="56" width="100" height="14" uuid="47b6773e-88b1-469a-bb4c-f004990705ac"/>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{sched}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="160" y="56" width="80" height="14" uuid="76871aba-21b6-495c-a340-ea25baf74882"/>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="400" y="56" width="50" height="14" uuid="3cb8e538-ce6a-4728-9d1e-f0a2f4c36813"/>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="340" y="56" width="60" height="14" uuid="6ecff1a9-3a9c-4fc6-8d76-c5c242063b6f"/>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{contract_details}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="22" width="554" height="20" uuid="2467cf6d-7d8f-4bac-a878-76ca614b65ec"/>
+					<textElement>
+						<font size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{bp_name} + "" + $F{name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="450" y="56" width="50" height="14" uuid="6bb68995-5c6c-4c65-a210-82c07484fcff"/>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{to_invoice}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="500" y="56" width="50" height="14" uuid="3fe83df0-8352-44e3-928d-ad80d7d9a6c5"/>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{invoiced}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="50" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="554" height="25" uuid="236899f5-9750-493e-b135-e3847590bc6e"/>
+				<textElement>
+					<font size="18"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="14" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="80" height="14" uuid="c7ecc20e-d1ff-4ff5-9c97-b5424a373dbd"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{manufacturer}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="0" width="80" height="14" uuid="43a182bf-3830-4728-abb9-9ab064b93b38"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="240" y="0" width="100" height="14" uuid="170314b3-3764-4c29-a282-151318fcca4b"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{schedule}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="160" y="0" width="80" height="14" uuid="43d3bde3-3b80-4c4e-87f7-cfeb50305235"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{month}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="0" width="50" height="14" uuid="f261f7da-22f5-4063-a3e9-a3e381dbb2db"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty_ordered_sum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="340" y="0" width="60" height="14" uuid="529d608b-6261-4efb-b33c-55ff42f8ade2"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{contract_details}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="450" y="0" width="50" height="14" uuid="8bb26d4d-1c1d-48e5-9faf-a9b01c496996"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{netamttoinvoice_sum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="500" y="0" width="50" height="14" uuid="850e4c6e-79bf-46ff-a3c4-1061a08c2924"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{netamtinvoiced_sum}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="60" splitType="Stretch"/>
+	</pageFooter>
+</jasperReport>
