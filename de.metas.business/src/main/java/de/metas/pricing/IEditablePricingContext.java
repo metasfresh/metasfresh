@@ -29,9 +29,6 @@ import java.sql.Timestamp;
  * A {@link IPricingContext} which also have setters.
  *
  * This object is used for creating the pricing context.
- *
- * @author tsa
- *
  */
 public interface IEditablePricingContext extends IPricingContext
 {
@@ -98,7 +95,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	/**
 	 * When setting this and {@link #setM_PricingSystem_ID(int)}, no <code>M_PriceList_ID</code> or <code>M_PriceListVersion_ID</code> needs to be set.
-	 * 
+	 *
 	 * @param c_Country_ID
 	 */
 	void setC_Country_ID(int c_Country_ID);

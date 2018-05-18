@@ -1,6 +1,8 @@
 package de.metas.order.grossprofit;
 
-import de.metas.order.OrderLineId;
+import de.metas.money.grossprofit.GrossProfitComputeRequest;
+import de.metas.order.OrderLine;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -15,16 +17,23 @@ import de.metas.order.OrderLineId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface GrossProfitComponentProvider
+public class GrossProfitComputeRequestCreator
 {
-	GrossProfitComponent provideForOrderLine(OrderLineId orderLineId);
+	public static GrossProfitComputeRequest of(@NonNull final OrderLine orderLine)
+	{
+		return new GrossProfitComputeRequest(
+				orderLine.getBPartnerId(),
+				orderLine.getProductId(),
+				orderLine.getDatePromised(),
+				orderLine.getPriceActual());
+	}
 }

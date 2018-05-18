@@ -1,4 +1,4 @@
-package de.metas.order.grossprofit;
+package de.metas.money.grossprofit;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,9 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.money.Money;
-import de.metas.order.OrderLineId;
-import de.metas.order.grossprofit.GrossProfitPrice.GrossProfitPriceBuilder;
+import de.metas.money.grossprofit.GrossProfitPrice.GrossProfitPriceBuilder;
 import lombok.NonNull;
 
 /*
@@ -44,17 +42,15 @@ public class GrossProfitPriceFactory
 		this.providers = ImmutableList.copyOf(providers.orElse(ImmutableList.of()));
 	}
 
-	public GrossProfitPrice createGrossProfitPrice(
-			@NonNull final Money basePrice,
-			@NonNull final OrderLineId orderLineId)
+	public GrossProfitPrice createGrossProfitPrice(@NonNull final GrossProfitComputeRequest grossProfitAware)
 	{
 		final GrossProfitPriceBuilder builder = GrossProfitPrice
 				.builder()
-				.basePrice(basePrice);
+				.basePrice(grossProfitAware.getBaseAmount());
 
 		for (final GrossProfitComponentProvider provider : providers)
 		{
-			builder.profitCompponent(provider.provideForOrderLine(orderLineId));
+			builder.profitCompponent(provider.provideForOrderLine(grossProfitAware));
 		}
 		return builder.build();
 	}

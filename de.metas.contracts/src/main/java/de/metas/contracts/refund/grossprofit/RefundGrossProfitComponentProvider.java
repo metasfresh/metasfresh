@@ -3,9 +3,9 @@ package de.metas.contracts.refund.grossprofit;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.refund.RefundContractRepository;
-import de.metas.order.OrderLineId;
-import de.metas.order.grossprofit.GrossProfitComponent;
-import de.metas.order.grossprofit.GrossProfitComponentProvider;
+import de.metas.money.grossprofit.GrossProfitComputeRequest;
+import de.metas.money.grossprofit.GrossProfitComponent;
+import de.metas.money.grossprofit.GrossProfitComponentProvider;
 import lombok.NonNull;
 
 /*
@@ -33,21 +33,17 @@ import lombok.NonNull;
 @Service
 public class RefundGrossProfitComponentProvider implements GrossProfitComponentProvider
 {
-	private final OrderLineRepository orderLineRepository;
-	private final RefundContractRepository refundContractRepository;
+private final RefundContractRepository refundContractRepository;
 
 	public RefundGrossProfitComponentProvider(
-			@NonNull final OrderLineRepository orderLineRepository,
 			@NonNull final RefundContractRepository refundContractRepository)
 	{
-		this.orderLineRepository = orderLineRepository;
 		this.refundContractRepository = refundContractRepository;
 	}
 
 	@Override
-	public GrossProfitComponent provideForOrderLine(@NonNull final OrderLineId orderLineId)
+	public GrossProfitComponent provideForOrderLine(@NonNull final GrossProfitComputeRequest request)
 	{
-		final OrderLine orderLine = orderLineRepository.getById(orderLineId);
-		return new RefundGrossProfitComponent(orderLine, refundContractRepository);
+		return new RefundGrossProfitComponent(request, refundContractRepository);
 	}
 }

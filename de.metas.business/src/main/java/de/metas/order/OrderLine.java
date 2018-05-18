@@ -1,11 +1,13 @@
-package de.metas.contracts.refund.grossprofit;
+package de.metas.order;
 
 import java.time.LocalDate;
 
 import org.adempiere.bpartner.BPartnerId;
 
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -34,9 +36,21 @@ import lombok.Value;
 @Builder
 public class OrderLine
 {
+	@NonNull
+	OrderLineId id;
+
+	@NonNull
+	OrderId orderId;
+
+	@NonNull
 	BPartnerId bPartnerId;
 
+	@NonNull
 	ProductId productId;
 
+	@NonNull
 	LocalDate datePromised;
+
+	@NonNull
+	Money priceActual;
 }
