@@ -1,5 +1,7 @@
 package de.metas.ui.web.pporder.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +9,8 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
+import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
 
@@ -16,13 +20,14 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
-import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -60,10 +65,25 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-
 		final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
+		if (!singleSelectedRow.isIssue())
+		{
+			final String internalReason = StringUtils.formatMessage("The selected row is not an issue-row; row={}", singleSelectedRow);
+			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
+		}
+		if (singleSelectedRow.isProcessed())
+		{
+			final String internalReason = StringUtils.formatMessage("The selected row is already processed; row={}", singleSelectedRow);
+			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
+		}
 
-		return WEBUI_PP_Order_ProcessHelper.checkPreconditionsApplicable(singleSelectedRow);
+		final List<I_M_Source_HU> sourceHus = retrieveActiveSourceHus(singleSelectedRow);
+		if (sourceHus.isEmpty())
+		{
+			final String internalReason = StringUtils.formatMessage("There are no sourceHU records for the selected row; row={}", singleSelectedRow);
+			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
+		}
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
@@ -71,7 +91,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 	{
 		final PPOrderLineRow row = getSingleSelectedRow();
 
-		final List<I_M_Source_HU> sourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
+		final List<I_M_Source_HU> sourceHus = retrieveActiveSourceHus(row);
 		if (sourceHus.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
@@ -83,7 +103,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 				.peek(sourceHu -> huId2SourceHu.put(sourceHu.getM_HU_ID(), sourceHu))
 				.map(I_M_Source_HU::getM_HU)
 				.collect(ImmutableList.toImmutableList());
-	
+
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
 				.qtyTU(qtyTU.intValue())
@@ -116,4 +136,13 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 		return MSG_OK;
 	}
 
+	private static List<I_M_Source_HU> retrieveActiveSourceHus(@NonNull final PPOrderLineRow row)
+	{
+		final I_PP_Order ppOrder = load(row.getPP_Order_ID(), I_PP_Order.class);
+
+		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
+				.productId(row.getM_Product_ID())
+				.warehouseId(ppOrder.getM_Warehouse_ID()).build();
+		return SourceHUsService.get().retrieveMatchingSourceHuMarkers(query);
+	}
 }
