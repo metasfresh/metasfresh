@@ -25,6 +25,7 @@ import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
+import de.metas.pricing.conditions.PricingConditionsDiscountType;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -248,6 +249,8 @@ class PricingConditionsRowsLoader
 		}
 
 		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(sourceDocumentLine.getBpartnerId(), sourceDocumentLine.isSOTrx());
+		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
+
 		return PricingConditionsRow.builder()
 				.lookups(lookups)
 				.editable(true)
@@ -260,7 +263,7 @@ class PricingConditionsRowsLoader
 				.paymentTerm(lookups.lookupPaymentTerm(sourceDocumentLine.getPaymentTermId()))
 				.discount(sourceDocumentLine.getDiscount())
 				//
-				.discountSchemaId(discountSchemaId)
+				.discountSchemaId(pricingConditions.getDiscountType() == PricingConditionsDiscountType.BREAKS ? pricingConditions.getDiscountSchemaId() : -1)
 				.breakMatchCriteria(PricingConditionsBreakMatchCriteria.builder()
 						.breakValue(BigDecimal.ZERO)
 						.productId(sourceDocumentLine.getProductId())
