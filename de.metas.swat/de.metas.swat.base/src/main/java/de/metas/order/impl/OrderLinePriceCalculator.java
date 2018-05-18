@@ -17,6 +17,8 @@ import de.metas.order.PriceAndDiscount;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingConditionsResult;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
@@ -84,11 +86,6 @@ class OrderLinePriceCalculator
 					.setParameter("pricingResult", pricingResult);
 		}
 
-		if (pricingResult.getC_PaymentTerm_ID() > 0)
-		{
-			orderLine.setC_PaymentTerm_Override_ID(pricingResult.getC_PaymentTerm_ID());
-		}
-
 		PriceAndDiscount priceAndDiscount = extractPriceAndDiscount(pricingResult, pricingCtx.isSOTrx());
 
 		//
@@ -101,7 +98,7 @@ class OrderLinePriceCalculator
 					.priceActual(priceAndDiscount.getPriceActual())
 					.paymentTermId(orderLineBL.getC_PaymentTerm_ID(orderLine))
 					.build());
-			
+
 			priceAndDiscount = priceAndDiscount.enforcePriceLimit(priceLimitResult);
 		}
 
@@ -121,8 +118,7 @@ class OrderLinePriceCalculator
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
 
-		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
-		orderLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
+		updateOrderLineFromPricingConditionsResult(orderLine, pricingResult.getPricingConditions());
 
 		//
 		//
@@ -137,6 +133,29 @@ class OrderLinePriceCalculator
 				orderLineBL.updateLineNetAmt(orderLine, orderLineBL.getQtyEntered(orderLine));
 			}
 		}
+	}
+
+	private void updateOrderLineFromPricingConditionsResult(final I_C_OrderLine orderLine, final PricingConditionsResult pricingConditionsResult)
+	{
+		final PricingConditionsBreakId pricingConditionsBreakId;
+		final int basePricingSystemId;
+		final int paymentTermId;
+		if (pricingConditionsResult != null)
+		{
+			pricingConditionsBreakId = pricingConditionsResult.getPricingConditionsBreakId();
+			basePricingSystemId = pricingConditionsResult.getBasePricingSystemId();
+			paymentTermId = pricingConditionsResult.getPaymentTermId();
+		}
+		else
+		{
+			pricingConditionsBreakId = null;
+			basePricingSystemId = -1;
+			paymentTermId = -1;
+		}
+
+		orderLine.setM_DiscountSchemaBreak_ID(pricingConditionsBreakId != null ? pricingConditionsBreakId.getDiscountSchemaBreakId() : 0);
+		orderLine.setBase_PricingSystem_ID(basePricingSystemId);
+		orderLine.setC_PaymentTerm_Override_ID(paymentTermId);
 	}
 
 	public IEditablePricingContext createPricingContext()
@@ -264,7 +283,7 @@ class OrderLinePriceCalculator
 				.build()
 				.updatePriceActual();
 	}
-	
+
 	private BigDecimal extractPriceEntered(final IPricingResult pricingResult)
 	{
 		if (isAllowChangingPriceEntered())

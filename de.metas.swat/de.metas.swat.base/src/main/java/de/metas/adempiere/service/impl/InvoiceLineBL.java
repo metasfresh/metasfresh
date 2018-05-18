@@ -56,6 +56,7 @@ import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingConditionsResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
@@ -426,7 +427,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			invoiceLine.setDiscount(pricingResult.getDiscount());
 		}
 
-		invoiceLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
+		final PricingConditionsResult pricingConditions = pricingResult.getPricingConditions();
+		invoiceLine.setBase_PricingSystem_ID(pricingConditions != null ? pricingConditions.getBasePricingSystemId() : -1);
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
