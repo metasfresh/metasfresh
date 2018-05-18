@@ -25,16 +25,12 @@ export function browseViewRequest({
   orderBy,
 }) {
   return get(
-    config.API_URL +
-      '/documentView/' +
-      windowId +
-      '/' +
-      viewId +
-      '?firstRow=' +
-      pageLength * (page - 1) +
-      '&pageLength=' +
-      pageLength +
-      (orderBy ? '&orderBy=' + orderBy : '')
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+      (page - 1)}&pageLength=${pageLength}${
+      orderBy ? `&orderBy=${orderBy}` : ''
+    }`
   );
 }
 
