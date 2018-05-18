@@ -1,15 +1,14 @@
 package de.metas.handlingunits.inventory.process;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Inventory;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -63,6 +62,8 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 
 	private I_M_Inventory _inventory;
 
+	private Map<Integer, Integer> inventoryLinesByHU = new HashMap<>();
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
@@ -83,10 +84,13 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 	@Override
 	protected String doIt()
 	{
-		final List<Integer> exitentHUIdsInInventoryLines = fetchExistentHUIds();
+		inventoryLinesByHU = Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(getInventory().getM_Inventory_ID(), I_M_InventoryLine.class)
+				.stream()
+				.filter(line -> line.getM_HU_ID() > 0)
+				.collect(Collectors.toMap(I_M_InventoryLine::getM_HU_ID, I_M_InventoryLine::getM_InventoryLine_ID));
 
 		final long countInventoryLines = streamHUs()
-				.flatMap(hu -> createUpdateInventoryLines(hu, exitentHUIdsInInventoryLines.contains(hu.getM_HU_ID())))
+				.flatMap(hu -> createUpdateInventoryLines(hu, inventoryLinesByHU.values().contains(hu.getM_HU_ID())))
 				.count();
 
 		return "@Created@/@Updated@ #" + countInventoryLines;
@@ -99,17 +103,6 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 			_inventory = getRecord(I_M_Inventory.class);
 		}
 		return _inventory;
-	}
-
-	private List<Integer> fetchExistentHUIds()
-	{
-		final I_M_Inventory inventory = getInventory();
-		return Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class)
-				.stream()
-				.map(I_M_InventoryLine::getM_HU_ID)
-				.filter(huId -> huId > 0)
-				.collect(ImmutableList.toImmutableList());
-
 	}
 
 	private Stream<I_M_HU> streamHUs()
@@ -151,7 +144,8 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		final I_M_HU hu = huProductStorage.getM_HU();
 		if (updateLine)
 		{
-			inventoryLine = fetchInventoryLineForHU(hu.getM_HU_ID());
+			final int inventoryLineId = inventoryLinesByHU.get(hu.getM_HU_ID());
+			inventoryLine = InterfaceWrapperHelper.load(inventoryLineId, I_M_InventoryLine.class);
 		}
 		else
 		{
@@ -169,22 +163,11 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 			inventoryLine.setC_UOM(huProductStorage.getC_UOM());
 		}
 
-
 		inventoryLine.setQtyBook(huProductStorage.getQty());
 		inventoryLine.setQtyCount(huProductStorage.getQty());
 
 		InterfaceWrapperHelper.save(inventoryLine);
 
 		return inventoryLine;
-	}
-
-	private I_M_InventoryLine fetchInventoryLineForHU(final int huId)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, getInventory().getM_Inventory_ID())
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_HU_ID, huId)
-				.create()
-				.firstOnly(I_M_InventoryLine.class);
 	}
 }
