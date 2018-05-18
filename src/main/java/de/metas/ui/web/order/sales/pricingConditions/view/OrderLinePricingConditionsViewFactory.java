@@ -70,6 +70,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 
 		final PricingConditionsRowData rowsData = preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(createPricingConditionsBreaksExtractor(salesOrderLine))
+				.priceNetCalculator(new PriceNetCalculator()) // TODO
 				.filters(extractFilters(request))
 				.adClientId(salesOrderLine.getAD_Client_ID())
 				.sourceDocumentLine(createSourceDocumentLine(salesOrderLine))

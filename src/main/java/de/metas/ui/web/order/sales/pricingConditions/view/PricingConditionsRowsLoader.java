@@ -69,6 +69,7 @@ class PricingConditionsRowsLoader
 
 	private final PricingConditionsRowLookups lookups;
 	private final PricingConditionsBreaksExtractor pricingConditionsBreaksExtractor;
+	private final PriceNetCalculator priceNetCalculator;
 	private final DocumentFiltersList filters;
 	private final int adClientId;
 	private final SourceDocumentLine sourceDocumentLine;
@@ -79,6 +80,7 @@ class PricingConditionsRowsLoader
 	private PricingConditionsRowsLoader(
 			@NonNull final PricingConditionsRowLookups lookups,
 			@NonNull final PricingConditionsBreaksExtractor pricingConditionsBreaksExtractor,
+			@NonNull final PriceNetCalculator priceNetCalculator,
 			final DocumentFiltersList filters,
 			final int adClientId,
 			@Nullable final SourceDocumentLine sourceDocumentLine)
@@ -87,6 +89,7 @@ class PricingConditionsRowsLoader
 
 		this.lookups = lookups;
 		this.pricingConditionsBreaksExtractor = pricingConditionsBreaksExtractor;
+		this.priceNetCalculator = priceNetCalculator;
 		this.filters = filters != null ? filters : DocumentFiltersList.EMPTY;
 		this.adClientId = adClientId;
 		this.sourceDocumentLine = sourceDocumentLine;
@@ -175,8 +178,8 @@ class PricingConditionsRowsLoader
 				.product(lookups.lookupProduct(pricingConditionsBreak.getMatchCriteria().getProductId()))
 				.breakValue(pricingConditionsBreak.getMatchCriteria().getBreakValue())
 				//
+				.priceNetCalculator(priceNetCalculator)
 				.price(extractPrice(pricingConditionsBreak))
-				.priceNet(null) // TODO
 				//
 				.discount(pricingConditionsBreak.getDiscount())
 				.paymentTerm(lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId()))
@@ -258,7 +261,9 @@ class PricingConditionsRowsLoader
 				//
 				.bpartner(lookups.lookupBPartner(sourceDocumentLine.getBpartnerId()))
 				.customer(sourceDocumentLine.isSOTrx())
+				.breakValue(BigDecimal.ZERO)
 				//
+				.priceNetCalculator(priceNetCalculator)
 				.price(Price.fixedPrice(sourceDocumentLine.getPriceEntered()))
 				//
 				.paymentTerm(lookups.lookupPaymentTerm(sourceDocumentLine.getPaymentTermId()))

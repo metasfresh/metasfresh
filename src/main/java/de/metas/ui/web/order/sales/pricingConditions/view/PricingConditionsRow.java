@@ -170,6 +170,7 @@ public class PricingConditionsRow implements IViewRow
 
 	@Getter
 	private final Price price;
+	private final PriceNetCalculator priceNetCalculator;
 
 	@Getter
 	private final PricingConditionsId pricingConditionsId;
@@ -198,6 +199,7 @@ public class PricingConditionsRow implements IViewRow
 			@NonNull final BigDecimal discount,
 			//
 			@NonNull final Price price,
+			@NonNull final PriceNetCalculator priceNetCalculator,
 			final BigDecimal priceNet,
 			//
 			final LocalDate dateLastInOut,
@@ -227,7 +229,9 @@ public class PricingConditionsRow implements IViewRow
 		this.basePricingSystem = price.getBasePricingSystem();
 		this.basePriceAddAmt = price.getBasePriceAddAmt();
 		this.fixedPrice = price.getFixedPrice();
-		this.priceNet = priceNet;
+
+		this.priceNetCalculator = priceNetCalculator;
+		this.priceNet = priceNet != null ? priceNet : priceNetCalculator.calculate(price, discount, paymentTerm);
 
 		this.dateLastInOut = dateLastInOut;
 		this.dateCreated = dateCreated;
@@ -416,30 +420,7 @@ public class PricingConditionsRow implements IViewRow
 		boolean valueChanged = false;
 
 		//
-		// Price
-		final Price price;
-		final PriceChange priceChange = request.getPriceChange();
-		if (priceChange == null)
-		{
-			price = this.price;
-			// no change
-		}
-		else if (priceChange instanceof CompletePriceChange)
-		{
-			price = ((CompletePriceChange)priceChange).getPrice();
-			valueChanged = valueChanged || !Objects.equals(price, this.price);
-		}
-		else if (priceChange instanceof PartialPriceChange)
-		{
-			price = applyPartialPriceChangeTo((PartialPriceChange)priceChange, this.price);
-			valueChanged = valueChanged || !Objects.equals(price, this.price);
-		}
-		else
-		{
-			throw new AdempiereException("Unknow price change request: " + priceChange);
-		}
-
-		//
+		// Discount%
 		BigDecimal discount = this.discount;
 		if (request.getDiscount() != null)
 		{
@@ -448,11 +429,22 @@ public class PricingConditionsRow implements IViewRow
 		}
 
 		//
+		// Payment Term
 		LookupValue paymentTerm = this.paymentTerm;
 		if (request.getPaymentTerm() != null)
 		{
 			paymentTerm = request.getPaymentTerm().orElse(null);
 			valueChanged = valueChanged || !Objects.equals(paymentTerm, this.paymentTerm);
+		}
+
+		//
+		// Price
+		final Price price = applyPriceChangeTo(request.getPriceChange(), this.price);
+		BigDecimal priceNet = this.priceNet;
+		if (!Objects.equals(price, this.price))
+		{
+			priceNet = priceNetCalculator.calculate(price, discount, paymentTerm);
+			valueChanged = true;
 		}
 
 		boolean changed = valueChanged;
@@ -487,12 +479,35 @@ public class PricingConditionsRow implements IViewRow
 
 		return toBuilder()
 				.price(price)
+				.priceNet(priceNet)
 				.discount(discount)
 				.paymentTerm(paymentTerm)
 				.pricingConditionsBreakId(pricingConditionsBreakId)
 				.copiedFromPricingConditionsBreakId(copiedFromPricingConditionsBreakId)
 				.temporaryPricingConditions(temporaryPricingConditions)
 				.build();
+	}
+
+	private static Price applyPriceChangeTo(final PriceChange priceChange, final Price price)
+	{
+		if (priceChange == null)
+		{
+			// no change
+			return price;
+		}
+		else if (priceChange instanceof CompletePriceChange)
+		{
+			return ((CompletePriceChange)priceChange).getPrice();
+		}
+		else if (priceChange instanceof PartialPriceChange)
+		{
+			return applyPartialPriceChangeTo((PartialPriceChange)priceChange, price);
+		}
+		else
+		{
+			throw new AdempiereException("Unknow price change request: " + priceChange);
+		}
+
 	}
 
 	private static Price applyPartialPriceChangeTo(final PartialPriceChange changes, final Price price)
