@@ -172,8 +172,8 @@ public class MailBL implements IMailBL
 			String message,
 			final boolean html)
 	{
-		Check.assumeNotEmpty(to, "Param 'to' is not empty");
-		Check.assumeNotNull(mailbox, "Param 'mailbox' is not null");
+		Check.assumeNotEmpty(to, "Param 'to' is not empty (mailbox={}, subject={})", mailbox, subject);
+		Check.assumeNotNull(mailbox, "Param 'mailbox' is not null (mailbox={}, subject={})", mailbox, subject);
 
 		if (mailbox.getEmail() == null
 				// || mailbox.getUsername() == null

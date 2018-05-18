@@ -1,8 +1,7 @@
-package de.metas.pricing.conditions;
+package de.metas.product;
 
-import java.math.BigDecimal;
+import org.adempiere.util.Check;
 
-import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -28,33 +27,21 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class PricingConditionsBreak
+public class ProductAndCategoryId
 {
-	public static enum PriceOverrideType
+	public static ProductAndCategoryId of(final int productId, final int productCategoryId)
 	{
-		NONE, BASE_PRICING_SYSTEM, FIXED_PRICE;
+		return new ProductAndCategoryId(productId, productCategoryId);
 	}
 
-	int discountSchemaId;
-	int discountSchemaBreakId;
+	int productId;
+	int productCategoryId;
 
-	PricingConditionsBreakMatchCriteria matchCriteria;
-
-	//
-	// Price
-	PriceOverrideType priceOverride;
-	int basePricingSystemId;
-	BigDecimal basePriceAddAmt;
-	BigDecimal fixedPrice;
-
-	//
-	// Discount%
-	boolean bpartnerFlatDiscount;
-	BigDecimal discount;
-	int paymentTermId;
-
-	//
-	// Quality
-	BigDecimal qualityDiscountPercentage;
+	private ProductAndCategoryId(final int productId, final int productCategoryId)
+	{
+		Check.assumeGreaterThanZero(productId, "productId");
+		Check.assumeGreaterThanZero(productCategoryId, "productCategoryId");
+		this.productId = productId;
+		this.productCategoryId = productCategoryId;
+	}
 }

@@ -1,9 +1,9 @@
 package org.adempiere.server.rpl.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 
 /**
  * 
@@ -46,18 +46,19 @@ public class ReplicationException extends AdempiereException
 	}
 
 	@Override
-	protected String buildMessage()
+	protected ITranslatableString buildMessage()
 	{
-		final StringBuilder sb = new StringBuilder();
-		sb.append(Services.get(IMsgBL.class).translate(getADLanguage(), adMessage));
+		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
 		
-		appendParameters(sb);
+		message.appendADMessage(adMessage);
+		
+		appendParameters(message);
 		
 		if (cause != null)
 		{
-			sb.append("\nCause: ").append(cause.getLocalizedMessage());
+			message.append("\nCause: ").append(AdempiereException.extractMessage(cause));
 		}
 
-		return sb.toString();
+		return message.build();
 	}
 }

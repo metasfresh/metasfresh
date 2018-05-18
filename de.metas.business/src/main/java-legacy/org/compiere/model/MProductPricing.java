@@ -26,6 +26,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 
 /**
@@ -369,5 +370,10 @@ public class MProductPricing
 	public void setManualPrice(boolean manualPrice)
 	{
 		pricingCtx.setManualPrice(manualPrice);
+	}
+	
+	public void throwProductNotOnPriceListException()
+	{
+		throw new ProductNotOnPriceListException(pricingCtx);
 	}
 }	// MProductPrice

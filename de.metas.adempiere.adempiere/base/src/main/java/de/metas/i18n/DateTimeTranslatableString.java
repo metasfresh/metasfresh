@@ -10,6 +10,7 @@ import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
 
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /*
@@ -35,6 +36,7 @@ import lombok.ToString;
  */
 
 @ToString
+@EqualsAndHashCode
 public final class DateTimeTranslatableString implements ITranslatableString
 {
 	public static final DateTimeTranslatableString ofDate(final java.util.Date date)

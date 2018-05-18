@@ -23,6 +23,7 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -258,5 +259,39 @@ public class PriceListDAO implements IPriceListDAO
 				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_Created)
 				.create()
 				.first();
+	}
+
+	@Override
+	public String getPricingSystemName(final int pricingSystemId)
+	{
+		if (pricingSystemId <= 0)
+		{
+			return "-";
+		}
+
+		final I_M_PricingSystem pricingSystem = loadOutOfTrx(pricingSystemId, I_M_PricingSystem.class);
+		if (pricingSystem == null)
+		{
+			return "<" + pricingSystemId + ">";
+		}
+
+		return pricingSystem.getName();
+	}
+
+	@Override
+	public String getPriceListName(final int priceListId)
+	{
+		if (priceListId <= 0)
+		{
+			return "-";
+		}
+
+		final I_M_PriceList priceList = getById(priceListId);
+		if (priceList == null)
+		{
+			return "<" + priceListId + ">";
+		}
+
+		return priceList.getName();
 	}
 }

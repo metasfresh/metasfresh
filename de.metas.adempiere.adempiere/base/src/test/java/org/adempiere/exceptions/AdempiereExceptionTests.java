@@ -36,15 +36,22 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.ImmutableTranslatableString;
+
 public class AdempiereExceptionTests
 {
 	private static final List<Class<?>> boxingExceptionClasses = ImmutableList.<Class<?>> of(ExecutionException.class, InvocationTargetException.class);
 	private final Random random = new Random(System.currentTimeMillis());
 
+	private AdempiereException newAdempiereException()
+	{
+		return new AdempiereException(ImmutableTranslatableString.empty());
+	}
+
 	@Test
 	public void testExtractCauseFrom_ExecutionException()
 	{
-		final AdempiereException expectedCause = new AdempiereException();
+		final AdempiereException expectedCause = newAdempiereException();
 
 		final Throwable actualCause = AdempiereException.extractCause(new ExecutionException(expectedCause));
 		Assert.assertSame(expectedCause, actualCause);
@@ -53,7 +60,7 @@ public class AdempiereExceptionTests
 	@Test
 	public void testExtractCauseFrom_InvocationTargetException()
 	{
-		final AdempiereException expectedCause = new AdempiereException();
+		final AdempiereException expectedCause = newAdempiereException();
 
 		final Throwable actualCause = AdempiereException.extractCause(new InvocationTargetException(expectedCause));
 		Assert.assertSame(expectedCause, actualCause);
@@ -62,7 +69,7 @@ public class AdempiereExceptionTests
 	@Test
 	public void testWrapIfNeeded_AdempiereException()
 	{
-		final AdempiereException expected = new AdempiereException();
+		final AdempiereException expected = newAdempiereException();
 		final AdempiereException actual = AdempiereException.wrapIfNeeded(expected);
 		Assert.assertSame(expected, actual);
 	}
@@ -115,7 +122,7 @@ public class AdempiereExceptionTests
 	@Test
 	public void test_setParameter_null()
 	{
-		final AdempiereException ex = new AdempiereException()
+		final AdempiereException ex = newAdempiereException()
 				.setParameter("param", null);
 		Assert.assertEquals(ImmutableMap.of("param", Null.NULL), ex.getParameters());
 	}
@@ -123,7 +130,7 @@ public class AdempiereExceptionTests
 	@Test
 	public void test_setParameters_nullAndNotNull()
 	{
-		final AdempiereException ex = new AdempiereException()
+		final AdempiereException ex = newAdempiereException()
 				.setParameter("param1", null)
 				.setParameter("param2", "value2")
 				.setParameter("param3", null)
@@ -139,7 +146,7 @@ public class AdempiereExceptionTests
 	@Test
 	public void test_setParameters_removeParameter()
 	{
-		final AdempiereException ex = new AdempiereException()
+		final AdempiereException ex = newAdempiereException()
 				.setParameter("param1", "value1")
 				.setParameter("param2", "value2");
 		Assert.assertEquals(ImmutableMap.of(
@@ -156,14 +163,14 @@ public class AdempiereExceptionTests
 	@Test
 	public void test_hasParameters_null()
 	{
-		final AdempiereException adempiereException = new AdempiereException();
+		final AdempiereException adempiereException = newAdempiereException();
 		assertThat(adempiereException.hasParameter("hasnt")).isFalse();
 	}
 
 	@Test
 	public void test_hasParameters_different()
 	{
-		final AdempiereException adempiereException = new AdempiereException()
+		final AdempiereException adempiereException = newAdempiereException()
 				.setParameter("someParam", "test");
 		assertThat(adempiereException.hasParameter("hasnt")).isFalse();
 	}
@@ -171,7 +178,7 @@ public class AdempiereExceptionTests
 	@Test
 	public void test_hasParameters_same()
 	{
-		final AdempiereException adempiereException = new AdempiereException()
+		final AdempiereException adempiereException = newAdempiereException()
 				.setParameter("someParam", "test");
 		assertThat(adempiereException.hasParameter("someParam")).isTrue();
 	}

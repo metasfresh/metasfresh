@@ -421,7 +421,7 @@ class ReadPaymentDocumentPanel
 				bpartnerField.setReadWrite(true); // set read-only to false (user can edit)
 				bpartnerField.requestFocus();
 
-				final Exception ex = new AdempiereException(ctx, MSG_CouldNotFindOrCreateBPBankAccount, new Object[] {});
+				final Exception ex = new AdempiereException(MSG_CouldNotFindOrCreateBPBankAccount, new Object[] {});
 				clientUI.warn(windowNo, ex);
 				return;
 			}

@@ -13,11 +13,11 @@ package de.metas.pricing.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,7 +36,7 @@ public interface IPriceListDAO extends ISingletonService
 {
 	public static final int M_PricingSystem_ID_None = 100;
 	public static final int M_PriceList_ID_None = 100;
-	
+
 	I_M_PriceList getById(int priceListId);
 
 	/**
@@ -63,7 +63,6 @@ public interface IPriceListDAO extends ISingletonService
 	 * @return the price list for the given pricing system and location or <code>null</code>.
 	 */
 	I_M_PriceList retrievePriceListByPricingSyst(int pricingSystemId, I_C_BPartner_Location bpartnerLocation, boolean isSOPriceList);
-
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>
@@ -106,4 +105,8 @@ public interface IPriceListDAO extends ISingletonService
 	I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(int priceListId, Date date);
 
 	I_M_PriceList_Version retrieveLastCreatedPriceListVersion(int priceListId);
+
+	String getPricingSystemName(final int pricingSystemId);
+
+	String getPriceListName(final int priceListId);
 }
