@@ -54,15 +54,22 @@ Here come the actual release notes:
 
 * metasfresh-dist
   * [#41](https://github.com/metasfresh/metasfresh-dist/issues/41) Fix and improvement around picking/shipping
+    * Improves the Picking Slot locators for compression workflow.
 
 # Fixes
 * metasfresh
   * [#4013](https://github.com/metasfresh/metasfresh/issues/4013) Lot No Action error when running multiple times
+    * Fixes the Lot No Action, now allowing to run the Action multiple times without errors.
   * [#4020](https://github.com/metasfresh/metasfresh/issues/4020) eventlog data needs to be stored out-of-trx
+    * Internal Housekeeping improvemen, now storing eventlog data out of transaction.
   * [#4027](https://github.com/metasfresh/metasfresh/issues/4027) "To Be Updated" in shipment schedule and "In Verarbeitung" in workpackage getting stuck
+    * Fixes a Bug about blocked workpackages in workpackage processing for shipment schedule entries.
   * [#3980](https://github.com/metasfresh/metasfresh/issues/3980) Notifications in Swing Client show no info
+    * Fixes the Notification feature in Swing Client, now showing detailes information body again.
   * [#4016](https://github.com/metasfresh/metasfresh/issues/4016) Pricing Conditions error when save
+    * Fixes an error mit null value in pricing conditions seqno. Now allowing to save the pricing conditions again.
   * [#4028](https://github.com/metasfresh/metasfresh/issues/4028) Multiple shipment lines for one order line all have the order line's TU-Qty
+    * Fix for the Transporation Unit Quantity in shipment lines, for multiple shipment lines for one orderline.
 
 * metasfresh-webui-frontend
   * [#1751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1751) HU Editor: selection jumps from your line to first line
