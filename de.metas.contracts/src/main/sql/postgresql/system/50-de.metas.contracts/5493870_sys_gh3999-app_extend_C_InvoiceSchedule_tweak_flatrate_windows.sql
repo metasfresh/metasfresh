@@ -83,11 +83,6 @@ UPDATE AD_Table SET Description='',Updated=TO_TIMESTAMP('2018-05-18 05:34:57','Y
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2018-05-18 05:35:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560168
 ;
 
--- 2018-05-18T05:35:20.992
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE C_InvoiceSchedule SET InvoiceInterval=1 WHERE InvoiceInterval IS NULL
-;
-
 -- 2018-05-18T05:39:14.118
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET IsDisplayed='N', IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2018-05-18 05:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=2882
@@ -318,3 +313,7 @@ UPDATE AD_Ref_List SET ValueName='Friday' WHERE AD_Ref_List_ID=250;
 UPDATE AD_Ref_List SET ValueName='Saturday' WHERE AD_Ref_List_ID=251;
 UPDATE AD_Ref_List SET ValueName='Sunday' WHERE AD_Ref_List_ID=245;
 
+-- 2018-05-18T05:35:20.992
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_InvoiceSchedule SET InvoiceDistance=1 WHERE InvoiceDistance IS NULL
+;
