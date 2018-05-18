@@ -90,7 +90,7 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 				.collect(Collectors.toMap(I_M_InventoryLine::getM_HU_ID, I_M_InventoryLine::getM_InventoryLine_ID));
 
 		final long countInventoryLines = streamHUs()
-				.flatMap(hu -> createUpdateInventoryLines(hu, inventoryLinesByHU.values().contains(hu.getM_HU_ID())))
+				.flatMap(hu -> createUpdateInventoryLines(hu, inventoryLinesByHU.containsKey(hu.getM_HU_ID())))
 				.count();
 
 		return "@Created@/@Updated@ #" + countInventoryLines;
