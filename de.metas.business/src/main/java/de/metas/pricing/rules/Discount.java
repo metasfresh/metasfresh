@@ -163,8 +163,8 @@ public class Discount implements IPricingRule
 		pricingResult.setPricingConditions(PricingConditionsResult.builder()
 				.pricingConditionsId(pricingConditionsId)
 				.pricingConditionsBreakId(pricingConditionsResult.getPricingConditionsBreakId())
-				.basePricingSystemId(pricingConditionsResult.getDiscountSchemaBreak_BasePricingSystem_Id())
-				.paymentTermId(pricingConditionsResult.getC_PaymentTerm_ID())
+				.basePricingSystemId(pricingConditionsResult.getBasePricingSystemId())
+				.paymentTermId(pricingConditionsResult.getPaymentTermId())
 				.build());
 
 		pricingResult.setDiscount(pricingConditionsResult.getDiscount());

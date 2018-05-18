@@ -107,7 +107,7 @@ import lombok.NonNull;
 
 		final CalculatePricingConditionsResultBuilder result = CalculatePricingConditionsResult.builder()
 				.pricingConditionsBreakId(breakApplied.getId())
-				.C_PaymentTerm_ID(breakApplied.getPaymentTermId());
+				.paymentTermId(breakApplied.getPaymentTermId());
 
 		computePriceForDiscountSchemaBreak(result, breakApplied);
 		computeDiscountForDiscountSchemaBreak(result, breakApplied);
@@ -133,7 +133,7 @@ import lombok.NonNull;
 
 			final BigDecimal priceStdAddAmt = pricingConditionsBreak.getBasePriceAddAmt();
 
-			result.discountSchemaBreak_BasePricingSystem_Id(basePricingSystemId);
+			result.basePricingSystemId(basePricingSystemId);
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
 			result.priceStdOverride(priceStd.add(priceStdAddAmt));
