@@ -247,7 +247,7 @@ public class PricingConditionsRow implements IViewRow
 		}
 		else
 		{
-			this.temporaryPricingConditions = this.pricingConditionsBreakId == null;
+			this.temporaryPricingConditions = computeIsTemporaryConditions(this.pricingConditionsBreakId);
 		}
 
 		this.breakMatchCriteria = breakMatchCriteria;
@@ -256,6 +256,11 @@ public class PricingConditionsRow implements IViewRow
 	private static final DocumentId buildDocumentId(final LookupValue bpartner, final boolean customer)
 	{
 		return DocumentId.of(bpartner.getIdAsString() + "-" + (customer ? "C" : "V"));
+	}
+
+	private static final boolean computeIsTemporaryConditions(final PricingConditionsBreakId pricingConditionsBreakId)
+	{
+		return pricingConditionsBreakId == null;
 	}
 
 	private static final ImmutableMap<String, ViewEditorRenderMode> buildViewEditorRenderModeByFieldName(final boolean editable, final PriceType priceType)
@@ -471,8 +476,8 @@ public class PricingConditionsRow implements IViewRow
 		}
 
 		//
-		final boolean temporaryPricingConditions = pricingConditionsBreakId == null || valueChanged;
-		changed = changed || (temporaryPricingConditions != this.temporaryPricingConditions);
+		final boolean temporaryPricingConditions = valueChanged || computeIsTemporaryConditions(pricingConditionsBreakId);
+		changed = changed || !Objects.equals(temporaryPricingConditions, this.temporaryPricingConditions);
 
 		//
 		if (!changed)
