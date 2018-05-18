@@ -49,6 +49,7 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.X_M_DiscountSchemaBreak;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -162,6 +163,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				//
 				.paymentTermId(schemaBreakRecord.getC_PaymentTerm_ID())
 				//
+				.dateCreated(TimeUtil.asLocalDateTime(schemaBreakRecord.getCreated()))
 				.build();
 	}
 
