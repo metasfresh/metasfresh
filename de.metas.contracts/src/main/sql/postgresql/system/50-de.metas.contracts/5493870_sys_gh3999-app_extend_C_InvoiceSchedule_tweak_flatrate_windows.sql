@@ -310,3 +310,11 @@ UPDATE AD_Field SET DisplayLogic='@Type_Conditions@=''Subscr''|@Type_Conditions@
 UPDATE AD_Field SET DisplayLogic='@Type_Conditions@=''Subscr''|@Type_Conditions@=''QualityBsd''|@Type_Conditions@=''Procuremnt''|@Type_Conditions@=''Refund''',Updated=TO_TIMESTAMP('2018-05-18 06:42:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559779
 ;
 
+UPDATE AD_Ref_List SET ValueName='Monday' WHERE AD_Ref_List_ID=246;
+UPDATE AD_Ref_List SET ValueName='Tuesday' WHERE AD_Ref_List_ID=247;
+UPDATE AD_Ref_List SET ValueName='Wednesday' WHERE AD_Ref_List_ID=248;
+UPDATE AD_Ref_List SET ValueName='Thursday' WHERE AD_Ref_List_ID=249;
+UPDATE AD_Ref_List SET ValueName='Friday' WHERE AD_Ref_List_ID=250;
+UPDATE AD_Ref_List SET ValueName='Saturday' WHERE AD_Ref_List_ID=251;
+UPDATE AD_Ref_List SET ValueName='Sunday' WHERE AD_Ref_List_ID=245;
+

@@ -15,7 +15,7 @@ public class X_C_InvoiceSchedule extends org.compiere.model.PO implements I_C_In
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 523842989L;
+	private static final long serialVersionUID = -1981042217L;
 
     /** Standard Constructor */
     public X_C_InvoiceSchedule (Properties ctx, int C_InvoiceSchedule_ID, String trxName)
@@ -240,20 +240,20 @@ public class X_C_InvoiceSchedule extends org.compiere.model.PO implements I_C_In
 	 * Reference name: Weekdays
 	 */
 	public static final int INVOICEWEEKDAY_AD_Reference_ID=167;
-	/** Sonntag = 7 */
-	public static final String INVOICEWEEKDAY_Sonntag = "7";
-	/** Montag = 1 */
-	public static final String INVOICEWEEKDAY_Montag = "1";
-	/** Dienstag = 2 */
-	public static final String INVOICEWEEKDAY_Dienstag = "2";
-	/** Mittwoch = 3 */
-	public static final String INVOICEWEEKDAY_Mittwoch = "3";
-	/** Donnerstag = 4 */
-	public static final String INVOICEWEEKDAY_Donnerstag = "4";
-	/** Freitag = 5 */
-	public static final String INVOICEWEEKDAY_Freitag = "5";
-	/** Samstag = 6 */
-	public static final String INVOICEWEEKDAY_Samstag = "6";
+	/** Sunday = 7 */
+	public static final String INVOICEWEEKDAY_Sunday = "7";
+	/** Monday = 1 */
+	public static final String INVOICEWEEKDAY_Monday = "1";
+	/** Tuesday = 2 */
+	public static final String INVOICEWEEKDAY_Tuesday = "2";
+	/** Wednesday = 3 */
+	public static final String INVOICEWEEKDAY_Wednesday = "3";
+	/** Thursday = 4 */
+	public static final String INVOICEWEEKDAY_Thursday = "4";
+	/** Friday = 5 */
+	public static final String INVOICEWEEKDAY_Friday = "5";
+	/** Saturday = 6 */
+	public static final String INVOICEWEEKDAY_Saturday = "6";
 	/** Set Wochentag.
 		@param InvoiceWeekDay 
 		Day to generate invoices
@@ -279,20 +279,20 @@ public class X_C_InvoiceSchedule extends org.compiere.model.PO implements I_C_In
 	 * Reference name: Weekdays
 	 */
 	public static final int INVOICEWEEKDAYCUTOFF_AD_Reference_ID=167;
-	/** Sonntag = 7 */
-	public static final String INVOICEWEEKDAYCUTOFF_Sonntag = "7";
-	/** Montag = 1 */
-	public static final String INVOICEWEEKDAYCUTOFF_Montag = "1";
-	/** Dienstag = 2 */
-	public static final String INVOICEWEEKDAYCUTOFF_Dienstag = "2";
-	/** Mittwoch = 3 */
-	public static final String INVOICEWEEKDAYCUTOFF_Mittwoch = "3";
-	/** Donnerstag = 4 */
-	public static final String INVOICEWEEKDAYCUTOFF_Donnerstag = "4";
-	/** Freitag = 5 */
-	public static final String INVOICEWEEKDAYCUTOFF_Freitag = "5";
-	/** Samstag = 6 */
-	public static final String INVOICEWEEKDAYCUTOFF_Samstag = "6";
+	/** Sunday = 7 */
+	public static final String INVOICEWEEKDAYCUTOFF_Sunday = "7";
+	/** Monday = 1 */
+	public static final String INVOICEWEEKDAYCUTOFF_Monday = "1";
+	/** Tuesday = 2 */
+	public static final String INVOICEWEEKDAYCUTOFF_Tuesday = "2";
+	/** Wednesday = 3 */
+	public static final String INVOICEWEEKDAYCUTOFF_Wednesday = "3";
+	/** Thursday = 4 */
+	public static final String INVOICEWEEKDAYCUTOFF_Thursday = "4";
+	/** Friday = 5 */
+	public static final String INVOICEWEEKDAYCUTOFF_Friday = "5";
+	/** Saturday = 6 */
+	public static final String INVOICEWEEKDAYCUTOFF_Saturday = "6";
 	/** Set Letzter Wochentag Lieferungen.
 		@param InvoiceWeekDayCutoff 
 		Last day in the week for shipments to be included
