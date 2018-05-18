@@ -34,11 +34,11 @@ COPY . /usr/src/app/
 RUN npm install
 
 # Copy the script which shall output the correct config.js used by the server when the container starts
-COPY docker/config_from_env.sh config_from_env.sh
+COPY docker/dev/config_from_env.sh config_from_env.sh
 RUN chmod +x config_from_env.sh
 
 # Copy the script that shall actually start the nodejs server within the container
-COPY docker/provision_config_and_start_server.sh provision_config_and_start_server.sh
+COPY docker/dev/provision_config_and_start_server.sh provision_config_and_start_server.sh
 RUN chmod +x provision_config_and_start_server.sh
 
 EXPOSE 3000
