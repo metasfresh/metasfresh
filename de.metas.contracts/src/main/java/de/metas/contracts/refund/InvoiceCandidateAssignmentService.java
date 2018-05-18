@@ -55,7 +55,7 @@ public class InvoiceCandidateAssignmentService
 			@NonNull final AssignableInvoiceCandidate invoiceCandidate)
 	{
 		final Optional<FlatrateTermId> flatrateTermId = refundContractRepository
-				.getMatchingIdByInvoiceCandidate(invoiceCandidate);
+				.getIdByQuery(RefundContractQuery.of(invoiceCandidate));
 
 		if (!flatrateTermId.isPresent())
 		{
