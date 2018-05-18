@@ -57,7 +57,7 @@ import lombok.NonNull;
 public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 {
 	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormatId = "BPartnerImportProcess_BPPrintFormatId";
-	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg = "BPartnerImportProcess_BPPrintFormatId_ErrorMsg";
+	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg = "@BPartnerImportProcess_BPPrintFormatId_ErrorMsg@";
 
 	private final BPartnerImportHelper bpartnerImporter;
 	private final BPartnerLocationImportHelper bpartnerLocationImporter;
