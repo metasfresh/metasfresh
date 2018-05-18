@@ -16,11 +16,11 @@ import java.util.Map;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,6 +39,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.Msg;
+import de.metas.i18n.TranslatableStringBuilder;
 
 /**
  *
@@ -59,7 +60,7 @@ public class MsgBL implements IMsgBL
 	{
 		return Msg.getMsg(adLanguage, message, params);
 	}
-	
+
 	@Override
 	public String getMsg(final String adLanguage, final String message, final List<Object> params)
 	{
@@ -77,13 +78,12 @@ public class MsgBL implements IMsgBL
 	{
 		return Msg.getMsg(ctx, adMessage, params);
 	}
-	
+
 	@Override
 	public String getMsg(final String adMessage, final List<Object> params)
 	{
 		return getMsg(Env.getCtx(), adMessage, params != null && !params.isEmpty() ? params.toArray() : null);
 	}
-
 
 	@Override
 	public String getMsg(final Properties ctx, final String adMessage, final boolean text)
@@ -96,7 +96,6 @@ public class MsgBL implements IMsgBL
 	{
 		return Msg.getMsgMap(adLanguage, prefix, removePrefix);
 	}
-
 
 	@Override
 	public String translate(final Properties ctx, final String text)
@@ -119,7 +118,7 @@ public class MsgBL implements IMsgBL
 	@Override
 	public ITranslatableString translatable(final String text)
 	{
-		if(Check.isEmpty(text, true))
+		if (Check.isEmpty(text, true))
 		{
 			return ImmutableTranslatableString.constant(text);
 		}
@@ -145,11 +144,59 @@ public class MsgBL implements IMsgBL
 	}
 
 	@Override
+	public ITranslatableString parseTranslatableString(final String text)
+	{
+		if (text == null || text.isEmpty())
+		{
+			return ImmutableTranslatableString.empty();
+		}
+
+		final TranslatableStringBuilder builder = TranslatableStringBuilder.newInstance();
+
+		String inStr = text;
+		int idx = inStr.indexOf('@');
+		while (idx != -1)
+		{
+			builder.append(inStr.substring(0, idx)); // up to @
+			inStr = inStr.substring(idx + 1, inStr.length()); // from first @
+
+			final int j = inStr.indexOf('@'); // next @
+			if (j < 0) // no second tag
+			{
+				inStr = "@" + inStr;
+				break;
+			}
+
+			final String token = inStr.substring(0, j);
+			if (token.isEmpty())
+			{
+				builder.append("@");
+			}
+			else
+			{
+				builder.append(getTranslatableMsgText(token)); // replace context
+			}
+
+			inStr = inStr.substring(j + 1, inStr.length());	// from second @
+			idx = inStr.indexOf('@');
+		}
+
+		// add remainder
+		if (inStr != null && inStr.length() > 0)
+		{
+			builder.append(inStr);
+		}
+
+		return builder.build();
+	}
+
+	@Override
 	public void cacheReset()
 	{
 		Msg.cacheReset();
 	}
 
+	@lombok.EqualsAndHashCode
 	private static final class ADMessageTranslatableString implements ITranslatableString
 	{
 		private final String adMessage;
@@ -184,7 +231,7 @@ public class MsgBL implements IMsgBL
 		@Override
 		public String getDefaultValue()
 		{
-			return adMessage;
+			return "@" + adMessage + "@";
 		}
 
 		@Override
@@ -199,13 +246,13 @@ public class MsgBL implements IMsgBL
 	 * 
 	 * @author metas-dev <dev@metasfresh.com>
 	 */
+	@lombok.EqualsAndHashCode
 	private static final class ADElementOrADMessageTranslatableString implements ITranslatableString
 	{
 		private final String text;
 
 		private ADElementOrADMessageTranslatableString(final String text)
 		{
-			super();
 			this.text = text;
 		}
 
@@ -225,7 +272,7 @@ public class MsgBL implements IMsgBL
 		@Override
 		public String getDefaultValue()
 		{
-			return text;
+			return "@" + text + "@";
 		}
 
 		@Override
