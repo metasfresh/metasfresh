@@ -169,6 +169,8 @@ class TableItem extends PureComponent {
 
     const { edited, updatedRow, listenOnKeys } = this.state;
 
+    console.log('renderCells')
+
     // Iterate over layout settings
 
     if (colspan) {
@@ -186,6 +188,12 @@ class TableItem extends PureComponent {
                 cells[property] &&
                 cells[property].viewEditorRenderMode) ||
                 item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+            const isEdited = isEditable || edited === property;
+
+            if (item.caption.toLowerCase().includes('pr') || item.caption.toLowerCase().includes('type')) {
+              console.log('ITEM: ', item.caption, item.fields[0].field, item.viewEditorRenderMode,
+                cells[property].viewEditorRenderMode,', isEditable: ', isEditable, isEdited, item)
+            }
 
             let widgetData = item.fields.map(prop => {
               if (cells) {
@@ -230,7 +238,7 @@ class TableItem extends PureComponent {
                 }}
                 key={`${rowId}-${property}`}
                 isRowSelected={this.props.isSelected}
-                isEdited={isEditable || edited === property}
+                isEdited={isEdited}
                 handleDoubleClick={e =>
                   this.handleEditProperty(e, property, true, widgetData[0])
                 }

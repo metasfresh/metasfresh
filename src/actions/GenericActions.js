@@ -93,6 +93,8 @@ export function patchRequest({
   let payload =
     docId !== 'NEW' ? createPatchRequestPayload(property, value) : [];
 
+  console.log('patchRequest')
+
   return axios.patch(
     config.API_URL +
       '/' +
