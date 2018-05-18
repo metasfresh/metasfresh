@@ -14,7 +14,9 @@ import org.adempiere.util.Check;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange.PartialPriceChangeBuilder;
@@ -170,11 +172,11 @@ public class PricingConditionsRow implements IViewRow
 	private final Price price;
 
 	@Getter
-	final int discountSchemaId;
+	private final PricingConditionsId pricingConditionsId;
 	@Getter
-	private final int discountSchemaBreakId;
+	private final PricingConditionsBreakId pricingConditionsBreakId;
 	@Getter
-	private final int copiedFromDiscountSchemaBreakId;
+	private final PricingConditionsBreakId copiedFromPricingConditionsBreakId;
 	@Getter
 	private final boolean temporaryPricingConditions;
 
@@ -202,10 +204,10 @@ public class PricingConditionsRow implements IViewRow
 			final LocalDateTime dateCreated,
 			//
 			final boolean editable,
-			final int discountSchemaId,
-			final int discountSchemaBreakId,
+			final PricingConditionsId pricingConditionsId,
+			final PricingConditionsBreakId pricingConditionsBreakId,
 			final Boolean temporaryPricingConditions,
-			final int copiedFromDiscountSchemaBreakId,
+			final PricingConditionsBreakId copiedFromPricingConditionsBreakId,
 			@NonNull final PricingConditionsBreakMatchCriteria breakMatchCriteria)
 	{
 		id = buildDocumentId(bpartner, customer);
@@ -233,9 +235,11 @@ public class PricingConditionsRow implements IViewRow
 		this.editable = editable;
 		viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(editable, price.getPriceType());
 
-		this.discountSchemaId = discountSchemaId;
-		this.discountSchemaBreakId = discountSchemaBreakId;
-		this.copiedFromDiscountSchemaBreakId = copiedFromDiscountSchemaBreakId;
+		PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreakId);
+		this.pricingConditionsId = pricingConditionsId;
+		this.pricingConditionsBreakId = pricingConditionsBreakId;
+
+		this.copiedFromPricingConditionsBreakId = copiedFromPricingConditionsBreakId;
 
 		if (temporaryPricingConditions != null)
 		{
@@ -243,7 +247,7 @@ public class PricingConditionsRow implements IViewRow
 		}
 		else
 		{
-			this.temporaryPricingConditions = discountSchemaBreakId <= 0;
+			this.temporaryPricingConditions = this.pricingConditionsBreakId == null;
 		}
 
 		this.breakMatchCriteria = breakMatchCriteria;
@@ -450,24 +454,24 @@ public class PricingConditionsRow implements IViewRow
 
 		//
 		// ID
-		int discountSchemaBreakId = this.discountSchemaBreakId;
-		if (request.getDiscountSchemaBreakId() != null)
+		PricingConditionsBreakId pricingConditionsBreakId = this.pricingConditionsBreakId;
+		if (request.getPricingConditionsBreakId() != null)
 		{
-			discountSchemaBreakId = request.getDiscountSchemaBreakId();
-			changed = changed || !Objects.equals(discountSchemaBreakId, this.discountSchemaBreakId);
+			pricingConditionsBreakId = request.getPricingConditionsBreakId();
+			changed = changed || !Objects.equals(pricingConditionsBreakId, this.pricingConditionsBreakId);
 		}
 
 		//
 		// Copied from ID
-		int copiedFromDiscountSchemaBreakId = this.copiedFromDiscountSchemaBreakId;
-		if (request.getSourceDiscountSchemaBreakId() != null)
+		PricingConditionsBreakId copiedFromPricingConditionsBreakId = this.copiedFromPricingConditionsBreakId;
+		if (request.getSourcePricingConditionsBreakId() != null)
 		{
-			copiedFromDiscountSchemaBreakId = request.getSourceDiscountSchemaBreakId();
-			changed = changed || !Objects.equals(copiedFromDiscountSchemaBreakId, this.copiedFromDiscountSchemaBreakId);
+			copiedFromPricingConditionsBreakId = request.getSourcePricingConditionsBreakId();
+			changed = changed || !Objects.equals(copiedFromPricingConditionsBreakId, this.copiedFromPricingConditionsBreakId);
 		}
 
 		//
-		final boolean temporaryPricingConditions = discountSchemaBreakId <= 0 || valueChanged;
+		final boolean temporaryPricingConditions = pricingConditionsBreakId == null || valueChanged;
 		changed = changed || (temporaryPricingConditions != this.temporaryPricingConditions);
 
 		//
@@ -480,8 +484,8 @@ public class PricingConditionsRow implements IViewRow
 				.price(price)
 				.discount(discount)
 				.paymentTerm(paymentTerm)
-				.discountSchemaBreakId(discountSchemaBreakId)
-				.copiedFromDiscountSchemaBreakId(copiedFromDiscountSchemaBreakId)
+				.pricingConditionsBreakId(pricingConditionsBreakId)
+				.copiedFromPricingConditionsBreakId(copiedFromPricingConditionsBreakId)
 				.temporaryPricingConditions(temporaryPricingConditions)
 				.build();
 	}

@@ -86,7 +86,7 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 				.priceChange(CompletePriceChange.of(price))
 				.discount(templateRow.getDiscount())
 				.paymentTerm(Optional.ofNullable(templateRow.getPaymentTerm()))
-				.sourceDiscountSchemaBreakId(templateRow.getDiscountSchemaBreakId())
+				.sourcePricingConditionsBreakId(templateRow.getPricingConditionsBreakId())
 				.build();
 	}
 
