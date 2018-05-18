@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -37,13 +38,15 @@ public class PricingConditionsBreak
 		NONE, BASE_PRICING_SYSTEM, FIXED_PRICE;
 	}
 
-	int discountSchemaId;
-	int discountSchemaBreakId;
+	@NonNull
+	PricingConditionsBreakId id;
 
+	@NonNull
 	PricingConditionsBreakMatchCriteria matchCriteria;
 
 	//
 	// Price
+	@NonNull
 	PriceOverrideType priceOverride;
 	int basePricingSystemId;
 	BigDecimal basePriceAddAmt;
@@ -58,6 +61,12 @@ public class PricingConditionsBreak
 	//
 	// Quality
 	BigDecimal qualityDiscountPercentage;
-	
+
+	@NonNull
 	LocalDateTime dateCreated;
+
+	public PricingConditionsId getPricingConditionsId()
+	{
+		return id.getPricingConditionsId();
+	}
 }

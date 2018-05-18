@@ -40,6 +40,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
@@ -110,7 +111,7 @@ public class Discount implements IPricingRule
 		}
 
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
-				.discountSchemaId(discountSchemaId)
+				.pricingConditionsId(PricingConditionsId.ofDiscountSchemaId(discountSchemaId))
 				.qty(pricingCtx.getQty())
 				.price(result.getPriceStd())
 				.productId(pricingCtx.getM_Product_ID())
@@ -150,7 +151,7 @@ public class Discount implements IPricingRule
 	{
 		pricingResult.setDiscount(pricingConditionsResult.getDiscount());
 		pricingResult.setC_PaymentTerm_ID(pricingConditionsResult.getC_PaymentTerm_ID());
-		pricingResult.setM_DiscountSchemaBreak_ID(pricingConditionsResult.getDiscountSchemaBreakId());
+		pricingResult.setM_DiscountSchemaBreak_ID(pricingConditionsResult.getPricingConditionsBreakId() != null ? pricingConditionsResult.getPricingConditionsBreakId().getDiscountSchemaBreakId() : 0);
 		pricingResult.setM_DiscountSchemaBreak_BasePricingSystem_ID(pricingConditionsResult.getDiscountSchemaBreak_BasePricingSystem_Id());
 		
 		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();

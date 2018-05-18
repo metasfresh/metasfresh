@@ -192,7 +192,7 @@ public class M_DiscountSchemaBreak
 		pricingCtx.setC_Country_ID(context.getCountryId());
 
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
-				.discountSchemaId(pricingConditionsBreak.getDiscountSchemaId())
+				.pricingConditionsId(pricingConditionsBreak.getId().getPricingConditionsId())
 				.forceSchemaBreak(pricingConditionsBreak)
 				.qty(pricingCtx.getQty())
 				.price(BigDecimal.ZERO) // N/A

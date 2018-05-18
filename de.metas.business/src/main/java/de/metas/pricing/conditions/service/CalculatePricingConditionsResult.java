@@ -5,6 +5,7 @@ package de.metas.pricing.conditions.service;
 
 import java.math.BigDecimal;
 
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -60,8 +61,7 @@ public class CalculatePricingConditionsResult
 	BigDecimal priceStdOverride;
 	BigDecimal priceLimitOverride;
 
-	@Default
-	private final int discountSchemaBreakId = -1;
+	private final PricingConditionsBreakId pricingConditionsBreakId;
 	
 	@Default
 	private final int discountSchemaBreak_BasePricingSystem_Id = -1;

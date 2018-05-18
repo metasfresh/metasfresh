@@ -67,7 +67,7 @@ import lombok.NonNull;
 
 	public CalculatePricingConditionsResult calculate()
 	{
-		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(request.getDiscountSchemaId());
+		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(request.getPricingConditionsId());
 
 		final PricingConditionsDiscountType discountType = pricingConditions.getDiscountType();
 		if (discountType == PricingConditionsDiscountType.FLAT_PERCENT)
@@ -110,7 +110,7 @@ import lombok.NonNull;
 		}
 
 		final CalculatePricingConditionsResultBuilder result = CalculatePricingConditionsResult.builder()
-				.discountSchemaBreakId(breakApplied.getDiscountSchemaBreakId())
+				.pricingConditionsBreakId(breakApplied.getId())
 				.C_PaymentTerm_ID(breakApplied.getPaymentTermId());
 
 		computePriceForDiscountSchemaBreak(result, breakApplied);

@@ -9,14 +9,16 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -49,7 +51,7 @@ import lombok.Value;
 @Immutable
 public class CalculatePricingConditionsRequest
 {
-	private final int discountSchemaId;
+	private final PricingConditionsId pricingConditionsId;
 	private final PricingConditionsBreak forceSchemaBreak;
 
 	private final BigDecimal qty;
@@ -61,7 +63,7 @@ public class CalculatePricingConditionsRequest
 
 	@Builder
 	private CalculatePricingConditionsRequest(
-			final int discountSchemaId,
+			@NonNull final PricingConditionsId pricingConditionsId,
 			final PricingConditionsBreak forceSchemaBreak,
 			final BigDecimal qty,
 			final BigDecimal price,
@@ -70,17 +72,15 @@ public class CalculatePricingConditionsRequest
 			final List<I_M_AttributeInstance> attributeInstances,
 			final IPricingContext pricingCtx)
 	{
-		Check.assumeGreaterThanZero(discountSchemaId, "discountSchemaId");
-
-		if (forceSchemaBreak != null && forceSchemaBreak.getDiscountSchemaId() != discountSchemaId)
+		if (forceSchemaBreak != null && !PricingConditionsBreakId.matching(pricingConditionsId, forceSchemaBreak.getId()))
 		{
 			throw new AdempiereException("Schema and schema break does not match")
-					.setParameter("discountSchemaId", discountSchemaId)
+					.setParameter("discountSchemaId", pricingConditionsId)
 					.setParameter("forceSchemaBreak", forceSchemaBreak)
 					.appendParametersToMessage();
 		}
 
-		this.discountSchemaId = discountSchemaId;
+		this.pricingConditionsId = pricingConditionsId;
 		this.forceSchemaBreak = forceSchemaBreak;
 		this.qty = qty;
 		this.price = price;
