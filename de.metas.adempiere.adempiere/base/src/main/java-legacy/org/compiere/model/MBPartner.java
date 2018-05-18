@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.BPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -331,9 +331,6 @@ public class MBPartner extends X_C_BPartner
 	private MBPBankAccount[] m_accounts = null;
 	/** Prim Address */
 	private Integer m_primaryC_BPartner_Location_ID = null;
-	/** Prim User */
-	private Integer m_primaryAD_User_ID = null;
-	/** Credit Limit recently calcualted */
 
 	/** BP Group */
 	private MBPGroup m_group = null;
@@ -405,14 +402,7 @@ public class MBPartner extends X_C_BPartner
 		return success;
 	} // getTemplate
 
-	/**
-	 * Get All Contacts
-	 *
-	 * @param reload
-	 *            if true users will be requeried
-	 * @return contacts
-	 */
-	public List<I_AD_User> getContacts(final boolean reload)
+	public List<I_AD_User> getContacts(final boolean reload_NOTUSED)
 	{
 		return Services.get(IBPartnerDAO.class).retrieveContacts(this);
 	}
@@ -698,28 +688,6 @@ public class MBPartner extends X_C_BPartner
 	} // getPrimaryC_BPartner_Location
 
 	/**
-	 * Get Primary AD_User_ID
-	 *
-	 * @return AD_User_ID
-	 */
-	public int getPrimaryAD_User_ID()
-	{
-		if (m_primaryAD_User_ID == null)
-		{
-			final List<I_AD_User> users = getContacts(false);
-			if (m_primaryAD_User_ID == null && users.size() > 0)
-			{
-				setPrimaryAD_User_ID(users.get(0).getAD_User_ID());
-			}
-		}
-		if (m_primaryAD_User_ID == null)
-		{
-			return 0;
-		}
-		return m_primaryAD_User_ID.intValue();
-	} // getPrimaryAD_User_ID
-
-	/**
 	 * Set Primary C_BPartner_Location_ID
 	 *
 	 * @param C_BPartner_Location_ID
@@ -727,19 +695,8 @@ public class MBPartner extends X_C_BPartner
 	 */
 	public void setPrimaryC_BPartner_Location_ID(final int C_BPartner_Location_ID)
 	{
-		m_primaryC_BPartner_Location_ID = new Integer(C_BPartner_Location_ID);
+		m_primaryC_BPartner_Location_ID = C_BPartner_Location_ID;
 	} // setPrimaryC_BPartner_Location_ID
-
-	/**
-	 * Set Primary AD_User_ID
-	 *
-	 * @param AD_User_ID
-	 *            id
-	 */
-	public void setPrimaryAD_User_ID(final int AD_User_ID)
-	{
-		m_primaryAD_User_ID = new Integer(AD_User_ID);
-	} // setPrimaryAD_User_ID
 
 	/**
 	 * Credit Status is Stop or Hold.
