@@ -100,6 +100,7 @@ public class PurchaseRowFactory
 				.rowId(PurchaseRowId.lineId(purchaseCandidate.getSalesOrderLineId(), bpartnerId, processedPurchaseCandidateId))
 				.salesOrderId(purchaseCandidate.getSalesOrderId())
 				.rowType(PurchaseRowType.LINE).product(product)
+				.grossProfitPrice(purchaseCandidate.getGrossProfitPrice())
 				.uomOrAvailablility(uom)
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
