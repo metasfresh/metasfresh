@@ -170,8 +170,11 @@ class PricingConditionsRowsLoader
 				//
 				.bpartner(lookups.lookupBPartner(discountSchemaInfo.getBpartnerId()))
 				.customer(discountSchemaInfo.isSOTrx())
+				.product(lookups.lookupProduct(pricingConditionsBreak.getMatchCriteria().getProductId()))
+				.breakValue(pricingConditionsBreak.getMatchCriteria().getBreakValue())
 				//
 				.price(extractPrice(pricingConditionsBreak))
+				.priceNet(null) // TODO
 				//
 				.discount(pricingConditionsBreak.getDiscount())
 				.paymentTerm(lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId()))
@@ -179,6 +182,8 @@ class PricingConditionsRowsLoader
 				.discountSchemaId(pricingConditionsBreak.getDiscountSchemaId())
 				.discountSchemaBreakId(pricingConditionsBreak.getDiscountSchemaBreakId())
 				.breakMatchCriteria(pricingConditionsBreak.getMatchCriteria())
+				.dateLastInOut(null) // TODO
+				.dateCreated(pricingConditionsBreak.getDateCreated())
 				.build();
 	}
 

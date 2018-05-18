@@ -1,6 +1,8 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -82,6 +84,18 @@ public class PricingConditionsRow implements IViewRow
 	@Getter
 	private final boolean customer;
 
+	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 22),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 22)
+	})
+	private final LookupValue product;
+
+	@ViewColumn(captionKey = "BreakValue", widgetType = DocumentFieldWidgetType.Number, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 23),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 23)
+	})
+	private final BigDecimal breakValue;
+
 	public static final String FIELDNAME_PriceType = "priceType";
 	@ViewColumn(fieldName = FIELDNAME_PriceType, captionKey = "Type", widgetType = DocumentFieldWidgetType.List, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25),
@@ -126,6 +140,24 @@ public class PricingConditionsRow implements IViewRow
 	@Getter
 	private final LookupValue paymentTerm;
 
+	@ViewColumn(captionKey = "PriceNet", widgetType = DocumentFieldWidgetType.Number, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 100)
+	})
+	private final BigDecimal priceNet;
+
+	@ViewColumn(captionKey = "LastInOutDate", widgetType = DocumentFieldWidgetType.Date, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 110)
+	})
+	private final LocalDate dateLastInOut;
+
+	@ViewColumn(captionKey = "Created", widgetType = DocumentFieldWidgetType.DateTime, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 120),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 120)
+	})
+	private final LocalDateTime dateCreated;
+
 	//
 	private final PricingConditionsRowLookups lookups;
 
@@ -157,11 +189,17 @@ public class PricingConditionsRow implements IViewRow
 			@NonNull final PricingConditionsRowLookups lookups,
 			@NonNull final LookupValue bpartner,
 			final boolean customer,
+			final LookupValue product,
+			@NonNull final BigDecimal breakValue,
 			//
 			final LookupValue paymentTerm,
 			@NonNull final BigDecimal discount,
 			//
 			@NonNull final Price price,
+			final BigDecimal priceNet,
+			//
+			final LocalDate dateLastInOut,
+			final LocalDateTime dateCreated,
 			//
 			final boolean editable,
 			final int discountSchemaId,
@@ -176,6 +214,8 @@ public class PricingConditionsRow implements IViewRow
 
 		this.bpartner = bpartner;
 		this.customer = customer;
+		this.product = product;
+		this.breakValue = breakValue;
 
 		this.paymentTerm = paymentTerm;
 		this.discount = discount;
@@ -185,6 +225,10 @@ public class PricingConditionsRow implements IViewRow
 		this.basePricingSystem = price.getBasePricingSystem();
 		this.basePriceAddAmt = price.getBasePriceAddAmt();
 		this.fixedPrice = price.getFixedPrice();
+		this.priceNet = priceNet;
+
+		this.dateLastInOut = dateLastInOut;
+		this.dateCreated = dateCreated;
 
 		this.editable = editable;
 		viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(editable, price.getPriceType());
