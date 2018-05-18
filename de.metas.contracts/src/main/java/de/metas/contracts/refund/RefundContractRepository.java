@@ -56,6 +56,8 @@ public class RefundContractRepository
 
 	public Optional<FlatrateTermId> getMatchingIdByInvoiceCandidate(@NonNull final AssignableInvoiceCandidate invoiceCandidate)
 	{
+		// TODO don't return ID if invoiceCandidate if the invoicecandidate references a refund contract by itself!
+
 		final Timestamp invoicableFromTimestamp = TimeUtil.asTimestamp(invoiceCandidate.getInvoiceableFrom());
 		final int billPartnerId = invoiceCandidate.getBpartnerId().getRepoId();
 		final int productId = invoiceCandidate.getProductId().getRepoId();
@@ -63,7 +65,7 @@ public class RefundContractRepository
 		final ArrayKey key = ArrayKey.of(invoicableFromTimestamp, billPartnerId, productId);
 		final int contractRecordId = CACHE.getOrLoad(
 				key,
-				() -> retrieveIdNoCache(invoicableFromTimestamp, billPartnerId, productId));
+				() -> retrieveIdForCache(invoicableFromTimestamp, billPartnerId, productId));
 
 		if (contractRecordId > 0)
 		{
@@ -72,7 +74,10 @@ public class RefundContractRepository
 		return Optional.empty();
 	}
 
-	private int retrieveIdNoCache(final Timestamp invoicableFromTimestamp, final int billPartnerId, final int productId)
+	private int retrieveIdForCache(
+			@NonNull final Timestamp invoicableFromTimestamp,
+			final int billPartnerId,
+			final int productId)
 	{
 		final int contractRecordId = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_Term.class)

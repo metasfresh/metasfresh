@@ -1,5 +1,9 @@
 package de.metas.contracts.refund.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
+
+import java.sql.Timestamp;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Services;
@@ -52,13 +56,20 @@ public class C_Invoice_Candidate
 		this.invoiceCandidateAssignmentService = invoiceCandidateAssociationService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
 	public void associateDuringUpdateProcess(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		if (!Services.get(IInvoiceCandBL.class).isUpdateProcessInProgress())
 		{
 			return;
 		}
+		final Timestamp invoicableFromDate = getValueOverrideOrValue(invoiceCandidateRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
+		if (invoicableFromDate == null)
+		{
+			return; // it's not yet ready
+		}
+
+		// TODO: address the case that it is refund-record itself.
 
 		final AssignableInvoiceCandidate assignableInvoiceCandidate = invoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
 		final RefundInvoiceCandidate refundInvoiceCandidate = assignableInvoiceCandidate.getRefundInvoiceCandidate();
