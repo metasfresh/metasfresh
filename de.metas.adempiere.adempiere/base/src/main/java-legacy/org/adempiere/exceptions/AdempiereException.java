@@ -185,6 +185,12 @@ public class AdempiereException extends RuntimeException
 		AdempiereException.captureLanguageOnConstructionTime = true;
 	}
 
+	public static AdempiereException ofADMessage(final String adMessage, final Object... msgParameters)
+	{
+		final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, msgParameters);
+		return new AdempiereException(message);
+	}
+
 	private static boolean captureLanguageOnConstructionTime = false;
 
 	private final ITranslatableString messageTrl;
