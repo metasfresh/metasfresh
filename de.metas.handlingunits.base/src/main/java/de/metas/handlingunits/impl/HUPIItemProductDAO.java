@@ -105,7 +105,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Cached
 	public I_M_HU_PI_Item_Product retrieveVirtualPIMaterialItemProduct(@CacheCtx final Properties ctx)
 	{
-		return retrieveForId(ctx, VIRTUAL_HU_PI_Item_Product_ID);
+		final I_M_HU_PI_Item_Product piip = retrieveForId(ctx, VIRTUAL_HU_PI_Item_Product_ID);
+
+		return Check.assumeNotNull(piip,
+				"There is always a M_HU_PI_Item_Product record for HU_PI_Item_Product_ID={}",
+				VIRTUAL_HU_PI_Item_Product_ID);
 	}
 
 	@Override

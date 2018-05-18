@@ -72,7 +72,7 @@ import lombok.NonNull;
  */
 public abstract class AbstractFlatrateTermTest
 {
-	private final transient IInvoiceCandidateHandlerBL iinvoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	private final String sequence = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
 	protected final static BigDecimal QTY_ONE = BigDecimal.ONE;
@@ -157,17 +157,20 @@ public abstract class AbstractFlatrateTermTest
 	public I_C_Flatrate_Term prepareContractForTest(final String extensionType, final Timestamp startDate)
 	{
 		prepareBPartner();
+
 		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
 		createProductAcct(productAndPricingSystem);
+
 		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, extensionType);
 		createContractChange(conditions);
+
 		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
 		return contract;
 	}
 
 	public List<I_C_Invoice_Candidate> createInvoiceCandidates(final I_C_Flatrate_Term flatrateTerm)
 	{
-		return iinvoiceCandidateHandlerBL.createMissingCandidatesFor(flatrateTerm);
+		return invoiceCandidateHandlerBL.createMissingCandidatesFor(flatrateTerm);
 	}
 
 

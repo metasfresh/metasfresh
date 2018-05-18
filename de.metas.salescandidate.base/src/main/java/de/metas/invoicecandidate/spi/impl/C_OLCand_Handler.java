@@ -53,6 +53,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_OLCand}.
@@ -229,7 +230,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		invalidateCandidatesForOLCand(olc);
 	}
 
-	private void invalidateCandidatesForOLCand(final I_C_OLCand olc)
+	private void invalidateCandidatesForOLCand(@NonNull final I_C_OLCand olc)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -256,7 +257,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
 	 */
 	@Override
-	public void setOrderedData(final I_C_Invoice_Candidate ic)
+	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OLCand olc = getOLCand(ic);
 
@@ -264,7 +265,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setDateOrdered(olc.getDateCandidate());
 	}
 
-	private I_C_OLCand getOLCand(final I_C_Invoice_Candidate ic)
+	private I_C_OLCand getOLCand(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OLCand olc =TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
 		return olc;
@@ -280,14 +281,14 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
 	 */
 	@Override
-	public void setDeliveredData(final I_C_Invoice_Candidate ic)
+	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		ic.setQtyDelivered(ic.getQtyOrdered());
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 
 	@Override
-	public PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OLCand olc = getOLCand(ic);
 		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(olc, null, 0, olc.getDateCandidate());
@@ -300,7 +301,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void setBPartnerData(final I_C_Invoice_Candidate ic)
+	public void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
@@ -312,7 +313,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
+	public void setC_UOM_ID(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
