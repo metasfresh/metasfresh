@@ -56,7 +56,8 @@ import lombok.NonNull;
  */
 public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 {
-	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormat = "BPartnerImportProcess_BPPrintFormat";
+	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormatId = "BPartnerImportProcess_BPPrintFormatId";
+	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg = "BPartnerImportProcess_BPPrintFormatId_ErrorMsg";
 
 	private final BPartnerImportHelper bpartnerImporter;
 	private final BPartnerLocationImportHelper bpartnerLocationImporter;
@@ -245,7 +246,11 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
 
-			final int AD_PrintFormat_ID =  Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormat, 1000015);
+			final int AD_PrintFormat_ID =  Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormatId, -1);
+			if (AD_PrintFormat_ID <= 0 )
+			{
+				throw new AdempiereException(BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg);
+			}
 
 			final I_C_BP_PrintFormat bpPrintFormat = InterfaceWrapperHelper.newInstance(I_C_BP_PrintFormat.class);
 			bpPrintFormat.setAD_PrintFormat_ID(AD_PrintFormat_ID);
