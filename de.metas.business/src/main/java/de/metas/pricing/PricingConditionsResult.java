@@ -1,13 +1,8 @@
-/**
- *
- */
-package de.metas.pricing.conditions.service;
-
-import java.math.BigDecimal;
+package de.metas.pricing;
 
 import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsId;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,36 +28,27 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@Builder
 @Value
-public class CalculatePricingConditionsResult
+public class PricingConditionsResult
 {
-	public static CalculatePricingConditionsResult discount(@NonNull final BigDecimal discount)
+	PricingConditionsId pricingConditionsId;
+	PricingConditionsBreakId pricingConditionsBreakId;
+	int basePricingSystemId;
+	int paymentTermId;
+
+	@Builder
+	private PricingConditionsResult(
+			@NonNull final PricingConditionsId pricingConditionsId,
+			final PricingConditionsBreakId pricingConditionsBreakId,
+			final int basePricingSystemId,
+			final int paymentTermId)
 	{
-		if (BigDecimal.ZERO.equals(ZERO.getDiscount()))
-		{
-			return ZERO;
-		}
-		return builder().discount(discount).build();
+		PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreakId);
+
+		this.pricingConditionsId = pricingConditionsId;
+		this.pricingConditionsBreakId = pricingConditionsBreakId;
+		this.basePricingSystemId = basePricingSystemId;
+		this.paymentTermId = paymentTermId;
 	}
 
-	public static final CalculatePricingConditionsResult ZERO = builder().discount(BigDecimal.ZERO).build();
-
-	@Default
-	@NonNull
-	BigDecimal discount = BigDecimal.ZERO;
-	@Default
-	int C_PaymentTerm_ID = -1;
-	BigDecimal priceListOverride;
-	BigDecimal priceStdOverride;
-	BigDecimal priceLimitOverride;
-
-	PricingConditionsBreakId pricingConditionsBreakId;
-
-	@Default
-	int discountSchemaBreak_BasePricingSystem_Id = -1;
 }

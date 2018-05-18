@@ -152,8 +152,8 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setDisallowDiscount(subscriptionPricingResult.isDisallowDiscount());
 
 		result.setUsesDiscountSchema(subscriptionPricingResult.isUsesDiscountSchema());
-		// 08634: also set the discount schema
-		result.setM_DiscountSchema_ID(subscriptionPricingResult.getM_DiscountSchema_ID());
+		result.setPricingConditions(subscriptionPricingResult.getPricingConditions());
+		
 		result.setEnforcePriceLimit(subscriptionPricingResult.isEnforcePriceLimit());
 		result.setM_PricingSystem_ID(subscriptionPricingResult.getM_PricingSystem_ID());
 		result.setM_PriceList_Version_ID(subscriptionPricingResult.getM_PriceList_Version_ID());

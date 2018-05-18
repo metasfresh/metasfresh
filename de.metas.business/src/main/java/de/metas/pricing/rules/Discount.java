@@ -40,6 +40,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingConditionsResult;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
@@ -109,9 +110,10 @@ public class Discount implements IPricingRule
 		{
 			return;
 		}
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaId(discountSchemaId);
 
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
-				.pricingConditionsId(PricingConditionsId.ofDiscountSchemaId(discountSchemaId))
+				.pricingConditionsId(pricingConditionsId)
 				.qty(pricingCtx.getQty())
 				.price(result.getPriceStd())
 				.productId(pricingCtx.getM_Product_ID())
@@ -119,53 +121,59 @@ public class Discount implements IPricingRule
 				.bpartnerFlatDiscount(bpartnerFlatDiscount)
 				.pricingCtx(pricingCtx)
 				.build();
-		
+
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 		final CalculatePricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
 
 		result.setUsesDiscountSchema(true);
-		result.setM_DiscountSchema_ID(discountSchemaId);
-		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
+		updatePricingResultFromPricingConditionsResult(result, pricingConditionsId, pricingConditionsResult);
 	}
 
 	private List<I_M_AttributeInstance> getAttributeInstances(final Object pricingReferencedObject)
 	{
-		if(pricingReferencedObject == null)
+		if (pricingReferencedObject == null)
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class)
 				.createOrNull(pricingReferencedObject);
-		if(asiAware == null)
+		if (asiAware == null)
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final int asiId = asiAware.getM_AttributeSetInstance_ID();
 		final List<I_M_AttributeInstance> attributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asiId);
 		return attributeInstances;
 	}
-	
-	private static void updatePricingResultFromPricingConditionsResult(final IPricingResult pricingResult, final CalculatePricingConditionsResult pricingConditionsResult)
+
+	private static void updatePricingResultFromPricingConditionsResult(
+			final IPricingResult pricingResult,
+			final PricingConditionsId pricingConditionsId,
+			final CalculatePricingConditionsResult pricingConditionsResult)
 	{
+		pricingResult.setPricingConditions(PricingConditionsResult.builder()
+				.pricingConditionsId(pricingConditionsId)
+				.pricingConditionsBreakId(pricingConditionsResult.getPricingConditionsBreakId())
+				.basePricingSystemId(pricingConditionsResult.getDiscountSchemaBreak_BasePricingSystem_Id())
+				.paymentTermId(pricingConditionsResult.getC_PaymentTerm_ID())
+				.build());
+
 		pricingResult.setDiscount(pricingConditionsResult.getDiscount());
-		pricingResult.setC_PaymentTerm_ID(pricingConditionsResult.getC_PaymentTerm_ID());
-		pricingResult.setM_DiscountSchemaBreak_ID(pricingConditionsResult.getPricingConditionsBreakId() != null ? pricingConditionsResult.getPricingConditionsBreakId().getDiscountSchemaBreakId() : 0);
-		pricingResult.setM_DiscountSchemaBreak_BasePricingSystem_ID(pricingConditionsResult.getDiscountSchemaBreak_BasePricingSystem_Id());
-		
+
 		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();
 		final BigDecimal priceListOverride = pricingConditionsResult.getPriceListOverride();
 		final BigDecimal priceLimitOverride = pricingConditionsResult.getPriceLimitOverride();
-		if(priceStdOverride != null)
+		if (priceStdOverride != null)
 		{
 			pricingResult.setPriceStd(priceStdOverride);
 		}
-		if(priceListOverride != null)
+		if (priceListOverride != null)
 		{
 			pricingResult.setPriceList(priceListOverride);
 		}
-		if(priceLimitOverride != null)
+		if (priceLimitOverride != null)
 		{
 			pricingResult.setPriceLimit(priceLimitOverride);
 		}

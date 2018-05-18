@@ -75,7 +75,7 @@ public class CalculatePricingConditionsRequest
 		if (forceSchemaBreak != null && !PricingConditionsBreakId.matching(pricingConditionsId, forceSchemaBreak.getId()))
 		{
 			throw new AdempiereException("Schema and schema break does not match")
-					.setParameter("discountSchemaId", pricingConditionsId)
+					.setParameter("pricingConditionsId", pricingConditionsId)
 					.setParameter("forceSchemaBreak", forceSchemaBreak)
 					.appendParametersToMessage();
 		}
