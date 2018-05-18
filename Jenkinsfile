@@ -250,7 +250,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		else
 		{
 			sh "docker run -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\" ${dbInitDockerImageName}"
-			sh "docker rmi ${dbInitDockerImageName}"
+			//sh "docker rmi ${dbInitDockerImageName}"
 		}
 	}
 } // node
