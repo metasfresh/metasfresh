@@ -30,15 +30,21 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3754](https://github.com/metasfresh/metasfresh/issues/3754) Inventory: Allow only "Active" and "Issued" HUs in inventorylines
+    * Improved Inventory Feature, only allowing active and issued Handling Units in Inventory Lines.
   * [#3975](https://github.com/metasfresh/metasfresh/issues/3975) Allow annotating data as personal
+    * New Feature for GDPR Compliance that allows to annotate data as personal Data via Applicaiton Dictionary,
   * [#3991](https://github.com/metasfresh/metasfresh/issues/3991) Implement "Der Kurier" parcel number check digit
+    * New Feature creating a check digit for the new Logistics Provider Implementation of "Der Kurier"
   * [#3993](https://github.com/metasfresh/metasfresh/issues/3993) Eliminate the ampersand from all AD_Messages
+    * Improvement for Messaged, eliminating all Ampersand characters.
   * [#4003](https://github.com/metasfresh/metasfresh/issues/4003) Adjust Window "Der Kurier Versandauftrag"
     * New Window for a new Logistics Partner Order window of "Der Kurier".
   * [#4004](https://github.com/metasfresh/metasfresh/issues/4004) WebUI: Adjust new Window Discount Schema Pharma
     * Improved Window for Discount Schema Pharma.
   * [#4029](https://github.com/metasfresh/metasfresh/pull/4029) CleverReach Interface generic marketing datamodel
+    * New Implemetation of the CleverReach marketing data model.
   * [#4034](https://github.com/metasfresh/metasfresh/issues/4034) Add CustomerCode and CollectorCode to Der Kurier
+    * Additional Implemantation for the new Logistics Provider "Der Kurier"
 
 * metasfresh-webui-frontend
   * [#1613](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1613) Display field changes warnings
