@@ -1,7 +1,5 @@
 package org.adempiere.bpartner.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -61,8 +59,17 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public String getBPartnerValueAndName(final int bpartnerId)
 	{
+		if (bpartnerId <= 0)
+		{
+			return "?";
+		}
+
 		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
-		Check.assumeNotNull(bpartner, "bpartner is not null");
+		if (bpartner == null)
+		{
+			return "<" + bpartnerId + ">";
+		}
+
 		return bpartner.getValue() + "_" + bpartner.getName();
 	}
 
@@ -359,7 +366,7 @@ public class BPartnerBL implements IBPartnerBL
 	public int getDiscountSchemaId(final int bpartnerId, final boolean soTrx)
 	{
 		Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
-		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
 		return getDiscountSchemaId(bpartner, soTrx);
 	}
 

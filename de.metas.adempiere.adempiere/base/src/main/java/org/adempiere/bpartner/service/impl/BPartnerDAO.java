@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -49,16 +48,12 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_AD_User;
@@ -159,24 +154,6 @@ public class BPartnerDAO implements IBPartnerDAO
 		return queryBuilder
 				.create()
 				.listImmutable(I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public Set<Integer> retrieveCountryIdsOfBPartnerLocations(final int bpartnerId)
-	{
-		return retrieveBPartnerLocations(bpartnerId)
-				.stream()
-				.map(I_C_BPartner_Location::getC_Location)
-				.map(I_C_Location::getC_Country_ID)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@Override
-	public List<org.compiere.model.I_AD_User> retrieveContacts(final int partnerId, final boolean reload, final String trxName)
-	{
-		final MBPartner bPArtner = new MBPartner(Env.getCtx(), partnerId, trxName);
-		final List<I_AD_User> users = bPArtner.getContacts(reload);
-		return InterfaceWrapperHelper.wrapToImmutableList(users, org.compiere.model.I_AD_User.class);
 	}
 
 	@Override
@@ -595,21 +572,6 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return queryBuilder.create()
 				.first();
-	}
-
-	@Override
-	public List<Integer> retrieveBPartnerIdsForDiscountSchemaId(final int discountSchemaId, final boolean isSOTrx)
-	{
-		Check.assumeGreaterThanZero(discountSchemaId, "discountSchemaId");
-
-		final String discountSchemaIdColumnName = isSOTrx ? I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID : I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(discountSchemaIdColumnName, discountSchemaId)
-				.create()
-				.listIds();
 	}
 
 	@Override

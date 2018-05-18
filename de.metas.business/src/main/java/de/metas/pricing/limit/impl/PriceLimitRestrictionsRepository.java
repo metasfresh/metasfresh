@@ -1,12 +1,18 @@
 package de.metas.pricing.limit.impl;
 
+import java.util.Optional;
+import java.util.Set;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PriceLimit_Restriction;
 import org.compiere.util.CCache;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.pricing.limit.IPriceLimitRestrictionsRepository;
 import de.metas.pricing.limit.PriceLimitRestrictions;
+import de.metas.pricing.service.IPriceListDAO;
 
 /*
  * #%L
@@ -32,15 +38,15 @@ import de.metas.pricing.limit.PriceLimitRestrictions;
 
 public class PriceLimitRestrictionsRepository implements IPriceLimitRestrictionsRepository
 {
-	private final CCache<Integer, PriceLimitRestrictions> cache = CCache.newCache(I_C_PriceLimit_Restriction.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	private final CCache<Integer, Optional<PriceLimitRestrictions>> cache = CCache.newCache(I_C_PriceLimit_Restriction.Table_Name, 1, CCache.EXPIREMINUTES_Never);
 
 	@Override
-	public PriceLimitRestrictions get()
+	public Optional<PriceLimitRestrictions> get()
 	{
 		return cache.getOrLoad(0, this::retrievePriceLimitRestrictions);
 	}
 
-	private PriceLimitRestrictions retrievePriceLimitRestrictions()
+	private Optional<PriceLimitRestrictions> retrievePriceLimitRestrictions()
 	{
 		final I_C_PriceLimit_Restriction priceLimitRestrictionsRecord = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_PriceLimit_Restriction.class)
@@ -50,14 +56,29 @@ public class PriceLimitRestrictionsRepository implements IPriceLimitRestrictions
 				.firstOnly(I_C_PriceLimit_Restriction.class);
 		if (priceLimitRestrictionsRecord == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
-		return PriceLimitRestrictions.builder()
+		final PriceLimitRestrictions priceLimitRestrictions = PriceLimitRestrictions.builder()
 				.basePricingSystemId(priceLimitRestrictionsRecord.getBase_PricingSystem_ID())
 				.priceAddAmt(priceLimitRestrictionsRecord.getStd_AddAmt())
 				.discountPercent(priceLimitRestrictionsRecord.getDiscount())
 				.build();
+		return Optional.of(priceLimitRestrictions);
+	}
+
+	@Override
+	public Set<Integer> getPriceCountryIds()
+	{
+		return get()
+				.map(this::getPriceContryIds)
+				.orElseGet(ImmutableSet::of);
+	}
+
+	private final Set<Integer> getPriceContryIds(final PriceLimitRestrictions priceLimitRestrictions)
+	{
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+		return priceListsRepo.retrieveCountryIdsByPricingSystem(priceLimitRestrictions.getBasePricingSystemId());
 	}
 
 }

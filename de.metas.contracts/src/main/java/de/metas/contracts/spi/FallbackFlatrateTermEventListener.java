@@ -1,14 +1,12 @@
 package de.metas.contracts.spi;
 
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
@@ -74,10 +72,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 			// However, we want to give a user-friendly explanation to the user.
 			if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(entry.getDocStatus()))
 			{
-				final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-
 				throw new AdempiereException(
-						Env.getLanguage(ctx).getAD_Language(),
 						MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P,
 						new Object[] { entry.getC_UOM().getName(), entry.getC_Period().getName() });
 			}

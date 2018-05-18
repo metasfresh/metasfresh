@@ -13,7 +13,6 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -51,7 +50,6 @@ public class MInventoryImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(MInventoryImportTableSqlUpdater.class);
 
-	@Builder(buildMethodName = "updateIInventory")
 	public void updateInventoryImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateLocatorDimensions(whereClause);
@@ -107,8 +105,8 @@ public class MInventoryImportTableSqlUpdater
 		// update DateLastInventory
 		sql = new StringBuilder("UPDATE M_Locator l ")
 				.append("SET DateLastInventory=(SELECT DateLastInventory FROM I_Inventory i ")
-				.append("WHERE i.LocatorValue=l.Value AND i.AD_Client_ID=l.AD_Client_ID) ")
-				.append("AND I_IsImported<>'Y' ")
+				.append("WHERE i.LocatorValue=l.Value AND i.AD_Client_ID=l.AD_Client_ID ")
+				.append("AND I_IsImported<>'Y') ")
 				.append(whereClause);
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}

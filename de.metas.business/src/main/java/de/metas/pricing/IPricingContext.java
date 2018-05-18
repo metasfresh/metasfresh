@@ -106,6 +106,8 @@ public interface IPricingContext extends IContextAware
 	boolean isConvertPriceToContextUOM();
 
 	<T> T getProperty(String propertyName, Class<T> clazz);
+	
+	boolean isPropertySet(String propertyName);
 
 	/**
 	 * Specifies if the pricing engine shall calculate a price or not.
