@@ -4,21 +4,17 @@
 package de.metas.pricing.conditions.service;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_AttributeInstance;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -52,41 +48,65 @@ import lombok.Value;
 public class CalculatePricingConditionsRequest
 {
 	private final PricingConditionsId pricingConditionsId;
-	private final PricingConditionsBreak forceSchemaBreak;
 
-	private final BigDecimal qty;
-	private final BigDecimal price;
-	private final int productId;
+	private final PricingConditionsBreak forcePricingConditionsBreak;
+	private final PricingConditionsBreakQuery pricingConditionsBreakQuery;
+
 	private final BigDecimal bpartnerFlatDiscount;
-	private final List<I_M_AttributeInstance> attributeInstances;
+
 	private final IPricingContext pricingCtx;
 
 	@Builder
 	private CalculatePricingConditionsRequest(
-			@NonNull final PricingConditionsId pricingConditionsId,
-			final PricingConditionsBreak forceSchemaBreak,
-			final BigDecimal qty,
-			final BigDecimal price,
-			final int productId,
+			final PricingConditionsId pricingConditionsId,
+			final PricingConditionsBreak forcePricingConditionsBreak,
+			final PricingConditionsBreakQuery pricingConditionsBreakQuery,
 			final BigDecimal bpartnerFlatDiscount,
-			final List<I_M_AttributeInstance> attributeInstances,
 			final IPricingContext pricingCtx)
 	{
-		if (forceSchemaBreak != null && !PricingConditionsBreakId.matching(pricingConditionsId, forceSchemaBreak.getId()))
-		{
-			throw new AdempiereException("Schema and schema break does not match")
-					.setParameter("pricingConditionsId", pricingConditionsId)
-					.setParameter("forceSchemaBreak", forceSchemaBreak)
-					.appendParametersToMessage();
-		}
+		assertValid(pricingConditionsId, forcePricingConditionsBreak, pricingConditionsBreakQuery);
 
-		this.pricingConditionsId = pricingConditionsId;
-		this.forceSchemaBreak = forceSchemaBreak;
-		this.qty = qty;
-		this.price = price;
-		this.productId = productId;
+		this.pricingConditionsId = extractPricingConditionsId(pricingConditionsId, forcePricingConditionsBreak);
+
+		this.forcePricingConditionsBreak = forcePricingConditionsBreak;
+		this.pricingConditionsBreakQuery = pricingConditionsBreakQuery;
+
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount != null ? bpartnerFlatDiscount : BigDecimal.ZERO;
-		this.attributeInstances = attributeInstances != null ? ImmutableList.copyOf(attributeInstances) : ImmutableList.of();
 		this.pricingCtx = pricingCtx;
+	}
+
+	private static void assertValid(
+			final PricingConditionsId pricingConditionsId,
+			final PricingConditionsBreak forcePricingConditionsBreak,
+			final PricingConditionsBreakQuery pricingConditionsBreakQuery)
+	{
+		if (forcePricingConditionsBreak == null && pricingConditionsBreakQuery == null)
+		{
+			throw new AdempiereException("forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified");
+		}
+		else if (forcePricingConditionsBreak != null && pricingConditionsBreakQuery != null)
+		{
+			throw new AdempiereException("Only forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified but not both");
+		}
+		if (forcePricingConditionsBreak != null && pricingConditionsId != null)
+		{
+			PricingConditionsBreakId.assertMatching(pricingConditionsId, forcePricingConditionsBreak.getId());
+		}
+	}
+
+	private static final PricingConditionsId extractPricingConditionsId(final PricingConditionsId pricingConditionsId, final PricingConditionsBreak forcePricingConditionsBreak)
+	{
+		if (pricingConditionsId != null)
+		{
+			return pricingConditionsId;
+		}
+		else if (forcePricingConditionsBreak != null)
+		{
+			return forcePricingConditionsBreak.getPricingConditionsId();
+		}
+		else
+		{
+			throw new AdempiereException("Cannot extract " + PricingConditionsId.class);
+		}
 	}
 }

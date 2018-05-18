@@ -170,7 +170,7 @@ public class M_DiscountSchemaBreak
 		}
 	}
 
-	private CalculatePricingConditionsRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
+	private static CalculatePricingConditionsRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
@@ -193,10 +193,10 @@ public class M_DiscountSchemaBreak
 
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(pricingConditionsBreak.getId().getPricingConditionsId())
-				.forceSchemaBreak(pricingConditionsBreak)
-				.qty(pricingCtx.getQty())
-				.price(BigDecimal.ZERO) // N/A
-				.productId(pricingCtx.getM_Product_ID())
+				.forcePricingConditionsBreak(pricingConditionsBreak)
+//				.qty(pricingCtx.getQty())
+//				.price(BigDecimal.ZERO) // N/A
+//				.productId(pricingCtx.getM_Product_ID())
 				.pricingCtx(pricingCtx)
 				.build();
 		return request;
