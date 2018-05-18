@@ -131,7 +131,7 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		if (!subscriptionPricingResult.isCalculated())
 		{
-			throw new ProductNotOnPriceListException(subscriptionPricingCtx, 0);
+			throw new ProductNotOnPriceListException(subscriptionPricingCtx);
 		}
 		return subscriptionPricingResult;
 	}

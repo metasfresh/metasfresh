@@ -81,7 +81,6 @@ class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
-					.appendParametersToMessage()
 					.setParameter("pricingResult", pricingResult);
 		}
 

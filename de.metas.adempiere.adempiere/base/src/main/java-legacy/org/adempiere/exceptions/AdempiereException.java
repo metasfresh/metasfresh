@@ -17,7 +17,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
@@ -25,19 +24,20 @@ import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
-import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.logging.MetasfreshLastError;
 import lombok.NonNull;
 
@@ -114,6 +114,17 @@ public class AdempiereException extends RuntimeException
 		return message;
 	}
 
+	public static final ITranslatableString extractMessageTrl(final Throwable throwable)
+	{
+		if (throwable instanceof AdempiereException)
+		{
+			final AdempiereException ex = (AdempiereException)throwable;
+			return ex.getMessageBuilt();
+		}
+
+		return ImmutableTranslatableString.constant(extractMessage(throwable));
+	}
+
 	/**
 	 * Extract cause exception from those exceptions which are only about wrapping the real cause (e.g. ExecutionException, InvocationTargetException).
 	 *
@@ -174,13 +185,18 @@ public class AdempiereException extends RuntimeException
 		AdempiereException.captureLanguageOnConstructionTime = true;
 	}
 
+	public static AdempiereException ofADMessage(final String adMessage, final Object... msgParameters)
+	{
+		final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, msgParameters);
+		return new AdempiereException(message);
+	}
+
 	private static boolean captureLanguageOnConstructionTime = false;
 
-	private boolean parseTranslation = true;
+	private final ITranslatableString messageTrl;
 	/** Build message but not translated */
-	private String _messageBuilt = null;
+	private ITranslatableString _messageBuilt = null;
 	private final String adLanguage;
-	private ValueNamePair _translatedLocalizedMessage = null;
 
 	private Integer adIssueId = null;
 	private boolean userNotified = false;
@@ -192,45 +208,46 @@ public class AdempiereException extends RuntimeException
 	/**
 	 * Default Constructor (saved logger error will be used as message)
 	 */
+	@Deprecated
 	public AdempiereException()
 	{
 		this(getMessageFromLogger());
 	}
 
-	/**
-	 * @param message
-	 */
 	public AdempiereException(final String message)
 	{
-		super(message);
+		super();
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = Services.get(IMsgBL.class).parseTranslatableString(message);
+	}
+
+	public AdempiereException(final ITranslatableString message)
+	{
+		super();
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = message;
 	}
 
 	public AdempiereException(final String adLanguage, final String adMessage, final Object[] params)
 	{
-		super(Services.get(IMsgBL.class).getMsg(adLanguage, adMessage, params));
+		super();
+		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, params);
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
-		setParameter("AD_Language", adLanguage);
-		setParameter("AD_Message", adMessage);
-	}
 
-	public AdempiereException(final Properties ctx, final String adMessage, final Object[] params)
-	{
-		this(Env.getAD_Language(ctx), adMessage, params);
+		setParameter("AD_Language", this.adLanguage);
+		setParameter("AD_Message", adMessage);
 	}
 
 	public AdempiereException(final String adMessage, final Object[] params)
 	{
-		this(Env.getCtx(), adMessage, params);
+		this(Env.getAD_Language(), adMessage, params);
 	}
 
-	/**
-	 * @param cause
-	 */
 	public AdempiereException(final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = ImmutableTranslatableString.empty();
 	}
 
 	/**
@@ -239,64 +256,9 @@ public class AdempiereException extends RuntimeException
 	 */
 	public AdempiereException(final String message, final Throwable cause)
 	{
-		super(message, cause);
+		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-	}
-
-	private final String getOriginalLocalizedMessage()
-	{
-		return super.getLocalizedMessage();
-	}
-
-	@Override
-	public final String getLocalizedMessage()
-	{
-		if (!parseTranslation)
-		{
-			return getOriginalLocalizedMessage();
-		}
-
-		if (!Language.isBaseLanguageSet())
-		{
-			return getOriginalLocalizedMessage();
-		}
-
-		try
-		{
-			final String adLanguage = getADLanguage();
-			return translateOriginalLocalizedMessage(adLanguage);
-		}
-		catch (final Throwable ex)
-		{
-			// don't fail while building the actual exception
-			ex.printStackTrace();
-			return getOriginalLocalizedMessage();
-		}
-	}
-
-	// NOTE: i think we don't have to synchronize this method because usually is called by same thread
-	// NOTE: it's OK to cache by last used language because in 99% of the cases only one language is used.
-	private String translateOriginalLocalizedMessage(final String adLanguage)
-	{
-		ValueNamePair translatedLocalizedMessage = this._translatedLocalizedMessage;
-		if (translatedLocalizedMessage == null || !translatedLocalizedMessage.getValue().equals(adLanguage))
-		{
-			final String msg = getOriginalLocalizedMessage();
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final String msgTrl = msgBL.parseTranslation(adLanguage, msg);
-			this._translatedLocalizedMessage = translatedLocalizedMessage = ValueNamePair.of(adLanguage, msgTrl);
-		}
-		return translatedLocalizedMessage.getName();
-	}
-
-	@Override
-	public final String getMessage()
-	{
-		if (_messageBuilt == null)
-		{
-			_messageBuilt = buildMessage();
-		}
-		return _messageBuilt;
+		this.messageTrl = ImmutableTranslatableString.constant(message);
 	}
 
 	/**
@@ -304,9 +266,59 @@ public class AdempiereException extends RuntimeException
 	 *
 	 * @return original message
 	 */
-	protected final String getOriginalMessage()
+	protected final ITranslatableString getOriginalMessage()
 	{
-		return super.getMessage();
+		return messageTrl;
+	}
+
+	@Override
+	public final String getLocalizedMessage()
+	{
+		final ITranslatableString message = getMessageBuilt();
+
+		if (!Language.isBaseLanguageSet())
+		{
+			return message.getDefaultValue();
+		}
+
+		try
+		{
+			final String adLanguage = getADLanguage();
+			return message.translate(adLanguage);
+		}
+		catch (final Throwable ex)
+		{
+			// don't fail while building the actual exception
+			ex.printStackTrace();
+			return message.getDefaultValue();
+		}
+	}
+
+	@Override
+	public final String getMessage()
+	{
+		// FIXME: i think we shall translate it!
+		return getMessageBuilt().getDefaultValue();
+	}
+
+	/**
+	 * Reset the build message. Next time when the message is needed, it will be re-builded first ({@link #buildMessage()}).
+	 *
+	 * Call this method from each setter which would change your message.
+	 */
+	protected final void resetMessageBuilt()
+	{
+		this._messageBuilt = null;
+	}
+
+	private final ITranslatableString getMessageBuilt()
+	{
+		ITranslatableString messageBuilt = _messageBuilt;
+		if (messageBuilt == null)
+		{
+			_messageBuilt = messageBuilt = buildMessage();
+		}
+		return messageBuilt;
 	}
 
 	/**
@@ -321,26 +333,15 @@ public class AdempiereException extends RuntimeException
 	 *
 	 * @return built detail message
 	 */
-	protected String buildMessage()
+	protected ITranslatableString buildMessage()
 	{
-		final StringBuilder message = new StringBuilder();
+		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
 		message.append(getOriginalMessage());
 		if (appendParametersToMessage)
 		{
 			appendParameters(message);
 		}
-		return message.toString();
-	}
-
-	/**
-	 * Reset the build message. Next time when the message is needed, it will be re-builded first ({@link #buildMessage()}).
-	 *
-	 * Call this method from each setter which would change your message.
-	 */
-	protected final void resetMessageBuilt()
-	{
-		this._messageBuilt = null;
-		this._translatedLocalizedMessage = null;
+		return message.build();
 	}
 
 	protected final String getADLanguage()
@@ -460,16 +461,6 @@ public class AdempiereException extends RuntimeException
 		exception.throwOrLog(throwIt, Level.WARN, logger);
 	}
 
-	/**
-	 * Sets if {@link #getLocalizedMessage()} shall parse the translations.
-	 *
-	 * @param parseTranslation
-	 */
-	protected final void setParseTranslation(final boolean parseTranslation)
-	{
-		this.parseTranslation = parseTranslation;
-	}
-
 	@Override
 	public final void markIssueReported(final int adIssueId)
 	{
@@ -550,7 +541,7 @@ public class AdempiereException extends RuntimeException
 	 * Note: as of now, this method is final by intention; if you need the returned string to be customized, I suggest to not override this method somewhere,
 	 * but instead add another method that can take a format string as parameter.
 	 *
-	 * @return an empty sting if this instance has no parameters or otherwise something like
+	 * @return an empty string if this instance has no parameters or otherwise something like
 	 *
 	 *         <pre>
 	 * Additional parameters:
@@ -558,22 +549,22 @@ public class AdempiereException extends RuntimeException
 	 * name2: value2
 	 *         </pre>
 	 */
-	protected final String buildParametersString()
+	protected final ITranslatableString buildParametersString()
 	{
 		final Map<String, Object> parameters = getParameters();
 		if (parameters.isEmpty())
 		{
-			return "";
+			return ImmutableTranslatableString.empty();
 		}
 
-		final StringBuilder message = new StringBuilder();
+		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
 		message.append("Additional parameters:");
 		for (final Map.Entry<String, Object> paramName2Value : parameters.entrySet())
 		{
-			message.append("\n ").append(paramName2Value.getKey()).append(": ").append(paramName2Value.getValue());
+			message.append("\n ").append(paramName2Value.getKey()).append(": ").appendObj(paramName2Value.getValue());
 		}
 
-		return message.toString();
+		return message.build();
 	}
 
 	/**
@@ -581,21 +572,21 @@ public class AdempiereException extends RuntimeException
 	 *
 	 * @see #buildParametersString()
 	 */
-	protected final void appendParameters(final StringBuilder message)
+	protected final void appendParameters(final TranslatableStringBuilder message)
 	{
-		final String parametersStr = buildParametersString();
-		if (Check.isEmpty(parametersStr, true))
+		final ITranslatableString parametersStr = buildParametersString();
+		if (ImmutableTranslatableString.isBlank(parametersStr))
 		{
 			return;
 		}
 
-		if (message.length() > 0)
+		if (!message.isEmpty())
 		{
 			message.append("\n");
 		}
 		message.append(parametersStr);
 	}
-	
+
 	/**
 	 * Marks this exception as user validation error.
 	 * In case an exception is a user validation error, the framework assumes the message is user friendly and can be displayed directly.
@@ -607,12 +598,12 @@ public class AdempiereException extends RuntimeException
 		userValidationError = true;
 		return this;
 	}
-	
+
 	public final boolean isUserValidationError()
 	{
 		return userValidationError;
 	}
-	
+
 	public static final boolean isUserValidationError(final Throwable ex)
 	{
 		return (ex instanceof AdempiereException) && ((AdempiereException)ex).isUserValidationError();

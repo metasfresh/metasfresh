@@ -1,9 +1,8 @@
-package de.metas.pricing.limit;
+package de.metas.product;
 
-import java.util.Optional;
-import java.util.Set;
+import org.adempiere.util.Check;
 
-import org.adempiere.util.ISingletonService;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,9 +26,22 @@ import org.adempiere.util.ISingletonService;
  * #L%
  */
 
-public interface IPriceLimitRestrictionsRepository extends ISingletonService
+@Value
+public class ProductAndCategoryId
 {
-	Optional<PriceLimitRestrictions> get();
+	public static ProductAndCategoryId of(final int productId, final int productCategoryId)
+	{
+		return new ProductAndCategoryId(productId, productCategoryId);
+	}
 
-	Set<Integer> getPriceCountryIds();
+	int productId;
+	int productCategoryId;
+
+	private ProductAndCategoryId(final int productId, final int productCategoryId)
+	{
+		Check.assumeGreaterThanZero(productId, "productId");
+		Check.assumeGreaterThanZero(productCategoryId, "productCategoryId");
+		this.productId = productId;
+		this.productCategoryId = productCategoryId;
+	}
 }

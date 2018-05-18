@@ -13,15 +13,14 @@ package de.metas.pricing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -85,6 +84,10 @@ public interface IEditablePricingContext extends IPricingContext
 
 	void setProperty(String propertyName, Object value);
 
+	default void setProperty(String propertyName)
+	{
+		setProperty(propertyName, Boolean.TRUE);
+	}
 
 	/**
 	 * See {@link IPricingContext#isManualPrice()}.
@@ -95,6 +98,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	/**
 	 * When setting this and {@link #setM_PricingSystem_ID(int)}, no <code>M_PriceList_ID</code> or <code>M_PriceListVersion_ID</code> needs to be set.
+	 * 
 	 * @param c_Country_ID
 	 */
 	void setC_Country_ID(int c_Country_ID);

@@ -46,7 +46,7 @@ public class PlainMsgBL implements IMsgBL
 	{
 		return adLanguage + "_" + message + "_" + Arrays.toString(params);
 	}
-	
+
 	@Override
 	public String getMsg(final String adLanguage, final String message, final List<Object> params)
 	{
@@ -131,6 +131,12 @@ public class PlainMsgBL implements IMsgBL
 	public ITranslatableString getTranslatableMsgText(final String adMessage, final Object... msgParameters)
 	{
 		return ImmutableTranslatableString.constant(adMessage);
+	}
+
+	@Override
+	public ITranslatableString parseTranslatableString(final String text)
+	{
+		return ImmutableTranslatableString.constant(text);
 	}
 
 	@Override

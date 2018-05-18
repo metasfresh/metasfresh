@@ -1,11 +1,12 @@
 package de.metas.pricing.interceptor;
 
 import java.math.BigDecimal;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -16,12 +17,15 @@ import org.springframework.stereotype.Component;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.impl.PricingConditionsRepository;
+import de.metas.pricing.limit.IPriceLimitRule;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
@@ -96,29 +100,41 @@ public class M_DiscountSchemaBreak
 			return;
 		}
 
+		final PricingConditionsBreak pricingConditionsBreak = PricingConditionsRepository.toPricingConditionsBreak(schemaBreak);
+		final PriceOverrideType priceOverride = pricingConditionsBreak.getPriceOverride();
+		final Set<Integer> countryIds;
+		if (priceOverride == PriceOverrideType.NONE)
+		{
+			// nothing to validate
+			return;
+		}
+		else if (priceOverride == PriceOverrideType.BASE_PRICING_SYSTEM)
+		{
+			countryIds = Services.get(IPriceListDAO.class).retrieveCountryIdsByPricingSystem(pricingConditionsBreak.getBasePricingSystemId());
+
+		}
+		else if (priceOverride == PriceOverrideType.FIXED_PRICE)
+		{
+			countryIds = Services.get(IPricingBL.class).getPriceLimitCountryIds();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown " + PriceOverrideType.class + ": " + priceOverride);
+		}
+
 		final PriceLimitEnforceContext context = PriceLimitEnforceContext.builder()
-				.pricingConditionsBreak(PricingConditionsRepository.toPricingConditionsBreak(schemaBreak))
+				.pricingConditionsBreak(pricingConditionsBreak)
 				.isSOTrx(true)
 				.build();
 
 		Stream.of(context)
-				.flatMap(this::explodeByBPartnerId)
-				.flatMap(this::explodeByCountryId)
+				.flatMap(explodeByCountryIds(countryIds))
 				.forEach(this::enforcePriceLimit);
 	}
 
-	private Stream<PriceLimitEnforceContext> explodeByBPartnerId(@NonNull final PriceLimitEnforceContext context)
+	private Function<PriceLimitEnforceContext, Stream<PriceLimitEnforceContext>> explodeByCountryIds(final Set<Integer> countryIds)
 	{
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-		return bpartnersRepo.retrieveBPartnerIdsForDiscountSchemaId(context.getPricingConditionsBreak().getDiscountSchemaId(), context.getIsSOTrx())
-				.stream()
-				.map(bpartnerId -> context.toBuilder().bpartnerId(bpartnerId).build());
-	}
-
-	private Stream<PriceLimitEnforceContext> explodeByCountryId(@NonNull final PriceLimitEnforceContext context)
-	{
-		return Services.get(IBPartnerDAO.class).retrieveCountryIdsOfBPartnerLocations(context.getBpartnerId())
-				.stream()
+		return context -> countryIds.stream()
 				.map(countryId -> context.toBuilder().countryId(countryId).build());
 	}
 
@@ -156,20 +172,23 @@ public class M_DiscountSchemaBreak
 
 	private CalculatePricingConditionsRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
 	{
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
+
 		final PricingConditionsBreak pricingConditionsBreak = context.getPricingConditionsBreak();
 		final PricingConditionsBreakMatchCriteria matchCriteria = pricingConditionsBreak.getMatchCriteria();
 
 		final int productId = matchCriteria.getProductId();
 		final BigDecimal qty = matchCriteria.getBreakValue();
 
-		final IEditablePricingContext pricingCtx = Services.get(IPricingBL.class).createPricingContext();
+		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setConvertPriceToContextUOM(true);
 		pricingCtx.setM_Product_ID(productId);
-		pricingCtx.setC_UOM_ID(Services.get(IProductBL.class).getStockingUOM(productId).getC_UOM_ID());
+		pricingCtx.setC_UOM_ID(productBL.getStockingUOMId(productId));
 		pricingCtx.setSOTrx(context.getIsSOTrx());
 		pricingCtx.setQty(qty);
 
-		pricingCtx.setC_BPartner_ID(context.getBpartnerId());
+		pricingCtx.setProperty(IPriceLimitRule.OPTION_SkipCheckingBPartnerEligible);
 		pricingCtx.setC_Country_ID(context.getCountryId());
 
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
@@ -191,7 +210,6 @@ public class M_DiscountSchemaBreak
 		final PricingConditionsBreak pricingConditionsBreak;
 		@NonNull
 		final Boolean isSOTrx;
-		final Integer bpartnerId;
 		private Integer countryId;
 	}
 

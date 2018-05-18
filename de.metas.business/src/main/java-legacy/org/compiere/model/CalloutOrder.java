@@ -28,7 +28,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
@@ -36,6 +38,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -352,13 +355,14 @@ public class CalloutOrder extends CalloutEngine
 				// #928: The IsDefaultContact is no longer important
 				// + " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
 				+ " , c." + I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
+		final Object[] sqlParams = new Object[] { C_BPartner_ID };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, C_BPartner_ID);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -535,10 +539,9 @@ public class CalloutOrder extends CalloutEngine
 				}
 			}
 		}
-		catch (final SQLException e)
+		catch (final SQLException ex)
 		{
-			log.error(sql, e);
-			return e.getLocalizedMessage();
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -615,21 +618,14 @@ public class CalloutOrder extends CalloutEngine
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
 				+ "p.SO_Description,p.IsDiscountPrinted,"
 				+ "p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
-				+ ", stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
-				+ ", "
+				+ "stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
+				+ "stats." + I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus + ", "
 				+ "c.AD_User_ID,"
 				+ "p.PO_PriceList_ID, p.PaymentRulePO, p.PO_PaymentTerm_ID,"
 				+ "lbill.C_BPartner_Location_ID AS Bill_Location_ID "
 				+ "FROM C_BPartner p"
 
-				+ " INNER JOIN "
-				+ I_C_BPartner_Stats.Table_Name
-				+ " stats ON (p."
-				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
-				+ " = stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
-				+ ")"
+				+ " INNER JOIN " + I_C_BPartner_Stats.Table_Name + " stats ON (p." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " = stats." + I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID + ")"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
 				// #928
@@ -640,9 +636,9 @@ public class CalloutOrder extends CalloutEngine
 				// metas: (2009 0027 G1): making sure that the default billTo
 				// location is used
 				+ " ORDER BY " + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
-
 		// metas end
 		; // #1
+		final Object[] sqlParams = new Object[] { bill_BPartner_ID };
 
 		final boolean IsSOTrx = order.isSOTrx();
 		PreparedStatement pstmt = null;
@@ -650,7 +646,7 @@ public class CalloutOrder extends CalloutEngine
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, bill_BPartner_ID);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -712,7 +708,7 @@ public class CalloutOrder extends CalloutEngine
 				// CreditAvailable
 				if (IsSOTrx)
 				{
-					final String creditStatus = rs.getString("SOCreditStatus");
+					final String creditStatus = rs.getString(I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus);
 					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
 							.bpartnerId(bill_BPartner_ID)
 							.creditStatus(creditStatus)
@@ -723,11 +719,11 @@ public class CalloutOrder extends CalloutEngine
 					{
 						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bill_BPartner_ID, order.getDateOrdered());
-						final double creditUsed = rs.getDouble("SO_CreditUsed");
-						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
-						if (!rs.wasNull() && CreditAvailable.signum() < 0)
+						final BigDecimal creditUsed = Util.coalesce(rs.getBigDecimal(I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed), BigDecimal.ZERO);
+						final BigDecimal creditAvailable = creditLimit.subtract(creditUsed);
+						if (creditAvailable.signum() < 0)
 						{
-							calloutField.fireDataStatusEEvent(MSG_CreditLimitOver, DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
+							calloutField.fireDataStatusEEvent(MSG_CreditLimitOver, DisplayType.getNumberFormat(DisplayType.Amount).format(creditAvailable), false);
 						}
 					}
 				}
@@ -794,10 +790,9 @@ public class CalloutOrder extends CalloutEngine
 				}
 			}
 		}
-		catch (final SQLException e)
+		catch (final SQLException ex)
 		{
-			log.error("bPartnerBill", e);
-			return e.getLocalizedMessage();
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -884,19 +879,20 @@ public class CalloutOrder extends CalloutEngine
 		if (orderLine.getM_Product_ID() > 0)
 		{
 			orderLine.setC_Charge(null);
-			return "ChargeExclusively";
+			throw new AdempiereException("ChargeExclusively");
 		}
 		orderLine.setM_AttributeSetInstance(null);
 		orderLine.setS_ResourceAssignment_ID(-1);
 		orderLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
 
 		final String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
+		final Object[] sqlParams = new Object[] { C_Charge_ID };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, C_Charge_ID);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -912,10 +908,9 @@ public class CalloutOrder extends CalloutEngine
 				// metas: end
 			}
 		}
-		catch (final SQLException e)
+		catch (final SQLException ex)
 		{
-			log.error(sql, e);
-			return e.getLocalizedMessage();
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -1458,10 +1453,9 @@ public class CalloutOrder extends CalloutEngine
 
 			}
 		}
-		catch (final SQLException e)
+		catch (final SQLException ex)
 		{
-			log.error(sql, e);
-			return e.getLocalizedMessage();
+			throw new DBException(ex, sql);
 		}
 		finally
 		{

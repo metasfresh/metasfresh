@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import groovy.transform.EqualsAndHashCode;
 import lombok.Getter;
@@ -41,6 +42,7 @@ public class AvailabilityException extends AdempiereException
 
 	public AvailabilityException(@NonNull final Map<PurchaseCandidate, Throwable> purchaseCandidate2Throwable)
 	{
+		super(ImmutableTranslatableString.empty());
 		this.purchaseCandidate2Throwable = purchaseCandidate2Throwable;
 	}
 }

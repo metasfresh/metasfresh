@@ -1,29 +1,5 @@
 package de.metas.banking.payment.modelvalidator;
 
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -98,12 +74,10 @@ public class C_PaySelectionLine
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(paySelectionLine);
-
 		final I_C_Currency iCurrency = invoice.getC_Currency();
 		final I_C_Currency baCurrency = bankAccount.getC_Currency();
 
-		throw new AdempiereException(ctx, MSG_PaySelectionLine_Invoice_InvalidCurrency, new Object[] {
+		throw new AdempiereException(MSG_PaySelectionLine_Invoice_InvalidCurrency, new Object[] {
 				invoice.getDocumentNo(),     // invoice
 				iCurrency.getISO_Code(),      // Actual
 				baCurrency.getISO_Code() }); // Expected

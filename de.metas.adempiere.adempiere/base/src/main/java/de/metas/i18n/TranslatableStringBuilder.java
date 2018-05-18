@@ -1,12 +1,16 @@
 package de.metas.i18n;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+
+import com.google.common.base.MoreObjects;
 
 /*
  * #%L
@@ -37,19 +41,46 @@ public class TranslatableStringBuilder
 		return new TranslatableStringBuilder();
 	}
 
+	private static final String EMPTY_JOIN_STRING = "";
+
+	private final List<ITranslatableString> parts = new ArrayList<>();
+	private StringBuilder lastStringBuffer;
+
 	private TranslatableStringBuilder()
 	{
 	}
 
-	private final List<ITranslatableString> parts = new ArrayList<>();
+	/**
+	 * Use {@link #build()} instead.
+	 */
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this).addValue(parts).toString();
+	}
 
 	public ITranslatableString build()
 	{
+		appendLastStringBuffer();
+
 		if (parts.isEmpty())
 		{
 			return ITranslatableString.empty();
 		}
-		return new CompositeTranslatableString(parts, "");
+		else if (parts.size() == 1)
+		{
+			return parts.get(0);
+		}
+		else
+		{
+			return new CompositeTranslatableString(parts, EMPTY_JOIN_STRING);
+		}
+	}
+
+	public boolean isEmpty()
+	{
+		return parts.isEmpty();
 	}
 
 	public TranslatableStringBuilder append(final ITranslatableString value)
@@ -59,7 +90,52 @@ public class TranslatableStringBuilder
 			return this;
 		}
 
+		appendLastStringBuffer();
+
 		parts.add(value);
+		return this;
+	}
+
+	private void appendLastStringBuffer()
+	{
+		if (lastStringBuffer == null)
+		{
+			return;
+		}
+
+		if (lastStringBuffer.length() > 0)
+		{
+			parts.add(ImmutableTranslatableString.constant(lastStringBuffer.toString()));
+		}
+
+		lastStringBuffer = null;
+	}
+
+	public TranslatableStringBuilder appendObj(final Object obj)
+	{
+		if (obj == null)
+		{
+			return append("null");
+		}
+		else if (obj instanceof ITranslatableString)
+		{
+			return append((ITranslatableString)obj);
+		}
+		// TODO: handle more types, like date, integer, BigDecimal etc
+		else
+		{
+			return append(String.valueOf(obj));
+		}
+	}
+
+	public TranslatableStringBuilder insertFirst(final ITranslatableString value)
+	{
+		if (value == null)
+		{
+			return this;
+		}
+
+		parts.add(0, value);
 		return this;
 	}
 
@@ -70,7 +146,14 @@ public class TranslatableStringBuilder
 			return this;
 		}
 
-		return append(ConstantTranslatableString.of(value));
+		if (lastStringBuffer == null)
+		{
+			lastStringBuffer = new StringBuilder();
+		}
+		lastStringBuffer.append(value);
+
+		return this;
+		// return append(ConstantTranslatableString.of(value));
 	}
 
 	public TranslatableStringBuilder append(final BigDecimal value, final int displayType)
@@ -78,7 +161,17 @@ public class TranslatableStringBuilder
 		return append(NumberTranslatableString.of(value, displayType));
 	}
 
+	public TranslatableStringBuilder append(final int value)
+	{
+		return append(NumberTranslatableString.of(value));
+	}
+
 	public TranslatableStringBuilder appendDate(final Date value)
+	{
+		return append(DateTimeTranslatableString.ofDate(value));
+	}
+
+	public TranslatableStringBuilder appendDate(final LocalDate value)
 	{
 		return append(DateTimeTranslatableString.ofDate(value));
 	}
@@ -88,10 +181,33 @@ public class TranslatableStringBuilder
 		return append(DateTimeTranslatableString.ofDateTime(value));
 	}
 
+	public TranslatableStringBuilder appendDateTime(final LocalDateTime value)
+	{
+		return append(DateTimeTranslatableString.ofDateTime(value));
+	}
+
+	public TranslatableStringBuilder append(final Boolean value)
+	{
+		if (value == null)
+		{
+			return append("?");
+		}
+		else
+		{
+			return append(Services.get(IMsgBL.class).getTranslatableMsgText(value));
+		}
+	}
+
 	public TranslatableStringBuilder appendADMessage(final String adMessage, final Object... msgParameters)
 	{
 		final ITranslatableString value = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, msgParameters);
 		return append(value);
+	}
+
+	public TranslatableStringBuilder insertFirstADMessage(final String adMessage, final Object... msgParameters)
+	{
+		final ITranslatableString value = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, msgParameters);
+		return insertFirst(value);
 	}
 
 	public TranslatableStringBuilder appendADElement(final String columnName)

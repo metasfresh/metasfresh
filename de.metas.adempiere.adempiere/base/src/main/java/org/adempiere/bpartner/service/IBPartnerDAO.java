@@ -25,7 +25,6 @@ package org.adempiere.bpartner.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_Relation;
@@ -56,18 +55,6 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(Properties ctx, int bpartnerId, String trxName);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(I_C_BPartner bpartner);
-	
-	Set<Integer> retrieveCountryIdsOfBPartnerLocations(int bpartnerId);
-
-	/**
-	 * Contacts of the partner, ordered by ad_user_ID, ascending
-	 *
-	 * @param bPartnerId
-	 * @param reload
-	 * @param trxName
-	 * @return
-	 */
-	List<org.compiere.model.I_AD_User> retrieveContacts(int bPartnerId, boolean reload, String trxName);
 
 	/**
 	 * Contacts of the partner, ordered by ad_user_ID, ascending
@@ -217,8 +204,6 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return
 	 */
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
-
-	List<Integer> retrieveBPartnerIdsForDiscountSchemaId(int discountSchemaId, boolean isSOTrx);
 
 	Map<Integer, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(int adClientId, boolean isSOTrx);
 }
