@@ -128,3 +128,58 @@ UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-05-18 18:18:4
 UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-05-18 18:18:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=552059
 ;
 
+-- 2018-05-18T18:20:05.734
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-18 18:20:05','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Organisation',Description='',Help='' WHERE AD_Field_ID=564240 AND AD_Language='en_US'
+;
+
+-- 2018-05-18T18:20:15.138
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-18 18:20:15','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Active',Description='',Help='' WHERE AD_Field_ID=564241 AND AD_Language='en_US'
+;
+
+-- 2018-05-18T18:20:25.123
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-18 18:20:25','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Client',Description='',Help='' WHERE AD_Field_ID=564239 AND AD_Language='en_US'
+;
+
+-- 2018-05-18T18:20:52.271
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-18 18:20:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Invoice Candidate Term ID' WHERE AD_Field_ID=564243 AND AD_Language='en_US'
+;
+
+-- 2018-05-18T18:21:10.902
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-18 18:21:10','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Invoice Candidate Assigned ID' WHERE AD_Field_ID=564244 AND AD_Language='en_US'
+;
+
+-- 2018-05-18T18:21:28.831
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-18 18:21:28','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Invoice Candidate Assignment' WHERE AD_Field_ID=564242 AND AD_Language='en_US'
+;
+
+-- 2018-05-18T18:23:06.256
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-18 18:23:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Refund Assignment' WHERE AD_Tab_ID=541110 AND AD_Language='en_US'
+;
+
+-- 2018-05-18T18:23:42.251
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-18 18:23:42','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Flatrate Term' WHERE AD_Field_ID=564245 AND AD_Language='en_US'
+;
+
+-- 2018-05-18T18:24:01.846
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Vertrag Rechnungskandidat',Updated=TO_TIMESTAMP('2018-05-18 18:24:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=564243
+;
+
+-- 2018-05-18T18:24:05.916
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Pauschale Vertragsperiode',Updated=TO_TIMESTAMP('2018-05-18 18:24:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=564245
+;
+
+-- 2018-05-18T18:24:15.150
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-18 18:24:15','YYYY-MM-DD HH24:MI:SS'),Name='Invoice Candidate Term' WHERE AD_Field_ID=564243 AND AD_Language='en_US'
+;
+
