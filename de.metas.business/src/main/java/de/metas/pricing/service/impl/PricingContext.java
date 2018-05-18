@@ -379,6 +379,12 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
+	public boolean isPropertySet(final String propertyName)
+	{
+		return properties.get(propertyName) != null;
+	}
+
+	@Override
 	public void setProperty(final String propertyName, final Object value)
 	{
 		properties.put(propertyName, value);
@@ -419,25 +425,25 @@ class PricingContext implements IEditablePricingContext
 	{
 		this.C_Country_ID = countryId;
 	}
-	
+
 	@Override
 	public boolean isFailIfNotCalculated()
 	{
 		return failIfNotCalculated;
 	}
-	
+
 	@Override
 	public void setFailIfNotCalculated(boolean failIfNotCalculated)
 	{
 		this.failIfNotCalculated = failIfNotCalculated;
 	}
-	
+
 	@Override
 	public void setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag)
 	{
 		this.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
 	}
-	
+
 	@Override
 	public boolean isSkipCheckingPriceListSOTrxFlag()
 	{
