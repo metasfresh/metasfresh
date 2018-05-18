@@ -362,10 +362,9 @@ public class AggregationEngine implements IAggregationEngine
 
 		invoiceHeader.setTaxIncluded(invoiceCandBL.isTaxIncluded(ic)); // task 08541
 
-		final I_C_DocType invoiceDocType = ic.getC_DocTypeInvoice();
-		if (invoiceDocType != null && invoiceDocType.getC_DocType_ID() > 0)
+		if (ic.getC_DocTypeInvoice_ID() > 0)
 		{
-			invoiceHeader.setC_DocTypeInvoice(invoiceDocType);
+			invoiceHeader.setC_DocTypeInvoice(ic.getC_DocTypeInvoice());
 		}
 
 		// 06630: set shipment id to header
