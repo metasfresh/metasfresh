@@ -14,22 +14,33 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
+import de.metas.document.IDocTypeDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.Money;
@@ -85,6 +96,19 @@ public class InvoiceCandidateRepository
 	public <T extends InvoiceCandidate> T ofRecord(@NonNull final I_C_Invoice_Candidate record)
 	{
 		return invoiceCandidateFactory.ofRecord(record);
+	}
+
+	public boolean isRefundInvoiceCandidateRecord(@NonNull final I_C_Invoice_Candidate record)
+	{
+		if (record.getAD_Table_ID() != getTableId(I_C_Flatrate_Term.class))
+		{
+			return false;
+		}
+
+		final I_C_Flatrate_Term term = loadOutOfTrx(record.getRecord_ID(), I_C_Flatrate_Term.class);
+		final boolean recordIsARefundCandidate = X_C_Flatrate_Term.TYPE_CONDITIONS_Refund.equals(term.getType_Conditions());
+
+		return recordIsARefundCandidate;
 	}
 
 	public Optional<InvoiceCandidateId> getId(@NonNull final RefundInvoiceCandidateQuery query)
@@ -183,7 +207,9 @@ public class InvoiceCandidateRepository
 
 	public void deleteAssignments(@Nullable final DeleteAssignmentsRequest request)
 	{
-		final IQueryBuilder<I_C_Invoice_Candidate_Assignment> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_C_Invoice_Candidate_Assignment> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class);
 
 		if (request.isOnlyActive())
@@ -191,48 +217,60 @@ public class InvoiceCandidateRepository
 			queryBuilder.addOnlyActiveRecordsFilter();
 		}
 
-		final InvoiceCandidateId removeForContractCandidateId = request.getRemoveForContractCandidateId();
+		final ICompositeQueryFilter<I_C_Invoice_Candidate_Assignment> invoiceCandidateIDsOrFilter = queryBL
+				.createCompositeQueryFilter(I_C_Invoice_Candidate_Assignment.class)
+				.setJoinOr();
+
+		final InvoiceCandidateId removeForContractCandidateId = request.getRemoveForRefundCandidateId();
 		if (removeForContractCandidateId != null)
 		{
-			queryBuilder.addEqualsFilter(
+			invoiceCandidateIDsOrFilter.addEqualsFilter(
 					I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Term_ID,
 					removeForContractCandidateId.getRepoId());
 		}
 		final InvoiceCandidateId removeForAssignedCandidateId = request.getRemoveForAssignedCandidateId();
 		if (removeForAssignedCandidateId != null)
 		{
-			queryBuilder.addEqualsFilter(
+			invoiceCandidateIDsOrFilter.addEqualsFilter(
 					I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assignment_ID,
 					removeForAssignedCandidateId.getRepoId());
 		}
 
 		queryBuilder
+				.filter(invoiceCandidateIDsOrFilter)
 				.create()
 				.delete();
 	}
 
+	/**
+	 *
+	 * Note: {@link DeleteAssignmentsRequestBuilder#removeForAssignedCandidateId(InvoiceCandidateId)}
+	 * and {@link DeleteAssignmentsRequestBuilder#removeForRefundCandidateId}
+	 * are {@code OR}ed and at least one of them has to be no-null.
+	 *
+	 */
 	@Value
 	public static final class DeleteAssignmentsRequest
 	{
-		InvoiceCandidateId removeForContractCandidateId;
+		InvoiceCandidateId removeForRefundCandidateId;
 		InvoiceCandidateId removeForAssignedCandidateId;
 
 		boolean onlyActive;
 
 		@Builder
 		private DeleteAssignmentsRequest(
-				@Nullable final InvoiceCandidateId removeForContractCandidateId,
+				@Nullable final InvoiceCandidateId removeForRefundCandidateId,
 				@Nullable final InvoiceCandidateId removeForAssignedCandidateId,
 				@Nullable final Boolean onlyActive)
 		{
 			Check.errorIf(
-					removeForContractCandidateId == null
+					removeForRefundCandidateId == null
 							&& removeForAssignedCandidateId == null,
 					"At least one of the two invoiceCandidateId needs to be not-null");
 
 			this.onlyActive = Util.coalesce(onlyActive, true);
 
-			this.removeForContractCandidateId = removeForContractCandidateId;
+			this.removeForRefundCandidateId = removeForRefundCandidateId;
 			this.removeForAssignedCandidateId = removeForAssignedCandidateId;
 		}
 	}
@@ -301,6 +339,10 @@ public class InvoiceCandidateRepository
 		final I_C_Invoice_Candidate refundInvoiceCandidateRecord = Services.get(IInvoiceCandBL.class)
 				.splitCandidate(assignableInvoiceCandidateRecord);
 
+		final I_C_ILCandHandler handlerRecord = Services.get(IInvoiceCandidateHandlerDAO.class)
+				.retrieveForClassOneOnly(Env.getCtx(), FlatrateTerm_Handler.class);
+		refundInvoiceCandidateRecord.setC_ILCandHandler(handlerRecord);
+
 		refundInvoiceCandidateRecord.setC_Order(null);
 		refundInvoiceCandidateRecord.setC_OrderLine(null);
 
@@ -317,15 +359,72 @@ public class InvoiceCandidateRepository
 
 		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(refundConfig.getInvoiceScheduleId().getRepoId());
 		refundInvoiceCandidateRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
+		refundInvoiceCandidateRecord.setInvoiceRule_Override(null);
+		refundInvoiceCandidateRecord.setDateToInvoice_Override(null);
 
-		refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(refundConfig.getDocTypeId().getRepoId());
-		final boolean isSOTrx = refundInvoiceCandidateRecord.getC_DocTypeInvoice().isSOTrx();
+		final boolean soTrx = !assignableInvoiceCandidateRecord.isSOTrx();
 
-		refundInvoiceCandidateRecord.setIsSOTrx(isSOTrx);
+		refundInvoiceCandidateRecord.setIsSOTrx(soTrx);
+
+		try
+		{
+			final int docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundConfig);
+			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+					.setParameter("invoiceCandidate", invoiceCandidate)
+					.setParameter("refundConfig", refundConfig)
+					.setParameter("assignableInvoiceCandidateRecord", assignableInvoiceCandidateRecord);
+		}
 
 		saveRecord(refundInvoiceCandidateRecord);
 
 		return invoiceCandidateFactory.ofNullableRefundRecord(refundInvoiceCandidateRecord).get();
+	}
+
+	private int computeDocType(
+			final I_C_Invoice_Candidate assignableInvoiceCandidateRecord,
+			final RefundConfig refundConfig)
+	{
+		final boolean soTrx = !assignableInvoiceCandidateRecord.isSOTrx();
+
+		final DocTypeQueryBuilder docTypeQueryBuilder = DocTypeQuery
+				.builder()
+				.isSOTrx(soTrx)
+				.adClientId(assignableInvoiceCandidateRecord.getAD_Client_ID())
+				.adOrgId(assignableInvoiceCandidateRecord.getAD_Org_ID())
+				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE);
+
+		switch (refundConfig.getRefundInvoiceType())
+		{
+			case INVOICE:
+				if (soTrx)
+				{
+					docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_ARInvoice); // Rechnung (Debitorenkonten) = outgoing "they pay" invoice
+				}
+				else
+				{
+					docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice); // Rechnung (Kreditorenkonten) = incoming "we pay" invoice
+				}
+				break;
+			case CREDITMEMO:
+				if (soTrx)
+				{
+					docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo); // Gutschrift (Debitorenkonten)
+				}
+				else
+				{
+					docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_ARInvoice); // Gutschrift (Debitorenkonten)
+				}
+				break;
+			default:
+				Check.fail("The current refundConfig has an ussupported invoice type={}", refundConfig.getRefundInvoiceType());
+		}
+
+		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQueryBuilder.build());
+		return Check.assumeGreaterThanZero(docTypeId, "doctype");
 	}
 
 	private RefundConfig retrieveConfig(@NonNull final I_C_Invoice_Candidate refundInvoiceCandidateRecord)

@@ -22,8 +22,9 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
-import de.metas.document.DocTypeId;
+import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
@@ -139,9 +140,27 @@ public class RefundConfigRepository
 		{
 			return null;
 		}
+
+		final RefundInvoiceType refundInvoiceType;
+		if (X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo.equals(record.getRefundInvoiceType()))
+		{
+			refundInvoiceType = RefundInvoiceType.CREDITMEMO;
+		}
+		else if (X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice.equals(record.getRefundInvoiceType()))
+		{
+			refundInvoiceType = RefundInvoiceType.INVOICE;
+		}
+		else
+		{
+			Check.fail(
+					"The given C_Flatrate_RefundConfig has an unsupposed refundInvoiceType={}; record={}",
+					record.getRefundInvoiceType(), record);
+			return null;
+		}
+
 		final RefundConfigBuilder builder = RefundConfig.builder()
 				.conditionsId(ConditionsId.ofRepoId(record.getC_Flatrate_Conditions_ID()))
-				.docTypeId(DocTypeId.ofRepoId(record.getC_DocTypeInvoice_ID()))
+				.refundInvoiceType(refundInvoiceType)
 				.invoiceScheduleId(InvoiceScheduleId.ofRepoId(record.getC_InvoiceSchedule_ID()))
 				.percent(record.getPercent());
 		if (record.getM_Product_ID() > 0)

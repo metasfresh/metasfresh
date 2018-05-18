@@ -26,6 +26,7 @@ import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyRepository;
@@ -100,7 +101,7 @@ public class InvoiceCandidateFactoryTest
 		final I_C_Flatrate_RefundConfig refundConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);
 		refundConfigRecord.setC_Flatrate_Conditions(conditionsRecord);
 		refundConfigRecord.setM_Product(productRecord);
-		refundConfigRecord.setC_DocTypeInvoice_ID(30);
+		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
 		refundConfigRecord.setC_InvoiceSchedule_ID(40);
 		refundConfigRecord.setPercent(THREE);
 		saveRecord(refundConfigRecord);

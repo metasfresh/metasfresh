@@ -15,7 +15,7 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1834284503L;
+	private static final long serialVersionUID = 1849446722L;
 
     /** Standard Constructor */
     public X_C_Flatrate_RefundConfig (Properties ctx, int C_Flatrate_RefundConfig_ID, String trxName)
@@ -23,11 +23,12 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
       super (ctx, C_Flatrate_RefundConfig_ID, trxName);
       /** if (C_Flatrate_RefundConfig_ID == 0)
         {
-			setC_DocTypeInvoice_ID (0);
 			setC_Flatrate_Conditions_ID (0);
 			setC_Flatrate_RefundConfig_ID (0);
 			setC_InvoiceSchedule_ID (0);
+			setM_Product_ID (0);
 			setPercent (BigDecimal.ZERO);
+			setRefundInvoiceType (null); // Invoice
         } */
     }
 
@@ -45,43 +46,6 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocTypeInvoice() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocTypeInvoice_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocTypeInvoice(org.compiere.model.I_C_DocType C_DocTypeInvoice)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocTypeInvoice_ID, org.compiere.model.I_C_DocType.class, C_DocTypeInvoice);
-	}
-
-	/** Set Rechnungs-Belegart.
-		@param C_DocTypeInvoice_ID 
-		Document type used for invoices generated from this sales document
-	  */
-	@Override
-	public void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID)
-	{
-		if (C_DocTypeInvoice_ID < 1) 
-			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, Integer.valueOf(C_DocTypeInvoice_ID));
-	}
-
-	/** Get Rechnungs-Belegart.
-		@return Document type used for invoices generated from this sales document
-	  */
-	@Override
-	public int getC_DocTypeInvoice_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeInvoice_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions() throws RuntimeException
@@ -233,5 +197,31 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** 
+	 * RefundInvoiceType AD_Reference_ID=540863
+	 * Reference name: RefundInvoiceType
+	 */
+	public static final int REFUNDINVOICETYPE_AD_Reference_ID=540863;
+	/** Invoice = Invoice */
+	public static final String REFUNDINVOICETYPE_Invoice = "Invoice";
+	/** Creditmemo = Creditmemo */
+	public static final String REFUNDINVOICETYPE_Creditmemo = "Creditmemo";
+	/** Set Rückvergütung per.
+		@param RefundInvoiceType Rückvergütung per	  */
+	@Override
+	public void setRefundInvoiceType (java.lang.String RefundInvoiceType)
+	{
+
+		set_Value (COLUMNNAME_RefundInvoiceType, RefundInvoiceType);
+	}
+
+	/** Get Rückvergütung per.
+		@return Rückvergütung per	  */
+	@Override
+	public java.lang.String getRefundInvoiceType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_RefundInvoiceType);
 	}
 }

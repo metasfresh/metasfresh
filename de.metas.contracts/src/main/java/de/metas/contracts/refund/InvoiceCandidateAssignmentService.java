@@ -105,12 +105,15 @@ public class InvoiceCandidateAssignmentService
 		final DeleteAssignmentsRequest request = DeleteAssignmentsRequest
 				.builder()
 				.removeForAssignedCandidateId(invoiceCandidate.getId())
-				.removeForContractCandidateId(invoiceCandidate.getId())
+				.removeForRefundCandidateId(invoiceCandidate.getId())
 				.onlyActive(false) // remove *all*, as the method name sais
 				.build();
 		invoiceCandidateRepository.deleteAssignments(request);
 	}
 
+	/**
+	 * Note: assumes {@link AssignableInvoiceCandidate#isAssigned()} to be {@code true}.
+	 */
 	public UnassignedPairOfCandidates unassignCandidate(@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
 		final RefundInvoiceCandidate refundInvoiceCandidate = Check

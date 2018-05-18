@@ -6,10 +6,13 @@ import java.sql.Timestamp;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import ch.qos.logback.classic.Level;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
 import de.metas.contracts.refund.InvoiceCandidate;
 import de.metas.contracts.refund.InvoiceCandidateAssignmentService;
@@ -17,6 +20,7 @@ import de.metas.contracts.refund.InvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -43,12 +47,15 @@ import lombok.NonNull;
 
 @Component("de.metas.contracts.refund.interceptor.C_Invoice_Candidate")
 @Interceptor(I_C_Invoice_Candidate.class)
-public class C_Invoice_Candidate
+public class C_Invoice_Candidate_Manage_Refund_Candidates
 {
+
+	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate_Manage_Refund_Candidates.class);
+
 	private final InvoiceCandidateRepository invoiceCandidateRepository;
 	private final InvoiceCandidateAssignmentService invoiceCandidateAssignmentService;
 
-	private C_Invoice_Candidate(
+	private C_Invoice_Candidate_Manage_Refund_Candidates(
 			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository,
 			@NonNull final InvoiceCandidateAssignmentService invoiceCandidateAssociationService)
 	{
@@ -56,31 +63,53 @@ public class C_Invoice_Candidate
 		this.invoiceCandidateAssignmentService = invoiceCandidateAssociationService;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
+	@ModelChange(//
+			timings = ModelValidator.TYPE_AFTER_CHANGE, //
+			ifColumnsChanged = {
+					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice,
+					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Effective,
+					I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice,
+					I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced })
 	public void associateDuringUpdateProcess(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		if (!Services.get(IInvoiceCandBL.class).isUpdateProcessInProgress())
 		{
-			return;
+			return; // we one want one part to manage refund invoice candidate to avoid locking problems and other race conditions
 		}
+
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(invoiceCandidateRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
 		if (invoicableFromDate == null)
 		{
 			return; // it's not yet ready
 		}
-
-		// TODO: address the case that it is refund-record itself.
-
-		final AssignableInvoiceCandidate assignableInvoiceCandidate = invoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
-		final RefundInvoiceCandidate refundInvoiceCandidate = assignableInvoiceCandidate.getRefundInvoiceCandidate();
-
-		if (refundInvoiceCandidate == null)
+		if (invoiceCandidateRepository.isRefundInvoiceCandidateRecord(invoiceCandidateRecord))
 		{
-			invoiceCandidateAssignmentService.createOrFindRefundCandidateAndAssignIfFeasible(assignableInvoiceCandidate);
 			return;
 		}
 
-		invoiceCandidateRepository.save(refundInvoiceCandidate.withUpdatedMoneyAmout(assignableInvoiceCandidate));
+		associateDuringUpdateProcess0(invoiceCandidateRecord);
+	}
+
+	private void associateDuringUpdateProcess0(final I_C_Invoice_Candidate invoiceCandidateRecord)
+	{
+		try
+		{
+			final AssignableInvoiceCandidate assignableInvoiceCandidate = invoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
+			final RefundInvoiceCandidate refundInvoiceCandidate = assignableInvoiceCandidate.getRefundInvoiceCandidate();
+
+			if (refundInvoiceCandidate == null)
+			{
+				invoiceCandidateAssignmentService.createOrFindRefundCandidateAndAssignIfFeasible(assignableInvoiceCandidate);
+				return;
+			}
+
+			invoiceCandidateRepository.save(refundInvoiceCandidate.withUpdatedMoneyAmout(assignableInvoiceCandidate));
+		}
+		catch (final RuntimeException e)
+		{
+			// allow the "normal ICs" to be updated, even if something is wrong with the "refund-ICs"
+			Loggables.get().withLogger(logger, Level.WARN).addLog("associateDuringUpdateProcess0 - Caught an exception; please check the async workpackage log; e={}", e);
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -89,11 +118,16 @@ public class C_Invoice_Candidate
 		final InvoiceCandidate invoiceCandidate = invoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
 		if (invoiceCandidate instanceof RefundInvoiceCandidate)
 		{
-			invoiceCandidateAssignmentService.removeAllAssignments(RefundInvoiceCandidate.cast(invoiceCandidate));
+			final RefundInvoiceCandidate refundCandidate = RefundInvoiceCandidate.cast(invoiceCandidate);
+			invoiceCandidateAssignmentService.removeAllAssignments(refundCandidate);
 		}
 		else
 		{
-			invoiceCandidateAssignmentService.unassignCandidate(AssignableInvoiceCandidate.cast(invoiceCandidate));
+			final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.cast(invoiceCandidate);
+			if (assignableCandidate.isAssigned())
+			{
+				invoiceCandidateAssignmentService.unassignCandidate(assignableCandidate);
+			}
 		}
 	}
 }

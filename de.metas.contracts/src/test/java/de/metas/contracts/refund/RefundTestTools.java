@@ -20,7 +20,9 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -85,7 +87,7 @@ public class RefundTestTools
 		final I_C_Flatrate_RefundConfig refundConfig = newInstance(I_C_Flatrate_RefundConfig.class);
 		refundConfig.setC_Flatrate_Conditions(conditions);
 		refundConfig.setM_Product_ID(productId.getRepoId());
-		refundConfig.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
+		refundConfig.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
 		refundConfig.setC_InvoiceSchedule_ID(invoiceScheduleId.getRepoId());
 		refundConfig.setPercent(TWENTY);
 		saveRecord(refundConfig);
@@ -113,7 +115,7 @@ public class RefundTestTools
 						.percent(TWENTY)
 						.conditionsId(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID()))
 						.invoiceScheduleId(invoiceScheduleId)
-						.docTypeId(docTypeId)
+						.refundInvoiceType(RefundInvoiceType.CREDITMEMO)
 						.build())
 				.refundContractId(FlatrateTermId.ofRepoId(contract.getC_Flatrate_Term_ID()))
 				.money(money)

@@ -69,35 +69,6 @@ public interface I_C_Flatrate_RefundConfig
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Rechnungs-Belegart.
-	 * Document type used for invoices generated from this sales document
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID);
-
-	/**
-	 * Get Rechnungs-Belegart.
-	 * Document type used for invoices generated from this sales document
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_DocTypeInvoice_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocTypeInvoice();
-
-	public void setC_DocTypeInvoice(org.compiere.model.I_C_DocType C_DocTypeInvoice);
-
-    /** Column definition for C_DocTypeInvoice_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_RefundConfig, org.compiere.model.I_C_DocType> COLUMN_C_DocTypeInvoice_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_RefundConfig, org.compiere.model.I_C_DocType>(I_C_Flatrate_RefundConfig.class, "C_DocTypeInvoice_ID", org.compiere.model.I_C_DocType.class);
-    /** Column name C_DocTypeInvoice_ID */
-    public static final String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
-
-	/**
 	 * Set Vertragsbedingungen.
 	 *
 	 * <br>Type: Search
@@ -151,7 +122,7 @@ public interface I_C_Flatrate_RefundConfig
 	 * Set Terminplan Rechnung.
 	 * Plan für die Rechnungsstellung
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -161,7 +132,7 @@ public interface I_C_Flatrate_RefundConfig
 	 * Get Terminplan Rechnung.
 	 * Plan für die Rechnungsstellung
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -236,7 +207,7 @@ public interface I_C_Flatrate_RefundConfig
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setM_Product_ID (int M_Product_ID);
@@ -246,7 +217,7 @@ public interface I_C_Flatrate_RefundConfig
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
@@ -284,6 +255,29 @@ public interface I_C_Flatrate_RefundConfig
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_RefundConfig, Object> COLUMN_Percent = new org.adempiere.model.ModelColumn<I_C_Flatrate_RefundConfig, Object>(I_C_Flatrate_RefundConfig.class, "Percent", null);
     /** Column name Percent */
     public static final String COLUMNNAME_Percent = "Percent";
+
+	/**
+	 * Set Rückvergütung per.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setRefundInvoiceType (java.lang.String RefundInvoiceType);
+
+	/**
+	 * Get Rückvergütung per.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getRefundInvoiceType();
+
+    /** Column definition for RefundInvoiceType */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_RefundConfig, Object> COLUMN_RefundInvoiceType = new org.adempiere.model.ModelColumn<I_C_Flatrate_RefundConfig, Object>(I_C_Flatrate_RefundConfig.class, "RefundInvoiceType", null);
+    /** Column name RefundInvoiceType */
+    public static final String COLUMNNAME_RefundInvoiceType = "RefundInvoiceType";
 
 	/**
 	 * Get Aktualisiert.

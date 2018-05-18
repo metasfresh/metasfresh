@@ -36,7 +36,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
 public class AssignableInvoiceCandidate implements InvoiceCandidate
 {
 	public static AssignableInvoiceCandidate cast(@NonNull final Object invoiceCandidate)
@@ -44,26 +43,35 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 		return (AssignableInvoiceCandidate)invoiceCandidate;
 	}
 
-	@NonNull
 	InvoiceCandidateId id;
-
-	@NonNull
 	BPartnerId bpartnerId;
-
-	@NonNull
 	ProductId productId;
-
-	@NonNull
 	LocalDate invoiceableFrom;
-
-	@Nullable
 	RefundInvoiceCandidate refundInvoiceCandidate;
-
-	@NonNull
 	Money money;
-
-	@Nullable
 	Money oldMoney;
+	boolean soTrx;
+
+	@Builder(toBuilder = true)
+	private AssignableInvoiceCandidate(
+			@NonNull final InvoiceCandidateId id,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ProductId productId,
+			@NonNull final LocalDate invoiceableFrom,
+			@Nullable final RefundInvoiceCandidate refundInvoiceCandidate,
+			@NonNull final Money money,
+			@Nullable final Money oldMoney,
+			@NonNull final Boolean soTrx)
+	{
+		this.id = id;
+		this.bpartnerId = bpartnerId;
+		this.productId = productId;
+		this.invoiceableFrom = invoiceableFrom;
+		this.refundInvoiceCandidate = refundInvoiceCandidate;
+		this.money = money;
+		this.oldMoney = oldMoney;
+		this.soTrx = soTrx;
+	}
 
 	public AssignableInvoiceCandidate withoutRefundInvoiceCandidate()
 	{
@@ -80,5 +88,10 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 		}
 
 		return money.subtract(oldMoney);
+	}
+
+	public boolean isAssigned()
+	{
+		return refundInvoiceCandidate != null;
 	}
 }

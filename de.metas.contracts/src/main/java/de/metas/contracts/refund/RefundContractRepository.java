@@ -58,6 +58,7 @@ public class RefundContractRepository
 	{
 		// TODO don't return ID if invoiceCandidate if the invoicecandidate references a refund contract by itself!
 
+
 		final Timestamp invoicableFromTimestamp = TimeUtil.asTimestamp(invoiceCandidate.getInvoiceableFrom());
 		final int billPartnerId = invoiceCandidate.getBpartnerId().getRepoId();
 		final int productId = invoiceCandidate.getProductId().getRepoId();

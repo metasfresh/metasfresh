@@ -4,10 +4,7 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.Objects;
-
 import de.metas.contracts.ConditionsId;
-import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -40,6 +37,14 @@ import lombok.Value;
 @Builder
 public class RefundConfig
 {
+	public enum RefundInvoiceType
+	{
+		INVOICE, CREDITMEMO;
+	}
+
+	@NonNull
+	RefundInvoiceType refundInvoiceType;
+
 	@NonNull
 	BigDecimal percent;
 
@@ -51,19 +56,5 @@ public class RefundConfig
 	InvoiceScheduleId invoiceScheduleId;
 
 	@NonNull
-	DocTypeId docTypeId;
-
-	@NonNull
 	ConditionsId conditionsId;
-
-
-
-	public boolean matchesProductId(@NonNull final ProductId productId)
-	{
-		if (this.productId == null)
-		{
-			return true;
-		}
-		return Objects.equal(productId, this.productId);
-	}
 }
