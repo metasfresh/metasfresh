@@ -21,7 +21,9 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice;
+import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.interceptor.MainValidator;
+import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.pricing.ContractDiscount;
@@ -40,8 +42,8 @@ import de.metas.pricing.rules.PriceListVersion;
  */
 public class FlatrateTermTestHelper
 {
-	private final String invoiceCandClassname = "de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler";
-	private final String shipmentCandClassname = "de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler";
+	private final String invoiceCandClassname = FlatrateTerm_Handler.class.getName();
+	private final String shipmentCandClassname = SubscriptionShipmentScheduleHandler.class.getName();
 
 	private final Map<String, String> pricingRules = new HashMap<>();
 
@@ -190,14 +192,14 @@ public class FlatrateTermTestHelper
 
 	/**
 	 * Setup module interceptors: "de.metas.contracts" module - FULL (interceptors, factories, etc), like in production (used by some integration tests).
-	 * 
+	 *
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
-	 * 
+	 *
 	 * <pre>
 	&#64;RunWith(SpringRunner.class)
 	&#64;SpringBootTest(classes= StartupListener.class)
 	 * </pre>
-	 * 
+	 *
 	 * Otherwise, tests will probably fail due to spring application context.
 	 */
 	public final void setupModuleInterceptors_Contracts_Full()
