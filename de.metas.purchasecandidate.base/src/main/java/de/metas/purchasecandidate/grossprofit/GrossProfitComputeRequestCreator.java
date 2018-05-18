@@ -5,11 +5,7 @@ import static java.math.BigDecimal.ONE;
 import java.time.LocalDate;
 
 import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_Currency;
-import org.compiere.util.Env;
 
-import de.metas.currency.ICurrencyDAO;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -49,11 +45,10 @@ public class GrossProfitComputeRequestCreator
 		final LocalDate date = purchaseCandidate.getDateRequired().toLocalDate();
 
 		// TODO: use the purchase candidate's pricing info, or compute it right here if must be
-		final I_C_Currency currencyrecordEUR = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(Env.getCtx(), "EUR");
 		final Currency currency = Currency
 				.builder()
-				.id(CurrencyId.ofRepoId(currencyrecordEUR.getC_Currency_ID()))
-				.precision(currencyrecordEUR.getStdPrecision())
+				.id(CurrencyId.ofRepoId(102)) // 102=Euro
+				.precision(2)
 				.build();
 
 		return new GrossProfitComputeRequest(bPartnerId, productId, date, Money.of(ONE, currency));
