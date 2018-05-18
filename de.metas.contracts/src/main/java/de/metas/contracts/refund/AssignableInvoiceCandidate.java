@@ -50,7 +50,6 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 	RefundInvoiceCandidate refundInvoiceCandidate;
 	Money money;
 	Money oldMoney;
-	boolean soTrx;
 
 	@Builder(toBuilder = true)
 	private AssignableInvoiceCandidate(
@@ -60,8 +59,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 			@NonNull final LocalDate invoiceableFrom,
 			@Nullable final RefundInvoiceCandidate refundInvoiceCandidate,
 			@NonNull final Money money,
-			@Nullable final Money oldMoney,
-			@NonNull final Boolean soTrx)
+			@Nullable final Money oldMoney)
 	{
 		this.id = id;
 		this.bpartnerId = bpartnerId;
@@ -70,7 +68,6 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 		this.refundInvoiceCandidate = refundInvoiceCandidate;
 		this.money = money;
 		this.oldMoney = oldMoney;
-		this.soTrx = soTrx;
 	}
 
 	public AssignableInvoiceCandidate withoutRefundInvoiceCandidate()
