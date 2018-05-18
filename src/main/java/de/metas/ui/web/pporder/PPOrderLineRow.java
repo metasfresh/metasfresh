@@ -76,6 +76,9 @@ public class PPOrderLineRow implements IViewRow
 	private final boolean sourceHU;
 	private final boolean topLevelHU;
 
+	@Nullable
+	private final String issueMethod;
+
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10))
 	private final JSONLookupValue product;
 
@@ -151,6 +154,8 @@ public class PPOrderLineRow implements IViewRow
 		this.qty = quantity.getQty();
 
 		this.documentPath = computeDocumentPath();
+
+		this.issueMethod = ppOrderQty.getPP_Order_BOMLine().getIssueMethod();
 	}
 
 	@lombok.Builder(builderMethodName = "builderForPPOrder", builderClassName = "BuilderForPPOrder")
@@ -193,6 +198,9 @@ public class PPOrderLineRow implements IViewRow
 				.reduce(BigDecimal.ZERO, (qtySum, includedQty) -> qtySum.add(includedQty));
 
 		this.documentPath = computeDocumentPath();
+
+		this.issueMethod = null;
+
 	}
 
 	@lombok.Builder(builderMethodName = "builderForPPOrderBomLine", builderClassName = "BuilderForPPOrderBomLine")
@@ -203,7 +211,8 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final Boolean processed,
 			@NonNull final BigDecimal qtyPlan,
 			@NonNull final IViewRowAttributesProvider attributesProvider,
-			@NonNull final List<PPOrderLineRow> includedRows)
+			@NonNull final List<PPOrderLineRow> includedRows,
+			@NonNull final String issueMethod)
 	{
 		this.rowId = DocumentId.of(I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBomLine.getPP_Order_BOMLine_ID());
 		this.type = type;
@@ -238,6 +247,8 @@ public class PPOrderLineRow implements IViewRow
 				.reduce(BigDecimal.ZERO, (qtySum, includedQty) -> qtySum.add(includedQty));
 
 		this.documentPath = computeDocumentPath();
+
+		this.issueMethod = issueMethod;
 	}
 
 	@lombok.Builder(builderMethodName = "builderForSourceHU", builderClassName = "BuilderForSourceHU")
@@ -283,6 +294,8 @@ public class PPOrderLineRow implements IViewRow
 		this.qty = qty;
 
 		this.documentPath = computeDocumentPath();
+
+		this.issueMethod = null;
 	}
 
 	private DocumentPath computeDocumentPath()
@@ -444,6 +457,11 @@ public class PPOrderLineRow implements IViewRow
 		return huStatus != null && X_M_HU.HUSTATUS_Active.equals(huStatus.getKey());
 	}
 
+	public String getIssueMethod()
+	{
+		return issueMethod;
+	}
+
 	@Override
 	public List<PPOrderLineRow> getIncludedRows()
 	{
@@ -471,4 +489,5 @@ public class PPOrderLineRow implements IViewRow
 		}
 		return attributes;
 	}
+
 }

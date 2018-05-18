@@ -1,7 +1,5 @@
 package de.metas.ui.web.pporder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -21,6 +19,8 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order;
@@ -263,6 +263,8 @@ class PPOrderLinesLoader
 		final ImmutableList<PPOrderLineRow> includedRows = createIncludedRowsForPPOrderQtys(
 				ppOrderQtys,
 				readOnly);
+		
+		final String issueMethod = ppOrderBOMLine.getIssueMethod();
 
 		return PPOrderLineRow.builderForPPOrderBomLine()
 				.ppOrderBomLine(ppOrderBOMLine)
@@ -272,6 +274,7 @@ class PPOrderLinesLoader
 				.attributesProvider(asiAttributesProvider)
 				.processed(readOnly)
 				.includedRows(includedRows)
+				.issueMethod(issueMethod)
 				.build();
 	}
 
