@@ -1071,7 +1071,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public String getInvoiceRule(final I_C_Invoice_Candidate ic)
 	{
 		final String invoiceRuleOverride = ic.getInvoiceRule_Override();
-		if (invoiceRuleOverride != null)
+		if (!Check.isEmpty(invoiceRuleOverride, true))
 		{
 			return invoiceRuleOverride;
 		}
