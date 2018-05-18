@@ -205,3 +205,23 @@ CREATE INDEX IF NOT EXISTS c_invoice_candidate_assigned_id_c_invoice_candidate_t
 UPDATE AD_Column SET MandatoryLogic='@Type_Conditions@=''Subscr'' | @Type_Conditions@=''Refund''', ReadOnlyLogic='@Type_Conditions@=''Procuremnt'' | @Type_Conditions@=''Subscr'' | @Type_Conditions@=''Refund''',Updated=TO_TIMESTAMP('2018-05-17 12:38:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=547283
 ;
 
+-- 2018-05-17T17:23:16.150
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='',Updated=TO_TIMESTAMP('2018-05-17 17:23:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=546600
+;
+
+-- 2018-05-17T17:23:24.182
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN C_InvoiceSchedule_ID NUMERIC(10)')
+;
+
+-- 2018-05-17T21:23:46.293
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM C_ILCandHandler WHERE C_ILCandHandler_ID=540019
+;
+
+-- 2018-05-17T21:25:18.364
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_ILCandHandler SET Classname='de.metas.contracts.invoicecandidate.FlatrateTerm_Handler', Is_AD_User_InCharge_UI_Setting='N', Name='Laufender Vertrag', TableName='C_Flatrate_Term',Updated=TO_TIMESTAMP('2018-05-17 21:25:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_ILCandHandler_ID=540004
+;
+

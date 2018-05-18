@@ -223,16 +223,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		ic.setDateToInvoice(dateToInvoice);
 	}
 
-	private Timestamp mkDateToInvoiceForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSched, final Timestamp deliveryDate)
+	private Timestamp mkDateToInvoiceForInvoiceSchedule(
+			@NonNull final I_C_InvoiceSchedule invoiceSched,
+			@NonNull final Timestamp deliveryDate)
 	{
-		Check.assumeNotNull(invoiceSched, " param 'invoiceSched' not null");
-		Check.assumeNotNull(deliveryDate, " param 'deliveryDate' not null");
-
 		final Timestamp dateToInvoice;
+
+		final int offset = Integer.max(invoiceSched.getInvoiceDistance() - 1, 0);
 
 		if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily.equals(invoiceSched.getInvoiceFrequency()))
 		{
-			dateToInvoice = deliveryDate;
+			dateToInvoice = TimeUtil.addDays(deliveryDate, offset);
 		}
 		else if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Weekly.equals(invoiceSched.getInvoiceFrequency()))
 		{
@@ -243,11 +244,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final Timestamp dateDayOfWeek = new Timestamp(calToday.getTimeInMillis());
 			if (dateDayOfWeek.before(deliveryDate))
 			{
-				dateToInvoice = TimeUtil.addWeeks(dateDayOfWeek, 1);
+				dateToInvoice = TimeUtil.addWeeks(dateDayOfWeek, 1 + offset);
 			}
 			else
 			{
-				dateToInvoice = dateDayOfWeek;
+				dateToInvoice = TimeUtil.addWeeks(dateDayOfWeek, offset);
 			}
 		}
 		else if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly.equals(invoiceSched.getInvoiceFrequency())
@@ -267,12 +268,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				if (dateDayOfMonth.before(deliveryDate))
 				{
 
-					dateToInvoice = TimeUtil.addMonths(dateDayOfMonth, 1);
-
+					dateToInvoice = TimeUtil.addMonths(dateDayOfMonth, 1 + offset);
 				}
 				else
 				{
-					dateToInvoice = dateDayOfMonth;
+					dateToInvoice = TimeUtil.addMonths(dateDayOfMonth, offset);
 				}
 			}
 		}

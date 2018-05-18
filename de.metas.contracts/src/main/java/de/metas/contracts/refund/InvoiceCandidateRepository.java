@@ -31,6 +31,7 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.Money;
 import de.metas.money.MoneyFactory;
 import lombok.AccessLevel;
@@ -315,6 +316,8 @@ public class InvoiceCandidateRepository
 		final RefundConfig refundConfig = retrieveConfig(refundInvoiceCandidateRecord);
 
 		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(refundConfig.getInvoiceScheduleId().getRepoId());
+		refundInvoiceCandidateRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
+
 		refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(refundConfig.getDocTypeId().getRepoId());
 		final boolean isSOTrx = refundInvoiceCandidateRecord.getC_DocTypeInvoice().isSOTrx();
 

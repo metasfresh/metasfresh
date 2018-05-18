@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.util.Check;
-import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -34,7 +33,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	{
 		this(ImmutableList.<ConditionTypeSpecificInvoiceCandidateHandler> of(
 				new FlatrateTermSubscription_Handler(),
-				Adempiere.getBean(FlatrateTermRefund_Handler.class)));
+				new FlatrateTermRefund_Handler()));
 	}
 
 	public FlatrateTerm_Handler(
@@ -115,6 +114,10 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_C_Invoice_Candidate ic = HandlerTools.createIcAndSetCommonFields(term);
 		ic.setC_ILCandHandler(getHandlerRecord());
+
+		// note that C_Invoice_Cand.QtyDelivered by InvoiceCandBL, so
+		// whatever InvoiceRule set in the conditions should be OK
+		ic.setInvoiceRule(term.getC_Flatrate_Conditions().getInvoiceRule());
 
 		getSpecificHandler(term).setSpecificInvoiceCandidateValues(ic, term);
 		return ic;

@@ -7,8 +7,11 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.refund.RefundConfigRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -36,11 +39,22 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 @Interceptor(I_C_Flatrate_Conditions.class)
 public class C_Flatrate_Conditions
 {
+	private final RefundConfigRepository refundConfigRepository;
+
+	public C_Flatrate_Conditions(@NonNull final RefundConfigRepository refundConfigRepository)
+	{
+		this.refundConfigRepository = refundConfigRepository;
+	}
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void beforeComplete(final I_C_Flatrate_Conditions cond)
+	public void beforeComplete(@NonNull final I_C_Flatrate_Conditions cond)
 	{
 		final boolean refundConfigIsRequired = X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund.equals(cond.getType_Conditions());
 		if (!refundConfigIsRequired)
+		{
+			return;
+		}
+		if (refundConfigRepository.hasRefundConfig(ConditionsId.ofRepoId(cond.getC_Flatrate_Conditions_ID())))
 		{
 			return;
 		}

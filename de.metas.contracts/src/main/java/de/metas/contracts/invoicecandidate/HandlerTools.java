@@ -95,10 +95,6 @@ public class HandlerTools
 		ic.setBill_Location_ID(term.getBill_Location_ID());
 		ic.setBill_User_ID(term.getBill_User_ID());
 
-		// note that C_Invoice_Cand.QtyDelivered by InvoiceCandBL, so
-		// whatever InvoiceRule set in the conditions should be OK
-		ic.setInvoiceRule(term.getC_Flatrate_Conditions().getInvoiceRule());
-
 		ic.setM_PricingSystem_ID(term.getM_PricingSystem_ID());
 
 		// 07442 activity and tax

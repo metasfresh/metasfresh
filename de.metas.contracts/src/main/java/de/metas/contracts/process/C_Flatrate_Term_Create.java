@@ -65,6 +65,7 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 	public String doIt() throws Exception
 	{
 		builder
+				.ctx(getCtx())
 				.bPartners(getBPartners())
 				.build()
 				.createTermsForBPartners();
