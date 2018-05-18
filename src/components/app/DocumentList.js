@@ -134,7 +134,6 @@ class DocumentList extends Component {
       refId,
       windowType,
       dispatch,
-      location,
     } = this.props;
     const { page, sort, viewId, staticFilterCleared } = this.state;
     const included =
@@ -143,6 +142,7 @@ class DocumentList extends Component {
       nextIncludedView &&
       nextIncludedView.windowType &&
       nextIncludedView.viewId;
+    const location = document.location;
 
     this.loadSupportAttributeFlag(nextProps);
 
@@ -179,14 +179,8 @@ class DocumentList extends Component {
           if (included) {
             dispatch(closeListIncludedView(includedView));
           }
-          if (
-            !(
-              location.hash === '#notification' &&
-              document.location.hash !== '#notification'
-            )
-          ) {
-            this.fetchLayoutAndData();
-          }
+
+          this.fetchLayoutAndData();
         }
       );
     }
@@ -980,7 +974,6 @@ const mapStateToProps = (state, props) => ({
         viewId: props.parentDefaultViewId,
       })
     : NO_SELECTION,
-  location: state.routing.locationBeforeTransitions,
 });
 
 export default connect(mapStateToProps, null, null, { withRef: true })(

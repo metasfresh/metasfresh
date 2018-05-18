@@ -176,6 +176,7 @@ Inbox.propTypes = {
   open: PropTypes.bool,
   onFocus: PropTypes.func,
   modalVisible: PropTypes.bool.isRequired,
+  location: PropTypes.object,
 };
 
 Inbox.defaultProps = {
