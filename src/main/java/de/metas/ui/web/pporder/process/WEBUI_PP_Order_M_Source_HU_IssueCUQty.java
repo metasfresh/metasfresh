@@ -1,0 +1,118 @@
+package de.metas.ui.web.pporder.process;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.handlingunits.storage.EmptyHUListener;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.pporder.PPOrderLineRow;
+import de.metas.ui.web.pporder.PPOrderLinesView;
+import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
+
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2018 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
+		extends WEBUI_PP_Order_Template
+		implements IProcessPrecondition
+{
+	@Param(parameterName = "QtyCU", mandatory = true)
+	private BigDecimal qtyCU;
+
+	@Override
+	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
+	{
+		if (!getSelectedRowIds().isSingleDocumentId())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
+
+		return WEBUI_PP_Order_ProcessHelper.checkPreconditionsApplicable(singleSelectedRow);
+	}
+
+	@Override
+	protected String doIt() throws Exception
+	{
+		final PPOrderLineRow row = getSingleSelectedRow();
+
+		final List<I_M_Source_HU> sourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
+		if (sourceHus.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
+		final Map<Integer, I_M_Source_HU> huId2SourceHu = new HashMap<>();
+
+		final ImmutableList<I_M_HU> husThatAreFlaggedAsSource = sourceHus.stream()
+				.peek(sourceHu -> huId2SourceHu.put(sourceHu.getM_HU_ID(), sourceHu))
+				.map(I_M_Source_HU::getM_HU)
+				.collect(ImmutableList.toImmutableList());
+
+		// final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
+		// .sourceHUs(husThatAreFlaggedAsSource)
+		// .qtyCU(qtyCU.intValue())
+		// .build();
+
+		// EmptyHUListener emptyHUListener =
+		EmptyHUListener
+				.doBeforeDestroyed(hu -> {
+					if (huId2SourceHu.containsKey(hu.getM_HU_ID()))
+					{
+						SourceHUsService.get().snapshotSourceHU(huId2SourceHu.get(hu.getM_HU_ID()));
+					}
+				}, "Create snapshot of source-HU before it is destroyed");
+
+		// final List<I_M_HU> extractedCUs = HUTransformService.builder()
+		// .emptyHUListener(emptyHUListener)
+		// .build()
+		// .husToNewCUs(request);
+
+		final PPOrderLinesView ppOrderView = getView();
+
+		final int ppOrderId = ppOrderView.getPP_Order_ID();
+		Services.get(IHUPPOrderBL.class)
+				.createIssueProducer()
+				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
+				.createDraftIssues(sourceHus.stream().map(sourceHu -> sourceHu.getM_HU()).collect(ImmutableList.toImmutableList()));
+
+		getView().invalidateAll();
+		ppOrderView.invalidateAll();
+
+		return MSG_OK;
+	}
+
+}
