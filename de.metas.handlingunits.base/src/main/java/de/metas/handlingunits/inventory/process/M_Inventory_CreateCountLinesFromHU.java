@@ -90,7 +90,7 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 				.collect(Collectors.toMap(I_M_InventoryLine::getM_HU_ID, I_M_InventoryLine::getM_InventoryLine_ID));
 
 		final long countInventoryLines = streamHUs()
-				.flatMap(hu -> createUpdateInventoryLines(hu, inventoryLinesByHU.containsKey(hu.getM_HU_ID())))
+				.flatMap(hu -> createUpdateInventoryLines(hu))
 				.count();
 
 		return "@Created@/@Updated@ #" + countInventoryLines;
@@ -129,24 +129,27 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 				.iterateAndStream();
 	}
 
-	private Stream<I_M_InventoryLine> createUpdateInventoryLines(@NonNull final I_M_HU hu, final boolean updateLine)
+	private Stream<I_M_InventoryLine> createUpdateInventoryLines(@NonNull final I_M_HU hu)
 	{
 		return Services.get(IHandlingUnitsBL.class)
 				.getStorageFactory()
 				.streamHUProductStorages(hu)
-				.map(huProductStorage -> createUpdateInventoryLine(huProductStorage, updateLine));
+				.map(huProductStorage -> createUpdateInventoryLine(huProductStorage));
 	}
 
-	private I_M_InventoryLine createUpdateInventoryLine(@NonNull final IHUProductStorage huProductStorage, final boolean updateLine)
+	private I_M_InventoryLine createUpdateInventoryLine(@NonNull final IHUProductStorage huProductStorage)
 	{
 		final I_M_Inventory inventory = getInventory();
 		final I_M_InventoryLine inventoryLine;
 		final I_M_HU hu = huProductStorage.getM_HU();
-		if (updateLine)
+
+		//update line
+		if (inventoryLinesByHU.containsKey(hu.getM_HU_ID()))
 		{
 			final int inventoryLineId = inventoryLinesByHU.get(hu.getM_HU_ID());
 			inventoryLine = InterfaceWrapperHelper.load(inventoryLineId, I_M_InventoryLine.class);
 		}
+		// create line
 		else
 		{
 			inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
