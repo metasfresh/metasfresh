@@ -1,6 +1,8 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.UnaryOperator;
@@ -71,6 +73,14 @@ public final class Values
 		{
 			final java.util.Date valueDate = (java.util.Date)value;
 			return JSONDate.toJson(valueDate);
+		}
+		else if (value instanceof LocalDate)
+		{
+			return JSONDate.toJson((LocalDate)value);
+		}
+		else if (value instanceof LocalDateTime)
+		{
+			return JSONDate.toJson((LocalDateTime)value);
 		}
 		else if (value instanceof DateRangeValue)
 		{

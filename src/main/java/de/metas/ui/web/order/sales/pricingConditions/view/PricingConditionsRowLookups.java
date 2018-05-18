@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Evaluatees;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -42,6 +43,7 @@ public class PricingConditionsRowLookups
 	}
 
 	private final LookupDataSource bpartnerLookup;
+	private final LookupDataSource productLookup;
 	private final LookupDataSource priceTypeLookup;
 	private final LookupDataSource pricingSystemLookup;
 	private final LookupDataSource paymentTermLookup;
@@ -50,6 +52,7 @@ public class PricingConditionsRowLookups
 	{
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 		bpartnerLookup = lookupFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		productLookup = lookupFactory.searchInTableLookup(I_M_Product.Table_Name);
 		priceTypeLookup = lookupFactory.listByReferenceId(PriceType.AD_Reference_ID);
 		pricingSystemLookup = lookupFactory.searchInTableLookup(I_M_PricingSystem.Table_Name);
 		paymentTermLookup = lookupFactory.searchInTableLookup(I_C_PaymentTerm.Table_Name);
@@ -58,6 +61,11 @@ public class PricingConditionsRowLookups
 	public LookupValue lookupBPartner(final int bpartnerId)
 	{
 		return bpartnerLookup.findById(bpartnerId);
+	}
+
+	public LookupValue lookupProduct(final int productId)
+	{
+		return productLookup.findById(productId);
 	}
 
 	public LookupValue lookupPriceType(@NonNull final PriceType priceType)
