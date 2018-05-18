@@ -54,7 +54,6 @@ import de.metas.adempiere.util.CacheIgnore;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.logging.LogManager;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 
@@ -197,16 +196,13 @@ public class ProductPA implements IProductPA
 			final int partnerId, final int priceListId, final BigDecimal qty,
 			final boolean soTrx)
 	{
-
 		final MProductPricing pricing = new MProductPricing(productId, partnerId, qty, soTrx);
-
 		pricing.setM_PriceList_ID(priceListId);
 
 		final BigDecimal priceStd = pricing.getPriceStd();
-
 		if (priceStd.signum() == 0)
 		{
-			throw new ProductNotOnPriceListException(pricing, -1);
+			pricing.throwProductNotOnPriceListException();
 		}
 		return priceStd;
 	}

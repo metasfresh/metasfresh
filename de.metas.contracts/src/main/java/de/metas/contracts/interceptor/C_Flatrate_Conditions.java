@@ -33,7 +33,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -79,7 +78,7 @@ public class C_Flatrate_Conditions
 			final Properties ctx = InterfaceWrapperHelper.getCtx(cond);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-			throw new AdempiereException(Env.getAD_Language(ctx), MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P,
+					throw new AdempiereException(MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P,
 					new Object[] {
 							msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_C_Flatrate_Transition_ID),
 							msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryIntervalUnit) + ", " +

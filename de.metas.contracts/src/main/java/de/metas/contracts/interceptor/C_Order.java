@@ -11,7 +11,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 
 /*
  * #%L
@@ -76,7 +75,7 @@ public class C_Order
 			{
 				if (icOfOl.isToClear())
 				{
-					throw new AdempiereException(Env.getAD_Language(ctx), MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P, new Object[] { ol.getLine() });
+					throw new AdempiereException(MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P, new Object[] { ol.getLine() });
 				}
 			}
 		}

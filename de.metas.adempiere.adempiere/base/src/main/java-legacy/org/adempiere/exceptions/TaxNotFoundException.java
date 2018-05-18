@@ -29,6 +29,9 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import lombok.Builder;
 
 /**
@@ -81,6 +84,8 @@ public class TaxNotFoundException extends AdempiereException
 			final int billFromCountryId,
 			final int billToC_Location_ID)
 	{
+		super(ImmutableTranslatableString.empty());
+
 		this.productId = productId;
 		setParameter("productId", productId > 0 ? productId : null);
 		this.chargeId = chargeId;
@@ -114,72 +119,79 @@ public class TaxNotFoundException extends AdempiereException
 	}
 
 	@Override
-	protected String buildMessage()
+	protected ITranslatableString buildMessage()
 	{
-		final StringBuilder msg = new StringBuilder("@").append(MSG_TaxNotFound).append("@");
+		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		message.appendADMessage(MSG_TaxNotFound);
 
 		//
 		if (productId > 0)
 		{
 			final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, ITrx.TRXNAME_None);
 			final String productValue = product != null ? product.getValue() : "<" + productId + ">";
-			msg.append(" - @M_Product_ID@:").append(productValue);
+			message.append(" - ").appendADElement("M_Product_ID").append(": ").append(productValue);
 		}
 		if (chargeId > 0)
 		{
-			msg.append(" - @C_Charge_ID@:").append(InterfaceWrapperHelper.create(Env.getCtx(), chargeId, I_C_Charge.class, ITrx.TRXNAME_None).getName());
+			final String chargeName = InterfaceWrapperHelper.create(Env.getCtx(), chargeId, I_C_Charge.class, ITrx.TRXNAME_None).getName();
+			message.append(" - ").appendADElement("C_Charge_ID").append(": ").append(chargeName);
 		}
 
 		//
 		if (taxCategoryId > 0)
 		{
-			msg.append(" - @C_TaxCategory_ID@:").append(getTaxCategoryString(taxCategoryId));
+			final String taxCategoryName = getTaxCategoryString(taxCategoryId);
+			message.append(" - ").appendADElement("C_TaxCategory_ID").append(": ").append(taxCategoryName);
 		}
 
 		if (isSOTrx != null)
 		{
-			msg.append(", @IsSOTrx@:@").append(isSOTrx ? "Y" : "N").append("@");
+			message.append(" - ").appendADElement("IsSOTrx").append(": ").append(isSOTrx);
 		}
 
 		if (orgId != null && orgId >= 0)
 		{
 			final String orgName = Services.get(IOrgDAO.class).retrieveOrgName(orgId);
-			msg.append(", @AD_Org_ID@:").append(orgName);
+			message.append(" - ").appendADElement("AD_Org_ID").append(": ").append(orgName);
 		}
 
 		//
 		// Ship info
 		if (shipDate != null)
 		{
-			msg.append(", @ShipDate@:").append(shipDate);
+			message.append(" - ").appendADElement("ShipDate").append(": ").appendDate(shipDate);
 		}
 		if (shipFromC_Location_ID > 0 || shipFromCountryId > 0)
 		{
-			msg.append(", @ShipFrom@:").append(getLocationString(shipFromC_Location_ID, shipFromCountryId));
+			final String locationString = getLocationString(shipFromC_Location_ID, shipFromCountryId);
+			message.append(" - ").appendADElement("ShipFrom").append(": ").append(locationString);
 		}
 		if (shipToC_Location_ID > 0)
 		{
-			msg.append(", @ShipTo@").append(getLocationString(shipToC_Location_ID));
+			final String locationString = getLocationString(shipToC_Location_ID);
+			message.append(" - ").appendADElement("ShipTo").append(": ").append(locationString);
 		}
 
 		//
 		// Bill info
 		if (billDate != null)
 		{
-			msg.append(", @BillDate@:").append(billDate);
+			message.append(" - ").appendADElement("BillDate").append(": ").appendDate(billDate);
 		}
 		if (billFromC_Location_ID > 0 || billFromCountryId > 0)
 		{
-			msg.append(", @BillFrom@:").append(getLocationString(billFromC_Location_ID, billFromCountryId));
+			final String locationString = getLocationString(billFromC_Location_ID, billFromCountryId);
+			message.append(" - ").appendADElement("BillFrom").append(": ").append(locationString);
 		}
 		if (billToC_Location_ID > 0)
 		{
-			msg.append(", @BillTo@:").append(getLocationString(billToC_Location_ID));
+			final String locationString = getLocationString(billToC_Location_ID);
+			message.append(" - ").appendADElement("BillTo").append(": ").append(locationString);
 		}
 
 		//
 		//
-		return msg.toString();
+		return message.build();
 	}
 
 	private static final String getTaxCategoryString(final int C_TaxCategory_ID)
