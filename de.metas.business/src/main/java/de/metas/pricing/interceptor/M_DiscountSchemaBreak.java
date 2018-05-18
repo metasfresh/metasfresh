@@ -170,7 +170,7 @@ public class M_DiscountSchemaBreak
 		}
 	}
 
-	private CalculatePricingConditionsRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
+	private static CalculatePricingConditionsRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
