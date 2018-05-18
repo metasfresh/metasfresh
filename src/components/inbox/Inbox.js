@@ -39,8 +39,12 @@ class Inbox extends Component {
           // to force refresh of DocumentList component so in order to do that
           // we check if viewId's are equal
           let samePageParam = '';
-          const locationViewId = get(location, 'query.viewId').split('-')[0];
-          const targetViewId = item.target.viewId.split('-')[0];
+          const locationViewId = get(location, 'query.viewId')
+            ? get(location, 'query.viewId').split('-')[0]
+            : null;
+          const targetViewId = item.target.viewId
+            ? item.target.viewId.split('-')[0]
+            : null;
 
           if (locationViewId === targetViewId) {
             samePageParam = '#notification';
