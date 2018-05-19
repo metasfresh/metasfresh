@@ -52,6 +52,7 @@ import lombok.NonNull;
 class OrderLinePriceCalculator
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final OrderLineBL orderLineBL;
 	private final OrderLinePriceUpdateRequest request;
@@ -124,9 +125,9 @@ class OrderLinePriceCalculator
 		//
 		if (request.isUpdateLineNetAmt())
 		{
-			if (request.getQty() != null)
+			if (request.getQtyOverride() != null)
 			{
-				orderLineBL.updateLineNetAmt(orderLine, request.getQty());
+				orderLineBL.updateLineNetAmt(orderLine, request.getQtyOverride());
 			}
 			else
 			{
@@ -174,9 +175,9 @@ class OrderLinePriceCalculator
 		final Timestamp date = OrderLineBL.getPriceDate(orderLine, order);
 
 		final BigDecimal qtyInPriceUOM;
-		if (request.getQty() != null)
+		if (request.getQtyOverride() != null)
 		{
-			final Quantity qtyOverride = request.getQty();
+			final Quantity qtyOverride = request.getQtyOverride();
 			qtyInPriceUOM = orderLineBL.convertToPriceUOM(qtyOverride, orderLine).getQty();
 		}
 		else
@@ -195,16 +196,13 @@ class OrderLinePriceCalculator
 		// 03152: setting the 'ol' to allow the subscription system to compute the right price
 		pricingCtx.setReferencedObject(orderLine);
 
-		if (request.getPriceListId() > 0)
-		{
-			pricingCtx.setM_PriceList_ID(request.getPriceListId());
-		}
-		else
-		{
-			final IOrderBL orderBL = Services.get(IOrderBL.class);
-			final int priceListId = orderBL.retrievePriceListId(order);
-			pricingCtx.setM_PriceList_ID(priceListId);
-		}
+		//
+		// Pricing System / List
+		final int pricingSystemId = request.getPricingSystemIdOverride() > 0 ? request.getPricingSystemIdOverride() : pricingCtx.getM_PricingSystem_ID();
+		final int priceListId = request.getPriceListIdOverride() > 0 ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
+		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
+		pricingCtx.setM_PriceList_ID(priceListId);
+		pricingCtx.setM_PriceList_Version_ID(-1);
 
 		final int countryId = getCountryIdOrZero(orderLine);
 		pricingCtx.setC_Country_ID(countryId);
