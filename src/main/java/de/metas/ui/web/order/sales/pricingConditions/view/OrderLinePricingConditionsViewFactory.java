@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -12,10 +13,16 @@ import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeInstance;
 
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import de.metas.ui.web.order.sales.pricingConditions.view.PriceNetCalculator.BasePriceFromBasePricingSystemCalculator;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.PricingConditionsBreaksExtractor;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.SourceDocumentLine;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -68,14 +75,30 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		Check.assumeGreaterThanZero(salesOrderLineId, "salesOrderLineId");
 		final I_C_OrderLine salesOrderLine = InterfaceWrapperHelper.load(salesOrderLineId, I_C_OrderLine.class);
 
+		final PriceNetCalculator priceNetCalculator = PriceNetCalculator.builder()
+				.basePriceFromBasePricingSystemCalculator(createBasePriceFromBasePricingSystemCalculator(salesOrderLine))
+				.build();
+
 		final PricingConditionsRowData rowsData = preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(createPricingConditionsBreaksExtractor(salesOrderLine))
-				.priceNetCalculator(new PriceNetCalculator()) // TODO
+				.priceNetCalculator(priceNetCalculator)
 				.filters(extractFilters(request))
 				.adClientId(salesOrderLine.getAD_Client_ID())
 				.sourceDocumentLine(createSourceDocumentLine(salesOrderLine))
 				.load();
 		return rowsData;
+	}
+
+	private final BasePriceFromBasePricingSystemCalculator createBasePriceFromBasePricingSystemCalculator(final I_C_OrderLine orderLine)
+	{
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+		return pricingConditionsBreak -> orderLineBL.computePrices(OrderLinePriceUpdateRequest.builder()
+				.orderLine(orderLine)
+				.pricingConditionsBreakOverride(pricingConditionsBreak)
+				.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
+				.build())
+				.getPriceStd();
 	}
 
 	private final PricingConditionsBreaksExtractor createPricingConditionsBreaksExtractor(final I_C_OrderLine salesOrderLine)
@@ -109,13 +132,13 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 	private final SourceDocumentLine createSourceDocumentLine(final I_C_OrderLine salesOrderLine)
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-		final int productId = salesOrderLine.getM_Product_ID();
-		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 
 		return SourceDocumentLine.builder()
 				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
 				.isSOTrx(true)
-				.bpartnerId(salesOrderLine.getC_BPartner_ID())
+				.bpartnerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))
 				.productId(productId)
 				.productCategoryId(productCategoryId)
 				.priceEntered(salesOrderLine.getPriceEntered())

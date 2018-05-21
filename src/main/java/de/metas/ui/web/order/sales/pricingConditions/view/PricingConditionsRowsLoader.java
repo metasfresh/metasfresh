@@ -1,33 +1,38 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSetMultimap;
 
-import de.metas.logging.LogManager;
+import de.metas.inout.IInOutDAO;
+import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
-import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
-import de.metas.pricing.conditions.PricingConditionsDiscountType;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import lombok.Builder;
@@ -58,10 +63,10 @@ import lombok.NonNull;
 class PricingConditionsRowsLoader
 {
 	// services
-	private static final Logger logger = LogManager.getLogger(PricingConditionsRowsLoader.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
+	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
 
 	private static final Comparator<PricingConditionsRow> ROWS_SORTING = Comparator.<PricingConditionsRow, Integer> comparing(row -> row.isEditable() ? 0 : 1)
 			.thenComparing(row -> row.getBpartner().getDisplayName())
@@ -131,27 +136,40 @@ class PricingConditionsRowsLoader
 	{
 		if (pricingConditionsInfoById == null)
 		{
-			final ImmutableSetMultimap.Builder<PricingConditionsId, PricingConditionsInfo> builder = ImmutableSetMultimap.builder();
+			final Stream<PricingConditionsInfo> vendorPricingConditions = streamPricingConditionsInfos(/* isSOTrx */false);
+			final Stream<PricingConditionsInfo> customerPricingConditions = streamPricingConditionsInfos(/* isSOTrx */true);
 
-			// Vendor Discount Schemas
-			bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(adClientId, /* isSOTrx */false)
-					.forEach((bpartnerId, discountSchemaId) -> builder.put(PricingConditionsId.ofDiscountSchemaId(discountSchemaId), PricingConditionsInfo.builder()
-							.bpartnerId(bpartnerId)
-							.pricingConditionsId(PricingConditionsId.ofDiscountSchemaId(discountSchemaId))
-							.isSOTrx(false)
-							.build()));
-
-			// Customer Discount Schemas
-			bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(adClientId, /* isSOTrx */true)
-					.forEach((bpartnerId, discountSchemaId) -> builder.put(PricingConditionsId.ofDiscountSchemaId(discountSchemaId), PricingConditionsInfo.builder()
-							.bpartnerId(bpartnerId)
-							.pricingConditionsId(PricingConditionsId.ofDiscountSchemaId(discountSchemaId))
-							.isSOTrx(true)
-							.build()));
-
-			pricingConditionsInfoById = builder.build();
+			pricingConditionsInfoById = Stream.concat(vendorPricingConditions, customerPricingConditions)
+					.collect(ImmutableSetMultimap.toImmutableSetMultimap(PricingConditionsInfo::getPricingConditionsId, Function.identity()));
 		}
 		return pricingConditionsInfoById;
+	}
+
+	private Stream<PricingConditionsInfo> streamPricingConditionsInfos(final boolean isSOTrx)
+	{
+		final Map<BPartnerId, Integer> discountSchemaIdsByBPartnerId = bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(adClientId, isSOTrx);
+
+		return discountSchemaIdsByBPartnerId.keySet()
+				.stream()
+				.map(lookups::lookupBPartner)
+				.filter(Predicates.notNull())
+				.map(bpartner -> PricingConditionsInfo.builder()
+						.bpartner(bpartner)
+						.pricingConditionsId(getPricingConditionsIdByBPartner(bpartner, discountSchemaIdsByBPartnerId))
+						.isSOTrx(isSOTrx)
+						.build());
+	}
+
+	private static final PricingConditionsId getPricingConditionsIdByBPartner(final LookupValue bpartner, final Map<BPartnerId, Integer> discountSchemaIdsByBPartnerId)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getIdAsInt());
+		final Integer discountSchemaId = discountSchemaIdsByBPartnerId.get(bpartnerId);
+		if (discountSchemaId == null)
+		{
+			return null;
+		}
+
+		return PricingConditionsId.ofDiscountSchemaId(discountSchemaId);
 	}
 
 	private Stream<PricingConditionsBreak> streamMatchingSchemaBreaks(final PricingConditionsId pricingConditionsId)
@@ -173,54 +191,15 @@ class PricingConditionsRowsLoader
 				.lookups(lookups)
 				.editable(false)
 				//
-				.bpartner(lookups.lookupBPartner(pricingConditionsInfo.getBpartnerId()))
+				.bpartner(pricingConditionsInfo.getBpartner())
 				.customer(pricingConditionsInfo.isSOTrx())
-				.product(lookups.lookupProduct(pricingConditionsBreak.getMatchCriteria().getProductId()))
-				.breakValue(pricingConditionsBreak.getMatchCriteria().getBreakValue())
 				//
+				.pricingConditionsId(pricingConditionsInfo.getPricingConditionsId())
+				.pricingConditionsBreak(pricingConditionsBreak)
+				.dateLastInOut(getLastInOutDate(pricingConditionsInfo.getBPartnerId(), pricingConditionsInfo.isSOTrx(), pricingConditionsBreak))
 				.priceNetCalculator(priceNetCalculator)
-				.price(extractPrice(pricingConditionsBreak))
 				//
-				.discount(pricingConditionsBreak.getDiscount())
-				.paymentTerm(lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId()))
-				//
-				.pricingConditionsId(pricingConditionsBreak.getPricingConditionsId())
-				.pricingConditionsBreakId(pricingConditionsBreak.getId())
-				.breakMatchCriteria(pricingConditionsBreak.getMatchCriteria())
-				.dateLastInOut(null) // TODO
-				.dateCreated(pricingConditionsBreak.getDateCreated())
 				.build();
-	}
-
-	private Price extractPrice(final PricingConditionsBreak pricingConditionsBreak)
-	{
-		final PriceOverrideType priceOverride = pricingConditionsBreak.getPriceOverride();
-		if (priceOverride == PriceOverrideType.NONE)
-		{
-			return Price.none();
-		}
-		else if (priceOverride == PriceOverrideType.BASE_PRICING_SYSTEM)
-		{
-			final LookupValue pricingSystem = lookups.lookupPricingSystem(pricingConditionsBreak.getBasePricingSystemId());
-			if (pricingSystem == null)
-			{
-				logger.warn("Cannot extract pricing system from {}. Returning NO price", pricingConditionsBreak);
-				return Price.none();
-			}
-
-			final BigDecimal basePriceAddAmt = pricingConditionsBreak.getBasePriceAddAmt();
-
-			return Price.basePricingSystem(pricingSystem, basePriceAddAmt);
-		}
-		else if (priceOverride == PriceOverrideType.FIXED_PRICE)
-		{
-			return Price.fixedPrice(pricingConditionsBreak.getFixedPrice());
-		}
-		else
-		{
-			logger.warn("Unknown priceOverride={} of {}. Returning NO price", priceOverride, pricingConditionsBreak);
-			return Price.none();
-		}
 	}
 
 	private Optional<PricingConditionsRow> removeCurrentPricingConditionsRow(final ArrayList<PricingConditionsRow> rows)
@@ -241,7 +220,7 @@ class PricingConditionsRowsLoader
 	private boolean isCurrentConditions(final PricingConditionsRow row)
 	{
 		return sourceDocumentLine != null
-				&& row.getBpartnerId() == sourceDocumentLine.getBpartnerId()
+				&& Objects.equals(row.getBpartnerId(), sourceDocumentLine.getBpartnerId())
 				&& (sourceDocumentLine.isSOTrx() ? row.isCustomer() : row.isVendor());
 	}
 
@@ -253,7 +232,20 @@ class PricingConditionsRowsLoader
 		}
 
 		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(sourceDocumentLine.getBpartnerId(), sourceDocumentLine.isSOTrx());
-		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaIdOrNull(discountSchemaId);
+
+		final PricingConditionsBreak pricingConditionsBreak = PricingConditionsBreak.builder()
+				.id(null) // N/A
+				.matchCriteria(PricingConditionsBreakMatchCriteria.builder()
+						.breakValue(BigDecimal.ZERO)
+						.productId(sourceDocumentLine.getProductId())
+						.productCategoryId(sourceDocumentLine.getProductCategoryId())
+						.build())
+				.priceOverride(PriceOverride.fixedPrice(sourceDocumentLine.getPriceEntered()))
+				.paymentTermId(sourceDocumentLine.getPaymentTermId())
+				.discount(sourceDocumentLine.getDiscount())
+				.dateCreated(null) // N/A
+				.build();
 
 		return PricingConditionsRow.builder()
 				.lookups(lookups)
@@ -261,31 +253,42 @@ class PricingConditionsRowsLoader
 				//
 				.bpartner(lookups.lookupBPartner(sourceDocumentLine.getBpartnerId()))
 				.customer(sourceDocumentLine.isSOTrx())
-				.breakValue(BigDecimal.ZERO)
 				//
+				.pricingConditionsId(pricingConditionsId)
+				.pricingConditionsBreak(pricingConditionsBreak)
 				.priceNetCalculator(priceNetCalculator)
-				.price(Price.fixedPrice(sourceDocumentLine.getPriceEntered()))
 				//
-				.paymentTerm(lookups.lookupPaymentTerm(sourceDocumentLine.getPaymentTermId()))
-				.discount(sourceDocumentLine.getDiscount())
+				.dateLastInOut(getLastInOutDate(sourceDocumentLine.getBpartnerId(), sourceDocumentLine.isSOTrx(), pricingConditionsBreak))
 				//
-				.pricingConditionsId(pricingConditions.getDiscountType() == PricingConditionsDiscountType.BREAKS ? pricingConditions.getId() : null)
-				.pricingConditionsBreakId(null) // NEW
-				.breakMatchCriteria(PricingConditionsBreakMatchCriteria.builder()
-						.breakValue(BigDecimal.ZERO)
-						.productId(sourceDocumentLine.getProductId())
-						.productCategoryId(sourceDocumentLine.getProductCategoryId())
-						.build())
 				.build();
+	}
+
+	private LocalDate getLastInOutDate(final BPartnerId bpartnerId, final boolean isSOTrx, final PricingConditionsBreak pricingConditionsBreak)
+	{
+		final ProductId productId = pricingConditionsBreak.getMatchCriteria().getProductId();
+		if (productId == null)
+		{
+			return null;
+		}
+
+		return inoutsRepo.getLastInOutDate(bpartnerId, productId, isSOTrx);
+
 	}
 
 	@lombok.Value
 	@lombok.Builder
 	private static class PricingConditionsInfo
 	{
+		@lombok.NonNull
 		PricingConditionsId pricingConditionsId;
-		int bpartnerId;
+		@lombok.NonNull
+		LookupValue bpartner;
 		boolean isSOTrx;
+
+		public BPartnerId getBPartnerId()
+		{
+			return BPartnerId.ofRepoId(bpartner.getIdAsInt());
+		}
 	}
 
 	@FunctionalInterface
@@ -301,10 +304,10 @@ class PricingConditionsRowsLoader
 		int salesOrderLineId;
 		boolean isSOTrx;
 
-		int bpartnerId;
+		BPartnerId bpartnerId;
 
-		int productId;
-		int productCategoryId;
+		ProductId productId;
+		ProductCategoryId productCategoryId;
 
 		BigDecimal priceEntered;
 		BigDecimal discount;

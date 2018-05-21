@@ -2,7 +2,13 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
 
-import de.metas.ui.web.window.datatypes.LookupValue;
+import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.order.PriceAndDiscount;
+import de.metas.pricing.conditions.PriceOverride;
+import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -29,9 +35,70 @@ import lombok.NonNull;
 
 public class PriceNetCalculator
 {
-	public BigDecimal calculate(@NonNull final Price price, final BigDecimal discount, final LookupValue paymentTerm)
+	// params
+	private final BasePriceFromBasePricingSystemCalculator basePriceFromBasePricingSystemCalculator;
+
+	@Builder
+	private PriceNetCalculator(@NonNull final BasePriceFromBasePricingSystemCalculator basePriceFromBasePricingSystemCalculator)
 	{
-		// TODO
-		return BigDecimal.ZERO;
+		this.basePriceFromBasePricingSystemCalculator = basePriceFromBasePricingSystemCalculator;
+	}
+
+	public BigDecimal calculate(@NonNull final PricingConditionsBreak pricingConditionsBreak)
+	{
+		BigDecimal basePrice = calculateBasePrice(pricingConditionsBreak);
+		if (basePrice == null)
+		{
+			return null;
+		}
+
+		final BigDecimal price = subtractDiscount(basePrice, pricingConditionsBreak);
+
+		return price;
+	}
+
+	private BigDecimal calculateBasePrice(@NonNull final PricingConditionsBreak pricingConditionsBreak)
+	{
+		final PriceOverride price = pricingConditionsBreak.getPriceOverride();
+		final PriceOverrideType type = price.getType();
+		if (type == PriceOverrideType.NONE)
+		{
+			return null;
+		}
+		else if (type == PriceOverrideType.BASE_PRICING_SYSTEM)
+		{
+			final BigDecimal basePrice = basePriceFromBasePricingSystemCalculator.calculate(pricingConditionsBreak);
+			// NOTE: assume BasePriceAddAmt was added
+			// basePrice = basePrice.add(price.getBasePriceAddAmt());
+
+			return basePrice;
+		}
+		else if (type == PriceOverrideType.FIXED_PRICE)
+		{
+			return price.getFixedPrice();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown " + PriceOverrideType.class + ": " + type);
+		}
+	}
+
+	private BigDecimal subtractDiscount(final BigDecimal basePrice, final PricingConditionsBreak pricingConditionsBreak)
+	{
+		if (basePrice.signum() == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		final int precision = 2; // TODO: hardcoded
+		final BigDecimal priceAfterDiscount = PriceAndDiscount.subtractDiscount(basePrice, pricingConditionsBreak.getDiscount(), precision);
+		return priceAfterDiscount;
+
+	}
+
+	@FunctionalInterface
+	public static interface BasePriceFromBasePricingSystemCalculator
+	{
+		BigDecimal calculate(PricingConditionsBreak pricingConditionsBreak);
 	}
 }
