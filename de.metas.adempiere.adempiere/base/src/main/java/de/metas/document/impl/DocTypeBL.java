@@ -60,4 +60,11 @@ public class DocTypeBL implements IDocTypeBL
 				|| X_C_DocType.DOCBASETYPE_MaterialDelivery.equals(docBaseType)
 				|| docBaseType.startsWith("AR"); // Account Receivables (Invoice, Payment Receipt)
 	}
+
+	@Override
+	public boolean isPrepay(final I_C_DocType dt)
+	{
+		return X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(dt.getDocSubType())
+				&& X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType());
+	}
 }
