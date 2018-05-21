@@ -12,9 +12,10 @@ import org.adempiere.util.Services;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.conditions.PriceOverride;
+import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
-import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsDiscountType;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
@@ -109,43 +110,43 @@ import lombok.NonNull;
 				.pricingConditionsBreakId(breakApplied.getId())
 				.paymentTermId(breakApplied.getPaymentTermId());
 
-		computePriceForPricingConditionsBreak(result, breakApplied);
+		computePriceForPricingConditionsBreak(result, breakApplied.getPriceOverride());
 		computeDiscountForPricingConditionsBreak(result, breakApplied);
 
 		return result.build();
 	}
 
-	private void computePriceForPricingConditionsBreak(final CalculatePricingConditionsResultBuilder result, final PricingConditionsBreak pricingConditionsBreak)
+	private void computePriceForPricingConditionsBreak(final CalculatePricingConditionsResultBuilder result, final PriceOverride priceOverride)
 	{
-		final PriceOverrideType priceOverride = pricingConditionsBreak.getPriceOverride();
-		if (priceOverride == PriceOverrideType.NONE)
+		final PriceOverrideType priceOverrideType = priceOverride.getType();
+		if (priceOverrideType == PriceOverrideType.NONE)
 		{
 			// nothing
 		}
-		else if (priceOverride == PriceOverrideType.BASE_PRICING_SYSTEM)
+		else if (priceOverrideType == PriceOverrideType.BASE_PRICING_SYSTEM)
 		{
-			final int basePricingSystemId = pricingConditionsBreak.getBasePricingSystemId();
+			final int basePricingSystemId = priceOverride.getBasePricingSystemId();
 
 			final IPricingResult productPrices = computePricesForBasePricingSystem(basePricingSystemId);
 			final BigDecimal priceStd = productPrices.getPriceStd();
 			final BigDecimal priceList = productPrices.getPriceList();
 			final BigDecimal priceLimit = productPrices.getPriceLimit();
 
-			final BigDecimal priceStdAddAmt = pricingConditionsBreak.getBasePriceAddAmt();
+			final BigDecimal priceStdAddAmt = priceOverride.getBasePriceAddAmt();
 
 			result.basePricingSystemId(basePricingSystemId);
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
 			result.priceStdOverride(priceStd.add(priceStdAddAmt));
 		}
-		else if (priceOverride == PriceOverrideType.FIXED_PRICE)
+		else if (priceOverrideType == PriceOverrideType.FIXED_PRICE)
 		{
-			result.priceStdOverride(pricingConditionsBreak.getFixedPrice());
+			result.priceStdOverride(priceOverride.getFixedPrice());
 		}
 		else
 		{
-			throw new AdempiereException("Unknow price override type: " + priceOverride)
-					.setParameter("break", pricingConditionsBreak);
+			throw new AdempiereException("Unknow price override type: " + priceOverrideType)
+					.setParameter("priceOverride", priceOverride);
 		}
 	}
 

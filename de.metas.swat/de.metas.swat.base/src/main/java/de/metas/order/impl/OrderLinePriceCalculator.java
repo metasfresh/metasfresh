@@ -217,6 +217,8 @@ class OrderLinePriceCalculator
 		{
 			pricingCtx.setDisallowDiscount(true);
 		}
+		
+		pricingCtx.setForcePricingConditionsBreak(request.getPricingConditionsBreakOverride());
 
 		return pricingCtx;
 	}
