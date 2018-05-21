@@ -1803,8 +1803,7 @@ public class MOrder extends X_C_Order implements IDocument
 		MInOut shipment = null;
 		if (MDocType.DOCSUBTYPE_OnCreditOrder.equals(DocSubType)		// (W)illCall(I)nvoice
 				|| MDocType.DOCSUBTYPE_WarehouseOrder.equals(DocSubType)	// (W)illCall(P)ickup
-				|| MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType)			// (W)alkIn(R)eceipt
-				|| MDocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType))
+				|| MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType))			// (W)alkIn(R)eceipt
 		{
 			if (!DELIVERYRULE_Force.equals(getDeliveryRule()))
 			{
