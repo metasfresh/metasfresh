@@ -30,12 +30,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
-/**
- * Pricing context
- *
- * @author tsa
- *
- */
 public interface IPricingContext extends IContextAware
 {
 	int getM_Product_ID();
@@ -106,7 +100,7 @@ public interface IPricingContext extends IContextAware
 	boolean isConvertPriceToContextUOM();
 
 	<T> T getProperty(String propertyName, Class<T> clazz);
-	
+
 	boolean isPropertySet(String propertyName);
 
 	/**
@@ -120,6 +114,6 @@ public interface IPricingContext extends IContextAware
 	int getC_Country_ID();
 
 	boolean isFailIfNotCalculated();
-	
+
 	boolean isSkipCheckingPriceListSOTrxFlag();
 }

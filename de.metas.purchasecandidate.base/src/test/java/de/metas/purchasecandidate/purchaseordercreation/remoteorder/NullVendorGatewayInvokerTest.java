@@ -7,9 +7,15 @@ import java.util.List;
 
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
@@ -37,6 +43,8 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class NullVendorGatewayInvokerTest
 {
 	@Test

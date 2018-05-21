@@ -1,11 +1,11 @@
-package de.metas.order.grossprofit;
+package de.metas.money.grossprofit;
 
-import java.util.List;
+import java.time.LocalDate;
+
+import org.adempiere.bpartner.BPartnerId;
 
 import de.metas.money.Money;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
+import de.metas.product.ProductId;
 import lombok.Value;
 
 /*
@@ -21,35 +21,23 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
-@Builder
-public class GrossProfitPrice
+public class GrossProfitComputeRequest
 {
-	boolean soTrx;
+	BPartnerId bPartnerId;
 
-	@NonNull
-	Money basePrice;
+	ProductId productId;
 
-	@Singular
-	List<GrossProfitComponent> profitCompponents;
+	LocalDate date;
 
-	public Money computeProfitPrice()
-	{
-		Money intermediateResult = basePrice;
-		for (final GrossProfitComponent profitComponent : profitCompponents)
-		{
-			intermediateResult = profitComponent.applyToInput(intermediateResult);
-		}
-
-		return intermediateResult;
-	}
+	Money baseAmount;
 }
