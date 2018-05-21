@@ -51,16 +51,21 @@ public class OrderLinePriceUpdateRequest
 	@NonNull
 	I_C_OrderLine orderLine;
 
-	int priceListId;
-	Quantity qty;
+	//
+	// Pricing context overrides
+	int pricingSystemIdOverride;
+	int priceListIdOverride;
+	Quantity qtyOverride;
 
+	//
+	// Result options
 	@NonNull
 	ResultUOM resultUOM;
 
+	//
+	// Updating the order line options
 	boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet; // task 06727
-
 	boolean updateLineNetAmt;
-
 	@Default
 	boolean applyPriceLimitRestrictions = true;
 

@@ -47,7 +47,7 @@ public class OrderLineRepository
 	public OrderLine ofRecord(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		return OrderLine.builder()
-				.id(OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID()))
+				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
 				.orderId(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()))
 				.bPartnerId(BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()))
 				.datePromised(TimeUtil.asLocalDate(orderLineRecord.getDatePromised()))
