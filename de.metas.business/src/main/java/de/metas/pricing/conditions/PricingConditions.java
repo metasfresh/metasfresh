@@ -46,7 +46,7 @@ public class PricingConditions
 	private static final Comparator<PricingConditionsBreak> SORT_BY_BREAK_VALUE = Comparator.<PricingConditionsBreak, BigDecimal> comparing(b -> b.getMatchCriteria().getBreakValue());
 	private static final Comparator<PricingConditionsBreak> SORT_BY_BREAK_VALUE_DESC = SORT_BY_BREAK_VALUE.reversed();
 
-	int discountSchemaId;
+	PricingConditionsId id;
 
 	PricingConditionsDiscountType discountType;
 

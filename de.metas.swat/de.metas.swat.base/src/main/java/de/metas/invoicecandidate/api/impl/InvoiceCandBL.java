@@ -2040,8 +2040,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 		}
-		final BigDecimal amt = ic.getPriceActual().multiply(qty);
-
+		
+		final BigDecimal priceActual = ic.getPriceActual();
 		final int productId = ic.getM_Product_ID();
 		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 
@@ -2050,7 +2050,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.attributeInstances(instances)
 				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
 				.qty(qty)
-				.amt(amt)
+				.price(priceActual)
 				.build());
 
 		final BigDecimal qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;

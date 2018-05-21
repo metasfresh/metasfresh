@@ -9,9 +9,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Env;
 
+import de.metas.payment.api.IPaymentTermRepository;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -51,6 +51,7 @@ import de.metas.vertical.pharma.model.I_M_Product;
 class PharmaPriceLimitRuleInstance
 {
 	private final transient IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final transient IPaymentTermRepository paymentTermsRepo = Services.get(IPaymentTermRepository.class);
 
 	private final PriceLimitRuleContext context;
 
@@ -194,13 +195,7 @@ class PharmaPriceLimitRuleInstance
 			return BigDecimal.ZERO;
 		}
 
-		final I_C_PaymentTerm paymentTerm = loadOutOfTrx(paymentTermId, I_C_PaymentTerm.class);
-		if (paymentTerm == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		return paymentTerm.getDiscount();
+		return paymentTermsRepo.getPaymentTermDiscount(paymentTermId);
 	}
 
 	@lombok.Value

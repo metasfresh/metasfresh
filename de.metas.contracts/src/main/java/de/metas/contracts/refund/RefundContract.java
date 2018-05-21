@@ -31,4 +31,7 @@ public class RefundContract
 {
 	@NonNull
 	FlatrateTermId flatrateTermId;
+
+	@NonNull
+	RefundConfig refundConfig;
 }
