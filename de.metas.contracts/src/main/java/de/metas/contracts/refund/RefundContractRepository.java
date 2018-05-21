@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
@@ -43,6 +44,13 @@ import lombok.NonNull;
 @Repository
 public class RefundContractRepository
 {
+	private final RefundConfigRepository refundConfigRepository;
+
+	public RefundContractRepository(@NonNull final RefundConfigRepository refundConfigRepository)
+	{
+		this.refundConfigRepository = refundConfigRepository;
+	}
+
 	private static final CCache<ArrayKey, Integer> CACHE = CCache.<ArrayKey, Integer> newCache(
 			I_C_Flatrate_Term.Table_Name + "#by"
 					+ I_C_Flatrate_Term.COLUMNNAME_Type_Conditions + "#"
@@ -54,14 +62,11 @@ public class RefundContractRepository
 			0,
 			CCache.EXPIREMINUTES_Never);
 
-	public Optional<FlatrateTermId> getMatchingIdByInvoiceCandidate(@NonNull final AssignableInvoiceCandidate invoiceCandidate)
+	public Optional<FlatrateTermId> getIdByQuery(@NonNull final RefundContractQuery query)
 	{
-		// TODO don't return ID if invoiceCandidate if the invoicecandidate references a refund contract by itself!
-
-
-		final Timestamp invoicableFromTimestamp = TimeUtil.asTimestamp(invoiceCandidate.getInvoiceableFrom());
-		final int billPartnerId = invoiceCandidate.getBpartnerId().getRepoId();
-		final int productId = invoiceCandidate.getProductId().getRepoId();
+		final Timestamp invoicableFromTimestamp = TimeUtil.asTimestamp(query.getDate());
+		final int billPartnerId = query.getBPartnerId().getRepoId();
+		final int productId = query.getProductId().getRepoId();
 
 		final ArrayKey key = ArrayKey.of(invoicableFromTimestamp, billPartnerId, productId);
 		final int contractRecordId = CACHE.getOrLoad(
@@ -75,13 +80,20 @@ public class RefundContractRepository
 		return Optional.empty();
 	}
 
-	private int retrieveIdForCache(
+	public Optional<RefundContract> getByQuery(@NonNull final RefundContractQuery query)
+	{
+		return getIdByQuery(query)
+				.map(this::load);
+
+	}
+
+	private static int retrieveIdForCache(
 			@NonNull final Timestamp invoicableFromTimestamp,
 			final int billPartnerId,
 			final int productId)
 	{
 		final int contractRecordId = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Flatrate_Term.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class, PlainContextAware.newOutOfTrx())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
@@ -95,5 +107,12 @@ public class RefundContractRepository
 				.create()
 				.firstId();
 		return contractRecordId;
+	}
+
+	private RefundContract load(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final RefundConfig refundConfig = refundConfigRepository.getByRefundContractId(flatrateTermId);
+
+		return new RefundContract(flatrateTermId, refundConfig);
 	}
 }

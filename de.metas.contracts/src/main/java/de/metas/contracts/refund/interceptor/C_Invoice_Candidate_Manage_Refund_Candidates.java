@@ -108,7 +108,10 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		catch (final RuntimeException e)
 		{
 			// allow the "normal ICs" to be updated, even if something is wrong with the "refund-ICs"
-			Loggables.get().withLogger(logger, Level.WARN).addLog("associateDuringUpdateProcess0 - Caught an exception; please check the async workpackage log; e={}", e);
+			Loggables
+					.get()
+					.withLogger(logger, Level.WARN)
+					.addLog("associateDuringUpdateProcess0 - Caught an exception; please check the async workpackage log; e={}", e.toString());
 		}
 	}
 

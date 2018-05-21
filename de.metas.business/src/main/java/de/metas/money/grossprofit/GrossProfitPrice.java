@@ -1,12 +1,16 @@
-package de.metas.contracts.refund;
+package de.metas.money.grossprofit;
 
-import de.metas.contracts.FlatrateTermId;
+import java.util.List;
+
+import de.metas.money.Money;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,11 +31,25 @@ import lombok.Value;
  */
 
 @Value
-public class RefundContract
+@Builder
+public class GrossProfitPrice
 {
-	@NonNull
-	FlatrateTermId flatrateTermId;
+	boolean soTrx;
 
 	@NonNull
-	RefundConfig refundConfig;
+	Money basePrice;
+
+	@Singular
+	List<GrossProfitComponent> profitCompponents;
+
+	public Money computeProfitPrice()
+	{
+		Money intermediateResult = basePrice;
+		for (final GrossProfitComponent profitComponent : profitCompponents)
+		{
+			intermediateResult = profitComponent.applyToInput(intermediateResult);
+		}
+
+		return intermediateResult;
+	}
 }
