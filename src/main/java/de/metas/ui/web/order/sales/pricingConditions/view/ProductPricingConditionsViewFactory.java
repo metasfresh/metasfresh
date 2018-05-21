@@ -58,6 +58,7 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 
 		return preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(pricingConditions -> pricingConditions.streamBreaksMatchingAnyOfProducts(productAndCategoryIds))
+				.priceNetCalculator(new PriceNetCalculator()) // TODO
 				.adClientId(adClientId)
 				.load();
 	}

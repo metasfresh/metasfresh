@@ -14,7 +14,9 @@ import org.adempiere.util.Check;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange.PartialPriceChangeBuilder;
@@ -168,13 +170,14 @@ public class PricingConditionsRow implements IViewRow
 
 	@Getter
 	private final Price price;
+	private final PriceNetCalculator priceNetCalculator;
 
 	@Getter
-	final int discountSchemaId;
+	private final PricingConditionsId pricingConditionsId;
 	@Getter
-	private final int discountSchemaBreakId;
+	private final PricingConditionsBreakId pricingConditionsBreakId;
 	@Getter
-	private final int copiedFromDiscountSchemaBreakId;
+	private final PricingConditionsBreakId copiedFromPricingConditionsBreakId;
 	@Getter
 	private final boolean temporaryPricingConditions;
 
@@ -196,16 +199,17 @@ public class PricingConditionsRow implements IViewRow
 			@NonNull final BigDecimal discount,
 			//
 			@NonNull final Price price,
+			@NonNull final PriceNetCalculator priceNetCalculator,
 			final BigDecimal priceNet,
 			//
 			final LocalDate dateLastInOut,
 			final LocalDateTime dateCreated,
 			//
 			final boolean editable,
-			final int discountSchemaId,
-			final int discountSchemaBreakId,
+			final PricingConditionsId pricingConditionsId,
+			final PricingConditionsBreakId pricingConditionsBreakId,
 			final Boolean temporaryPricingConditions,
-			final int copiedFromDiscountSchemaBreakId,
+			final PricingConditionsBreakId copiedFromPricingConditionsBreakId,
 			@NonNull final PricingConditionsBreakMatchCriteria breakMatchCriteria)
 	{
 		id = buildDocumentId(bpartner, customer);
@@ -225,7 +229,9 @@ public class PricingConditionsRow implements IViewRow
 		this.basePricingSystem = price.getBasePricingSystem();
 		this.basePriceAddAmt = price.getBasePriceAddAmt();
 		this.fixedPrice = price.getFixedPrice();
-		this.priceNet = priceNet;
+
+		this.priceNetCalculator = priceNetCalculator;
+		this.priceNet = priceNet != null ? priceNet : priceNetCalculator.calculate(price, discount, paymentTerm);
 
 		this.dateLastInOut = dateLastInOut;
 		this.dateCreated = dateCreated;
@@ -233,9 +239,11 @@ public class PricingConditionsRow implements IViewRow
 		this.editable = editable;
 		viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(editable, price.getPriceType());
 
-		this.discountSchemaId = discountSchemaId;
-		this.discountSchemaBreakId = discountSchemaBreakId;
-		this.copiedFromDiscountSchemaBreakId = copiedFromDiscountSchemaBreakId;
+		PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreakId);
+		this.pricingConditionsId = pricingConditionsId;
+		this.pricingConditionsBreakId = pricingConditionsBreakId;
+
+		this.copiedFromPricingConditionsBreakId = copiedFromPricingConditionsBreakId;
 
 		if (temporaryPricingConditions != null)
 		{
@@ -243,7 +251,7 @@ public class PricingConditionsRow implements IViewRow
 		}
 		else
 		{
-			this.temporaryPricingConditions = discountSchemaBreakId <= 0;
+			this.temporaryPricingConditions = computeIsTemporaryConditions(this.pricingConditionsBreakId);
 		}
 
 		this.breakMatchCriteria = breakMatchCriteria;
@@ -252,6 +260,11 @@ public class PricingConditionsRow implements IViewRow
 	private static final DocumentId buildDocumentId(final LookupValue bpartner, final boolean customer)
 	{
 		return DocumentId.of(bpartner.getIdAsString() + "-" + (customer ? "C" : "V"));
+	}
+
+	private static final boolean computeIsTemporaryConditions(final PricingConditionsBreakId pricingConditionsBreakId)
+	{
+		return pricingConditionsBreakId == null;
 	}
 
 	private static final ImmutableMap<String, ViewEditorRenderMode> buildViewEditorRenderModeByFieldName(final boolean editable, final PriceType priceType)
@@ -407,30 +420,7 @@ public class PricingConditionsRow implements IViewRow
 		boolean valueChanged = false;
 
 		//
-		// Price
-		final Price price;
-		final PriceChange priceChange = request.getPriceChange();
-		if (priceChange == null)
-		{
-			price = this.price;
-			// no change
-		}
-		else if (priceChange instanceof CompletePriceChange)
-		{
-			price = ((CompletePriceChange)priceChange).getPrice();
-			valueChanged = valueChanged || !Objects.equals(price, this.price);
-		}
-		else if (priceChange instanceof PartialPriceChange)
-		{
-			price = applyPartialPriceChangeTo((PartialPriceChange)priceChange, this.price);
-			valueChanged = valueChanged || !Objects.equals(price, this.price);
-		}
-		else
-		{
-			throw new AdempiereException("Unknow price change request: " + priceChange);
-		}
-
-		//
+		// Discount%
 		BigDecimal discount = this.discount;
 		if (request.getDiscount() != null)
 		{
@@ -439,6 +429,7 @@ public class PricingConditionsRow implements IViewRow
 		}
 
 		//
+		// Payment Term
 		LookupValue paymentTerm = this.paymentTerm;
 		if (request.getPaymentTerm() != null)
 		{
@@ -446,29 +437,39 @@ public class PricingConditionsRow implements IViewRow
 			valueChanged = valueChanged || !Objects.equals(paymentTerm, this.paymentTerm);
 		}
 
+		//
+		// Price
+		final Price price = applyPriceChangeTo(request.getPriceChange(), this.price);
+		BigDecimal priceNet = this.priceNet;
+		if (!Objects.equals(price, this.price))
+		{
+			priceNet = priceNetCalculator.calculate(price, discount, paymentTerm);
+			valueChanged = true;
+		}
+
 		boolean changed = valueChanged;
 
 		//
 		// ID
-		int discountSchemaBreakId = this.discountSchemaBreakId;
-		if (request.getDiscountSchemaBreakId() != null)
+		PricingConditionsBreakId pricingConditionsBreakId = this.pricingConditionsBreakId;
+		if (request.getPricingConditionsBreakId() != null)
 		{
-			discountSchemaBreakId = request.getDiscountSchemaBreakId();
-			changed = changed || !Objects.equals(discountSchemaBreakId, this.discountSchemaBreakId);
+			pricingConditionsBreakId = request.getPricingConditionsBreakId();
+			changed = changed || !Objects.equals(pricingConditionsBreakId, this.pricingConditionsBreakId);
 		}
 
 		//
 		// Copied from ID
-		int copiedFromDiscountSchemaBreakId = this.copiedFromDiscountSchemaBreakId;
-		if (request.getSourceDiscountSchemaBreakId() != null)
+		PricingConditionsBreakId copiedFromPricingConditionsBreakId = this.copiedFromPricingConditionsBreakId;
+		if (request.getSourcePricingConditionsBreakId() != null)
 		{
-			copiedFromDiscountSchemaBreakId = request.getSourceDiscountSchemaBreakId();
-			changed = changed || !Objects.equals(copiedFromDiscountSchemaBreakId, this.copiedFromDiscountSchemaBreakId);
+			copiedFromPricingConditionsBreakId = request.getSourcePricingConditionsBreakId();
+			changed = changed || !Objects.equals(copiedFromPricingConditionsBreakId, this.copiedFromPricingConditionsBreakId);
 		}
 
 		//
-		final boolean temporaryPricingConditions = discountSchemaBreakId <= 0 || valueChanged;
-		changed = changed || (temporaryPricingConditions != this.temporaryPricingConditions);
+		final boolean temporaryPricingConditions = valueChanged || computeIsTemporaryConditions(pricingConditionsBreakId);
+		changed = changed || !Objects.equals(temporaryPricingConditions, this.temporaryPricingConditions);
 
 		//
 		if (!changed)
@@ -478,12 +479,35 @@ public class PricingConditionsRow implements IViewRow
 
 		return toBuilder()
 				.price(price)
+				.priceNet(priceNet)
 				.discount(discount)
 				.paymentTerm(paymentTerm)
-				.discountSchemaBreakId(discountSchemaBreakId)
-				.copiedFromDiscountSchemaBreakId(copiedFromDiscountSchemaBreakId)
+				.pricingConditionsBreakId(pricingConditionsBreakId)
+				.copiedFromPricingConditionsBreakId(copiedFromPricingConditionsBreakId)
 				.temporaryPricingConditions(temporaryPricingConditions)
 				.build();
+	}
+
+	private static Price applyPriceChangeTo(final PriceChange priceChange, final Price price)
+	{
+		if (priceChange == null)
+		{
+			// no change
+			return price;
+		}
+		else if (priceChange instanceof CompletePriceChange)
+		{
+			return ((CompletePriceChange)priceChange).getPrice();
+		}
+		else if (priceChange instanceof PartialPriceChange)
+		{
+			return applyPartialPriceChangeTo((PartialPriceChange)priceChange, price);
+		}
+		else
+		{
+			throw new AdempiereException("Unknow price change request: " + priceChange);
+		}
+
 	}
 
 	private static Price applyPartialPriceChangeTo(final PartialPriceChange changes, final Price price)

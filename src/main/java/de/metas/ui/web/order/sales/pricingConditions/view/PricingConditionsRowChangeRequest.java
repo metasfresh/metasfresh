@@ -3,8 +3,7 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.adempiere.util.Check;
-
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,16 +35,15 @@ import lombok.Value;
 @Builder
 public class PricingConditionsRowChangeRequest
 {
-	public static final PricingConditionsRowChangeRequest saved(final int discountSchemaBreakId)
+	public static final PricingConditionsRowChangeRequest saved(@NonNull final PricingConditionsBreakId pricingConditionsBreakId)
 	{
-		Check.assumeGreaterThanZero(discountSchemaBreakId, "discountSchemaBreakId");
 		return builder()
-				.discountSchemaBreakId(discountSchemaBreakId)
+				.pricingConditionsBreakId(pricingConditionsBreakId)
 				.build();
 	}
 
-	Integer discountSchemaBreakId;
-	Integer sourceDiscountSchemaBreakId;
+	PricingConditionsBreakId pricingConditionsBreakId;
+	PricingConditionsBreakId sourcePricingConditionsBreakId;
 
 	BigDecimal discount;
 	Optional<LookupValue> paymentTerm;

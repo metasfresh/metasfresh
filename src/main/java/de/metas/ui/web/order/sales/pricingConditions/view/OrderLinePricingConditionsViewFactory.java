@@ -70,6 +70,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 
 		final PricingConditionsRowData rowsData = preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(createPricingConditionsBreaksExtractor(salesOrderLine))
+				.priceNetCalculator(new PriceNetCalculator()) // TODO
 				.filters(extractFilters(request))
 				.adClientId(salesOrderLine.getAD_Client_ID())
 				.sourceDocumentLine(createSourceDocumentLine(salesOrderLine))
@@ -97,12 +98,11 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(salesOrderLine.getM_AttributeSetInstance_ID());
 		final BigDecimal qty = salesOrderLine.getQtyOrdered();
 		final BigDecimal price = salesOrderLine.getPriceActual();
-		final BigDecimal amt = qty.multiply(price);
 		return PricingConditionsBreakQuery.builder()
 				.attributeInstances(attributeInstances)
 				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
 				.qty(qty)
-				.amt(amt)
+				.price(price)
 				.build();
 	}
 

@@ -4,6 +4,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
 import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest.PricingConditionsBreakChangeRequestBuilder;
@@ -44,7 +46,7 @@ public class PricingConditionsRowsSaver
 		this.row = row;
 	}
 
-	public int save()
+	public PricingConditionsBreakId save()
 	{
 		if (!row.isEditable())
 		{
@@ -52,18 +54,18 @@ public class PricingConditionsRowsSaver
 					.setParameter("row", row);
 		}
 
-		final int discountSchemaId = row.getDiscountSchemaId();
-		if (discountSchemaId <= 0)
+		final PricingConditionsId pricingConditionsId = row.getPricingConditionsId();
+		if (pricingConditionsId == null)
 		{
 			throw new AdempiereException("Cannot save row because no discount schema was defined"); // TODO trl
 		}
 
 		final PricingConditionsBreakChangeRequestBuilder requestBuilder = PricingConditionsBreakChangeRequest.builder()
-				.discountSchemaId(discountSchemaId)
-				.discountSchemaBreakId(row.getDiscountSchemaBreakId())
+				.pricingConditionsId(pricingConditionsId)
+				.pricingConditionsBreakId(row.getPricingConditionsBreakId())
 				.matchCriteria(row.getBreakMatchCriteria())
 				//
-				.updateFromDiscountSchemaBreakId(row.getCopiedFromDiscountSchemaBreakId())
+				.updateFromPricingConditionsBreakId(row.getCopiedFromPricingConditionsBreakId())
 				//
 				.discount(row.getDiscount())
 				.paymentTermId(row.getPaymentTermId());
