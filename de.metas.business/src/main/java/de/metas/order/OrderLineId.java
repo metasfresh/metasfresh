@@ -29,12 +29,12 @@ import lombok.Value;
 @Value
 public class OrderLineId
 {
-	int repoId;
-
-	public static OrderLineId ofRepoId(final int repoId)
+	public static OrderLineId ofRepoIdOrNull(final int repoId)
 	{
-		return new OrderLineId(repoId);
+		return repoId > 0 ? new OrderLineId(repoId) : null;
 	}
+
+	int repoId;
 
 	private OrderLineId(final int repoId)
 	{

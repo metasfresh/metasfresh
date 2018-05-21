@@ -2,6 +2,8 @@ package de.metas.order;
 
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.bpartner.BPartnerId;
 
 import de.metas.money.Money;
@@ -36,7 +38,7 @@ import lombok.Value;
 @Builder
 public class OrderLine
 {
-	@NonNull
+	@Nullable
 	OrderLineId id;
 
 	@NonNull
