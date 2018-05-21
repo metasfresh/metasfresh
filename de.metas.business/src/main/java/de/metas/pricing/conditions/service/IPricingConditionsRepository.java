@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.pricing.conditions.PricingConditions;
-import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsId;
 
 public interface IPricingConditionsRepository extends ISingletonService
@@ -16,7 +16,7 @@ public interface IPricingConditionsRepository extends ISingletonService
 
 	Collection<PricingConditions> getPricingConditionsByIds(Collection<Integer> discountSchemaIds);
 
-	PricingConditionsBreakId changePricingConditionsBreak(PricingConditionsBreakChangeRequest request);
+	PricingConditionsBreak changePricingConditionsBreak(PricingConditionsBreakChangeRequest request);
 
 	/**
 	 * Re-sequence the lines and breaks of the given schema.

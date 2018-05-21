@@ -37,6 +37,7 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -72,8 +73,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public I_C_BPartner getById(final int bpartnerId)
 	{
-		Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
-		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		return getById(BPartnerId.ofRepoId(bpartnerId));
+	}
+
+	@Override
+	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId.getRepoId(), I_C_BPartner.class);
 		return bpartner;
 	}
 
@@ -249,9 +255,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public int retrievePricingSystemId(final int bPartnerId, final boolean soTrx)
+	public int retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final boolean soTrx)
 	{
-		return retrievePricingSystemId(Env.getCtx(), bPartnerId, soTrx, ITrx.TRXNAME_None);
+		return retrievePricingSystemId(Env.getCtx(), bPartnerId.getRepoId(), soTrx, ITrx.TRXNAME_None);
 	}
 
 	@Override
@@ -575,7 +581,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Map<Integer, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final int adClientId, final boolean isSOTrx)
+	public Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final int adClientId, final boolean isSOTrx)
 	{
 		final String discountSchemaIdColumnName = isSOTrx ? I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID : I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 
@@ -588,7 +594,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.listDistinct(I_C_BPartner.COLUMNNAME_C_BPartner_ID, discountSchemaIdColumnName)
 				.stream()
 				.map(row -> GuavaCollectors.entry(
-						NumberUtils.asInt(row.get(I_C_BPartner.COLUMNNAME_C_BPartner_ID), -1),
+						BPartnerId.ofRepoId(NumberUtils.asInt(row.get(I_C_BPartner.COLUMNNAME_C_BPartner_ID), -1)),
 						NumberUtils.asInt(row.get(discountSchemaIdColumnName), -1)))
 				.collect(GuavaCollectors.toImmutableMap());
 	}

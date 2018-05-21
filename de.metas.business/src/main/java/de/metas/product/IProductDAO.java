@@ -33,6 +33,8 @@ import org.compiere.model.I_M_Product_Category;
 
 public interface IProductDAO extends ISingletonService
 {
+	I_M_Product getById(ProductId productId);
+
 	I_M_Product getById(final int productId);
 
 	I_M_Product retrieveProductByUPC(Properties ctx, String upc);
@@ -70,9 +72,11 @@ public interface IProductDAO extends ISingletonService
 	/** @return M_Product_Category_ID or <code>-1</code> if product does not exist or it was deactivated */
 	int retrieveProductCategoryByProductId(int productId);
 
+	/** @return product category or null */
+	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
+
 	/** @return product category IDs indexed by product IDs */
 	Set<ProductAndCategoryId> retrieveProductCategoriesByProductIds(Set<Integer> productIds);
 
 	String retrieveProductValueByProductId(int productId);
-
 }

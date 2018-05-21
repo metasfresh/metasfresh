@@ -1,6 +1,7 @@
 package de.metas.inout.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 
 /*
@@ -33,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -42,6 +44,7 @@ import org.compiere.model.I_M_InOutLine;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public class InOutDAO implements IInOutDAO
@@ -220,5 +223,12 @@ public class InOutDAO implements IInOutDAO
 				.addCompareFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, Operator.GREATER, BigDecimal.ZERO);
 
 		return queryBuilder;
+	}
+
+	@Override
+	public LocalDate getLastInOutDate(final BPartnerId bpartnerId, final ProductId productId, final boolean isSOTrx)
+	{
+		// TODO: implement
+		return null;
 	}
 }

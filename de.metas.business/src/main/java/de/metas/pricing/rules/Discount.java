@@ -44,6 +44,7 @@ import de.metas.pricing.PricingConditionsResult;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest.CalculatePricingConditionsRequestBuilder;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.product.IProductDAO;
@@ -101,39 +102,56 @@ public class Discount implements IPricingRule
 		}
 
 		//
-		final int bpartnerId = pricingCtx.getC_BPartner_ID();
-		final boolean isSOTrx = pricingCtx.isSOTrx();
-
-		final I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
-		final BigDecimal bpartnerFlatDiscount = partner.getFlatDiscount();
-
-		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(partner, isSOTrx);
-		if (discountSchemaId <= 0)
+		final CalculatePricingConditionsRequest request = createCalculatePricingConditionsRequest(pricingCtx, result);
+		if (request == null)
 		{
 			return;
 		}
-		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaId(discountSchemaId);
-
-		final int productId = pricingCtx.getM_Product_ID();
-		final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
-
-		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
-				.pricingConditionsId(pricingConditionsId)
-				.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
-						.qty(pricingCtx.getQty())
-						.price(result.getPriceStd())
-						.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
-						.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
-						.build())
-				.bpartnerFlatDiscount(bpartnerFlatDiscount)
-				.pricingCtx(pricingCtx)
-				.build();
 
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 		final CalculatePricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
 
 		result.setUsesDiscountSchema(true);
-		updatePricingResultFromPricingConditionsResult(result, pricingConditionsId, pricingConditionsResult);
+		updatePricingResultFromPricingConditionsResult(result, request.getPricingConditionsId(), pricingConditionsResult);
+	}
+
+	private CalculatePricingConditionsRequest createCalculatePricingConditionsRequest(final IPricingContext pricingCtx, final IPricingResult result)
+	{
+		final int bpartnerId = pricingCtx.getC_BPartner_ID();
+		final boolean isSOTrx = pricingCtx.isSOTrx();
+
+		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+		final BigDecimal bpartnerFlatDiscount = bpartner.getFlatDiscount();
+
+		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(bpartner, isSOTrx);
+		if (discountSchemaId <= 0)
+		{
+			return null;
+		}
+
+		final CalculatePricingConditionsRequestBuilder builder = CalculatePricingConditionsRequest.builder()
+				.pricingConditionsId(PricingConditionsId.ofDiscountSchemaId(discountSchemaId))
+				.bpartnerFlatDiscount(bpartnerFlatDiscount)
+				.pricingCtx(pricingCtx);
+
+		if (pricingCtx.getForcePricingConditionsBreak() != null)
+		{
+			builder.forcePricingConditionsBreak(pricingCtx.getForcePricingConditionsBreak());
+		}
+		else
+		{
+			final int productId = pricingCtx.getM_Product_ID();
+			final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+
+			builder.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
+					.qty(pricingCtx.getQty())
+					.price(result.getPriceStd())
+					.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
+					.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
+					.build());
+		}
+
+		return builder.build();
 	}
 
 	private List<I_M_AttributeInstance> getAttributeInstances(final Object pricingReferencedObject)

@@ -30,6 +30,8 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
+import de.metas.pricing.conditions.PricingConditionsBreak;
+
 public interface IPricingContext extends IContextAware
 {
 	int getM_Product_ID();
@@ -73,6 +75,8 @@ public interface IPricingContext extends IContextAware
 	int getPP_Product_BOMLine_ID();
 
 	boolean isDisallowDiscount();
+
+	PricingConditionsBreak getForcePricingConditionsBreak();
 
 	Object getReferencedObject();
 
