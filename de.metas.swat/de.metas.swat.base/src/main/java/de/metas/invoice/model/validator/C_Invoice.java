@@ -46,6 +46,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.pricing.service.IPriceListDAO;
@@ -261,7 +262,7 @@ public class C_Invoice
 	public void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (order != null && order.getC_Payment_ID() > 0)
+		if (order != null && Services.get(IDocTypeBL.class).isPrepay(order.getC_DocType()) &&  order.getC_Payment_ID() > 0)
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
@@ -275,7 +276,7 @@ public class C_Invoice
 	public void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (order != null && order.getC_Payment_ID() > 0)
+		if (order != null && Services.get(IDocTypeBL.class).isPrepay(order.getC_DocType()) && order.getC_Payment_ID() > 0)
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, payment, true);
