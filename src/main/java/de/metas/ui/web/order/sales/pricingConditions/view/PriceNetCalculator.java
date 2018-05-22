@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.order.PriceAndDiscount;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -91,7 +90,7 @@ public class PriceNetCalculator
 		}
 
 		final int precision = 2; // TODO: hardcoded
-		final BigDecimal priceAfterDiscount = PriceAndDiscount.subtractDiscount(basePrice, pricingConditionsBreak.getDiscount(), precision);
+		final BigDecimal priceAfterDiscount = pricingConditionsBreak.getDiscount().subtractFromBase(basePrice, precision);
 		return priceAfterDiscount;
 
 	}

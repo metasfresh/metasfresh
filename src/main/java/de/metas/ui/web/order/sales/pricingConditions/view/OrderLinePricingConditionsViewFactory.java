@@ -13,6 +13,7 @@ import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeInstance;
 
+import de.metas.lang.Percent;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
@@ -142,7 +143,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 				.productId(productId)
 				.productCategoryId(productCategoryId)
 				.priceEntered(salesOrderLine.getPriceEntered())
-				.discount(salesOrderLine.getDiscount())
+				.discount(Percent.of(salesOrderLine.getDiscount()))
 				.paymentTermId(salesOrderLine.getC_PaymentTerm_Override_ID())
 				.build();
 	}

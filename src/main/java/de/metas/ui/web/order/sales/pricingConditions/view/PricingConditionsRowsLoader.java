@@ -25,6 +25,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.inout.IInOutDAO;
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -69,7 +70,7 @@ class PricingConditionsRowsLoader
 	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
 
 	private static final Comparator<PricingConditionsRow> ROWS_SORTING = Comparator.<PricingConditionsRow, Integer> comparing(row -> row.isEditable() ? 0 : 1)
-			.thenComparing(row -> row.getBpartner().getDisplayName())
+			.thenComparing(row -> row.getBpartnerDisplayName())
 			.thenComparing(row -> row.isCustomer() ? 0 : 1);
 
 	private final PricingConditionsRowLookups lookups;
@@ -310,7 +311,10 @@ class PricingConditionsRowsLoader
 		ProductCategoryId productCategoryId;
 
 		BigDecimal priceEntered;
-		BigDecimal discount;
+
+		@lombok.Builder.Default
+		Percent discount = Percent.ZERO;
+
 		int paymentTermId;
 	}
 

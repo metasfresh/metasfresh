@@ -1,7 +1,7 @@
 package de.metas.ui.web.order.sales.pricingConditions.process;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.util.OptionalInt;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -82,7 +82,7 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 		return PricingConditionsRowChangeRequest.builder()
 				.priceChange(CompletePriceChange.of(price))
 				.discount(templateRow.getDiscount())
-				.paymentTerm(Optional.ofNullable(templateRow.getPaymentTerm()))
+				.paymentTermId(templateRow.getPaymentTermId() > 0 ? OptionalInt.of(templateRow.getPaymentTermId()) : OptionalInt.empty())
 				.sourcePricingConditionsBreakId(templateRow.getPricingConditionsBreakId())
 				.build();
 	}

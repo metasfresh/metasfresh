@@ -173,7 +173,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			}
 
 			salesOrderLine.setIsManualDiscount(true);
-			salesOrderLine.setDiscount(editableRow.getDiscount());
+			salesOrderLine.setDiscount(editableRow.getDiscount().getValueAsBigDecimal());
 
 			if (editableRow.getPaymentTermId() > 0)
 			{

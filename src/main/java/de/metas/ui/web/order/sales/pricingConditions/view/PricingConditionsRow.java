@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.OptionalInt;
 
 import org.adempiere.bpartner.BPartnerId;
@@ -15,6 +14,7 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -80,7 +80,6 @@ public class PricingConditionsRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
 	})
-	@Getter
 	private final LookupValue bpartner;
 
 	@ViewColumn(captionKey = "IsCustomer", widgetType = DocumentFieldWidgetType.YesNo, layouts = {
@@ -135,7 +134,6 @@ public class PricingConditionsRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 	})
-	@Getter
 	private final BigDecimal discount;
 
 	public static final String FIELDNAME_PaymentTerm = "paymentTerm";
@@ -143,7 +141,6 @@ public class PricingConditionsRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
 	})
-	@Getter
 	private final LookupValue paymentTerm;
 
 	@ViewColumn(captionKey = "PriceNet", widgetType = DocumentFieldWidgetType.Number, layouts = {
@@ -210,7 +207,7 @@ public class PricingConditionsRow implements IViewRow
 		this.breakValue = pricingConditionsBreak.getMatchCriteria().getBreakValue();
 
 		this.paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId());
-		this.discount = pricingConditionsBreak.getDiscount();
+		this.discount = pricingConditionsBreak.getDiscount().getValueAsBigDecimal();
 
 		final PriceOverride price = pricingConditionsBreak.getPriceOverride();
 		this.priceType = lookups.lookupPriceType(price.getType());
@@ -331,11 +328,13 @@ public class PricingConditionsRow implements IViewRow
 			final String fieldName = fieldChangeRequest.getPath();
 			if (FIELDNAME_Discount.equals(fieldName))
 			{
-				builder.discount(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
+				builder.discount(Percent.of(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO)));
 			}
 			else if (FIELDNAME_PaymentTerm.equals(fieldName))
 			{
-				builder.paymentTerm(Optional.ofNullable(fieldChangeRequest.getValueAsIntegerLookupValue()));
+				final LookupValue paymentTerm = fieldChangeRequest.getValueAsIntegerLookupValue();
+				final OptionalInt paymentTermId = paymentTerm != null && paymentTerm.getIdAsInt() > 0 ? OptionalInt.of(paymentTerm.getIdAsInt()) : OptionalInt.empty();
+				builder.paymentTermId(paymentTermId);
 			}
 		}
 
@@ -430,9 +429,9 @@ public class PricingConditionsRow implements IViewRow
 
 		//
 		// Payment Term
-		if (request.getPaymentTerm() != null)
+		if (request.getPaymentTermId() != null)
 		{
-			builder.paymentTermId(request.getPaymentTerm().map(LookupValue::getIdAsInt).orElse(-1));
+			builder.paymentTermId(request.getPaymentTermId().orElse(-1));
 		}
 
 		//
@@ -525,6 +524,11 @@ public class PricingConditionsRow implements IViewRow
 		return BPartnerId.ofRepoId(bpartner.getIdAsInt());
 	}
 
+	public String getBpartnerDisplayName()
+	{
+		return bpartner.getDisplayName();
+	}
+
 	public boolean isVendor()
 	{
 		return !isCustomer();
@@ -543,6 +547,11 @@ public class PricingConditionsRow implements IViewRow
 	public PriceOverride getPrice()
 	{
 		return pricingConditionsBreak.getPriceOverride();
+	}
+
+	public Percent getDiscount()
+	{
+		return pricingConditionsBreak.getDiscount();
 	}
 
 	public PricingConditionsBreakId getPricingConditionsBreakId()

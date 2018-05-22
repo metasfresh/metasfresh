@@ -2,13 +2,12 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.OptionalInt;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -51,8 +50,8 @@ public class PricingConditionsRowChangeRequest
 	
 	PricingConditionsBreakId sourcePricingConditionsBreakId;
 
-	BigDecimal discount;
-	Optional<LookupValue> paymentTerm;
+	Percent discount;
+	OptionalInt paymentTermId;
 
 	PriceChange priceChange;
 
