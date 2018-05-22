@@ -3,12 +3,11 @@
  */
 package de.metas.pricing.conditions.service;
 
-import java.math.BigDecimal;
-
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
@@ -52,7 +51,7 @@ public class CalculatePricingConditionsRequest
 	private final PricingConditionsBreak forcePricingConditionsBreak;
 	private final PricingConditionsBreakQuery pricingConditionsBreakQuery;
 
-	private final BigDecimal bpartnerFlatDiscount;
+	private final Percent bpartnerFlatDiscount;
 
 	private final IPricingContext pricingCtx;
 
@@ -61,7 +60,7 @@ public class CalculatePricingConditionsRequest
 			final PricingConditionsId pricingConditionsId,
 			final PricingConditionsBreak forcePricingConditionsBreak,
 			final PricingConditionsBreakQuery pricingConditionsBreakQuery,
-			final BigDecimal bpartnerFlatDiscount,
+			final Percent bpartnerFlatDiscount,
 			final IPricingContext pricingCtx)
 	{
 		assertValid(pricingConditionsId, forcePricingConditionsBreak, pricingConditionsBreakQuery);
@@ -71,7 +70,7 @@ public class CalculatePricingConditionsRequest
 		this.forcePricingConditionsBreak = forcePricingConditionsBreak;
 		this.pricingConditionsBreakQuery = pricingConditionsBreakQuery;
 
-		this.bpartnerFlatDiscount = bpartnerFlatDiscount != null ? bpartnerFlatDiscount : BigDecimal.ZERO;
+		this.bpartnerFlatDiscount = bpartnerFlatDiscount != null ? bpartnerFlatDiscount : Percent.ZERO;
 		this.pricingCtx = pricingCtx;
 	}
 

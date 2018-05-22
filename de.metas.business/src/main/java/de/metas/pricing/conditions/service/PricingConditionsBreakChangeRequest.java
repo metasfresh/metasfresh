@@ -1,7 +1,6 @@
 package de.metas.pricing.conditions.service;
 
-import java.math.BigDecimal;
-
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
@@ -47,6 +46,6 @@ public class PricingConditionsBreakChangeRequest
 	PriceOverride price;
 
 	// Discount
-	BigDecimal discount;
+	Percent discount;
 	Integer paymentTermId;
 }

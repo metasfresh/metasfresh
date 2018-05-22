@@ -9,6 +9,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -178,7 +179,7 @@ import lombok.NonNull;
 
 	private void computeDiscountForPricingConditionsBreak(final CalculatePricingConditionsResultBuilder result, final PricingConditionsBreak pricingConditionsBreak)
 	{
-		final BigDecimal discount;
+		final Percent discount;
 		if (pricingConditionsBreak.isBpartnerFlatDiscount())
 		{
 			discount = request.getBpartnerFlatDiscount();

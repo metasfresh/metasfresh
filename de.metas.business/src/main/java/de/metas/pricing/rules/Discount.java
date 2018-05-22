@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -121,7 +122,7 @@ public class Discount implements IPricingRule
 		final boolean isSOTrx = pricingCtx.isSOTrx();
 
 		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
-		final BigDecimal bpartnerFlatDiscount = bpartner.getFlatDiscount();
+		final Percent bpartnerFlatDiscount = Percent.of(bpartner.getFlatDiscount());
 
 		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(bpartner, isSOTrx);
 		if (discountSchemaId <= 0)

@@ -12,6 +12,7 @@ import org.compiere.model.I_M_AttributeInstance;
 
 import com.google.common.base.Predicates;
 
+import de.metas.lang.Percent;
 import de.metas.product.ProductAndCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -51,7 +52,7 @@ public class PricingConditions
 	PricingConditionsDiscountType discountType;
 
 	boolean bpartnerFlatDiscount;
-	BigDecimal flatDiscount;
+	Percent flatDiscount;
 
 	boolean quantityBased;
 
