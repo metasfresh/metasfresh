@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
@@ -79,7 +80,7 @@ import lombok.NonNull;
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
 			@NonNull OrderUserNotifications userNotifications)
 	{
-		final int vendorBPartnerId = orderAggregationKey.getVendorBPartnerId();
+		final BPartnerId vendorBPartnerId = orderAggregationKey.getVendorBPartnerId();
 
 		this.orderFactory = OrderFactory.newPurchaseOrder()
 				.orgId(orderAggregationKey.getOrgId())

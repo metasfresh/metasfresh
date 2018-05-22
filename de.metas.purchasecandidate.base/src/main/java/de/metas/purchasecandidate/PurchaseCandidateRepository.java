@@ -217,7 +217,8 @@ public class PurchaseCandidateRepository
 		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getDateRequired()));
 		record.setReminderDate(TimeUtil.asTimestamp(purchaseCandidate.getReminderDate()));
 
-		record.setVendor_ID(purchaseCandidate.getVendorBPartnerId());
+		final BPartnerId vendorBPartnerId = purchaseCandidate.getVendorBPartnerId();
+		record.setVendor_ID(vendorBPartnerId != null ? vendorBPartnerId.getRepoId() : -1);
 		record.setC_BPartner_Product_ID(purchaseCandidate.getBpartnerProductId().orElse(-1));
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
 
@@ -273,7 +274,7 @@ public class PurchaseCandidateRepository
 		// TODO: handle the null case!
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(
 				bpartnerProduct,
-				purchaseCandidatePO.getVendor_ID(),
+				BPartnerId.ofRepoIdOrNull(purchaseCandidatePO.getVendor_ID()),
 				purchaseCandidatePO.isAggregatePO());
 		return vendorProductInfo;
 	}

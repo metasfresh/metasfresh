@@ -11,8 +11,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.generator.Frequency;
 import org.adempiere.util.time.generator.FrequencyType;
@@ -55,21 +55,21 @@ import lombok.ToString;
 @Repository
 public class BPPurchaseScheduleRepository
 {
-	private final CCache<Integer, AllBPPurchaseSchedule> //
-	schedulesByBpartnerId = CCache.<Integer, AllBPPurchaseSchedule> newCache(I_C_BP_PurchaseSchedule.Table_Name, 10, CCache.EXPIREMINUTES_Never);
+	private final CCache<BPartnerId, AllBPPurchaseSchedule> //
+	schedulesByBpartnerId = CCache.<BPartnerId, AllBPPurchaseSchedule> newCache(I_C_BP_PurchaseSchedule.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
-	public Optional<BPPurchaseSchedule> getByBPartnerIdAndValidFrom(final int bpartnerId, final LocalDate date)
+	public Optional<BPPurchaseSchedule> getByBPartnerIdAndValidFrom(final BPartnerId bpartnerId, final LocalDate date)
 	{
 		return schedulesByBpartnerId.getOrLoad(bpartnerId, this::retrieveAllBPPurchaseSchedulesByBPartnerId)
 				.findByDate(date);
 	}
 
-	private AllBPPurchaseSchedule retrieveAllBPPurchaseSchedulesByBPartnerId(final int bpartnerId)
+	private AllBPPurchaseSchedule retrieveAllBPPurchaseSchedulesByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		final List<BPPurchaseSchedule> bpPurchaseSchedules = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_PurchaseSchedule.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_PurchaseSchedule.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_BP_PurchaseSchedule.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
 				.create()
 				.stream()
 				.map(scheduleRecord -> toBPPurchaseSchedule(scheduleRecord))
@@ -227,14 +227,12 @@ public class BPPurchaseScheduleRepository
 	{
 		private static final Comparator<BPPurchaseSchedule> ORDERING_VALID_FROM_DESC = Comparator.comparing(BPPurchaseSchedule::getValidFrom).reversed();
 
-		int bpartnerId;
+		BPartnerId bpartnerId;
 		List<BPPurchaseSchedule> schedules;
 
 		@Builder
-		private AllBPPurchaseSchedule(final int bpartnerId, @NonNull final List<BPPurchaseSchedule> schedules)
+		private AllBPPurchaseSchedule(@NonNull final BPartnerId bpartnerId, @NonNull final List<BPPurchaseSchedule> schedules)
 		{
-			Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
-
 			this.bpartnerId = bpartnerId;
 			this.schedules = schedules.stream()
 					.sorted(ORDERING_VALID_FROM_DESC)
