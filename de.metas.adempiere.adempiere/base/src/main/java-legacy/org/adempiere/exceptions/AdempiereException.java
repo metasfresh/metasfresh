@@ -293,8 +293,9 @@ public class AdempiereException extends RuntimeException
 	@Override
 	public final String getMessage()
 	{
-		// FIXME: i think we shall translate it!
-		return getMessageBuilt().getDefaultValue();
+		// always return the localized string,
+		// else those APIs which are using getMessage() will fetch the not so nice text message.
+		return getLocalizedMessage();
 	}
 
 	/**
