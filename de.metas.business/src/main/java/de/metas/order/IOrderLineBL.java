@@ -29,6 +29,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.Percent;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
@@ -86,10 +87,13 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param discount the discount to subtract in percent (between 0 and 100). Example: 10
 	 * @param precision the precision of the expected result (relevant for rounding)
 	 * @return
+	 * @deprecated Use {@link Percent#subtractFromBase(BigDecimal, int)}
 	 */
-	BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, int precision);
-
-	BigDecimal calculateDiscountFromPrices(BigDecimal priceEntered, BigDecimal priceActual, int precision);
+	@Deprecated
+	default BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, int precision)
+	{
+		return Percent.of(discount).subtractFromBase(baseAmount, precision);
+	}
 
 	BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(BigDecimal priceActual, BigDecimal discount, int precision);
 

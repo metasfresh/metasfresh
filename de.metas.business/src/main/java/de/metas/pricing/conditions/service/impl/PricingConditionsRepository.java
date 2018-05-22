@@ -58,6 +58,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditions;
@@ -148,7 +149,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.id(PricingConditionsId.ofDiscountSchemaId(discountSchemaRecord.getM_DiscountSchema_ID()))
 				.discountType(discountType)
 				.bpartnerFlatDiscount(discountSchemaRecord.isBPartnerFlatDiscount())
-				.flatDiscount(discountSchemaRecord.getFlatDiscount())
+				.flatDiscount(Percent.of(discountSchemaRecord.getFlatDiscount()))
 				.quantityBased(discountSchemaRecord.isQuantityBased())
 				.breaks(breaks)
 				.build();
@@ -163,7 +164,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.priceOverride(toPriceOverride(schemaBreakRecord))
 				//
 				.bpartnerFlatDiscount(schemaBreakRecord.isBPartnerFlatDiscount())
-				.discount(schemaBreakRecord.getBreakDiscount())
+				.discount(Percent.of(schemaBreakRecord.getBreakDiscount()))
 				.paymentTermId(schemaBreakRecord.getC_PaymentTerm_ID())
 				//
 				.qualityDiscountPercentage(schemaBreakRecord.getQualityIssuePercentage())
@@ -328,7 +329,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		updateSchemaBreakRecordFromPrice(schemaBreak, request.getPrice());
 		if (request.getDiscount() != null)
 		{
-			schemaBreak.setBreakDiscount(request.getDiscount());
+			schemaBreak.setBreakDiscount(request.getDiscount().getValueAsBigDecimal());
 		}
 		if (request.getPaymentTermId() != null)
 		{

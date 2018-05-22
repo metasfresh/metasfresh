@@ -155,18 +155,6 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final int precision)
-	{
-		return PriceAndDiscount.subtractDiscount(baseAmount, discount, precision);
-	}
-
-	@Override
-	public BigDecimal calculateDiscountFromPrices(final BigDecimal priceEntered, final BigDecimal priceActual, final int precision)
-	{
-		return PriceAndDiscount.calculateDiscountFromPrices(priceEntered, priceActual, precision);
-	}
-
-	@Override
 	public BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(final BigDecimal priceActual, final BigDecimal discount, final int precision)
 	{
 		return PriceAndDiscount.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, precision);

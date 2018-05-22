@@ -133,7 +133,7 @@ public interface IInvoiceCandInvalidUpdater
 		}
 		if (priceAndTax.getDiscount() != null)
 		{
-			ic.setDiscount(priceAndTax.getDiscount());
+			ic.setDiscount(priceAndTax.getDiscount() != null ? priceAndTax.getDiscount().getValueAsBigDecimal() : null);
 		}
 
 		//

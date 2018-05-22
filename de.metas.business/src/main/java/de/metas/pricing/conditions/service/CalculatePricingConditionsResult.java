@@ -5,6 +5,7 @@ package de.metas.pricing.conditions.service;
 
 import java.math.BigDecimal;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -41,20 +42,20 @@ import lombok.Value;
 @Value
 public class CalculatePricingConditionsResult
 {
-	public static CalculatePricingConditionsResult discount(@NonNull final BigDecimal discount)
+	public static CalculatePricingConditionsResult discount(@NonNull final Percent discount)
 	{
-		if (BigDecimal.ZERO.compareTo(ZERO.getDiscount()) == 0)
+		if (discount.isZero())
 		{
 			return ZERO;
 		}
 		return builder().discount(discount).build();
 	}
 
-	public static final CalculatePricingConditionsResult ZERO = builder().discount(BigDecimal.ZERO).build();
+	public static final CalculatePricingConditionsResult ZERO = builder().discount(Percent.ZERO).build();
 
 	@Default
 	@NonNull
-	BigDecimal discount = BigDecimal.ZERO;
+	Percent discount = Percent.ZERO;
 	@Default
 	int paymentTermId = -1;
 	BigDecimal priceListOverride;
