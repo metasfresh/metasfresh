@@ -99,7 +99,7 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 		final ProductId productId = pricingConditionsBreak.getMatchCriteria().getProductId();
 		pricingCtx.setM_Product_ID(productId != null ? productId.getRepoId() : -1);
 		pricingCtx.setQty(BigDecimal.ONE);
-		pricingCtx.setC_BPartner_ID(request.getBpartnerId().getRepoId());
+		pricingCtx.setBPartnerId(request.getBpartnerId());
 		pricingCtx.setSOTrx(request.isSOTrx());
 
 		return pricingCtx;
