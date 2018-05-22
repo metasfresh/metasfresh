@@ -40,6 +40,8 @@ import de.metas.interfaces.I_C_OrderLine;
 
 public interface IOrderDAO extends ISingletonService
 {
+	I_C_OrderLine getOrderLineById(final int orderLineId);
+	
 	/**
 	 * @param ctx
 	 * @param bpartnerId

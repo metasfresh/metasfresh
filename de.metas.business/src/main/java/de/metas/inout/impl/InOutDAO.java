@@ -38,6 +38,7 @@ import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -226,9 +227,15 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public LocalDate getLastInOutDate(final BPartnerId bpartnerId, final ProductId productId, final boolean isSOTrx)
+	public LocalDate getLastInOutDate(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId, final boolean isSOTrx)
 	{
-		// TODO: implement
-		return null;
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMN_M_Product_ID, productId.getRepoId())
+				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
+				.addEqualsFilter(I_M_InOut.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
+				.addEqualsFilter(I_M_InOut.COLUMN_IsSOTrx, isSOTrx)
+				.create()
+				.aggregate(I_M_InOut.COLUMN_MovementDate, Aggregate.MAX, LocalDate.class);
 	}
 }

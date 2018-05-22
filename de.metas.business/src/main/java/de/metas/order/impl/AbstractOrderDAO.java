@@ -49,6 +49,12 @@ import lombok.NonNull;
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
 	@Override
+	public I_C_OrderLine getOrderLineById(final int orderLineId)
+	{
+		return InterfaceWrapperHelper.load(orderLineId, I_C_OrderLine.class);
+	}
+	
+	@Override
 	public List<I_C_OrderLine> retrieveOrderLines(final org.compiere.model.I_C_Order order)
 	{
 		return retrieveOrderLines(order, I_C_OrderLine.class);
