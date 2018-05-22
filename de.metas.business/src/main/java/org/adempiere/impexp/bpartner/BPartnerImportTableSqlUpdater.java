@@ -338,7 +338,7 @@ public class BPartnerImportTableSqlUpdater
 		int no;
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET C_Aggregation_ID=(SELECT C_Aggregation_ID FROM C_Aggregation a"
-				+ " WHERE i.AggregationName=a.Name AND a.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ " WHERE i.AggregationName=a.Name AND a.AD_Client_ID IN (0, i.AD_Client_ID) LIMIT 1 ) "
 				+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
