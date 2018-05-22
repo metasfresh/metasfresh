@@ -893,7 +893,7 @@ class DocumentList extends Component {
               onDoubleClick={id => !isIncluded && this.redirectToDocument(id)}
               size={data.size}
               pageLength={this.pageLength}
-              handleChangePage={this.handleChangePage}
+              onChangePage={this.handleChangePage}
               onSelectionChanged={updateParentSelectedIds}
               mainTable={true}
               updateDocList={this.fetchLayoutAndData}

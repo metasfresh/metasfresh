@@ -18,12 +18,7 @@ class MenuOverlayItem extends Component {
   }
 
   clickedItem = (e, elementId, nodeId, type) => {
-    const {
-      handleClickOnFolder,
-      handleNewRedirect,
-      openModal,
-      caption,
-    } = this.props;
+    const { onClickOnFolder, onNewRedirect, openModal, caption } = this.props;
 
     if (e) {
       e.preventDefault();
@@ -31,24 +26,24 @@ class MenuOverlayItem extends Component {
     }
 
     if (type === 'newRecord') {
-      handleNewRedirect(elementId);
+      onNewRedirect(elementId);
     } else if (type === 'window' || type === 'board') {
       this.handleClick(elementId, type);
     } else if (type === 'group') {
-      handleClickOnFolder(e, nodeId);
+      onClickOnFolder(e, nodeId);
     } else if (type === 'report' || type === 'process') {
       openModal(elementId + '', 'process', caption);
     }
   };
 
   handleClick = (elementId, entity) => {
-    const { handleRedirect } = this.props;
-    handleRedirect(elementId, null, entity);
+    const { onRedirect } = this.props;
+    onRedirect(elementId, null, entity);
     this.renderBreadcrumb(entity, elementId);
   };
 
   handleKeyDown = e => {
-    const { back, handleMenuOverlay } = this.props;
+    const { back, onMenuOverlay } = this.props;
     const overlay = document.getElementsByClassName('js-menu-overlay')[0];
 
     switch (e.key) {
@@ -76,7 +71,7 @@ class MenuOverlayItem extends Component {
         break;
       case 'Escape':
         e.preventDefault();
-        handleMenuOverlay('', '');
+        onMenuOverlay('', '');
     }
   };
 
@@ -153,7 +148,7 @@ class MenuOverlayItem extends Component {
       elementId,
       caption,
       children,
-      handleClickOnFolder,
+      onClickOnFolder,
       query,
       printChildren,
       favorite,
@@ -179,7 +174,7 @@ class MenuOverlayItem extends Component {
               className={children ? 'menu-overlay-expand' : 'menu-overlay-link'}
               onClick={e => {
                 children
-                  ? handleClickOnFolder(e, nodeId)
+                  ? onClickOnFolder(e, nodeId)
                   : this.clickedItem(e, elementId, nodeId, type);
               }}
             >

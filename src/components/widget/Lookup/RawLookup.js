@@ -57,7 +57,7 @@ class RawLookup extends Component {
       autoFocus,
       defaultValue,
       fireClickOutside,
-      handleInputEmptyStatus,
+      onInputEmptyStatus,
       filterWidget,
       lookupEmpty,
       localClearing,
@@ -82,7 +82,7 @@ class RawLookup extends Component {
       (prevProps.defaultValue == null ||
         (prevProps.defaultValue &&
           prevProps.defaultValue.caption !== defaultValue.caption)) &&
-      handleInputEmptyStatus(false);
+      onInputEmptyStatus(false);
 
     if (fireClickOutside && prevProps.fireClickOutside !== fireClickOutside) {
       if (defaultValue !== null && typeof defaultValue !== 'undefined') {
@@ -132,7 +132,7 @@ class RawLookup extends Component {
   handleSelect = select => {
     const {
       onChange,
-      handleInputEmptyStatus,
+      onInputEmptyStatus,
       mainProperty,
       setNextProperty,
       filterWidget,
@@ -183,7 +183,7 @@ class RawLookup extends Component {
       this.inputSearch.value = select.caption;
     }
 
-    handleInputEmptyStatus(false);
+    onInputEmptyStatus(false);
 
     this.handleBlur();
   };
@@ -257,7 +257,7 @@ class RawLookup extends Component {
       subentityId,
       viewId,
       mainProperty,
-      handleInputEmptyStatus,
+      onInputEmptyStatus,
       enableAutofocus,
       isModal,
       newRecordCaption,
@@ -270,7 +270,7 @@ class RawLookup extends Component {
     }
 
     if (this.inputSearch.value || allowEmpty) {
-      !allowEmpty && handleInputEmptyStatus(false);
+      !allowEmpty && onInputEmptyStatus(false);
 
       this.setState({
         isInputEmpty: false,
@@ -343,7 +343,7 @@ class RawLookup extends Component {
         list: recent,
       });
 
-      handleInputEmptyStatus(true);
+      onInputEmptyStatus(true);
     }
   };
 

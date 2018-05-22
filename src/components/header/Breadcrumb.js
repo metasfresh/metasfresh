@@ -61,7 +61,7 @@ class Breadcrumb extends Component {
   };
 
   handleClick = (e, menu) => {
-    const { handleMenuOverlay, windowType } = this.props;
+    const { onMenuOverlay, windowType } = this.props;
 
     const noChildNodes =
       menu &&
@@ -78,7 +78,7 @@ class Breadcrumb extends Component {
         }
       }
     } else {
-      handleMenuOverlay(e, menu.nodeId);
+      onMenuOverlay(e, menu.nodeId);
     }
 
     this.toggleTooltip(false);
@@ -86,7 +86,7 @@ class Breadcrumb extends Component {
 
   renderBtn = (menu, index) => {
     const {
-      handleMenuOverlay,
+      onMenuOverlay,
       menuOverlay,
       siteName,
       openModal,
@@ -127,14 +127,14 @@ class Breadcrumb extends Component {
             <MenuOverlay
               {...{
                 siteName,
-                handleMenuOverlay,
+                onMenuOverlay,
                 openModal,
                 windowType,
                 docId,
               }}
               nodeId={menu.nodeId}
               node={menu}
-              onClickOutside={e => handleMenuOverlay(e, '')}
+              onClickOutside={e => onMenuOverlay(e, '')}
               disableOnClickOutside={menuOverlay !== menu.nodeId}
             />
           )}

@@ -42,10 +42,10 @@ class Device extends Component {
   }
 
   handleClick = () => {
-    const { handleChange } = this.props;
+    const { onChange } = this.props;
     const { value } = this.state;
 
-    handleChange(value);
+    onChange(value);
   };
 
   handleToggleChangeStopper = value => {
@@ -55,12 +55,12 @@ class Device extends Component {
   };
 
   handleKey = e => {
-    const { handleChange } = this.props;
+    const { onChange } = this.props;
     const { value } = this.state;
 
     switch (e.key) {
       case 'Enter':
-        handleChange(value);
+        onChange(value);
         break;
     }
   };

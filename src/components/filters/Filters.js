@@ -210,7 +210,7 @@ class Filters extends Component {
               data={frequentFilters}
               notValidFields={notValidFields}
               viewId={viewId}
-              handleShow={this.handleShow}
+              onShow={this.handleShow}
               widgetShown={widgetShown}
               applyFilters={this.applyFilters}
               clearFilters={this.clearFilters}
@@ -224,7 +224,7 @@ class Filters extends Component {
               data={notFrequentFilters}
               notValidFields={notValidFields}
               viewId={viewId}
-              handleShow={this.handleShow}
+              onShow={this.handleShow}
               widgetShown={widgetShown}
               applyFilters={this.applyFilters}
               clearFilters={this.clearFilters}

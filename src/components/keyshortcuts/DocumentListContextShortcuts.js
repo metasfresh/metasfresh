@@ -8,22 +8,22 @@ export default class DocumentListContextShortcuts extends Component {
     OPEN_SELECTED: event => {
       event.preventDefault();
 
-      if (this.props.handleOpenNewTab) {
-        this.props.handleOpenNewTab();
+      if (this.props.onOpenNewTab) {
+        this.props.onOpenNewTab();
       }
     },
     REMOVE_SELECTED: event => {
       event.preventDefault();
 
-      if (this.props.handleDelete) {
-        this.props.handleDelete();
+      if (this.props.onDelete) {
+        this.props.onDelete();
       }
     },
     ADVANCED_EDIT: event => {
       event.preventDefault();
 
-      if (this.props.handleAdvancedEdit) {
-        this.props.handleAdvancedEdit();
+      if (this.props.onAdvancedEdit) {
+        this.props.onAdvancedEdit();
       }
     },
     SELECT_ALL_LEAFS: event => {
@@ -36,15 +36,15 @@ export default class DocumentListContextShortcuts extends Component {
     EXPAND_INDENT: event => {
       event.preventDefault();
 
-      if (this.props.handleIndent) {
-        this.props.handleIndent(true);
+      if (this.props.onIndent) {
+        this.props.onIndent(true);
       }
     },
     COLLAPSE_INDENT: event => {
       event.preventDefault();
 
-      if (this.props.handleIndent) {
-        this.props.handleIndent(false);
+      if (this.props.onIndent) {
+        this.props.onIndent(false);
       }
     },
   };

@@ -1048,7 +1048,7 @@ class Table extends Component {
               });
             }
           }}
-          handleRightClick={(e, fieldName, supportZoomInto, supportFieldEdit) =>
+          onRightClick={(e, fieldName, supportZoomInto, supportFieldEdit) =>
             this.handleRightClick(
               e,
               item[keyProperty],
@@ -1063,13 +1063,13 @@ class Table extends Component {
           isSelected={
             selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all'
           }
-          handleSelect={this.selectRangeProduct}
+          onSelect={this.selectRangeProduct}
           contextType={item.type}
           caption={item.caption ? item.caption : ''}
           colspan={item.colspan}
           notSaved={item.saveStatus && !item.saveStatus.saved}
           getSizeClass={this.getSizeClass}
-          handleRowCollapse={() =>
+          onRowCollapse={() =>
             this.handleRowCollapse(
               item,
               collapsedParentsRows.indexOf(item[keyProperty]) > -1
@@ -1115,7 +1115,7 @@ class Table extends Component {
       tabid,
       readonly,
       size,
-      handleChangePage,
+      onChangePage,
       pageLength,
       page,
       mainTable,
@@ -1169,22 +1169,22 @@ class Table extends Component {
               }}
               blur={() => this.closeContextMenu()}
               tabId={tabid}
-              deselect={() => this.deselectAllProducts()}
-              handleFieldEdit={() => {
+              onDeselect={() => this.deselectAllProducts()}
+              onFieldEdit={() => {
                 if (contextMenu.supportFieldEdit && selected.length === 1) {
                   this.handleFieldEdit(selected, contextMenu.fieldName);
                 }
               }}
-              handleAdvancedEdit={() =>
+              onAdvancedEdit={() =>
                 this.handleAdvancedEdit(type, tabid, selected)
               }
-              handleOpenNewTab={() => this.handleOpenNewTab(selected)}
-              handleDelete={
+              onOpenNewTab={() => this.handleOpenNewTab(selected)}
+              onDelete={
                 !isModal && (tabInfo && tabInfo.allowDelete)
                   ? () => this.handleDelete()
                   : null
               }
-              handleZoomInto={this.handleZoomInto}
+              onZoomInto={this.handleZoomInto}
             />
           )}
           {!readonly && (
@@ -1202,7 +1202,7 @@ class Table extends Component {
                   }}
                   docType={type}
                   tabId={tabid}
-                  handleBatchEntryToggle={this.handleBatchEntryToggle}
+                  onBatchEntryToggle={this.handleBatchEntryToggle}
                   allowCreateNew={tabInfo && tabInfo.allowCreateNew}
                 />
               </div>
@@ -1248,7 +1248,7 @@ class Table extends Component {
                     tabid,
                   }}
                   getSizeClass={this.getSizeClass}
-                  deselect={this.deselectAllProducts}
+                  onDeselect={this.deselectAllProducts}
                 />
               </thead>
               <tbody>{this.renderTableBody()}</tbody>
@@ -1268,7 +1268,7 @@ class Table extends Component {
           <div>
             <TablePagination
               {...{
-                handleChangePage,
+                onChangePage,
                 size,
                 selected,
                 page,
@@ -1278,9 +1278,9 @@ class Table extends Component {
               }}
               pageLength={pageLength}
               rowLength={rows ? rows.length : 0}
-              handleSelectAll={this.selectAll}
-              handleSelectRange={this.selectRangeProduct}
-              deselect={this.deselectAllProducts}
+              onSelectAll={this.selectAll}
+              onSelectRange={this.selectRangeProduct}
+              onDeselect={this.deselectAllProducts}
             />
           </div>
         )}
@@ -1296,27 +1296,27 @@ class Table extends Component {
 
         {allowShortcut && (
           <DocumentListContextShortcuts
-            handleAdvancedEdit={
+            onAdvancedEdit={
               selected.length > 0
                 ? () => this.handleAdvancedEdit(type, tabid, selected)
                 : ''
             }
-            handleOpenNewTab={
+            onOpenNewTab={
               selected.length > 0 && mainTable
                 ? () => this.handleOpenNewTab(selected)
                 : ''
             }
-            handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
+            onDelete={selected.length > 0 ? () => this.handleDelete() : ''}
             getAllLeafs={this.getAllLeafs}
-            handleIndent={this.handleShortcutIndent}
+            onIndent={this.handleShortcutIndent}
           />
         )}
 
         {allowShortcut &&
           !readonly && (
             <TableContextShortcuts
-              handleToggleQuickInput={this.handleBatchEntryToggle}
-              handleToggleExpand={() => toggleFullScreen(!fullScreen)}
+              onToggleQuickInput={this.handleBatchEntryToggle}
+              onToggleExpand={() => toggleFullScreen(!fullScreen)}
             />
           )}
       </div>

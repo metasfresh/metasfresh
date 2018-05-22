@@ -107,7 +107,7 @@ class Attachments extends Component {
           <AttachUrl
             windowId={windowType}
             documentId={docId}
-            handleClose={this.handleCloseAttachUrl}
+            onClose={this.handleCloseAttachUrl}
             fetchAttachments={this.fetchAttachments}
           />
         )}

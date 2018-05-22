@@ -108,10 +108,10 @@ class SelectionAttributes extends Component {
                 key={id}
                 type={item.type}
                 caption={item.caption}
-                handleFocus={() => setClickOutsideLock(true)}
-                handleBlur={() => setClickOutsideLock(false)}
-                handlePatch={DLWrapperHandlePatch}
-                handleChange={DLWrapperHandleChange}
+                onFocus={() => setClickOutsideLock(true)}
+                onBlur={() => setClickOutsideLock(false)}
+                onPatch={DLWrapperHandlePatch}
+                onChange={DLWrapperHandleChange}
                 tabIndex={this.getTabId(
                   item.fields.map(elem => DLWrapperData[elem.field] || -1)
                 )}

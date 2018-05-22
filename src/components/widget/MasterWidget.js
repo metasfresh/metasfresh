@@ -208,22 +208,22 @@ class MasterWidget extends Component {
   };
 
   render() {
-    const { handleBackdropLock } = this.props;
+    const { onBackdropLock } = this.props;
     const { updated, data } = this.state;
-    const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
+    const handleFocusFn = onBackdropLock ? onBackdropLock : () => {};
 
     return (
       <RawWidget
         {...this.props}
         updated={updated}
         data={data}
-        handleFocus={() => handleFocusFn(true)}
-        handleBlur={() => handleFocusFn(false)}
-        handlePatch={this.handlePatch}
-        handleChange={this.handleChange}
-        handleProcess={this.handleProcess}
+        onFocus={() => handleFocusFn(true)}
+        onBlur={() => handleFocusFn(false)}
+        onPatch={this.handlePatch}
+        onChange={this.handleChange}
+        onProcess={this.handleProcess}
         setEditedFlag={this.setEditedFlag}
-        handleZoomInto={this.handleZoomInto}
+        onZoomInto={this.handleZoomInto}
       />
     );
   }

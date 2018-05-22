@@ -49,7 +49,7 @@ class FiltersNotFrequent extends Component {
       windowType,
       notValidFields,
       viewId,
-      handleShow,
+      onShow,
       applyFilters,
       clearFilters,
       active,
@@ -117,8 +117,8 @@ class FiltersNotFrequent extends Component {
                 notValidFields={notValidFields}
                 isActive={activeFilter.isActive}
                 active={active}
-                onShow={() => handleShow(true)}
-                onHide={() => handleShow(false)}
+                onShow={() => onShow(true)}
+                onHide={() => onShow(false)}
                 viewId={viewId}
                 outsideClick={this.outsideClick}
               />

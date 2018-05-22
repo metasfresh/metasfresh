@@ -157,7 +157,7 @@ class MenuOverlay extends Component {
   };
 
   renderNavigation = node => {
-    const { handleMenuOverlay, openModal, dispatch, siteName } = this.props;
+    const { onMenuOverlay, openModal, dispatch, siteName } = this.props;
     return (
       <div
         className="menu-overlay-container-column-wrapper js-menu-overlay"
@@ -211,15 +211,15 @@ class MenuOverlay extends Component {
             node.children.map((item, index) => (
               <MenuOverlayContainer
                 key={index}
-                handleClickOnFolder={this.handleDeeper}
-                handleRedirect={this.handleRedirect}
-                handleNewRedirect={this.handleNewRedirect}
-                handlePath={this.handlePath}
+                onClickOnFolder={this.handleDeeper}
+                onRedirect={this.handleRedirect}
+                onNewRedirect={this.handleNewRedirect}
+                onPath={this.handlePath}
                 parent={node}
                 printChildren={true}
                 transparentBookmarks={true}
                 back={e => this.handleClickBack(e)}
-                handleMenuOverlay={handleMenuOverlay}
+                onMenuOverlay={onMenuOverlay}
                 openModal={openModal}
                 {...item}
               />
@@ -230,19 +230,19 @@ class MenuOverlay extends Component {
   };
 
   renderSubnavigation = nodeData => {
-    const { handleMenuOverlay, openModal } = this.props;
+    const { onMenuOverlay, openModal } = this.props;
     return (
       <div>
         <MenuOverlayContainer
-          handleClickOnFolder={this.handleDeeper}
-          handleRedirect={this.handleRedirect}
-          handleNewRedirect={this.handleNewRedirect}
-          handlePath={this.handlePath}
+          onClickOnFolder={this.handleDeeper}
+          onRedirect={this.handleRedirect}
+          onNewRedirect={this.handleNewRedirect}
+          onPath={this.handlePath}
           parent={nodeData}
           printChildren={true}
           transparentBookmarks={true}
           back={e => this.handleClickBack(e)}
-          handleMenuOverlay={handleMenuOverlay}
+          onMenuOverlay={onMenuOverlay}
           openModal={openModal}
           subNavigation={true}
           type={nodeData.type}
@@ -264,7 +264,7 @@ class MenuOverlay extends Component {
   };
 
   handleKeyDown = e => {
-    const { handleMenuOverlay } = this.props;
+    const { onMenuOverlay } = this.props;
     const input = document.getElementById('search-input-query');
     const firstMenuItem = document.getElementsByClassName('js-menu-item')[0];
     const firstQueryItem = document
@@ -348,7 +348,7 @@ class MenuOverlay extends Component {
         break;
       case 'Escape':
         e.preventDefault();
-        handleMenuOverlay('', '');
+        onMenuOverlay('', '');
     }
   };
 
@@ -432,7 +432,7 @@ class MenuOverlay extends Component {
 
   render() {
     const { queriedResults, deepSubNode, query, data } = this.state;
-    const { nodeId, node, handleMenuOverlay, openModal } = this.props;
+    const { nodeId, node, onMenuOverlay, openModal } = this.props;
     const nodeData = data.length
       ? data
       : node && node.children ? node.children : node;
@@ -475,11 +475,11 @@ class MenuOverlay extends Component {
                       key={index}
                       query={true}
                       transparentBookmarks={true}
-                      handleClickOnFolder={this.handleDeeper}
-                      handleRedirect={this.handleRedirect}
-                      handleNewRedirect={this.handleNewRedirect}
-                      handlePath={this.handlePath}
-                      handleMenuOverlay={handleMenuOverlay}
+                      onClickOnFolder={this.handleDeeper}
+                      onRedirect={this.handleRedirect}
+                      onNewRedirect={this.handleNewRedirect}
+                      onPath={this.handlePath}
+                      onMenuOverlay={onMenuOverlay}
                       openModal={openModal}
                       {...result}
                     />

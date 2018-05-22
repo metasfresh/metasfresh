@@ -160,7 +160,7 @@ class TableItem extends PureComponent {
       tabIndex,
       entity,
       getSizeClass,
-      handleRightClick,
+      onRightClick,
       caption,
       colspan,
       onItemChange,
@@ -231,7 +231,7 @@ class TableItem extends PureComponent {
                 key={`${rowId}-${property}`}
                 isRowSelected={this.props.isSelected}
                 isEdited={isEditable || edited === property}
-                handleDoubleClick={e =>
+                onDoubleClick={e =>
                   this.handleEditProperty(e, property, true, widgetData[0])
                 }
                 onClickOutside={e => {
@@ -242,19 +242,12 @@ class TableItem extends PureComponent {
                 onCellChange={onItemChange}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
-                handleKeyDown={e =>
-                  this.handleKeyDown(e, property, widgetData[0])
-                }
+                onKeyDown={e => this.handleKeyDown(e, property, widgetData[0])}
                 listenOnKeysTrue={this.listenOnKeysTrue}
                 listenOnKeysFalse={this.listenOnKeysFalse}
                 closeTableField={e => this.closeTableField(e)}
-                handleRightClick={e =>
-                  handleRightClick(
-                    e,
-                    property,
-                    supportZoomInto,
-                    supportFieldEdit
-                  )
+                onRightClick={e =>
+                  onRightClick(e, property, supportZoomInto, supportFieldEdit)
                 }
               />
             );
@@ -297,9 +290,9 @@ class TableItem extends PureComponent {
   };
 
   handleIndentSelect = (e, id, elem) => {
-    const { handleSelect } = this.props;
+    const { onSelect } = this.props;
     e.stopPropagation();
-    handleSelect(this.nestedSelect(elem).concat([id]));
+    onSelect(this.nestedSelect(elem).concat([id]));
   };
 
   getIconClassName = huType => {
@@ -327,7 +320,7 @@ class TableItem extends PureComponent {
       includedDocuments,
       rowId,
       collapsed,
-      handleRowCollapse,
+      onRowCollapse,
       collapsible,
     } = this.props;
 
@@ -366,12 +359,12 @@ class TableItem extends PureComponent {
         {includedDocuments && collapsible ? (
           collapsed ? (
             <i
-              onClick={handleRowCollapse}
+              onClick={onRowCollapse}
               className="meta-icon-plus indent-collapse-icon"
             />
           ) : (
             <i
-              onClick={handleRowCollapse}
+              onClick={onRowCollapse}
               className="meta-icon-minus indent-collapse-icon"
             />
           )

@@ -22,8 +22,8 @@ class SideList extends Component {
   }
 
   handleClickOutside = () => {
-    const { closeSideList } = this.props;
-    closeSideList();
+    const { onClose } = this.props;
+    onClose();
   };
 
   changeTab = index => {
@@ -35,8 +35,8 @@ class SideList extends Component {
   renderBody = () => {
     const {
       windowType,
-      closeOverlays,
-      closeSideList,
+      onCloseOverlays,
+      onClose,
       isSideListShow,
       docId,
       pagination,
@@ -66,10 +66,10 @@ class SideList extends Component {
             selected={[docId]}
             disconnectFromState={true}
             autofocus={true}
+            onCloseSideList={onClose}
+            onCloseOverlays={onCloseOverlays}
             {...{
               windowType,
-              closeOverlays,
-              closeSideList,
               isSideListShow,
             }}
           />

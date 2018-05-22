@@ -515,7 +515,7 @@ class Modal extends Component {
         disabled={pending}
         data={data}
         layout={layout}
-        handleSubmit={this.setFetchOnTrue}
+        onSubmit={this.setFetchOnTrue}
         closeOverlay={this.removeModal}
       />
     );

@@ -11,21 +11,21 @@ class DropzoneWrapper extends Component {
   }
 
   handleDropFile = (accepted, rejected) => {
-    const { handleDropFile, handleRejectDropped } = this.props;
+    const { onDropFile, onRejectDropped } = this.props;
 
     this.handleDragEnd();
 
     for (const file of accepted) {
-      handleDropFile(file);
+      onDropFile(file);
     }
 
     for (const file of rejected) {
-      handleRejectDropped(file);
+      onRejectDropped(file);
     }
   };
 
   handleDragStart = () => {
-    const { handleDragStart } = this.props;
+    const { onDragStart } = this.props;
     const { dragActive } = this.state;
 
     this.setState(
@@ -33,7 +33,7 @@ class DropzoneWrapper extends Component {
         dragActive: true,
       },
       () => {
-        dragActive && handleDragStart();
+        dragActive && onDragStart();
       }
     );
   };

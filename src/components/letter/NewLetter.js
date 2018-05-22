@@ -27,7 +27,7 @@ class NewLetter extends Component {
   }
 
   async componentWillMount() {
-    const { windowId, docId, handleCloseLetter } = this.props;
+    const { windowId, docId, onCloseLetter } = this.props;
 
     try {
       const res = await createLetter(windowId, docId);
@@ -45,7 +45,7 @@ class NewLetter extends Component {
         console.error(error);
       }
     } catch (error) {
-      handleCloseLetter();
+      onCloseLetter();
     }
   }
 
@@ -130,11 +130,11 @@ class NewLetter extends Component {
 
   complete = async () => {
     const { letterId } = this.state;
-    const { handleCloseLetter, dispatch } = this.props;
+    const { onCloseLetter, dispatch } = this.props;
 
     await completeLetter(letterId);
 
-    handleCloseLetter();
+    onCloseLetter();
 
     await dispatch(
       addNotification('Letter', 'Letter has been sent.', 5000, 'success')
@@ -142,7 +142,7 @@ class NewLetter extends Component {
   };
 
   render() {
-    const { handleCloseLetter } = this.props;
+    const { onCloseLetter } = this.props;
     const {
       init,
       message,
@@ -190,7 +190,7 @@ class NewLetter extends Component {
               )}
               <div
                 className="input-icon input-icon-lg letter-icon-close"
-                onClick={handleCloseLetter}
+                onClick={onCloseLetter}
               >
                 <i className="meta-icon-close-1" />
               </div>

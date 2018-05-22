@@ -242,21 +242,16 @@ class Window extends PureComponent {
 
   render() {
     const { sections, tabs } = this.props.layout;
-    const {
-      handleDropFile,
-      handleRejectDropped,
-      handleDragStart,
-      isModal,
-    } = this.props;
+    const { onDropFile, onRejectDropped, onDragStart, isModal } = this.props;
 
     this.widgets = [];
 
     return (
       <div key="window" className="window-wrapper">
         <Dropzone
-          handleDropFile={handleDropFile}
-          handleRejectDropped={handleRejectDropped}
-          handleDragStart={handleDragStart}
+          onDropFile={onDropFile}
+          onRejectDropped={onRejectDropped}
+          onDragStart={onDragStart}
         >
           <div className="sections-wrapper">
             {sections && this.renderSections(sections)}

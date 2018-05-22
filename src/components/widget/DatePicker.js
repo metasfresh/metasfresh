@@ -19,8 +19,8 @@ class DatePicker extends Component {
   }
 
   componentDidMount() {
-    const { handleBackdropLock, isOpenDatePicker } = this.props;
-    handleBackdropLock && handleBackdropLock(true);
+    const { onBackdropLock, isOpenDatePicker } = this.props;
+    onBackdropLock && onBackdropLock(true);
     if (isOpenDatePicker) {
       setTimeout(() => {
         this.picker.openCalendar();
@@ -29,7 +29,7 @@ class DatePicker extends Component {
   }
 
   handleBlur = date => {
-    const { patch, handleBackdropLock, dispatch, field } = this.props;
+    const { patch, onBackdropLock, dispatch, field } = this.props;
     const { cache, open } = this.state;
 
     if (!open) {
@@ -52,7 +52,7 @@ class DatePicker extends Component {
 
     this.handleClose();
 
-    handleBackdropLock && handleBackdropLock(false);
+    onBackdropLock && onBackdropLock(false);
   };
 
   handleFocus = () => {
@@ -132,7 +132,7 @@ class DatePicker extends Component {
 
 DatePicker.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  handleBackdropLock: PropTypes.func,
+  onBackdropLock: PropTypes.func,
   patch: PropTypes.func,
   field: PropTypes.string,
   value: PropTypes.any,

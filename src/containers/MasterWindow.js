@@ -361,7 +361,7 @@ class MasterWindow extends Component {
         docId={params.docId}
         showSidelist
         showIndicator={!modal.visible}
-        handleDeletedStatus={this.handleDeletedStatus}
+        onDeletedStatus={this.handleDeletedStatus}
       >
         {dataId === 'notfound' ? (
           <BlankPage what="Document" />
@@ -376,9 +376,9 @@ class MasterWindow extends Component {
             dataId={dataId}
             isModal={false}
             newRow={newRow}
-            handleDragStart={this.handleDragStart}
-            handleDropFile={this.handleDropFile}
-            handleRejectDropped={this.handleRejectDropped}
+            onDragStart={this.handleDragStart}
+            onDropFile={this.handleDropFile}
+            onRejectDropped={this.handleRejectDropped}
           />
         )}
 

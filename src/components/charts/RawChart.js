@@ -133,7 +133,7 @@ class RawChart extends Component {
       chartTitle,
       editmode,
       noData,
-      handleChartOptions,
+      onChartOptions,
     } = this.props;
     const { chartData, forceChartReRender } = this.state;
     const data = chartData[0] && chartData[0].values;
@@ -204,7 +204,7 @@ class RawChart extends Component {
             {editmode ? (
               <span
                 className="chart-edit-mode"
-                onClick={() => handleChartOptions(true, caption, id, true)}
+                onClick={() => onChartOptions(true, caption, id, true)}
               >
                 <i className="meta-icon-settings" />
               </span>

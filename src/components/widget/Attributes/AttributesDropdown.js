@@ -32,7 +32,7 @@ class AttributesDropdown extends Component {
   };
 
   handlePatch = (prop, value, attrId) => {
-    const { handlePatch } = this.props;
+    const { onPatch } = this.props;
     const { patchCallbacks } = this.state;
     const updatedCallbacks = patchCallbacks.set(attrId, true);
 
@@ -41,7 +41,7 @@ class AttributesDropdown extends Component {
         patchCallbacks: updatedCallbacks,
       },
       () => {
-        handlePatch(prop, value, attrId, () => {
+        onPatch(prop, value, attrId, () => {
           const resolvedCallbacks = this.state.patchCallbacks.delete(attrId);
 
           this.setState({
@@ -58,7 +58,7 @@ class AttributesDropdown extends Component {
       layout,
       data,
       attributeType,
-      handleChange,
+      onChange,
       attrId,
       disableOnClickOutside,
       enableOnClickOutside,
@@ -79,8 +79,8 @@ class AttributesDropdown extends Component {
             key={idx}
             type={item.type}
             caption={item.caption}
-            handlePatch={(prop, value) => this.handlePatch(prop, value, attrId)}
-            handleChange={handleChange}
+            onPatch={(prop, value) => this.handlePatch(prop, value, attrId)}
+            onChange={onChange}
             disableOnClickOutside={disableOnClickOutside}
             enableOnClickOutside={enableOnClickOutside}
             tabIndex={tabIndex}
@@ -105,11 +105,11 @@ AttributesDropdown.propTypes = {
   isModal: PropTypes.bool,
   data: PropTypes.object.isRequired,
   attributeType: PropTypes.string.isRequired,
-  handleChange: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired,
   attrId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   layout: PropTypes.array,
   onClickOutside: PropTypes.func,
-  handlePatch: PropTypes.func.isRequired,
+  onPatch: PropTypes.func.isRequired,
   disableOnClickOutside: PropTypes.func.isRequired,
   enableOnClickOutside: PropTypes.func.isRequired,
 };

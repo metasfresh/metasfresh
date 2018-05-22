@@ -21,14 +21,6 @@ import List from './List/List';
 import Lookup from './Lookup/Lookup';
 
 class RawWidget extends Component {
-  static propTypes = {
-    handleZoomInto: PropTypes.func,
-  };
-
-  static defaultProps = {
-    handleZoomInto: () => {},
-  };
-
   constructor(props) {
     super(props);
 
@@ -60,7 +52,7 @@ class RawWidget extends Component {
    * DOM element outside of it's parent's tree.
    */
   focus = () => {
-    const { handleFocus, disableOnClickOutside, entity } = this.props;
+    const { onFocus, disableOnClickOutside, entity } = this.props;
     const { rawWidget } = this;
 
     if (rawWidget && rawWidget.focus) {
@@ -71,11 +63,11 @@ class RawWidget extends Component {
     if (entity !== 'pattribute') {
       disableOnClickOutside && disableOnClickOutside();
     }
-    handleFocus && handleFocus();
+    onFocus && onFocus();
   };
 
   handleFocus = e => {
-    const { dispatch, handleFocus, listenOnKeysFalse } = this.props;
+    const { dispatch, onFocus, listenOnKeysFalse } = this.props;
 
     dispatch(disableShortcut());
 
@@ -85,20 +77,20 @@ class RawWidget extends Component {
     });
 
     listenOnKeysFalse && listenOnKeysFalse();
-    handleFocus && handleFocus();
+    onFocus && onFocus();
   };
 
   handleBlur = (widgetField, value, id) => {
     const {
       dispatch,
-      handleBlur,
+      onBlur,
       listenOnKeysTrue,
       enableOnClickOutside,
     } = this.props;
 
     enableOnClickOutside && enableOnClickOutside();
     dispatch(allowShortcut());
-    handleBlur && handleBlur(this.willPatch(value));
+    onBlur && onBlur(this.willPatch(value));
 
     this.setState({
       isEdited: false,
@@ -122,16 +114,16 @@ class RawWidget extends Component {
   // Datepicker is checking the cached value in datepicker component itself
   // and send a patch request only if date is changed
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch } = this.props;
+    const { onPatch } = this.props;
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if ((isForce || this.willPatch(value, valueTo)) && handlePatch) {
+    if ((isForce || this.willPatch(value, valueTo)) && onPatch) {
       this.setState({
         cachedValue: value,
         clearedFieldWarning: false,
       });
-      return handlePatch(property, value, id, valueTo);
+      return onPatch(property, value, id, valueTo);
     }
 
     return null;
@@ -139,7 +131,7 @@ class RawWidget extends Component {
 
   handleProcess = () => {
     const {
-      handleProcess,
+      onProcess,
       buttonProcessId,
       tabId,
       rowId,
@@ -148,8 +140,8 @@ class RawWidget extends Component {
       caption,
     } = this.props;
 
-    handleProcess &&
-      handleProcess(caption, buttonProcessId, tabId, rowId, dataId, windowType);
+    onProcess &&
+      onProcess(caption, buttonProcessId, tabId, rowId, dataId, windowType);
   };
 
   handleErrorPopup = value => {
@@ -230,7 +222,7 @@ class RawWidget extends Component {
 
   renderWidget = () => {
     const {
-      handleChange,
+      onChange,
       updated,
       modalVisible,
       isModal,
@@ -239,10 +231,10 @@ class RawWidget extends Component {
       id,
       range,
       onHide,
-      handleBackdropLock,
+      onBackdropLock,
       subentity,
       subentityId,
-      dropdownOpenCallback,
+      onDropdownOpen,
       autoFocus,
       fullScreen,
       widgetType,
@@ -263,7 +255,7 @@ class RawWidget extends Component {
       listenOnKeys,
       listenOnKeysFalse,
       closeTableField,
-      handleZoomInto,
+      onZoomInto,
       attribute,
       allowShowPassword,
       onBlurWidget,
@@ -294,7 +286,7 @@ class RawWidget extends Component {
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: e => handleChange && handleChange(widgetField, e.target.value),
+      onChange: e => onChange && onChange(widgetField, e.target.value),
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
@@ -342,7 +334,7 @@ class RawWidget extends Component {
                 value={widgetValue || widgetData[0].value}
                 onChange={date => {
                   const finalDate = date.utc ? date.utc(true) : date;
-                  return handleChange(widgetField, finalDate);
+                  return onChange(widgetField, finalDate);
                 }}
                 patch={date =>
                   this.handlePatch(
@@ -354,7 +346,7 @@ class RawWidget extends Component {
                   )
                 }
                 {...{
-                  handleBackdropLock,
+                  onBackdropLock,
                 }}
               />
             </div>
@@ -398,7 +390,7 @@ class RawWidget extends Component {
                   tabIndex: tabIndex,
                 }}
                 value={widgetValue}
-                onChange={date => handleChange(widgetField, date)}
+                onChange={date => onChange(widgetField, date)}
                 patch={date =>
                   this.handlePatch(
                     widgetField,
@@ -409,7 +401,7 @@ class RawWidget extends Component {
                   )
                 }
                 tabIndex={tabIndex}
-                handleBackdropLock={handleBackdropLock}
+                onBackdropLock={onBackdropLock}
               />
             </div>
           );
@@ -446,7 +438,7 @@ class RawWidget extends Component {
                 tabIndex: tabIndex,
               }}
               value={widgetValue}
-              onChange={date => handleChange(widgetField, date)}
+              onChange={date => onChange(widgetField, date)}
               patch={date =>
                 this.handlePatch(
                   widgetField,
@@ -457,7 +449,7 @@ class RawWidget extends Component {
                 )
               }
               tabIndex={tabIndex}
-              handleBackdropLock={handleBackdropLock}
+              onBackdropLock={onBackdropLock}
             />
           </div>
         );
@@ -498,7 +490,7 @@ class RawWidget extends Component {
             listenOnKeysFalse={listenOnKeysFalse}
             closeTableField={closeTableField}
             onFocus={this.focus}
-            onHandleBlur={this.handleBlur}
+            onBlur={this.handleBlur}
             onChange={this.handlePatch}
             onBlurWidget={onBlurWidget}
           />
@@ -522,7 +514,7 @@ class RawWidget extends Component {
             rowId={rowId}
             tabId={tabId}
             onFocus={this.focus}
-            onHandleBlur={this.handleBlur}
+            onBlur={this.handleBlur}
             onChange={option => this.handlePatch(widgetField, option, id)}
             align={gridAlign}
             updated={updated}
@@ -642,7 +634,7 @@ class RawWidget extends Component {
               id,
               filterWidget,
             }}
-            handlePatch={this.handlePatch}
+            onPatch={this.handlePatch}
           />
         );
       case 'Switch':
@@ -731,7 +723,7 @@ class RawWidget extends Component {
             dataId={dataId}
             onChange={option => this.handlePatch(fields[1].field, option)}
             tabIndex={tabIndex}
-            dropdownOpenCallback={dropdownOpenCallback}
+            onDropdownOpen={onDropdownOpen}
             ref={c => (this.rawWidget = c)}
           />
         );
@@ -747,10 +739,10 @@ class RawWidget extends Component {
             tabId={tabId}
             rowId={rowId}
             onFocus={this.handleFocus}
-            onHandleBlur={this.handleBlur}
+            onBlur={this.handleBlur}
             fieldName={widgetField}
-            handleBackdropLock={handleBackdropLock}
-            patch={option => this.handlePatch(widgetField, option)}
+            onBackdropLock={onBackdropLock}
+            onPatch={option => this.handlePatch(widgetField, option)}
             tabIndex={tabIndex}
             autoFocus={autoFocus}
             readonly={readonly}
@@ -767,8 +759,8 @@ class RawWidget extends Component {
             tabId={tabId}
             rowId={rowId}
             fieldName={widgetField}
-            handleBackdropLock={handleBackdropLock}
-            patch={option => this.handlePatch(widgetField, option)}
+            onBackdropLock={onBackdropLock}
+            onPatch={option => this.handlePatch(widgetField, option)}
             tabIndex={tabIndex}
             autoFocus={autoFocus}
             readonly={readonly}
@@ -780,7 +772,7 @@ class RawWidget extends Component {
           <Image
             fields={fields}
             data={widgetData[0]}
-            handlePatch={this.handlePatch}
+            onPatch={this.handlePatch}
             readonly={readonly}
           />
         );
@@ -792,7 +784,7 @@ class RawWidget extends Component {
               (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
               (readonly ? 'tag-disabled disabled ' : '')
             }
-            onClick={() => handleZoomInto(fields[0].field)}
+            onClick={() => onZoomInto(fields[0].field)}
             tabIndex={tabIndex}
             ref={c => (this.rawWidget = c)}
           >
@@ -842,9 +834,9 @@ class RawWidget extends Component {
       widgetData,
       rowId,
       isModal,
-      handlePatch,
+      onPatch,
       widgetType,
-      handleZoomInto,
+      onZoomInto,
     } = this.props;
 
     const { errorPopup, clearedFieldWarning, tooltipToggled } = this.state;
@@ -903,7 +895,7 @@ class RawWidget extends Component {
               {fields[0].supportZoomInto ? (
                 <span
                   className="zoom-into"
-                  onClick={() => handleZoomInto(fields[0].field)}
+                  onClick={() => onZoomInto(fields[0].field)}
                 >
                   {caption}
                 </span>
@@ -963,8 +955,8 @@ class RawWidget extends Component {
               <DevicesWidget
                 devices={fields[0].devices}
                 tabIndex={1}
-                handleChange={value =>
-                  handlePatch && handlePatch(fields[0].field, value)
+                onChange={value =>
+                  onPatch && onPatch(fields[0].field, value)
                 }
               />
             )}
@@ -982,12 +974,13 @@ RawWidget.propTypes = {
   listenOnKeysFalse: PropTypes.func,
   listenOnKeysTrue: PropTypes.func,
   widgetData: PropTypes.array,
-  handleFocus: PropTypes.func,
-  handlePatch: PropTypes.func,
-  handleBlur: PropTypes.func,
-  handleProcess: PropTypes.func,
-  handleChange: PropTypes.func,
-  handleBackdropLock: PropTypes.func,
+  onFocus: PropTypes.func,
+  onPatch: PropTypes.func,
+  onBlur: PropTypes.func,
+  onProcess: PropTypes.func,
+  onChange: PropTypes.func,
+  onBackdropLock: PropTypes.func,
+  onZoomInto: PropTypes.func,
   tabId: PropTypes.string,
   viewId: PropTypes.string,
   rowId: PropTypes.string,
@@ -1008,7 +1001,7 @@ RawWidget.propTypes = {
   subentity: PropTypes.string,
   subentityId: PropTypes.string,
   tabIndex: PropTypes.number,
-  dropdownOpenCallback: PropTypes.func,
+  onDropdownOpen: PropTypes.func,
   fullScreen: PropTypes.string,
   widgetType: PropTypes.string,
   fields: PropTypes.array,
@@ -1027,6 +1020,7 @@ RawWidget.propTypes = {
 
 RawWidget.defaultProps = {
   tabIndex: 0,
+  onZoomInto: () => {},
 };
 
 export default connect(state => ({

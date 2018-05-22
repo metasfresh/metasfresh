@@ -10,7 +10,7 @@ class UserDropdown extends Component {
     super(props);
   }
 
-  handleClickOutside = () => this.props.handleUDOpen(false);
+  handleClickOutside = () => this.props.onUDOpen(false);
 
   handleKeyDown = e => {
     switch (e.key) {
@@ -52,7 +52,7 @@ class UserDropdown extends Component {
   render() {
     const {
       open,
-      handleUDOpen,
+      onUDOpen,
       redirect,
       shortcut,
       toggleTooltip,
@@ -71,7 +71,7 @@ class UserDropdown extends Component {
       >
         <div
           className="header-item avatar-container"
-          onClick={() => handleUDOpen(true)}
+          onClick={() => onUDOpen(true)}
         >
           <Avatar id={me.avatarId} />
         </div>
@@ -98,7 +98,7 @@ class UserDropdown extends Component {
                 redirect(
                   '/window/' + me.userProfileWindowId + '/' + me.userProfileId
                 );
-                handleUDOpen(false);
+                onUDOpen(false);
                 toggleTooltip('');
               }}
               tabIndex={0}
@@ -110,7 +110,7 @@ class UserDropdown extends Component {
               className="user-dropdown-item"
               onClick={() => {
                 redirect('/logout');
-                handleUDOpen(false);
+                onUDOpen(false);
               }}
               tabIndex={0}
             >

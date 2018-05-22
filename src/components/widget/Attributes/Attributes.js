@@ -81,7 +81,7 @@ export default class Attributes extends Component {
   };
 
   handleToggle = option => {
-    const { handleBackdropLock } = this.props;
+    const { onBackdropLock } = this.props;
     const { loading } = this.state;
 
     if (!loading) {
@@ -94,7 +94,7 @@ export default class Attributes extends Component {
         () => {
           //Method is disabling outside click in parents
           //elements if there is some
-          handleBackdropLock && handleBackdropLock(!!option);
+          onBackdropLock && onBackdropLock(!!option);
 
           if (option) {
             this.handleInit();
@@ -180,12 +180,12 @@ export default class Attributes extends Component {
   };
 
   doCompleteRequest = () => {
-    const { attributeType, patch } = this.props;
+    const { attributeType, onPatch } = this.props;
     const { data } = this.state;
     const attrId = data && data.ID ? data.ID.value : -1;
 
     completeRequest(attributeType, attrId).then(response => {
-      patch(response.data);
+      onPatch(response.data);
     });
   };
 
@@ -232,8 +232,8 @@ export default class Attributes extends Component {
             onClickOutside={this.handleCompletion}
             data={data}
             layout={layout}
-            handlePatch={this.handlePatch}
-            handleChange={this.handleChange}
+            onPatch={this.handlePatch}
+            onChange={this.handleChange}
             attrId={attrId}
           />
         )}
@@ -243,7 +243,7 @@ export default class Attributes extends Component {
 }
 
 Attributes.propTypes = {
-  patch: PropTypes.func.isRequired,
-  handleBackdropLock: PropTypes.func,
+  onPatch: PropTypes.func.isRequired,
+  onBackdropLock: PropTypes.func,
   isModal: PropTypes.bool,
 };

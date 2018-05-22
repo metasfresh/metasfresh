@@ -31,7 +31,7 @@ class TableFilter extends Component {
       docId,
       tabId,
       isBatchEntry,
-      handleBatchEntryToggle,
+      onBatchEntryToggle,
       supportQuickInput,
       allowCreateNew,
       modalVisible,
@@ -60,7 +60,7 @@ class TableFilter extends Component {
               allowCreateNew && (
                 <button
                   className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                  onClick={handleBatchEntryToggle}
+                  onClick={onBatchEntryToggle}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.TOGGLE_QUICK_INPUT)
                   }
@@ -90,7 +90,7 @@ class TableFilter extends Component {
             (isBatchEntry || fullScreen) &&
             allowCreateNew && (
               <TableQuickInput
-                closeBatchEntry={handleBatchEntryToggle}
+                onCloseBatchEntry={onBatchEntryToggle}
                 docType={docType}
                 docId={docId}
                 tabId={tabId}

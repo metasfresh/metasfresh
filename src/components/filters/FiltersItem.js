@@ -189,10 +189,10 @@ class FiltersItem extends Component {
             filter
             captionValue={captionValue}
             layout={filter}
-            handlePatch={this.setValue}
-            handleChange={this.setValue}
+            onPatch={this.setValue}
+            onChange={this.setValue}
             closeOverlay={outsideClick}
-            handleSubmit={this.handleApply}
+            onSubmit={this.handleApply}
             {...{ windowType, onShow, onHide, viewId }}
           />
         ) : (
@@ -221,8 +221,8 @@ class FiltersItem extends Component {
                       entity="documentView"
                       subentity="filter"
                       subentityId={filter.filterId}
-                      handlePatch={this.setValue}
-                      handleChange={this.setValue}
+                      onPatch={this.setValue}
+                      onChange={this.setValue}
                       widgetType={item.widgetType}
                       fields={[item]}
                       type={item.type}

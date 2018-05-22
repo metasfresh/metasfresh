@@ -60,16 +60,16 @@ class AutocompleteTo extends Component {
     );
   };
 
+  handleChange = (e, { method }) => {
+    if (method === 'enter') {
+      e.preventDefault();
+    } else {
+      this.props.onChange(e);
+    }
+  };
+
   autocompleteRenderInput = ({ addTag, ...props }) => {
     const { suggestions } = this.state;
-
-    const handleOnChange = (e, { method }) => {
-      if (method === 'enter') {
-        e.preventDefault();
-      } else {
-        props.onChange(e);
-      }
-    };
 
     return (
       <Autosuggest
@@ -78,7 +78,7 @@ class AutocompleteTo extends Component {
         shouldRenderSuggestions={value => value && value.trim().length > 0}
         getSuggestionValue={s => s.caption}
         renderSuggestion={this.renderSuggestion}
-        inputProps={{ ...props, onChange: handleOnChange }}
+        inputProps={{ ...props, onChange: this.handleChange }}
         onSuggestionSelected={(e, { suggestion }) => {
           addTag(suggestion.caption);
         }}

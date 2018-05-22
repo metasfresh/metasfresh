@@ -8,12 +8,12 @@ export default class TableContextShortcuts extends Component {
     TOGGLE_EXPAND: event => {
       event.preventDefault();
 
-      this.props.handleToggleExpand();
+      this.props.onToggleExpand();
     },
     TOGGLE_QUICK_INPUT: event => {
       event.preventDefault();
 
-      this.props.handleToggleQuickInput();
+      this.props.onToggleQuickInput();
     },
   };
 

@@ -71,7 +71,7 @@ export class Dashboard extends Component {
       <Container
         siteName="Dashboard"
         noMargin
-        handleEditModeToggle={this.toggleEditMode}
+        onEditModeToggle={this.toggleEditMode}
         modal={modal}
         rawModal={rawModal}
         indicator={indicator}

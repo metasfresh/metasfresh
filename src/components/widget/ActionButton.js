@@ -59,10 +59,10 @@ class ActionButton extends Component {
   };
 
   handleDropdownFocus = () => {
-    const { dropdownOpenCallback } = this.props;
+    const { onDropdownOpen } = this.props;
 
     this.fetchStatusList();
-    dropdownOpenCallback();
+    onDropdownOpen();
     this.statusDropdown.classList.add('dropdown-status-open');
   };
 
@@ -168,7 +168,7 @@ class ActionButton extends Component {
         />
         <ul className="dropdown-status-list">{this.renderStatusList(list)}</ul>
         <DocumentStatusContextShortcuts
-          handleDocumentCompleteStatus={() => {
+          onDocumentCompleteStatus={() => {
             this.handleChangeStatus(list.find(elem => elem.key === 'CO'));
           }}
         />
