@@ -1,9 +1,12 @@
 package org.adempiere.impexp.bpartner;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_I_BPartner;
@@ -48,19 +51,32 @@ import lombok.NonNull;
 
 	public final void importRecord(final I_I_BPartner importRecord)
 	{
-		I_C_BPartner_CreditLimit bpCreditLimit = null;
 		final I_C_BPartner bpartner = importRecord.getC_BPartner();
 		if (importRecord.getCreditLimit().signum() > 0)
 		{
-			bpCreditLimit = createBPCreditLimit(importRecord.getCreditLimit(), Insurance_C_CreditLimit_Type_ID);
-			bpCreditLimit.setC_BPartner(bpartner);
-			InterfaceWrapperHelper.save(bpCreditLimit);
+			createUpdateBPCreditLimit(bpartner.getC_BPartner_ID(), importRecord.getCreditLimit(), Insurance_C_CreditLimit_Type_ID);
 		}
 
 		if (importRecord.getCreditLimit2().signum() > 0)
 		{
-			bpCreditLimit = createBPCreditLimit(importRecord.getCreditLimit2(), Management_C_CreditLimit_Type_ID);
-			bpCreditLimit.setC_BPartner(bpartner);
+			createUpdateBPCreditLimit(bpartner.getC_BPartner_ID(), importRecord.getCreditLimit2(), Management_C_CreditLimit_Type_ID);
+		}
+	}
+
+	private final void createUpdateBPCreditLimit(final int bPartnerId, @NonNull final BigDecimal amount, final int typeId)
+	{
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final Optional<I_C_BPartner_CreditLimit> bpCreditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartnerId, typeId);
+		if (bpCreditLimit.isPresent())
+		{
+			final I_C_BPartner_CreditLimit creditLimit = bpCreditLimit.get();
+			creditLimit.setAmount(amount);
+			InterfaceWrapperHelper.save(bpCreditLimit);
+		}
+		else
+		{
+			final I_C_BPartner_CreditLimit creditLimit = createBPCreditLimit(amount, typeId);
+			creditLimit.setC_BPartner_ID(bPartnerId);
 			InterfaceWrapperHelper.save(bpCreditLimit);
 		}
 	}
