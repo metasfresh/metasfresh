@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -303,7 +304,7 @@ public class PurchaseCandidateRepository
 				.listDistinct(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)
 				.stream()
 				.map(map -> PurchaseCandidateReminder.builder()
-						.vendorBPartnerId(NumberUtils.asInt(map.get(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID), -1))
+						.vendorBPartnerId(BPartnerId.ofRepoId(NumberUtils.asInt(map.get(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID), -1)))
 						.notificationTime(TimeUtil.asLocalDateTime(map.get(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)))
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
@@ -311,8 +312,8 @@ public class PurchaseCandidateRepository
 
 	public static PurchaseCandidateReminder toPurchaseCandidateReminderOrNull(final I_C_PurchaseCandidate record)
 	{
-		final int vendorBPartnerId = record.getVendor_ID();
-		if (vendorBPartnerId <= 0)
+		final BPartnerId vendorBPartnerId = BPartnerId.ofRepoIdOrNull(record.getVendor_ID());
+		if (vendorBPartnerId == null)
 		{
 			return null;
 		}

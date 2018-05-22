@@ -35,7 +35,7 @@ import de.metas.i18n.Language;
 
 public interface IBPartnerBL extends ISingletonService
 {
-	public String getBPartnerValueAndName(final int bpartnerId);
+	public String getBPartnerValueAndName(final BPartnerId bpartnerId);
 	
 	/**
 	 * make full address
