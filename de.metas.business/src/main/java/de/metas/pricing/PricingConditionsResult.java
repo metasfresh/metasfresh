@@ -3,7 +3,6 @@ package de.metas.pricing;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -38,7 +37,7 @@ public class PricingConditionsResult
 
 	@Builder
 	private PricingConditionsResult(
-			@NonNull final PricingConditionsId pricingConditionsId,
+			final PricingConditionsId pricingConditionsId,
 			final PricingConditionsBreakId pricingConditionsBreakId,
 			final int basePricingSystemId,
 			final int paymentTermId)
