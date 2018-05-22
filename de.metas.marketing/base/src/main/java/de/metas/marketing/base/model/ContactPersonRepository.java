@@ -102,6 +102,7 @@ public class ContactPersonRepository
 		{
 			final ContactPersonId contactPersonId = contactPerson.getContactPersonId();
 			contactPersonRecord = load(contactPersonId.getRepoId(), I_MKTG_ContactPerson.class);
+			return Optional.ofNullable(contactPersonRecord);
 		}
 
 		final ICompositeQueryFilter<I_MKTG_ContactPerson> baseQueryFilter = queryBL.createCompositeQueryFilter(I_MKTG_ContactPerson.class)
@@ -215,7 +216,8 @@ public class ContactPersonRepository
 
 		final I_MKTG_Consent consent = consentExistingRecord != null ? consentExistingRecord : newInstance(I_MKTG_Consent.class);
 
-		consent.setAD_User_ID(contactPerson.getAdUserId());
+		final int contactPersonUserId = contactPerson.getAdUserId();
+		consent.setAD_User_ID(contactPersonUserId > 0 ? contactPersonUserId : null);
 		consent.setC_BPartner_ID(contactPerson.getCBpartnerId());
 		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
 		consent.setMKTG_ContactPerson_ID(contactPerson.getContactPersonId().getRepoId());

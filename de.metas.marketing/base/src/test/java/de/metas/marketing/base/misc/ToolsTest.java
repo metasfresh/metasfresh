@@ -53,10 +53,8 @@ import de.metas.marketing.base.model.I_MKTG_Platform;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class,
-
 		Tools.class,
 		CampaignRepository.class,
-
 		ContactPersonRepository.class })
 public class ToolsTest
 {

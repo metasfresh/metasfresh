@@ -6,7 +6,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.i18n.IMsgBL;
@@ -61,7 +60,7 @@ public class AD_User
 			{
 				final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org, user.getAD_Org().getName());
 
-				throw new AdempiereException(translatableMsgText.translate(Env.getAD_Language()));
+				throw new AdempiereException(translatableMsgText);
 			}
 			converters.addToNewsletter(user, defaultcampaignId);
 		}
