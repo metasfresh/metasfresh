@@ -24,7 +24,6 @@ export function browseViewRequest({
   pageLength,
   orderBy,
 }) {
-  console.log('browseViewRequest')
   return get(
     config.API_URL +
       '/documentView/' +

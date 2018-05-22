@@ -18,6 +18,7 @@ class TableItem extends PureComponent {
       activeCell: '',
       updatedRow: false,
       listenOnKeys: true,
+      editedCells: {},
     };
   }
 
@@ -81,6 +82,8 @@ class TableItem extends PureComponent {
 
   editProperty = (e, property, callback, item) => {
     const { changeListenOnTrue, changeListenOnFalse } = this.props;
+
+    console.log('TableItem editProperty: ', property)
 
     if (item ? !item.readonly : true) {
       this.setState(
@@ -147,8 +150,36 @@ class TableItem extends PureComponent {
     return item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
   };
 
-  renderCells = (cols, cells) => {
+  onCellChange = (rowId, property, value, ret) => {
+    const { onItemChange } = this.props;
+    const editedCells = { ...this.state.editedCells }
+
+    if (ret) {
+      ret.then(resp => {
+        if (resp[0] && resp[0].fieldsByName) {
+          console.log('RESP: ', resp[0].fieldsByName)
+          for (let [k,v] of Object.entries(resp[0].fieldsByName)) {
+            if (v.viewEditorRenderMode) {
+              editedCells[k] = {
+                viewEditorRenderMode: v.viewEditorRenderMode,
+              };
+            }
+          }
+        }
+
+        this.setState({
+          editedCells,
+        }, () => onItemChange(rowId, property, value));
+      });
+    } else {
+      onItemChange(rowId, property, value);
+    }
+  };
+
+  renderCells = () => {
     const {
+      cols,
+      fieldsByName,
       type,
       docId,
       rowId,
@@ -163,13 +194,16 @@ class TableItem extends PureComponent {
       handleRightClick,
       caption,
       colspan,
-      onItemChange,
       viewId,
     } = this.props;
+    const { edited, updatedRow, listenOnKeys, editedCells } = this.state;
+    const cells = fieldsByName;
+    // const cells = {
+    //   ...fieldsByName,
+    //   ...editedCells,
+    // };
 
-    const { edited, updatedRow, listenOnKeys } = this.state;
-
-    console.log('renderCells')
+    console.log('renderCells: ', fieldsByName, editedCells, cells);
 
     // Iterate over layout settings
 
@@ -179,21 +213,32 @@ class TableItem extends PureComponent {
       return (
         cols &&
         cols.map(item => {
-          if (shouldRenderColumn(item)) {
-            const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
             let isEditable =
               ((cells &&
                 cells[property] &&
                 cells[property].viewEditorRenderMode) ||
+                (editedCells[property] &&
+                editedCells[property].viewEditorRenderMode) ||
                 item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
-            const isEdited = isEditable || edited === property;
+            const isEdited = edited === property;//isEditable || edited === property;
 
-            if (item.caption.toLowerCase().includes('pr') || item.caption.toLowerCase().includes('type')) {
-              console.log('ITEM: ', item.caption, item.fields[0].field, item.viewEditorRenderMode,
-                cells[property].viewEditorRenderMode,', isEditable: ', isEditable, isEdited, item)
-            }
+            // if (item.caption.toLowerCase().includes('pr') || item.caption.toLowerCase().includes('type')) {
+            //   console.log('ITEM: ', item.caption, item.fields[0].field, ', renderModes: ', item.viewEditorRenderMode,
+            //     cells[property].viewEditorRenderMode,', isEditable: ', isEditable, isEdited, supportFieldEdit,', randomshit: ', property, )
+            // }
+
+          if (shouldRenderColumn(item)) {
+            const { supportZoomInto } = item.fields[0];
+            // const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
+            // const property = item.fields[0].field;
+            // let isEditable =
+            //   ((cells &&
+            //     cells[property] &&
+            //     cells[property].viewEditorRenderMode) ||
+            //     item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+            // const isEdited = isEditable || edited === property;
 
             let widgetData = item.fields.map(prop => {
               if (cells) {
@@ -203,6 +248,7 @@ class TableItem extends PureComponent {
                   isEditable ||
                   (supportFieldEdit && typeof cellWidget === 'object')
                 ) {
+                  // console.log('is this some dead code ?: ', property, item.caption, isEditable, isEdited, supportFieldEdit)
                   cellWidget = {
                     ...cellWidget,
                     widgetType: item.widgetType,
@@ -239,15 +285,18 @@ class TableItem extends PureComponent {
                 key={`${rowId}-${property}`}
                 isRowSelected={this.props.isSelected}
                 isEdited={isEdited}
-                handleDoubleClick={e =>
+                handleDoubleClick={e => {
+                  console.log('dblclick');
                   this.handleEditProperty(e, property, true, widgetData[0])
                 }
+                }
                 onClickOutside={e => {
+                  console.log('clickoutside ?')
                   this.handleEditProperty(e);
                   changeListenOnTrue();
                 }}
                 disableOnClickOutside={edited !== property}
-                onCellChange={onItemChange}
+                onCellChange={this.onCellChange}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
                 handleKeyDown={e =>
@@ -434,7 +483,7 @@ class TableItem extends PureComponent {
           indent && (
             <td className="indented">{this.renderTree(contextType)}</td>
           )}
-        {this.renderCells(cols, fieldsByName)}
+        {this.renderCells()}
       </tr>
     );
   }
