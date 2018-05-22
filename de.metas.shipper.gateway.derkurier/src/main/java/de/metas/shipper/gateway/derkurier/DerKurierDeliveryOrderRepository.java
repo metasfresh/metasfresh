@@ -241,8 +241,8 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				.parcelNumber(lineRecord.getDK_ParcelNumber())
 				.collectorCode(lineRecord.getCollectorCode())
 				.customerCode(lineRecord.getCustomerCode())
-				.desiredTimeFrom(lineRecord.getDK_DesiredDeliveryTime_From())
-				.desiredTimeTo(lineRecord.getDK_DesiredDeliveryTime_To())
+				.desiredTimeFrom(TimeUtil.asLocalTime(lineRecord.getDK_DesiredDeliveryTime_From()))
+				.desiredTimeTo(TimeUtil.asLocalTime(lineRecord.getDK_DesiredDeliveryTime_To()))
 				.build();
 		deliveryPositionBuilder.customDeliveryData(derKurierDeliveryData);
 		return deliveryPositionBuilder;
@@ -403,8 +403,8 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 			lineRecord.setCollectorCode(derKurierDeliveryData.getCollectorCode());
 			lineRecord.setCustomerCode(derKurierDeliveryData.getCustomerCode());
 
-			lineRecord.setDK_DesiredDeliveryTime_From(derKurierDeliveryData.getDesiredTimeFrom());
-			lineRecord.setDK_DesiredDeliveryTime_To(derKurierDeliveryData.getDesiredTimeTo());
+			lineRecord.setDK_DesiredDeliveryTime_From(TimeUtil.asTimestamp(derKurierDeliveryData.getDesiredTimeFrom()));
+			lineRecord.setDK_DesiredDeliveryTime_To(TimeUtil.asTimestamp(derKurierDeliveryData.getDesiredTimeTo()));
 
 			lineCounter += lineInterval;
 			lineRecord.setLine(lineCounter);

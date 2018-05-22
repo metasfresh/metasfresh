@@ -1,6 +1,6 @@
 package de.metas.shipper.gateway.derkurier;
 
-import java.sql.Timestamp;
+import java.time.LocalTime;
 
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
@@ -50,7 +50,7 @@ public class DerKurierDeliveryData implements CustomDeliveryData
 
 	String collectorCode;
 
-	Timestamp desiredTimeFrom;
+	LocalTime desiredTimeFrom;
 
-	Timestamp desiredTimeTo;
+	LocalTime desiredTimeTo;
 }

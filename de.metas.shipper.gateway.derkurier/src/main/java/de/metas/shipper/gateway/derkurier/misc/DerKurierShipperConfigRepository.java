@@ -4,6 +4,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_MailBox;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -55,8 +56,8 @@ public class DerKurierShipperConfigRepository
 				.deliveryOrderRecipientEmailOrNull(shipperConfigRecord.getEMail_To())
 				.collectorCode(shipperConfigRecord.getCollectorCode())
 				.customerCode(shipperConfigRecord.getCustomerCode())
-				.desiredTimeFrom(shipperConfigRecord.getDK_DesiredDeliveryTime_From())
-				.desiredTimeTo(shipperConfigRecord.getDK_DesiredDeliveryTime_To())
+				.desiredTimeFrom(TimeUtil.asLocalTime(shipperConfigRecord.getDK_DesiredDeliveryTime_From()))
+				.desiredTimeTo(TimeUtil.asLocalTime(shipperConfigRecord.getDK_DesiredDeliveryTime_To()))
 				.build();
 
 		return shipperConfig;

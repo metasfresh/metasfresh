@@ -1,6 +1,6 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import java.sql.Timestamp;
+import java.time.LocalTime;
 
 import javax.annotation.Nullable;
 
@@ -51,8 +51,8 @@ public class DerKurierShipperConfig
 	String collectorCode;
 	String customerCode;
 
-	Timestamp desiredTimeFrom;
-	Timestamp desiredTimeTo;
+	LocalTime desiredTimeFrom;
+	LocalTime desiredTimeTo;
 
 	@Builder
 	private DerKurierShipperConfig(
@@ -63,8 +63,8 @@ public class DerKurierShipperConfig
 			@NonNull String collectorCode,
 			@NonNull String customerCode,
 			final int parcelNumberAdSequenceId,
-			@NonNull Timestamp desiredTimeFrom,
-			@NonNull Timestamp desiredTimeTo)
+			@NonNull LocalTime desiredTimeFrom,
+			@NonNull LocalTime desiredTimeTo)
 	{
 		this.customerNumber = Check.assumeNotEmpty(customerNumber, "Parameter customerNumber is not empty");
 		this.restApiBaseUrl = Check.assumeNotEmpty(restApiBaseUrl, "Parameter restApiBaseUrl is not empty");
