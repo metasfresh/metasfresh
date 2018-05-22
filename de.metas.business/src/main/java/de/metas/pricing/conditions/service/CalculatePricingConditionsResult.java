@@ -7,9 +7,8 @@ import java.math.BigDecimal;
 
 import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsId;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -38,32 +37,47 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Builder
 @Value
 public class CalculatePricingConditionsResult
 {
-	public static CalculatePricingConditionsResult discount(@NonNull final Percent discount)
-	{
-		if (discount.isZero())
-		{
-			return ZERO;
-		}
-		return builder().discount(discount).build();
-	}
+	public static final CalculatePricingConditionsResult ZERO = builder().build();
 
-	public static final CalculatePricingConditionsResult ZERO = builder().discount(Percent.ZERO).build();
+	Percent discount;
+	int paymentTermId;
 
-	@Default
-	@NonNull
-	Percent discount = Percent.ZERO;
-	@Default
-	int paymentTermId = -1;
 	BigDecimal priceListOverride;
 	BigDecimal priceStdOverride;
 	BigDecimal priceLimitOverride;
 
+	PricingConditionsId pricingConditionsId;
 	PricingConditionsBreakId pricingConditionsBreakId;
 
-	@Default
-	int basePricingSystemId = -1;
+	int basePricingSystemId;
+
+	@Builder
+	public CalculatePricingConditionsResult(
+			final Percent discount,
+			final int paymentTermId,
+			final BigDecimal priceListOverride,
+			final BigDecimal priceStdOverride,
+			final BigDecimal priceLimitOverride,
+			final PricingConditionsId pricingConditionsId,
+			final PricingConditionsBreakId pricingConditionsBreakId,
+			final int basePricingSystemId)
+	{
+		PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreakId);
+
+		this.discount = discount != null ? discount : Percent.ZERO;
+		this.paymentTermId = paymentTermId;
+
+		this.priceListOverride = priceListOverride;
+		this.priceStdOverride = priceStdOverride;
+		this.priceLimitOverride = priceLimitOverride;
+
+		this.pricingConditionsId = pricingConditionsId;
+		this.pricingConditionsBreakId = pricingConditionsBreakId;
+
+		this.basePricingSystemId = basePricingSystemId;
+	}
+
 }

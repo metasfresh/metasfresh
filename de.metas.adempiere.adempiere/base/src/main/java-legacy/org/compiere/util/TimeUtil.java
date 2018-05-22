@@ -1492,6 +1492,16 @@ public class TimeUtil
 		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 	}
 
+	public static LocalDate asLocalDate(final Timestamp date)
+	{
+		if (date == null)
+		{
+			return null;
+		}
+
+		return date.toLocalDateTime().toLocalDate();
+	}
+
 	public static LocalTime asLocalTime(final Date time)
 	{
 		if (time == null)

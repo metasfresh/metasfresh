@@ -113,7 +113,7 @@ public class Discount implements IPricingRule
 		final CalculatePricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
 
 		result.setUsesDiscountSchema(true);
-		updatePricingResultFromPricingConditionsResult(result, request.getPricingConditionsId(), pricingConditionsResult);
+		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
 	}
 
 	private CalculatePricingConditionsRequest createCalculatePricingConditionsRequest(final IPricingContext pricingCtx, final IPricingResult result)
@@ -176,11 +176,10 @@ public class Discount implements IPricingRule
 
 	private static void updatePricingResultFromPricingConditionsResult(
 			final IPricingResult pricingResult,
-			final PricingConditionsId pricingConditionsId,
 			final CalculatePricingConditionsResult pricingConditionsResult)
 	{
 		pricingResult.setPricingConditions(PricingConditionsResult.builder()
-				.pricingConditionsId(pricingConditionsId)
+				.pricingConditionsId(pricingConditionsResult.getPricingConditionsId())
 				.pricingConditionsBreakId(pricingConditionsResult.getPricingConditionsBreakId())
 				.basePricingSystemId(pricingConditionsResult.getBasePricingSystemId())
 				.paymentTermId(pricingConditionsResult.getPaymentTermId())
