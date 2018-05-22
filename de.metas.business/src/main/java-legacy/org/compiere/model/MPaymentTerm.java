@@ -21,14 +21,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.i18n.Msg;
 
 
 /**
@@ -94,7 +92,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		if (m_schedule != null && !requery)
 			return m_schedule;
 		String sql = "SELECT * FROM C_PaySchedule WHERE C_PaymentTerm_ID=? AND IsActive='Y' ORDER BY NetDays";
-		ArrayList<MPaySchedule> list = new ArrayList<MPaySchedule>();
+		ArrayList<MPaySchedule> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		try
 		{

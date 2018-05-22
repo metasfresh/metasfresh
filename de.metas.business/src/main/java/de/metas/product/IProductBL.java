@@ -33,6 +33,8 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import lombok.NonNull;
+
 public interface IProductBL extends ISingletonService
 {
 	int getUOMPrecision(I_M_Product product);
@@ -113,9 +115,9 @@ public interface IProductBL extends ISingletonService
 	/** @return UOM used in material storage; never return null; */
 	I_C_UOM getStockingUOM(int productId);
 
-	default int getStockingUOMId(final int productId)
+	default int getStockingUOMId(@NonNull final ProductId productId)
 	{
-		return getStockingUOM(productId).getC_UOM_ID();
+		return getStockingUOM(productId.getRepoId()).getC_UOM_ID();
 	}
 
 	/**

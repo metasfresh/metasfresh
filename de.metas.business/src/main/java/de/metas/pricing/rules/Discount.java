@@ -26,10 +26,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
@@ -41,10 +41,14 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingConditionsResult;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest.CalculatePricingConditionsRequestBuilder;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
 
 /**
  * Discount Calculations
@@ -59,7 +63,6 @@ import de.metas.pricing.conditions.service.IPricingConditionsService;
  * @version $Id: MProductPricing.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
 public class Discount implements IPricingRule
-
 {
 	private final transient Logger log = LogManager.getLogger(getClass());
 
@@ -99,34 +102,56 @@ public class Discount implements IPricingRule
 		}
 
 		//
-		final int bpartnerId = pricingCtx.getC_BPartner_ID();
-		final boolean isSOTrx = pricingCtx.isSOTrx();
-
-		final I_C_BPartner partner = InterfaceWrapperHelper.loadOutOfTrx(bpartnerId, I_C_BPartner.class);
-		final BigDecimal bpartnerFlatDiscount = partner.getFlatDiscount();
-
-		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(partner, isSOTrx);
-		if (discountSchemaId <= 0)
+		final CalculatePricingConditionsRequest request = createCalculatePricingConditionsRequest(pricingCtx, result);
+		if (request == null)
 		{
 			return;
 		}
-		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaId(discountSchemaId);
-
-		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
-				.pricingConditionsId(pricingConditionsId)
-				.qty(pricingCtx.getQty())
-				.price(result.getPriceStd())
-				.productId(pricingCtx.getM_Product_ID())
-				.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
-				.bpartnerFlatDiscount(bpartnerFlatDiscount)
-				.pricingCtx(pricingCtx)
-				.build();
 
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 		final CalculatePricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
 
 		result.setUsesDiscountSchema(true);
-		updatePricingResultFromPricingConditionsResult(result, pricingConditionsId, pricingConditionsResult);
+		updatePricingResultFromPricingConditionsResult(result, request.getPricingConditionsId(), pricingConditionsResult);
+	}
+
+	private CalculatePricingConditionsRequest createCalculatePricingConditionsRequest(final IPricingContext pricingCtx, final IPricingResult result)
+	{
+		final int bpartnerId = pricingCtx.getC_BPartner_ID();
+		final boolean isSOTrx = pricingCtx.isSOTrx();
+
+		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+		final BigDecimal bpartnerFlatDiscount = bpartner.getFlatDiscount();
+
+		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(bpartner, isSOTrx);
+		if (discountSchemaId <= 0)
+		{
+			return null;
+		}
+
+		final CalculatePricingConditionsRequestBuilder builder = CalculatePricingConditionsRequest.builder()
+				.pricingConditionsId(PricingConditionsId.ofDiscountSchemaId(discountSchemaId))
+				.bpartnerFlatDiscount(bpartnerFlatDiscount)
+				.pricingCtx(pricingCtx);
+
+		if (pricingCtx.getForcePricingConditionsBreak() != null)
+		{
+			builder.forcePricingConditionsBreak(pricingCtx.getForcePricingConditionsBreak());
+		}
+		else
+		{
+			final int productId = pricingCtx.getM_Product_ID();
+			final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+
+			builder.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
+					.qty(pricingCtx.getQty())
+					.price(result.getPriceStd())
+					.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
+					.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
+					.build());
+		}
+
+		return builder.build();
 	}
 
 	private List<I_M_AttributeInstance> getAttributeInstances(final Object pricingReferencedObject)
@@ -156,8 +181,8 @@ public class Discount implements IPricingRule
 		pricingResult.setPricingConditions(PricingConditionsResult.builder()
 				.pricingConditionsId(pricingConditionsId)
 				.pricingConditionsBreakId(pricingConditionsResult.getPricingConditionsBreakId())
-				.basePricingSystemId(pricingConditionsResult.getDiscountSchemaBreak_BasePricingSystem_Id())
-				.paymentTermId(pricingConditionsResult.getC_PaymentTerm_ID())
+				.basePricingSystemId(pricingConditionsResult.getBasePricingSystemId())
+				.paymentTermId(pricingConditionsResult.getPaymentTermId())
 				.build());
 
 		pricingResult.setDiscount(pricingConditionsResult.getDiscount());

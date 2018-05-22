@@ -52,12 +52,14 @@ public class InvoiceCandidateAssignmentServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository();
+
 		invoiceCandidateRepository = new InvoiceCandidateRepository(
-				new RefundConfigRepository(),
+				refundConfigRepository,
 				new MoneyFactory(new CurrencyRepository()));
 
 		invoiceCandidateAssignmentService = new InvoiceCandidateAssignmentService(
-				new RefundContractRepository(),
+				new RefundContractRepository(refundConfigRepository),
 				invoiceCandidateRepository);
 	}
 

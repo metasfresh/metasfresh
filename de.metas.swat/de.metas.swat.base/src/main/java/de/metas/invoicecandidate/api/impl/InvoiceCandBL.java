@@ -48,6 +48,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -2020,7 +2021,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(ic.getBill_BPartner_ID(), ic.isSOTrx());
+		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), ic.isSOTrx());
 		if (discountSchemaId <= 0)
 		{
 			// do nothing
@@ -2040,8 +2041,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 		}
-		final BigDecimal amt = ic.getPriceActual().multiply(qty);
-
+		
+		final BigDecimal priceActual = ic.getPriceActual();
 		final int productId = ic.getM_Product_ID();
 		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 
@@ -2050,7 +2051,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.attributeInstances(instances)
 				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
 				.qty(qty)
-				.amt(amt)
+				.price(priceActual)
 				.build());
 
 		final BigDecimal qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;

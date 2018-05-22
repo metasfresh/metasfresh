@@ -16,8 +16,9 @@ import org.springframework.stereotype.Component;
 
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.conditions.PriceOverride;
+import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
-import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
@@ -28,6 +29,7 @@ import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -101,25 +103,26 @@ public class M_DiscountSchemaBreak
 		}
 
 		final PricingConditionsBreak pricingConditionsBreak = PricingConditionsRepository.toPricingConditionsBreak(schemaBreak);
-		final PriceOverrideType priceOverride = pricingConditionsBreak.getPriceOverride();
+		final PriceOverride priceOverride = pricingConditionsBreak.getPriceOverride();
+		final PriceOverrideType priceOverrideType = priceOverride.getType();
 		final Set<Integer> countryIds;
-		if (priceOverride == PriceOverrideType.NONE)
+		if (priceOverrideType == PriceOverrideType.NONE)
 		{
 			// nothing to validate
 			return;
 		}
-		else if (priceOverride == PriceOverrideType.BASE_PRICING_SYSTEM)
+		else if (priceOverrideType == PriceOverrideType.BASE_PRICING_SYSTEM)
 		{
-			countryIds = Services.get(IPriceListDAO.class).retrieveCountryIdsByPricingSystem(pricingConditionsBreak.getBasePricingSystemId());
+			countryIds = Services.get(IPriceListDAO.class).retrieveCountryIdsByPricingSystem(priceOverride.getBasePricingSystemId());
 
 		}
-		else if (priceOverride == PriceOverrideType.FIXED_PRICE)
+		else if (priceOverrideType == PriceOverrideType.FIXED_PRICE)
 		{
 			countryIds = Services.get(IPricingBL.class).getPriceLimitCountryIds();
 		}
 		else
 		{
-			throw new AdempiereException("Unknown " + PriceOverrideType.class + ": " + priceOverride);
+			throw new AdempiereException("Unknown " + PriceOverrideType.class + ": " + priceOverrideType);
 		}
 
 		final PriceLimitEnforceContext context = PriceLimitEnforceContext.builder()
@@ -170,7 +173,7 @@ public class M_DiscountSchemaBreak
 		}
 	}
 
-	private CalculatePricingConditionsRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
+	private static CalculatePricingConditionsRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
@@ -178,12 +181,12 @@ public class M_DiscountSchemaBreak
 		final PricingConditionsBreak pricingConditionsBreak = context.getPricingConditionsBreak();
 		final PricingConditionsBreakMatchCriteria matchCriteria = pricingConditionsBreak.getMatchCriteria();
 
-		final int productId = matchCriteria.getProductId();
+		final ProductId productId = matchCriteria.getProductId();
 		final BigDecimal qty = matchCriteria.getBreakValue();
 
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setConvertPriceToContextUOM(true);
-		pricingCtx.setM_Product_ID(productId);
+		pricingCtx.setM_Product_ID(productId != null ? productId.getRepoId() : -1);
 		pricingCtx.setC_UOM_ID(productBL.getStockingUOMId(productId));
 		pricingCtx.setSOTrx(context.getIsSOTrx());
 		pricingCtx.setQty(qty);
@@ -193,10 +196,10 @@ public class M_DiscountSchemaBreak
 
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(pricingConditionsBreak.getId().getPricingConditionsId())
-				.forceSchemaBreak(pricingConditionsBreak)
-				.qty(pricingCtx.getQty())
-				.price(BigDecimal.ZERO) // N/A
-				.productId(pricingCtx.getM_Product_ID())
+				.forcePricingConditionsBreak(pricingConditionsBreak)
+				// .qty(pricingCtx.getQty())
+				// .price(BigDecimal.ZERO) // N/A
+				// .productId(pricingCtx.getM_Product_ID())
 				.pricingCtx(pricingCtx)
 				.build();
 		return request;

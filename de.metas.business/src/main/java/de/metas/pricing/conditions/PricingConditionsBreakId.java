@@ -58,7 +58,9 @@ public class PricingConditionsBreakId
 	{
 		if (!matching(id, breakId))
 		{
-			throw new AdempiereException("" + id + " and " + breakId + " are not matching");
+			throw new AdempiereException("" + id + " and " + breakId + " are not matching")
+					.setParameter("pricingConditionsId", id)
+					.setParameter("pricingConditionsBreakId", breakId);
 		}
 	}
 
