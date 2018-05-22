@@ -67,6 +67,7 @@ Here come the actual release notes:
 * metasfresh
   * [#3754](https://github.com/metasfresh/metasfresh/issues/3754) Inventory: Allow only "Active" and "Issued" HUs in inventorylines
   * [#3975](https://github.com/metasfresh/metasfresh/issues/3975) Allow annotating data as personal
+    * New Feature for GDPR Compliance that allows to annotate data as personal Data via Application Dictionary.
   * [#3991](https://github.com/metasfresh/metasfresh/issues/3991) Implement "Der Kurier" parcel number check digit
   * [#3993](https://github.com/metasfresh/metasfresh/issues/3993) Eliminate the ampersand from all AD_Messages
   * [#4003](https://github.com/metasfresh/metasfresh/issues/4003) Adjust Window "Der Kurier Versandauftrag"
@@ -90,8 +91,20 @@ Here come the actual release notes:
   * [#4013](https://github.com/metasfresh/metasfresh/issues/4013) Lot No Action error when running multiple times
   * [#4017](https://github.com/metasfresh/metasfresh/issues/4017) Vendor Action for adding (temp.) Pricing Conditions in Purchase Order missing
   * [#4020](https://github.com/metasfresh/metasfresh/issues/4020) eventlog data needs to be stored out-of-trx
+<<<<<<< HEAD
+    * Internal Housekeeping improvement, now storing eventlog data out of transaction.
+||||||| merged common ancestors
+    * Internal Housekeeping improvemen, now storing eventlog data out of transaction.
+=======
+>>>>>>> 7ae088fc4cd6d3ebed968077a4270fa34feaccc8
   * [#4027](https://github.com/metasfresh/metasfresh/issues/4027) "To Be Updated" in shipment schedule and "In Verarbeitung" in workpackage getting stuck
   * [#3980](https://github.com/metasfresh/metasfresh/issues/3980) Notifications in Swing Client show no info
+<<<<<<< HEAD
+    * Fixes the Notification feature in Swing Client, now showing detailed information body again.
+||||||| merged common ancestors
+    * Fixes the Notification feature in Swing Client, now showing detailes information body again.
+=======
+>>>>>>> 7ae088fc4cd6d3ebed968077a4270fa34feaccc8
   * [#4016](https://github.com/metasfresh/metasfresh/issues/4016) Pricing Conditions error when save
   * [#4028](https://github.com/metasfresh/metasfresh/issues/4028) Multiple shipment lines for one order line all have the order line's TU-Qty
 
