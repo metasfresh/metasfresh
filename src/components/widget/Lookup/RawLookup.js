@@ -472,6 +472,8 @@ const mapStateToProps = state => ({
 
 RawLookup.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
 };
 
 export default connect(mapStateToProps)(RawLookup);

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
@@ -475,5 +476,10 @@ class Lookup extends Component {
     );
   }
 }
+
+Lookup.propTypes = {
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
+};
 
 export default connect()(BarcodeScanner(onClickOutside(Lookup)));

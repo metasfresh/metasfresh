@@ -209,6 +209,9 @@ const mapStateToProps = state => ({
 
 RawModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  children: PropTypes.node,
+  modalTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+  modalDescription: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalVisible: PropTypes.bool,
   rawModalVisible: PropTypes.bool,
   requests: PropTypes.object.isRequired,
