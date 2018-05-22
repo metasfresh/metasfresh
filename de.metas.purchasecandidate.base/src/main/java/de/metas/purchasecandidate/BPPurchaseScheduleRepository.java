@@ -231,10 +231,9 @@ public class BPPurchaseScheduleRepository
 		List<BPPurchaseSchedule> schedules;
 
 		@Builder
-		private AllBPPurchaseSchedule(final int bpartnerId, final List<BPPurchaseSchedule> schedules)
+		private AllBPPurchaseSchedule(final int bpartnerId, @NonNull final List<BPPurchaseSchedule> schedules)
 		{
 			Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
-			Check.assumeNotEmpty(schedules, "schedules is not empty");
 
 			this.bpartnerId = bpartnerId;
 			this.schedules = schedules.stream()
