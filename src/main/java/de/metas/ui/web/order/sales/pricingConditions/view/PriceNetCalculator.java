@@ -2,8 +2,11 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -34,30 +37,41 @@ import lombok.NonNull;
 
 public class PriceNetCalculator
 {
+	private static final Logger logger = LogManager.getLogger(PriceNetCalculator.class);
+
 	// params
-	private final BasePriceFromBasePricingSystemCalculator basePriceFromBasePricingSystemCalculator;
+	private final BasePriceCalculator basePriceCalculator;
 
 	@Builder
-	private PriceNetCalculator(@NonNull final BasePriceFromBasePricingSystemCalculator basePriceFromBasePricingSystemCalculator)
+	private PriceNetCalculator(@NonNull final BasePriceCalculator basePriceCalculator)
 	{
-		this.basePriceFromBasePricingSystemCalculator = basePriceFromBasePricingSystemCalculator;
+		this.basePriceCalculator = basePriceCalculator;
 	}
 
-	public BigDecimal calculate(@NonNull final PricingConditionsBreak pricingConditionsBreak)
+	public BigDecimal calculate(@NonNull final PriceNetCalculateRequest request)
 	{
-		BigDecimal basePrice = calculateBasePrice(pricingConditionsBreak);
-		if (basePrice == null)
+		try
 		{
+			final BigDecimal basePrice = calculateBasePrice(request);
+			if (basePrice == null)
+			{
+				return null;
+			}
+
+			final BigDecimal price = subtractDiscount(basePrice, request.getPricingConditionsBreak());
+
+			return price;
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed calculating net price for {}. Returning null.", request, ex);
 			return null;
 		}
-
-		final BigDecimal price = subtractDiscount(basePrice, pricingConditionsBreak);
-
-		return price;
 	}
 
-	private BigDecimal calculateBasePrice(@NonNull final PricingConditionsBreak pricingConditionsBreak)
+	private BigDecimal calculateBasePrice(@NonNull final PriceNetCalculateRequest request)
 	{
+		final PricingConditionsBreak pricingConditionsBreak = request.getPricingConditionsBreak();
 		final PriceOverride price = pricingConditionsBreak.getPriceOverride();
 		final PriceOverrideType type = price.getType();
 		if (type == PriceOverrideType.NONE)
@@ -66,7 +80,7 @@ public class PriceNetCalculator
 		}
 		else if (type == PriceOverrideType.BASE_PRICING_SYSTEM)
 		{
-			final BigDecimal basePrice = basePriceFromBasePricingSystemCalculator.calculate(pricingConditionsBreak);
+			final BigDecimal basePrice = basePriceCalculator.calculate(request);
 			// NOTE: assume BasePriceAddAmt was added
 			// basePrice = basePrice.add(price.getBasePriceAddAmt());
 
@@ -95,9 +109,20 @@ public class PriceNetCalculator
 
 	}
 
-	@FunctionalInterface
-	public static interface BasePriceFromBasePricingSystemCalculator
+	@lombok.Value
+	@lombok.Builder
+	public static class PriceNetCalculateRequest
 	{
-		BigDecimal calculate(PricingConditionsBreak pricingConditionsBreak);
+		@lombok.NonNull
+		PricingConditionsBreak pricingConditionsBreak;
+		@lombok.NonNull
+		BPartnerId bpartnerId;
+		boolean isSOTrx;
+	}
+
+	@FunctionalInterface
+	public static interface BasePriceCalculator
+	{
+		BigDecimal calculate(PriceNetCalculateRequest request);
 	}
 }

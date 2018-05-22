@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,12 +21,17 @@ import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.Percent;
+import de.metas.logging.LogManager;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -64,6 +70,7 @@ import lombok.NonNull;
 class PricingConditionsRowsLoader
 {
 	// services
+	private static final Logger logger = LogManager.getLogger(PricingConditionsRowsLoader.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
@@ -81,6 +88,17 @@ class PricingConditionsRowsLoader
 	private final SourceDocumentLine sourceDocumentLine;
 
 	private ImmutableSetMultimap<PricingConditionsId, PricingConditionsInfo> pricingConditionsInfoById; // lazy
+	private final LoadingCache<LastInOutDateRequest, Optional<LocalDate>> lastInOutDates = CacheBuilder.newBuilder()
+			.build(new CacheLoader<LastInOutDateRequest, Optional<LocalDate>>()
+			{
+				@Override
+				public Optional<LocalDate> load(final LastInOutDateRequest key)
+				{
+					final LocalDate lastInOutDate = inoutsRepo.getLastInOutDate(key.getBpartnerId(), key.getProductId(), key.isSOTrx());
+					return Optional.ofNullable(lastInOutDate);
+				}
+
+			});
 
 	@Builder
 	private PricingConditionsRowsLoader(
@@ -272,8 +290,21 @@ class PricingConditionsRowsLoader
 			return null;
 		}
 
-		return inoutsRepo.getLastInOutDate(bpartnerId, productId, isSOTrx);
+		final LastInOutDateRequest request = LastInOutDateRequest.builder()
+				.bpartnerId(bpartnerId)
+				.productId(productId)
+				.isSOTrx(isSOTrx)
+				.build();
 
+		try
+		{
+			return lastInOutDates.get(request).orElse(null);
+		}
+		catch (ExecutionException ex)
+		{
+			logger.warn("Failed fetching last InOut date for {}. Returning null.", request, ex);
+			return null;
+		}
 	}
 
 	@lombok.Value
@@ -316,6 +347,17 @@ class PricingConditionsRowsLoader
 		Percent discount = Percent.ZERO;
 
 		int paymentTermId;
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	private static final class LastInOutDateRequest
+	{
+		@NonNull
+		BPartnerId bpartnerId;
+		@NonNull
+		ProductId productId;
+		boolean isSOTrx;
 	}
 
 	//

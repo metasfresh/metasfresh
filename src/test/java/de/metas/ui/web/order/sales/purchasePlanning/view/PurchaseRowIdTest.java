@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.junit.Test;
 
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
@@ -58,7 +59,7 @@ public class PurchaseRowIdTest
 	{
 		final PurchaseRowId rowId = PurchaseRowId.lineId(
 				Integer.parseInt(salesOrderLineId),
-				Integer.parseInt(vendorBPartnerId),
+				BPartnerId.ofRepoId(Integer.parseInt(vendorBPartnerId)),
 				Integer.parseInt(processedPurchaseCandidateId));
 
 		final DocumentId documentId = rowId.toDocumentId();
@@ -74,7 +75,7 @@ public class PurchaseRowIdTest
 	@Test
 	public void withAvailability()
 	{
-		final PurchaseRowId rowId = PurchaseRowId.lineId(10, 20, 30);
+		final PurchaseRowId rowId = PurchaseRowId.lineId(10, BPartnerId.ofRepoId(20), 30);
 		final PurchaseRowId availabilityRowId = rowId.withAvailability(Type.AVAILABLE, "someString");
 
 		assertThat(rowId.toDocumentId()).isNotEqualTo(availabilityRowId.toDocumentId());
@@ -96,7 +97,7 @@ public class PurchaseRowIdTest
 		final DocumentId documentId = DocumentId.ofString("1000007-2156423-0-AVAILABLE-11");
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(documentId);
 		assertThat(purchaseRowId.getSalesOrderLineId()).isEqualTo(1000007);
-		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(2156423);
+		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(BPartnerId.ofRepoId(2156423));
 		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(0);
 		assertThat(purchaseRowId.getAvailabilityType()).isEqualTo(Type.AVAILABLE);
 	}
@@ -107,7 +108,7 @@ public class PurchaseRowIdTest
 		final DocumentId documentId = DocumentId.ofString("1000007-2156423-32311-NOT_AVAILABLE-11");
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(documentId);
 		assertThat(purchaseRowId.getSalesOrderLineId()).isEqualTo(1000007);
-		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(2156423);
+		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(BPartnerId.ofRepoId(2156423));
 		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(32311);
 		assertThat(purchaseRowId.getAvailabilityType()).isEqualTo(Type.NOT_AVAILABLE);
 	}
