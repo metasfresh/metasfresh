@@ -83,8 +83,6 @@ class TableItem extends PureComponent {
   editProperty = (e, property, callback, item) => {
     const { changeListenOnTrue, changeListenOnFalse } = this.props;
 
-    console.log('TableItem editProperty: ', property)
-
     if (item ? !item.readonly : true) {
       this.setState(
         {
@@ -154,10 +152,13 @@ class TableItem extends PureComponent {
     const { onItemChange } = this.props;
     const editedCells = { ...this.state.editedCells }
 
+    // this is something we're not doing usually as all field
+    // layouts come from the server. But in cases of modals
+    // sometimes we need to modify the state of fields that are displayed
+    // for instance to show/hide them
     if (ret) {
       ret.then(resp => {
         if (resp[0] && resp[0].fieldsByName) {
-          console.log('RESP: ', resp[0].fieldsByName)
           for (let [k,v] of Object.entries(resp[0].fieldsByName)) {
             if (v.viewEditorRenderMode) {
               editedCells[k] = {
@@ -184,7 +185,6 @@ class TableItem extends PureComponent {
       docId,
       rowId,
       tabId,
-      readonly,
       mainTable,
       newRow,
       changeListenOnTrue,
@@ -196,14 +196,9 @@ class TableItem extends PureComponent {
       colspan,
       viewId,
     } = this.props;
+    let { readonly } = this.props;
     const { edited, updatedRow, listenOnKeys, editedCells } = this.state;
     const cells = fieldsByName;
-    // const cells = {
-    //   ...fieldsByName,
-    //   ...editedCells,
-    // };
-
-    console.log('renderCells: ', fieldsByName, editedCells, cells);
 
     // Iterate over layout settings
 
@@ -213,32 +208,19 @@ class TableItem extends PureComponent {
       return (
         cols &&
         cols.map(item => {
+          if (shouldRenderColumn(item)) {
+            const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
             let isEditable =
               ((cells &&
                 cells[property] &&
                 cells[property].viewEditorRenderMode) ||
+                // fields altered by the response from widget patch
                 (editedCells[property] &&
                 editedCells[property].viewEditorRenderMode) ||
                 item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
-            const isEdited = edited === property;//isEditable || edited === property;
-
-            // if (item.caption.toLowerCase().includes('pr') || item.caption.toLowerCase().includes('type')) {
-            //   console.log('ITEM: ', item.caption, item.fields[0].field, ', renderModes: ', item.viewEditorRenderMode,
-            //     cells[property].viewEditorRenderMode,', isEditable: ', isEditable, isEdited, supportFieldEdit,', randomshit: ', property, )
-            // }
-
-          if (shouldRenderColumn(item)) {
-            const { supportZoomInto } = item.fields[0];
-            // const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
-            // const property = item.fields[0].field;
-            // let isEditable =
-            //   ((cells &&
-            //     cells[property] &&
-            //     cells[property].viewEditorRenderMode) ||
-            //     item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
-            // const isEdited = isEditable || edited === property;
+            const isEdited = edited === property;
 
             let widgetData = item.fields.map(prop => {
               if (cells) {
@@ -248,7 +230,6 @@ class TableItem extends PureComponent {
                   isEditable ||
                   (supportFieldEdit && typeof cellWidget === 'object')
                 ) {
-                  // console.log('is this some dead code ?: ', property, item.caption, isEditable, isEdited, supportFieldEdit)
                   cellWidget = {
                     ...cellWidget,
                     widgetType: item.widgetType,
@@ -256,6 +237,7 @@ class TableItem extends PureComponent {
                     mandatory: true,
                     readonly: false,
                   };
+                  readonly = false;
                 }
 
                 return cellWidget;
@@ -285,13 +267,10 @@ class TableItem extends PureComponent {
                 key={`${rowId}-${property}`}
                 isRowSelected={this.props.isSelected}
                 isEdited={isEdited}
-                handleDoubleClick={e => {
-                  console.log('dblclick');
+                handleDoubleClick={e => 
                   this.handleEditProperty(e, property, true, widgetData[0])
                 }
-                }
                 onClickOutside={e => {
-                  console.log('clickoutside ?')
                   this.handleEditProperty(e);
                   changeListenOnTrue();
                 }}
