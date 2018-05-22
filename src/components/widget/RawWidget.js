@@ -498,7 +498,7 @@ class RawWidget extends Component {
             listenOnKeysFalse={listenOnKeysFalse}
             closeTableField={closeTableField}
             onFocus={this.focus}
-            onHandleBlur={this.handleBlur}
+            onBlur={this.handleBlur}
             onChange={this.handlePatch}
             onBlurWidget={onBlurWidget}
           />
@@ -522,7 +522,7 @@ class RawWidget extends Component {
             rowId={rowId}
             tabId={tabId}
             onFocus={this.focus}
-            onHandleBlur={this.handleBlur}
+            onBlur={this.handleBlur}
             onChange={option => this.handlePatch(widgetField, option, id)}
             align={gridAlign}
             updated={updated}
@@ -747,7 +747,7 @@ class RawWidget extends Component {
             tabId={tabId}
             rowId={rowId}
             onFocus={this.handleFocus}
-            onHandleBlur={this.handleBlur}
+            onBlur={this.handleBlur}
             fieldName={widgetField}
             handleBackdropLock={handleBackdropLock}
             patch={option => this.handlePatch(widgetField, option)}
