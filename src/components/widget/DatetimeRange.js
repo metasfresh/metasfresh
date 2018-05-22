@@ -78,6 +78,7 @@ class DatetimeRange extends Component {
         onShow={onShow}
         onHide={onHide}
         locale={{
+          format: Moment.localeData().longDateFormat('l'),
           firstDay: 1,
           monthNames: Moment.months(),
           applyLabel: counterpart.translate('window.daterange.apply'),
