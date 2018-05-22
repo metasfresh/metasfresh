@@ -173,6 +173,7 @@ class ListWidget extends Component {
 
     this.setState(
       {
+        autoFocus: false,
         listFocused: false,
         list: null,
       },
