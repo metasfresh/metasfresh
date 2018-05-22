@@ -150,7 +150,7 @@ class TableItem extends PureComponent {
 
   onCellChange = (rowId, property, value, ret) => {
     const { onItemChange } = this.props;
-    const editedCells = { ...this.state.editedCells }
+    const editedCells = { ...this.state.editedCells };
 
     // this is something we're not doing usually as all field
     // layouts come from the server. But in cases of modals
@@ -159,7 +159,7 @@ class TableItem extends PureComponent {
     if (ret) {
       ret.then(resp => {
         if (resp[0] && resp[0].fieldsByName) {
-          for (let [k,v] of Object.entries(resp[0].fieldsByName)) {
+          for (let [k, v] of Object.entries(resp[0].fieldsByName)) {
             if (v.viewEditorRenderMode) {
               editedCells[k] = {
                 viewEditorRenderMode: v.viewEditorRenderMode,
@@ -168,9 +168,12 @@ class TableItem extends PureComponent {
           }
         }
 
-        this.setState({
-          editedCells,
-        }, () => onItemChange(rowId, property, value));
+        this.setState(
+          {
+            editedCells,
+          },
+          () => onItemChange(rowId, property, value)
+        );
       });
     } else {
       onItemChange(rowId, property, value);
@@ -218,7 +221,7 @@ class TableItem extends PureComponent {
                 cells[property].viewEditorRenderMode) ||
                 // fields altered by the response from widget patch
                 (editedCells[property] &&
-                editedCells[property].viewEditorRenderMode) ||
+                  editedCells[property].viewEditorRenderMode) ||
                 item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
             const isEdited = edited === property;
 
@@ -267,7 +270,7 @@ class TableItem extends PureComponent {
                 key={`${rowId}-${property}`}
                 isRowSelected={this.props.isSelected}
                 isEdited={isEdited}
-                handleDoubleClick={e => 
+                handleDoubleClick={e =>
                   this.handleEditProperty(e, property, true, widgetData[0])
                 }
                 onClickOutside={e => {
@@ -428,8 +431,6 @@ class TableItem extends PureComponent {
     const {
       key,
       isSelected,
-      fieldsByName,
-      cols,
       onClick,
       onDoubleClick,
       odd,
