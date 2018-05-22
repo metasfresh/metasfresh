@@ -3,8 +3,7 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
-import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
-import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
@@ -46,7 +45,7 @@ public class PricingConditionsRowsSaver
 		this.row = row;
 	}
 
-	public PricingConditionsBreakId save()
+	public PricingConditionsBreak save()
 	{
 		if (!row.isEditable())
 		{
@@ -67,35 +66,10 @@ public class PricingConditionsRowsSaver
 				//
 				.updateFromPricingConditionsBreakId(row.getCopiedFromPricingConditionsBreakId())
 				//
+				.price(row.getPrice())
 				.discount(row.getDiscount())
 				.paymentTermId(row.getPaymentTermId());
 
-		updatePrice(requestBuilder, row.getPrice());
-
 		return pricingConditionsRepo.changePricingConditionsBreak(requestBuilder.build());
-	}
-
-	private void updatePrice(final PricingConditionsBreakChangeRequestBuilder requestBuilder, final Price price)
-	{
-		final PriceType priceType = price.getPriceType();
-		if (priceType == PriceType.NONE)
-		{
-			requestBuilder.priceOverride(PriceOverrideType.NONE);
-		}
-		else if (priceType == PriceType.BASE_PRICING_SYSTEM)
-		{
-			requestBuilder.priceOverride(PriceOverrideType.BASE_PRICING_SYSTEM);
-			requestBuilder.basePricingSystemId(price.getPricingSystemId());
-			requestBuilder.basePriceAddAmt(price.getBasePriceAddAmt());
-		}
-		else if (priceType == PriceType.FIXED_PRICE)
-		{
-			requestBuilder.priceOverride(PriceOverrideType.FIXED_PRICE);
-			requestBuilder.fixedPrice(price.getFixedPrice());
-		}
-		else
-		{
-			throw new AdempiereException("Unknown priceType: " + priceType);
-		}
 	}
 }

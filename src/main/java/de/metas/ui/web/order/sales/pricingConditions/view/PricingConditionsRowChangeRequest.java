@@ -1,10 +1,13 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.OptionalInt;
 
+import de.metas.lang.Percent;
+import de.metas.pricing.conditions.PriceOverride;
+import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,7 +38,7 @@ import lombok.Value;
 @Builder
 public class PricingConditionsRowChangeRequest
 {
-	public static final PricingConditionsRowChangeRequest saved(@NonNull final PricingConditionsBreakId pricingConditionsBreakId)
+	public static final PricingConditionsRowChangeRequest saved(@NonNull final PricingConditionsBreakId pricingConditionsBreakId, final LocalDateTime dateCreated)
 	{
 		return builder()
 				.pricingConditionsBreakId(pricingConditionsBreakId)
@@ -43,10 +46,12 @@ public class PricingConditionsRowChangeRequest
 	}
 
 	PricingConditionsBreakId pricingConditionsBreakId;
+	LocalDateTime dateCreated;
+	
 	PricingConditionsBreakId sourcePricingConditionsBreakId;
 
-	BigDecimal discount;
-	Optional<LookupValue> paymentTerm;
+	Percent discount;
+	OptionalInt paymentTermId;
 
 	PriceChange priceChange;
 
@@ -58,8 +63,8 @@ public class PricingConditionsRowChangeRequest
 	@lombok.Builder
 	public static final class PartialPriceChange implements PriceChange
 	{
-		PriceType priceType;
-		Optional<LookupValue> basePricingSystem;
+		PriceOverrideType priceType;
+		OptionalInt basePricingSystemId;
 		BigDecimal basePriceAddAmt;
 		BigDecimal fixedPrice;
 	}
@@ -68,6 +73,6 @@ public class PricingConditionsRowChangeRequest
 	public static final class CompletePriceChange implements PriceChange
 	{
 		@NonNull
-		Price price;
+		PriceOverride price;
 	}
 }

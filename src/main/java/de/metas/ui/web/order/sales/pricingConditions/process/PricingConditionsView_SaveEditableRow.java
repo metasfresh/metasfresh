@@ -1,6 +1,6 @@
 package de.metas.ui.web.order.sales.pricingConditions.process;
 
-import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest;
@@ -61,12 +61,12 @@ public class PricingConditionsView_SaveEditableRow extends PricingConditionsView
 	@Override
 	protected String doIt()
 	{
-		final PricingConditionsBreakId pricingConditionsBreakId = PricingConditionsRowsSaver.builder()
+		final PricingConditionsBreak pricingConditionsBreak = PricingConditionsRowsSaver.builder()
 				.row(getEditableRow())
 				.build()
 				.save();
 
-		patchEditableRow(PricingConditionsRowChangeRequest.saved(pricingConditionsBreakId));
+		patchEditableRow(PricingConditionsRowChangeRequest.saved(pricingConditionsBreak.getId(), pricingConditionsBreak.getDateCreated()));
 
 		return MSG_OK;
 	}

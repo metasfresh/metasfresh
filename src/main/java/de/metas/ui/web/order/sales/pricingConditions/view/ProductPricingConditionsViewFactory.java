@@ -56,9 +56,13 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 
 		final int adClientId = Env.getAD_Client_ID();
 
+		final PriceNetCalculator priceNetCalculator = PriceNetCalculator.builder()
+				// .basePriceFromBasePricingSystemCalculator(basePriceFromBasePricingSystemCalculator) // TODO
+				.build();
+
 		return preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(pricingConditions -> pricingConditions.streamBreaksMatchingAnyOfProducts(productAndCategoryIds))
-				.priceNetCalculator(new PriceNetCalculator()) // TODO
+				.priceNetCalculator(priceNetCalculator)
 				.adClientId(adClientId)
 				.load();
 	}
