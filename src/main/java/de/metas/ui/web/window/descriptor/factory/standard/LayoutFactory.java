@@ -127,20 +127,21 @@ public class LayoutFactory
 
 		_adWindowId = gridTabVO.getAD_Window_ID();
 		windowCaption = ImmutableTranslatableString.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
+		
+		final int templateTabId = Util.firstGreaterThanZero(gridTabVO.getTemplateTabId(), gridTabVO.getAD_Tab_ID());
 
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),
 		// and fetch the UI sections
 		{
 			IWindowUIElementsProvider uiProvider = new DAOWindowUIElementsProvider();
-			final int AD_Tab_ID = gridTabVO.getAD_Tab_ID();
-			List<I_AD_UI_Section> uiSections = uiProvider.getUISections(AD_Tab_ID);
+			List<I_AD_UI_Section> uiSections = uiProvider.getUISections(templateTabId);
 			if (uiSections.isEmpty())
 			{
 				uiProvider = new InMemoryUIElementsProvider();
 				logger.warn("No UI Sections found for {}. Switching to {}", gridTabVO, uiProvider);
 
-				uiSections = uiProvider.getUISections(AD_Tab_ID);
+				uiSections = uiProvider.getUISections(templateTabId);
 			}
 
 			_uiSections = ImmutableList.copyOf(uiSections);
@@ -150,7 +151,7 @@ public class LayoutFactory
 			logger.trace("Using UI provider: {}", _uiProvider);
 		}
 
-		final List<I_AD_UI_Element> labelsUIElements = _uiProvider.getUIElementsOfTypeLabels(gridTabVO.getAD_Tab_ID());
+		final List<I_AD_UI_Element> labelsUIElements = _uiProvider.getUIElementsOfTypeLabels(templateTabId);
 		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx(), labelsUIElements);
 
 		this.childAdTabIdsToSkip = labelsUIElements
