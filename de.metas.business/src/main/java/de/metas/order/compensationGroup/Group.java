@@ -10,10 +10,10 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.lang.Percent;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -152,10 +152,10 @@ public class Group
 	{
 		compensationLine.setBaseAmt(baseAmt);
 
-		final BigDecimal percentage = compensationLine.getPercentage();
+		final Percent percentage = compensationLine.getPercentage();
 		final GroupCompensationType compensationType = compensationLine.getType();
 
-		final BigDecimal compensationAmt = baseAmt.multiply(percentage).divide(Env.ONEHUNDRED, precision, RoundingMode.HALF_UP);
+		final BigDecimal compensationAmt = percentage.multiply(baseAmt, precision);
 		final BigDecimal amt = OrderGroupCompensationUtils.adjustAmtByCompensationType(compensationAmt, compensationType);
 
 		compensationLine.setPriceAndQty(amt, BigDecimal.ONE, precision);

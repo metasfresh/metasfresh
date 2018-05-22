@@ -16,7 +16,13 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
@@ -49,6 +55,9 @@ import mockit.Verifications;
  * #L%
  */
 
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseOrderFromItemFactoryTest
 {
 	private static final LocalDateTime PURCHASE_CANDIDATE_DATE_REQUIRED = SystemTime.asLocalDateTime();

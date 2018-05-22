@@ -1,7 +1,5 @@
 package de.metas.contracts.pricing;
 
-import org.compiere.util.Env;
-
 /*
  * #%L
  * de.metas.contracts
@@ -28,6 +26,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -83,6 +82,6 @@ public class ContractDiscount implements IPricingRule
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		result.setDiscount(Env.ONEHUNDRED);
+		result.setDiscount(Percent.ONE_HUNDRED);
 	}
 }

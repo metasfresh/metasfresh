@@ -16,7 +16,13 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_Order;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
@@ -44,6 +50,8 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseOrderFromItemsAggregatorTest
 {
 

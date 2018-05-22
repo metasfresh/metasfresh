@@ -11,6 +11,7 @@ import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.Discount;
@@ -54,7 +55,7 @@ public class GroupCompensationLineCreateRequestFactory
 		final GroupCompensationType type = extractGroupCompensationType(product);
 		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);
 
-		BigDecimal percentage = BigDecimal.ZERO;
+		Percent percentage = Percent.ZERO;
 		if (GroupCompensationType.Discount.equals(type) && GroupCompensationAmtType.Percent.equals(amtType))
 		{
 			percentage = calculateDefaultDiscountPercentage(templateLine, group);
@@ -82,7 +83,7 @@ public class GroupCompensationLineCreateRequestFactory
 		return GroupCompensationAmtType.ofAD_Ref_List_Value(Util.coalesce(product.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
 	}
 
-	private BigDecimal calculateDefaultDiscountPercentage(final GroupTemplateLine templateLine, final Group group)
+	private Percent calculateDefaultDiscountPercentage(final GroupTemplateLine templateLine, final Group group)
 	{
 		if (templateLine.getPercentage() != null)
 		{
@@ -92,7 +93,7 @@ public class GroupCompensationLineCreateRequestFactory
 		return retrieveDiscountPercentageFromPricing(templateLine, group);
 	}
 
-	private final BigDecimal retrieveDiscountPercentageFromPricing(final GroupTemplateLine templateLine, final Group group)
+	private final Percent retrieveDiscountPercentageFromPricing(final GroupTemplateLine templateLine, final Group group)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 

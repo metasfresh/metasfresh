@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerAware;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -363,9 +364,8 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public int getDiscountSchemaId(final int bpartnerId, final boolean soTrx)
+	public int getDiscountSchemaId(@NonNull final BPartnerId bpartnerId, final boolean soTrx)
 	{
-		Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
 		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
 		return getDiscountSchemaId(bpartner, soTrx);
 	}

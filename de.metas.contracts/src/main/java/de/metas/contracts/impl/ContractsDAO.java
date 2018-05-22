@@ -40,7 +40,6 @@ import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
@@ -51,7 +50,9 @@ import lombok.NonNull;
 public class ContractsDAO implements IContractsDAO
 {
 	@Override
-	public List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(final int limit)
+	public List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(
+			@NonNull String typeConditions,
+			final int limit)
 	{
 		final Timestamp now = SystemTime.asTimestamp();
 
@@ -59,7 +60,7 @@ public class ContractsDAO implements IContractsDAO
 				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_Type_Conditions, typeConditions)
 
 				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, flatrateConditionsThatRequireInvoicing())
 

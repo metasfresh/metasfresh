@@ -191,7 +191,10 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	BigDecimal calculateNetAmt(BigDecimal qty, BigDecimal price, int currencyPrecision);
 
-	I_C_Invoice_Candidate splitCandidate(I_C_Invoice_Candidate ic, String trxName);
+	/**
+	 * @return the newly created, but not yet saved invoice candidate record.
+	 */
+	I_C_Invoice_Candidate splitCandidate(I_C_Invoice_Candidate ic);
 
 	String getInvoiceRule(I_C_Invoice_Candidate ic);
 

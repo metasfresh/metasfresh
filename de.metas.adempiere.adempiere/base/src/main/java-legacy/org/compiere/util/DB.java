@@ -2695,4 +2695,42 @@ public final class DB
 			close(rs, pstmt);
 		}
 	}
+
+	@FunctionalInterface
+	public static interface ResultSetRowLoader<T>
+	{
+		T retrieveRow(ResultSet rs) throws SQLException;
+	}
+
+	public static <T> T retrieveFirstRowOrNull(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+			if(rs.next())
+			{
+				return loader.retrieveRow(rs);
+			}
+			else
+			{
+				return null;
+			}
+		}
+		catch(SQLException ex)
+		{
+			throw new DBException(sql);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
+	}
+
 } // DB

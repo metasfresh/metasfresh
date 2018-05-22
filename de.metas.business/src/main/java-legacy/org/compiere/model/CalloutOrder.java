@@ -46,6 +46,7 @@ import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.Percent;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -1066,7 +1067,7 @@ public class CalloutOrder extends CalloutEngine
 					.precision(pricePrecision)
 					.priceEntered(priceEntered)
 					.priceActual(priceActual)
-					.discount(orderLine.getDiscount())
+					.discount(Percent.of(orderLine.getDiscount()))
 					.build();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))

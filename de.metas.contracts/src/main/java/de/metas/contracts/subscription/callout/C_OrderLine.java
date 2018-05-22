@@ -167,8 +167,8 @@ public class C_OrderLine
 		// now compute the new prices
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(ol)
-				.priceListId(subscriptionPL.getM_PriceList_ID())
-				.qty(priceQty)
+				.priceListIdOverride(subscriptionPL.getM_PriceList_ID())
+				.qtyOverride(priceQty)
 				.resultUOM(ResultUOM.PRICE_UOM)
 				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
 				.updateLineNetAmt(true)

@@ -30,10 +30,14 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -50,7 +54,7 @@ import lombok.ToString;
 class PricingResult implements IPricingResult
 {
 	private boolean calculated = false;
-	
+
 	private int M_PricingSystem_ID = -1;
 	private int M_PriceList_ID = -1;
 	private int C_Currency_ID = -1;
@@ -59,20 +63,19 @@ class PricingResult implements IPricingResult
 	private int M_Product_Category_ID = -1;
 	private int M_PriceList_Version_ID = -1;
 	private int C_TaxCategory_ID = -1;
-	private int M_DiscountSchema_ID = -1;
-	private int M_DiscountSchemaBreak_ID = -1;
-	private int M_DiscountSchemaBreak_BasePricingSystem_ID = -1;
+	@Setter
+	@Getter
+	private PricingConditionsResult pricingConditions;
 	private int precision = NO_PRECISION;
 	private BigDecimal priceList = BigDecimal.ZERO;
 	private BigDecimal priceStd = BigDecimal.ZERO;
 	private BigDecimal priceLimit = BigDecimal.ZERO;
-	private BigDecimal discount = BigDecimal.ZERO;
+	private Percent discount = Percent.ZERO;
 	private boolean enforcePriceLimit = false;
 	private boolean taxIncluded = false;
 	private boolean isUseDiscountSchema = false;
 	private boolean disallowDiscount = false;
 	private Timestamp priceDateTS = null;
-	private int C_PaymentTerm_ID = -1;
 
 	private boolean isPriceEditable = true;
 	private boolean isDiscountEditable = true;
@@ -217,16 +220,16 @@ class PricingResult implements IPricingResult
 	 * @return the discount
 	 */
 	@Override
-	public BigDecimal getDiscount()
+	public Percent getDiscount()
 	{
-		return discount != null ? discount : BigDecimal.ZERO;
+		return discount != null ? discount : Percent.ZERO;
 	}
 
 	/**
 	 * @param discount the discount to set
 	 */
 	@Override
-	public void setDiscount(final BigDecimal discount)
+	public void setDiscount(final Percent discount)
 	{
 		Check.assume(!isDisallowDiscount(), "Method caller is respecting the 'disallowDiscount' property");
 		this.discount = discount;
@@ -401,21 +404,6 @@ class PricingResult implements IPricingResult
 	}
 
 	@Override
-	public int getM_DiscountSchema_ID()
-	{
-		return M_DiscountSchema_ID;
-	}
-
-	@Override
-	public void setM_DiscountSchema_ID(final int m_DiscountSchema_ID)
-	{
-		M_DiscountSchema_ID = m_DiscountSchema_ID;
-	}
-
-	/**
-	 * @see IPricingAttribute
-	 */
-	@Override
 	public List<IPricingAttribute> getPricingAttributes()
 	{
 		return pricingAttributes;
@@ -430,18 +418,6 @@ class PricingResult implements IPricingResult
 		}
 
 		pricingAttributes.addAll(pricingAttributesToAdd);
-	}
-
-	@Override
-	public int getC_PaymentTerm_ID()
-	{
-		return C_PaymentTerm_ID;
-	}
-
-	@Override
-	public void setC_PaymentTerm_ID(final int C_PaymentTerm_ID)
-	{
-		this.C_PaymentTerm_ID = C_PaymentTerm_ID;
 	}
 
 	@Override
@@ -466,29 +442,5 @@ class PricingResult implements IPricingResult
 	public boolean isDiscountEditable()
 	{
 		return isDiscountEditable;
-	}
-
-	@Override
-	public int getM_DiscountSchemaBreak_ID()
-	{
-		return M_DiscountSchemaBreak_ID;
-	}
-
-	@Override
-	public void setM_DiscountSchemaBreak_ID(final int M_DiscountSchemaBreak_ID)
-	{
-		this.M_DiscountSchemaBreak_ID = M_DiscountSchemaBreak_ID;
-	}
-
-	@Override
-	public int getM_DiscountSchemaBreak_BasePricingSystem_ID()
-	{
-		return M_DiscountSchemaBreak_BasePricingSystem_ID;
-	}
-
-	@Override
-	public void setM_DiscountSchemaBreak_BasePricingSystem_ID(int m_DiscountSchemaBreak_BasePricingSystem_ID)
-	{
-		M_DiscountSchemaBreak_BasePricingSystem_ID = m_DiscountSchemaBreak_BasePricingSystem_ID;
 	}
 }

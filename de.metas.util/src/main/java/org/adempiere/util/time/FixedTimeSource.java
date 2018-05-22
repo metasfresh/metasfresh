@@ -24,7 +24,7 @@ public class FixedTimeSource implements TimeSource
 	 * @param year
 	 * @param month 1..12
 	 * @param day
-	 * @param hour
+	 * @param hour 0..23
 	 * @param minute
 	 * @param second
 	 */

@@ -25,13 +25,12 @@ package de.metas.pricing;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import de.metas.pricing.conditions.PricingConditionsBreak;
+
 /**
  * A {@link IPricingContext} which also have setters.
  *
  * This object is used for creating the pricing context.
- *
- * @author tsa
- *
  */
 public interface IEditablePricingContext extends IPricingContext
 {
@@ -73,6 +72,8 @@ public interface IEditablePricingContext extends IPricingContext
 	 */
 	void setDisallowDiscount(boolean disallowDiscount);
 
+	void setForcePricingConditionsBreak(PricingConditionsBreak forcePricingConditionsBreak);
+
 	void setTrxName(String trxName);
 
 	/**
@@ -98,7 +99,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	/**
 	 * When setting this and {@link #setM_PricingSystem_ID(int)}, no <code>M_PriceList_ID</code> or <code>M_PriceListVersion_ID</code> needs to be set.
-	 * 
+	 *
 	 * @param c_Country_ID
 	 */
 	void setC_Country_ID(int c_Country_ID);

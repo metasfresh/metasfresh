@@ -18,8 +18,8 @@ import org.junit.Ignore;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
-import de.metas.pricing.conditions.service.impl.PricingConditionsRepository;
 
 /*
  * #%L
@@ -88,7 +88,7 @@ public class PricingConditionsTestData1
 
 	public PricingConditions getPricingConditions()
 	{
-		return pricingConditionsRepo.retrievePricingConditionsById(schema.getM_DiscountSchema_ID());
+		return pricingConditionsRepo.retrievePricingConditionsById(id(schema));
 	}
 
 	public PricingConditionsBreakQuery createQueryForQty(final int qty)
@@ -102,6 +102,11 @@ public class PricingConditionsTestData1
 		final PricingConditionsBreak actualSchemaBreak = pricingConditions.pickApplyingBreak(createQueryForQty(qty));
 
 		assertThat(actualSchemaBreak).isNotNull();
-		return assertThat(actualSchemaBreak.getDiscountSchemaBreakId());
+		return assertThat(actualSchemaBreak.getId().getDiscountSchemaBreakId());
+	}
+
+	private static PricingConditionsId id(final I_M_DiscountSchema record)
+	{
+		return PricingConditionsId.ofDiscountSchemaId(record.getM_DiscountSchema_ID());
 	}
 }
