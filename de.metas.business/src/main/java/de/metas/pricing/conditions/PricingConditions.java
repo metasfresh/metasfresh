@@ -12,6 +12,7 @@ import org.compiere.model.I_M_AttributeInstance;
 
 import com.google.common.base.Predicates;
 
+import de.metas.lang.Percent;
 import de.metas.product.ProductAndCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -46,12 +47,12 @@ public class PricingConditions
 	private static final Comparator<PricingConditionsBreak> SORT_BY_BREAK_VALUE = Comparator.<PricingConditionsBreak, BigDecimal> comparing(b -> b.getMatchCriteria().getBreakValue());
 	private static final Comparator<PricingConditionsBreak> SORT_BY_BREAK_VALUE_DESC = SORT_BY_BREAK_VALUE.reversed();
 
-	int discountSchemaId;
+	PricingConditionsId id;
 
 	PricingConditionsDiscountType discountType;
 
 	boolean bpartnerFlatDiscount;
-	BigDecimal flatDiscount;
+	Percent flatDiscount;
 
 	boolean quantityBased;
 

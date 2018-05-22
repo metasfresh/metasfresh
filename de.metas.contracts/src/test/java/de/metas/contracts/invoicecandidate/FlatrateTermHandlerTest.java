@@ -22,7 +22,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -34,7 +33,6 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
@@ -71,144 +69,6 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 
 		activity = newInstance(I_C_Activity.class);
 		InterfaceWrapperHelper.save(activity);
-	}
-
-	@Test
-	public void test_isCorrectDateForTerm_TermOfNotice_ThreeMonths_FirstDay()
-	{
-		SystemTime.setTimeSource(new FixedTimeSource(2013, 2, 7));
-
-		final I_C_Flatrate_Transition transition = newFlatrateTransition()
-				.termDuration(1)
-				.termDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE)
-				.termOfNotice(3)
-				.termOfNoticeUnit(X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE)
-				.build();
-
-		final I_C_Flatrate_Conditions conditions = newFlatrateConditionss()
-				.transition(transition)
-				.build();
-
-		final I_C_Flatrate_Term term = newFlatrateTerm()
-				.conditions(conditions)
-				.startDate(TimeUtil.getDay(2013, 5, 7))
-				.isAutoRenew(true)
-				.build();
-
-		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
-
-		final boolean resultActual = handler.isCorrectDateForTerm(term);
-		final boolean resultExpected = true;
-		Assert.assertEquals(resultExpected, resultActual);
-	}
-
-	@Test
-	public void test_isCorrectDateForTerm_ThreeMonths_InsideInterval()
-	{
-		SystemTime.setTimeSource(new FixedTimeSource(2013, 2, 7));
-
-		final I_C_Flatrate_Transition transition = newFlatrateTransition()
-				.termDuration(1)
-				.termDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE)
-				.termOfNotice(3)
-				.termOfNoticeUnit(X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE)
-				.build();
-
-		final I_C_Flatrate_Conditions conditions = newFlatrateConditionss()
-				.transition(transition)
-				.build();
-
-		final I_C_Flatrate_Term term = newFlatrateTerm()
-				.conditions(conditions)
-				.startDate(TimeUtil.getDay(2013, 4, 7))
-				.isAutoRenew(true)
-				.build();
-
-		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
-
-		final boolean resultActual = handler.isCorrectDateForTerm(term);
-		final boolean resultExpected = true;
-		Assert.assertEquals(resultExpected, resultActual);
-	}
-
-	@Test
-	public void test_isCorrectDateForTerm_ThreeMonths_OutsideInterval()
-	{
-		SystemTime.setTimeSource(new FixedTimeSource(2013, 2, 7));
-
-		final I_C_Flatrate_Transition transition = newFlatrateTransition()
-				.termDuration(1)
-				.termDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE)
-				.termOfNotice(3)
-				.termOfNoticeUnit(X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE)
-				.build();
-
-		final I_C_Flatrate_Conditions conditions = newFlatrateConditionss()
-				.transition(transition)
-				.build();
-
-		final I_C_Flatrate_Term term = newFlatrateTerm()
-				.conditions(conditions)
-				.startDate(TimeUtil.getDay(2013, 10, 7))
-				.isAutoRenew(true)
-				.build();
-
-		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
-
-		final boolean resultActual = handler.isCorrectDateForTerm(term);
-		final boolean resultExpected = false;
-		Assert.assertEquals(resultExpected, resultActual);
-	}
-
-	@Test
-	public void test_isCorrectDateForTerm_InThePast()
-	{
-		SystemTime.setTimeSource(new FixedTimeSource(2013, 2, 7));
-
-		final I_C_Flatrate_Transition transition = newFlatrateTransition()
-				.termDuration(1)
-				.termDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE)
-				.termOfNotice(3)
-				.termOfNoticeUnit(X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE)
-				.build();
-
-		final I_C_Flatrate_Conditions conditions = newFlatrateConditionss()
-				.transition(transition)
-				.build();
-
-		final I_C_Flatrate_Term term = newFlatrateTerm()
-				.conditions(conditions)
-				.startDate(TimeUtil.getDay(2011, 10, 7))
-				.isAutoRenew(true)
-				.build();
-
-		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
-
-		final boolean resultActual = handler.isCorrectDateForTerm(term);
-		final boolean resultExpected = true;
-		Assert.assertEquals(resultExpected, resultActual);
-	}
-
-	@Test(expected = AdempiereException.class)
-	public void test_isCorrectDateForTerm_no_TermOfNoticeUnit()
-	{
-		SystemTime.setTimeSource(new FixedTimeSource(2013, 2, 7));
-
-		final I_C_Flatrate_Transition transition = newFlatrateTransition()
-				.build();
-
-		final I_C_Flatrate_Conditions conditions = newFlatrateConditionss()
-				.transition(transition)
-				.build();
-
-		final I_C_Flatrate_Term term = newFlatrateTerm()
-				.conditions(conditions)
-				.startDate(TimeUtil.getDay(2013, 5, 7))
-				.isAutoRenew(true)
-				.build();
-
-		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
-		handler.isCorrectDateForTerm(term);
 	}
 
 	@Test
@@ -268,7 +128,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		}};
 		// @formatter:on
 
-		final FlatrateTermInvoiceCandidateHandler flatrateTermHandler = new FlatrateTermInvoiceCandidateHandler();
+		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();
 		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));
 		assertInvoiceCandidates(candidates, term1);
 	}

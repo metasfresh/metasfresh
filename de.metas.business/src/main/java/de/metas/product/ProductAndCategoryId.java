@@ -1,7 +1,5 @@
 package de.metas.product;
 
-import org.adempiere.util.Check;
-
 import lombok.Value;
 
 /*
@@ -34,14 +32,12 @@ public class ProductAndCategoryId
 		return new ProductAndCategoryId(productId, productCategoryId);
 	}
 
-	int productId;
-	int productCategoryId;
+	ProductId productId;
+	ProductCategoryId productCategoryId;
 
 	private ProductAndCategoryId(final int productId, final int productCategoryId)
 	{
-		Check.assumeGreaterThanZero(productId, "productId");
-		Check.assumeGreaterThanZero(productCategoryId, "productCategoryId");
-		this.productId = productId;
-		this.productCategoryId = productCategoryId;
+		this.productId = ProductId.ofRepoId(productId);
+		this.productCategoryId = ProductCategoryId.ofRepoId(productCategoryId);
 	}
 }

@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.rules.IPricingRule;
 
 /**
@@ -65,11 +66,11 @@ public interface IPricingResult
 
 	/**
 	 *
-	 * @return discount (between 0 and 100)
+	 * @return discount (between 0 and 100); never null
 	 */
-	BigDecimal getDiscount();
+	Percent getDiscount();
 
-	void setDiscount(BigDecimal discount);
+	void setDiscount(Percent discount);
 
 	int getPrecision();
 
@@ -121,9 +122,9 @@ public interface IPricingResult
 
 	void setM_Product_ID(int m_Product_ID);
 
-	int getM_DiscountSchema_ID();
+	PricingConditionsResult getPricingConditions();
 
-	void setM_DiscountSchema_ID(int m_DiscountSchema_ID);
+	void setPricingConditions(PricingConditionsResult pricingConditions);
 
 	/**
 	 * @return the price relevant attributes. Never return {@code null}.
@@ -150,10 +151,6 @@ public interface IPricingResult
 	 */
 	void setPriceDate(Timestamp priceDate);
 
-	int getC_PaymentTerm_ID();
-
-	void setC_PaymentTerm_ID(int C_PaymentTerm_ID);
-
 	boolean isPriceEditable();
 
 	void setPriceEditable(boolean isPriceEditable);
@@ -161,12 +158,4 @@ public interface IPricingResult
 	boolean isDiscountEditable();
 
 	void setDiscountEditable(boolean isDiscountEditable);
-
-	void setM_DiscountSchemaBreak_ID(final int M_DiscountSchemaBreak_ID);
-
-	int getM_DiscountSchemaBreak_ID();
-
-	int getM_DiscountSchemaBreak_BasePricingSystem_ID();
-
-	void setM_DiscountSchemaBreak_BasePricingSystem_ID(int m_DiscountSchemaBreak_BasePricingSystem_ID);
 }

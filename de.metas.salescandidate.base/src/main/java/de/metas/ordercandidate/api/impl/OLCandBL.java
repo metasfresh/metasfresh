@@ -41,8 +41,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
@@ -201,7 +201,7 @@ public class OLCandBL implements IOLCandBL
 		}
 
 		final BigDecimal priceEntered;
-		final BigDecimal discount;
+		final Percent discount;
 		final int currencyId;
 
 		if (olCand.isManualPrice())
@@ -218,7 +218,7 @@ public class OLCandBL implements IOLCandBL
 
 		if (olCand.isManualDiscount())
 		{
-			discount = olCand.getDiscount();
+			discount = Percent.of(olCand.getDiscount());
 		}
 		else
 		{
@@ -233,7 +233,7 @@ public class OLCandBL implements IOLCandBL
 		}
 
 		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, currencyId);
-		final BigDecimal priceActual = Services.get(IOrderLineBL.class).subtractDiscount(priceEntered, discount, currency.getStdPrecision());
+		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, currency.getStdPrecision());
 
 		pricingResult.setPriceStd(priceActual);
 		pricingResult.setDiscount(discount);

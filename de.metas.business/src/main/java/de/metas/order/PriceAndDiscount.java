@@ -3,10 +3,10 @@ package de.metas.order;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -46,7 +46,7 @@ public class PriceAndDiscount
 				.precision(precision)
 				.priceEntered(orderLine.getPriceEntered())
 				.priceActual(orderLine.getPriceActual())
-				.discount(orderLine.getDiscount())
+				.discount(Percent.of(orderLine.getDiscount()))
 				.priceLimit(orderLine.getPriceLimit())
 				.build();
 	}
@@ -61,7 +61,7 @@ public class PriceAndDiscount
 
 	@NonNull
 	@Default
-	BigDecimal discount = BigDecimal.ZERO;
+	Percent discount = Percent.ZERO;
 
 	@Default
 	int precision = 2;
@@ -84,7 +84,7 @@ public class PriceAndDiscount
 		boolean priceLimitEnforced = false;
 		BigDecimal priceEntered = this.priceEntered;
 		BigDecimal priceActual = this.priceActual;
-		BigDecimal discount = this.discount;
+		Percent discount = this.discount;
 
 		boolean updateDiscount = false;
 		if (priceLimitResult.isBelowPriceLimit(priceEntered))
@@ -117,7 +117,7 @@ public class PriceAndDiscount
 
 	public PriceAndDiscount updatePriceActual()
 	{
-		final BigDecimal priceActual = subtractDiscount(priceEntered, discount, precision);
+		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, precision);
 		return toBuilder().priceActual(priceActual).build();
 	}
 
@@ -131,11 +131,11 @@ public class PriceAndDiscount
 		return updatePriceActual();
 	}
 
-	public static BigDecimal calculateDiscountFromPrices(final BigDecimal priceEntered, final BigDecimal priceActual, final int precision)
+	public static Percent calculateDiscountFromPrices(final BigDecimal priceEntered, final BigDecimal priceActual, final int precision)
 	{
 		if (priceEntered.signum() == 0)
 		{
-			return BigDecimal.ZERO;
+			return Percent.ZERO;
 		}
 
 		BigDecimal discount = priceEntered.subtract(priceActual)
@@ -146,16 +146,7 @@ public class PriceAndDiscount
 			discount = discount.setScale(2, BigDecimal.ROUND_HALF_UP);
 		}
 
-		return discount;
-	}
-
-	public static BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final int precision)
-	{
-		Check.assumeGreaterOrEqualToZero(precision, "precision");
-
-		final BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount).divide(Env.ONEHUNDRED, precision * 3, RoundingMode.HALF_UP);
-		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
-		return result;
+		return Percent.of(discount);
 	}
 
 	public static BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(final BigDecimal priceActual, final BigDecimal discount, final int precision)
@@ -167,7 +158,7 @@ public class PriceAndDiscount
 	public void applyTo(final I_C_OrderLine orderLine)
 	{
 		orderLine.setPriceEntered(priceEntered);
-		orderLine.setDiscount(discount);
+		orderLine.setDiscount(discount.getValueAsBigDecimal());
 		orderLine.setPriceActual(priceActual);
 		orderLine.setPriceLimit(priceLimit);
 	}

@@ -10,18 +10,54 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.59 (2018-22)
+
+**release for week 2018-22**
+
+## Features
+* metasfresh
+
+## Fixes
+
 # metasfresh 5.58 (2018-21)
 
 **release for week 2018-21**
 
 ## Features
 * metasfresh
-  * [#4030](https://github.com/metasfresh/metasfresh/issues/4030) Create webui windows for marketing and cleverreach settings
-    * New Windows in WebUI for the new Markiting Ülatform Feature.
+  * [#3753](https://github.com/metasfresh/metasfresh/issues/3753) Inventory: Prepare Inventorylines shall update existing lines
+  * [#3879](https://github.com/metasfresh/metasfresh/issues/3879) Add link and templates for email notification
+  * [#3999](https://github.com/metasfresh/metasfresh/issues/3999) New contract Type: Yearly Bonus from vendors
+  * [#4001](https://github.com/metasfresh/metasfresh/issues/4001) Calculate Purchase price with yearly Bonus
+  * [#4002](https://github.com/metasfresh/metasfresh/issues/4002) Purchase Order Aggregation
+  * [#4030](https://github.com/metasfresh/metasfresh/issues/4030) create webui windows for marketing and cleverreach settings
+  * [#4032](https://github.com/metasfresh/metasfresh/issues/4032) Show Pricing Conditions of Business Partner
+  * [#4070](https://github.com/metasfresh/metasfresh/issues/4070) WebUI Windows for new contract Type "Yearly Bonus from vendors"
+  * [#4071](https://github.com/metasfresh/metasfresh/issues/4071) exception handling: make them more translatable
+  * [#4073](https://github.com/metasfresh/metasfresh/issues/4073) Virtual Tabs implementation
+  * [#4047](https://github.com/metasfresh/metasfresh/issues/4047) CleverReach get paginated receivers list
   * [#4056](https://github.com/metasfresh/metasfresh/issues/4056) webui: pimp Partner Pharma - Purchase schedule tab
-    * New Purchase Schedule Tab in Business Partner Pharma Window.
+  * [#4062](https://github.com/metasfresh/metasfresh/issues/4062) Pricing conditions modal: allow changing pricing type, edit pricing system etc
+  * [#4071](https://github.com/metasfresh/metasfresh/issues/4071) exception handling: make them more translatable
+
+* metasfresh-webui-frontend
+  * [#1789](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1789) user notifications: handle view target type
+
+* metasfresh-dist
+  * [#18](https://github.com/metasfresh/metasfresh-dist/issues/18) create docker image automatically via jenkins
+
+* metasfresh-dist-orgs
+  * [#93](https://github.com/metasfresh/metasfresh-dist-orgs/issues/92) Postal Lookup for Switzerland CH
 
 ## Fixes
+* metasfresh
+  * [#3792](https://github.com/metasfresh/metasfresh/issues/3729) Setting a different invoice bpartner causes error
+  * [#4018](https://github.com/metasfresh/metasfresh/issues/4018) QtyCU not respected in Quarantine DD_Orderline
+  * [#4052](https://github.com/metasfresh/metasfresh/issues/4052) NPE when deleting inoutline with empty product
+  * [#4063](https://github.com/metasfresh/metasfresh/issues/4063) Enhanced Pricing: Discount Break is falsely invalidated
+
+* metasfresh-webui-frontend
+  * [#1790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1790) view: refresh after removing a static filter
 
 # metasfresh 5.57 (2018-20)
 
@@ -30,21 +66,16 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3754](https://github.com/metasfresh/metasfresh/issues/3754) Inventory: Allow only "Active" and "Issued" HUs in inventorylines
-    * Improved Inventory Feature, only allowing active and issued Handling Units in Inventory Lines.
   * [#3975](https://github.com/metasfresh/metasfresh/issues/3975) Allow annotating data as personal
-    * New Feature for GDPR Compliance that allows to annotate data as personal Data via Applicaiton Dictionary,
+    * New Feature for GDPR Compliance that allows to annotate data as personal Data via Application Dictionary.
   * [#3991](https://github.com/metasfresh/metasfresh/issues/3991) Implement "Der Kurier" parcel number check digit
-    * New Feature creating a check digit for the new Logistics Provider Implementation of "Der Kurier"
   * [#3993](https://github.com/metasfresh/metasfresh/issues/3993) Eliminate the ampersand from all AD_Messages
-    * Improvement for Messaged, eliminating all Ampersand characters.
   * [#4003](https://github.com/metasfresh/metasfresh/issues/4003) Adjust Window "Der Kurier Versandauftrag"
     * New Window for a new Logistics Partner Order window of "Der Kurier".
   * [#4004](https://github.com/metasfresh/metasfresh/issues/4004) WebUI: Adjust new Window Discount Schema Pharma
     * Improved Window for Discount Schema Pharma.
   * [#4029](https://github.com/metasfresh/metasfresh/pull/4029) CleverReach Interface generic marketing datamodel
-    * New Implemetation of the CleverReach marketing data model.
   * [#4034](https://github.com/metasfresh/metasfresh/issues/4034) Add CustomerCode and CollectorCode to Der Kurier
-    * Additional Implemantation for the new Logistics Provider "Der Kurier"
 
 * metasfresh-webui-frontend
   * [#1613](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1613) Display field changes warnings
@@ -58,9 +89,22 @@ Here come the actual release notes:
 # Fixes
 * metasfresh
   * [#4013](https://github.com/metasfresh/metasfresh/issues/4013) Lot No Action error when running multiple times
+  * [#4017](https://github.com/metasfresh/metasfresh/issues/4017) Vendor Action for adding (temp.) Pricing Conditions in Purchase Order missing
   * [#4020](https://github.com/metasfresh/metasfresh/issues/4020) eventlog data needs to be stored out-of-trx
+<<<<<<< HEAD
+    * Internal Housekeeping improvement, now storing eventlog data out of transaction.
+||||||| merged common ancestors
+    * Internal Housekeeping improvemen, now storing eventlog data out of transaction.
+=======
+>>>>>>> 7ae088fc4cd6d3ebed968077a4270fa34feaccc8
   * [#4027](https://github.com/metasfresh/metasfresh/issues/4027) "To Be Updated" in shipment schedule and "In Verarbeitung" in workpackage getting stuck
   * [#3980](https://github.com/metasfresh/metasfresh/issues/3980) Notifications in Swing Client show no info
+<<<<<<< HEAD
+    * Fixes the Notification feature in Swing Client, now showing detailed information body again.
+||||||| merged common ancestors
+    * Fixes the Notification feature in Swing Client, now showing detailes information body again.
+=======
+>>>>>>> 7ae088fc4cd6d3ebed968077a4270fa34feaccc8
   * [#4016](https://github.com/metasfresh/metasfresh/issues/4016) Pricing Conditions error when save
   * [#4028](https://github.com/metasfresh/metasfresh/issues/4028) Multiple shipment lines for one order line all have the order line's TU-Qty
 
