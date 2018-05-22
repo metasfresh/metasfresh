@@ -174,7 +174,7 @@ public class MsgBL implements IMsgBL
 			}
 			else
 			{
-				builder.append(getTranslatableMsgText(token)); // replace context
+				builder.append(translatable(token)); // replace context
 			}
 
 			inStr = inStr.substring(j + 1, inStr.length());	// from second @
