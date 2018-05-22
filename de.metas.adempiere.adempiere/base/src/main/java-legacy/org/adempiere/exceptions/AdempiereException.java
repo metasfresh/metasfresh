@@ -221,7 +221,7 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = Services.get(IMsgBL.class).parseTranslatableString(message);
 	}
 
-	public AdempiereException(final ITranslatableString message)
+	public AdempiereException(@NonNull final ITranslatableString message)
 	{
 		super();
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
@@ -250,9 +250,6 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = ImmutableTranslatableString.empty();
 	}
 
-	/**
-	 * @param message
-	 * @param cause
 	 */
 	public AdempiereException(final String message, final Throwable cause)
 	{
