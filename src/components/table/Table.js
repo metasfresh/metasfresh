@@ -53,9 +53,11 @@ class Table extends Component {
     dispatch: PropTypes.func.isRequired,
 
     // from <DocumentList>
+    autofocus: PropTypes.bool,
+    rowEdited: PropTypes.bool,
     onSelectionChanged: PropTypes.func,
-
     onRowEdited: PropTypes.func,
+    defaultSelected: PropTypes.array,
   };
 
   _isMounted = false;
@@ -63,7 +65,7 @@ class Table extends Component {
   constructor(props) {
     super(props);
 
-    const { defaultSelected } = props;
+    const { defaultSelected, rowEdited } = props;
 
     this.state = {
       selected: defaultSelected || [undefined],
@@ -83,7 +85,8 @@ class Table extends Component {
       collapsedParentsRows: [],
       pendingInit: true,
       collapsedArrayMap: [],
-      rowEdited: props.rowEdited,
+      rowEdited: rowEdited,
+      tableRefreshToggle: false,
     };
   }
 
@@ -229,9 +232,12 @@ class Table extends Component {
       expandedDepth,
       keyProperty,
     } = this.props;
+    const { selected } = this.state;
+
+    let rowsData = [];
 
     if (indentSupported && rowData.get(`${tabid}`)) {
-      let rowsData = getRowsData(rowData.get(`${tabid}`));
+      rowsData = getRowsData(rowData.get(`${tabid}`));
       let stateChange = {
         rows: rowsData,
         pendingInit: !rowsData,
@@ -252,7 +258,19 @@ class Table extends Component {
         let updatedRows = [...this.state.collapsedRows];
 
         if (firstRow && selectFirst) {
-          this.selectOneProduct(firstRow.id);
+          let selectedIndex = 0;
+          if (
+            selected.length === 1 &&
+            selected[0] &&
+            firstRow.id !== selected[0]
+          ) {
+            selectedIndex = _.findIndex(rows, row => row.id === selected[0]);
+          }
+
+          if (!selectedIndex) {
+            this.selectOneProduct(rows[0]);
+          }
+
           document.getElementsByClassName('js-table')[0].focus();
         }
 
@@ -277,13 +295,21 @@ class Table extends Component {
         }
       });
     } else {
-      const rowsData = rowData.get(`${tabid}`)
+      rowsData = rowData.get(`${tabid}`)
         ? rowData.get(`${tabid}`).toArray()
         : [];
       this.setState({
         rows: rowsData,
         pendingInit: !rowData.get(`${tabid}`),
       });
+    }
+
+    if (rowsData.length) {
+      setTimeout(() => {
+        this.setState({
+          tableRefreshToggle: !this.state.mounted,
+        });
+      }, 1);
     }
   };
 
@@ -1116,6 +1142,7 @@ class Table extends Component {
       promptOpen,
       isBatchEntry,
       rows,
+      tableRefreshToggle,
     } = this.state;
 
     let showPagination = page && pageLength;
@@ -1203,6 +1230,7 @@ class Table extends Component {
                 {
                   'table-read-only': readonly,
                   'table-fade-out': hasIncluded && blurOnIncludedView,
+                  'layout-fix': tableRefreshToggle,
                 }
               )}
               onKeyDown={this.handleKeyDown}

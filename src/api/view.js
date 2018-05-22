@@ -25,16 +25,12 @@ export function browseViewRequest({
   orderBy,
 }) {
   return get(
-    config.API_URL +
-      '/documentView/' +
-      windowId +
-      '/' +
-      viewId +
-      '?firstRow=' +
-      pageLength * (page - 1) +
-      '&pageLength=' +
-      pageLength +
-      (orderBy ? '&orderBy=' + orderBy : '')
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+      (page - 1)}&pageLength=${pageLength}${
+      orderBy ? `&orderBy=${orderBy}` : ''
+    }`
   );
 }
 
@@ -91,13 +87,9 @@ export function filterViewRequest(windowId, viewId, filters) {
 
 export function deleteStaticFilter(windowId, viewId, filterId) {
   return del(
-    config.API_URL +
-      '/documentView/' +
-      windowId +
-      '/' +
-      viewId +
-      '/staticFilter/' +
-      filterId
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}/staticFilter/${filterId}`
   );
 }
 

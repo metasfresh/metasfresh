@@ -2,8 +2,10 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
+import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import { get } from 'lodash';
 
 import {
   deleteUserNotification,
@@ -24,21 +26,43 @@ class Inbox extends Component {
   };
 
   handleClick = item => {
-    const { dispatch, close } = this.props;
+    const { dispatch, close, location } = this.props;
     if (item.target) {
       switch (item.target.targetType) {
         case 'window':
           dispatch(
-            push(
-              '/window/' +
-                item.target.documentType +
-                '/' +
-                item.target.documentId
-            )
+            push(`/window/${item.target.windowId}/${item.target.documentId}`)
           );
           break;
+        case 'view': {
+          // in case we're on the same page, we want to add a hash param
+          // to force refresh of DocumentList component so in order to do that
+          // we check if viewId's are equal
+          let samePageParam = '';
+          const locationViewId = get(location, 'query.viewId')
+            ? get(location, 'query.viewId').split('-')[0]
+            : null;
+          const targetViewId = item.target.viewId
+            ? item.target.viewId.split('-')[0]
+            : null;
+
+          if (locationViewId === targetViewId) {
+            samePageParam = '#notification';
+          }
+
+          dispatch(
+            push(
+              `/window/${item.target.windowId}/?viewId=${
+                item.target.viewId
+              }${samePageParam}`
+            )
+          );
+
+          break;
+        }
       }
     }
+
     if (!item.read) {
       markAsRead(item.id);
     }
@@ -152,12 +176,16 @@ Inbox.propTypes = {
   open: PropTypes.bool,
   onFocus: PropTypes.func,
   modalVisible: PropTypes.bool.isRequired,
+  location: PropTypes.object,
 };
 
 Inbox.defaultProps = {
   onFocus: () => {},
 };
 
-export default connect(state => ({
-  modalVisible: state.windowHandler.modal.visible,
-}))(onClickOutside(Inbox));
+export default withRouter(
+  connect((state, props) => ({
+    modalVisible: state.windowHandler.modal.visible,
+    location: props.router.location,
+  }))(onClickOutside(Inbox))
+);
