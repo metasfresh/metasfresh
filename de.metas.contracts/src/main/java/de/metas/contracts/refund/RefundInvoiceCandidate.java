@@ -93,7 +93,7 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 				.percentage(refundConfig.getPercent());
 
 		return toBuilder()
-				.money(augend.add(augend))
+				.money(money.add(augend))
 				.build();
 	}
 }
