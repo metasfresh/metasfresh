@@ -1161,6 +1161,11 @@ public final class Env
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Client_ID);
 	}	// getAD_Client_ID
 
+	public static int getAD_Client_ID()
+	{
+		return getAD_Client_ID(getCtx());
+	}
+
 	/**
 	 * Get Login AD_Org_ID
 	 *

@@ -1,7 +1,5 @@
 package org.adempiere.bpartner.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -12,12 +10,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerAware;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -61,8 +60,17 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public String getBPartnerValueAndName(final int bpartnerId)
 	{
+		if (bpartnerId <= 0)
+		{
+			return "?";
+		}
+
 		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
-		Check.assumeNotNull(bpartner, "bpartner is not null");
+		if (bpartner == null)
+		{
+			return "<" + bpartnerId + ">";
+		}
+
 		return bpartner.getValue() + "_" + bpartner.getName();
 	}
 
@@ -170,18 +178,18 @@ public class BPartnerBL implements IBPartnerBL
 	//
 	/*
 	 * @Override public void updateNextLocation(I_C_BPartner_Location bpLocation) { final int nextId = bpLocation.getNext_ID(); if (nextId <= 0) { return; }
-	 * 
+	 *
 	 * final Properties ctx = InterfaceWrapperHelper.getCtx(bpLocation); final String trxName = InterfaceWrapperHelper.getTrxName(bpLocation);
-	 * 
+	 *
 	 * final I_C_BPartner_Location nextLocation = InterfaceWrapperHelper.create(ctx, nextId, I_C_BPartner_Location.class, trxName);
-	 * 
+	 *
 	 * // inherit the flags from the previous
-	 * 
+	 *
 	 * // Don't update the defaults if the current location is still valid. if (isTerminatedInThePast(bpLocation)) { nextLocation.setIsBillToDefault(bpLocation.isBillToDefault());
 	 * nextLocation.setIsShipToDefault(bpLocation.isShipToDefault()); }
-	 * 
+	 *
 	 * nextLocation.setIsBillTo(bpLocation.isBillTo()); nextLocation.setIsShipTo(bpLocation.isShipTo());
-	 * 
+	 *
 	 * InterfaceWrapperHelper.save(nextLocation); }
 	 */
 
@@ -326,6 +334,16 @@ public class BPartnerBL implements IBPartnerBL
 		bpContact.setLastname(template.getLastname());
 		bpContact.setPhone(template.getPhone());
 		bpContact.setEMail(template.getEMail());
+		if (template.isCustomer())
+		{
+			bpContact.setIsSalesContact(true);
+			bpContact.setIsSalesContact_Default(true);
+		}
+		if (template.isVendor())
+		{
+			bpContact.setIsPurchaseContact(true);
+			bpContact.setIsPurchaseContact_Default(true);
+		}
 		InterfaceWrapperHelper.save(bpContact);
 
 		//
@@ -356,10 +374,9 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public int getDiscountSchemaId(final int bpartnerId, final boolean soTrx)
+	public int getDiscountSchemaId(@NonNull final BPartnerId bpartnerId, final boolean soTrx)
 	{
-		Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
-		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
 		return getDiscountSchemaId(bpartner, soTrx);
 	}
 

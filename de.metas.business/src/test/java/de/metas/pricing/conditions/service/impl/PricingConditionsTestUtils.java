@@ -21,6 +21,7 @@ import org.junit.Ignore;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.product.ProductAndCategoryId;
 
 /*
  * #%L
@@ -94,10 +95,9 @@ class PricingConditionsTestUtils
 	public static PricingConditionsBreakQuery createQueryForQty(final I_M_Product product, final int qty)
 	{
 		return PricingConditionsBreakQuery.builder()
-				.productId(product.getM_Product_ID())
-				.productCategoryId(product.getM_Product_Category_ID())
+				.productAndCategoryId(extractProductAndCategoryId(product))
 				.qty(BigDecimal.valueOf(qty))
-				.amt(BigDecimal.valueOf(qty * 2)) // does not matter
+				.price(BigDecimal.valueOf(2)) // does not matter
 				.build();
 	}
 
@@ -108,12 +108,16 @@ class PricingConditionsTestUtils
 				.collect(ImmutableList.toImmutableList());
 
 		return PricingConditionsBreakQuery.builder()
-				.productId(product.getM_Product_ID())
-				.productCategoryId(product.getM_Product_Category_ID())
+				.productAndCategoryId(extractProductAndCategoryId(product))
 				.attributeInstances(attributeInstances)
 				.qty(BigDecimal.valueOf(qty))
-				.amt(BigDecimal.valueOf(qty * 2)) // does not matter
+				.price(BigDecimal.valueOf(2)) // does not matter
 				.build();
+	}
+
+	private static ProductAndCategoryId extractProductAndCategoryId(final I_M_Product product)
+	{
+		return ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID());
 	}
 
 	public static I_M_AttributeInstance createAttributeInstance(final I_M_Attribute attr, final I_M_AttributeValue attrValue)

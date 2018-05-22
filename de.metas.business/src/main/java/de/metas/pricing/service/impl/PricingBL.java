@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
@@ -432,5 +433,11 @@ public class PricingBL implements IPricingBL
 	public PriceLimitRuleResult computePriceLimit(final PriceLimitRuleContext context)
 	{
 		return priceLimitRules.compute(context);
+	}
+
+	@Override
+	public Set<Integer> getPriceLimitCountryIds()
+	{
+		return priceLimitRules.getPriceCountryIds();
 	}
 }

@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -38,6 +37,7 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -49,16 +49,12 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_AD_User;
@@ -77,8 +73,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public I_C_BPartner getById(final int bpartnerId)
 	{
-		Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
-		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		return getById(BPartnerId.ofRepoId(bpartnerId));
+	}
+
+	@Override
+	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId.getRepoId(), I_C_BPartner.class);
 		return bpartner;
 	}
 
@@ -159,24 +160,6 @@ public class BPartnerDAO implements IBPartnerDAO
 		return queryBuilder
 				.create()
 				.listImmutable(I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public Set<Integer> retrieveCountryIdsOfBPartnerLocations(final int bpartnerId)
-	{
-		return retrieveBPartnerLocations(bpartnerId)
-				.stream()
-				.map(I_C_BPartner_Location::getC_Location)
-				.map(I_C_Location::getC_Country_ID)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@Override
-	public List<org.compiere.model.I_AD_User> retrieveContacts(final int partnerId, final boolean reload, final String trxName)
-	{
-		final MBPartner bPArtner = new MBPartner(Env.getCtx(), partnerId, trxName);
-		final List<I_AD_User> users = bPArtner.getContacts(reload);
-		return InterfaceWrapperHelper.wrapToImmutableList(users, org.compiere.model.I_AD_User.class);
 	}
 
 	@Override
@@ -272,9 +255,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public int retrievePricingSystemId(final int bPartnerId, final boolean soTrx)
+	public int retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final boolean soTrx)
 	{
-		return retrievePricingSystemId(Env.getCtx(), bPartnerId, soTrx, ITrx.TRXNAME_None);
+		return retrievePricingSystemId(Env.getCtx(), bPartnerId.getRepoId(), soTrx, ITrx.TRXNAME_None);
 	}
 
 	@Override
@@ -598,22 +581,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public List<Integer> retrieveBPartnerIdsForDiscountSchemaId(final int discountSchemaId, final boolean isSOTrx)
-	{
-		Check.assumeGreaterThanZero(discountSchemaId, "discountSchemaId");
-
-		final String discountSchemaIdColumnName = isSOTrx ? I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID : I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(discountSchemaIdColumnName, discountSchemaId)
-				.create()
-				.listIds();
-	}
-
-	@Override
-	public Map<Integer, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final int adClientId, final boolean isSOTrx)
+	public Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final int adClientId, final boolean isSOTrx)
 	{
 		final String discountSchemaIdColumnName = isSOTrx ? I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID : I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 
@@ -626,7 +594,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.listDistinct(I_C_BPartner.COLUMNNAME_C_BPartner_ID, discountSchemaIdColumnName)
 				.stream()
 				.map(row -> GuavaCollectors.entry(
-						NumberUtils.asInt(row.get(I_C_BPartner.COLUMNNAME_C_BPartner_ID), -1),
+						BPartnerId.ofRepoId(NumberUtils.asInt(row.get(I_C_BPartner.COLUMNNAME_C_BPartner_ID), -1)),
 						NumberUtils.asInt(row.get(discountSchemaIdColumnName), -1)))
 				.collect(GuavaCollectors.toImmutableMap());
 	}

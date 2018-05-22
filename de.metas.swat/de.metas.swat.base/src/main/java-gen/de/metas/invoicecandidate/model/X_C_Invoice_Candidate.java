@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 211874144L;
+	private static final long serialVersionUID = 1294845685L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -685,9 +685,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Rechnungskandidat.
-		@param C_Invoice_Candidate_ID 
-		Eindeutige Identifikationsnummer eines Rechnungskandidaten
-	  */
+		@param C_Invoice_Candidate_ID Rechnungskandidat	  */
 	@Override
 	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID)
 	{
@@ -698,8 +696,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Get Rechnungskandidat.
-		@return Eindeutige Identifikationsnummer eines Rechnungskandidaten
-	  */
+		@return Rechnungskandidat	  */
 	@Override
 	public int getC_Invoice_Candidate_ID () 
 	{
@@ -728,7 +725,11 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID)
 	{
-		throw new IllegalArgumentException ("C_InvoiceSchedule_ID is virtual column");	}
+		if (C_InvoiceSchedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceSchedule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceSchedule_ID, Integer.valueOf(C_InvoiceSchedule_ID));
+	}
 
 	/** Get Terminplan Rechnung.
 		@return Plan für die Rechnungsstellung

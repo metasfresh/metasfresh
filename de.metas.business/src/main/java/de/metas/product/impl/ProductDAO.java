@@ -1,5 +1,6 @@
 package de.metas.product.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -27,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -41,18 +43,28 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public class ProductDAO implements IProductDAO
 {
 	@Override
+	public I_M_Product getById(@NonNull final ProductId productId)
+	{
+		return loadOutOfTrx(productId.getRepoId(), I_M_Product.class); // assume caching is configured on table level
+	}
+
+	@Override
 	public I_M_Product getById(final int productId)
 	{
-		Check.assumeGreaterThanZero(productId, "productId");
-		return loadOutOfTrx(productId, I_M_Product.class); // assume caching is configured on table level
+		return getById(ProductId.ofRepoId(productId));
 	}
 
 	@Override
@@ -158,8 +170,20 @@ public class ProductDAO implements IProductDAO
 		{
 			return -1;
 		}
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = getById(productId);
 		return product != null && product.isActive() ? product.getM_Product_Category_ID() : -1;
+	}
+
+	@Override
+	public ProductCategoryId retrieveProductCategoryByProductId(final ProductId productId)
+	{
+		if (productId == null)
+		{
+			return null;
+		}
+
+		final I_M_Product product = getById(productId);
+		return product != null && product.isActive() ? ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()) : null;
 	}
 
 	@Override
@@ -168,4 +192,14 @@ public class ProductDAO implements IProductDAO
 		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		return product.getValue();
 	}
+
+	@Override
+	public Set<ProductAndCategoryId> retrieveProductCategoriesByProductIds(final Set<Integer> productIds)
+	{
+		return loadByIdsOutOfTrx(productIds, I_M_Product.class)
+				.stream()
+				.map(product -> ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 }

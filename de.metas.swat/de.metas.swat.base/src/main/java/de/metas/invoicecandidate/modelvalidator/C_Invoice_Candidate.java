@@ -225,7 +225,7 @@ public class C_Invoice_Candidate
 	 * {@link InterfaceWrapperHelper#hasChanges(Object)} returns <code>false</code>. In that case, the method does nothing.
 	 * <p>
 	 * Note: we invalidate more than just the given candidate, because at least for the case of "split"-candidates we need to do so, in order to update the new and the old candidate. See
-	 * {@link InvoiceCandBL#splitCandidate(I_C_Invoice_Candidate, String)}.
+	 * {@link InvoiceCandBL#splitCandidate(I_C_Invoice_Candidate)}.
 	 *
 	 * @param ic
 	 */

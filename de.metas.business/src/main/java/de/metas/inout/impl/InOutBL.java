@@ -130,7 +130,7 @@ public class InOutBL implements IInOutBL
 		final IPricingResult result = pricingBL.calculatePrice(pricingCtx);
 		if (!result.isCalculated())
 		{
-			throw new ProductNotOnPriceListException(pricingCtx, -1);
+			throw new ProductNotOnPriceListException(pricingCtx);
 		}
 		return result;
 	}

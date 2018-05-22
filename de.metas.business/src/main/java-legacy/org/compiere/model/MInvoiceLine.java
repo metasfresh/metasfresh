@@ -38,7 +38,6 @@ import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -488,9 +487,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// metas: end
 		// metas us1064
 		// setPriceActual (m_productPricing.getPriceStd());
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final BigDecimal priceActual =
-				orderLineBL.subtractDiscount(m_productPricing.getPriceStd(), m_productPricing.getDiscount(), getPrecision());
+		final BigDecimal priceActual = m_productPricing.getDiscount().subtractFromBase(m_productPricing.getPriceStd(), getPrecision());
 		setPriceActual(priceActual);
 		// metas us1064 end
 		setPriceList(m_productPricing.getPriceList());
@@ -1245,7 +1242,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			if (lc.getM_InOut_ID() != 0)
 			{
 				// Create List
-				ArrayList<MInOutLine> list = new ArrayList<MInOutLine>();
+				ArrayList<MInOutLine> list = new ArrayList<>();
 				MInOut ship = new MInOut(getCtx(), lc.getM_InOut_ID(), get_TrxName());
 				MInOutLine[] lines = ship.getLines();
 				for (int i = 0; i < lines.length; i++)
@@ -1340,7 +1337,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				return "Multiple Landed Cost Rules cannot different Cost Elements";
 		}
 		// Create List
-		ArrayList<MInOutLine> list = new ArrayList<MInOutLine>();
+		ArrayList<MInOutLine> list = new ArrayList<>();
 		for (int ii = 0; ii < lcs.length; ii++)
 		{
 			MLandedCost lc = lcs[ii];
@@ -1442,7 +1439,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 */
 	public MLandedCost[] getLandedCost(String whereClause)
 	{
-		ArrayList<MLandedCost> list = new ArrayList<MLandedCost>();
+		ArrayList<MLandedCost> list = new ArrayList<>();
 		String sql = "SELECT * FROM C_LandedCost WHERE C_InvoiceLine_ID=? ";
 		if (whereClause != null)
 			sql += whereClause;

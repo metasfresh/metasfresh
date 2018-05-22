@@ -3,10 +3,12 @@ package de.metas.pricing.limit;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import lombok.NonNull;
 import lombok.ToString;
@@ -67,5 +69,13 @@ public class CompositePriceLimitRule implements IPriceLimitRule
 			return PriceLimitRuleResult.notApplicable("default PriceLimit=0 is not eligible");
 		}
 		return PriceLimitRuleResult.priceLimit(priceLimit, "pricing PriceLimit (default)");
+	}
+
+	@Override
+	public Set<Integer> getPriceCountryIds()
+	{
+		return enforcers.stream()
+				.flatMap(enforcer -> enforcer.getPriceCountryIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }
