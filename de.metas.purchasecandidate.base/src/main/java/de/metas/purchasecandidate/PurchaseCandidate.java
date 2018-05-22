@@ -13,11 +13,16 @@ import java.util.OptionalInt;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_OrderLine;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.money.grossprofit.GrossProfitComputeRequest;
+import de.metas.money.grossprofit.GrossProfitPrice;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.purchasecandidate.grossprofit.GrossProfitComputeRequestCreator;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
@@ -71,6 +76,9 @@ public class PurchaseCandidate
 
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToPurchaseInitial;
+
+	@Setter(AccessLevel.NONE)
+	private BigDecimal grossProfitPrice;
 
 	@NonNull
 	private LocalDateTime dateRequired;
@@ -136,7 +144,8 @@ public class PurchaseCandidate
 				.build();
 
 		this.qtyToPurchase = qtyToPurchase;
-		qtyToPurchaseInitial = qtyToPurchase;
+		this.qtyToPurchaseInitial = qtyToPurchase;
+
 		this.dateRequired = dateRequired;
 		this.reminderTime = reminderTime;
 		dateRequiredInitial = dateRequired;
@@ -151,6 +160,12 @@ public class PurchaseCandidate
 				.filter(purchaseItem -> purchaseItem instanceof PurchaseErrorItem)
 				.map(PurchaseErrorItem::cast)
 				.collect(toCollection(ArrayList::new));
+
+		// TODO compute this in a repo or factory
+		final GrossProfitComputeRequest grossProfitComputeRequest = GrossProfitComputeRequestCreator.of(this);
+		final GrossProfitPriceFactory grossProfitPriceFactory = Adempiere.getBean(GrossProfitPriceFactory.class);
+		final GrossProfitPrice grossProfit = grossProfitPriceFactory.createGrossProfitPrice(grossProfitComputeRequest);
+		this.grossProfitPrice = grossProfit.computeProfitPrice().getValue();
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)

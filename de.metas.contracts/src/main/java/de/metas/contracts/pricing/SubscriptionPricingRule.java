@@ -99,27 +99,14 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final I_M_PriceList subscriptionPriceList)
 	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-
-		final IEditablePricingContext subscriptionPricingCtx = pricingBL.createPricingContext();
-		subscriptionPricingCtx.setAD_Table_ID(pricingCtx.getAD_Table_ID());
-		subscriptionPricingCtx.setC_BPartner_ID(pricingCtx.getC_BPartner_ID());
-		subscriptionPricingCtx.setC_Currency_ID(pricingCtx.getC_Currency_ID());
-		subscriptionPricingCtx.setC_UOM_ID(pricingCtx.getC_UOM_ID());
-		subscriptionPricingCtx.setM_Product_ID(pricingCtx.getM_Product_ID());
-		subscriptionPricingCtx.setPriceDate(pricingCtx.getPriceDate());
-		subscriptionPricingCtx.setQty(pricingCtx.getQty());
-		subscriptionPricingCtx.setSOTrx(pricingCtx.isSOTrx());
-		subscriptionPricingCtx.setAD_Table_ID(pricingCtx.getAD_Table_ID());
-		subscriptionPricingCtx.setRecord_ID(pricingCtx.getRecord_ID());
-		subscriptionPricingCtx.setDisallowDiscount(pricingCtx.isDisallowDiscount());
-
+		final IEditablePricingContext subscriptionPricingCtx = pricingCtx.copy();
+		
 		// don't set a ReferencedObject, so that this rule's 'applies()' method will return false
 		subscriptionPricingCtx.setReferencedObject(null);
 
 		// set the price list from subscription's M_Pricing_Systen
-		subscriptionPricingCtx.setM_PriceList_Version_ID(0);
 		subscriptionPricingCtx.setM_PriceList_ID(subscriptionPriceList.getM_PriceList_ID());
+		subscriptionPricingCtx.setM_PriceList_Version_ID(0);
 		
 		return subscriptionPricingCtx;
 	}
@@ -131,7 +118,7 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		if (!subscriptionPricingResult.isCalculated())
 		{
-			throw new ProductNotOnPriceListException(subscriptionPricingCtx, 0);
+			throw new ProductNotOnPriceListException(subscriptionPricingCtx);
 		}
 		return subscriptionPricingResult;
 	}
@@ -152,8 +139,8 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setDisallowDiscount(subscriptionPricingResult.isDisallowDiscount());
 
 		result.setUsesDiscountSchema(subscriptionPricingResult.isUsesDiscountSchema());
-		// 08634: also set the discount schema
-		result.setM_DiscountSchema_ID(subscriptionPricingResult.getM_DiscountSchema_ID());
+		result.setPricingConditions(subscriptionPricingResult.getPricingConditions());
+		
 		result.setEnforcePriceLimit(subscriptionPricingResult.isEnforcePriceLimit());
 		result.setM_PricingSystem_ID(subscriptionPricingResult.getM_PricingSystem_ID());
 		result.setM_PriceList_Version_ID(subscriptionPricingResult.getM_PriceList_Version_ID());

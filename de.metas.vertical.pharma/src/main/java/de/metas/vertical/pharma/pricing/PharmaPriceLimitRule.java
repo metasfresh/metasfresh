@@ -1,5 +1,10 @@
 package de.metas.vertical.pharma.pricing;
 
+import java.util.Set;
+
+import org.adempiere.util.Services;
+
+import de.metas.pricing.limit.IPriceLimitRestrictionsRepository;
 import de.metas.pricing.limit.IPriceLimitRule;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
@@ -33,6 +38,12 @@ public class PharmaPriceLimitRule implements IPriceLimitRule
 	public PriceLimitRuleResult compute(final PriceLimitRuleContext context)
 	{
 		return new PharmaPriceLimitRuleInstance(context).execute();
+	}
+
+	@Override
+	public Set<Integer> getPriceCountryIds()
+	{
+		return Services.get(IPriceLimitRestrictionsRepository.class).getPriceCountryIds();
 	}
 
 }

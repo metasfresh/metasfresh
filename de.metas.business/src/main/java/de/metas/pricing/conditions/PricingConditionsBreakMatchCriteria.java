@@ -1,7 +1,13 @@
 package de.metas.pricing.conditions;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
+import org.adempiere.util.Check;
+
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,8 +40,8 @@ public class PricingConditionsBreakMatchCriteria
 {
 	@NonNull
 	BigDecimal breakValue;
-	int productId;
-	int productCategoryId;
+	ProductId productId;
+	ProductCategoryId productCategoryId;
 	int attributeValueId;
 
 	public boolean breakValueMatches(final BigDecimal value)
@@ -44,21 +50,27 @@ public class PricingConditionsBreakMatchCriteria
 
 	}
 
-	public boolean productMatches(final int productId, final int productCategoryId)
+	public boolean productMatchesAnyOf(@NonNull final Set<ProductAndCategoryId> productAndCategoryIds)
 	{
-		final int breakProductId = this.productId;
-		if (breakProductId > 0)
-		{
-			return breakProductId == productId;
-		}
+		Check.assumeNotEmpty(productAndCategoryIds, "productAndCategoryIds is not empty");
 
-		final int breakProductCategoryId = this.productCategoryId;
-		if (breakProductCategoryId > 0)
-		{
-			return breakProductCategoryId == productCategoryId;
-		}
+		return productAndCategoryIds.stream().anyMatch(this::productMatches);
+	}
 
-		return true;
+	public boolean productMatches(@NonNull final ProductAndCategoryId productAndCategoryId)
+	{
+		if (productId != null)
+		{
+			return productId.equals(productAndCategoryId.getProductId());
+		}
+		else if (productCategoryId != null)
+		{
+			return productCategoryId.equals(productAndCategoryId.getProductCategoryId());
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	public boolean attributeMatches(final int attributeValueId)

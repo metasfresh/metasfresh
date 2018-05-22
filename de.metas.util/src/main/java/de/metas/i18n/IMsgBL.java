@@ -32,7 +32,7 @@ import org.adempiere.util.ISingletonService;
 public interface IMsgBL extends ISingletonService
 {
 	String getMsg(String adLanguage, String message);
-	
+
 	/**
 	 * Get translated text message for AD_Message
 	 * 
@@ -63,7 +63,7 @@ public interface IMsgBL extends ISingletonService
 	 * @return translated text
 	 */
 	String getMsg(Properties ctx, String adMessage, Object[] params);
-	
+
 	String getMsg(final String adMessage, final List<Object> params);
 
 	/**
@@ -124,6 +124,13 @@ public interface IMsgBL extends ISingletonService
 		final Object[] msgParametersArr = msgParameters != null ? msgParameters.toArray() : new Object[] {};
 		return getTranslatableMsgText(adMessage, msgParametersArr);
 	}
+
+	default ITranslatableString getTranslatableMsgText(final boolean booleanValue)
+	{
+		return getTranslatableMsgText(booleanValue ? "Y" : "N");
+	}
+
+	ITranslatableString parseTranslatableString(String text);
 
 	/**
 	 * Gets AD_Language/message map

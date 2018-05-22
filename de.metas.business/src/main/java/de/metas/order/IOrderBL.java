@@ -121,13 +121,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setM_PricingSystem_ID(I_C_Order order, boolean overridePricingSystem);
 
-	/**
-	 *
-	 * @param order
-	 * @return M_PriceList_ID
-	 * @see "<a href='http://dewiki908/mediawiki/index.php/Produktzulassung_Land_%282009_0027_G9%29'>(2009_0027_G9)<a>"
-	 */
-	int retrievePriceListId(I_C_Order order);
+	int retrievePriceListId(I_C_Order order, int pricingSystemIdOverride);
 
 	/**
 	 * Set Target Sales Document Type.

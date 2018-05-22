@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
+import de.metas.lang.Percent;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -55,7 +56,7 @@ public final class GroupCompensationLine
 	@Getter
 	private final GroupCompensationAmtType amtType;
 	@Getter
-	private final BigDecimal percentage;
+	private final Percent percentage;
 
 	/** Base amount for percentage calculation */
 	@Getter
@@ -78,7 +79,7 @@ public final class GroupCompensationLine
 			final int uomId,
 			@NonNull final GroupCompensationType type,
 			@NonNull final GroupCompensationAmtType amtType,
-			final BigDecimal percentage,
+			final Percent percentage,
 			final BigDecimal baseAmt,
 			final BigDecimal qty,
 			final BigDecimal price,

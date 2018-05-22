@@ -41,6 +41,7 @@ import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
+import de.metas.i18n.ITranslatableString;
 
 /**
  * @author cg
@@ -238,6 +239,19 @@ public class CountryDAO implements ICountryDAO
 			throw new AdempiereException("No country code alpha3 found for '" + countryCode2 + "'");
 		}
 		return countryCode3;
+	}
+
+	@Override
+	public ITranslatableString getCountryNameById(final int countryId)
+	{
+		final I_C_Country country = getIndexedCountries().getByIdOrNull(countryId);
+		if (country == null)
+		{
+			return ITranslatableString.constant("<" + countryId + ">");
+		}
+
+		return InterfaceWrapperHelper.getModelTranslationMap(country)
+				.getColumnTrl(I_C_Country.COLUMNNAME_Name, country.getName());
 	}
 
 	private static final class IndexedCountries

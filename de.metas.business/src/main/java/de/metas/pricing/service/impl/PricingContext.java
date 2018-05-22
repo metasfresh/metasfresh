@@ -37,6 +37,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @ToString
@@ -71,11 +74,15 @@ class PricingContext implements IEditablePricingContext
 	private int m_PP_Product_BOM_ID;
 	private int m_PP_Product_BOMLine_ID;
 	private Object referencedObject;
-	private boolean disallowDiscount;
 	private String trxName;
 	private boolean convertPriceToContextUOM;
 	private Boolean isManualPrice = null; // task 08908: can be set by the calling code. Otherwise the engine shall try the referenced object
 	private boolean failIfNotCalculated = false;
+
+	private boolean disallowDiscount;
+	@Setter
+	@Getter
+	private PricingConditionsBreak forcePricingConditionsBreak;
 
 	final private Map<String, Object> properties = new HashMap<>();
 
@@ -102,6 +109,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.m_PP_Product_BOMLine_ID = m_PP_Product_BOMLine_ID;
 		pricingCtxNew.referencedObject = referencedObject;
 		pricingCtxNew.disallowDiscount = disallowDiscount;
+		pricingCtxNew.forcePricingConditionsBreak = forcePricingConditionsBreak;
 		pricingCtxNew.trxName = trxName;
 		pricingCtxNew.convertPriceToContextUOM = convertPriceToContextUOM;
 		pricingCtxNew.isManualPrice = isManualPrice;
@@ -379,6 +387,12 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
+	public boolean isPropertySet(final String propertyName)
+	{
+		return properties.get(propertyName) != null;
+	}
+
+	@Override
 	public void setProperty(final String propertyName, final Object value)
 	{
 		properties.put(propertyName, value);
@@ -419,25 +433,25 @@ class PricingContext implements IEditablePricingContext
 	{
 		this.C_Country_ID = countryId;
 	}
-	
+
 	@Override
 	public boolean isFailIfNotCalculated()
 	{
 		return failIfNotCalculated;
 	}
-	
+
 	@Override
 	public void setFailIfNotCalculated(boolean failIfNotCalculated)
 	{
 		this.failIfNotCalculated = failIfNotCalculated;
 	}
-	
+
 	@Override
 	public void setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag)
 	{
 		this.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
 	}
-	
+
 	@Override
 	public boolean isSkipCheckingPriceListSOTrxFlag()
 	{
