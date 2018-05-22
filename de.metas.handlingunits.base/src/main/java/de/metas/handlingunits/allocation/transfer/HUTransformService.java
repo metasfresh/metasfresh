@@ -502,7 +502,7 @@ public class HUTransformService
 		}
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
+
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
 			final I_M_HU_PI piOfChildHU = handlingUnitsBL.getPI(tuToAttach);
 
@@ -675,6 +675,8 @@ public class HUTransformService
 			throw new HUException("Cannot extract TUs from CU").setParameter("sourceHU", sourceHU);
 		}
 	}
+
+	
 
 	/**
 	 * Extract a given amount of TUs from an LU.
@@ -898,7 +900,7 @@ public class HUTransformService
 				final I_M_HU_Item tuHUsParentItem = handlingUnitsDAO.retrieveParentItem(sourceTuHU); // can't be null because if is was isAggregateHU() would return false.
 				final BigDecimal representedTUsCount = tuHUsParentItem.getQty();
 				Preconditions.checkState(representedTUsCount.signum() > 0, "Param 'tuHU' is an aggregate HU whose M_HU_Item_Parent has a qty of %s; tuHU=%s; tuHU's M_HU_Item_Parent=%s", representedTUsCount, sourceTuHU, tuHUsParentItem);
-				
+
 				final int uomPrecision = firstProductStorage.getC_UOM().getStdPrecision();
 				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount, uomPrecision, RoundingMode.HALF_UP);
 			}
@@ -985,5 +987,130 @@ public class HUTransformService
 		}
 		Preconditions.checkState(!productStorages.isEmpty(), "The list of productStorages below the given 'tuHU' may not be empty; tuHU=%s", tuHU);
 		return productStorages;
+	}
+	
+	
+	
+	@lombok.Value
+	public static class HUsToNewCUsRequest
+	{
+		List<I_M_HU> sourceHUs;
+
+		BigDecimal qtyCU;
+
+		public static HUsToNewCUsRequest forSourceHuAndQty(@NonNull I_M_HU sourceHU, BigDecimal qtyCU)
+		{
+			return HUsToNewCUsRequest.builder().sourceHU(sourceHU).qtyCU(qtyCU).build();
+		}
+
+		@lombok.Builder
+		private HUsToNewCUsRequest(
+				@Singular("sourceHU") @NonNull final List<I_M_HU> sourceHUs,
+				final BigDecimal qtyCU)
+		{
+			this.sourceHUs = sourceHUs;
+
+			Preconditions.checkArgument(qtyCU.signum() > 0, "Parameter qtyCU=%s needs to be grreater than zero", qtyCU);
+			this.qtyCU = qtyCU;
+		}
+	}
+
+	public List<I_M_HU> husToNewCUs(@NonNull final HUsToNewCUsRequest newCUsRequest)
+	{
+		BigDecimal qtyCuLeft = newCUsRequest.getQtyCU();
+
+		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
+		for (final I_M_HU sourceHU : newCUsRequest.getSourceHUs())
+		{
+			final List<I_M_HU> currentResult = huToNewCUs(sourceHU, qtyCuLeft);
+			result.addAll(currentResult);
+
+			qtyCuLeft = qtyCuLeft.subtract(BigDecimal.valueOf(currentResult.size()));
+
+			if (qtyCuLeft.signum() <= 0)
+			{
+				break;
+			}
+		}
+
+		return result.build();
+	}
+
+	private List<I_M_HU> huToNewCUs(@NonNull final I_M_HU sourceHU, final BigDecimal qtyCU)
+	{
+		if (handlingUnitsBL.isLoadingUnit(sourceHU))
+		{
+			return luExtractCUs(sourceHU, qtyCU);
+		}
+		else if (handlingUnitsBL.isTransportUnitOrAggregate(sourceHU))
+		{
+			return tuExtractCUs(sourceHU, qtyCU);
+
+		}
+		else
+		{
+			return cuToNewCU(sourceHU, qtyCU);
+		}
+	}
+
+	private List<I_M_HU> luExtractCUs(@NonNull final I_M_HU sourceLU, final BigDecimal qtyCU)
+	{
+		Preconditions.checkArgument(qtyCU.signum() > 0, "qtyCU > 0");
+
+		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
+
+		BigDecimal qtyCUsRemaining = qtyCU; // how many CUs we still have to extract
+
+		for (int i = 0; i <= handlingUnitsDAO.retrieveIncludedHUs(sourceLU).size(); i++)
+		{
+			if (qtyCUsRemaining.signum() <= 0)
+			{
+				break;
+			}
+			
+			final List<I_M_HU> luExtractTUs = luExtractTUs(sourceLU, 1);
+
+			for (final I_M_HU tu : luExtractTUs)
+			{
+				if (qtyCUsRemaining.signum() <= 0)
+				{
+					break;
+				}
+
+				final List<I_M_HU> tuExtractCUs = tuExtractCUs(tu, qtyCUsRemaining);
+				
+				extractedCUs.addAll(tuExtractCUs);
+
+				qtyCUsRemaining = qtyCUsRemaining.subtract(BigDecimal.valueOf(tuExtractCUs.size()));
+			} 
+		}
+		
+		return extractedCUs.build();
+
+	}
+
+	private List<I_M_HU> tuExtractCUs(@NonNull final I_M_HU sourceTU, final BigDecimal qtyCU)
+	{
+		Preconditions.checkArgument(qtyCU.signum() > 0, "qtyCU > 0");
+
+		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
+		BigDecimal qtyCUsRemaining = qtyCU; // how many TUs we still have to extract
+
+		for (final I_M_HU cu : handlingUnitsDAO.retrieveIncludedHUs(sourceTU))
+		{
+			if (qtyCUsRemaining.signum()<= 0)
+			{
+				break;
+			}
+			
+			final List<I_M_HU> cuToNewCU = cuToNewCU(cu, qtyCUsRemaining);
+			
+			extractedCUs.addAll(cuToNewCU);
+			
+			qtyCUsRemaining = qtyCUsRemaining.subtract(BigDecimal.valueOf(cuToNewCU.size()));
+			
+		} // each TU
+
+		return extractedCUs.build();
 	}
 }
