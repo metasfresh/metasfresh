@@ -60,7 +60,7 @@ public class BPPurchaseScheduleRepository
 
 	public Optional<BPPurchaseSchedule> getByBPartnerIdAndValidFrom(final int bpartnerId, final LocalDate date)
 	{
-		return schedulesByBpartnerId.getOrLoad(bpartnerId, () -> retrieveAllBPPurchaseSchedulesByBPartnerId(bpartnerId))
+		return schedulesByBpartnerId.getOrLoad(bpartnerId, this::retrieveAllBPPurchaseSchedulesByBPartnerId)
 				.findByDate(date);
 	}
 
