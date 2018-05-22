@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -69,7 +70,7 @@ class PricingResult implements IPricingResult
 	private BigDecimal priceList = BigDecimal.ZERO;
 	private BigDecimal priceStd = BigDecimal.ZERO;
 	private BigDecimal priceLimit = BigDecimal.ZERO;
-	private BigDecimal discount = BigDecimal.ZERO;
+	private Percent discount = Percent.ZERO;
 	private boolean enforcePriceLimit = false;
 	private boolean taxIncluded = false;
 	private boolean isUseDiscountSchema = false;
@@ -219,16 +220,16 @@ class PricingResult implements IPricingResult
 	 * @return the discount
 	 */
 	@Override
-	public BigDecimal getDiscount()
+	public Percent getDiscount()
 	{
-		return discount != null ? discount : BigDecimal.ZERO;
+		return discount != null ? discount : Percent.ZERO;
 	}
 
 	/**
 	 * @param discount the discount to set
 	 */
 	@Override
-	public void setDiscount(final BigDecimal discount)
+	public void setDiscount(final Percent discount)
 	{
 		Check.assume(!isDisallowDiscount(), "Method caller is respecting the 'disallowDiscount' property");
 		this.discount = discount;

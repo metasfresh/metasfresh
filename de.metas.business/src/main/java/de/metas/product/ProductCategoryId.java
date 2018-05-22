@@ -1,11 +1,7 @@
-package de.metas.pricing.conditions.service;
+package de.metas.product;
 
-import de.metas.lang.Percent;
-import de.metas.pricing.conditions.PriceOverride;
-import de.metas.pricing.conditions.PricingConditionsBreakId;
-import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
-import de.metas.pricing.conditions.PricingConditionsId;
-import lombok.Builder;
+import org.adempiere.util.Check;
+
 import lombok.Value;
 
 /*
@@ -31,21 +27,28 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class PricingConditionsBreakChangeRequest
+public class ProductCategoryId
 {
-	PricingConditionsId pricingConditionsId;
-	PricingConditionsBreakId pricingConditionsBreakId;
+	int repoId;
 
-	PricingConditionsBreakId updateFromPricingConditionsBreakId;
+	public static ProductCategoryId ofRepoId(final int repoId)
+	{
+		return new ProductCategoryId(repoId);
+	}
 
-	PricingConditionsBreakMatchCriteria matchCriteria;
+	public static ProductCategoryId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new ProductCategoryId(repoId) : null;
+	}
 
-	//
-	// Price
-	PriceOverride price;
+	public static int toRepoId(ProductCategoryId productCategoryId)
+	{
+		return productCategoryId != null ? productCategoryId.getRepoId() : -1;
+	}
 
-	// Discount
-	Percent discount;
-	Integer paymentTermId;
+	private ProductCategoryId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
 }

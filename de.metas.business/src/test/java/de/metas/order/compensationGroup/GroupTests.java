@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.lang.Percent;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
 
 /*
@@ -126,7 +127,7 @@ public class GroupTests
 				.seqNo(seqNo)
 				.type(GroupCompensationType.Discount)
 				.amtType(GroupCompensationAmtType.Percent)
-				.percentage(BigDecimal.valueOf(discountPerc))
+				.percentage(Percent.of(discountPerc))
 				// does not matter but needs to be filled
 				.productId(M_Product_ID)
 				.uomId(C_UOM_ID);
@@ -137,7 +138,7 @@ public class GroupTests
 		return GroupCompensationLineCreateRequest.builder()
 				.type(GroupCompensationType.Discount)
 				.amtType(GroupCompensationAmtType.Percent)
-				.percentage(BigDecimal.valueOf(discountPerc))
+				.percentage(Percent.of(discountPerc))
 				// does not matter but needs to be filled
 				.productId(M_Product_ID)
 				.uomId(C_UOM_ID)

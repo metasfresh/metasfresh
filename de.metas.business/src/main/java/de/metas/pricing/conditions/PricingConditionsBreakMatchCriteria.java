@@ -6,6 +6,8 @@ import java.util.Set;
 import org.adempiere.util.Check;
 
 import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,8 +40,8 @@ public class PricingConditionsBreakMatchCriteria
 {
 	@NonNull
 	BigDecimal breakValue;
-	int productId;
-	int productCategoryId;
+	ProductId productId;
+	ProductCategoryId productCategoryId;
 	int attributeValueId;
 
 	public boolean breakValueMatches(final BigDecimal value)
@@ -57,19 +59,18 @@ public class PricingConditionsBreakMatchCriteria
 
 	public boolean productMatches(@NonNull final ProductAndCategoryId productAndCategoryId)
 	{
-		final int breakProductId = this.productId;
-		if (breakProductId > 0)
+		if (productId != null)
 		{
-			return breakProductId == productAndCategoryId.getProductId();
+			return productId.equals(productAndCategoryId.getProductId());
 		}
-
-		final int breakProductCategoryId = this.productCategoryId;
-		if (breakProductCategoryId > 0)
+		else if (productCategoryId != null)
 		{
-			return breakProductCategoryId == productAndCategoryId.getProductCategoryId();
+			return productCategoryId.equals(productAndCategoryId.getProductCategoryId());
 		}
-
-		return true;
+		else
+		{
+			return true;
+		}
 	}
 
 	public boolean attributeMatches(final int attributeValueId)

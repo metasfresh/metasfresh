@@ -10,6 +10,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_OrderLine;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.Percent;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
@@ -217,6 +218,8 @@ class OrderLinePriceCalculator
 		{
 			pricingCtx.setDisallowDiscount(true);
 		}
+		
+		pricingCtx.setForcePricingConditionsBreak(request.getPricingConditionsBreakOverride());
 
 		return pricingCtx;
 	}
@@ -310,7 +313,7 @@ class OrderLinePriceCalculator
 		return true;
 	}
 
-	private BigDecimal extractDiscount(final IPricingResult pricingResult, final boolean isSOTrx)
+	private Percent extractDiscount(final IPricingResult pricingResult, final boolean isSOTrx)
 	{
 		if (isAllowChangingDiscount(isSOTrx))
 		{
@@ -319,7 +322,7 @@ class OrderLinePriceCalculator
 		else
 		{
 			final I_C_OrderLine orderLine = request.getOrderLine();
-			return orderLine.getDiscount();
+			return Percent.of(orderLine.getDiscount());
 		}
 	}
 

@@ -25,6 +25,8 @@ package de.metas.pricing;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import de.metas.pricing.conditions.PricingConditionsBreak;
+
 /**
  * A {@link IPricingContext} which also have setters.
  *
@@ -69,6 +71,8 @@ public interface IEditablePricingContext extends IPricingContext
 	 * @param disallowDiscount
 	 */
 	void setDisallowDiscount(boolean disallowDiscount);
+
+	void setForcePricingConditionsBreak(PricingConditionsBreak forcePricingConditionsBreak);
 
 	void setTrxName(String trxName);
 
