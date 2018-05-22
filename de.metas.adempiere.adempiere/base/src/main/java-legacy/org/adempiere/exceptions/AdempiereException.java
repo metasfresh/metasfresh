@@ -257,6 +257,13 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = ImmutableTranslatableString.constant(message);
 	}
 
+	public AdempiereException(@NonNull final ITranslatableString message, final Throwable cause)
+	{
+		super(cause);
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = message;
+	}
+
 	/**
 	 * Gets original message
 	 *
