@@ -70,7 +70,7 @@ class ListWidget extends Component {
     }
   }
 
-  requestListData = (forceSelection = false, forceFocus = false) => {
+  requestListData = (forceSelection = false, ignoreFocus = false) => {
     const {
       properties,
       dataId,
@@ -139,7 +139,8 @@ class ListWidget extends Component {
       if (values.length === 0 && lastProperty) {
         disableAutofocus();
       } else if (
-        (forceFocus || this.state.autoFocus) &&
+        !ignoreFocus &&
+        this.state.autoFocus &&
         values &&
         values.length > 1
       ) {
