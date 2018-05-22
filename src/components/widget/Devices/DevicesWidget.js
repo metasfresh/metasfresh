@@ -8,7 +8,7 @@ class DevicesWidget extends Component {
   }
 
   render() {
-    const { devices, onChange, tabIndex } = this.props;
+    const { devices, handleChange, tabIndex } = this.props;
     const isMore = devices.length > 1;
 
     return (
@@ -19,7 +19,7 @@ class DevicesWidget extends Component {
               device={item}
               key={index}
               index={index}
-              onChange={onChange}
+              handleChange={handleChange}
               isMore={isMore}
               tabIndex={tabIndex}
             />

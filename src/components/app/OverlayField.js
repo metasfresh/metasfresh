@@ -6,11 +6,11 @@ import BarcodeScanner from '../widget/BarcodeScanner/BarcodeScannerWidget';
 
 class OverlayField extends Component {
   handleKeyDown = e => {
-    const { onSubmit, closeOverlay, onSelectBarcode } = this.props;
+    const { handleSubmit, closeOverlay, onSelectBarcode } = this.props;
     switch (e.key) {
       case 'Enter':
         document.activeElement.blur();
-        onSubmit();
+        handleSubmit();
         break;
       case 'Escape':
         closeOverlay();
@@ -70,8 +70,8 @@ class OverlayField extends Component {
       viewId,
       onShow,
       onHide,
-      onPatch,
-      onChange,
+      handlePatch,
+      handleChange,
       captionValue,
       barcodeSelected,
     } = this.props;
@@ -107,8 +107,8 @@ class OverlayField extends Component {
           autoFocus={index === 0}
           textSelected={true}
           {...{
-            onPatch,
-            onChange,
+            handlePatch,
+            handleChange,
             windowType,
             onShow,
             onHide,

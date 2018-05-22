@@ -8,9 +8,9 @@ class QuickActionsDropdown extends Component {
   }
 
   handleClickOutside = () => {
-    const { onClickOutside } = this.props;
+    const { handleClickOutside } = this.props;
 
-    onClickOutside();
+    handleClickOutside();
   };
 
   componentDidMount() {
@@ -18,7 +18,7 @@ class QuickActionsDropdown extends Component {
   }
 
   handleKeyDown = (e, action) => {
-    const { onClick } = this.props;
+    const { handleClick } = this.props;
     e.preventDefault();
     const next = document.activeElement.nextSibling;
     const prev = document.activeElement.previousSibling;
@@ -39,7 +39,7 @@ class QuickActionsDropdown extends Component {
         }
         break;
       case 'Enter':
-        onClick(action);
+        handleClick(action);
         break;
     }
   };
@@ -49,7 +49,7 @@ class QuickActionsDropdown extends Component {
   };
 
   render() {
-    const { actions, onClick } = this.props;
+    const { actions, handleClick } = this.props;
 
     return (
       <div className="quick-actions-dropdown">
@@ -62,7 +62,7 @@ class QuickActionsDropdown extends Component {
               (action.disabled ? 'quick-actions-item-disabled ' : '')
             }
             key={index}
-            onClick={() => onClick(action)}
+            onClick={() => handleClick(action)}
             onKeyDown={e => this.handleKeyDown(e, action)}
             onMouseEnter={() => this.handleItem(index)}
           >

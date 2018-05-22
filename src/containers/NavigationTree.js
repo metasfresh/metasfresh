@@ -259,7 +259,7 @@ class NavigationTree extends Component {
     }
   }
 
-  onRedirect = (elementId, isNew, type) => {
+  handleRedirect = (elementId, isNew, type) => {
     const { dispatch } = this.props;
     dispatch(push('/' + (type ? type : 'window') + '/' + elementId));
   };
@@ -332,9 +332,9 @@ class NavigationTree extends Component {
                 openModal={this.openModal}
                 updateData={this.updateData}
                 onKeyDown={this.handleKeyDown}
-                onClickOnFolder={this.handleDeeper}
-                onRedirect={this.handleRedirect}
-                onNewRedirect={this.handleNewRedirect}
+                handleClickOnFolder={this.handleDeeper}
+                handleRedirect={this.handleRedirect}
+                handleNewRedirect={this.handleNewRedirect}
                 {...subitem}
               />
             ))}

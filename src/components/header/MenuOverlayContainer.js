@@ -10,8 +10,8 @@ class MenuOverlayContainer extends Component {
   }
 
   handleClick = () => {
-    const { dispatch, onRedirect, elementId } = this.props;
-    onRedirect(elementId);
+    const { dispatch, handleRedirect, elementId } = this.props;
+    handleRedirect(elementId);
     dispatch(getWindowBreadcrumb(elementId));
   };
 
@@ -21,14 +21,14 @@ class MenuOverlayContainer extends Component {
       elementId,
       caption,
       type,
-      onClickOnFolder,
-      onRedirect,
-      onNewRedirect,
-      onPath,
+      handleClickOnFolder,
+      handleRedirect,
+      handleNewRedirect,
+      handlePath,
       printChildren,
       deep,
       back,
-      onMenuOverlay,
+      handleMenuOverlay,
       openModal,
       showBookmarks,
       updateData,
@@ -64,17 +64,17 @@ class MenuOverlayContainer extends Component {
             {...{
               showBookmarks,
               openModal,
-              onPath,
+              handlePath,
               back,
               type,
               caption,
               elementId,
               updateData,
               transparentBookmarks,
-              onMenuOverlay,
-              onNewRedirect,
-              onRedirect,
-              onClickOnFolder,
+              handleMenuOverlay,
+              handleNewRedirect,
+              handleRedirect,
+              handleClickOnFolder,
             }}
           />
         )}
@@ -94,9 +94,9 @@ class MenuOverlayContainer extends Component {
                     openModal,
                     updateData,
                     transparentBookmarks,
-                    onNewRedirect,
-                    onRedirect,
-                    onClickOnFolder,
+                    handleNewRedirect,
+                    handleRedirect,
+                    handleClickOnFolder,
                   }}
                 />
               ) : (
@@ -108,13 +108,13 @@ class MenuOverlayContainer extends Component {
                     openModal,
                     back,
                     printChildren,
-                    onPath,
+                    handlePath,
                     updateData,
                     transparentBookmarks,
-                    onMenuOverlay,
-                    onNewRedirect,
-                    onRedirect,
-                    onClickOnFolder,
+                    handleMenuOverlay,
+                    handleNewRedirect,
+                    handleRedirect,
+                    handleClickOnFolder,
                   }}
                 />
               )

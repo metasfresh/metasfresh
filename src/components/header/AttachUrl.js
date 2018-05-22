@@ -48,7 +48,7 @@ class AttachUrl extends Component {
     const {
       windowId,
       documentId,
-      onClose,
+      handleClose,
       dispatch,
       fetchAttachments,
     } = this.props;
@@ -61,7 +61,7 @@ class AttachUrl extends Component {
       name: name || nameFromUrl,
     })
       .then(() => {
-        onClose(event);
+        handleClose(event);
         fetchAttachments();
       })
       .catch(() => {
@@ -77,7 +77,7 @@ class AttachUrl extends Component {
   };
 
   render() {
-    const { onClose } = this.props;
+    const { handleClose } = this.props;
     const { url, name, nameFromUrl } = this.state;
 
     // TODO: increase max-len or find another way to avoid this
@@ -93,7 +93,7 @@ class AttachUrl extends Component {
               </span>
               <div
                 className="input-icon input-icon-lg attachurl-icon-close"
-                onClick={onClose}
+                onClick={handleClose}
               >
                 <i className="meta-icon-close-1" />
               </div>

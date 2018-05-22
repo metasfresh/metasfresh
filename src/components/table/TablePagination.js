@@ -22,20 +22,25 @@ class TablePagination extends PureComponent {
     });
   };
 
-  handleSelectAll = () => {
-    const { selected, rowLength, onSelectAll, onSelectRange } = this.props;
+  _handleSelectAll = () => {
+    const {
+      selected,
+      rowLength,
+      handleSelectAll,
+      handleSelectRange,
+    } = this.props;
     const selectedWholePage = selected && selected.length === rowLength;
 
-    return selectedWholePage ? onSelectRange(['all']) : onSelectAll();
+    return selectedWholePage ? handleSelectRange(['all']) : handleSelectAll();
   };
 
   handleSubmit = (e, value, pages) => {
-    const { onChangePage } = this.props;
+    const { handleChangePage } = this.props;
     if (e.key === 'Enter') {
       e.preventDefault();
 
       if (value <= pages && value > 0) {
-        onChangePage(Number(value));
+        handleChangePage(Number(value));
         this.setState({
           value: '',
           secondDotsState: false,
@@ -104,7 +109,7 @@ class TablePagination extends PureComponent {
   };
 
   renderFirstPartPagination = (pagination, pages) => {
-    const { onChangePage, compressed } = this.props;
+    const { handleChangePage, compressed } = this.props;
     const { firstDotsState, value } = this.state;
 
     pagination.push(
@@ -113,7 +118,7 @@ class TablePagination extends PureComponent {
         key={1}
         onClick={() => {
           this.resetGoToPage();
-          onChangePage(1);
+          handleChangePage(1);
         }}
       >
         <a
@@ -142,7 +147,7 @@ class TablePagination extends PureComponent {
   };
 
   renderLastPartPagination = (pagination, pages) => {
-    const { onChangePage, compressed } = this.props;
+    const { handleChangePage, compressed } = this.props;
     const { secondDotsState, value } = this.state;
 
     pagination.push(
@@ -164,7 +169,7 @@ class TablePagination extends PureComponent {
         key={9999}
         onClick={() => {
           this.resetGoToPage();
-          onChangePage(pages);
+          handleChangePage(pages);
         }}
       >
         <a
@@ -179,7 +184,7 @@ class TablePagination extends PureComponent {
   };
 
   renderPaginationContent = (pagination, page, start, end) => {
-    const { onChangePage, compressed } = this.props;
+    const { handleChangePage, compressed } = this.props;
 
     for (let i = start; i <= end; i++) {
       pagination.push(
@@ -190,7 +195,7 @@ class TablePagination extends PureComponent {
           key={i}
           onClick={() => {
             this.resetGoToPage();
-            onChangePage(i);
+            handleChangePage(i);
           }}
         >
           <a
@@ -235,7 +240,7 @@ class TablePagination extends PureComponent {
         <div
           className="pagination-link pointer"
           onClick={() => {
-            this.handleSelectAll();
+            this._handleSelectAll();
           }}
           title="Alt+A"
         >
@@ -250,7 +255,7 @@ class TablePagination extends PureComponent {
   };
 
   renderArrow = left => {
-    const { compressed, onChangePage } = this.props;
+    const { compressed, handleChangePage } = this.props;
     return (
       <li className="page-item">
         <a
@@ -259,7 +264,7 @@ class TablePagination extends PureComponent {
           })}
           onClick={() => {
             this.resetGoToPage();
-            onChangePage(left ? 'down' : 'up');
+            handleChangePage(left ? 'down' : 'up');
           }}
         >
           <span>{left ? '«' : '»'}</span>
@@ -273,17 +278,18 @@ class TablePagination extends PureComponent {
       size,
       pageLength,
       disablePaginationShortcuts,
-      onChangePage,
+      handleChangePage,
     } = this.props;
 
     const pages = size ? Math.ceil(size / pageLength) : 0;
 
     return (
       !disablePaginationShortcuts && {
-        onFirstPage: () => onChangePage(1),
-        onLastPage: () => onChangePage(size ? Math.ceil(size / pageLength) : 0),
-        onNextPage: () => onChangePage('up'),
-        onPrevPage: () => onChangePage('down'),
+        handleFirstPage: () => handleChangePage(1),
+        handleLastPage: () =>
+          handleChangePage(size ? Math.ceil(size / pageLength) : 0),
+        handleNextPage: () => handleChangePage('up'),
+        handlePrevPage: () => handleChangePage('down'),
         pages: pages,
       }
     );
@@ -337,7 +343,7 @@ class TablePagination extends PureComponent {
         </div>
 
         <PaginationContextShortcuts
-          onSelectAll={() => this.handleSelectAll()}
+          handleSelectAll={() => this._handleSelectAll()}
           {...this.paginationShortcuts()}
         />
       </div>
@@ -347,9 +353,9 @@ class TablePagination extends PureComponent {
 
 TablePagination.propTypes = {
   selected: PropTypes.array,
-  onSelectAll: PropTypes.func,
-  onSelectRange: PropTypes.func,
-  onChangePage: PropTypes.func,
+  handleSelectAll: PropTypes.func,
+  handleSelectRange: PropTypes.func,
+  handleChangePage: PropTypes.func,
   rowLength: PropTypes.number.isRequired,
   compressed: PropTypes.any, // Looks like it's not used
   size: PropTypes.number.isRequired,

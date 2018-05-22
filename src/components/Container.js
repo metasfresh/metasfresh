@@ -41,7 +41,7 @@ class Container extends Component {
       showIndicator,
       isDocumentNotSaved,
       hideHeader,
-      onDeletedStatus,
+      handleDeletedStatus,
       dropzoneFocused,
       notfound,
       rawModal,
@@ -54,7 +54,7 @@ class Container extends Component {
       setModalDescription,
       modalDescription,
       editmode,
-      onEditModeToggle,
+      handleEditModeToggle,
       activeTab,
       masterDocumentList,
     } = this.props;
@@ -68,7 +68,7 @@ class Container extends Component {
             docStatusData={docStatusData}
             docNoData={docNoData}
             docSummaryData={docSummaryData}
-            onDeletedStatus={onDeletedStatus}
+            handleDeletedStatus={handleDeletedStatus}
             isDocumentNotSaved={isDocumentNotSaved}
             showIndicator={showIndicator}
             query={query}
@@ -84,7 +84,7 @@ class Container extends Component {
             notfound={notfound}
             docId={docId}
             editmode={editmode}
-            onEditModeToggle={onEditModeToggle}
+            handleEditModeToggle={handleEditModeToggle}
             activeTab={activeTab}
             docStatus={docActionElem}
           />

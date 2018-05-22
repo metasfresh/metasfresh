@@ -143,8 +143,8 @@ class TableCell extends PureComponent {
       type,
       rowId,
       tabId,
-      onDoubleClick,
-      onKeyDown,
+      handleDoubleClick,
+      handleKeyDown,
       updatedRow,
       tabIndex,
       entity,
@@ -153,7 +153,7 @@ class TableCell extends PureComponent {
       listenOnKeysTrue,
       closeTableField,
       getSizeClass,
-      onRightClick,
+      handleRightClick,
       mainTable,
       onCellChange,
       viewId,
@@ -180,10 +180,10 @@ class TableCell extends PureComponent {
         ref={c => (this.cell = c)}
         onDoubleClick={e => {
           if (isEdited) e.stopPropagation();
-          if (!readonly) onDoubleClick(e);
+          if (!readonly) handleDoubleClick(e);
         }}
-        onKeyDown={onKeyDown}
-        onContextMenu={onRightClick}
+        onKeyDown={handleKeyDown}
+        onContextMenu={handleRightClick}
         className={classnames(
           {
             [`text-xs-${item.gridAlign}`]: item.gridAlign,
@@ -212,7 +212,7 @@ class TableCell extends PureComponent {
             tabId={mainTable ? null : tabId}
             noLabel={true}
             gridAlign={item.gridAlign}
-            onBackdropLock={this.handleBackdropLock}
+            handleBackdropLock={this.handleBackdropLock}
             listenOnKeys={listenOnKeys}
             listenOnKeysTrue={listenOnKeysTrue}
             listenOnKeysFalse={listenOnKeysFalse}

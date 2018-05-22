@@ -46,7 +46,7 @@ class LoginForm extends Component {
     }
   };
 
-  handleChange = e => {
+  handleOnChange = e => {
     e.preventDefault();
 
     this.setState({
@@ -218,7 +218,7 @@ class LoginForm extends Component {
               </div>
               <input
                 type="text"
-                onChange={this.handleChange}
+                onChange={this.handleOnChange}
                 name="username"
                 className={classnames('input-primary input-block', {
                   'input-error': err,
@@ -235,7 +235,7 @@ class LoginForm extends Component {
               <input
                 type="password"
                 name="password"
-                onChange={this.handleChange}
+                onChange={this.handleOnChange}
                 className={classnames('input-primary input-block', {
                   'input-error': err,
                   'input-disabled': pending,

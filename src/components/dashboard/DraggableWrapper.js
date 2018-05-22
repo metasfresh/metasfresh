@@ -237,7 +237,7 @@ export class DraggableWrapper extends Component {
               chartType={'Indicator'}
               kpi={false}
               noData={indicator.fetchOnDrop}
-              onChartOptions={this.handleChartOptions}
+              handleChartOptions={this.handleChartOptions}
               {...{ editmode }}
             />
           </DndWidget>
@@ -303,7 +303,7 @@ export class DraggableWrapper extends Component {
                   maximizeWidget={this.maximizeWidget}
                   text={item.caption}
                   noData={item.fetchOnDrop}
-                  onChartOptions={this.handleChartOptions}
+                  handleChartOptions={this.handleChartOptions}
                   {...{ editmode }}
                 />
               </DndWidget>

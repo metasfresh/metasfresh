@@ -62,7 +62,7 @@ class TableQuickInput extends Component {
   }
 
   initQuickInput = () => {
-    const { dispatch, docType, docId, tabId, onCloseBatchEntry } = this.props;
+    const { dispatch, docType, docId, tabId, closeBatchEntry } = this.props;
     const { layout } = this.state;
 
     this.setState(
@@ -88,7 +88,7 @@ class TableQuickInput extends Component {
                   'error'
                 )
               );
-              onCloseBatchEntry();
+              closeBatchEntry();
             }
           });
 
@@ -185,10 +185,11 @@ class TableQuickInput extends Component {
             gridAlign={item.gridAlign}
             key={id}
             caption={item.caption}
-            onPatch={(prop, value, callback) =>
+            handlePatch={(prop, value, callback) =>
               this.handlePatch(prop, value, callback)
             }
-            onChange={this.handleChange}
+            handleFocus={() => {}}
+            handleChange={this.handleChange}
             onBlurWidget={this.handleBlurWidget}
             type="secondary"
             autoFocus={id === 0}

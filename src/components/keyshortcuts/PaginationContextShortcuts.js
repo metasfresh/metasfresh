@@ -7,29 +7,29 @@ export default class PaginationContextShortcuts extends Component {
     FIRST_PAGE: event => {
       event.preventDefault();
 
-      return this.props.onFirstPage();
+      return this.props.handleFirstPage();
     },
     LAST_PAGE: event => {
       event.preventDefault();
 
-      return this.props.onLastPage();
+      return this.props.handleLastPage();
     },
     NEXT_PAGE: event => {
       event.preventDefault();
 
-      if (this.props.pages > 1) return this.props.onNextPage();
+      if (this.props.pages > 1) return this.props.handleNextPage();
       return;
     },
     PREV_PAGE: event => {
       event.preventDefault();
 
-      if (this.props.pages > 1) return this.props.onPrevPage();
+      if (this.props.pages > 1) return this.props.handlePrevPage();
       return;
     },
     SELECT_ALL_ROWS: event => {
       event.preventDefault();
 
-      return this.props.onSelectAll();
+      return this.props.handleSelectAll();
     },
   };
 

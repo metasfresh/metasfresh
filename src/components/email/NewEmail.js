@@ -31,7 +31,7 @@ class NewEmail extends Component {
   }
 
   componentWillMount = () => {
-    const { windowId, docId, onCloseEmail } = this.props;
+    const { windowId, docId, handleCloseEmail } = this.props;
     createEmail(windowId, docId)
       .then(res => {
         this.setState({
@@ -42,7 +42,7 @@ class NewEmail extends Component {
         this.getTemplates();
       })
       .catch(() => {
-        onCloseEmail();
+        handleCloseEmail();
       });
   };
 
@@ -90,9 +90,9 @@ class NewEmail extends Component {
 
   send = () => {
     const { emailId } = this.state;
-    const { onCloseEmail, dispatch } = this.props;
+    const { handleCloseEmail, dispatch } = this.props;
     sendEmail(emailId).then(() => {
-      onCloseEmail();
+      handleCloseEmail();
       dispatch(
         addNotification('Email', 'Email has been sent.', 5000, 'success')
       );
@@ -141,7 +141,7 @@ class NewEmail extends Component {
   };
 
   render() {
-    const { onCloseEmail, windowId, docId } = this.props;
+    const { handleCloseEmail, windowId, docId } = this.props;
     const {
       init,
       attachments,
@@ -183,7 +183,7 @@ class NewEmail extends Component {
               )}
               <div
                 className="input-icon input-icon-lg icon-email"
-                onClick={onCloseEmail}
+                onClick={handleCloseEmail}
               >
                 <i className="meta-icon-close-1" />
               </div>
@@ -240,7 +240,7 @@ NewEmail.propTypes = {
   windowId: PropTypes.string,
   dispatch: PropTypes.func,
   docId: PropTypes.string,
-  onCloseEmail: PropTypes.func,
+  handleCloseEmail: PropTypes.func,
 };
 
 export default connect()(NewEmail);

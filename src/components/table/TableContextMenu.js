@@ -99,18 +99,21 @@ class TableContextMenu extends Component {
       blur,
       selected,
       mainTable,
-      onAdvancedEdit,
-      onOpenNewTab,
-      onDelete,
-      onFieldEdit,
-      onZoomInto,
+      handleAdvancedEdit,
+      handleOpenNewTab,
+      handleDelete,
+      handleFieldEdit,
+      handleZoomInto,
     } = this.props;
 
     const { contextMenu, references } = this.state;
 
     const isSelectedOne = selected.length === 1;
     const showFieldEdit =
-      isSelectedOne && mainTable && contextMenu.supportFieldEdit && onFieldEdit;
+      isSelectedOne &&
+      mainTable &&
+      contextMenu.supportFieldEdit &&
+      handleFieldEdit;
 
     return (
       <div
@@ -133,7 +136,7 @@ class TableContextMenu extends Component {
         {contextMenu.supportZoomInto && (
           <div
             className="context-menu-item"
-            onClick={() => onZoomInto(contextMenu.fieldName)}
+            onClick={() => handleZoomInto(contextMenu.fieldName)}
           >
             <i className="meta-icon-share" />
             {` ${counterpart.translate('window.table.zoomInto')}`}
@@ -141,7 +144,7 @@ class TableContextMenu extends Component {
         )}
 
         {showFieldEdit && (
-          <div className="context-menu-item" onClick={onFieldEdit}>
+          <div className="context-menu-item" onClick={handleFieldEdit}>
             <i className="meta-icon-edit" />
             {` ${counterpart.translate('window.table.editField')}`}
           </div>
@@ -153,7 +156,7 @@ class TableContextMenu extends Component {
 
         {isSelectedOne &&
           !mainTable && (
-            <div className="context-menu-item" onClick={onAdvancedEdit}>
+            <div className="context-menu-item" onClick={handleAdvancedEdit}>
               <i className="meta-icon-edit" />
               {` ${counterpart.translate('window.table.advancedEdit')}`}
               <span className="tooltip-inline">{keymap.ADVANCED_EDIT}</span>
@@ -161,15 +164,15 @@ class TableContextMenu extends Component {
           )}
 
         {mainTable && (
-          <div className="context-menu-item" onClick={onOpenNewTab}>
+          <div className="context-menu-item" onClick={handleOpenNewTab}>
             <i className="meta-icon-file" />
             {` ${counterpart.translate('window.table.openInNewTab')}`}
             <span className="tooltip-inline">{keymap.OPEN_SELECTED}</span>
           </div>
         )}
 
-        {onDelete && (
-          <div className="context-menu-item" onClick={onDelete}>
+        {handleDelete && (
+          <div className="context-menu-item" onClick={handleDelete}>
             <i className="meta-icon-trash" />
             {` ${counterpart.translate('window.delete.caption')}`}
             <span className="tooltip-inline">{keymap.REMOVE_SELECTED}</span>

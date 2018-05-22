@@ -169,11 +169,11 @@ class Subheader extends Component {
     const {
       dataId,
       docNo,
-      onClone,
-      onDelete,
-      onEmail,
-      onLetter,
-      onPrint,
+      handleClone,
+      handleDelete,
+      handleEmail,
+      handleLetter,
+      handlePrint,
       openModal,
       standardActions,
       windowType,
@@ -196,7 +196,7 @@ class Subheader extends Component {
       {
         action: 'clone',
         handler: () => {
-          onClone(windowType, dataId);
+          handleClone(windowType, dataId);
         },
         icon: 'meta-icon-duplicate',
         caption: counterpart.translate('window.clone.caption'),
@@ -205,7 +205,7 @@ class Subheader extends Component {
       {
         action: 'email',
         handler: () => {
-          onEmail();
+          handleEmail();
         },
         icon: 'meta-icon-mail',
         caption: counterpart.translate('window.email.caption'),
@@ -214,7 +214,7 @@ class Subheader extends Component {
       {
         action: 'letter',
         handler: () => {
-          onLetter();
+          handleLetter();
         },
         icon: 'meta-icon-letter',
         caption: counterpart.translate('window.letter.caption'),
@@ -223,7 +223,7 @@ class Subheader extends Component {
       {
         action: 'print',
         handler: () => {
-          onPrint(windowType, dataId, docNo);
+          handlePrint(windowType, dataId, docNo);
         },
         icon: 'meta-icon-print',
         caption: counterpart.translate('window.Print.caption'),
@@ -232,7 +232,7 @@ class Subheader extends Component {
       {
         action: 'delete',
         handler: () => {
-          onDelete();
+          handleDelete();
         },
         icon: 'meta-icon-delete',
         caption: counterpart.translate('window.Delete.caption'),
@@ -251,7 +251,7 @@ class Subheader extends Component {
     const {
       closeSubheader,
       editmode,
-      onEditModeToggle,
+      handleEditModeToggle,
       query,
       redirect,
       selected,
@@ -336,7 +336,7 @@ class Subheader extends Component {
             className="subheader-item js-subheader-item"
             tabIndex={0}
             onClick={() => {
-              onEditModeToggle();
+              handleEditModeToggle();
               closeSubheader();
             }}
           >

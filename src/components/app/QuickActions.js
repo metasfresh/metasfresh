@@ -234,17 +234,17 @@ class QuickActions extends Component {
             {isDropdownOpen && (
               <QuickActionsDropdown
                 actions={actions}
-                onClick={this.handleClick}
-                onClickOutside={() => this.toggleDropdown(false)}
+                handleClick={this.handleClick}
+                handleClickOutside={() => this.toggleDropdown(false)}
                 disableOnClickOutside={!isDropdownOpen}
               />
             )}
           </div>
           <QuickActionsContextShortcuts
-            onClick={() =>
+            handleClick={() =>
               shouldNotUpdate ? null : this.handleClick(actions[0])
             }
-            onToggle={() => this.toggleDropdown(!isDropdownOpen)}
+            onClick={() => this.toggleDropdown(!isDropdownOpen)}
           />
         </div>
       );

@@ -137,7 +137,7 @@ class Lookup extends Component {
   };
 
   dropdownListToggle = value => {
-    const { onFocus, onBlur } = this.props;
+    const { onFocus, onHandleBlur } = this.props;
 
     this.setState({
       isDropdownListOpen: value,
@@ -145,8 +145,8 @@ class Lookup extends Component {
 
     if (value && onFocus) {
       onFocus();
-    } else if (!value && onBlur) {
-      onBlur();
+    } else if (!value && onHandleBlur) {
+      onHandleBlur();
     }
   };
 
@@ -210,7 +210,7 @@ class Lookup extends Component {
         [`${fieldName}`]: false,
       },
     });
-    this.props.onBlur();
+    this.props.onHandleBlur();
   };
 
   getFocused = fieldName => {
@@ -288,7 +288,7 @@ class Lookup extends Component {
       scanning,
       barcodeSelected,
       scannerElement,
-      onBlur,
+      onHandleBlur,
       onFocus,
     } = this.props;
 
@@ -371,9 +371,9 @@ class Lookup extends Component {
                   setNextProperty={this.setNextProperty}
                   lookupEmpty={isInputEmpty}
                   fireDropdownList={fireDropdownList}
-                  onInputEmptyStatus={this.handleInputEmptyStatus}
+                  handleInputEmptyStatus={this.handleInputEmptyStatus}
                   enableAutofocus={this.enableAutofocus}
-                  onBlur={onBlur}
+                  onHandleBlur={onHandleBlur}
                   onHandleFocus={onFocus}
                   isOpen={isDropdownListOpen}
                   onDropdownListToggle={this.dropdownListToggle}
@@ -449,7 +449,7 @@ class Lookup extends Component {
                     disableAutofocus={this.disableAutofocus}
                     enableAutofocus={this.enableAutofocus}
                     onFocus={() => this.handleFocus(item.field)}
-                    onBlur={() => this.handleBlur(item.field)}
+                    onHandleBlur={() => this.handleBlur(item.field)}
                     {...{
                       dataId,
                       entity,

@@ -52,7 +52,7 @@ class FiltersFrequent extends PureComponent {
       windowType,
       notValidFields,
       viewId,
-      onShow,
+      handleShow,
       applyFilters,
       clearFilters,
       active,
@@ -132,8 +132,8 @@ class FiltersFrequent extends PureComponent {
                   notValidFields={notValidFields}
                   isActive={item.isActive}
                   active={active}
-                  onShow={() => onShow(true)}
-                  onHide={() => onShow(false)}
+                  onShow={() => handleShow(true)}
+                  onHide={() => handleShow(false)}
                   viewId={viewId}
                   outsideClick={this.outsideClick}
                 />

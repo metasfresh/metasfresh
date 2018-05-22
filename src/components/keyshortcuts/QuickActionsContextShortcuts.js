@@ -7,12 +7,12 @@ export default class QuickActionsContextShortcuts extends Component {
     QUICK_ACTION_POS: event => {
       event.preventDefault();
 
-      this.props.onClick();
+      this.props.handleClick();
     },
     QUICK_ACTION_TOGGLE: event => {
       event.preventDefault();
 
-      this.props.onToggle();
+      this.props.onClick();
     },
   };
 

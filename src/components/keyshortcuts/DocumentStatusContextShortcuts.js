@@ -5,11 +5,11 @@ import { arePropTypesIdentical } from '../../utils';
 
 export default class DocumentStatusContextShortcuts extends Component {
   handleShortcut = event => {
-    const { onDocumentCompleteStatus } = this.props;
+    const { handleDocumentCompleteStatus } = this.props;
 
     event.preventDefault();
 
-    return onDocumentCompleteStatus();
+    return handleDocumentCompleteStatus();
   };
 
   shouldComponentUpdate = nextProps =>

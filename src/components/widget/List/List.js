@@ -168,7 +168,7 @@ class ListWidget extends Component {
   };
 
   handleBlur = () => {
-    const { onBlur } = this.props;
+    const { onHandleBlur } = this.props;
 
     this.setState(
       {
@@ -176,7 +176,7 @@ class ListWidget extends Component {
         list: null,
       },
       () => {
-        onBlur && onBlur();
+        onHandleBlur && onHandleBlur();
       }
     );
   };
@@ -329,7 +329,7 @@ ListWidget.propTypes = {
   enableAutofocus: PropTypes.func,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
-  onBlur: PropTypes.func,
+  onHandleBlur: PropTypes.func,
 };
 
 const mapStateToProps = state => ({

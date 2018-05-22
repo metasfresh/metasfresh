@@ -8,14 +8,14 @@ export default class GlobalContextShortcuts extends Component {
     OPEN_AVATAR_MENU: event => {
       event.preventDefault();
 
-      this.props.onCloseOverlays(null, () => {
-        this.props.onUDOpen();
+      this.props.closeOverlays(null, () => {
+        this.props.handleUDOpen();
       });
     },
     OPEN_ACTIONS_MENU: event => {
       event.preventDefault();
 
-      this.props.onCloseOverlays('isSubheaderShow');
+      this.props.closeOverlays('isSubheaderShow');
     },
     OPEN_NAVIGATION_MENU: event => {
       event.preventDefault();
@@ -25,41 +25,41 @@ export default class GlobalContextShortcuts extends Component {
     OPEN_INBOX_MENU: event => {
       event.preventDefault();
 
-      this.props.onCloseOverlays('', () => this.props.onInboxOpen(true));
+      this.props.closeOverlays('', () => this.props.handleInboxOpen(true));
     },
     OPEN_SIDEBAR_MENU_0: event => {
       event.preventDefault();
 
-      this.props.onCloseOverlays(null, () => {
-        this.props.onSidelistToggle(0);
+      this.props.closeOverlays(null, () => {
+        this.props.handleSidelistToggle(0);
       });
     },
     OPEN_SIDEBAR_MENU_1: event => {
       event.preventDefault();
 
-      this.props.onCloseOverlays(null, () => {
-        this.props.onSidelistToggle(1);
+      this.props.closeOverlays(null, () => {
+        this.props.handleSidelistToggle(1);
       });
     },
     OPEN_SIDEBAR_MENU_2: event => {
       event.preventDefault();
 
-      this.props.onCloseOverlays(null, () => {
-        this.props.onSidelistToggle(2);
+      this.props.closeOverlays(null, () => {
+        this.props.handleSidelistToggle(2);
       });
     },
     DELETE_DOCUMENT: event => {
       event.preventDefault();
 
-      if (this.props.onDelete) {
-        this.props.onDelete();
+      if (this.props.handleDelete) {
+        this.props.handleDelete();
       }
     },
     CLONE_DOCUMENT: event => {
       event.preventDefault();
 
-      if (this.props.onClone) {
-        this.props.onClone();
+      if (this.props.handleClone) {
+        this.props.handleClone();
       }
     },
     OPEN_ADVANCED_EDIT: event => {
@@ -72,22 +72,22 @@ export default class GlobalContextShortcuts extends Component {
     OPEN_PRINT_RAPORT: event => {
       event.preventDefault();
 
-      if (this.props.onPrint) {
-        this.props.onPrint();
+      if (this.props.handlePrint) {
+        this.props.handlePrint();
       }
     },
     OPEN_EMAIL: event => {
       event.preventDefault();
 
-      if (this.props.onEmail) {
-        this.props.onEmail();
+      if (this.props.handleEmail) {
+        this.props.handleEmail();
       }
     },
     OPEN_LETTER: event => {
       event.preventDefault();
 
-      if (this.props.onLetter) {
-        this.props.onLetter();
+      if (this.props.handleLetter) {
+        this.props.handleLetter();
       }
     },
     NEW_DOCUMENT: event => {
@@ -100,15 +100,15 @@ export default class GlobalContextShortcuts extends Component {
     DOC_STATUS: event => {
       event.preventDefault();
 
-      if (this.props.onDocStatusToggle) {
-        this.props.onCloseOverlays('dropdown', this.props.onDocStatusToggle);
+      if (this.props.handleDocStatusToggle) {
+        this.props.closeOverlays('dropdown', this.props.handleDocStatusToggle);
       }
     },
     TOGGLE_EDIT_MODE: event => {
       event.preventDefault();
 
-      if (this.props.onEditModeToggle) {
-        this.props.onEditModeToggle();
+      if (this.props.handleEditModeToggle) {
+        this.props.handleEditModeToggle();
       }
     },
   };
