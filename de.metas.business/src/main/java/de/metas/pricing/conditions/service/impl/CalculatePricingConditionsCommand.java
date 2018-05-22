@@ -17,6 +17,7 @@ import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsDiscountType;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
@@ -126,7 +127,7 @@ import lombok.NonNull;
 		{
 			flatDiscount = pricingConditions.getFlatDiscount();
 		}
-		
+
 		return CalculatePricingConditionsResult.builder()
 				.pricingConditionsId(pricingConditions.getId())
 				.discount(flatDiscount)
@@ -142,8 +143,11 @@ import lombok.NonNull;
 			return CalculatePricingConditionsResult.ZERO;
 		}
 
+		final PricingConditionsBreakId pricingConditionsBreakId = breakApplied.getId();
+
 		final CalculatePricingConditionsResultBuilder result = CalculatePricingConditionsResult.builder()
-				.pricingConditionsBreakId(breakApplied.getId())
+				.pricingConditionsId(pricingConditionsBreakId != null ? pricingConditionsBreakId.getPricingConditionsId() : null)
+				.pricingConditionsBreakId(pricingConditionsBreakId)
 				.paymentTermId(breakApplied.getPaymentTermId());
 
 		computePriceForPricingConditionsBreak(result, breakApplied.getPriceOverride());
