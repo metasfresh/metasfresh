@@ -7,14 +7,26 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.X_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableList;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -46,9 +58,15 @@ import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 
 public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		extends WEBUI_PP_Order_Template
-		implements IProcessPrecondition
+		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	@Param(parameterName = "QtyCU", mandatory = true)
+	private static final IPPOrderBOMBL ppOrderBomBL = Services.get(IPPOrderBOMBL.class);
+
+	private static final String PARAM_QtyCU = "QtyCU";
+	/**
+	 * Qty CU to be issued
+	 */
+	@Param(parameterName = PARAM_QtyCU, mandatory = true)
 	private BigDecimal qtyCU;
 
 	@Override
@@ -81,14 +99,13 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				.peek(sourceHu -> huId2SourceHu.put(sourceHu.getM_HU_ID(), sourceHu))
 				.map(I_M_Source_HU::getM_HU)
 				.collect(ImmutableList.toImmutableList());
+	
+		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
+				.sourceHUs(husThatAreFlaggedAsSource)
+				.qtyCU(qtyCU)
+				.build();
 
-		// final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
-		// .sourceHUs(husThatAreFlaggedAsSource)
-		// .qtyCU(qtyCU.intValue())
-		// .build();
-
-		// EmptyHUListener emptyHUListener =
-		EmptyHUListener
+		EmptyHUListener emptyHUListener = EmptyHUListener
 				.doBeforeDestroyed(hu -> {
 					if (huId2SourceHu.containsKey(hu.getM_HU_ID()))
 					{
@@ -96,10 +113,10 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 					}
 				}, "Create snapshot of source-HU before it is destroyed");
 
-		// final List<I_M_HU> extractedCUs = HUTransformService.builder()
-		// .emptyHUListener(emptyHUListener)
-		// .build()
-		// .husToNewCUs(request);
+		final List<I_M_HU> extractedCUs = HUTransformService.builder()
+				.emptyHUListener(emptyHUListener)
+				.build()
+				.husToNewCUs(request);
 
 		final PPOrderLinesView ppOrderView = getView();
 
@@ -107,12 +124,44 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		Services.get(IHUPPOrderBL.class)
 				.createIssueProducer()
 				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
-				.createDraftIssues(sourceHus.stream().map(sourceHu -> sourceHu.getM_HU()).collect(ImmutableList.toImmutableList()));
+				.createDraftIssues(extractedCUs);
 
 		getView().invalidateAll();
 		ppOrderView.invalidateAll();
 
 		return MSG_OK;
+	}
+
+	@Override
+	public Object getParameterDefaultValue(IProcessDefaultParameter parameter)
+	{
+		if (PARAM_QtyCU.equals(parameter.getColumnName()))
+		{
+			final PPOrderLineRow row = getSingleSelectedRow();
+
+			final I_PP_Order_BOMLine bomLine = load(row.getPP_Order_BOMLine_ID(), I_PP_Order_BOMLine.class);
+			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx());
+			final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
+			
+			
+			final I_M_HU hu = activeSourceHus.get(0).getM_HU();
+			final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
+
+			final String issueMethod = row.getIssueMethod();
+
+			if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
+			{
+				return ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getC_UOM()).getQty();
+			}
+			else
+			{
+				return productStorages.get(0).getQty();
+			}
+		}
+		else
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
 	}
 
 }

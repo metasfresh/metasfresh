@@ -155,7 +155,7 @@ public class PPOrderLineRow implements IViewRow
 
 		this.documentPath = computeDocumentPath();
 
-		this.issueMethod = ppOrderQty.getPP_Order_BOMLine().getIssueMethod();
+		this.issueMethod = ppOrderQty.getPP_Order_BOMLine() == null ? null : ppOrderQty.getPP_Order_BOMLine().getIssueMethod();
 	}
 
 	@lombok.Builder(builderMethodName = "builderForPPOrder", builderClassName = "BuilderForPPOrder")

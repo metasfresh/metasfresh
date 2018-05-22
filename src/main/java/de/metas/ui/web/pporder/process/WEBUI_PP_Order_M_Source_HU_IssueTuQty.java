@@ -10,7 +10,6 @@ import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
