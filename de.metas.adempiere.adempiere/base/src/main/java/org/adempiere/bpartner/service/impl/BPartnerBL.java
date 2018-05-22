@@ -339,7 +339,7 @@ public class BPartnerBL implements IBPartnerBL
 			bpContact.setIsSalesContact(true);
 			bpContact.setIsSalesContact_Default(true);
 		}
-		else if (template.isVendor())
+		if (template.isVendor())
 		{
 			bpContact.setIsPurchaseContact(true);
 			bpContact.setIsPurchaseContact_Default(true);
