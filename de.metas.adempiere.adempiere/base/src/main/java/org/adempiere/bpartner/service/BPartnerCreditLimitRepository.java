@@ -131,6 +131,7 @@ public class BPartnerCreditLimitRepository
 				.addOnlyContextClient()
 				.create()
 				.stream()
+				.sorted(comparator)
 				.findFirst();
 	}
 }
