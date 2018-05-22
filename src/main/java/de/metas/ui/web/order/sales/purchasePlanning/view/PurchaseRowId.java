@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
@@ -49,13 +50,13 @@ public final class PurchaseRowId
 	{
 		return PurchaseRowId.builder()
 				.salesOrderLineId(salesOrderLineId)
-				.vendorBPartnerId(-1)
+				.vendorBPartnerId(null)
 				.build();
 	}
 
 	public static PurchaseRowId lineId(
 			final int salesOrderLineId,
-			final int vendorBPartnerId,
+			final BPartnerId vendorBPartnerId,
 			final int processedPurchaseCandidateId)
 	{
 		return PurchaseRowId.builder()
@@ -106,7 +107,7 @@ public final class PurchaseRowId
 		try
 		{
 			final int salesOrderLineId = Integer.parseInt(parts.get(0));
-			final int vendorBPartnerId = partsCount >= 2 ? Integer.parseInt(parts.get(1)) : -1;
+			final BPartnerId vendorBPartnerId = partsCount >= 2 ? BPartnerId.ofRepoIdOrNull(Integer.parseInt(parts.get(1))) : null;
 			final int processedPurchaseCandidateId = partsCount >= 3 ? Integer.parseInt(parts.get(2)) : -1;
 			final Type availabilityType = partsCount >= 4 ? Type.valueOf(parts.get(3)) : null;
 			final String availabilityDistinguisher = partsCount >= 5 ? parts.get(4) : null;
@@ -135,7 +136,7 @@ public final class PurchaseRowId
 	private final int salesOrderLineId;
 
 	@Getter(AccessLevel.PACKAGE) // visible for testing
-	private final int vendorBPartnerId;
+	private final BPartnerId vendorBPartnerId;
 
 	@Getter
 	private final Type availabilityType;
@@ -150,7 +151,7 @@ public final class PurchaseRowId
 	@Builder
 	private PurchaseRowId(
 			final int salesOrderLineId,
-			final int vendorBPartnerId,
+			final BPartnerId vendorBPartnerId,
 			final int processedPurchaseCandidateId,
 			final Type availabilityType,
 			final String availabilityDistinguisher,
@@ -167,7 +168,7 @@ public final class PurchaseRowId
 				PARTS_SEPARATOR, availabilityDistinguisher);
 
 		this.salesOrderLineId = salesOrderLineId;
-		this.vendorBPartnerId = vendorBPartnerId > 0 ? vendorBPartnerId : 0;
+		this.vendorBPartnerId = vendorBPartnerId;
 		this.processedPurchaseCandidateId = processedPurchaseCandidateId > 0 ? processedPurchaseCandidateId : 0;
 
 		this.availabilityType = availabilityType;
@@ -182,10 +183,10 @@ public final class PurchaseRowId
 		{
 			final StringBuilder sb = new StringBuilder();
 			sb.append(salesOrderLineId);
-			if (vendorBPartnerId > 0 || processedPurchaseCandidateId > 0)
+			if (vendorBPartnerId != null || processedPurchaseCandidateId > 0)
 			{
 				sb.append(PARTS_SEPARATOR);
-				sb.append(vendorBPartnerId);
+				sb.append(BPartnerId.toRepoIdOr(vendorBPartnerId, 0));
 
 				sb.append(PARTS_SEPARATOR);
 				sb.append(processedPurchaseCandidateId);
@@ -232,12 +233,12 @@ public final class PurchaseRowId
 
 	public boolean isGroupRowId()
 	{
-		return (vendorBPartnerId <= 0 && processedPurchaseCandidateId <= 0);
+		return (vendorBPartnerId == null && processedPurchaseCandidateId <= 0);
 	}
 
 	public boolean isLineRowId()
 	{
-		return (vendorBPartnerId > 0 || processedPurchaseCandidateId > 0) && availabilityType == null;
+		return (vendorBPartnerId != null || processedPurchaseCandidateId > 0) && availabilityType == null;
 	}
 
 	public boolean isAvailabilityRowId()

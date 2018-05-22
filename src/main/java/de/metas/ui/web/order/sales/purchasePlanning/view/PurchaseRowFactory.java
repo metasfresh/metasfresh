@@ -10,6 +10,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -73,7 +75,7 @@ public class PurchaseRowFactory
 			@Nullable final VendorProductInfo vendorProductInfo,
 			@NotNull final Date datePromised)
 	{
-		final int bpartnerId = purchaseCandidate.getVendorBPartnerId();
+		final BPartnerId bpartnerId = purchaseCandidate.getVendorBPartnerId();
 		final int productId;
 		final JSONLookupValue vendorBPartner = createBPartnerLookupValue(bpartnerId);
 		final JSONLookupValue product;
@@ -228,14 +230,14 @@ public class PurchaseRowFactory
 		return JSONLookupValue.of(asi.getM_AttributeSetInstance_ID(), asi.getDescription());
 	}
 
-	private static JSONLookupValue createBPartnerLookupValue(final int bpartnerId)
+	private static JSONLookupValue createBPartnerLookupValue(final BPartnerId bpartnerId)
 	{
-		if (bpartnerId <= 0)
+		if (bpartnerId == null)
 		{
 			return null;
 		}
 
-		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 		if (bpartner == null)
 		{
 			return null;

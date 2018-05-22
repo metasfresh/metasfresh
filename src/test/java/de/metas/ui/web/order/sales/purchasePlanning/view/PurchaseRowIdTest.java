@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.junit.Test;
 
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
@@ -58,7 +59,7 @@ public class PurchaseRowIdTest
 	{
 		final PurchaseRowId rowId = PurchaseRowId.lineId(
 				Integer.parseInt(salesOrderLineId),
-				Integer.parseInt(vendorBPartnerId),
+				BPartnerId.ofRepoId(Integer.parseInt(vendorBPartnerId)),
 				Integer.parseInt(processedPurchaseCandidateId));
 
 		final DocumentId documentId = rowId.toDocumentId();
@@ -74,7 +75,7 @@ public class PurchaseRowIdTest
 	@Test
 	public void withAvailability()
 	{
-		final PurchaseRowId rowId = PurchaseRowId.lineId(10, 20, 30);
+		final PurchaseRowId rowId = PurchaseRowId.lineId(10, BPartnerId.ofRepoId(20), 30);
 		final PurchaseRowId availabilityRowId = rowId.withAvailability(Type.AVAILABLE, "someString");
 
 		assertThat(rowId.toDocumentId()).isNotEqualTo(availabilityRowId.toDocumentId());

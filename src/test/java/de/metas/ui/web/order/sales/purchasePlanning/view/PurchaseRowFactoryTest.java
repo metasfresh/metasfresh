@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
@@ -95,7 +96,7 @@ public class PurchaseRowFactoryTest
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
-				.vendorBPartnerId(bPartner.getC_BPartner_ID())
+				.vendorBPartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
 				.productId(product.getM_Product_ID())
 				.productNo("productNo")
 				.productName("productName")
