@@ -11,7 +11,7 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
-import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductDAO;
@@ -81,7 +81,7 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 	{
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 
-		final CalculatePricingConditionsResult result = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
+		final PricingConditionsResult result = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
 				.forcePricingConditionsBreak(request.getPricingConditionsBreak())
 				.pricingCtx(createPricingContext(request))
 				.build());
