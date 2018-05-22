@@ -14,7 +14,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsViewFactory;
+import de.metas.ui.web.order.sales.pricingConditions.view.OrderLinePricingConditionsViewFactory;
 
 /*
  * #%L
@@ -57,10 +57,9 @@ public class WEBUI_SalesOrder_PricingConditionsView_Launcher extends JavaProcess
 		// }
 
 		final String docStatus = salesOrder.getDocStatus();
-		if (!IDocument.STATUS_Drafted.equals(docStatus)
-				&& !IDocument.STATUS_Completed.equals(docStatus))
+		if (!IDocument.STATUS_Drafted.equals(docStatus))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only draft or completed orders are allowed");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only draft orders are allowed");
 		}
 
 		// Make sure only one line is selected
@@ -86,7 +85,7 @@ public class WEBUI_SalesOrder_PricingConditionsView_Launcher extends JavaProcess
 				.collect(ImmutableSet.toImmutableSet());
 		ListUtils.singleElement(salesOrderLineRefs);
 
-		getResult().setRecordsToOpen(salesOrderLineRefs, PricingConditionsViewFactory.WINDOW_ID_STRING);
+		getResult().setRecordsToOpen(salesOrderLineRefs, OrderLinePricingConditionsViewFactory.WINDOW_ID_STRING);
 
 		return MSG_OK;
 	}

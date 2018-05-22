@@ -13,6 +13,8 @@ import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.pricing.conditions.PriceOverride;
+import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
@@ -146,28 +148,28 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 
 		final I_C_OrderLine salesOrderLine = load(getSalesOrderLineId(), I_C_OrderLine.class);
 		salesOrderLine.setC_PaymentTerm_Override_ID(editableRow.getPaymentTermId());
-		salesOrderLine.setIsTempPricingConditions(editableRow.isTemporary());
+		salesOrderLine.setIsTempPricingConditions(editableRow.isTemporaryPricingConditions());
 
-		if (editableRow.isTemporary())
+		if (editableRow.isTemporaryPricingConditions())
 		{
 			salesOrderLine.setM_DiscountSchemaBreak_ID(-1);
 
-			final Price price = editableRow.getPrice();
-			final PriceType priceType = price.getPriceType();
-			if (priceType == PriceType.NONE)
+			final PriceOverride price = editableRow.getPrice();
+			final PriceOverrideType type = price.getType();
+			if (type == PriceOverrideType.NONE)
 			{
 				//
 			}
-			else if (priceType == PriceType.BASE_PRICING_SYSTEM)
+			else if (type == PriceOverrideType.BASE_PRICING_SYSTEM)
 			{
 				salesOrderLine.setIsManualPrice(true);
 				salesOrderLine.setBase_PricingSystem_ID(editableRow.getBasePriceSystemId());
 
 			}
-			else if (priceType == PriceType.FIXED_PRICED)
+			else if (type == PriceOverrideType.FIXED_PRICE)
 			{
 				salesOrderLine.setIsManualPrice(true);
-				salesOrderLine.setPriceEntered(price.getPriceValue());
+				salesOrderLine.setPriceEntered(price.getFixedPrice());
 			}
 
 			salesOrderLine.setIsManualDiscount(true);
@@ -187,7 +189,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 
 		orderLineBL.updateLineNetAmt(salesOrderLine);
 		orderLineBL.setTaxAmtInfo(salesOrderLine);
-		
+
 		InterfaceWrapperHelper.save(salesOrderLine);
 	}
 }

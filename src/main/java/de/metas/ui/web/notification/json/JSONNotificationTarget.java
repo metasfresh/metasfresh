@@ -56,8 +56,14 @@ public class JSONNotificationTarget implements Serializable
 			case Window:
 				return JSONNotificationTarget.builder()
 						.targetType(UserNotificationTargetType.Window)
-						.documentType(notification.getTargetDocumentType())
+						.windowId(notification.getTargetDocumentType())
 						.documentId(notification.getTargetDocumentId())
+						.build();
+			case View:
+				return JSONNotificationTarget.builder()
+						.targetType(UserNotificationTargetType.View)
+						.windowId(notification.getTargetDocumentType())
+						.viewId(notification.getTargetViewId())
 						.build();
 			case None:
 				return null;
@@ -75,23 +81,39 @@ public class JSONNotificationTarget implements Serializable
 
 	//
 	// Target: Window/Document
+	@JsonProperty("windowId")
+	@JsonInclude(JsonInclude.Include.NON_ABSENT)
+	private String windowId;
+	//
 	@JsonProperty("documentType")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
+	@Deprecated
 	private String documentType;
 	//
 	@JsonProperty("documentId")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
 	private String documentId;
 
+	//
+	// Target: View
+	@JsonProperty("viewId")
+	@JsonInclude(JsonInclude.Include.NON_ABSENT)
+	private String viewId;
+
 	@Builder
 	@JsonCreator
 	private JSONNotificationTarget(
 			@JsonProperty("targetType") @NonNull final UserNotificationTargetType targetType,
-			@JsonProperty("documentType") final String documentType,
-			@JsonProperty("documentId") final String documentId)
+			@JsonProperty("windowId") final String windowId,
+			@JsonProperty("documentId") final String documentId,
+			@JsonProperty("viewId") final String viewId)
 	{
 		this.targetType = targetType;
-		this.documentType = documentType;
+
+		this.windowId = windowId;
+		this.documentType = windowId;
 		this.documentId = documentId;
+
+		this.viewId = viewId;
 	}
 }

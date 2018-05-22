@@ -3,17 +3,15 @@ package de.metas.ui.web.order.sales.pricingConditions.process;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_PricingSystem;
 
+import de.metas.pricing.conditions.PriceOverride;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.sales.pricingConditions.view.Price;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 
 /*
  * #%L
@@ -79,47 +77,34 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 	private PricingConditionsRowChangeRequest createChangeRequest()
 	{
 		final PricingConditionsRow templateRow = getSingleSelectedRow();
-		final Price price = extractPriceFromTemplate(templateRow);
+		final PriceOverride price = extractPriceFromTemplate(templateRow);
 
 		return PricingConditionsRowChangeRequest.builder()
-				.price(price).forceChangingPriceType(true)
+				.priceChange(CompletePriceChange.of(price))
 				.discount(templateRow.getDiscount())
 				.paymentTerm(Optional.ofNullable(templateRow.getPaymentTerm()))
-				.sourceDiscountSchemaBreakId(templateRow.getDiscountSchemaBreakId())
+				.sourcePricingConditionsBreakId(templateRow.getPricingConditionsBreakId())
 				.build();
 	}
 
-	private Price extractPriceFromTemplate(final PricingConditionsRow templateRow)
+	private PriceOverride extractPriceFromTemplate(final PricingConditionsRow templateRow)
 	{
-		final Price price = templateRow.getPrice();
+		final PriceOverride price = templateRow.getPrice();
 		if (!price.isNoPrice())
 		{
 			return price;
 		}
 
 		// In case row does not have a price then use BPartner's pricing system
-		final int bpartnerId = templateRow.getBpartnerId();
+		final BPartnerId bpartnerId = templateRow.getBpartnerId();
 		final boolean isSOTrx = templateRow.isCustomer();
-		final LookupValue pricingSystem = getPricingSystemForBPartnerId(bpartnerId, isSOTrx);
-		if (pricingSystem == null)
-		{
-			return Price.none();
-		}
-
-		final BigDecimal basePriceAddAmt = BigDecimal.ZERO;
-		return Price.basePricingSystem(pricingSystem, basePriceAddAmt);
-	}
-
-	private LookupValue getPricingSystemForBPartnerId(final int bpartnerId, final boolean isSOTrx)
-	{
 		final int pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, isSOTrx);
 		if (pricingSystemId <= 0)
 		{
-			return null;
+			return PriceOverride.none();
 		}
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
-		final LookupDataSource pricingSystemLookup = lookupFactory.searchInTableLookup(I_M_PricingSystem.Table_Name);
-		return pricingSystemLookup.findById(pricingSystemId);
+		final BigDecimal basePriceAddAmt = BigDecimal.ZERO;
+		return PriceOverride.basePricingSystem(pricingSystemId, basePriceAddAmt);
 	}
 }

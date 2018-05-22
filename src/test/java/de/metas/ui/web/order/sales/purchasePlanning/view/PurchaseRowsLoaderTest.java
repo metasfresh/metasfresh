@@ -10,19 +10,26 @@ import java.util.List;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
-import de.metas.interfaces.I_C_BPartner_Product;
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLines;
@@ -54,6 +61,8 @@ import mockit.Mocked;
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseRowsLoaderTest
 {
 	@Mocked
@@ -95,7 +104,7 @@ public class PurchaseRowsLoaderTest
 		save(orderLine);
 
 		final I_C_BPartner_Product bPartnerProduct = newInstance(I_C_BPartner_Product.class);
-		bPartnerProduct.setC_BPartner_Vendor(bPartnerVendor);
+		bPartnerProduct.setC_BPartner(bPartnerVendor);
 		bPartnerProduct.setM_Product(product);
 		bPartnerProduct.setVendorProductNo("bPartnerProduct.VendorProductNo");
 		bPartnerProduct.setProductName("bPartnerProduct.ProductName");
@@ -158,13 +167,12 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(20)
-				.dateRequired(orderLine.getDatePromised())
+				.dateRequired(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(orderLine.getM_Product_ID())
 				.qtyToPurchase(orderLine.getQtyOrdered())
 				.salesOrderId(orderLine.getC_Order_ID())
 				.salesOrderLineId(orderLine.getC_OrderLine_ID())
 				.uomId(orderLine.getM_Product().getC_UOM_ID())
-				.vendorBPartnerId(vendorProductInfo.getVendorBPartnerId())
 				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(30)
 				.build();

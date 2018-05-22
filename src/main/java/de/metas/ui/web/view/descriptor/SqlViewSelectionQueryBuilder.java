@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.IStringExpressionWrapper;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -76,6 +77,7 @@ public final class SqlViewSelectionQueryBuilder
 	private static final transient Logger logger = LogManager.getLogger(SqlViewSelectionQueryBuilder.class);
 
 	private final SqlViewBinding _viewBinding;
+	private boolean applySecurityRestrictions = true;
 	private SqlDocumentFilterConverter _sqlDocumentFieldConverter; // lazy
 
 	public static final SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding)
@@ -86,6 +88,12 @@ public final class SqlViewSelectionQueryBuilder
 	private SqlViewSelectionQueryBuilder(@NonNull final SqlViewBinding viewBinding)
 	{
 		_viewBinding = viewBinding;
+	}
+
+	public SqlViewSelectionQueryBuilder applySecurityRestrictions(final boolean applySecurityRestrictions)
+	{
+		this.applySecurityRestrictions = applySecurityRestrictions;
+		return this;
 	}
 
 	private String getTableName()
@@ -249,7 +257,7 @@ public final class SqlViewSelectionQueryBuilder
 							//
 							.append("\n FROM ").append(sqlTableName).append(" ").append(sqlTableAlias)
 							.append("\n WHERE 1=1 ")
-							.wrap(AccessSqlStringExpression.wrapper(sqlTableAlias, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+							.wrap(securityRestrictionsWrapper(sqlTableAlias)) // security
 			);
 			sqlParams.add(newViewId.getViewId());
 		}
@@ -324,7 +332,7 @@ public final class SqlViewSelectionQueryBuilder
 							//
 							.append("\n FROM ").append(sqlTableName).append(" ").append(sqlTableAlias)
 							.append("\n WHERE 1=1 ")
-							.wrap(AccessSqlStringExpression.wrapper(sqlTableAlias, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+							.wrap(securityRestrictionsWrapper(sqlTableAlias)) // security
 			);
 			sqlParams.add(newViewId.getViewId());
 		}
@@ -773,5 +781,17 @@ public final class SqlViewSelectionQueryBuilder
 				+ " AND " + DB.buildSqlList(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID, lineIds, sqlParams);
 
 		return SqlAndParams.of(sql, sqlParams);
+	}
+
+	private IStringExpressionWrapper securityRestrictionsWrapper(final String sqlTableAlias)
+	{
+		if (applySecurityRestrictions)
+		{
+			return AccessSqlStringExpression.wrapper(sqlTableAlias, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+		}
+		else
+		{
+			return expression -> expression;
+		}
 	}
 }

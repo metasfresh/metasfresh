@@ -67,10 +67,16 @@ import lombok.ToString;
 @EqualsAndHashCode(of = "documentId")
 public class MaterialCockpitRow implements IViewRow
 {
+	public static MaterialCockpitRow cast(final IViewRow row)
+	{
+		return (MaterialCockpitRow)row;
+	}
+
 	private static final String SEPARATOR = "-";
 	private static final Joiner DOCUMENT_ID_JOINER = Joiner.on(SEPARATOR).skipNulls();
 
 	private final Timestamp date;
+	@Getter
 	private final int productId;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
@@ -211,7 +217,7 @@ public class MaterialCockpitRow implements IViewRow
 
 	private static int extractProductId(final List<MaterialCockpitRow> includedRows)
 	{
-		final List<Integer> productIds = includedRows.stream().map(row -> row.productId).distinct().collect(ImmutableList.toImmutableList());
+		final List<Integer> productIds = includedRows.stream().map(MaterialCockpitRow::getProductId).distinct().collect(ImmutableList.toImmutableList());
 		Check.errorIf(productIds.size() > 1, "The given includedRows have different productIds={}; includedRows={}", productIds, includedRows);
 
 		return productIds.get(0);

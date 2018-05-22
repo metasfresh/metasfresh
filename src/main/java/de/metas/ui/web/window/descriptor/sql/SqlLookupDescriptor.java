@@ -91,7 +91,19 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				.setDisplayType(DisplayType.Search)
 				.setReadOnlyAccess()
 				.buildProvider();
+	}
 
+	public static final LookupDescriptorProvider listByReferenceId(final int adReferenceId)
+	{
+		Check.assumeGreaterThanZero(adReferenceId, "adReferenceId");
+
+		return builder()
+				.setCtxTableName(null) // tableName
+				.setCtxColumnName(null)
+				.setDisplayType(DisplayType.List)
+				.setAD_Reference_Value_ID(adReferenceId)
+				.setReadOnlyAccess()
+				.buildProvider();
 	}
 
 	public static final CtxName SQL_PARAM_KeyId = CtxNames.parse("SqlKeyId");
@@ -251,7 +263,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	{
 		return dependsOnFieldNames;
 	}
-	
+
 	@Override
 	public Set<String> getDependsOnTableNames()
 	{
@@ -362,7 +374,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 		private SqlLookupDescriptor build()
 		{
-			Check.assumeNotEmpty(ctxColumnName, "columnName is not empty");
+			// Check.assumeNotEmpty(ctxColumnName, "columnName is not empty");
 
 			final boolean IsParent = false;
 

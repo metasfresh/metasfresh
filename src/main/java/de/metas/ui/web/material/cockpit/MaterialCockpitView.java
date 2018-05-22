@@ -16,6 +16,7 @@ import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Displa
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.AbstractCustomView;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
@@ -45,6 +46,11 @@ import lombok.NonNull;
 
 public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 {
+	public static MaterialCockpitView cast(final IView view)
+	{
+		return (MaterialCockpitView)view;
+	}
+
 	private final ImmutableList<DocumentFilter> filters;
 
 	private final List<RelatedProcessDescriptor> relatedProcessDescriptors;
@@ -81,7 +87,7 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 	{
 		return filters;
 	}
-	
+
 	@Override
 	protected boolean isEligibleInvalidateEvent(final TableRecordReference recordRef)
 	{

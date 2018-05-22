@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.sales.pricingConditions.process;
 
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest;
@@ -49,9 +50,9 @@ public class PricingConditionsView_SaveEditableRow extends PricingConditionsView
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the editable row");
 		}
 
-		if (row.getDiscountSchemaId() <= 0)
+		if (row.getPricingConditionsId() == null)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("row does not have a discountSchemaId defined; saving will fail later");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("row does not have pricing conditions defined; saving will fail later");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -60,14 +61,12 @@ public class PricingConditionsView_SaveEditableRow extends PricingConditionsView
 	@Override
 	protected String doIt()
 	{
-		final int discountSchemaBreakId = PricingConditionsRowsSaver.builder()
+		final PricingConditionsBreak pricingConditionsBreak = PricingConditionsRowsSaver.builder()
 				.row(getEditableRow())
 				.build()
 				.save();
 
-		patchEditableRow(PricingConditionsRowChangeRequest.builder()
-				.discountSchemaBreakId(discountSchemaBreakId)
-				.build());
+		patchEditableRow(PricingConditionsRowChangeRequest.saved(pricingConditionsBreak.getId(), pricingConditionsBreak.getDateCreated()));
 
 		return MSG_OK;
 	}

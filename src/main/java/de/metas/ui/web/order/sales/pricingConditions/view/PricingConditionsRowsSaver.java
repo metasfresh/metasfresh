@@ -3,7 +3,8 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
-import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest.PricingConditionsBreakChangeRequestBuilder;
@@ -44,7 +45,7 @@ public class PricingConditionsRowsSaver
 		this.row = row;
 	}
 
-	public int save()
+	public PricingConditionsBreak save()
 	{
 		if (!row.isEditable())
 		{
@@ -52,47 +53,23 @@ public class PricingConditionsRowsSaver
 					.setParameter("row", row);
 		}
 
-		final int discountSchemaId = row.getDiscountSchemaId();
-		if (discountSchemaId <= 0)
+		final PricingConditionsId pricingConditionsId = row.getPricingConditionsId();
+		if (pricingConditionsId == null)
 		{
 			throw new AdempiereException("Cannot save row because no discount schema was defined"); // TODO trl
 		}
 
 		final PricingConditionsBreakChangeRequestBuilder requestBuilder = PricingConditionsBreakChangeRequest.builder()
-				.discountSchemaId(discountSchemaId)
-				.discountSchemaBreakId(row.getDiscountSchemaBreakId())
+				.pricingConditionsId(pricingConditionsId)
+				.pricingConditionsBreakId(row.getPricingConditionsBreakId())
+				.matchCriteria(row.getBreakMatchCriteria())
 				//
-				.updateFromDiscountSchemaBreakId(row.getCopiedFromDiscountSchemaBreakId())
+				.updateFromPricingConditionsBreakId(row.getCopiedFromPricingConditionsBreakId())
 				//
+				.price(row.getPrice())
 				.discount(row.getDiscount())
 				.paymentTermId(row.getPaymentTermId());
 
-		updatePrice(requestBuilder, row.getPrice());
-
 		return pricingConditionsRepo.changePricingConditionsBreak(requestBuilder.build());
-	}
-
-	private void updatePrice(final PricingConditionsBreakChangeRequestBuilder requestBuilder, final Price price)
-	{
-		final PriceType priceType = price.getPriceType();
-		if (priceType == PriceType.NONE)
-		{
-			requestBuilder.priceOverride(PriceOverrideType.NONE);
-		}
-		else if (priceType == PriceType.BASE_PRICING_SYSTEM)
-		{
-			requestBuilder.priceOverride(PriceOverrideType.BASE_PRICING_SYSTEM);
-			requestBuilder.basePricingSystemId(price.getPricingSystemId());
-			requestBuilder.basePriceAddAmt(price.getBasePriceAddAmt());
-		}
-		else if (priceType == PriceType.FIXED_PRICED)
-		{
-			requestBuilder.priceOverride(PriceOverrideType.FIXED_PRICED);
-			requestBuilder.fixedPrice(price.getPriceValue());
-		}
-		else
-		{
-			throw new AdempiereException("Unknown priceType: " + priceType);
-		}
 	}
 }

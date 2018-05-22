@@ -62,6 +62,12 @@ import lombok.NonNull;
 @lombok.Value
 public final class CreateViewRequest
 {
+	public static final Builder builder(final WindowId windowId)
+	{
+		final ViewId viewId = ViewId.random(windowId);
+		return new Builder(viewId, JSONViewDataType.grid);
+	}
+
 	public static final Builder builder(final WindowId windowId, final JSONViewDataType viewType)
 	{
 		final ViewId viewId = ViewId.random(windowId);
@@ -155,9 +161,10 @@ public final class CreateViewRequest
 
 	ViewActionDescriptorsList actions;
 	ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
-	
+
 	ImmutableMap<String, Object> parameters;
 
+	boolean applySecurityRestrictions;
 
 	private CreateViewRequest(final Builder builder)
 	{
@@ -176,8 +183,10 @@ public final class CreateViewRequest
 
 		actions = builder.getActions();
 		additionalRelatedProcessDescriptors = ImmutableList.copyOf(builder.getAdditionalRelatedProcessDescriptors());
-		
+
 		parameters = builder.getParameters();
+
+		applySecurityRestrictions = builder.isApplySecurityRestrictions();
 	}
 
 	private CreateViewRequest(@NonNull final CreateViewRequest from, @NonNull final DocumentFiltersList filters)
@@ -197,8 +206,10 @@ public final class CreateViewRequest
 
 		actions = from.actions;
 		additionalRelatedProcessDescriptors = from.additionalRelatedProcessDescriptors;
-		
+
 		parameters = from.parameters;
+
+		applySecurityRestrictions = from.applySecurityRestrictions;
 	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
@@ -283,8 +294,10 @@ public final class CreateViewRequest
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 		private final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = new ArrayList<>();
-		
+
 		private LinkedHashMap<String, Object> parameters;
+
+		private boolean applySecurityRestrictions = true;
 
 		private Builder(
 				@NonNull final ViewId viewId,
@@ -492,6 +505,17 @@ public final class CreateViewRequest
 		private ImmutableMap<String, Object> getParameters()
 		{
 			return parameters != null ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();
+		}
+
+		public Builder applySecurityRestrictions(final boolean applySecurityRestrictions)
+		{
+			this.applySecurityRestrictions = applySecurityRestrictions;
+			return this;
+		}
+
+		private boolean isApplySecurityRestrictions()
+		{
+			return applySecurityRestrictions;
 		}
 	}
 }

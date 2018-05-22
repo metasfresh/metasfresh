@@ -41,6 +41,7 @@ import de.metas.event.Type;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
 import de.metas.notification.UserNotificationTargetType;
 import de.metas.ui.web.config.WebConfig;
@@ -230,10 +231,10 @@ public class DebugRestController
 					.getTableName();
 
 			final TableRecordReference targetRecord = TableRecordReference.of(targetTableName, Integer.parseInt(targetDocumentId));
-			request.targetRecord(targetRecord);
+			request.targetAction(TargetRecordAction.of(targetRecord));
 		}
 
-		Services.get(INotificationBL.class).notifyUser(request.build());
+		Services.get(INotificationBL.class).send(request.build());
 	}
 
 	@PostMapping("/websocket/post")

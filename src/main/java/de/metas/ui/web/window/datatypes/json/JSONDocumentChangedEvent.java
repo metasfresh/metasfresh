@@ -152,7 +152,34 @@ public class JSONDocumentChangedEvent
 		}
 		else if (value instanceof JSONLookupValue)
 		{
-			JSONLookupValue json = (JSONLookupValue)value;
+			final JSONLookupValue json = (JSONLookupValue)value;
+			if (json == null)
+			{
+				return null;
+			}
+			return json.toIntegerLookupValue();
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + IntegerLookupValue.class);
+		}
+	}
+
+	public LookupValue getValueAsStringLookupValue()
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		else if (value instanceof Map)
+		{
+			@SuppressWarnings("unchecked")
+			final Map<String, Object> map = (Map<String, Object>)value;
+			return JSONLookupValue.stringLookupValueFromJsonMap(map);
+		}
+		else if (value instanceof JSONLookupValue)
+		{
+			final JSONLookupValue json = (JSONLookupValue)value;
 			if (json == null)
 			{
 				return null;

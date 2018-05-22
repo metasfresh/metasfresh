@@ -2,11 +2,10 @@ package de.metas.ui.web.material.cockpit;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
@@ -16,6 +15,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_PricingConditions;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -85,7 +85,8 @@ public class MaterialCockpitViewFactory
 				.filters(filtersToUse)
 				.filterDescriptors(filterDescriptors)
 				.rowsData(materialCockpitRowRepository.createRowsData(filtersToUse))
-				.relatedProcessDescriptor(createProcessDescriptor())
+				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_DocumentDetail_Display.class))
+				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_PricingConditions.class))
 				.build();
 
 		return view;
@@ -122,18 +123,20 @@ public class MaterialCockpitViewFactory
 		return viewlayOutBuilder.build();
 	}
 
-	private RelatedProcessDescriptor createProcessDescriptor()
+	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final int processId = adProcessDAO.retrieveProcessIdByClass(processClass);
+		if (processId <= 0)
+		{
+			throw new AdempiereException("No processId found for " + processClass);
+		}
 
-		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), MD_Cockpit_DocumentDetail_Display.class);
-		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for class %s", MD_Cockpit_DocumentDetail_Display.class);
-
-		final RelatedProcessDescriptor processDescriptor = RelatedProcessDescriptor.builder()
+		return RelatedProcessDescriptor.builder()
 				.processId(processId)
+				.anyTable().anyWindow()
 				.webuiQuickAction(true)
 				.build();
-		return processDescriptor;
 	}
 
 }

@@ -337,7 +337,8 @@ public class ViewRestController
 			@RequestParam(name = "parentViewId", required = false) final String parentViewIdStr,
 			@RequestParam(name = "parentViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String parentViewSelectedIdsListStr,
 			@RequestParam(name = "childViewId", required = false) final String childViewIdStr,
-			@RequestParam(name = "childViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String childViewSelectedIdsListStr)
+			@RequestParam(name = "childViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String childViewSelectedIdsListStr,
+			@RequestParam(name = "all", required = false) final boolean all)
 	{
 		userSession.assertLoggedIn();
 
@@ -352,7 +353,7 @@ public class ViewRestController
 				.build();
 
 		return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
-				.filter(WebuiRelatedProcessDescriptor::isEnabled) // only those which are enabled or not silent
+				.filter(descriptor -> all || descriptor.isEnabled()) // only those which are enabled and not internally rejected
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
@@ -364,7 +365,8 @@ public class ViewRestController
 			@RequestParam(name = "parentViewId", required = false) final String parentViewIdStr,
 			@RequestParam(name = "parentViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String parentViewSelectedIdsListStr,
 			@RequestParam(name = "childViewId", required = false) final String childViewIdStr,
-			@RequestParam(name = "childViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String childViewSelectedIdsListStr)
+			@RequestParam(name = "childViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String childViewSelectedIdsListStr,
+			@RequestParam(name = "all", required = false) final boolean all)
 	{
 		userSession.assertLoggedIn();
 
@@ -380,7 +382,7 @@ public class ViewRestController
 
 		return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
 				.filter(WebuiRelatedProcessDescriptor::isQuickAction)
-				.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
+				.filter(descriptor -> all || descriptor.isEnabledOrNotSilent()) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 

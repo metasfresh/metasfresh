@@ -30,11 +30,11 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -47,7 +47,7 @@ public final class JSONDocumentAction implements Serializable
 			.thenComparingInt(action -> action.isDefaultQuickAction() ? 0 : 1) // Default QuickAction
 			.thenComparingInt(action -> action.isQuickAction() ? 0 : 1) // QuickAction
 			.thenComparing(JSONDocumentAction::getCaption) // Caption
-			;
+	;
 
 	@JsonProperty("processId")
 	private final String processId;
@@ -66,6 +66,9 @@ public final class JSONDocumentAction implements Serializable
 	@JsonProperty("disabledReason")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String disabledReason;
+	@JsonProperty("disabledWithInternalReason")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean disabledWithInternalReason; // exposed only for tracing/debugging
 
 	@JsonProperty("evaluateDuration")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -85,10 +88,11 @@ public final class JSONDocumentAction implements Serializable
 
 		quickAction = relatedProcessDescriptor.isQuickAction();
 		defaultQuickAction = relatedProcessDescriptor.isDefaultQuickAction();
-		
+
 		disabled = relatedProcessDescriptor.isDisabled() ? Boolean.TRUE : null;
 		disabledReason = relatedProcessDescriptor.getDisabledReason(adLanguage);
-		
+		disabledWithInternalReason = relatedProcessDescriptor.isInternal() ? Boolean.TRUE : null;
+
 		final Duration preconditionsResolutionCalcDuration = relatedProcessDescriptor.getPreconditionsResolutionCalcDuration();
 		evaluateDurationStr = preconditionsResolutionCalcDuration != null ? TimeUtil.formatElapsed(preconditionsResolutionCalcDuration) : null;
 
@@ -124,13 +128,13 @@ public final class JSONDocumentAction implements Serializable
 	{
 		return description;
 	}
-	
+
 	@JsonIgnore
 	public boolean isDisabled()
 	{
 		return disabled != null && disabled.booleanValue();
 	}
-	
+
 	@JsonIgnore
 	public boolean isEnabled()
 	{

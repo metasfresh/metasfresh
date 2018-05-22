@@ -30,6 +30,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.purchasecandidate.BPPurchaseScheduleService;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.SalesOrderLines;
@@ -84,6 +85,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	// services
 	private final PurchaseCandidateRepository purchaseCandidatesRepo;
 	private final PurchaseRowFactory purchaseRowFactory;
+	private final BPPurchaseScheduleService bpPurchaseScheduleService;
 
 	private final CCache<ArrayKey, ViewLayout> viewLayoutCache = //
 			CCache.newCache(SalesOrder2PurchaseViewFactory.class + "#ViewLayout", 1, 0);
@@ -96,10 +98,12 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 
 	public SalesOrder2PurchaseViewFactory(
 			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo,
-			@NonNull final PurchaseRowFactory purchaseRowFactory)
+			@NonNull final PurchaseRowFactory purchaseRowFactory,
+			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService)
 	{
 		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
 		this.purchaseRowFactory = purchaseRowFactory;
+		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
 	}
 
 	@Override
@@ -186,7 +190,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	}
 
 	@Override
-	public PurchaseView createView(final CreateViewRequest request)
+	public PurchaseView createView(@NonNull final CreateViewRequest request)
 	{
 		final Set<Integer> salesOrderLineIds = request.getFilterOnlyIds();
 		Check.assumeNotEmpty(salesOrderLineIds, "salesOrderLineIds is not empty");
@@ -196,6 +200,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		final SalesOrderLines saleOrderLines = SalesOrderLines.builder()
 				.salesOrderLineIds(salesOrderLineIds)
 				.purchaseCandidateRepository(purchaseCandidatesRepo)
+				.bpPurchaseScheduleService(bpPurchaseScheduleService)
 				.build();
 
 		final PurchaseRowsLoader rowsLoader = PurchaseRowsLoader.builder()
