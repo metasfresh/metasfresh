@@ -22,6 +22,7 @@ import de.metas.pricing.conditions.PricingConditionsBreak.PricingConditionsBreak
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.pricing.conditions.PricingConditionsId;
+import de.metas.ui.web.order.sales.pricingConditions.view.PriceNetCalculator.PriceNetCalculateRequest;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange.PartialPriceChangeBuilder;
@@ -216,7 +217,11 @@ public class PricingConditionsRow implements IViewRow
 		this.fixedPrice = price.getFixedPrice();
 
 		this.priceNetCalculator = priceNetCalculator;
-		this.priceNet = priceNetCalculator.calculate(pricingConditionsBreak);
+		this.priceNet = priceNetCalculator.calculate(PriceNetCalculateRequest.builder()
+				.pricingConditionsBreak(pricingConditionsBreak)
+				.bpartnerId(BPartnerId.ofRepoId(bpartner.getIdAsInt()))
+				.isSOTrx(customer)
+				.build());
 
 		this.dateLastInOut = dateLastInOut;
 		this.dateCreated = pricingConditionsBreak.getDateCreated();
