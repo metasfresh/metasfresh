@@ -296,7 +296,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		return trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> changePricingConditionsBreak0(request));
 	}
 
-	public PricingConditionsBreak changePricingConditionsBreak0(@NonNull final PricingConditionsBreakChangeRequest request)
+	private PricingConditionsBreak changePricingConditionsBreak0(@NonNull final PricingConditionsBreakChangeRequest request)
 	{
 		final PricingConditionsId pricingConditionsId = request.getPricingConditionsId();
 
