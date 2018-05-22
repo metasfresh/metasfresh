@@ -208,7 +208,7 @@ public class BPartnerImportTableSqlUpdater
 		int no;
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET C_Job_ID=(SELECT C_Job_ID FROM C_Job j"
-				+ " WHERE i.JobName=j.Name AND j.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ " WHERE i.JobName=j.Name AND j.AD_Client_ID IN (0, i.AD_Client_ID) Limit 1) "
 				+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
