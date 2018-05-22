@@ -119,7 +119,7 @@ class MasterWidget extends Component {
 
     //callback
     if (onChange) {
-      onChange(rowId, property, value);
+      onChange(rowId, property, value, ret);
     }
 
     return ret;
