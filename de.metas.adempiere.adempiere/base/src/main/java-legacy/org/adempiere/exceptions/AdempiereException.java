@@ -250,7 +250,6 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = ImmutableTranslatableString.empty();
 	}
 
-	 */
 	public AdempiereException(final String message, final Throwable cause)
 	{
 		super(cause);
