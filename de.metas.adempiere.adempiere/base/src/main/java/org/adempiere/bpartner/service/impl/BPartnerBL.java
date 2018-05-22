@@ -58,9 +58,9 @@ public class BPartnerBL implements IBPartnerBL
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
-	public String getBPartnerValueAndName(final int bpartnerId)
+	public String getBPartnerValueAndName(final BPartnerId bpartnerId)
 	{
-		if (bpartnerId <= 0)
+		if (bpartnerId == null)
 		{
 			return "?";
 		}

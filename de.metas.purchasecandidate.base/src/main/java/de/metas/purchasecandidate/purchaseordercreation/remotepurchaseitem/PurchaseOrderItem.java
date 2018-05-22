@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_OrderLine;
@@ -137,7 +138,7 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getWarehouseId();
 	}
 
-	public int getVendorBPartnerId()
+	public BPartnerId getVendorBPartnerId()
 	{
 		return getPurchaseCandidate().getVendorBPartnerId();
 	}

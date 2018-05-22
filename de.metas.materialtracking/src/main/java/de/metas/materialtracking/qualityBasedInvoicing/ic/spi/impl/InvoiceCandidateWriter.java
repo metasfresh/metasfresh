@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
@@ -412,7 +413,8 @@ public class InvoiceCandidateWriter
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));
 
 		// bill partner data
-		ic.setBill_BPartner_ID(vendorInvoicingInfo.getBill_BPartner_ID());
+		final BPartnerId billBPartnerId = vendorInvoicingInfo.getBill_BPartner_ID();
+		ic.setBill_BPartner_ID(billBPartnerId != null ? billBPartnerId.getRepoId() : -1);
 		ic.setBill_Location_ID(vendorInvoicingInfo.getBill_Location_ID());
 		ic.setBill_User_ID(vendorInvoicingInfo.getBill_User_ID());
 

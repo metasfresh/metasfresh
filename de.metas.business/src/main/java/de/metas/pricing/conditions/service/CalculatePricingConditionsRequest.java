@@ -65,7 +65,7 @@ public class CalculatePricingConditionsRequest
 	{
 		assertValid(pricingConditionsId, forcePricingConditionsBreak, pricingConditionsBreakQuery);
 
-		this.pricingConditionsId = extractPricingConditionsId(pricingConditionsId, forcePricingConditionsBreak);
+		this.pricingConditionsId = extractPricingConditionsIdOrNull(pricingConditionsId, forcePricingConditionsBreak);
 
 		this.forcePricingConditionsBreak = forcePricingConditionsBreak;
 		this.pricingConditionsBreakQuery = pricingConditionsBreakQuery;
@@ -93,7 +93,7 @@ public class CalculatePricingConditionsRequest
 		}
 	}
 
-	private static final PricingConditionsId extractPricingConditionsId(final PricingConditionsId pricingConditionsId, final PricingConditionsBreak forcePricingConditionsBreak)
+	private static final PricingConditionsId extractPricingConditionsIdOrNull(final PricingConditionsId pricingConditionsId, final PricingConditionsBreak forcePricingConditionsBreak)
 	{
 		if (pricingConditionsId != null)
 		{
@@ -101,7 +101,15 @@ public class CalculatePricingConditionsRequest
 		}
 		else if (forcePricingConditionsBreak != null)
 		{
-			return forcePricingConditionsBreak.getPricingConditionsId();
+			final PricingConditionsBreakId pricingConditionsBreakId = forcePricingConditionsBreak.getId();
+			if (pricingConditionsBreakId != null)
+			{
+				return pricingConditionsBreakId.getPricingConditionsId();
+			}
+			else
+			{
+				return null; // pricing conditions ID not available but OK
+			}
 		}
 		else
 		{

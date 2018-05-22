@@ -316,11 +316,6 @@ public class MProductPricing
 				+ "]";
 	}
 
-	public int getC_BPartner_ID()
-	{
-		return pricingCtx.getC_BPartner_ID();
-	}
-
 	public int getAD_Table_ID()
 	{
 		return pricingCtx.getAD_Table_ID();

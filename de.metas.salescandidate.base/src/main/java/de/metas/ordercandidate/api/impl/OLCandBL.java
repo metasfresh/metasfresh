@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -158,7 +159,7 @@ public class OLCandBL implements IOLCandBL
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-			final int bill_BPartner_ID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
+			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(effectiveValuesBL.getBill_BPartner_Effective_ID(olCand));
 
 			final I_C_BPartner_Location dropShipLocation = effectiveValuesBL.getDropShip_Location_Effective(olCand);
 
@@ -173,7 +174,7 @@ public class OLCandBL implements IOLCandBL
 			}
 			pricingCtx.setM_PricingSystem_ID(pricingSystemId); // set it to the context that way it will also be in the result, even if the pricing rules won't need it
 
-			pricingCtx.setC_BPartner_ID(bill_BPartner_ID);
+			pricingCtx.setBPartnerId(billBPartnerId);
 			pricingCtx.setQty(qty);
 			pricingCtx.setPriceDate(date);
 			pricingCtx.setSOTrx(true);
