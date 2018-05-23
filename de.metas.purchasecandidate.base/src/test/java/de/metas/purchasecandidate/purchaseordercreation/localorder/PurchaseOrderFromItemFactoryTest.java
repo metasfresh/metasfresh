@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -27,6 +28,7 @@ import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.model.I_C_Order;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
@@ -173,8 +175,8 @@ public class PurchaseOrderFromItemFactoryTest
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
-				.vendorBPartnerId(vendor.getC_BPartner_ID())
-				.productId(20)
+				.vendorBPartnerId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
+				.productId(ProductId.ofRepoId(20))
 				.productName("productName")
 				.productNo("productNo")
 				.build();
@@ -183,7 +185,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
 				.orgId(3)
 				.warehouseId(4)
-				.productId(5)
+				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
 				.vendorProductInfo(vendorProductInfo)
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)

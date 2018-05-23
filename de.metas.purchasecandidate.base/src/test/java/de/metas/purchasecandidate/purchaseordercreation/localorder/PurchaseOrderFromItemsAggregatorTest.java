@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -23,6 +24,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
@@ -75,12 +77,12 @@ public class PurchaseOrderFromItemsAggregatorTest
 		vendor.setName("Vendor");
 		save(vendor);
 
-		final int productId = 20;
+		final ProductId productId = ProductId.ofRepoId(20);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
 				.productId(productId)
-				.vendorBPartnerId(vendor.getC_BPartner_ID())
+				.vendorBPartnerId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
 				.productName("productName")
 				.productNo("productNo").build();
 

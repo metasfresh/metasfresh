@@ -3,6 +3,7 @@ package de.metas.lang;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.junit.Test;
 
@@ -31,7 +32,7 @@ import org.junit.Test;
 public class PercentTest
 {
 	@Test
-	public void test_subtract()
+	public void subtract()
 	{
 		test_subtract(100, 0, 100);
 		test_subtract(100, 45, 55);
@@ -46,7 +47,7 @@ public class PercentTest
 	}
 
 	@Test
-	public void test_multiply()
+	public void multiply()
 	{
 		test_multiply(100, 0, 0);
 		test_multiply(100, 45, 45);
@@ -61,7 +62,7 @@ public class PercentTest
 	}
 
 	@Test
-	public void test_subtractFromBase()
+	public void subtractFromBase()
 	{
 		test_subtractFromBase(100, 0, 100);
 		test_subtractFromBase(100, 45, 55);
@@ -73,6 +74,23 @@ public class PercentTest
 		final Percent percent = Percent.of(percentInt);
 		final int precision = 2;
 		assertThat(percent.subtractFromBase(BigDecimal.valueOf(base), precision)).isEqualByComparingTo(BigDecimal.valueOf(expectedResult));
+	}
+
+	@Test
+	public void of_two_params()
+	{
+		assertThat(Percent.of(new BigDecimal("1"), new BigDecimal("4")).getValueAsBigDecimal()).isEqualByComparingTo("25");
+		assertThat(Percent.of(new BigDecimal("4"), new BigDecimal("1")).getValueAsBigDecimal()).isEqualByComparingTo("400");
+
+		assertThat(Percent.of(new BigDecimal("4"), new BigDecimal("0")).isZero()).isTrue();
+		assertThat(Percent.of(new BigDecimal("0"), new BigDecimal("4")).isZero()).isTrue();
+	}
+
+	@Test
+	public void roundToHalf()
+	{
+		assertThat(Percent.of(new BigDecimal("10.01")).roundToHalf(RoundingMode.HALF_UP).getValueAsBigDecimal()).isEqualByComparingTo("10.0");
+		assertThat(Percent.of(new BigDecimal("10.32")).roundToHalf(RoundingMode.HALF_UP).getValueAsBigDecimal()).isEqualByComparingTo("10.5");
 	}
 
 }

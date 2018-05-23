@@ -31,4 +31,7 @@ public class Currency
 {
 	CurrencyId id;
 	int precision;
+
+	/** Three letter ISO 4217 Code of the Currency **/
+	String threeLetterCode;
 }

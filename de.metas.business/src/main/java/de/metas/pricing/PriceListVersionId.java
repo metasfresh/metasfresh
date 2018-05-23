@@ -1,8 +1,8 @@
-package de.metas.order.grossprofit;
+package de.metas.pricing;
 
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
-import de.metas.order.OrderLine;
-import lombok.NonNull;
+import org.adempiere.util.Check;
+
+import lombok.Value;
 
 /*
  * #%L
@@ -26,14 +26,18 @@ import lombok.NonNull;
  * #L%
  */
 
-public class GrossProfitComputeRequestCreator
+@Value
+public class PriceListVersionId
 {
-	public static GrossProfitComputeRequest of(@NonNull final OrderLine orderLine)
+	int repoId;
+
+	public static PriceListVersionId ofRepoId(final int repoId)
 	{
-		return new GrossProfitComputeRequest(
-				orderLine.getBPartnerId(),
-				orderLine.getProductId(),
-				orderLine.getDatePromised().toLocalDate(),
-				orderLine.getPriceActual());
+		return new PriceListVersionId(repoId);
+	}
+
+	private PriceListVersionId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 }

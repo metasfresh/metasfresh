@@ -4,11 +4,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.OptionalInt;
 
-import org.adempiere.util.Check;
+import org.adempiere.bpartner.BPartnerId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
 
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,9 +41,10 @@ public class VendorProductInfo
 {
 	OptionalInt bpartnerProductId;
 
-	int vendorBPartnerId;
+	BPartnerId vendorBPartnerId;
 
-	int productId;
+	ProductId productId;
+
 	String productNo;
 	String productName;
 
@@ -86,8 +88,8 @@ public class VendorProductInfo
 
 		return builder()
 				.bpartnerProductId(bpartnerProduct.getC_BPartner_Product_ID())
-				.vendorBPartnerId(bpartnerVendorId)
-				.productId(bpartnerProduct.getM_Product_ID())
+				.vendorBPartnerId(BPartnerId.ofRepoId(bpartnerVendorId))
+				.productId(ProductId.ofRepoId(bpartnerProduct.getM_Product_ID()))
 				.productNo(productNo)
 				.productName(productName)
 				.aggregatePOs(aggregatePOs)
@@ -97,18 +99,17 @@ public class VendorProductInfo
 	@Builder
 	private VendorProductInfo(
 			final int bpartnerProductId,
-			final int vendorBPartnerId,
-			final int productId,
+			final BPartnerId vendorBPartnerId,
+			final ProductId productId,
 			@NonNull final String productNo,
 			@NonNull final String productName,
 			final boolean aggregatePOs)
 	{
-		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
-		Check.assume(productId > 0, "productId > 0");
-
 		this.bpartnerProductId = bpartnerProductId > 0 ? OptionalInt.of(bpartnerProductId) : OptionalInt.empty();
+
 		this.vendorBPartnerId = vendorBPartnerId;
 		this.productId = productId;
+
 		this.productNo = productNo;
 		this.productName = productName;
 		this.aggregatePOs = aggregatePOs;

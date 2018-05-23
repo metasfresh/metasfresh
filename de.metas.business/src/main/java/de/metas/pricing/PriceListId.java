@@ -1,8 +1,8 @@
-package de.metas.order.grossprofit;
+package de.metas.pricing;
 
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
-import de.metas.order.OrderLine;
-import lombok.NonNull;
+import org.adempiere.util.Check;
+
+import lombok.Value;
 
 /*
  * #%L
@@ -17,23 +17,27 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class GrossProfitComputeRequestCreator
+@Value
+public class PriceListId
 {
-	public static GrossProfitComputeRequest of(@NonNull final OrderLine orderLine)
+	int repoId;
+
+	public static PriceListId ofRepoId(final int repoId)
 	{
-		return new GrossProfitComputeRequest(
-				orderLine.getBPartnerId(),
-				orderLine.getProductId(),
-				orderLine.getDatePromised().toLocalDate(),
-				orderLine.getPriceActual());
+		return new PriceListId(repoId);
+	}
+
+	private PriceListId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 }

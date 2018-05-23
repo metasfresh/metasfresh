@@ -38,6 +38,12 @@ import lombok.NonNull;
 
 public class GrossProfitComputeRequestCreator
 {
+//	// TODO compute this in a repo or factory
+//			final GrossProfitComputeRequest grossProfitComputeRequest = GrossProfitComputeRequestCreator.of(this);
+//			final GrossProfitPriceFactory grossProfitPriceFactory = Adempiere.getBean(GrossProfitPriceFactory.class);
+//			final GrossProfitPrice grossProfit = grossProfitPriceFactory.createGrossProfitPrice(grossProfitComputeRequest);
+//			this.grossProfitPrice = grossProfit.computeProfitPrice().getValue();
+
 	public static GrossProfitComputeRequest of(@NonNull final PurchaseCandidate purchaseCandidate)
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(purchaseCandidate.getVendorBPartnerId());
@@ -48,6 +54,7 @@ public class GrossProfitComputeRequestCreator
 		final Currency currency = Currency
 				.builder()
 				.id(CurrencyId.ofRepoId(102)) // 102=Euro
+				.threeLetterCode("EUR")
 				.precision(2)
 				.build();
 

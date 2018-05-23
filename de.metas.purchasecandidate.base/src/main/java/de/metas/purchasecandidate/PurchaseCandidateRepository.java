@@ -32,6 +32,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.money.Currency;
+import de.metas.money.CurrencyRepository;
+import de.metas.money.Money;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import lombok.NonNull;
@@ -65,9 +69,14 @@ public class PurchaseCandidateRepository
 
 	private final PurchaseItemRepository purchaseItemRepository;
 
-	public PurchaseCandidateRepository(@NonNull final PurchaseItemRepository purchaseItemRepository)
+	private final CurrencyRepository currencyRepository;
+
+	public PurchaseCandidateRepository(
+			@NonNull final PurchaseItemRepository purchaseItemRepository,
+			@NonNull final CurrencyRepository currencyRepository)
 	{
 		this.purchaseItemRepository = purchaseItemRepository;
+		this.currencyRepository = currencyRepository;
 	}
 
 	public Stream<PurchaseCandidate> streamAllBySalesOrderLineIds(final Collection<Integer> salesOrderLineIds)
@@ -240,25 +249,31 @@ public class PurchaseCandidateRepository
 	/**
 	 * Note to dev: keep in sync with {@link #createOrUpdateRecord(PurchaseCandidate, I_C_PurchaseCandidate)}
 	 */
-	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate purchaseCandidatePO)
+	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
-		final boolean locked = Services.get(ILockManager.class).isLocked(purchaseCandidatePO);
+		final boolean locked = Services.get(ILockManager.class).isLocked(purchaseCandidateRecord);
 
-		final VendorProductInfo vendorProductInfo = extractVendorProductInfo(purchaseCandidatePO);
+		final VendorProductInfo vendorProductInfo = extractVendorProductInfo(purchaseCandidateRecord);
 
-		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+		final Currency currency = currencyRepository.ofRecord(purchaseCandidateRecord.getC_Currency());
+
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidate
+				.builder()
 				.locked(locked)
-				.purchaseCandidateId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
-				.salesOrderId(purchaseCandidatePO.getC_OrderSO_ID())
-				.salesOrderLineId(purchaseCandidatePO.getC_OrderLineSO_ID())
-				.orgId(purchaseCandidatePO.getAD_Org_ID())
-				.warehouseId(purchaseCandidatePO.getM_WarehousePO_ID())
-				.productId(purchaseCandidatePO.getM_Product_ID())
-				.uomId(purchaseCandidatePO.getC_UOM_ID())
+				.purchaseCandidateId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
+				.salesOrderId(purchaseCandidateRecord.getC_OrderSO_ID())
+				.salesOrderLineId(purchaseCandidateRecord.getC_OrderLineSO_ID())
+				.orgId(purchaseCandidateRecord.getAD_Org_ID())
+				.warehouseId(purchaseCandidateRecord.getM_WarehousePO_ID())
+				.productId(ProductId.ofRepoId(purchaseCandidateRecord.getM_Product_ID()))
+				.uomId(purchaseCandidateRecord.getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)
-				.qtyToPurchase(purchaseCandidatePO.getQtyToPurchase())
-				.dateRequired(TimeUtil.asLocalDateTime(purchaseCandidatePO.getDateRequired()))
-				.processed(purchaseCandidatePO.isProcessed())
+				.qtyToPurchase(purchaseCandidateRecord.getQtyToPurchase())
+				.dateRequired(TimeUtil.asLocalDateTime(purchaseCandidateRecord.getDateRequired()))
+				.processed(purchaseCandidateRecord.isProcessed())
+				.purchasePriceActual(Money.of(purchaseCandidateRecord.getPurchasePriceActual(), currency))
+				.customerPriceGrossProfit(Money.of(purchaseCandidateRecord.getCustomerPriceGrossProfit(), currency))
+				.priceGrossProfit(Money.of(purchaseCandidateRecord.getPriceGrossProfit(), currency))
 				.build();
 
 		purchaseItemRepository.retrieveForPurchaseCandidate(purchaseCandidate);
@@ -268,7 +283,9 @@ public class PurchaseCandidateRepository
 
 	private VendorProductInfo extractVendorProductInfo(final I_C_PurchaseCandidate purchaseCandidatePO)
 	{
-		final I_C_BPartner_Product bpartnerProduct = purchaseCandidatePO.getC_BPartner_Product_ID() > 0 ? loadOutOfTrx(purchaseCandidatePO.getC_BPartner_Product_ID(), I_C_BPartner_Product.class) : null;
+		final I_C_BPartner_Product bpartnerProduct = purchaseCandidatePO.getC_BPartner_Product_ID() > 0
+				? loadOutOfTrx(purchaseCandidatePO.getC_BPartner_Product_ID(), I_C_BPartner_Product.class)
+				: null;
 		// TODO: handle the null case!
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(
 				bpartnerProduct,

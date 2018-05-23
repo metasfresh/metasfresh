@@ -1,6 +1,6 @@
 package de.metas.order;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
@@ -8,6 +8,7 @@ import org.adempiere.bpartner.BPartnerId;
 
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -50,9 +51,13 @@ public class OrderLine
 	@NonNull
 	ProductId productId;
 
+	/** note: besides the name "datePromised", it's also in the application dictionary declared as date+time, and some businesses need it that way. */
 	@NonNull
-	LocalDate datePromised;
+	LocalDateTime datePromised;
 
 	@NonNull
 	Money priceActual;
+
+	@NonNull
+	Quantity orderedQty;
 }

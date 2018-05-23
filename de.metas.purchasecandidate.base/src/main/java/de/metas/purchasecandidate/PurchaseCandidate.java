@@ -13,16 +13,13 @@ import java.util.OptionalInt;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_OrderLine;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
-import de.metas.money.grossprofit.GrossProfitPrice;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.purchasecandidate.grossprofit.GrossProfitComputeRequestCreator;
+import de.metas.money.Money;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
@@ -77,8 +74,16 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToPurchaseInitial;
 
+	/** sales priceActual minus skonto minus refund/bonus (if any) */
 	@Setter(AccessLevel.NONE)
-	private BigDecimal grossProfitPrice;
+	private Money customerPriceGrossProfit;
+
+	@Setter(AccessLevel.NONE)
+	private Money purchasePriceActual;
+
+	/** sales price minus all discounts and refunds */
+	@Setter(AccessLevel.NONE)
+	private Money priceGrossProfit;
 
 	@NonNull
 	private LocalDateTime dateRequired;
@@ -109,7 +114,7 @@ public class PurchaseCandidate
 			final int purchaseOrderLineId,
 			final int orgId,
 			final int warehouseId,
-			final int productId,
+			final ProductId productId,
 			final int uomId,
 			@NonNull final VendorProductInfo vendorProductInfo,
 			@NonNull final BigDecimal qtyToPurchase,
@@ -117,20 +122,22 @@ public class PurchaseCandidate
 			final Duration reminderTime,
 			final boolean processed,
 			final boolean locked,
+			final Money priceGrossProfit,
+			final Money purchasePriceActual,
+			final Money customerPriceGrossProfit,
 			@Singular final List<PurchaseItem> purchaseItems)
 	{
 		Check.assume(salesOrderId > 0, "salesOrderId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
 		Check.assume(salesOrderLineId > 0, "salesOrderLineId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
 		Check.assume(orgId > 0, "orgId > 0");
 		Check.assume(warehouseId > 0, "warehouseId > 0");
-		Check.assume(productId > 0, "productId > 0");
 		Check.assume(uomId > 0, "uomId > 0");
 
 		this.purchaseCandidateId = purchaseCandidateId;
 
 		identifier = PurchaseCandidateImmutableFields.builder()
 				.orgId(orgId)
-				.productId(productId)
+				.productId(productId.getRepoId())
 				.salesOrderId(salesOrderId)
 				.salesOrderLineId(salesOrderLineId)
 				.uomId(uomId)
@@ -148,24 +155,22 @@ public class PurchaseCandidate
 
 		this.dateRequired = dateRequired;
 		this.reminderTime = reminderTime;
-		dateRequiredInitial = dateRequired;
+		this.dateRequiredInitial = dateRequired;
 
-		purchaseOrderItems = purchaseItems
+		this.customerPriceGrossProfit = customerPriceGrossProfit;
+		this.purchasePriceActual = purchasePriceActual;
+		this.priceGrossProfit = priceGrossProfit;
+
+		this.purchaseOrderItems = purchaseItems
 				.stream()
 				.filter(purchaseItem -> purchaseItem instanceof PurchaseOrderItem)
 				.map(PurchaseOrderItem::cast)
 				.collect(toCollection(ArrayList::new));
-		purchaseErrorItems = purchaseItems
+		this.purchaseErrorItems = purchaseItems
 				.stream()
 				.filter(purchaseItem -> purchaseItem instanceof PurchaseErrorItem)
 				.map(PurchaseErrorItem::cast)
 				.collect(toCollection(ArrayList::new));
-
-		// TODO compute this in a repo or factory
-		final GrossProfitComputeRequest grossProfitComputeRequest = GrossProfitComputeRequestCreator.of(this);
-		final GrossProfitPriceFactory grossProfitPriceFactory = Adempiere.getBean(GrossProfitPriceFactory.class);
-		final GrossProfitPrice grossProfit = grossProfitPriceFactory.createGrossProfitPrice(grossProfitComputeRequest);
-		this.grossProfitPrice = grossProfit.computeProfitPrice().getValue();
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
@@ -222,7 +227,7 @@ public class PurchaseCandidate
 
 	public int getVendorBPartnerId()
 	{
-		return getVendorProductInfo().getVendorBPartnerId();
+		return getVendorProductInfo().getVendorBPartnerId().getRepoId();
 	}
 
 	public OptionalInt getBpartnerProductId()

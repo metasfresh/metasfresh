@@ -23,10 +23,10 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
-import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.Percent;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -81,7 +81,6 @@ public class RefundTestTools
 		saveRecord(conditions);
 
 		final ProductId productId = ProductId.ofRepoId(20);
-		final DocTypeId docTypeId = DocTypeId.ofRepoId(30);
 		final InvoiceScheduleId invoiceScheduleId = InvoiceScheduleId.ofRepoId(40);
 
 		final I_C_Flatrate_RefundConfig refundConfig = newInstance(I_C_Flatrate_RefundConfig.class);
@@ -104,7 +103,10 @@ public class RefundTestTools
 		invoiceCandidateRecord.setC_Currency_ID(currencyId.getRepoId());
 		saveRecord(invoiceCandidateRecord);
 
-		final Money money = Money.of(HUNDRED, Currency.builder().id(currencyId).precision(2).build());
+		final Currency currency = Currency.builder()
+				.id(currencyId)
+				.precision(2).build();
+		final Money money = Money.of(HUNDRED, currency);
 
 		return RefundInvoiceCandidate.builder()
 				.id(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
@@ -112,7 +114,7 @@ public class RefundTestTools
 				.refundConfig(RefundConfig
 						.builder()
 						.productId(productId)
-						.percent(TWENTY)
+						.percent(Percent.of(TWENTY))
 						.conditionsId(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID()))
 						.invoiceScheduleId(invoiceScheduleId)
 						.refundInvoiceType(RefundInvoiceType.CREDITMEMO)

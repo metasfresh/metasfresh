@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
@@ -50,13 +52,13 @@ public class NullVendorGatewayInvokerTest
 	@Test
 	public void placeRemotePurchaseOrder()
 	{
-		final int productId = 20;
+		final ProductId productId = ProductId.ofRepoId(20);
 		final int vendorBPartnerId = 30;
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
 				.productId(productId)
-				.vendorBPartnerId(vendorBPartnerId)
+				.vendorBPartnerId(BPartnerId.ofRepoId(vendorBPartnerId))
 				.productName("productName")
 				.productNo("productNo").build();
 

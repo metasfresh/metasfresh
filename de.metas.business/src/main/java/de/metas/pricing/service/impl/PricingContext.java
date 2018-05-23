@@ -39,7 +39,6 @@ import org.compiere.util.Env;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 @ToString
@@ -80,7 +79,6 @@ class PricingContext implements IEditablePricingContext
 	private boolean failIfNotCalculated = false;
 
 	private boolean disallowDiscount;
-	@Setter
 	@Getter
 	private PricingConditionsBreak forcePricingConditionsBreak;
 
@@ -127,9 +125,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setM_PricingSystem_ID(final int pricingSystemId)
+	public IEditablePricingContext setM_PricingSystem_ID(final int pricingSystemId)
 	{
 		this.pricingSystemId = pricingSystemId;
+		return this;
 	}
 
 	@Override
@@ -139,10 +138,11 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setM_Product_ID(final int m_Product_ID)
+	public IEditablePricingContext setM_Product_ID(final int m_Product_ID)
 	{
 		M_Product_ID = m_Product_ID;
 		product = null; // reset
+		return this;
 	}
 
 	private I_M_Product product;
@@ -164,9 +164,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setM_PriceList_ID(final int M_PriceList_ID)
+	public IEditablePricingContext setM_PriceList_ID(final int M_PriceList_ID)
 	{
 		this.M_PriceList_ID = M_PriceList_ID;
+		return this;
 	}
 
 	@Override
@@ -194,16 +195,16 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setM_PriceList_Version_ID(final int m_PriceList_Version_ID)
+	public IEditablePricingContext setM_PriceList_Version_ID(final int m_PriceList_Version_ID)
 	{
 		if (M_PriceList_Version_ID == m_PriceList_Version_ID)
 		{
-			return;
+			return this;
 		}
 
 		M_PriceList_Version_ID = m_PriceList_Version_ID;
 		_priceListVersion = null; // needs to be reloaded
-
+		return this;
 	}
 
 	@Override
@@ -213,9 +214,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setPriceDate(final Timestamp priceDate)
+	public IEditablePricingContext setPriceDate(final Timestamp priceDate)
 	{
 		this.priceDateTS = priceDate == null ? 0 : priceDate.getTime();
+		return this;
 	}
 
 	@Override
@@ -225,9 +227,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setC_UOM_ID(final int c_UOM_ID)
+	public IEditablePricingContext setC_UOM_ID(final int c_UOM_ID)
 	{
 		C_UOM_ID = c_UOM_ID;
+		return this;
 	}
 
 	@Override
@@ -237,9 +240,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setC_Currency_ID(final int c_Currency_ID)
+	public IEditablePricingContext setC_Currency_ID(final int c_Currency_ID)
 	{
 		C_Currency_ID = c_Currency_ID;
+		return this;
 	}
 
 	@Override
@@ -249,9 +253,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setC_BPartner_ID(final int c_BPartner_ID)
+	public IEditablePricingContext setC_BPartner_ID(final int c_BPartner_ID)
 	{
 		C_BPartner_ID = c_BPartner_ID;
+		return this;
 	}
 
 	@Override
@@ -261,9 +266,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setQty(final BigDecimal qty)
+	public IEditablePricingContext setQty(final BigDecimal qty)
 	{
 		this.qty = qty;
+		return this;
 	}
 
 	@Override
@@ -273,9 +279,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setSOTrx(final boolean isSOTrx)
+	public IEditablePricingContext setSOTrx(final boolean isSOTrx)
 	{
 		this.isSOTrx = isSOTrx;
+		return this;
 	}
 
 	@Override
@@ -307,9 +314,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setAD_Table_ID(final int aD_Table_ID)
+	public IEditablePricingContext setAD_Table_ID(final int aD_Table_ID)
 	{
 		AD_Table_ID = aD_Table_ID;
+		return this;
 	}
 
 	@Override
@@ -319,9 +327,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setRecord_ID(final int record_ID)
+	public IEditablePricingContext setRecord_ID(final int record_ID)
 	{
 		Record_ID = record_ID;
+		return this;
 	}
 
 	@Override
@@ -331,13 +340,14 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setReferencedObject(final Object referencedObject)
+	public IEditablePricingContext setReferencedObject(final Object referencedObject)
 	{
 		this.referencedObject = referencedObject;
 		if (null != referencedObject)
 		{
 			trxName = InterfaceWrapperHelper.getTrxName(referencedObject);
 		}
+		return this;
 	}
 
 	@Override
@@ -347,9 +357,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setDisallowDiscount(final boolean disallowDiscount)
+	public IEditablePricingContext setDisallowDiscount(final boolean disallowDiscount)
 	{
 		this.disallowDiscount = disallowDiscount;
+		return this;
 	}
 
 	@Override
@@ -359,9 +370,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setTrxName(final String trxName)
+	public IEditablePricingContext setTrxName(final String trxName)
 	{
 		this.trxName = trxName;
+		return this;
 	}
 
 	@Override
@@ -371,9 +383,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setConvertPriceToContextUOM(final boolean convertPriceToContextUOM)
+	public IEditablePricingContext setConvertPriceToContextUOM(final boolean convertPriceToContextUOM)
 	{
 		this.convertPriceToContextUOM = convertPriceToContextUOM;
+		return this;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -393,9 +406,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setProperty(final String propertyName, final Object value)
+	public IEditablePricingContext setProperty(final String propertyName, final Object value)
 	{
 		properties.put(propertyName, value);
+		return this;
 	}
 
 	@Override
@@ -417,9 +431,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setManualPrice(boolean isManualPrice)
+	public IEditablePricingContext setManualPrice(boolean isManualPrice)
 	{
 		this.isManualPrice = isManualPrice;
+		return this;
 	}
 
 	@Override
@@ -429,9 +444,10 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setC_Country_ID(int countryId)
+	public IEditablePricingContext setC_Country_ID(int countryId)
 	{
 		this.C_Country_ID = countryId;
+		return this;
 	}
 
 	@Override
@@ -441,20 +457,29 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public void setFailIfNotCalculated(boolean failIfNotCalculated)
+	public IEditablePricingContext setFailIfNotCalculated(boolean failIfNotCalculated)
 	{
 		this.failIfNotCalculated = failIfNotCalculated;
+		return this;
 	}
 
 	@Override
-	public void setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag)
+	public IEditablePricingContext setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag)
 	{
 		this.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
+		return this;
 	}
 
 	@Override
 	public boolean isSkipCheckingPriceListSOTrxFlag()
 	{
 		return skipCheckingPriceListSOTrxFlag;
+	}
+
+	@Override
+	public IEditablePricingContext setForcePricingConditionsBreak(final PricingConditionsBreak forcePricingConditionsBreak)
+	{
+		this.forcePricingConditionsBreak = forcePricingConditionsBreak;
+		return this;
 	}
 }

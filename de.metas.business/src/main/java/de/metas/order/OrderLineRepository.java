@@ -8,9 +8,10 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.money.Currency;
-import de.metas.money.CurrencyId;
+import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -38,6 +39,13 @@ import lombok.NonNull;
 @Repository
 public class OrderLineRepository
 {
+	private final CurrencyRepository currencyRepository;
+
+	private OrderLineRepository(@NonNull final CurrencyRepository currencyRepository)
+	{
+		this.currencyRepository = currencyRepository;
+	}
+
 	public OrderLine getById(@NonNull final OrderLineId orderLineId)
 	{
 		final I_C_OrderLine orderLineRecord = load(orderLineId.getRepoId(), I_C_OrderLine.class);
@@ -50,25 +58,27 @@ public class OrderLineRepository
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
 				.orderId(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()))
 				.bPartnerId(BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()))
-				.datePromised(TimeUtil.asLocalDate(orderLineRecord.getDatePromised()))
+				.datePromised(TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.priceActual(moneyOfRecordsPriceActual(orderLineRecord))
+				.orderedQty(quantityOfRecordsQtyEntered(orderLineRecord))
 				.build();
 	}
 
-	private static Money moneyOfRecordsPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
+	private Money moneyOfRecordsPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final Currency currency = Currency.builder()
-				.id(CurrencyId.ofRepoId(orderLineRecord
-						.getC_Currency_ID()))
-				.precision(orderLineRecord
-						.getC_Currency()
-						.getStdPrecision())
-				.build();
+		// note that C_OrderLine.C_Currency_ID is mandatory, so there won't be an NPE
+		final Currency currency = currencyRepository.ofRecord(orderLineRecord.getC_Currency());
 
 		return Money.of(
 				orderLineRecord.getPriceActual(),
 				currency);
 	}
 
+	private Quantity quantityOfRecordsQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)
+	{
+		return Quantity.of(
+				orderLineRecord.getQtyEntered(),
+				orderLineRecord.getC_UOM());
+	}
 }

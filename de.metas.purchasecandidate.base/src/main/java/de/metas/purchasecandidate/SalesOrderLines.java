@@ -1,5 +1,6 @@
 package de.metas.purchasecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -31,6 +33,11 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
+import de.metas.money.Currency;
+import de.metas.money.Money;
+import de.metas.order.OrderLine;
+import de.metas.order.OrderLineRepository;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.purchasecandidate.availability.AvailabilityCheck;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasing.api.IBPartnerProductDAO;
@@ -68,6 +75,8 @@ public class SalesOrderLines
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final PurchaseCandidatePricing purchaseCandidatePricing;
+	private final OrderLineRepository orderLineRepository;
 
 	private final ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> //
 	salesOrderLineWithCandidates = ExtendedMemorizingSupplier.of(() -> loadOrCreatePurchaseCandidates0());
@@ -78,11 +87,15 @@ public class SalesOrderLines
 	private SalesOrderLines(
 			@NonNull final Collection<Integer> salesOrderLineIds,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
-			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService)
+			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
+			@NonNull final PurchaseCandidatePricing purchaseCandidatePricing,
+			@NonNull final OrderLineRepository orderLineRepository)
 	{
 		this.salesOrderLineIds = ImmutableList.copyOf(salesOrderLineIds);
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
+		this.purchaseCandidatePricing = purchaseCandidatePricing;
+		this.orderLineRepository = orderLineRepository;
 	}
 
 	private ImmutableList<SalesOrderLineWithCandidates> loadOrCreatePurchaseCandidates0()
@@ -172,7 +185,7 @@ public class SalesOrderLines
 			@NonNull final I_C_OrderLine salesOrderLine,
 			@NonNull final Set<Integer> vendorProductInfoIdsToExclude)
 	{
-		final Map<Integer, VendorProductInfo> vendorId2VendorProductInfo = retriveVendorProductInfosIndexedByVendorId(salesOrderLine);
+		final Map<BPartnerId, VendorProductInfo> vendorId2VendorProductInfo = retriveVendorProductInfosIndexedByVendorId(salesOrderLine);
 
 		final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = vendorId2VendorProductInfo.values().stream()
 
@@ -180,20 +193,24 @@ public class SalesOrderLines
 				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getBpartnerProductId().getAsInt()))
 
 				// create and collect them
-				.map(vendorProductInfo -> createPurchaseCandidate(salesOrderLine, vendorProductInfo))
+				.flatMap(vendorProductInfo -> createPurchaseCandidate(salesOrderLine, vendorProductInfo).stream())
 				.collect(ImmutableList.toImmutableList());
 
 		return newPurchaseCandidateForOrderLine;
 	}
 
-	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, final VendorProductInfo vendorProductInfo)
+	private List<PurchaseCandidate> createPurchaseCandidate(
+			@NonNull final I_C_OrderLine salesOrderLineRecord,
+			@NonNull final VendorProductInfo vendorProductInfo)
 	{
-		final LocalDateTime salesDatePromised = TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised());
+		final LocalDateTime salesDatePromised = TimeUtil.asLocalDateTime(salesOrderLineRecord.getDatePromised());
 
 		LocalDateTime purchaseDatePromised = salesDatePromised;
 		Duration reminderTime = null;
 
-		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(vendorProductInfo.getVendorBPartnerId(), salesDatePromised.toLocalDate()).orElse(null);
+		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(
+				vendorProductInfo.getVendorBPartnerId(),
+				salesDatePromised.toLocalDate()).orElse(null);
 		if (bpPurchaseSchedule != null)
 		{
 			LocalDateTime calculatedPurchaseDatePromised = bpPurchaseScheduleService.calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule).orElse(null);
@@ -205,18 +222,39 @@ public class SalesOrderLines
 			reminderTime = bpPurchaseSchedule.getReminderTime();
 		}
 
-		return PurchaseCandidate.builder()
-				.dateRequired(purchaseDatePromised)
-				.reminderTime(reminderTime)
-				.orgId(salesOrderLine.getAD_Org_ID())
-				.productId(vendorProductInfo.getProductId())
-				.qtyToPurchase(BigDecimal.ZERO)
-				.salesOrderId(salesOrderLine.getC_Order_ID())
-				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
-				.uomId(salesOrderLine.getC_UOM_ID())
-				.vendorProductInfo(vendorProductInfo)
-				.warehouseId(getWarehousePOId(salesOrderLine))
-				.build();
+		final OrderLine salesOrderLine = orderLineRepository.ofRecord(salesOrderLineRecord);
+
+		final Currency salesOrderLineCurrency = salesOrderLine.getPriceActual().getCurrency();
+
+		final BigDecimal customerGrossProfit = create(salesOrderLineRecord, de.metas.order.grossprofit.model.I_C_OrderLine.class).getPriceGrossProfit();
+
+		final Map<PriceListVersionId, Money> plvId2Price = purchaseCandidatePricing.computePricingStuff(salesOrderLine, vendorProductInfo);
+
+		Check.errorIf(plvId2Price.isEmpty(), "Unable to find pricing information for vendorProductInfo={}; salesOrderLineRecord",
+				vendorProductInfo, salesOrderLineRecord);
+
+		final ImmutableList.Builder<PurchaseCandidate> result = ImmutableList.builder();
+		for (final PriceListVersionId plvId : plvId2Price.keySet())
+		{
+			final PurchaseCandidate purchaseCandidate = PurchaseCandidate
+					.builder()
+					.dateRequired(purchaseDatePromised)
+					.reminderTime(reminderTime)
+					.orgId(salesOrderLineRecord.getAD_Org_ID())
+					.productId(vendorProductInfo.getProductId())
+					.qtyToPurchase(BigDecimal.ZERO)
+					.salesOrderId(salesOrderLineRecord.getC_Order_ID())
+					.salesOrderLineId(salesOrderLineRecord.getC_OrderLine_ID())
+					.uomId(salesOrderLineRecord.getC_UOM_ID())
+					.vendorProductInfo(vendorProductInfo)
+					.warehouseId(getWarehousePOId(salesOrderLineRecord))
+					.purchasePriceActual(plvId2Price.get(plvId))
+					.customerPriceGrossProfit(Money.of(customerGrossProfit, salesOrderLineCurrency))
+					// .priceGrossProfit(priceGrossProfit)	// TODO invoke GrossProfitComputeRequestCreator
+					.build();
+			result.add(purchaseCandidate);
+		}
+		return result.build();
 	}
 
 	private int getWarehousePOId(final I_C_OrderLine salesOrderLine)
@@ -230,7 +268,7 @@ public class SalesOrderLines
 		return salesOrderLine.getM_Warehouse_ID();
 	}
 
-	private Map<Integer, VendorProductInfo> retriveVendorProductInfosIndexedByVendorId(@NonNull final I_C_OrderLine salesOrderLine)
+	private Map<BPartnerId, VendorProductInfo> retriveVendorProductInfosIndexedByVendorId(@NonNull final I_C_OrderLine salesOrderLine)
 	{
 		final int productId = salesOrderLine.getM_Product_ID();
 		final int adOrgId = salesOrderLine.getAD_Org_ID();

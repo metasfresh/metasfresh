@@ -33,8 +33,6 @@ import de.metas.pricing.rules.IPricingRule;
 /**
  * Result of a pricing calculation
  *
- * @author tsa
- *
  */
 public interface IPricingResult
 {

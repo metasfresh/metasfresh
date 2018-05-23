@@ -8,6 +8,8 @@ import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.currency.Amount;
+import de.metas.lang.Percent;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,8 +40,6 @@ import lombok.Value;
 @Value
 public class Money
 {
-	private static final BigDecimal HUNDRED = new BigDecimal("100");
-
 	public static final Money of(
 			@NonNull final BigDecimal value,
 			@NonNull final Currency currency)
@@ -165,21 +165,11 @@ public class Money
 		return new Money(value.subtract(amtToSubtract), currency);
 	}
 
-	public Money percentage(@NonNull final BigDecimal percentage)
+	public Money percentage(@NonNull final Percent percent)
 	{
-		return new Money(computeFraction(percentage), currency);
-	}
-
-	private BigDecimal computeFraction(@NonNull final BigDecimal percent)
-	{
-		final int currencyPrecision = currency.getPrecision();
-
-		final BigDecimal subtrahend = value
-				.setScale(currencyPrecision + 2)
-				.divide(HUNDRED, RoundingMode.UNNECESSARY)
-				.multiply(percent)
-				.setScale(currencyPrecision, RoundingMode.HALF_UP);
-		return subtrahend;
+		final BigDecimal newValue = percent
+				.multiply(value, currency.getPrecision());
+		return new Money(newValue, currency);
 	}
 
 	public Money toZero()
@@ -189,5 +179,10 @@ public class Money
 			return this;
 		}
 		return Money.zero(currency);
+	}
+
+	public Amount toAmount()
+	{
+		return Amount.of(getValue(), currency.getThreeLetterCode());
 	}
 }
