@@ -21,6 +21,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1717](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1717) Date Format in date range picker is not localized
     * Fixes the Localization of Dates in Date Range Picker Widget.
+  * [#1805](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1805) Multi Line Text fields are displayed infinitely
+    * Now restricting the length of Multiline Text fields in Data Grids.
 
 # metasfresh 5.58 (2018-21)
 
