@@ -17,13 +17,14 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.collections.PagedIterator;
 import org.adempiere.util.collections.PagedIterator.Page;
 import org.adempiere.util.collections.PagedIterator.PageFetcher;
-import org.adempiere.util.email.EmailValidator;
 import org.springframework.core.ParameterizedTypeReference;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -227,10 +228,11 @@ public class CleverReachClient implements PlatformClient
 			@NonNull final List<ContactPerson> contactPersons,
 			@NonNull final ImmutableList.Builder<LocalToRemoteSyncResult> resultToAddErrorsTo)
 	{
-		final Predicate<ContactPerson> predicate = c -> EmailValidator.isValid(c.getEmailAddessStringOrNull());
-		final String errorMessage = "Contact person has no (valid) email address";
+	final String errorMessage = "Contact person has no (valid) email address";
 
-		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmail = partitionByOkAndNotOk(contactPersons, predicate);
+		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmail = partitionByOkAndNotOk(
+				contactPersons,
+				this::hasValidEmail);
 
 		personsWithAndWithoutEmail.get(false)
 				.stream()
@@ -239,6 +241,24 @@ public class CleverReachClient implements PlatformClient
 
 		final List<ContactPerson> personsWithEmail = personsWithAndWithoutEmail.get(true);
 		return personsWithEmail;
+	}
+
+	public boolean hasValidEmail(@NonNull final ContactPerson contactPerson)
+	{
+		final String emailAddess = contactPerson.getEmailAddessStringOrNull();
+		if (Check.isEmpty(emailAddess, true))
+		{
+			return false;
+		}
+		try
+		{
+			new InternetAddress(emailAddess).validate();
+			return true;
+		}
+		catch (final AddressException ex)
+		{
+			return false;
+		}
 	}
 
 	private List<ContactPerson> filterForPersonsWithEmailOrRemoteId(
