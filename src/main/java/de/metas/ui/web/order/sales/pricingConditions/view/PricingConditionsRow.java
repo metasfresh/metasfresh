@@ -506,7 +506,7 @@ public class PricingConditionsRow implements IViewRow
 		}
 		else if (priceType == PriceOverrideType.FIXED_PRICE)
 		{
-			final BigDecimal fixedPrice = changes.getFixedPrice() != null ? changes.getFixedPrice() : price.getFixedPrice();
+			final BigDecimal fixedPrice = Util.coalesce(changes.getFixedPrice(), price.getFixedPrice(), BigDecimal.ZERO);
 			return PriceOverride.fixedPrice(fixedPrice);
 		}
 		else
