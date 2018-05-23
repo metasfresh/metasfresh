@@ -38,9 +38,9 @@ import lombok.Value;
  *
  */
 @Value
-public class CalculatePricingConditionsResult
+public class PricingConditionsResult
 {
-	public static final CalculatePricingConditionsResult ZERO = builder().build();
+	public static final PricingConditionsResult ZERO = builder().build();
 
 	Percent discount;
 	int paymentTermId;
@@ -55,7 +55,7 @@ public class CalculatePricingConditionsResult
 	int basePricingSystemId;
 
 	@Builder
-	public CalculatePricingConditionsResult(
+	public PricingConditionsResult(
 			final Percent discount,
 			final int paymentTermId,
 			final BigDecimal priceListOverride,

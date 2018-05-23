@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.time.generator.DateSequenceGenerator;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +42,7 @@ public class BPPurchaseScheduleService
 		this.bpPurchaseScheduleRepo = bpPurchaseScheduleRepo;
 	}
 
-	public Optional<BPPurchaseSchedule> getBPPurchaseSchedule(final int bpartnerId, final LocalDate date)
+	public Optional<BPPurchaseSchedule> getBPPurchaseSchedule(final BPartnerId bpartnerId, final LocalDate date)
 	{
 		return bpPurchaseScheduleRepo.getByBPartnerIdAndValidFrom(bpartnerId, date);
 	}

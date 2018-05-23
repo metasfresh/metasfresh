@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
@@ -211,7 +212,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.uomId(6)
 				.vendorProductInfo(VendorProductInfo.builder()
 						.bpartnerProductId(10)
-						.vendorBPartnerId(vendorId)
+						.vendorBPartnerId(BPartnerId.ofRepoId(vendorId))
 						.productId(20)
 						.productNo("productNo")
 						.productName("productName").build())

@@ -45,6 +45,11 @@ public class BPartnerId
 		return repoId > 0 ? new BPartnerId(repoId) : null;
 	}
 
+	public static int toRepoIdOr(final BPartnerId bpartnerId, final int defaultValue)
+	{
+		return bpartnerId != null ? bpartnerId.getRepoId() : defaultValue;
+	}
+
 	private BPartnerId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");

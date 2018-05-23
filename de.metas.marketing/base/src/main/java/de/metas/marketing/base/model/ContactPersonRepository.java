@@ -7,7 +7,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.List;
 import java.util.Optional;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.user.UserId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
@@ -46,7 +49,7 @@ public class ContactPersonRepository
 {
 	public ContactPerson save(@NonNull final ContactPerson contactPerson)
 	{
-		final I_MKTG_ContactPerson contactPersonRecord = cerateOrUpdateRecordDontSave(contactPerson);
+		final I_MKTG_ContactPerson contactPersonRecord = createOrUpdateRecordDontSave(contactPerson);
 		saveRecord(contactPersonRecord);
 
 		return contactPerson.toBuilder()
@@ -54,22 +57,15 @@ public class ContactPersonRepository
 				.build();
 	}
 
-	private static I_MKTG_ContactPerson cerateOrUpdateRecordDontSave(
+	private static I_MKTG_ContactPerson createOrUpdateRecordDontSave(
 			@NonNull final ContactPerson contactPerson)
 	{
 		final I_MKTG_ContactPerson contactPersonRecord = loadRecordIfPossible(contactPerson)
 				.orElse(newInstance(I_MKTG_ContactPerson.class));
 
-		if (contactPerson.getAdUserId() > 0)
-		{
-			contactPersonRecord.setAD_User_ID(contactPerson.getAdUserId());
-		}
-		else
-		{
-			contactPersonRecord.setAD_User(null);
-		}
+		contactPersonRecord.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
+		contactPersonRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
 
-		contactPersonRecord.setC_BPartner_ID(contactPerson.getCBpartnerId());
 		contactPersonRecord.setName(contactPerson.getName());
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());
 		contactPersonRecord.setRemoteRecordId(contactPerson.getRemoteId());
@@ -93,44 +89,56 @@ public class ContactPersonRepository
 	private static Optional<I_MKTG_ContactPerson> loadRecordIfPossible(
 			@NonNull final ContactPerson contactPerson)
 	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 		I_MKTG_ContactPerson contactPersonRecord = null;
+
 		if (contactPerson.getContactPersonId() != null)
 		{
 			final ContactPersonId contactPersonId = contactPerson.getContactPersonId();
 			contactPersonRecord = load(contactPersonId.getRepoId(), I_MKTG_ContactPerson.class);
+			return Optional.of(contactPersonRecord);
 		}
-		else if (!Check.isEmpty(contactPerson.getRemoteId(), true) && contactPerson.getPlatformId() != null)
+
+		final ICompositeQueryFilter<I_MKTG_ContactPerson> baseQueryFilter = queryBL.createCompositeQueryFilter(I_MKTG_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_MKTG_Platform_ID, contactPerson.getPlatformId().getRepoId());
+
+		final UserId userId = contactPerson.getUserId();
+		if (userId != null)
 		{
-			contactPersonRecord = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_MKTG_ContactPerson.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_MKTG_Platform_ID, contactPerson.getPlatformId().getRepoId())
+			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID, userId.getRepoId());
+		}
+
+		if (contactPersonRecord == null && !Check.isEmpty(contactPerson.getRemoteId(), true))
+		{
+			contactPersonRecord = queryBL.createQueryBuilder(I_MKTG_ContactPerson.class)
+					.filter(baseQueryFilter)
 					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_RemoteRecordId, contactPerson.getRemoteId())
 					.create()
 					.firstOnly(I_MKTG_ContactPerson.class); // might be null, that's ok
 		}
 
-		if (contactPersonRecord == null)
+		final String emailAddress = contactPerson.getEmailAddessStringOrNull();
+
+		if (contactPersonRecord == null && emailAddress != null)
 		{
 			// if it's still null, then see if there is a contact with a matching email
-			contactPersonRecord = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_MKTG_ContactPerson.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_MKTG_Platform_ID, contactPerson.getPlatformId().getRepoId())
+			contactPersonRecord = queryBL.createQueryBuilder(I_MKTG_ContactPerson.class)
+					.filter(baseQueryFilter)
+					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_EMail, emailAddress)
 					.orderBy()
 					.addColumn(I_MKTG_ContactPerson.COLUMN_MKTG_ContactPerson_ID).endOrderBy()
 					.create()
 					.first();
-
 		}
-
 		return Optional.ofNullable(contactPersonRecord);
 	}
 
 	public ContactPerson saveCampaignSyncResult(@NonNull final SyncResult syncResult)
 	{
 		final ContactPerson contactPerson = ContactPerson.cast(syncResult.getSynchedDataRecord()).get();
-		final I_MKTG_ContactPerson contactPersonRecord = cerateOrUpdateRecordDontSave(contactPerson);
+		final I_MKTG_ContactPerson contactPersonRecord = createOrUpdateRecordDontSave(contactPerson);
 
 		if (syncResult instanceof LocalToRemoteSyncResult)
 		{
@@ -186,13 +194,53 @@ public class ContactPersonRepository
 			builder
 					.address(emailAddress);
 		}
+
 		return builder
-				.adUserId(contactPersonRecord.getAD_User_ID())
-				.cBpartnerId(contactPersonRecord.getC_BPartner_ID())
+				.userId(UserId.ofRepoId(contactPersonRecord.getAD_User_ID()))
+				.bPartnerId(BPartnerId.ofRepoId(contactPersonRecord.getC_BPartner_ID()))
 				.name(contactPersonRecord.getName())
 				.platformId(PlatformId.ofRepoId(contactPersonRecord.getMKTG_Platform_ID()))
 				.remoteId(contactPersonRecord.getRemoteRecordId())
 				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
 				.build();
+	}
+
+	public void createUpdateConsent(
+			@NonNull final ContactPerson contactPerson)
+	{
+		final I_MKTG_Consent consentExistingRecord = getConsentRecord(contactPerson);
+
+		final I_MKTG_Consent consent = consentExistingRecord != null ? consentExistingRecord : newInstance(I_MKTG_Consent.class);
+
+		consent.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
+		consent.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
+
+		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
+		consent.setMKTG_ContactPerson_ID(contactPerson.getContactPersonId().getRepoId());
+
+		saveRecord(consent);
+	}
+
+	public void revokeConsent(
+			@NonNull final ContactPerson contactPerson)
+	{
+		final I_MKTG_Consent consent = getConsentRecord(contactPerson);
+
+		if (consent != null)
+		{
+			consent.setConsentRevokedOn(SystemTime.asTimestamp());
+			saveRecord(consent);
+		}
+	}
+
+	private I_MKTG_Consent getConsentRecord(@NonNull final ContactPerson contactPerson)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Consent.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_ConsentRevokedOn, null)
+				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getContactPersonId().getRepoId())
+				.orderByDescending(I_MKTG_Consent.COLUMNNAME_ConsentDeclaredOn)
+				.create()
+				.first(I_MKTG_Consent.class);
 	}
 }

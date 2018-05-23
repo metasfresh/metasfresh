@@ -42,12 +42,11 @@ import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
-import de.metas.pricing.PricingConditionsResult;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest.CalculatePricingConditionsRequestBuilder;
-import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
@@ -111,7 +110,7 @@ public class Discount implements IPricingRule
 		}
 
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
-		final CalculatePricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
+		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
 
 		result.setUsesDiscountSchema(true);
 		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
@@ -177,15 +176,10 @@ public class Discount implements IPricingRule
 
 	private static void updatePricingResultFromPricingConditionsResult(
 			final IPricingResult pricingResult,
-			final CalculatePricingConditionsResult pricingConditionsResult)
+			final PricingConditionsResult pricingConditionsResult)
 	{
-		pricingResult.setPricingConditions(PricingConditionsResult.builder()
-				.pricingConditionsId(pricingConditionsResult.getPricingConditionsId())
-				.pricingConditionsBreakId(pricingConditionsResult.getPricingConditionsBreakId())
-				.basePricingSystemId(pricingConditionsResult.getBasePricingSystemId())
-				.paymentTermId(pricingConditionsResult.getPaymentTermId())
-				.build());
-
+		pricingResult.setPricingConditions(pricingConditionsResult);
+		
 		pricingResult.setDiscount(pricingConditionsResult.getDiscount());
 
 		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();
