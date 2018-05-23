@@ -105,6 +105,10 @@
         span {
             pointer-events: none;
         }
+
+        &.LongText {
+            max-width: 350px;
+        }
     }
 
     /* Table cols sizing */
