@@ -135,14 +135,14 @@ class DocumentList extends Component {
       windowType,
       dispatch,
     } = this.props;
-    const { page, sort, viewId } = this.state;
-
+    const { page, sort, viewId, staticFilterCleared } = this.state;
     const included =
       includedView && includedView.windowType && includedView.viewId;
     const nextIncluded =
       nextIncludedView &&
       nextIncludedView.windowType &&
       nextIncludedView.viewId;
+    const location = document.location;
 
     this.loadSupportAttributeFlag(nextProps);
 
@@ -156,13 +156,15 @@ class DocumentList extends Component {
          * The reference ID is changed
          */
     if (
+      staticFilterCleared ||
       nextWindowType !== windowType ||
       (nextDefaultViewId === undefined &&
         nextDefaultViewId !== defaultViewId) ||
       (nextWindowType === windowType &&
-        nextDefaultViewId !== defaultViewId &&
-        isIncluded &&
-        nextIsIncluded) ||
+        ((nextDefaultViewId !== defaultViewId &&
+          isIncluded &&
+          nextIsIncluded) ||
+          location.hash === '#notification')) ||
       nextRefId !== refId
     ) {
       this.setState(
@@ -170,7 +172,8 @@ class DocumentList extends Component {
           data: null,
           layout: null,
           filters: null,
-          viewId: null,
+          viewId: location.hash === '#notification' ? this.state.viewId : null,
+          staticFilterCleared: false,
         },
         () => {
           if (included) {
@@ -345,7 +348,9 @@ class DocumentList extends Component {
     const { viewId } = this.state;
 
     deleteStaticFilter(windowType, viewId, filterId).then(response => {
-      dispatch(push(`/window/${windowType}?viewId=${response.data.viewId}`));
+      this.setState({ staticFilterCleared: true }, () =>
+        dispatch(push(`/window/${windowType}?viewId=${response.data.viewId}`))
+      );
     });
   };
 
@@ -403,11 +408,14 @@ class DocumentList extends Component {
   browseView = () => {
     const { viewId, page, sort } = this.state;
 
-    this.getData(viewId, page, sort).catch(err => {
-      if (err.response && err.response.status === 404) {
-        this.createView();
-      }
-    });
+    // in case of redirect from a notification, first call will have viewId empty
+    if (viewId) {
+      this.getData(viewId, page, sort).catch(err => {
+        if (err.response && err.response.status === 404) {
+          this.createView();
+        }
+      });
+    }
   };
 
   createView = () => {

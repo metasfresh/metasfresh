@@ -779,6 +779,11 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     background-color: $brand-border-color;
 }
 
+.meta-icon-calendar {
+    font-size: 18px;
+    line-height: 1.2;
+}
+
 /* Attributes */
 
 .attributes {
