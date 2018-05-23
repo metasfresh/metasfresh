@@ -254,7 +254,7 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public IEditablePricingContext setC_BPartner_ID(final BPartnerId bpartnerId)
+	public IEditablePricingContext setBPartnerId(final BPartnerId bpartnerId)
 	{
 		this.bpartnerId = bpartnerId;
 		return this;

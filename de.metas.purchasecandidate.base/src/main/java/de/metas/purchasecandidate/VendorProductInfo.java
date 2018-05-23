@@ -3,6 +3,7 @@ package de.metas.purchasecandidate;
 import java.util.OptionalInt;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
@@ -87,7 +88,7 @@ public class VendorProductInfo
 
 		return builder()
 				.bpartnerProductId(bpartnerProduct.getC_BPartner_Product_ID())
-				.vendorBPartnerId(BPartnerId.ofRepoId(bpartnerVendorId))
+				.vendorBPartnerId(bpartnerVendorId)
 				.productId(ProductId.ofRepoId(bpartnerProduct.getM_Product_ID()))
 				.productNo(productNo)
 				.productName(productName)

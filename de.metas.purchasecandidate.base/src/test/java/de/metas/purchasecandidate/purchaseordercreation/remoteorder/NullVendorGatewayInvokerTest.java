@@ -58,7 +58,7 @@ public class NullVendorGatewayInvokerTest
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
 				.productId(productId)
-				.vendorBPartnerId(BPartnerId.ofRepoId(vendorBPartnerId))
+				.vendorBPartnerId(vendorBPartnerId)
 				.productName("productName")
 				.productNo("productNo").build();
 

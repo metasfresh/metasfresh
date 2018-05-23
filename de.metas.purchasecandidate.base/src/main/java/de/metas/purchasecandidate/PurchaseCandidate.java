@@ -228,7 +228,7 @@ public class PurchaseCandidate
 
 	public BPartnerId getVendorBPartnerId()
 	{
-		return getVendorProductInfo().getVendorBPartnerId().getRepoId();
+		return getVendorProductInfo().getVendorBPartnerId();
 	}
 
 	public OptionalInt getBpartnerProductId()

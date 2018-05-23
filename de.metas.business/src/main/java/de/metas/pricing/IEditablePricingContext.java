@@ -51,7 +51,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setQty(final BigDecimal qty);
 
-	IEditablePricingContext setC_BPartner_ID(final BPartnerId bpartnerId);
+	IEditablePricingContext setBPartnerId(final BPartnerId bpartnerId);
 
 	IEditablePricingContext setC_Currency_ID(final int c_Currency_ID);
 

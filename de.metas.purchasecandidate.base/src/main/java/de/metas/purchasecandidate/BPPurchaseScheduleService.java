@@ -44,7 +44,7 @@ public class BPPurchaseScheduleService
 
 	public Optional<BPPurchaseSchedule> getBPPurchaseSchedule(final BPartnerId bpartnerId, final LocalDate date)
 	{
-		return bpPurchaseScheduleRepo.getByBPartnerIdAndValidFrom(bpartnerId.getRepoId(), date);
+		return bpPurchaseScheduleRepo.getByBPartnerIdAndValidFrom(bpartnerId, date);
 	}
 
 	public Optional<LocalDateTime> calculatePurchaseDatePromised(@NonNull final LocalDateTime salesDatePromised, @NonNull final BPPurchaseSchedule schedule)
