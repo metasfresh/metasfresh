@@ -64,6 +64,7 @@ class DocumentList extends Component {
     childSelected: PropTypes.array.isRequired,
     parentSelected: PropTypes.array.isRequired,
     selected: PropTypes.array.isRequired,
+    isModal: PropTypes.bool,
   };
 
   static contextTypes = {
@@ -198,6 +199,7 @@ class DocumentList extends Component {
     if (nextDefaultViewId !== viewId) {
       dispatch(removeSelectedTableItems({ viewId: viewId, windowType }));
       stateChanges.viewId = nextDefaultViewId;
+      stateChanges.refreshSelection = true;
     }
 
     if (included && !nextIncluded) {
