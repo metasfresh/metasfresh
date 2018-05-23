@@ -1,4 +1,6 @@
-package de.metas.order;
+package org.adempiere.user;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
@@ -27,22 +29,29 @@ import lombok.Value;
  */
 
 @Value
-public class OrderLineId
+public class UserId
 {
-	public static OrderLineId ofRepoId(final int repoId)
-	{
-		return new OrderLineId(repoId);
-	}
-
-	public static OrderLineId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new OrderLineId(repoId) : null;
-	}
-
 	int repoId;
 
-	private OrderLineId(final int repoId)
+	public static UserId ofRepoId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		return new UserId(repoId);
+	}
+
+	public static UserId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new UserId(repoId) : null;
+	}
+
+	public static int toRepoIdOr(
+			@Nullable final UserId userId,
+			final int defaultValue)
+	{
+		return userId != null ? userId.getRepoId() : defaultValue;
+	}
+
+	private UserId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "repoId");
 	}
 }

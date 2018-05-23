@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
 
 import lombok.NonNull;
 import lombok.Value;
@@ -73,7 +74,8 @@ public class Percent
 
 	private Percent(@NonNull final BigDecimal valueAsBigDecimal)
 	{
-		this.valueAsBigDecimal = valueAsBigDecimal;
+		// NOTE: important to strip the trailing zeros, else the hashCode and equals might have different results
+		this.valueAsBigDecimal = NumberUtils.stripTrailingDecimalZeros(valueAsBigDecimal);
 	}
 
 	public boolean isZero()

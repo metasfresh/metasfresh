@@ -1,7 +1,9 @@
-package de.metas.order;
+package org.adempiere.user;
 
-import org.adempiere.util.Check;
+import javax.annotation.Nullable;
 
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -27,22 +29,16 @@ import lombok.Value;
  */
 
 @Value
-public class OrderLineId
+@Builder(toBuilder = true)
+public class User
 {
-	public static OrderLineId ofRepoId(final int repoId)
-	{
-		return new OrderLineId(repoId);
-	}
+	/** can be null for not-yet-saved users */
+	@Nullable
+	UserId id;
 
-	public static OrderLineId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new OrderLineId(repoId) : null;
-	}
+	@NonNull
+	String name;
 
-	int repoId;
-
-	private OrderLineId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
+	@Nullable
+	String emailAddress;
 }
