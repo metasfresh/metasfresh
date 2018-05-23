@@ -30,6 +30,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
@@ -102,7 +103,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	
 		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
-				.qtyCU(qtyCU)
+				.qtyCU(Quantity.of(qtyCU, row.getC_UOM()))
 				.build();
 
 		EmptyHUListener emptyHUListener = EmptyHUListener
