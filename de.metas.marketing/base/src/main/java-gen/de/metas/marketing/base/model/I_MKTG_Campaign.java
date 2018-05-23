@@ -172,6 +172,29 @@ public interface I_MKTG_Campaign
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set IsDefaultNewsletter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsDefaultNewsletter (boolean IsDefaultNewsletter);
+
+	/**
+	 * Get IsDefaultNewsletter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDefaultNewsletter();
+
+    /** Column definition for IsDefaultNewsletter */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object> COLUMN_IsDefaultNewsletter = new org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object>(I_MKTG_Campaign.class, "IsDefaultNewsletter", null);
+    /** Column name IsDefaultNewsletter */
+    public static final String COLUMNNAME_IsDefaultNewsletter = "IsDefaultNewsletter";
+
+	/**
 	 * Set Synchronisierungstatus-Detail.
 	 *
 	 * <br>Type: Text
