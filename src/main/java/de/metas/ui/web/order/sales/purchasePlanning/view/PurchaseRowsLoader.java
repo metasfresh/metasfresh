@@ -16,6 +16,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
+import de.metas.money.Currency;
+import de.metas.order.OrderLine;
+import de.metas.order.OrderLineRepository;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
@@ -59,6 +62,7 @@ class PurchaseRowsLoader
 	private final SalesOrderLines salesOrderLines;
 	private final PurchaseRowFactory purchaseRowFactory;
 	private final Supplier<IView> viewSupplier;
+	private final OrderLineRepository orderLineRepository;
 
 	private ImmutableMap<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRow;
 
@@ -66,8 +70,10 @@ class PurchaseRowsLoader
 	private PurchaseRowsLoader(
 			@NonNull final SalesOrderLines salesOrderLines,
 			@NonNull final Supplier<IView> viewSupplier,
-			@NonNull final PurchaseRowFactory purchaseRowFactory)
+			@NonNull final PurchaseRowFactory purchaseRowFactory,
+			@NonNull final OrderLineRepository orderLineRepository)
 	{
+		this.orderLineRepository = orderLineRepository;
 		this.salesOrderLines = salesOrderLines;
 		this.viewSupplier = viewSupplier;
 		this.purchaseRowFactory = purchaseRowFactory;
@@ -80,27 +86,33 @@ class PurchaseRowsLoader
 
 		for (final SalesOrderLineWithCandidates salesOrderLineWithCandidates : salesOrderLines.getSalesOrderLinesWithCandidates())
 		{
-			final I_C_OrderLine salesOrderLine = salesOrderLineWithCandidates.getSalesOrderLine();
-
-			final ImmutableList.Builder<PurchaseRow> rows = ImmutableList.builder();
-			for (final PurchaseCandidate purchaseCandidate : salesOrderLineWithCandidates.getPurchaseCandidates())
+			final I_C_OrderLine salesOrderLineRecord = salesOrderLineWithCandidates.getSalesOrderLine();
+			final OrderLine salesOrderLine = orderLineRepository.ofRecord(salesOrderLineRecord);
 			{
-				final PurchaseRow candidateRow = purchaseRowFactory
-						.rowFromPurchaseCandidateBuilder()
-						.purchaseCandidate(purchaseCandidate)
-						.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
-						.datePromised(salesOrderLine.getDatePromised())
-						.build();
+				final Currency currencyOfParentRow = salesOrderLine
+						.getPriceActual()
+						.getCurrency();
 
-				purchaseCandidate2purchaseRowBuilder.put(purchaseCandidate, candidateRow);
-				rows.add(candidateRow);
+				final ImmutableList.Builder<PurchaseRow> rows = ImmutableList.builder();
+				for (final PurchaseCandidate purchaseCandidate : salesOrderLineWithCandidates.getPurchaseCandidates())
+				{
+					final PurchaseRow candidateRow = purchaseRowFactory
+							.rowFromPurchaseCandidateBuilder()
+							.purchaseCandidate(purchaseCandidate)
+							.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
+							.datePromised(salesOrderLine.getDatePromised())
+							.currencyOfParentRow(currencyOfParentRow)
+							.build();
+
+					purchaseCandidate2purchaseRowBuilder.put(purchaseCandidate, candidateRow);
+					rows.add(candidateRow);
+				}
+
+				final PurchaseRow groupRow = //
+						purchaseRowFactory.createGroupRow(salesOrderLineRecord, rows.build());
+				result.add(groupRow);
 			}
-
-			final PurchaseRow groupRow = //
-					purchaseRowFactory.createGroupRow(salesOrderLine, rows.build());
-			result.add(groupRow);
 		}
-
 		purchaseCandidate2purchaseRow = purchaseCandidate2purchaseRowBuilder.build();
 
 		return result.build();

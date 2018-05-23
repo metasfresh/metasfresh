@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
@@ -80,11 +81,23 @@ public class PurchaseRow implements IViewRow
 	})
 	private final JSONLookupValue vendorBPartner;
 
-	@ViewColumn(captionKey = "PriceGrossProfit", widgetType = DocumentFieldWidgetType.Amount, layouts = {
+	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_CustomerPriceGrossProfit, widgetType = DocumentFieldWidgetType.Amount, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 23),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 23)
+	})
+	private final BigDecimal customerPriceGrossProfit;
+
+	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_PurchasePriceActual, widgetType = DocumentFieldWidgetType.Amount, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 25)
 	})
-	private final BigDecimal grossProfitPrice;
+	private final BigDecimal purchasePriceActual;
+
+	@ViewColumn(captionKey = "PercentGrossProfit", widgetType = DocumentFieldWidgetType.Amount, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 25)
+	})
+	private final BigDecimal percentGrossProfit;
 
 	@ViewColumn(captionKey = "Qty_AvailableToPromise", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
@@ -163,7 +176,9 @@ public class PurchaseRow implements IViewRow
 			@Nullable final JSONLookupValue attributeSetInstance,
 			@Nullable final JSONLookupValue vendorBPartner,
 			@Nullable final BigDecimal qtyAvailableToPromise,
-			@Nullable final BigDecimal grossProfitPrice,
+			@Nullable final BigDecimal customerPriceGrossProfit,
+			@Nullable final BigDecimal purchasePriceActual,
+			@Nullable final BigDecimal percentGrossProfit,
 			@NonNull final String uomOrAvailablility,
 			@Nullable final BigDecimal qtyToDeliver,
 			@Nullable final BigDecimal qtyToPurchase,
@@ -184,7 +199,11 @@ public class PurchaseRow implements IViewRow
 		this.attributeSetInstance = attributeSetInstance;
 		this.vendorBPartner = vendorBPartner;
 		this.qtyAvailableToPromise = qtyAvailableToPromise;
-		this.grossProfitPrice = grossProfitPrice;
+
+		this.customerPriceGrossProfit = customerPriceGrossProfit;
+		this.purchasePriceActual = purchasePriceActual;
+		this.percentGrossProfit = percentGrossProfit;
+
 		this.uomOrAvailablility = uomOrAvailablility;
 		this.qtyToDeliver = qtyToDeliver;
 		this.qtyToPurchase = Util.coalesce(qtyToPurchase, BigDecimal.ZERO);
@@ -217,7 +236,7 @@ public class PurchaseRow implements IViewRow
 		logger.trace("Created: {}, RO={} -- this={}", this.rowId, this.readonly, this);
 	}
 
-	private PurchaseRow(final PurchaseRow from)
+	private PurchaseRow(@NonNull final PurchaseRow from)
 	{
 		this.rowId = from.rowId;
 		this.salesOrderId = from.salesOrderId;
@@ -228,7 +247,9 @@ public class PurchaseRow implements IViewRow
 		this.qtyAvailableToPromise = from.qtyAvailableToPromise;
 		this.uomOrAvailablility = from.uomOrAvailablility;
 
-		this.grossProfitPrice = from.grossProfitPrice;
+		this.customerPriceGrossProfit = from.customerPriceGrossProfit;
+		this.purchasePriceActual = from.purchasePriceActual;
+		this.percentGrossProfit = from.percentGrossProfit;
 
 		this.qtyToDeliver = from.qtyToDeliver;
 		this.qtyToPurchase = from.qtyToPurchase;

@@ -29,7 +29,9 @@ import com.google.common.collect.Multimap;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLines;
@@ -137,7 +139,9 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
 				.salesOrderLines(salesOrderLines)
-				.purchaseRowFactory(new PurchaseRowFactory(new AvailableToPromiseRepository()))
+				.purchaseRowFactory(new PurchaseRowFactory(
+						new AvailableToPromiseRepository(),
+						new MoneyService()))
 				.viewSupplier(() -> null)
 				.build();
 
@@ -168,7 +172,7 @@ public class PurchaseRowsLoaderTest
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(20)
 				.dateRequired(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
-				.productId(orderLine.getM_Product_ID())
+				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.qtyToPurchase(orderLine.getQtyOrdered())
 				.salesOrderId(orderLine.getC_Order_ID())
 				.salesOrderLineId(orderLine.getC_OrderLine_ID())

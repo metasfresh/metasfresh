@@ -4,7 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -25,9 +26,13 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
+import de.metas.lang.Percent;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.money.Currency;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.product.IProductBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -63,17 +68,25 @@ import lombok.NonNull;
 public class PurchaseRowFactory
 {
 	private final AvailableToPromiseRepository availableToPromiseRepository;
+	private final MoneyService moneyService;
 
-	public PurchaseRowFactory(@NonNull AvailableToPromiseRepository availableToPromiseRepository)
+	public PurchaseRowFactory(
+			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
+			@NonNull final MoneyService moneyService)
 	{
+		this.moneyService = moneyService;
 		this.availableToPromiseRepository = availableToPromiseRepository;
 	}
 
+	/**
+	 * Create a purchase row from a {@link PurchaseCandidate}.
+	 */
 	@Builder(builderMethodName = "rowFromPurchaseCandidateBuilder", builderClassName = "RowFromPurchaseCandidateBuilder")
 	private PurchaseRow buildRowFromPurchaseCandidate(
 			@NonNull final PurchaseCandidate purchaseCandidate,
+			@NonNull final Currency currencyOfParentRow,
 			@Nullable final VendorProductInfo vendorProductInfo,
-			@NotNull final Date datePromised)
+			@NotNull final LocalDateTime datePromised)
 	{
 		final BPartnerId bpartnerId = purchaseCandidate.getVendorBPartnerId();
 		final int productId;
@@ -81,9 +94,9 @@ public class PurchaseRowFactory
 		final JSONLookupValue product;
 		if (vendorProductInfo != null)
 		{
-			productId = vendorProductInfo.getProductId();
+			productId = vendorProductInfo.getProductId().getRepoId();
 			product = createProductLookupValue(
-					vendorProductInfo.getProductId(),
+					productId,
 					vendorProductInfo.getProductNo(),
 					vendorProductInfo.getProductName());
 		}
@@ -98,15 +111,25 @@ public class PurchaseRowFactory
 				? purchaseCandidate.getPurchaseCandidateId()
 				: 0;
 
+		final Money purchasePriceActual = moneyService.convertMoneyToCurrency(purchaseCandidate.getPurchasePriceActual(), currencyOfParentRow);
+		final Money customerPriceGrossProfit = moneyService.convertMoneyToCurrency(purchaseCandidate.getCustomerPriceGrossProfit(), currencyOfParentRow);
+		final Money priceGrossProfit = moneyService.convertMoneyToCurrency(purchaseCandidate.getPriceGrossProfit(), currencyOfParentRow);
+
+		final Percent percentGrossProfit = Percent
+				.of(customerPriceGrossProfit.getValue(), priceGrossProfit.getValue())
+				.roundToHalf(RoundingMode.HALF_UP);
+
 		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.lineId(purchaseCandidate.getSalesOrderLineId(), bpartnerId, processedPurchaseCandidateId))
 				.salesOrderId(purchaseCandidate.getSalesOrderId())
 				.rowType(PurchaseRowType.LINE).product(product)
-				.grossProfitPrice(purchaseCandidate.getGrossProfitPrice())
+				.purchasePriceActual(purchasePriceActual.getValue())
+				.customerPriceGrossProfit(customerPriceGrossProfit.getValue())
+				.percentGrossProfit(percentGrossProfit.getValueAsBigDecimal())
 				.uomOrAvailablility(uom)
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
-				.datePromised(datePromised)
+				.datePromised(TimeUtil.asDate(datePromised))
 				.vendorBPartner(vendorBPartner)
 				.purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
 				.orgId(purchaseCandidate.getOrgId())
@@ -158,10 +181,16 @@ public class PurchaseRowFactory
 				: availabilityResult.getType().translate();
 
 		return parentRow.toBuilder()
-				.rowId(parentRow.getRowId().withAvailability(availabilityResult.getType(), createRandomString()))
-				.salesOrderId(parentRow.getSalesOrderId()).rowType(PurchaseRowType.AVAILABILITY_DETAIL)
-				.qtyToPurchase(availabilityResult.getQty()).readonly(true).uomOrAvailablility(availability)
-				.datePromised(TimeUtil.asTimestamp(availabilityResult.getDatePromised())).build();
+				.rowId(parentRow
+						.getRowId()
+						.withAvailability(availabilityResult.getType(), createRandomString()))
+				.salesOrderId(parentRow.getSalesOrderId())
+				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
+				.qtyToPurchase(availabilityResult.getQty())
+				.readonly(true)
+				.uomOrAvailablility(availability)
+				.datePromised(TimeUtil.asDate(availabilityResult.getDatePromised()))
+				.build();
 	}
 
 	@Builder(builderMethodName = "rowFromThrowableBuilder", builderClassName = "RowFromThrowableBuilder")
@@ -172,9 +201,13 @@ public class PurchaseRowFactory
 		return parentRow.toBuilder()
 				.rowId(parentRow.getRowId().withAvailability(Type.NOT_AVAILABLE, createRandomString()))
 				.salesOrderId(parentRow.getSalesOrderId()).rowType(PurchaseRowType.AVAILABILITY_DETAIL)
-				.qtyToPurchase(BigDecimal.ZERO).readonly(true)
-				.uomOrAvailablility(Util.coalesce(throwable.getLocalizedMessage(), throwable.getMessage(),
-						throwable.getClass().getName()))
+				.qtyToPurchase(BigDecimal.ZERO)
+				.readonly(true)
+				.uomOrAvailablility(Util
+						.coalesce(
+								throwable.getLocalizedMessage(),
+								throwable.getMessage(),
+								throwable.getClass().getName()))
 				.datePromised(null).build();
 	}
 

@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.bpartner.BPartnerId;
@@ -22,7 +23,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -63,13 +66,15 @@ public class PurchaseRowFactoryTest
 	public void test()
 	{
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(30);
-		final PurchaseRowFactory purchaseRowFactory = new PurchaseRowFactory(new AvailableToPromiseRepository());
+		final PurchaseRowFactory purchaseRowFactory = new PurchaseRowFactory(
+				new AvailableToPromiseRepository(),
+				new MoneyService());
 
 		final PurchaseRow candidateRow = purchaseRowFactory
 				.rowFromPurchaseCandidateBuilder()
 				.purchaseCandidate(purchaseCandidate)
 				.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
-				.datePromised(SystemTime.asTimestamp())
+				.datePromised(LocalDateTime.now())
 				.build();
 
 		final DocumentId id = candidateRow.getId();
@@ -93,11 +98,12 @@ public class PurchaseRowFactoryTest
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setC_UOM(uom);
 		save(product);
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
 				.vendorBPartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
-				.productId(product.getM_Product_ID())
+				.productId(productId)
 				.productNo("productNo")
 				.productName("productName")
 				.build();
@@ -108,7 +114,7 @@ public class PurchaseRowFactoryTest
 				.salesOrderLineId(2)
 				.orgId(3)
 				.warehouseId(4)
-				.productId(product.getM_Product_ID())
+				.productId(productId)
 				.uomId(uom.getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)
 				.qtyToPurchase(BigDecimal.ONE)
