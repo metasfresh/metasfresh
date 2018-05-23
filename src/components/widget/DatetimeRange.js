@@ -65,7 +65,9 @@ class DatetimeRange extends Component {
 
     const availableDates =
       !!startDate && !!endDate
-        ? ` ${Moment(startDate).format(fmt)} - ${Moment(endDate).format(fmt)}`
+        ? `${Moment(startDate).format(format)} - ${Moment(endDate).format(
+            format
+          )}`
         : counterpart.translate('window.daterange.filter.hint');
 
     return (
@@ -78,7 +80,7 @@ class DatetimeRange extends Component {
         onShow={onShow}
         onHide={onHide}
         locale={{
-          format: Moment.localeData().longDateFormat('l'),
+          format: Moment.localeData().longDateFormat(format),
           firstDay: 1,
           monthNames: Moment.months(),
           applyLabel: counterpart.translate('window.daterange.apply'),
