@@ -15,6 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -172,7 +173,7 @@ public class SalesOrderLines
 			@NonNull final I_C_OrderLine salesOrderLine,
 			@NonNull final Set<Integer> vendorProductInfoIdsToExclude)
 	{
-		final Map<Integer, VendorProductInfo> vendorId2VendorProductInfo = retriveVendorProductInfosIndexedByVendorId(salesOrderLine);
+		final Map<BPartnerId, VendorProductInfo> vendorId2VendorProductInfo = retriveVendorProductInfosIndexedByVendorId(salesOrderLine);
 
 		final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = vendorId2VendorProductInfo.values().stream()
 
@@ -230,7 +231,7 @@ public class SalesOrderLines
 		return salesOrderLine.getM_Warehouse_ID();
 	}
 
-	private Map<Integer, VendorProductInfo> retriveVendorProductInfosIndexedByVendorId(@NonNull final I_C_OrderLine salesOrderLine)
+	private Map<BPartnerId, VendorProductInfo> retriveVendorProductInfosIndexedByVendorId(@NonNull final I_C_OrderLine salesOrderLine)
 	{
 		final int productId = salesOrderLine.getM_Product_ID();
 		final int adOrgId = salesOrderLine.getAD_Org_ID();

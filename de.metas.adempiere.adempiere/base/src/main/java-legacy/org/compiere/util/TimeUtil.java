@@ -32,6 +32,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -56,6 +57,8 @@ import lombok.NonNull;
  */
 public class TimeUtil
 {
+	private static final LocalDate DATE_1970_01_01 = LocalDate.of(1970, Month.JANUARY, 1);
+
 	/**
 	 * Get earliest time of a day (truncate)
 	 *
@@ -1227,6 +1230,12 @@ public class TimeUtil
 			final Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
 			return Timestamp.from(instant);
 		}
+		else if(obj instanceof LocalTime)
+		{
+			final LocalTime localTime = (LocalTime)obj;
+			final Instant instant = localTime.atDate(DATE_1970_01_01).atZone(ZoneId.systemDefault()).toInstant();
+			return Timestamp.from(instant);
+		}
 		else if(obj instanceof Instant)
 		{
 			return new Timestamp(Date.from((Instant)obj).getTime());
@@ -1490,6 +1499,16 @@ public class TimeUtil
 		}
 
 		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	}
+
+	public static LocalDate asLocalDate(final Timestamp date)
+	{
+		if (date == null)
+		{
+			return null;
+		}
+
+		return date.toLocalDateTime().toLocalDate();
 	}
 
 	public static LocalTime asLocalTime(final Date time)

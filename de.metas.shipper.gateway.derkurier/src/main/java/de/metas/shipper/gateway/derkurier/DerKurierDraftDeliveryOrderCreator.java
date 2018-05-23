@@ -94,6 +94,8 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 						.parcelNumber(parcelNumberGenerator.getNextParcelNumber())
 						.collectorCode(config.getCollectorCode())
 						.customerCode(config.getCustomerCode())
+						.desiredTimeFrom(config.getDesiredTimeFrom())
+						.desiredTimeTo(config.getDesiredTimeTo())
 						.build();
 
 		return DeliveryOrder.builder()

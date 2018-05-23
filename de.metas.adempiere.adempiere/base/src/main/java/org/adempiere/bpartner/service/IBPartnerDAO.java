@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -37,7 +38,9 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 public interface IBPartnerDAO extends ISingletonService
 {
 	I_C_BPartner getById(final int bpartnerId);
-	
+
+	I_C_BPartner getById(final BPartnerId bpartnerId);
+
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
 	 *
@@ -92,7 +95,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	int retrievePricingSystemId(Properties ctx, int bPartnerId, boolean soTrx, String trxName);
 	
-	int retrievePricingSystemId(int bPartnerId, boolean soTrx);
+	int retrievePricingSystemId(BPartnerId bPartnerId, boolean soTrx);
 
 	I_M_Shipper retrieveShipper(int bPartnerId, String trxName);
 
@@ -205,5 +208,5 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
 
-	Map<Integer, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(int adClientId, boolean isSOTrx);
+	Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(int adClientId, boolean isSOTrx);
 }

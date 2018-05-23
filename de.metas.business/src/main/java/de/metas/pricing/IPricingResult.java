@@ -27,6 +27,8 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.lang.Percent;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 
 /**
@@ -65,11 +67,11 @@ public interface IPricingResult
 
 	/**
 	 *
-	 * @return discount (between 0 and 100)
+	 * @return discount (between 0 and 100); never null
 	 */
-	BigDecimal getDiscount();
+	Percent getDiscount();
 
-	void setDiscount(BigDecimal discount);
+	void setDiscount(Percent discount);
 
 	int getPrecision();
 

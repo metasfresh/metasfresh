@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -38,6 +39,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.lang.Percent;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -225,7 +227,7 @@ public class OrderGroupRepository implements GroupRepository
 				.groupId(groupId)
 				.groupTemplateId(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID())
 				.precision(precision)
-				.bpartnerId(order.getC_BPartner_ID())
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.isSOTrx(order.isSOTrx());
 
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
@@ -311,7 +313,7 @@ public class OrderGroupRepository implements GroupRepository
 				.uomId(groupOrderLine.getC_UOM_ID())
 				.type(GroupCompensationType.ofAD_Ref_List_Value(groupOrderLine.getGroupCompensationType()))
 				.amtType(GroupCompensationAmtType.ofAD_Ref_List_Value(groupOrderLine.getGroupCompensationAmtType()))
-				.percentage(groupOrderLine.getGroupCompensationPercentage())
+				.percentage(Percent.of(groupOrderLine.getGroupCompensationPercentage()))
 				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
 				.price(groupOrderLine.getPriceEntered())
 				.qty(groupOrderLine.getQtyEntered())
@@ -373,7 +375,7 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setIsGroupCompensationLine(true);
 		compensationLinePO.setGroupCompensationType(compensationLine.getType().getAdRefListValue());
 		compensationLinePO.setGroupCompensationAmtType(compensationLine.getAmtType().getAdRefListValue());
-		compensationLinePO.setGroupCompensationPercentage(compensationLine.getPercentage());
+		compensationLinePO.setGroupCompensationPercentage(compensationLine.getPercentage() != null ? compensationLine.getPercentage().getValueAsBigDecimal() : null);
 		compensationLinePO.setGroupCompensationBaseAmt(compensationLine.getBaseAmt());
 
 		compensationLinePO.setM_Product_ID(compensationLine.getProductId());
@@ -541,7 +543,7 @@ public class OrderGroupRepository implements GroupRepository
 		return Group.builder()
 				.groupId(extractGroupId(compensationLinePO))
 				.precision(precision)
-				.bpartnerId(order.getC_BPartner_ID())
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.isSOTrx(order.isSOTrx())
 				.regularLine(aggregatedRegularLine)
 				.compensationLine(compensationLine)

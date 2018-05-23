@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
@@ -37,6 +38,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @ToString
@@ -63,7 +67,7 @@ class PricingContext implements IEditablePricingContext
 
 	private int C_UOM_ID;
 	private int C_Currency_ID;
-	private int C_BPartner_ID;
+	private BPartnerId bpartnerId;
 	private BigDecimal qty;
 	private boolean isSOTrx;
 	private int AD_Table_ID;
@@ -71,11 +75,15 @@ class PricingContext implements IEditablePricingContext
 	private int m_PP_Product_BOM_ID;
 	private int m_PP_Product_BOMLine_ID;
 	private Object referencedObject;
-	private boolean disallowDiscount;
 	private String trxName;
 	private boolean convertPriceToContextUOM;
 	private Boolean isManualPrice = null; // task 08908: can be set by the calling code. Otherwise the engine shall try the referenced object
 	private boolean failIfNotCalculated = false;
+
+	private boolean disallowDiscount;
+	@Setter
+	@Getter
+	private PricingConditionsBreak forcePricingConditionsBreak;
 
 	final private Map<String, Object> properties = new HashMap<>();
 
@@ -93,7 +101,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.C_UOM_ID = C_UOM_ID;
 		pricingCtxNew.C_Currency_ID = C_Currency_ID;
 		pricingCtxNew.C_Country_ID = C_Country_ID;
-		pricingCtxNew.C_BPartner_ID = C_BPartner_ID;
+		pricingCtxNew.bpartnerId = bpartnerId;
 		pricingCtxNew.qty = qty;
 		pricingCtxNew.isSOTrx = isSOTrx;
 		pricingCtxNew.AD_Table_ID = AD_Table_ID;
@@ -102,6 +110,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.m_PP_Product_BOMLine_ID = m_PP_Product_BOMLine_ID;
 		pricingCtxNew.referencedObject = referencedObject;
 		pricingCtxNew.disallowDiscount = disallowDiscount;
+		pricingCtxNew.forcePricingConditionsBreak = forcePricingConditionsBreak;
 		pricingCtxNew.trxName = trxName;
 		pricingCtxNew.convertPriceToContextUOM = convertPriceToContextUOM;
 		pricingCtxNew.isManualPrice = isManualPrice;
@@ -235,15 +244,15 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public int getC_BPartner_ID()
+	public BPartnerId getBPartnerId()
 	{
-		return C_BPartner_ID;
+		return bpartnerId;
 	}
 
 	@Override
-	public void setC_BPartner_ID(final int c_BPartner_ID)
+	public void setBPartnerId(final BPartnerId bpartnerId)
 	{
-		C_BPartner_ID = c_BPartner_ID;
+		this.bpartnerId = bpartnerId;
 	}
 
 	@Override

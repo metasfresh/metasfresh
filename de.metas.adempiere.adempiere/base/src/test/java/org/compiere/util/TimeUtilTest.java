@@ -3,6 +3,8 @@
  */
 package org.compiere.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,6 +30,9 @@ package org.compiere.util;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -410,6 +415,16 @@ public class TimeUtilTest
 		final int actual = TimeUtil.getDayOfWeek(january1);
 
 		Assert.assertEquals(expected, actual);
+	}
 
+	@Test
+	public void asTimestamp_LocalTime()
+	{
+		final Timestamp expectedTimestamp = Timestamp.valueOf(LocalDateTime.of(1970, Month.JANUARY, 1, 15, 15, 0));
+
+		final LocalTime initialTime = LocalTime.of(15, 15);
+		final Timestamp timestampFromLocalTime = TimeUtil.asTimestamp(initialTime);
+
+		assertThat(timestampFromLocalTime).isEqualTo(expectedTimestamp);
 	}
 }

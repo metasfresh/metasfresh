@@ -1680,7 +1680,7 @@ public class GridField
 	 * @param AD_Tab_ID tab
 	 * @return array of all fields in display order
 	 */
-	public static GridField[] createSearchFields(Properties ctx, int WindowNo, int TabNo, int AD_Tab_ID)
+	public static GridField[] createSearchFields(Properties ctx, int WindowNo, int TabNo, int AD_Tab_ID, int templateTabId)
 	{
 		final List<GridFieldVO> listVO = GridFieldVOsLoader.newInstance()
 				.setCtx(ctx)
@@ -1688,6 +1688,7 @@ public class GridField
 				.setTabNo(TabNo)
 				.setAD_Window_ID(0)
 				.setAD_Tab_ID(AD_Tab_ID)
+				.setTemplateTabId(templateTabId)
 				.setTabReadOnly(false)
 				.load();
 

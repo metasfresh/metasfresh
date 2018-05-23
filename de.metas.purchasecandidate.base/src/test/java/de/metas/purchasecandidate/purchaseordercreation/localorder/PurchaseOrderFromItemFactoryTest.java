@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -173,7 +174,7 @@ public class PurchaseOrderFromItemFactoryTest
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
-				.vendorBPartnerId(vendor.getC_BPartner_ID())
+				.vendorBPartnerId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
 				.productId(20)
 				.productName("productName")
 				.productNo("productNo")
