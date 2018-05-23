@@ -61,7 +61,7 @@ class DatetimeRange extends Component {
     };
     const { startDate, endDate } = this.state;
     const { onShow, onHide, mandatory, validStatus, timePicker } = this.props;
-    const fmt = timePicker ? 'L LT' : 'L';
+    const format = timePicker ? 'LT' : 'l';
 
     const availableDates =
       !!startDate && !!endDate
