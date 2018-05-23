@@ -26,11 +26,6 @@ public class WEBUI_PP_Order_ProcessHelper
 			final String internalReason = StringUtils.formatMessage("The selected row is not an issuerow; row={}", ppOrderLineRow);
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 		}
-//		if (ppOrderLineRow.isProcessed())
-//		{
-//			final String internalReason = StringUtils.formatMessage("The selected row is already processed; row={}", ppOrderLineRow);
-//			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
-//		}
 
 		final List<I_M_Source_HU> sourceHus = retrieveActiveSourceHus(ppOrderLineRow);
 		if (sourceHus.isEmpty())
