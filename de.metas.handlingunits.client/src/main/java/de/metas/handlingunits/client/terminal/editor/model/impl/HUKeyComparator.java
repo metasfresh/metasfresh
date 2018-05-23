@@ -97,7 +97,9 @@ public final class HUKeyComparator implements Comparator<IHUKey>
 		// Get full qty of first HU
 		final I_M_HU hu1 = huKey1.getM_HU();
 		final IHUStorage hu1Storage = keyFactory.getStorageFactory().getStorage(hu1);
-		final BigDecimal hu1Qty = hu1Storage.getQtyForProductStorages();
+		final BigDecimal hu1Qty = hu1Storage.getQtyForProductStorages().getQty();
+		
+		
 
 		final List<IHUProductStorage> hu1ProductStorages = hu1Storage.getProductStorages();
 		final String hu1FullProductName = getFullProductName(hu1ProductStorages);
@@ -106,7 +108,7 @@ public final class HUKeyComparator implements Comparator<IHUKey>
 		// Get full qty of second HU
 		final I_M_HU hu2 = huKey2.getM_HU();
 		final IHUStorage hu2Storage = keyFactory.getStorageFactory().getStorage(hu2);
-		final BigDecimal hu2Qty = hu2Storage.getQtyForProductStorages();
+		final BigDecimal hu2Qty = hu2Storage.getQtyForProductStorages().getQty();
 
 		final List<IHUProductStorage> hu2ProductStorages = hu2Storage.getProductStorages();
 		final String hu2FullProductName = getFullProductName(hu2ProductStorages);

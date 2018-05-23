@@ -62,6 +62,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.quantity.Capacity;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -170,16 +171,15 @@ public class HUTransformService
 	private IAllocationRequest createCUAllocationRequest(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_Product cuProduct,
-			@NonNull final I_C_UOM cuUOM,
-			@NonNull final BigDecimal cuQty,
+			@NonNull final Quantity qtyCU,
 			final boolean forceAllocation)
 	{
 		//
 		// Create allocation request for the quantity user entered
 		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
 				cuProduct,
-				cuQty,
-				cuUOM,
+				qtyCU.getQty(),
+				qtyCU.getUOM(),
 				SystemTime.asTimestamp(),
 				null, // referenced model
 				forceAllocation);
@@ -201,12 +201,13 @@ public class HUTransformService
 		return BigDecimal.ONE;
 	}
 
-	public BigDecimal getMaximumQtyCU(@NonNull final I_M_HU cu)
+	public Quantity getMaximumQtyCU(@NonNull final I_M_HU cu, @NonNull I_C_UOM uom)
 	{
+
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final IHUStorage storage = storageFactory.getStorage(cu);
 
-		return storage.getQtyForProductStorages();
+		return storage.getQtyForProductStorages(uom);
 	}
 
 	/**
@@ -218,9 +219,9 @@ public class HUTransformService
 	 */
 	public List<I_M_HU> cuToNewCU(
 			@NonNull final I_M_HU cuHU,
-			@NonNull final BigDecimal qtyCU)
+			@NonNull final Quantity qtyCU)
 	{
-		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(getMaximumQtyCU(cuHU)) >= 0;
+		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(getMaximumQtyCU(cuHU, qtyCU.getUOM())) >= 0;
 		if (qtyCuExceedsCuHU)
 		{
 			// deal with the complete cuHU, i.e. no partial quantity will remain at the source.
@@ -258,7 +259,6 @@ public class HUTransformService
 				.requestProvider(huContext -> createCUAllocationRequest(
 						huContext,
 						singleProductStorage.getM_Product(),
-						singleProductStorage.getC_UOM(),
 						qtyCU,
 						false) // forceAllocation = false; no need, because destination has no capacity constraints
 				)
@@ -293,7 +293,7 @@ public class HUTransformService
 	 */
 	public List<I_M_HU> cuToExistingTU(
 			@NonNull final I_M_HU sourceCuHU,
-			@NonNull final BigDecimal qtyCU,
+			@NonNull final Quantity qtyCU,
 			@NonNull final I_M_HU targetTuHU)
 	{
 		// NOTE: because this method does several non-atomic operations it is important to glue them together in a transaction
@@ -302,7 +302,7 @@ public class HUTransformService
 
 	private List<I_M_HU> cuToExistingTU_InTrx(
 			@NonNull final I_M_HU sourceCuHU,
-			@NonNull final BigDecimal qtyCU,
+			@NonNull final Quantity qtyCU,
 			@NonNull final I_M_HU targetTuHU)
 	{
 		final IAllocationDestination destination;
@@ -315,7 +315,7 @@ public class HUTransformService
 		else
 		{
 			// we are later going to attach something as a child to the given 'tuHU'
-			if (qtyCU.compareTo(getMaximumQtyCU(sourceCuHU)) >= 0)
+			if (qtyCU.compareTo(getMaximumQtyCU(sourceCuHU, qtyCU.getUOM())) >= 0)
 			{
 				// we will attach the whole cuHU to tuHU and thus not load/split anything
 				destination = null;
@@ -336,7 +336,6 @@ public class HUTransformService
 					.huToSplit(sourceCuHU)
 					.requestProvider(huContext -> createCUAllocationRequest(huContext,
 							singleProductStorage.getM_Product(),
-							singleProductStorage.getC_UOM(),
 							qtyCU,
 							true /* forceAllocation */))
 					.destination(destination)
@@ -408,7 +407,7 @@ public class HUTransformService
 			final I_M_HU luHU,
 			final I_M_HU tuHU,
 			final I_M_HU cuHU, // may be null
-			final BigDecimal qtyCU,
+			final Quantity qtyCU,
 			final boolean negateQtyCU,
 			final IHUContext localHuContext)
 	{
@@ -434,7 +433,7 @@ public class HUTransformService
 			}
 			else
 			{
-				qtyToUse = qtyCU.multiply(factor);
+				qtyToUse = qtyCU.getQty().multiply(factor);
 			}
 
 			for (final TableRecordReference ref : getReferencedObjects())
@@ -535,7 +534,10 @@ public class HUTransformService
 	 * @param isOwnPackingMaterials
 	 */
 	public List<I_M_HU> cuToNewTUs(
-			final I_M_HU cuHU, final BigDecimal qtyCU, final I_M_HU_PI_Item_Product tuPIItemProduct, final boolean isOwnPackingMaterials)
+			final I_M_HU cuHU, 
+			final Quantity qtyCU, 
+			final I_M_HU_PI_Item_Product tuPIItemProduct, 
+			final boolean isOwnPackingMaterials)
 	{
 		Preconditions.checkNotNull(cuHU, "Param 'cuHU' may not be null");
 		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
@@ -557,7 +559,7 @@ public class HUTransformService
 				.huContextInitital(huContext)
 				.huToSplit(cuHU)
 				// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
-				.requestProvider(huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), storages.get(0).getC_UOM(), qtyCU, false))
+				.requestProvider(huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), qtyCU, false))
 				.destination(destination)
 				.build()
 				.withPropagateHUValues()
@@ -675,8 +677,6 @@ public class HUTransformService
 			throw new HUException("Cannot extract TUs from CU").setParameter("sourceHU", sourceHU);
 		}
 	}
-
-	
 
 	/**
 	 * Extract a given amount of TUs from an LU.
@@ -943,7 +943,7 @@ public class HUTransformService
 					.huContextInitital(huContext)
 					.huToSplit(sourceTuHU)
 					// forceAllocation = false; we want to create as many new top level HUs as are implied by the cuQty and the HUs' capacity
-					.requestProvider(huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU), false))
+					.requestProvider(huContext -> createCUAllocationRequest(huContext, cuProduct, Quantity.of(qtyTU.multiply(sourceQtyCUperTU), cuUOM), false))
 					.destination(destination)
 					.build()
 					.withPropagateHUValues()
@@ -959,7 +959,8 @@ public class HUTransformService
 		{
 			final IHUProductStorage currentHuProductStorage = productStorages.get(i);
 
-			final BigDecimal qtyCU = Preconditions.checkNotNull(currentHuProductStorage.getQty(), "Qty of currentHuProductStorage=%s may not be null", currentHuProductStorage);
+			final Quantity qtyCU = Quantity.of(Preconditions.checkNotNull(currentHuProductStorage.getQty(), "Qty of currentHuProductStorage=%s may not be null", currentHuProductStorage),
+					Preconditions.checkNotNull(currentHuProductStorage.getC_UOM(), "UOM of currentHuProductStorage=%s may not be null", currentHuProductStorage));
 			createdTUs.forEach(createdTU -> {
 				cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU);
 			});
@@ -988,17 +989,15 @@ public class HUTransformService
 		Preconditions.checkState(!productStorages.isEmpty(), "The list of productStorages below the given 'tuHU' may not be empty; tuHU=%s", tuHU);
 		return productStorages;
 	}
-	
-	
-	
+
 	@lombok.Value
 	public static class HUsToNewCUsRequest
 	{
 		List<I_M_HU> sourceHUs;
 
-		BigDecimal qtyCU;
+		Quantity qtyCU;
 
-		public static HUsToNewCUsRequest forSourceHuAndQty(@NonNull I_M_HU sourceHU, BigDecimal qtyCU)
+		public static HUsToNewCUsRequest forSourceHuAndQty(@NonNull I_M_HU sourceHU, @NonNull Quantity qtyCU)
 		{
 			return HUsToNewCUsRequest.builder().sourceHU(sourceHU).qtyCU(qtyCU).build();
 		}
@@ -1006,18 +1005,17 @@ public class HUTransformService
 		@lombok.Builder
 		private HUsToNewCUsRequest(
 				@Singular("sourceHU") @NonNull final List<I_M_HU> sourceHUs,
-				final BigDecimal qtyCU)
+				@NonNull final Quantity qtyCU)
 		{
 			this.sourceHUs = sourceHUs;
 
-			Preconditions.checkArgument(qtyCU.signum() > 0, "Parameter qtyCU=%s needs to be grreater than zero", qtyCU);
 			this.qtyCU = qtyCU;
 		}
 	}
 
 	public List<I_M_HU> husToNewCUs(@NonNull final HUsToNewCUsRequest newCUsRequest)
 	{
-		BigDecimal qtyCuLeft = newCUsRequest.getQtyCU();
+		Quantity qtyCuLeft = newCUsRequest.getQtyCU();
 
 		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
 		for (final I_M_HU sourceHU : newCUsRequest.getSourceHUs())
@@ -1025,7 +1023,7 @@ public class HUTransformService
 			final List<I_M_HU> currentResult = huToNewCUs(sourceHU, qtyCuLeft);
 			result.addAll(currentResult);
 
-			qtyCuLeft = qtyCuLeft.subtract(BigDecimal.valueOf(currentResult.size()));
+			qtyCuLeft = qtyCuLeft.subtract(calculateTotalQtyCU(currentResult, qtyCuLeft.getUOM()));
 
 			if (qtyCuLeft.signum() <= 0)
 			{
@@ -1036,7 +1034,7 @@ public class HUTransformService
 		return result.build();
 	}
 
-	private List<I_M_HU> huToNewCUs(@NonNull final I_M_HU sourceHU, final BigDecimal qtyCU)
+	private List<I_M_HU> huToNewCUs(@NonNull final I_M_HU sourceHU, final Quantity qtyCU)
 	{
 		if (handlingUnitsBL.isLoadingUnit(sourceHU))
 		{
@@ -1053,13 +1051,13 @@ public class HUTransformService
 		}
 	}
 
-	private List<I_M_HU> luExtractCUs(@NonNull final I_M_HU sourceLU, final BigDecimal qtyCU)
+	private List<I_M_HU> luExtractCUs(@NonNull final I_M_HU sourceLU, final Quantity qtyCU)
 	{
 		Preconditions.checkArgument(qtyCU.signum() > 0, "qtyCU > 0");
 
 		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
 
-		BigDecimal qtyCUsRemaining = qtyCU; // how many CUs we still have to extract
+		Quantity qtyCUsRemaining = qtyCU; // how many CUs we still have to extract
 
 		for (int i = 0; i <= handlingUnitsDAO.retrieveIncludedHUs(sourceLU).size(); i++)
 		{
@@ -1067,7 +1065,7 @@ public class HUTransformService
 			{
 				break;
 			}
-			
+
 			final List<I_M_HU> luExtractTUs = luExtractTUs(sourceLU, 1);
 
 			for (final I_M_HU tu : luExtractTUs)
@@ -1078,39 +1076,54 @@ public class HUTransformService
 				}
 
 				final List<I_M_HU> tuExtractCUs = tuExtractCUs(tu, qtyCUsRemaining);
-				
+
 				extractedCUs.addAll(tuExtractCUs);
 
-				qtyCUsRemaining = qtyCUsRemaining.subtract(BigDecimal.valueOf(tuExtractCUs.size()));
-			} 
+				qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyCU(tuExtractCUs, qtyCU.getUOM()));
+			}
 		}
-		
+
 		return extractedCUs.build();
 
 	}
 
-	private List<I_M_HU> tuExtractCUs(@NonNull final I_M_HU sourceTU, final BigDecimal qtyCU)
+	private List<I_M_HU> tuExtractCUs(@NonNull final I_M_HU sourceTU, final Quantity qtyCU)
 	{
 		Preconditions.checkArgument(qtyCU.signum() > 0, "qtyCU > 0");
 
 		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
-		BigDecimal qtyCUsRemaining = qtyCU; // how many TUs we still have to extract
+		Quantity qtyCUsRemaining = qtyCU; // how many TUs we still have to extract
 
 		for (final I_M_HU cu : handlingUnitsDAO.retrieveIncludedHUs(sourceTU))
 		{
-			if (qtyCUsRemaining.signum()<= 0)
+			if (qtyCUsRemaining.signum() <= 0)
 			{
 				break;
 			}
-			
+
 			final List<I_M_HU> cuToNewCU = cuToNewCU(cu, qtyCUsRemaining);
-			
+
 			extractedCUs.addAll(cuToNewCU);
-			
-			qtyCUsRemaining = qtyCUsRemaining.subtract(BigDecimal.valueOf(cuToNewCU.size()));
-			
+
+			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyCU(cuToNewCU, qtyCU.getUOM()));
+
 		} // each TU
 
 		return extractedCUs.build();
+	}
+
+	private Quantity calculateTotalQtyCU(final List<I_M_HU> cus, final I_C_UOM uom)
+	{
+		Quantity totalQtyCU = Quantity.zero(uom);
+		
+		for(final I_M_HU cu: cus)
+		{
+			final Quantity qtyToAdd = getMaximumQtyCU(cu, uom);
+			
+			totalQtyCU.add(qtyToAdd);
+	
+		}
+		
+		return totalQtyCU;
 	}
 }
