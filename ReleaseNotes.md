@@ -18,6 +18,9 @@ Here come the actual release notes:
 * metasfresh
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1717](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1717) Date Format in date range picker is not localized
+    * Fixes the Localization of Dates in Date Range Picker Widget.
 
 # metasfresh 5.58 (2018-21)
 
@@ -91,20 +94,10 @@ Here come the actual release notes:
   * [#4013](https://github.com/metasfresh/metasfresh/issues/4013) Lot No Action error when running multiple times
   * [#4017](https://github.com/metasfresh/metasfresh/issues/4017) Vendor Action for adding (temp.) Pricing Conditions in Purchase Order missing
   * [#4020](https://github.com/metasfresh/metasfresh/issues/4020) eventlog data needs to be stored out-of-trx
-<<<<<<< HEAD
     * Internal Housekeeping improvement, now storing eventlog data out of transaction.
-||||||| merged common ancestors
-    * Internal Housekeeping improvemen, now storing eventlog data out of transaction.
-=======
->>>>>>> 7ae088fc4cd6d3ebed968077a4270fa34feaccc8
   * [#4027](https://github.com/metasfresh/metasfresh/issues/4027) "To Be Updated" in shipment schedule and "In Verarbeitung" in workpackage getting stuck
   * [#3980](https://github.com/metasfresh/metasfresh/issues/3980) Notifications in Swing Client show no info
-<<<<<<< HEAD
     * Fixes the Notification feature in Swing Client, now showing detailed information body again.
-||||||| merged common ancestors
-    * Fixes the Notification feature in Swing Client, now showing detailes information body again.
-=======
->>>>>>> 7ae088fc4cd6d3ebed968077a4270fa34feaccc8
   * [#4016](https://github.com/metasfresh/metasfresh/issues/4016) Pricing Conditions error when save
   * [#4028](https://github.com/metasfresh/metasfresh/issues/4028) Multiple shipment lines for one order line all have the order line's TU-Qty
 
