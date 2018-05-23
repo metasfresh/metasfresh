@@ -75,4 +75,21 @@ public class PercentTest
 		assertThat(percent.subtractFromBase(BigDecimal.valueOf(base), precision)).isEqualByComparingTo(BigDecimal.valueOf(expectedResult));
 	}
 
+	@Test
+	public void test_hashCodeAndEquals()
+	{
+		test_hashCodeAndEquals("0.0000000010000000000000", "0.000000001");
+		test_hashCodeAndEquals("1.00", "1");
+		test_hashCodeAndEquals("10.00", "10");
+	}
+
+	public void test_hashCodeAndEquals(final String stringPercent1, final String stringPercent2)
+	{
+		final Percent percent1 = Percent.of(new BigDecimal(stringPercent1));
+		final Percent percent2 = Percent.of(new BigDecimal(stringPercent2));
+
+		assertThat(percent1.hashCode()).isEqualTo(percent2.hashCode());
+		assertThat(percent1).isEqualTo(percent2);
+	}
+
 }
