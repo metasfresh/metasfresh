@@ -43,10 +43,12 @@ import org.compiere.model.MDocType;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.model.X_C_Order;
+import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import lombok.NonNull;
 
@@ -72,7 +74,7 @@ public class C_Order
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getC_BPartner_ID());
-		final BigDecimal crediUsed = stats.getSOCreditUsed();
+		final BigDecimal creditUsed = stats.getSOCreditUsed();
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
 
@@ -81,17 +83,19 @@ public class C_Order
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{
-			final String msg = "@BPartnerCreditStop@ - @SOCreditUsed@="
-					+ crediUsed
-					+ ", @SO_CreditLimit@=" + creditLimit;
-			throw new AdempiereException(msg);
+			throw new AdempiereException(TranslatableStringBuilder.newInstance()
+					.appendADElement("BPartnerCreditStop").append(":")
+					.append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
+					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
+					.build());
 		}
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 		{
-			final String msg = "@BPartnerCreditHold@ - @SOCreditUsed@="
-					+ crediUsed
-					+ ", @SO_CreditLimit@=" + creditLimit;
-			throw new AdempiereException(msg);
+			throw new AdempiereException(TranslatableStringBuilder.newInstance()
+					.appendADElement("BPartnerCreditHold").append(":")
+					.append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
+					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
+					.build());
 		}
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(
@@ -112,10 +116,12 @@ public class C_Order
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
 		{
-			final String msg = "@BPartnerOverOCreditHold@-@SO_CreditUsed@="
-					+ crediUsed + ", @GrandTotal@=" + grandTotal
-					+ ", @SO_CreditLimit@=" + creditLimit;
-			throw new AdempiereException(msg);
+			throw new AdempiereException(TranslatableStringBuilder.newInstance()
+					.appendADElement("BPartnerOverOCreditHold").append(":")
+					.append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
+					.append(", ").appendADElement("GrandTotal").append("=").append(grandTotal, DisplayType.Amount)
+					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
+					.build());
 		}
 	}
 

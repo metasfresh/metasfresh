@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -225,7 +226,8 @@ public class PurchaseCandidateRepository
 		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getDateRequired()));
 		record.setReminderDate(TimeUtil.asTimestamp(purchaseCandidate.getReminderDate()));
 
-		record.setVendor_ID(purchaseCandidate.getVendorBPartnerId());
+		final BPartnerId vendorBPartnerId = purchaseCandidate.getVendorBPartnerId();
+		record.setVendor_ID(vendorBPartnerId != null ? vendorBPartnerId.getRepoId() : -1);
 		record.setC_BPartner_Product_ID(purchaseCandidate.getBpartnerProductId().orElse(-1));
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
 
@@ -289,7 +291,7 @@ public class PurchaseCandidateRepository
 		// TODO: handle the null case!
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(
 				bpartnerProduct,
-				purchaseCandidatePO.getVendor_ID(),
+				BPartnerId.ofRepoIdOrNull(purchaseCandidatePO.getVendor_ID()),
 				purchaseCandidatePO.isAggregatePO());
 		return vendorProductInfo;
 	}
@@ -320,7 +322,7 @@ public class PurchaseCandidateRepository
 				.listDistinct(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)
 				.stream()
 				.map(map -> PurchaseCandidateReminder.builder()
-						.vendorBPartnerId(NumberUtils.asInt(map.get(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID), -1))
+						.vendorBPartnerId(BPartnerId.ofRepoId(NumberUtils.asInt(map.get(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID), -1)))
 						.notificationTime(TimeUtil.asLocalDateTime(map.get(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)))
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
@@ -328,8 +330,8 @@ public class PurchaseCandidateRepository
 
 	public static PurchaseCandidateReminder toPurchaseCandidateReminderOrNull(final I_C_PurchaseCandidate record)
 	{
-		final int vendorBPartnerId = record.getVendor_ID();
-		if (vendorBPartnerId <= 0)
+		final BPartnerId vendorBPartnerId = BPartnerId.ofRepoIdOrNull(record.getVendor_ID());
+		if (vendorBPartnerId == null)
 		{
 			return null;
 		}

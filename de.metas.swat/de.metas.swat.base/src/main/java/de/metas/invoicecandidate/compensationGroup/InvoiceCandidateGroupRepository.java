@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -101,7 +102,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
 				.precision(precision)
-				.bpartnerId(order.getC_BPartner_ID())
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.isSOTrx(order.isSOTrx());
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)

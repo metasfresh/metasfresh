@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -226,7 +227,7 @@ public class OrderGroupRepository implements GroupRepository
 				.groupId(groupId)
 				.groupTemplateId(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID())
 				.precision(precision)
-				.bpartnerId(order.getC_BPartner_ID())
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.isSOTrx(order.isSOTrx());
 
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
@@ -542,7 +543,7 @@ public class OrderGroupRepository implements GroupRepository
 		return Group.builder()
 				.groupId(extractGroupId(compensationLinePO))
 				.precision(precision)
-				.bpartnerId(order.getC_BPartner_ID())
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.isSOTrx(order.isSOTrx())
 				.regularLine(aggregatedRegularLine)
 				.compensationLine(compensationLine)

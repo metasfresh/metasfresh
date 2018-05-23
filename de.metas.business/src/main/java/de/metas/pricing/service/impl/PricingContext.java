@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
@@ -65,7 +66,7 @@ class PricingContext implements IEditablePricingContext
 
 	private int C_UOM_ID;
 	private int C_Currency_ID;
-	private int C_BPartner_ID;
+	private BPartnerId bpartnerId;
 	private BigDecimal qty;
 	private boolean isSOTrx;
 	private int AD_Table_ID;
@@ -98,7 +99,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.C_UOM_ID = C_UOM_ID;
 		pricingCtxNew.C_Currency_ID = C_Currency_ID;
 		pricingCtxNew.C_Country_ID = C_Country_ID;
-		pricingCtxNew.C_BPartner_ID = C_BPartner_ID;
+		pricingCtxNew.bpartnerId = bpartnerId;
 		pricingCtxNew.qty = qty;
 		pricingCtxNew.isSOTrx = isSOTrx;
 		pricingCtxNew.AD_Table_ID = AD_Table_ID;
@@ -247,15 +248,15 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public int getC_BPartner_ID()
+	public BPartnerId getBPartnerId()
 	{
-		return C_BPartner_ID;
+		return bpartnerId;
 	}
 
 	@Override
-	public IEditablePricingContext setC_BPartner_ID(final int c_BPartner_ID)
+	public IEditablePricingContext setC_BPartner_ID(final BPartnerId bpartnerId)
 	{
-		C_BPartner_ID = c_BPartner_ID;
+		this.bpartnerId = bpartnerId;
 		return this;
 	}
 

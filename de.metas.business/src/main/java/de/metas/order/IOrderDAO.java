@@ -42,6 +42,8 @@ public interface IOrderDAO extends ISingletonService
 {
 	I_C_OrderLine getOrderLineById(final int orderLineId);
 	
+	I_C_OrderLine getOrderLineById(final OrderLineId orderLineId);
+	
 	/**
 	 * @param ctx
 	 * @param bpartnerId

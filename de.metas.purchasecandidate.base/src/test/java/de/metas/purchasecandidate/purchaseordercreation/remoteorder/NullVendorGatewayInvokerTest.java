@@ -53,7 +53,7 @@ public class NullVendorGatewayInvokerTest
 	public void placeRemotePurchaseOrder()
 	{
 		final ProductId productId = ProductId.ofRepoId(20);
-		final int vendorBPartnerId = 30;
+		final BPartnerId vendorBPartnerId = BPartnerId.ofRepoId(30);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)

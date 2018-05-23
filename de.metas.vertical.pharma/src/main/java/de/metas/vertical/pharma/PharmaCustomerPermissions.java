@@ -2,6 +2,8 @@ package de.metas.vertical.pharma;
 
 import java.util.Set;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.vertical.pharma.model.I_C_BPartner;
@@ -34,31 +36,33 @@ import lombok.ToString;
 @ToString
 public final class PharmaCustomerPermissions
 {
-	public static PharmaCustomerPermissions of(final I_C_BPartner bpartner)
+	public static PharmaCustomerPermissions of(final org.compiere.model.I_C_BPartner bpartner)
 	{
 		if (!bpartner.isCustomer())
 		{
 			return NONE;
 		}
+		
+		final I_C_BPartner pharmaBPartner = InterfaceWrapperHelper.create(bpartner, I_C_BPartner.class);
 
 		final ImmutableSet.Builder<PharmaCustomerPermission> permissionsBuilder = ImmutableSet.builder();
-		if (bpartner.isPharmaAgentPermission())
+		if (pharmaBPartner.isPharmaAgentPermission())
 		{
 			permissionsBuilder.add(PharmaCustomerPermission.PHARMA_AGENT);
 		}
-		if (bpartner.isPharmaciePermission())
+		if (pharmaBPartner.isPharmaciePermission())
 		{
 			permissionsBuilder.add(PharmaCustomerPermission.PHARMACIE);
 		}
-		if (bpartner.isPharmaManufacturerPermission())
+		if (pharmaBPartner.isPharmaManufacturerPermission())
 		{
 			permissionsBuilder.add(PharmaCustomerPermission.PHARMA_MANUFACTURER);
 		}
-		if (bpartner.isPharmaWholesalePermission())
+		if (pharmaBPartner.isPharmaWholesalePermission())
 		{
 			permissionsBuilder.add(PharmaCustomerPermission.PHARMA_WHOLESALE);
 		}
-		if (bpartner.isVeterinaryPharmacyPermission())
+		if (pharmaBPartner.isVeterinaryPharmacyPermission())
 		{
 			permissionsBuilder.add(PharmaCustomerPermission.VETERINARY_PHARMACY);
 		}

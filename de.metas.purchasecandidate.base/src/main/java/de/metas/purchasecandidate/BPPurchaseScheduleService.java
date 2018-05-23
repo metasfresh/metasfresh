@@ -42,8 +42,7 @@ public class BPPurchaseScheduleService
 		this.bpPurchaseScheduleRepo = bpPurchaseScheduleRepo;
 	}
 
-	public Optional<BPPurchaseSchedule> getBPPurchaseSchedule(
-			final BPartnerId bpartnerId, final LocalDate date)
+	public Optional<BPPurchaseSchedule> getBPPurchaseSchedule(final BPartnerId bpartnerId, final LocalDate date)
 	{
 		return bpPurchaseScheduleRepo.getByBPartnerIdAndValidFrom(bpartnerId.getRepoId(), date);
 	}

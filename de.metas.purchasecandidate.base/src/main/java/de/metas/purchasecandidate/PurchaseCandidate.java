@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Issue;
@@ -225,7 +226,7 @@ public class PurchaseCandidate
 		return getIdentifier().getSalesOrderLineId();
 	}
 
-	public int getVendorBPartnerId()
+	public BPartnerId getVendorBPartnerId()
 	{
 		return getVendorProductInfo().getVendorBPartnerId().getRepoId();
 	}

@@ -2,6 +2,7 @@ package de.metas.pricing.exceptions;
 
 import java.util.Date;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -78,8 +79,8 @@ public class ProductNotOnPriceListException extends AdempiereException
 			sb.appendADElement("M_PricingSystem_ID").append(": ").append(pricingSystemName);
 		}
 
-		final int bpartnerId = pricingCtx.getC_BPartner_ID();
-		if (bpartnerId > 0)
+		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
+		if (bpartnerId != null)
 		{
 			String bpartnerName = Services.get(IBPartnerBL.class).getBPartnerValueAndName(bpartnerId);
 			if (!sb.isEmpty())
