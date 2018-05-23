@@ -103,7 +103,7 @@ class ListWidget extends Component {
 
     let request = null;
 
-    if (viewId && !filterWidget) {
+    if (viewId && entity === 'window' && !filterWidget) {
       request = dropdownModalRequest({
         windowId: windowType,
         fieldName: propertyName,
