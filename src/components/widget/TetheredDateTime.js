@@ -16,6 +16,13 @@ class TetheredDateTime extends DateTime {
     });
   }
 
+  handleClick = () =>
+    this.onInputChange({
+      target: {
+        value: this.state.viewDate,
+      },
+    });
+
   onInputKey = e => {
     if (
       (e.key === 'Tab' && this.props.closeOnTab) ||
@@ -35,29 +42,32 @@ class TetheredDateTime extends DateTime {
   };
 
   render() {
-    const { open } = this.props;
-    let className = classnames('rdt', this.props.className, {
-      rdtStatic: !this.props.input,
+    const { open, className, input, inputProps, renderInput } = this.props;
+    const { inputValue, selectedDate, currentView } = this.state;
+
+    const classNames = classnames('rdt', className, {
+      rdtStatic: !input,
     });
+
     const children = [];
 
-    if (this.props.input) {
+    if (input) {
       const props = {
         type: 'text',
         className: 'form-control',
         onFocus: this.openCalendar,
         onChange: this.onInputChange,
         onKeyDown: this.onInputKey,
-        value: this.state.inputValue,
-        ...this.props.inputProps,
+        value: inputValue,
+        ...inputProps,
       };
-      const input = this.props.renderInput(props, this.openCalendar);
+      const input = renderInput(props, this.openCalendar);
 
       children.push(<div key="i">{input}</div>);
     }
 
     return (
-      <div className={className}>
+      <div className={classNames}>
         <TetherComponent
           attachment="top left"
           targetAttachment="bottom left"
@@ -73,9 +83,15 @@ class TetheredDateTime extends DateTime {
         >
           {children}
           {open && (
-            <div className="ignore-react-onclickoutside rdtPicker">
+            <div
+              className="ignore-react-onclickoutside rdtPicker"
+              onClick={
+                (currentView === 'time' && !selectedDate && this.handleClick) ||
+                null
+              }
+            >
               <CalendarContainer
-                view={this.state.currentView}
+                view={currentView}
                 viewProps={this.getComponentProps()}
               />
             </div>
