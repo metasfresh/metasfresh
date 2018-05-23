@@ -211,8 +211,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final Boolean processed,
 			@NonNull final BigDecimal qtyPlan,
 			@NonNull final IViewRowAttributesProvider attributesProvider,
-			@NonNull final List<PPOrderLineRow> includedRows,
-			@NonNull final String issueMethod)
+			@NonNull final List<PPOrderLineRow> includedRows)
 	{
 		this.rowId = DocumentId.of(I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBomLine.getPP_Order_BOMLine_ID());
 		this.type = type;
@@ -248,7 +247,7 @@ public class PPOrderLineRow implements IViewRow
 
 		this.documentPath = computeDocumentPath();
 
-		this.issueMethod = issueMethod;
+		this.issueMethod = ppOrderBomLine.getIssueMethod();
 	}
 
 	@lombok.Builder(builderMethodName = "builderForSourceHU", builderClassName = "BuilderForSourceHU")

@@ -264,8 +264,6 @@ class PPOrderLinesLoader
 				ppOrderQtys,
 				readOnly);
 		
-		final String issueMethod = ppOrderBOMLine.getIssueMethod();
-
 		return PPOrderLineRow.builderForPPOrderBomLine()
 				.ppOrderBomLine(ppOrderBOMLine)
 				.type(lineType)
@@ -274,7 +272,6 @@ class PPOrderLinesLoader
 				.attributesProvider(asiAttributesProvider)
 				.processed(readOnly)
 				.includedRows(includedRows)
-				.issueMethod(issueMethod)
 				.build();
 	}
 
