@@ -66,9 +66,12 @@ public class Percent
 	}
 
 	/**
-	 * Example {@code Percent.of(BigDecimal.ONE, new BigDecimal("4"))} returns and instance of "25%".
+	 * Examples:
+	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("4"))} returns and instance of "25%".
+	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("3"))} returns and instance of "33.33%".
 	 *
 	 * @param denominator if zero, then {@value #ZERO} percent is returned.
+	 * @return a percent instance with max. two digits after the decimal point.
 	 */
 	public static Percent of(@NonNull final BigDecimal numerator, @NonNull final BigDecimal denominator)
 	{
@@ -78,7 +81,8 @@ public class Percent
 		}
 
 		final BigDecimal percentValue = numerator
-				.divide(denominator)
+				.setScale(4, RoundingMode.HALF_UP)
+				.divide(denominator, RoundingMode.HALF_UP)
 				.multiply(ONE_HUNDRED_VALUE);
 		return Percent.of(percentValue);
 	}

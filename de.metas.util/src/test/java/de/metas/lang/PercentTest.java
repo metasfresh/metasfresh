@@ -84,6 +84,9 @@ public class PercentTest
 
 		assertThat(Percent.of(new BigDecimal("4"), new BigDecimal("0")).isZero()).isTrue();
 		assertThat(Percent.of(new BigDecimal("0"), new BigDecimal("4")).isZero()).isTrue();
+
+		assertThat(Percent.of(new BigDecimal("3"), new BigDecimal("10")).getValueAsBigDecimal()).isEqualByComparingTo("30");
+		assertThat(Percent.of(new BigDecimal("1"), new BigDecimal("3")).getValueAsBigDecimal()).isEqualByComparingTo("33.33");
 	}
 
 	@Test
