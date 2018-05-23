@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -136,7 +137,7 @@ class PricingConditionsRowsLoader
 		return PricingConditionsRowData.builder()
 				.editableRow(editableRow)
 				.rows(rows)
-				.salesOrderLineId(sourceDocumentLine != null ? sourceDocumentLine.getSalesOrderLineId() : -1)
+				.orderLineId(sourceDocumentLine != null ? sourceDocumentLine.getOrderLineId() : null)
 				.build()
 				.filter(filters);
 	}
@@ -333,7 +334,7 @@ class PricingConditionsRowsLoader
 	@lombok.Builder
 	public static final class SourceDocumentLine
 	{
-		int salesOrderLineId;
+		OrderLineId orderLineId;
 		boolean isSOTrx;
 
 		BPartnerId bpartnerId;
