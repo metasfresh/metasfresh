@@ -44,6 +44,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import lombok.NonNull;
 
 public abstract class AbstractOrderDAO implements IOrderDAO
@@ -53,7 +54,13 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return InterfaceWrapperHelper.load(orderLineId, I_C_OrderLine.class);
 	}
-	
+
+	@Override
+	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
+	{
+		return InterfaceWrapperHelper.load(orderLineId.getRepoId(), I_C_OrderLine.class);
+	}
+
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLines(final org.compiere.model.I_C_Order order)
 	{
