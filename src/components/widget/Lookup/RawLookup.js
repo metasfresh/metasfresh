@@ -217,7 +217,7 @@ class RawLookup extends Component {
   };
 
   handleBlur = () => {
-    const { onHandleBlur } = this.props;
+    const { onBlur } = this.props;
 
     this.setState(
       {
@@ -225,20 +225,20 @@ class RawLookup extends Component {
       },
       () => {
         this.props.onDropdownListToggle(false);
-        onHandleBlur && onHandleBlur();
+        onBlur && onBlur();
       }
     );
   };
 
   handleFocus = () => {
-    const { onHandleFocus } = this.props;
+    const { onFocus } = this.props;
 
     this.setState(
       {
         isFocused: true,
       },
       () => {
-        onHandleFocus && onHandleFocus();
+        onFocus && onFocus();
       }
     );
   };
@@ -472,6 +472,8 @@ const mapStateToProps = state => ({
 
 RawLookup.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
 };
 
 export default connect(mapStateToProps)(RawLookup);

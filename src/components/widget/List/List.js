@@ -73,7 +73,7 @@ class ListWidget extends Component {
     }
   }
 
-  requestListData = (forceSelection = false, forceFocus = false) => {
+  requestListData = (forceSelection = false, ignoreFocus = false) => {
     const {
       properties,
       dataId,
@@ -154,7 +154,8 @@ class ListWidget extends Component {
       if (values.length === 0 && lastProperty) {
         disableAutofocus();
       } else if (
-        (forceFocus || this.state.autoFocus) &&
+        !ignoreFocus &&
+        this.state.autoFocus &&
         values &&
         values.length > 1
       ) {
@@ -183,15 +184,16 @@ class ListWidget extends Component {
   };
 
   handleBlur = () => {
-    const { onHandleBlur } = this.props;
+    const { onBlur } = this.props;
 
     this.setState(
       {
+        autoFocus: false,
         listFocused: false,
         list: null,
       },
       () => {
-        onHandleBlur && onHandleBlur();
+        onBlur && onBlur();
       }
     );
   };
@@ -344,7 +346,7 @@ ListWidget.propTypes = {
   enableAutofocus: PropTypes.func,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
-  onHandleBlur: PropTypes.func,
+  onBlur: PropTypes.func,
 };
 
 const mapStateToProps = state => ({
