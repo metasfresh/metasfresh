@@ -14,7 +14,7 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 691937994L;
+	private static final long serialVersionUID = 1545630678L;
 
     /** Standard Constructor */
     public X_DerKurier_Shipper_Config (Properties ctx, int DerKurier_Shipper_Config_ID, String trxName)
@@ -28,6 +28,8 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 			setCustomerCode (null);
 			setDerKurier_Shipper_Config_ID (0);
 			setDK_CustomerNumber (null);
+			setDK_DesiredDeliveryTime_From (new Timestamp( System.currentTimeMillis() ));
+			setDK_DesiredDeliveryTime_To (new Timestamp( System.currentTimeMillis() ));
 			setM_Shipper_ID (0);
         } */
     }
@@ -190,6 +192,38 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 	public java.lang.String getDK_CustomerNumber () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DK_CustomerNumber);
+	}
+
+	/** Set Gewünschte Lieferuhrzeit von.
+		@param DK_DesiredDeliveryTime_From Gewünschte Lieferuhrzeit von	  */
+	@Override
+	public void setDK_DesiredDeliveryTime_From (java.sql.Timestamp DK_DesiredDeliveryTime_From)
+	{
+		set_Value (COLUMNNAME_DK_DesiredDeliveryTime_From, DK_DesiredDeliveryTime_From);
+	}
+
+	/** Get Gewünschte Lieferuhrzeit von.
+		@return Gewünschte Lieferuhrzeit von	  */
+	@Override
+	public java.sql.Timestamp getDK_DesiredDeliveryTime_From () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DK_DesiredDeliveryTime_From);
+	}
+
+	/** Set Gewünschte Lieferuhrzeit bis.
+		@param DK_DesiredDeliveryTime_To Gewünschte Lieferuhrzeit bis	  */
+	@Override
+	public void setDK_DesiredDeliveryTime_To (java.sql.Timestamp DK_DesiredDeliveryTime_To)
+	{
+		set_Value (COLUMNNAME_DK_DesiredDeliveryTime_To, DK_DesiredDeliveryTime_To);
+	}
+
+	/** Get Gewünschte Lieferuhrzeit bis.
+		@return Gewünschte Lieferuhrzeit bis	  */
+	@Override
+	public java.sql.Timestamp getDK_DesiredDeliveryTime_To () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DK_DesiredDeliveryTime_To);
 	}
 
 	/** Set EMail Empfänger.
