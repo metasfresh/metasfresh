@@ -1,11 +1,16 @@
-package de.metas.marketing.base.misc;
+package de.metas.marketing.base;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.user.User;
+import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.FixedTimeSource;
 import org.adempiere.util.time.SystemTime;
@@ -16,15 +21,11 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 import de.metas.StartupListener;
+import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.marketing.base.model.I_AD_User;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Consent;
@@ -40,12 +41,12 @@ import de.metas.marketing.base.model.I_MKTG_Platform;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,10 +54,12 @@ import de.metas.marketing.base.model.I_MKTG_Platform;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class,
-		Tools.class,
+		UserRepository.class,
+		CampaignService.class,
 		CampaignRepository.class,
-		ContactPersonRepository.class })
-public class ToolsTest
+		ContactPersonRepository.class
+		})
+public class CampaignServiceTest
 {
 	@Before
 	public void init()
@@ -67,13 +70,13 @@ public class ToolsTest
 	@Test
 	public void addToNewsletter()
 	{
-		final Tools converters = Adempiere.getBean(Tools.class);
+		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
 
-		final I_AD_User user = createUser("User1", "mail@mail.mail");
+		final User user = createUser("User1", "mail@mail.mail");
 
 		final I_MKTG_Campaign campaignRecord = createCampaign();
 
-		converters.addToNewsletter(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
+		campaignService.addToCampaignIfHasEmailAddress(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
 
 		final I_MKTG_Consent consentRecord = getConsentRecord();
 		final I_MKTG_Campaign_ContactPerson contactPerson = getContactPerson();
@@ -87,22 +90,19 @@ public class ToolsTest
 	public void removeFromNewsletter_ExistingConsent()
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 4, 4));
-		
-		final Tools converters = Adempiere.getBean(Tools.class);
 
-		final I_AD_User user = createUser("User1", "mail@mail.mail");
+		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
+
+		final User user = createUser("User1", "mail@mail.mail");
 
 		final I_MKTG_Campaign campaignRecord = createCampaign();
-		converters.addToNewsletter(user,  CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));		
-
+		campaignService.addToCampaignIfHasEmailAddress(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
 
 		final I_MKTG_Consent consent = getConsentRecord();
-		converters.removeFromNewsletter(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
-		
-		
+		campaignService.removeFromCampaign(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
+
 		refresh(consent);
 
-		
 		assertTrue(SystemTime.asTimestamp().equals(consent.getConsentRevokedOn()));
 
 	}
@@ -110,13 +110,13 @@ public class ToolsTest
 	@Test
 	public void removeFromNewsletter_NoConsent()
 	{
-		final Tools converters = Adempiere.getBean(Tools.class);
+		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
 
-		final I_AD_User user = createUser("User1", "mail@mail.mail");
+		final User user = createUser("User1", "mail@mail.mail");
 
 		final I_MKTG_Campaign campaignRecord = createCampaign();
 
-		converters.removeFromNewsletter(user,  CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
+		campaignService.removeFromCampaign(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
 
 		final I_MKTG_Consent consentRecord = getConsentRecord();
 		final I_MKTG_Campaign_ContactPerson contactPerson = getContactPerson();
@@ -142,16 +142,16 @@ public class ToolsTest
 				.firstOnly(I_MKTG_Campaign_ContactPerson.class);
 	}
 
-	private I_AD_User createUser(final String name, final String mail)
+	private User createUser(final String name, final String mail)
 	{
-		final I_AD_User user = newInstance(I_AD_User.class);
+		final User user = User.builder()
+				.name(name)
+				.emailAddress(mail)
+				.build();
 
-		user.setName(name);
-		user.setEMail(mail);
+		final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
 
-		save(user);
-
-		return user;
+		return userRepository.save(user);
 	}
 
 	private I_MKTG_Campaign createCampaign()
@@ -175,6 +175,4 @@ public class ToolsTest
 
 	}
 
-	
-	
 }

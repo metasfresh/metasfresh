@@ -1,10 +1,16 @@
 package de.metas.marketing.base.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.user.UserId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
@@ -12,10 +18,6 @@ import org.adempiere.util.time.SystemTime;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
 import lombok.NonNull;
@@ -61,16 +63,9 @@ public class ContactPersonRepository
 		final I_MKTG_ContactPerson contactPersonRecord = loadRecordIfPossible(contactPerson)
 				.orElse(newInstance(I_MKTG_ContactPerson.class));
 
-		if (contactPerson.getAdUserId() > 0)
-		{
-			contactPersonRecord.setAD_User_ID(contactPerson.getAdUserId());
-		}
-		else
-		{
-			contactPersonRecord.setAD_User(null);
-		}
+		contactPersonRecord.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
+		contactPersonRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
 
-		contactPersonRecord.setC_BPartner_ID(contactPerson.getCBpartnerId());
 		contactPersonRecord.setName(contactPerson.getName());
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());
 		contactPersonRecord.setRemoteRecordId(contactPerson.getRemoteId());
@@ -102,17 +97,17 @@ public class ContactPersonRepository
 		{
 			final ContactPersonId contactPersonId = contactPerson.getContactPersonId();
 			contactPersonRecord = load(contactPersonId.getRepoId(), I_MKTG_ContactPerson.class);
-			return Optional.ofNullable(contactPersonRecord);
+			return Optional.of(contactPersonRecord);
 		}
 
 		final ICompositeQueryFilter<I_MKTG_ContactPerson> baseQueryFilter = queryBL.createCompositeQueryFilter(I_MKTG_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_MKTG_Platform_ID, contactPerson.getPlatformId().getRepoId());
 
-		final int userId = contactPerson.getAdUserId();
-		if (userId > 0)
+		final UserId userId = contactPerson.getUserId();
+		if (userId != null)
 		{
-			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID, userId);
+			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID, userId.getRepoId());
 		}
 
 		if (contactPersonRecord == null && !Check.isEmpty(contactPerson.getRemoteId(), true))
@@ -199,9 +194,10 @@ public class ContactPersonRepository
 			builder
 					.address(emailAddress);
 		}
+
 		return builder
-				.adUserId(contactPersonRecord.getAD_User_ID())
-				.cBpartnerId(contactPersonRecord.getC_BPartner_ID())
+				.userId(UserId.ofRepoId(contactPersonRecord.getAD_User_ID()))
+				.bPartnerId(BPartnerId.ofRepoId(contactPersonRecord.getC_BPartner_ID()))
 				.name(contactPersonRecord.getName())
 				.platformId(PlatformId.ofRepoId(contactPersonRecord.getMKTG_Platform_ID()))
 				.remoteId(contactPersonRecord.getRemoteRecordId())
@@ -216,9 +212,9 @@ public class ContactPersonRepository
 
 		final I_MKTG_Consent consent = consentExistingRecord != null ? consentExistingRecord : newInstance(I_MKTG_Consent.class);
 
-		final int contactPersonUserId = contactPerson.getAdUserId();
-		consent.setAD_User_ID(contactPersonUserId > 0 ? contactPersonUserId : null);
-		consent.setC_BPartner_ID(contactPerson.getCBpartnerId());
+		consent.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
+		consent.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
+
 		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
 		consent.setMKTG_ContactPerson_ID(contactPerson.getContactPersonId().getRepoId());
 

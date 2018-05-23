@@ -1,20 +1,20 @@
 package de.metas.marketing.base.process;
 
-import java.util.Iterator;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.user.User;
+import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.marketing.base.misc.Tools;
-import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.model.CampaignId;
-import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.process.JavaProcess;
@@ -47,9 +47,8 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
 	@Param(mandatory = true, parameterName = I_MKTG_Campaign.COLUMNNAME_MKTG_Campaign_ID)
 	private int campaignId;
 
-	private final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
-
-	private final Tools tools = Adempiere.getBean(Tools.class);
+	private final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
+	private final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -61,7 +60,7 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
 				.create();
 
-		final Iterator<I_AD_User> adUsersToAdd = Services.get(IQueryBL.class)
+		final Stream<User> usersToAdd = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(currentSelectionFilter)
@@ -70,13 +69,12 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
-				.iterate(I_AD_User.class);
+				.iterateAndStream()
+				.map(userRepository::ofRecord);
 
-		final Campaign campaign = campaignRepository.getById(CampaignId.ofRepoId(campaignId));
-
-		tools.addAsContactPersonsToCampaign(
-				adUsersToAdd,
-				campaign);
+		campaignService.addAsContactPersonsToCampaign(
+				usersToAdd,
+				CampaignId.ofRepoId(campaignId));
 		return MSG_OK;
 	}
 }
