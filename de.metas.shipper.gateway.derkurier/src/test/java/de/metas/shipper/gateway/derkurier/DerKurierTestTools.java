@@ -96,7 +96,10 @@ public class DerKurierTestTools
 		final DerKurierDeliveryDataBuilder derKurierDeliveryDataBuilder = DerKurierDeliveryData
 				.builder()
 				.customerNumber("customerNumber-12345")
-				.station("030");
+				.station("030")
+				.desiredTimeFrom(LocalTime.of(9, 0))
+				.desiredTimeTo(LocalTime.of(17, 30));
+
 		return derKurierDeliveryDataBuilder;
 	}
 
