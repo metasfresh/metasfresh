@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -29,6 +28,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 
 /**
  * Product Model
@@ -49,14 +49,8 @@ public class MProduct extends X_M_Product
 	 */
 	private static final long serialVersionUID = 285926961771269935L;
 
-	/**
-	 * Get MProduct from Cache
-	 *
-	 * @param ctx context
-	 * @param M_Product_ID id
-	 * @return MProduct or null
-	 */
-	public static MProduct get(Properties ctx, int M_Product_ID)
+	@Deprecated
+	public static MProduct get(Properties ctx_IGNORED, int M_Product_ID)
 	{
 		if (M_Product_ID <= 0)
 		{
@@ -64,25 +58,8 @@ public class MProduct extends X_M_Product
 		}
 
 		// NOTE: we rely on table cache config
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, M_Product_ID, I_M_Product.class, ITrx.TRXNAME_None);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(M_Product_ID);
 		return LegacyAdapters.convertToPO(product);
-	}	// get
-
-	/**
-	 * Get MProduct from Cache
-	 *
-	 * @param ctx context
-	 * @param whereClause sql where clause
-	 * @param trxName trx
-	 * @return MProduct
-	 */
-	static MProduct[] get(Properties ctx, String whereClause, String trxName)
-	{
-		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		List<MProduct> list = new Query(ctx, Table_Name, "AD_Client_ID=? AND " + whereClause, trxName)
-				.setParameters(new Object[] { AD_Client_ID })
-				.list(MProduct.class);
-		return list.toArray(new MProduct[list.size()]);
 	}	// get
 
 	/**
@@ -92,6 +69,7 @@ public class MProduct extends X_M_Product
 	 * @param upc The upc to look for
 	 * @return List of MProduct
 	 */
+	@Deprecated
 	public static List<MProduct> getByUPC(Properties ctx, String upc, String trxName)
 	{
 		String whereClause = "AD_Client_ID=? AND UPC=?";
@@ -99,37 +77,6 @@ public class MProduct extends X_M_Product
 		q.setParameters(new Object[] { Env.getAD_Client_ID(ctx), upc });
 		return (q.list(MProduct.class));
 	}
-
-	/**
-	 * Is Product Stocked
-	 *
-	 * @param ctx context
-	 * @param M_Product_ID id
-	 * @return true if found and stocked - false otherwise
-	 * @deprecated Please use {@link IProductBL#isStocked(I_M_Product)}
-	 */
-	@Deprecated
-	public static boolean isProductStocked(Properties ctx, int M_Product_ID)
-	{
-		final MProduct product = get(ctx, M_Product_ID);
-		return Services.get(IProductBL.class).isStocked(product);
-	}	// isProductStocked
-
-	/**
-	 * Product is an Item and Stocked
-	 *
-	 * @param product
-	 * @return true if stocked and item
-	 * @deprecated Please use {@link IProductBL#isStocked(I_M_Product)}
-	 */
-	@Deprecated
-	public static boolean isProductStocked(final I_M_Product product)
-	{
-		return Services.get(IProductBL.class).isStocked(product);
-	}
-
-//	/** Cache */
-//	private static CCache<Integer, MProduct> s_cache = new CCache<>(Table_Name, 40, 5);	// 5 minutes
 
 	/**************************************************************************
 	 * Standard Constructor
@@ -182,7 +129,7 @@ public class MProduct extends X_M_Product
 	 *
 	 * @param et parent
 	 */
-	public MProduct(MExpenseType et)
+	MProduct(MExpenseType et)
 	{
 		this(et.getCtx(), 0, et.get_TrxName());
 		setProductType(X_M_Product.PRODUCTTYPE_ExpenseType);
@@ -246,7 +193,7 @@ public class MProduct extends X_M_Product
 	 * @param parent expense type
 	 * @return true if changed
 	 */
-	public boolean setExpenseType(MExpenseType parent)
+	boolean setExpenseType(MExpenseType parent)
 	{
 		boolean changed = false;
 		if (!PRODUCTTYPE_ExpenseType.equals(getProductType()))
@@ -341,18 +288,6 @@ public class MProduct extends X_M_Product
 		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
 		return pc.getA_Asset_Group_ID() != 0;
 	}	// isCreated
-
-	/**
-	 * Get Attribute Set
-	 *
-	 * @return set or null
-	 * @deprecated Please use {@link IProductBL#getM_AttributeSet(I_M_Product)}
-	 */
-	@Deprecated
-	public I_M_AttributeSet getAttributeSet()
-	{
-		return Services.get(IProductBL.class).getM_AttributeSet(this);
-	}	// getAttributeSet
 
 	/**
 	 * Create One Asset Per UOM

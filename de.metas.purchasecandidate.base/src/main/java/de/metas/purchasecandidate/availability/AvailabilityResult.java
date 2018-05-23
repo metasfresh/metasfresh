@@ -1,12 +1,13 @@
 package de.metas.purchasecandidate.availability;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -39,7 +40,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class AvailabilityResult
 {
 	public static AvailabilityResultBuilder prepareBuilderFor(
@@ -50,7 +50,7 @@ public class AvailabilityResult
 		return AvailabilityResult.builder()
 				.type(type)
 				.availabilityText(availabilityResponseItem.getAvailabilityText())
-				.datePromised(availabilityResponseItem.getDatePromised())
+				.datePromised(TimeUtil.asLocalDateTime(availabilityResponseItem.getDatePromised()))
 				.qty(availabilityResponseItem.getAvailableQuantity());
 	}
 
@@ -81,17 +81,18 @@ public class AvailabilityResult
 
 	BigDecimal qty;
 
-	Date datePromised;
+	LocalDateTime datePromised;
 
 	String availabilityText;
 
 	VendorGatewayService vendorGatewayServicethatWasUsed;
 
+	@Builder
 	private AvailabilityResult(
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final Type type,
 			@NonNull final BigDecimal qty,
-			@Nullable final Date datePromised,
+			@Nullable final LocalDateTime datePromised,
 			@Nullable final String availabilityText,
 			@Nullable final VendorGatewayService vendorGatewayServicethatWasUsed)
 	{

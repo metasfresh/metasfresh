@@ -25,7 +25,7 @@ package de.metas.handlingunits;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.adempiere.form.terminal.context.IPropertiesContainer;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;

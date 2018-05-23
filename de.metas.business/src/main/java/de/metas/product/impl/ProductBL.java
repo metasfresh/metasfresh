@@ -1,7 +1,5 @@
 package de.metas.product.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -15,11 +13,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -68,6 +66,13 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public int getUOMPrecision(final int productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return getUOMPrecision(product);
+	}
+
+	@Override
 	public String getMMPolicy(final I_M_Product product)
 	{
 		final MProductCategory pc = MProductCategory.get(Env.getCtx(), product.getM_Product_Category_ID());
@@ -88,8 +93,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public I_C_UOM getStockingUOM(final int productId)
 	{
-		Check.assume(productId > 0, "productId > 0");
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return getStockingUOM(product);
 	}
 
@@ -156,6 +160,13 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public boolean isItem(final int productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return isItem(product);
+	}
+
+	@Override
 	public boolean isService(final I_M_Product product)
 	{
 		// i.e. PRODUCTTYPE_Service, PRODUCTTYPE_Resource, PRODUCTTYPE_Online
@@ -178,7 +189,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public boolean isStocked(final int productId)
 	{
-		if(productId <= 0)
+		if (productId <= 0)
 		{
 			return false;
 		}
@@ -188,7 +199,6 @@ public final class ProductBL implements IProductBL
 
 		return isStocked(product);
 	}
-
 
 	@Override
 	public int getM_AttributeSet_ID(final I_M_Product product)
@@ -325,7 +335,7 @@ public final class ProductBL implements IProductBL
 		}
 		return mas.isInstanceAttribute();
 	}
-	
+
 	@Override
 	public boolean isProductInCategory(final int productId, final int expectedProductCategoryId)
 	{
@@ -333,8 +343,25 @@ public final class ProductBL implements IProductBL
 		{
 			return false;
 		}
-		
+
 		final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
 		return productCategoryId == expectedProductCategoryId;
 	}
+
+	@Override
+	public String getProductValueAndName(final int productId)
+	{
+		if (productId <= 0)
+		{
+			return "-";
+		}
+
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		if (product == null)
+		{
+			return "<" + productId + ">";
+		}
+		return product.getValue() + "_" + product.getName();
+	}
+
 }

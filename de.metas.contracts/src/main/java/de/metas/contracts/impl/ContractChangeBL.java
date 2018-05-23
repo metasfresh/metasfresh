@@ -62,7 +62,9 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 import lombok.Builder;
@@ -168,7 +170,12 @@ public class ContractChangeBL implements IContractChangeBL
 		cancelNextContractIfNeeded(currentTerm, contractChangeParameters);
 		creditInvoicesIfNeeded(currentTerm, contractChangeParameters);
 
-		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(currentTerm);
+		if (currentTerm.isCloseInvoiceCandidate())
+		{
+			// Make sure that no further invoicing takes place
+			final List<I_C_Invoice_Candidate> icOfCurrentTerm = Services.get(IInvoiceCandDAO.class).retrieveReferencing(currentTerm);
+			Services.get(IInvoiceCandBL.class).closeInvoiceCandidates(icOfCurrentTerm.iterator());
+		}
 	}
 
 	@Override

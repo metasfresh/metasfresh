@@ -24,13 +24,15 @@ package de.metas.order;
 
 import java.math.BigDecimal;
 
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
-import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.Percent;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.quantity.Quantity;
 
 public interface IOrderLineBL extends ISingletonService
@@ -85,14 +87,15 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param discount the discount to subtract in percent (between 0 and 100). Example: 10
 	 * @param precision the precision of the expected result (relevant for rounding)
 	 * @return
+	 * @deprecated Use {@link Percent#subtractFromBase(BigDecimal, int)}
 	 */
-	BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, int precision);
-
-	BigDecimal calculateDiscountFromPrices(BigDecimal priceEntered, BigDecimal priceActual, int precision);
+	@Deprecated
+	default BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, int precision)
+	{
+		return Percent.of(discount).subtractFromBase(baseAmount, precision);
+	}
 
 	BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(BigDecimal priceActual, BigDecimal discount, int precision);
-
-	BigDecimal calculatePriceActualFromPriceEnteredAndDiscount(BigDecimal priceEntered, BigDecimal discount, int precision);
 
 	/**
 	 * Retrieves the {@code M_ProductPrice} for the given {@code orderLine}'s {@code M_Product_ID} and {@code M_PriceList_Version_ID} and returns that pp's {@code C_TaxCategory_ID}.
@@ -115,6 +118,10 @@ public interface IOrderLineBL extends ISingletonService
 	void updatePrices(org.compiere.model.I_C_OrderLine orderLine);
 
 	void updatePrices(OrderLinePriceUpdateRequest request);
+
+	IPricingResult computePrices(OrderLinePriceUpdateRequest request);
+
+	PriceLimitRuleResult computePriceLimit(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Sets the product ID and optionally also the UOM.
@@ -207,22 +214,5 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 
-	/**
-	 * Task #3835
-	 * If the de.metas.order.NoPriceConditionsColorName sysconfig is set and the orderLine.M_DiscountSchemaBreak_ID is not set, the orderLine.NoPriceConditionsColor_ID will be set to the colourId corresponding with the name provided in the sys config.
-	 * If the de.metas.order.NoPriceConditionsColorName sysconfig is set and the orderLine.M_DiscountSchemaBreak_ID is set, the orderLine.NoPriceConditionsColor_ID will be set to null because a color warning is not needed.
-	 * If the sys config is not set, do nothing because the functionality is not needed
-	 * 
-	 * @param orderLine
-	 */
-	void updateNoPriceConditionsColor(I_C_OrderLine orderLine);
-
-	/**
-	 * Throw an error message if the sysconfig for mandatory pricing conditions is set ( see de.metas.order.impl.OrderLineBL.SYSCONFIG_NoPriceConditionsColorName) but the order contains lines that don't have the pricing conditions set.
-	 */
-	void failForMissingPricingConditions(de.metas.adempiere.model.I_C_Order order);
-
 	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
-
-	PriceLimitRuleResult computePriceLimit(org.compiere.model.I_C_OrderLine orderLine);
 }

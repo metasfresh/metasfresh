@@ -38,12 +38,15 @@ import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_I_BPartner;
+import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_I_Request;
 import org.compiere.model.I_I_User;
 
 import com.google.common.base.Supplier;
+
+import de.metas.pricing.impexp.DiscountSchemaImportProcess;
 
 public class ImportProcessFactory implements IImportProcessFactory
 {
@@ -59,6 +62,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 		registerImportProcess(I_I_Product.class, ProductImportProcess.class);
 		registerImportProcess(I_I_Request.class, RequestImportProcess.class);
 		registerImportProcess(I_I_Inventory.class, InventoryImportProcess.class);
+		registerImportProcess(I_I_DiscountSchema.class, DiscountSchemaImportProcess.class);
 	}
 
 	@Override

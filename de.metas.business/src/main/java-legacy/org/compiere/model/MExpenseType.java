@@ -19,6 +19,11 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.LegacyAdapters;
+import org.adempiere.util.Services;
+
 
 /**
  *	Expense Type Model
@@ -57,58 +62,48 @@ public class MExpenseType extends X_S_ExpenseType
 	}	//	MExpenseType
 	
 	/** Cached Product			*/
-	private MProduct	m_product = null;
+	private I_M_Product	product = null;
 	
-	/**
-	 * 	Get Product
-	 *	@return product
-	 */
-	private MProduct getProduct()
+	private I_M_Product getProduct()
 	{
-		if (m_product == null)
+		if (product == null)
 		{
-			MProduct[] products = MProduct.get(getCtx(), "S_ExpenseType_ID=" + getS_ExpenseType_ID(), get_TrxName());
-			if (products.length > 0)
-				m_product = products[0];
+			product = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_M_Product.class, getCtx(), get_TrxName())
+					.addEqualsFilter(I_M_Product.COLUMN_S_ExpenseType_ID, getS_ExpenseType_ID())
+					.create()
+					.firstOnly(I_M_Product.class);
 		}
-		return m_product;
-	}	//	getProduct
+		return product;
+	}
 	
 	
-	/**
-	 * 	beforeSave
-	 *	@see org.compiere.model.PO#beforeSave(boolean)
-	 *	@param newRecord
-	 *	@return true
-	 */
 	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (newRecord)
 		{
 			if (getValue() == null || getValue().length() == 0)
+			{
 				setValue(getName());
-			m_product = new MProduct(this);
-			return m_product.save(get_TrxName());
+			}
+			product = new MProduct(this);
+			InterfaceWrapperHelper.save(product);
 		}
 		return true;
 	}	//	beforeSave
 	
-	/**
-	 * 	After Save
-	 *	@param newRecord new
-	 *	@param success success
-	 *	@return success
-	 */
 	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (!success)
 			return success;
 				
-		MProduct prod = getProduct();
+		MProduct prod = LegacyAdapters.convertToPO(getProduct());
 		if (prod.setExpenseType(this))
-			prod.save(get_TrxName());
+		{
+			prod.saveEx(get_TrxName());
+		}
 		
 		return success;
 	}	//	afterSave

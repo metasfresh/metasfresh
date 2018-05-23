@@ -1,25 +1,30 @@
 package de.metas.handlingunits.inventory.process;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.inventory.IInventoryDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,6 +51,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements IProcessPrecondition
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	@Param(parameterName = I_M_Locator.COLUMNNAME_M_Locator_ID)
 	private int locatorId;
@@ -54,6 +60,8 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 	private int productId;
 
 	private I_M_Inventory _inventory;
+
+	private Map<Integer, I_M_InventoryLine> inventoryLinesByHU;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -75,11 +83,16 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 	@Override
 	protected String doIt()
 	{
+		inventoryLinesByHU = Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(getInventory().getM_Inventory_ID(), I_M_InventoryLine.class)
+				.stream()
+				.filter(line -> line.getM_HU_ID() > 0)
+				.collect(GuavaCollectors.toImmutableMapByKey(I_M_InventoryLine::getM_HU_ID));
+
 		final long countInventoryLines = streamHUs()
-				.flatMap(hu -> createInventoryLines(hu))
+				.flatMap(this::createUpdateInventoryLines)
 				.count();
 
-		return "@Created@ #" + countInventoryLines;
+		return "@Created@/@Updated@ #" + countInventoryLines;
 	}
 
 	private I_M_Inventory getInventory()
@@ -108,35 +121,49 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 			huQueryBuilder.addOnlyWithProductId(productId);
 		}
 
+		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
+
 		return huQueryBuilder
 				.createQuery()
 				.iterateAndStream();
 	}
 
-	private Stream<I_M_InventoryLine> createInventoryLines(final I_M_HU hu)
+	private Stream<I_M_InventoryLine> createUpdateInventoryLines(@NonNull final I_M_HU hu)
 	{
 		return Services.get(IHandlingUnitsBL.class)
 				.getStorageFactory()
 				.streamHUProductStorages(hu)
-				.map(huProductStorage -> createInventoryLine(huProductStorage));
+				.map(this::createUpdateInventoryLine);
 	}
 
-	private I_M_InventoryLine createInventoryLine(final IHUProductStorage huProductStorage)
+	private I_M_InventoryLine createUpdateInventoryLine(@NonNull final IHUProductStorage huProductStorage)
 	{
 		final I_M_Inventory inventory = getInventory();
-		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
-		inventoryLine.setM_Inventory(inventory);
-		inventoryLine.setAD_Org_ID(inventory.getAD_Org_ID());
-		inventoryLine.setM_Product_ID(huProductStorage.getM_Product_ID());
-		inventoryLine.setM_AttributeSetInstance_ID(0);
-
+		final I_M_InventoryLine inventoryLine;
 		final I_M_HU hu = huProductStorage.getM_HU();
-		inventoryLine.setM_Locator_ID(hu.getM_Locator_ID());
-		inventoryLine.setM_HU_ID(hu.getM_HU_ID());
-		inventoryLine.setM_HU_PI_Item_Product(null); // TODO
-		inventoryLine.setQtyTU(BigDecimal.ZERO); // TODO
 
-		inventoryLine.setC_UOM(huProductStorage.getC_UOM());
+		//update line
+		if (inventoryLinesByHU.containsKey(hu.getM_HU_ID()))
+		{
+			inventoryLine = inventoryLinesByHU.get(hu.getM_HU_ID());
+		}
+		// create line
+		else
+		{
+			inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
+			inventoryLine.setM_Inventory(inventory);
+			inventoryLine.setAD_Org_ID(inventory.getAD_Org_ID());
+			inventoryLine.setM_Product_ID(huProductStorage.getM_Product_ID());
+			inventoryLine.setM_AttributeSetInstance_ID(0);
+
+			inventoryLine.setM_Locator_ID(hu.getM_Locator_ID());
+			inventoryLine.setM_HU_ID(hu.getM_HU_ID());
+			inventoryLine.setM_HU_PI_Item_Product(null); // TODO
+			inventoryLine.setQtyTU(BigDecimal.ZERO); // TODO
+
+			inventoryLine.setC_UOM(huProductStorage.getC_UOM());
+		}
+
 		inventoryLine.setQtyBook(huProductStorage.getQty());
 		inventoryLine.setQtyCount(huProductStorage.getQty());
 

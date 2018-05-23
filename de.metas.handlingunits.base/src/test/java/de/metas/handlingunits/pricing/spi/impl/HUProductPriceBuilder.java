@@ -1,12 +1,12 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.impl.ProductPriceBuilder;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.pricing.service.impl.ProductPriceBuilder;
 
 /*
  * #%L

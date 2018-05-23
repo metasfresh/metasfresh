@@ -1,8 +1,8 @@
 package de.metas.printing.spi.impl;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.Util;

@@ -47,7 +47,6 @@ import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -55,12 +54,14 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -288,9 +289,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final org.compiere.model.I_M_Product product = olAndSched.getSched().getM_Product();
 			final int orgId = product.getAD_Org_ID();
 
-			final de.metas.interfaces.I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId),
-					de.metas.interfaces.I_C_BPartner_Product.class);
-
+			final I_C_BPartner_Product bpp = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
 			if (bpp == null)
 			{
 				// in case no dropship bpp entry was found, the schedule shall not be dropship

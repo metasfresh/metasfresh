@@ -26,7 +26,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
@@ -50,6 +49,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 

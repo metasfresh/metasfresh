@@ -1,7 +1,7 @@
 package org.adempiere.ad.persistence.po;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.junit.Before;
 import org.junit.Test;
 

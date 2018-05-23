@@ -1,7 +1,7 @@
 package de.metas.handlingunits.ddorder.api;
 
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.product.model.I_M_Product_LotNumber_Lock;
+import de.metas.product.LotNumberLock;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -35,7 +35,7 @@ public final class QuarantineInOutLine
 	I_M_InOutLine inOutLine;
 
 	@NonNull
-	I_M_Product_LotNumber_Lock lockLotNo;
+	LotNumberLock lockLotNo;
 
 	public int getBpartnerId()
 	{

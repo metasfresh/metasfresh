@@ -6,9 +6,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;

@@ -24,6 +24,7 @@ package org.adempiere.bpartner.service;
 
 import java.util.Properties;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -34,6 +35,8 @@ import de.metas.i18n.Language;
 
 public interface IBPartnerBL extends ISingletonService
 {
+	public String getBPartnerValueAndName(final BPartnerId bpartnerId);
+	
 	/**
 	 * make full address
 	 *
@@ -160,5 +163,8 @@ public interface IBPartnerBL extends ISingletonService
 	 */
 	int getDiscountSchemaId(I_C_BPartner bpartner, boolean soTrx);
 
-	int getDiscountSchemaId(int bpartnerId, boolean soTrx);
+	/**
+	 * @return partner's discount schema or -1
+	 */
+	int getDiscountSchemaId(BPartnerId bpartnerId, boolean soTrx);
 }

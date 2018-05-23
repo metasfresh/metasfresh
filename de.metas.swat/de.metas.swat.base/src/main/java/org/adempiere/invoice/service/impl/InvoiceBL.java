@@ -4,7 +4,6 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
@@ -23,6 +22,7 @@ import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.pricing.service.IPriceListDAO;
 
 public final class InvoiceBL extends AbstractInvoiceBL
 {

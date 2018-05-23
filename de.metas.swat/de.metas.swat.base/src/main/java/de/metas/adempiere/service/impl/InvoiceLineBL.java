@@ -32,12 +32,6 @@ import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPriceListBL;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -60,7 +54,14 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.pricing.service.ProductPrices;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
 
@@ -423,10 +424,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// When invoices are created by the system, there is no need to change an already-set discound (and this code is executed only once anyways)
 		if (invoiceLine.getDiscount().signum() == 0)
 		{
-			invoiceLine.setDiscount(pricingResult.getDiscount());
+			invoiceLine.setDiscount(pricingResult.getDiscount().getValueAsBigDecimal());
 		}
 
-		invoiceLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
+		final PricingConditionsResult pricingConditions = pricingResult.getPricingConditions();
+		invoiceLine.setBase_PricingSystem_ID(pricingConditions != null ? pricingConditions.getBasePricingSystemId() : -1);
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount

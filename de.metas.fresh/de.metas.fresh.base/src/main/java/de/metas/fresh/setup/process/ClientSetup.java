@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
@@ -34,6 +33,7 @@ import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
+import de.metas.pricing.service.IPriceListDAO;
 
 /*
  * #%L

@@ -32,6 +32,8 @@ public interface INotificationRepository extends ISingletonService
 
 	boolean deleteById(int notificationId);
 
+	void deleteAllByUserId(int userId);
+
 	boolean markAsReadById(int notificationId);
 
 	void markAllAsReadByUserId(int adUserId);

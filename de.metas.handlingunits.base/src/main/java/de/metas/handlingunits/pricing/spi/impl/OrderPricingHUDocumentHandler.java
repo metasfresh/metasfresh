@@ -11,7 +11,7 @@ import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.order.IOrderBL;
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.service.ProductPrices;
 
 public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 {

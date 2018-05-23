@@ -26,7 +26,7 @@ package de.metas.handlingunits.client.terminal.editor.model.filter;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.util.NamePair;
 

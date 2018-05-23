@@ -29,13 +29,14 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.TimeUtil;
+
+import de.metas.pricing.service.IPriceListDAO;
 
 /**
  * {@link InvoiceHeaderImpl} builder class used to collect invoice header values and make sure they match.

@@ -26,6 +26,9 @@ import de.metas.notification.INotificationRepository;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotification.UserNotificationBuilder;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetAction;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.UserNotificationTargetType;
 import lombok.NonNull;
 
@@ -70,7 +73,7 @@ public class NotificationRepository implements INotificationRepository
 	public UserNotification save(@NonNull final UserNotificationRequest request)
 	{
 		final I_AD_Note notificationPO = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Note.class);
-		notificationPO.setAD_User_ID(request.getRecipientUserId());
+		notificationPO.setAD_User_ID(request.getRecipient().getUserId());
 		notificationPO.setIsImportant(request.isImportant());
 
 		//
@@ -109,13 +112,29 @@ public class NotificationRepository implements INotificationRepository
 		notificationPO.setTextMsg(detailPlain);
 
 		//
-		// Target: window (from document record)
-		final ITableRecordReference targetRecord = request.getTargetRecord();
-		if (targetRecord != null)
+		// Target action
+		final TargetAction targetAction = request.getTargetAction();
+		if (targetAction == null)
 		{
+			// no action
+		}
+		else if (targetAction instanceof TargetRecordAction)
+		{
+			final TargetRecordAction targetRecordAction = TargetRecordAction.cast(targetAction);
+			final ITableRecordReference targetRecord = targetRecordAction.getRecord();
 			notificationPO.setAD_Table_ID(targetRecord.getAD_Table_ID());
 			notificationPO.setRecord_ID(targetRecord.getRecord_ID());
-			notificationPO.setAD_Window_ID(request.getTargetADWindowId());
+			notificationPO.setAD_Window_ID(targetRecordAction.getAdWindowId());
+		}
+		else if (targetAction instanceof TargetViewAction)
+		{
+			final TargetViewAction targetViewAction = TargetViewAction.cast(targetAction);
+			notificationPO.setViewId(targetViewAction.getViewId());
+			notificationPO.setAD_Window_ID(targetViewAction.getAdWindowId());
+		}
+		else
+		{
+			throw new AdempiereException("Unknown target action: " + targetAction + " (" + targetAction.getClass() + ")");
 		}
 
 		//
@@ -189,12 +208,18 @@ public class NotificationRepository implements INotificationRepository
 		builder.detailPlain(notificationPO.getTextMsg());
 
 		//
-		// Target record
+		// Target action
 		final int adTableId = notificationPO.getAD_Table_ID();
 		if (adTableId > 0)
 		{
 			builder.targetType(UserNotificationTargetType.Window)
 					.targetRecord(TableRecordReference.of(adTableId, notificationPO.getRecord_ID()))
+					.targetWindowId(notificationPO.getAD_Window_ID());
+		}
+		else if (!Check.isEmpty(notificationPO.getViewId(), true))
+		{
+			builder.targetType(UserNotificationTargetType.View)
+					.targetViewId(notificationPO.getViewId())
 					.targetWindowId(notificationPO.getAD_Window_ID());
 		}
 		else
@@ -300,9 +325,23 @@ public class NotificationRepository implements INotificationRepository
 			return false;
 		}
 
+		deleteNotification(notificationPO);
+		return true;
+	}
+
+	@Override
+	public void deleteAllByUserId(final int adUserId)
+	{
+		retrieveNotesByUserId(adUserId)
+				.create()
+				.list()
+				.forEach(this::deleteNotification);
+	}
+
+	private void deleteNotification(final I_AD_Note notificationPO)
+	{
 		notificationPO.setProcessed(false);
 		InterfaceWrapperHelper.delete(notificationPO);
-		return true;
 	}
 
 	@Override

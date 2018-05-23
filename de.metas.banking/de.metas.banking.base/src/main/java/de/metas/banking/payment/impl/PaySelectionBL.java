@@ -277,18 +277,6 @@ public class PaySelectionBL implements IPaySelectionBL
 				pslExt.setC_BP_BankAccount_ID(secondaryAcct);
 			}
 		}
-
-		// 08297: After trying to set the Reference from the payment request, fallback (if still empty) to the Invoice's POReference
-		final boolean trimWhitespaces = true;
-		if (Check.isEmpty(pslExt.getReference(), trimWhitespaces))
-		{
-			final String invoicePOReference = invoice.getPOReference();
-			if (Check.isEmpty(invoicePOReference, trimWhitespaces))
-			{
-				return;
-			}
-			pslExt.setReference(invoicePOReference);
-		}
 	}
 
 	@Override

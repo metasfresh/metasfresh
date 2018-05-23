@@ -1,15 +1,16 @@
 package de.metas.purchasecandidate;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
+import java.util.OptionalInt;
 
+import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import lombok.Builder;
-// import de.metas.interfaces.I_C_BPartner_Product;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -38,59 +39,79 @@ import lombok.Value;
 @Value
 public class VendorProductInfo
 {
-	int bPartnerProductId;
-	int vendorBPartnerId;
+	OptionalInt bpartnerProductId;
+
+	BPartnerId vendorBPartnerId;
+
 	int productId;
-
 	String productNo;
-
 	String productName;
 
-	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bPartnerProduct)
+	boolean aggregatePOs;
+
+	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProduct)
 	{
-		final de.metas.interfaces.I_C_BPartner_Product extendedBPartnerProduct = create(
-				bPartnerProduct,
-				de.metas.interfaces.I_C_BPartner_Product.class);
-
-		final String productNo = Util.coalesceSuppliers(
-				() -> extendedBPartnerProduct.getVendorProductNo(),
-				() -> extendedBPartnerProduct.getProductNo(),
-				() -> bPartnerProduct.getM_Product().getValue());
-
-		final String productName = Util.coalesceSuppliers(
-				() -> extendedBPartnerProduct.getProductName(),
-				() -> bPartnerProduct.getM_Product().getName());
-
-		final int bPartnerVendorId = Util.firstGreaterThanZero(
-				bPartnerProduct.getC_BPartner_Vendor_ID(),
-				bPartnerProduct.getC_BPartner_ID());
-
-		return new VendorProductInfo(
-				bPartnerProduct.getC_BPartner_Product_ID(),
-				bPartnerVendorId,
-				bPartnerProduct.getM_Product_ID(),
-				productNo,
-				productName);
+		final BPartnerId bpartnerVendorIdOverride = null;
+		final Boolean aggregatePOsOverride = null; // N/A
+		return fromDataRecord(bpartnerProduct, bpartnerVendorIdOverride, aggregatePOsOverride);
 	}
 
-	@VisibleForTesting
-	@Builder(toBuilder = true)
-	VendorProductInfo(
-			int bPartnerProductId,
-			int vendorBPartnerId,
-			int productId,
-			@NonNull String productNo,
-			@NonNull String productName)
+	public static VendorProductInfo fromDataRecord(
+			@NonNull final I_C_BPartner_Product bpartnerProduct,
+			final BPartnerId bpartnerVendorIdOverride,
+			final Boolean aggregatePOsOverride)
 	{
-		Check.assume(bPartnerProductId > 0, "bPartnerProductId > 0");
-		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
+		final String productNo = Util.coalesceSuppliers(
+				() -> bpartnerProduct.getVendorProductNo(),
+				() -> bpartnerProduct.getProductNo(),
+				() -> bpartnerProduct.getM_Product().getValue());
+
+		final String productName = Util.coalesceSuppliers(
+				() -> bpartnerProduct.getProductName(),
+				() -> bpartnerProduct.getM_Product().getName());
+
+		final BPartnerId bpartnerVendorId = Util.coalesceSuppliers(
+				() -> bpartnerVendorIdOverride,
+				() -> BPartnerId.ofRepoIdOrNull(bpartnerProduct.getC_BPartner_ID()));
+
+		final boolean aggregatePOs;
+		if (aggregatePOsOverride != null)
+		{
+			aggregatePOs = aggregatePOsOverride;
+		}
+		else
+		{
+			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerVendorId);
+			aggregatePOs = bpartner.isAggregatePO();
+		}
+
+		return builder()
+				.bpartnerProductId(bpartnerProduct.getC_BPartner_Product_ID())
+				.vendorBPartnerId(bpartnerVendorId)
+				.productId(bpartnerProduct.getM_Product_ID())
+				.productNo(productNo)
+				.productName(productName)
+				.aggregatePOs(aggregatePOs)
+				.build();
+	}
+
+	@Builder
+	private VendorProductInfo(
+			final int bpartnerProductId,
+			@NonNull final BPartnerId vendorBPartnerId,
+			final int productId,
+			@NonNull final String productNo,
+			@NonNull final String productName,
+			final boolean aggregatePOs)
+	{
 		Check.assume(productId > 0, "productId > 0");
 
-		this.bPartnerProductId = bPartnerProductId;
+		this.bpartnerProductId = bpartnerProductId > 0 ? OptionalInt.of(bpartnerProductId) : OptionalInt.empty();
 		this.vendorBPartnerId = vendorBPartnerId;
 		this.productId = productId;
 		this.productNo = productNo;
 		this.productName = productName;
+		this.aggregatePOs = aggregatePOs;
 	}
 
 }

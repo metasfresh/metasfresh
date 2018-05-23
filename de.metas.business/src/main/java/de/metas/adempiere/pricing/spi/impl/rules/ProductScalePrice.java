@@ -28,10 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_ProductScalePrice;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.impl.rules.AbstractPriceListBasedRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
@@ -39,7 +35,11 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MProduct;
 
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.rules.AbstractPriceListBasedRule;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductPA;
 
 /**

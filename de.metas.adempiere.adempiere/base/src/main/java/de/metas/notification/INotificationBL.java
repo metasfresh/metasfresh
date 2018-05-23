@@ -30,13 +30,19 @@ import de.metas.notification.spi.IRecordTextProvider;
 
 public interface INotificationBL extends ISingletonService
 {
-	void notifyUser(UserNotificationRequest request);
-	
-	void notifyUserAfterCommit(UserNotificationRequest request);
+	NotificationSenderTemplate newNotificationSender();
 
-	void notifyUserAfterCommit(List<UserNotificationRequest> requests);
+	void send(UserNotificationRequest request);
+
+	void sendAfterCommit(UserNotificationRequest request);
+
+	void sendAfterCommit(List<UserNotificationRequest> requests);
 
 	void addCtxProvider(IRecordTextProvider ctxProvider);
 
 	void setDefaultCtxProvider(IRecordTextProvider defaultCtxProvider);
+
+	UserNotificationsConfig getUserNotificationsConfig(int adUserId);
+
+	RoleNotificationsConfig getRoleNotificationsConfig(int adRoleId);
 }

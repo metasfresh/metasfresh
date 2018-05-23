@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.payment.sepa.model;
 
@@ -30,7 +14,7 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -351064060L;
+	private static final long serialVersionUID = 1656536518L;
 
     /** Standard Constructor */
     public X_SEPA_Export (Properties ctx, int SEPA_Export_ID, String trxName)
@@ -40,9 +24,9 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
         {
 			setDocumentNo (null);
 			setIBAN (null);
+			setIsExportBatchBookings (true); // Y
 			setPaymentDate (new Timestamp( System.currentTimeMillis() ));
-			setProcessed (false);
-// N	
+			setProcessed (false); // N	
 			setSEPA_CreditorIdentifier (null);
 			setSEPA_Export_ID (0);
 			setSwiftCode (null);
@@ -62,14 +46,6 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_SEPA_Export[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -125,7 +101,7 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Document No.
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -135,7 +111,7 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -161,6 +137,29 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 	public java.lang.String getIBAN () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_IBAN);
+	}
+
+	/** Set Sammelbuchungen exportieren.
+		@param IsExportBatchBookings Sammelbuchungen exportieren	  */
+	@Override
+	public void setIsExportBatchBookings (boolean IsExportBatchBookings)
+	{
+		set_Value (COLUMNNAME_IsExportBatchBookings, Boolean.valueOf(IsExportBatchBookings));
+	}
+
+	/** Get Sammelbuchungen exportieren.
+		@return Sammelbuchungen exportieren	  */
+	@Override
+	public boolean isExportBatchBookings () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsExportBatchBookings);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Zahldatum.

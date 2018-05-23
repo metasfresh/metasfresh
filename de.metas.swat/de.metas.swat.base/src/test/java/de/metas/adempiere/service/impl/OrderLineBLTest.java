@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.pricing.spi.impl.rules.MockedPricingRule;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
@@ -48,6 +47,7 @@ import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
+import de.metas.pricing.rules.MockedPricingRule;
 
 public class OrderLineBLTest
 {

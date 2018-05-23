@@ -4,16 +4,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -48,7 +56,8 @@ import mockit.Verifications;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseCandidateToOrderWorkflowTest
 {
 	private static final String SOMETHING_WENT_WRONG = "something went wrong";
@@ -201,14 +210,14 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.warehouseId(4)
 				.productId(5)
 				.uomId(6)
-				.vendorBPartnerId(vendorId)
 				.vendorProductInfo(VendorProductInfo.builder()
-						.bPartnerProductId(10)
-						.vendorBPartnerId(vendorId).productId(20)
+						.bpartnerProductId(10)
+						.vendorBPartnerId(BPartnerId.ofRepoId(vendorId))
+						.productId(20)
 						.productNo("productNo")
 						.productName("productName").build())
 				.qtyToPurchase(BigDecimal.ONE)
-				.dateRequired(SystemTime.asDayTimestamp())
+				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
 				.locked(false)
 				.build();

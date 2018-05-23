@@ -4,9 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.api.impl.PricingTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
@@ -15,6 +12,10 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.service.impl.PricingTestHelper;
 
 public class SubscriptionPricingRuleTest
 {

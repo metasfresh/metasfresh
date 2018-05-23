@@ -27,14 +27,10 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
@@ -46,8 +42,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
@@ -58,6 +54,11 @@ import de.metas.ordercandidate.api.OLCandSource;
 import de.metas.ordercandidate.api.OLCandsProcessorExecutor;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 
@@ -158,7 +159,7 @@ public class OLCandBL implements IOLCandBL
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-			final int bill_BPartner_ID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
+			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(effectiveValuesBL.getBill_BPartner_Effective_ID(olCand));
 
 			final I_C_BPartner_Location dropShipLocation = effectiveValuesBL.getDropShip_Location_Effective(olCand);
 
@@ -173,7 +174,7 @@ public class OLCandBL implements IOLCandBL
 			}
 			pricingCtx.setM_PricingSystem_ID(pricingSystemId); // set it to the context that way it will also be in the result, even if the pricing rules won't need it
 
-			pricingCtx.setC_BPartner_ID(bill_BPartner_ID);
+			pricingCtx.setBPartnerId(billBPartnerId);
 			pricingCtx.setQty(qty);
 			pricingCtx.setPriceDate(date);
 			pricingCtx.setSOTrx(true);
@@ -201,7 +202,7 @@ public class OLCandBL implements IOLCandBL
 		}
 
 		final BigDecimal priceEntered;
-		final BigDecimal discount;
+		final Percent discount;
 		final int currencyId;
 
 		if (olCand.isManualPrice())
@@ -218,7 +219,7 @@ public class OLCandBL implements IOLCandBL
 
 		if (olCand.isManualDiscount())
 		{
-			discount = olCand.getDiscount();
+			discount = Percent.of(olCand.getDiscount());
 		}
 		else
 		{
@@ -233,7 +234,7 @@ public class OLCandBL implements IOLCandBL
 		}
 
 		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, currencyId);
-		final BigDecimal priceActual = Services.get(IOrderLineBL.class).subtractDiscount(priceEntered, discount, currency.getStdPrecision());
+		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, currency.getStdPrecision());
 
 		pricingResult.setPriceStd(priceActual);
 		pricingResult.setDiscount(discount);

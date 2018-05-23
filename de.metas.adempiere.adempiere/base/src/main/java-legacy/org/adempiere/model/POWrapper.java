@@ -210,17 +210,17 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		return create(po, cl);
 	}
-	
+
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
 	{
 		if(ids.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final Properties ctx = Env.getCtx();
 		final String tableName = getTableName(modelClass);
-		
+
 		return tableModelLoader.getPOs(ctx, tableName, ids, trxName)
 				.stream()
 				.map(po -> create(po, modelClass))
@@ -1017,9 +1017,8 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return changed;
 	}
 
-	public static boolean hasChanges(final Object model)
+	public static boolean hasChanges(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		final PO po = getStrictPO(model);
 		return po.is_Changed();
 	}

@@ -59,7 +59,7 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.product.model.I_M_Product_LotNumber_Lock;
+import de.metas.product.LotNumberLock;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -443,8 +443,7 @@ public class HUs2DDOrderProducer
 		// Description
 		final StringBuilder description = new StringBuilder();
 
-		final I_M_Product_LotNumber_Lock lotNumberLock = ddOrderLineCandidate.getLotNumberLock();
-
+		final LotNumberLock lotNumberLock = ddOrderLineCandidate.getLotNumberLock();
 		final String lotNoLockDescription = getDescriptionForLotNoLock(lotNumberLock);
 
 		description.append(lotNoLockDescription);
@@ -464,7 +463,7 @@ public class HUs2DDOrderProducer
 		huDDOrderDAO.addToHUsScheduledToMove(ddOrderline, ddOrderLineCandidate.getM_HUs());
 	}
 
-	private String getDescriptionForLotNoLock(final I_M_Product_LotNumber_Lock lotNumberLock)
+	private static String getDescriptionForLotNoLock(final LotNumberLock lotNumberLock)
 	{
 		if (lotNumberLock == null)
 		{
@@ -472,7 +471,6 @@ public class HUs2DDOrderProducer
 		}
 
 		final String lotNoLockDescription = lotNumberLock.getDescription();
-
 		if (Check.isEmpty(lotNoLockDescription))
 		{
 			return "";
@@ -529,7 +527,7 @@ public class HUs2DDOrderProducer
 		private I_M_HU_PI_Item_Product piItemProduct;
 		private Map<org.compiere.model.I_M_Attribute, Object> attributes = ImmutableMap.of();
 
-		private I_M_Product_LotNumber_Lock lotNoLock;
+		private LotNumberLock lotNoLock;
 
 		public DDOrderLineCandidate(final IHUContext huContext, final IHUProductStorage huProductStorage, final HUToDistribute huToDistribute)
 		{
@@ -570,7 +568,7 @@ public class HUs2DDOrderProducer
 
 			this.lotNoLock = huToDistribute.getLockLotNo();
 
-			aggregationKeyBuilder.append(lotNoLock == null ? -1 : lotNoLock.getM_Product_LotNumber_Lock_ID());
+			aggregationKeyBuilder.append(lotNoLock == null ? -1 : lotNoLock.getId());
 
 			this.aggregationKey = aggregationKeyBuilder.build();
 
@@ -663,7 +661,7 @@ public class HUs2DDOrderProducer
 			return description.toString();
 		}
 
-		public I_M_Product_LotNumber_Lock getLotNumberLock()
+		public LotNumberLock getLotNumberLock()
 		{
 			return lotNoLock;
 		}
@@ -683,14 +681,14 @@ public class HUs2DDOrderProducer
 		}
 		
 		I_M_HU hu;
-		I_M_Product_LotNumber_Lock lockLotNo;
+		LotNumberLock lockLotNo;
 		int bpartnerId;
 		int bpartnerLocationId;
 
 		@Builder
 		private HUToDistribute(
 				@NonNull final I_M_HU hu,
-				I_M_Product_LotNumber_Lock lockLotNo,
+				LotNumberLock lockLotNo,
 				int bpartnerId,
 				int bpartnerLocationId)
 		{

@@ -68,12 +68,17 @@ public class UserNotification
 	private final String detailADMessage;
 	@JsonProperty("detailADMessageParams")
 	private final List<Object> detailADMessageParams;
+
+	//
+	// Target action
 	@JsonProperty("targetType")
 	private final UserNotificationTargetType targetType;
 	@JsonProperty("targetRecord")
 	private final TableRecordReference targetRecord;
 	@JsonProperty("targetWindowId")
 	private final int targetWindowId;
+	@JsonProperty("targetViewId")
+	private final String targetViewId;
 
 	@JsonProperty("read")
 	@Getter(AccessLevel.NONE)
@@ -96,11 +101,11 @@ public class UserNotification
 			@JsonProperty("detailADMessage") final String detailADMessage,
 			@JsonProperty("detailADMessageParams") @Singular final List<Object> detailADMessageParams,
 			//
+			// Target action
 			@JsonProperty("targetType") @NonNull final UserNotificationTargetType targetType,
-			//
-			// Target: Window/Document
 			@JsonProperty("targetRecord") final TableRecordReference targetRecord,
-			@JsonProperty("targetWindowId") final int targetWindowId)
+			@JsonProperty("targetWindowId") final int targetWindowId,
+			@JsonProperty("targetViewId") final String targetViewId)
 	{
 		Check.assumeGreaterThanZero(id, "id");
 		Check.assumeGreaterThanZero(timestamp, "timestamp");
@@ -121,11 +126,21 @@ public class UserNotification
 			Check.assumeNotNull(targetRecord, "Parameter targetRecord is not null");
 			this.targetRecord = targetRecord;
 			this.targetWindowId = targetWindowId > 0 ? targetWindowId : 0;
+			this.targetViewId = null;
+		}
+		else if (targetType == UserNotificationTargetType.View)
+		{
+			Check.assumeNotEmpty(targetViewId, "targetViewId is not empty");
+			Check.assumeGreaterThanZero(targetWindowId, "targetWindowId");
+			this.targetRecord = null;
+			this.targetWindowId = targetWindowId;
+			this.targetViewId = targetViewId;
 		}
 		else
 		{
 			this.targetRecord = null;
 			this.targetWindowId = 0;
+			this.targetViewId = targetViewId;
 		}
 	}
 
@@ -181,7 +196,7 @@ public class UserNotification
 	{
 		return read;
 	}
-	
+
 	public boolean isNotRead()
 	{
 		return !isRead();

@@ -49,6 +49,7 @@ echo_variable_values()
  echo "DB_NAME=${db_name}"
  echo "DB_USER=${db_user}"
  echo "DB_PASSWORD=*******"
+ echo ""
 }
 
 wait_dbms()

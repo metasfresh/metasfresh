@@ -26,22 +26,13 @@ package de.metas.tourplanning.api;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.tourplanning.model.I_M_TourVersion;
 
 public interface ITourBL extends ISingletonService
 {
-	/**
-	 * Gets Preparation Time for given Day of the Week.
-	 * 
-	 * @param tourVersion
-	 * @param dayOfWeek
-	 * @return preparation time (hour/minute/sec/millis) or null if there is no preparation time for that day of the week
-	 */
-	Timestamp getPreparationTime(I_M_TourVersion tourVersion, int dayOfWeek);
-
 	/**
 	 * Gets Preparation Date+Time for given Delivery Date.
 	 * 

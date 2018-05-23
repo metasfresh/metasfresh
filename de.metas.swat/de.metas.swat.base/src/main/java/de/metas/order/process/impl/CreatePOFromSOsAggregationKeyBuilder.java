@@ -1,11 +1,11 @@
 package de.metas.order.process.impl;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;

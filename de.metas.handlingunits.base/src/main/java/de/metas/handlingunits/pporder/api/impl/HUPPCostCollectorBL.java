@@ -25,10 +25,10 @@ package de.metas.handlingunits.pporder.api.impl;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 

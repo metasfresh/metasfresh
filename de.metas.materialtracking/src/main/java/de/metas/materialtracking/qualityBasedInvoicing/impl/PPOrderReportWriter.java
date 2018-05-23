@@ -29,10 +29,10 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.model.I_PP_Order_Report;

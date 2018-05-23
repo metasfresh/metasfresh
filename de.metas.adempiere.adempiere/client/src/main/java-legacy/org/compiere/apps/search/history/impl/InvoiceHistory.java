@@ -46,7 +46,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
@@ -68,6 +67,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.pricing.service.IPriceListBL;
 
 /**
  * Price History for BPartner/Product

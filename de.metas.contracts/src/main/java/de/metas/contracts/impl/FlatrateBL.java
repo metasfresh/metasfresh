@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /*
@@ -42,11 +43,11 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
@@ -379,11 +380,11 @@ public class FlatrateBL implements IFlatrateBL
 			final BigDecimal priceActual,
 			final String trxName)
 	{
-
 		final I_C_Invoice_Candidate newCand = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
+		Check.assume(newCand.getAD_Client_ID() == dataEntry.getAD_Client_ID(), "ctx contains the correct AD_Client_ID");
+
 		final int orgId = dataEntry.getAD_Org_ID();
 		newCand.setAD_Org_ID(orgId);
-		Check.assume(newCand.getAD_Client_ID() == dataEntry.getAD_Client_ID(), "ctx contains the correct AD_Client_ID");
 
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 		newCand.setM_PricingSystem_ID(fc.getM_PricingSystem_ID());
@@ -415,7 +416,7 @@ public class FlatrateBL implements IFlatrateBL
 		// 07442 activity and tax
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, trxName);
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), product);
 
 		newCand.setC_Activity(activity);
@@ -426,11 +427,19 @@ public class FlatrateBL implements IFlatrateBL
 		final boolean isSOTrx = true;
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, term, taxCategoryId, productId, -1 // chargeId
-				, dataEntry.getDate_Reported() // billDate
-				, dataEntry.getDate_Reported() // shipDate
-				, orgId, warehouse, billLocationID, -1 // ship location id
-				, isSOTrx, trxName);
+				ctx,
+				term,
+				taxCategoryId,
+				productId,
+				-1, // chargeId
+				dataEntry.getDate_Reported(),// billDate
+				dataEntry.getDate_Reported(),// shipDate
+				orgId,
+				warehouse,
+				billLocationID,
+				-1 // ship location id
+				, isSOTrx,
+				trxName);
 
 		newCand.setC_Tax_ID(taxId);
 
@@ -1033,11 +1042,16 @@ public class FlatrateBL implements IFlatrateBL
 			contracts.add(currentRequest.getContract());
 			do
 			{
-				extendContract0(currentRequest);
+				extendContractIfRequired(currentRequest);
 
 				final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
 				currentTerm.setAD_PInstance_EndOfTerm_ID(currentRequest.getAD_PInstance_ID());
 				InterfaceWrapperHelper.save(currentTerm);
+				if (currentTerm.getC_FlatrateTerm_Next_ID() <= 0)
+				{
+					// https://github.com/metasfresh/metasfresh/issues/4022 avoid NPE if currentTerm was actually *not* extended by extendContractIfRequired
+					break;
+				}
 
 				final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
 				final I_C_Flatrate_Conditions nextConditions = nextTerm.getC_Flatrate_Conditions();
@@ -1090,7 +1104,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 	}
 
-	private void extendContract0(final @NonNull ContractExtendingRequest request)
+	private void extendContractIfRequired(final @NonNull ContractExtendingRequest request)
 	{
 		final I_C_Flatrate_Term currentTerm = request.getContract();
 		final boolean forceExtend = request.isForceExtend();
@@ -1485,7 +1499,6 @@ public class FlatrateBL implements IFlatrateBL
 			{
 				throw new AdempiereException(
 						"de.metas.flatrate.Org.Warehouse_Missing",
-						Env.getAD_Language(ctx),
 						new Object[] { msgBL.translate(ctx, I_AD_Org.COLUMNNAME_AD_Org_ID), InterfaceWrapperHelper.loadOutOfTrx(term.getAD_Org_ID(), I_AD_Org.class) });
 			}
 			warehouseId = warehousesForOrg.get(0).getM_Warehouse_ID();

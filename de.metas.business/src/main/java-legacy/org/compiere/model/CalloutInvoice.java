@@ -30,7 +30,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -40,6 +39,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.pricing.service.IPriceListBL;
 import de.metas.tax.api.ITaxBL;
 
 /**

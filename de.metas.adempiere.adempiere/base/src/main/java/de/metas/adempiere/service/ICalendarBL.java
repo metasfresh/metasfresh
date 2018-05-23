@@ -24,11 +24,15 @@ package de.metas.adempiere.service;
 
 
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
+import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
+
+import de.metas.calendar.IBusinessDayMatcher;
 
 /**
  * @author RC
@@ -84,5 +88,5 @@ public interface ICalendarBL extends ISingletonService
 	 */
 	boolean isStandardPeriod(I_C_Period period);
 
-	IBusinessDayMatcher getBusinessDayMatcher();
+	IBusinessDayMatcher createBusinessDayMatcherExcluding(Set<DayOfWeek> excludeWeekendDays);
 }

@@ -1149,6 +1149,29 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_IsSubscription = "IsSubscription";
 
 	/**
+	 * Set Temporary pricing conditions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsTempPricingConditions (boolean IsTempPricingConditions);
+
+	/**
+	 * Get Temporary pricing conditions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isTempPricingConditions();
+
+    /** Column definition for IsTempPricingConditions */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsTempPricingConditions = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsTempPricingConditions", null);
+    /** Column name IsTempPricingConditions */
+    public static final String COLUMNNAME_IsTempPricingConditions = "IsTempPricingConditions";
+
+	/**
 	 * Set Zeile Nr..
 	 * Unique line for this document
 	 *
