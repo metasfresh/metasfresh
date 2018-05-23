@@ -63,12 +63,22 @@ class DatetimeRange extends Component {
     const { onShow, onHide, mandatory, validStatus, timePicker } = this.props;
     const format = timePicker ? 'LT' : 'l';
 
-    const availableDates =
-      !!startDate && !!endDate
-        ? `${Moment(startDate).format(format)} - ${Moment(endDate).format(
-            format
-          )}`
-        : counterpart.translate('window.daterange.filter.hint');
+    let availableDates = counterpart.translate('window.daterange.filter.hint');
+
+    if (startDate && endDate) {
+      // Expliclitly setting locale here, since startDate and endDate could already be a (wrongly) localized Moment object
+      const locale = Moment.locale();
+
+      const startDateLocalized = Moment(startDate);
+      startDateLocalized.locale(locale);
+      const startDateFormatted = startDateLocalized.format(format);
+
+      const endDateLocalized = Moment(endDate);
+      endDateLocalized.locale(locale);
+      const endDateFormatted = endDateLocalized.format(format);
+
+      availableDates = `${startDateFormatted} - ${endDateFormatted}`;
+    }
 
     return (
       <DateRangePicker
