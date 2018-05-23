@@ -38,9 +38,8 @@ class DatePicker extends Component {
 
     try {
       if (
-        date &&
         JSON.stringify(cache) !==
-          (date !== '' ? JSON.stringify(date && date.toDate()) : '')
+        (date !== '' ? JSON.stringify(date && date.toDate()) : '')
       ) {
         patch(date);
       }

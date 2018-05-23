@@ -148,10 +148,7 @@ class MasterWidget extends Component {
         data: val,
       },
       () => {
-        if (
-          dateParse.indexOf(widgetType) === -1 &&
-          !this.validatePrecision(val)
-        ) {
+        if (!dateParse.includes(widgetType) && !this.validatePrecision(val)) {
           return;
         }
         if (rowId === 'NEW') {
