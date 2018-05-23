@@ -25,6 +25,7 @@ package de.metas.pricing.rules;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -81,7 +82,7 @@ public class Discount implements IPricingRule
 			return false;
 		}
 
-		if (pricingCtx.getC_BPartner_ID() <= 0)
+		if (pricingCtx.getBPartnerId() == null)
 		{
 			return false;
 		}
@@ -113,12 +114,12 @@ public class Discount implements IPricingRule
 		final CalculatePricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
 
 		result.setUsesDiscountSchema(true);
-		updatePricingResultFromPricingConditionsResult(result, request.getPricingConditionsId(), pricingConditionsResult);
+		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
 	}
 
 	private CalculatePricingConditionsRequest createCalculatePricingConditionsRequest(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		final int bpartnerId = pricingCtx.getC_BPartner_ID();
+		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
 		final boolean isSOTrx = pricingCtx.isSOTrx();
 
 		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
@@ -176,11 +177,10 @@ public class Discount implements IPricingRule
 
 	private static void updatePricingResultFromPricingConditionsResult(
 			final IPricingResult pricingResult,
-			final PricingConditionsId pricingConditionsId,
 			final CalculatePricingConditionsResult pricingConditionsResult)
 	{
 		pricingResult.setPricingConditions(PricingConditionsResult.builder()
-				.pricingConditionsId(pricingConditionsId)
+				.pricingConditionsId(pricingConditionsResult.getPricingConditionsId())
 				.pricingConditionsBreakId(pricingConditionsResult.getPricingConditionsBreakId())
 				.basePricingSystemId(pricingConditionsResult.getBasePricingSystemId())
 				.paymentTermId(pricingConditionsResult.getPaymentTermId())

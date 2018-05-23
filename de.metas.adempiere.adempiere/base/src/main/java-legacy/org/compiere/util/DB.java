@@ -2634,6 +2634,16 @@ public final class DB
 			final Timestamp ts = rs.getTimestamp(columnIndex);
 			value = (AT)ts;
 		}
+		else if(returnType.isAssignableFrom(LocalDateTime.class))
+		{
+			final Timestamp ts = rs.getTimestamp(columnIndex);
+			value = (AT)TimeUtil.asLocalDateTime(ts);
+		}
+		else if(returnType.isAssignableFrom(LocalDate.class))
+		{
+			final Timestamp ts = rs.getTimestamp(columnIndex);
+			value = (AT)TimeUtil.asLocalDate(ts);
+		}
 		else if (returnType.isAssignableFrom(Boolean.class) || returnType == boolean.class)
 		{
 			value = (AT)StringUtils.toBoolean(rs.getString(columnIndex), Boolean.FALSE);

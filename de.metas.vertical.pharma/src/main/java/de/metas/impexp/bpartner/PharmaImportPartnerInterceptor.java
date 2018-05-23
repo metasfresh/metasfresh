@@ -86,7 +86,7 @@ public class PharmaImportPartnerInterceptor implements IImportInterceptor
 		//
 		if (!Check.isEmpty(ibpartner.getSalesResponsible(),true))
 		{
-			bpartner.setPharmaproductpermlaw52(ibpartner.getPharmaproductpermlaw52());
+			bpartner.setSalesResponsible(ibpartner.getSalesResponsible());
 		}
 		//
 		if (!Check.isEmpty(ibpartner.getPurchaseGroup(),true))
@@ -101,7 +101,7 @@ public class PharmaImportPartnerInterceptor implements IImportInterceptor
 		//
 		if (!Check.isEmpty(ibpartner.getShipmentPermissionPharma_Old(),true))
 		{
-			bpartner.setAssociationMembership(ibpartner.getShipmentPermissionPharma_Old());
+			bpartner.setShipmentPermissionPharma_Old(ibpartner.getShipmentPermissionPharma_Old());
 		}
 		//
 		if (!Check.isEmpty(ibpartner.getPermissionPharmaType(),true))
