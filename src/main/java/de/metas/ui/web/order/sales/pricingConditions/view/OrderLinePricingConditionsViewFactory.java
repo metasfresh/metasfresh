@@ -9,12 +9,14 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeInstance;
 
 import de.metas.lang.Percent;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -74,20 +76,22 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 
-		final int salesOrderLineId = ListUtils.singleElement(request.getFilterOnlyIds());
-		Check.assumeGreaterThanZero(salesOrderLineId, "salesOrderLineId");
-		final I_C_OrderLine salesOrderLine = ordersRepo.getOrderLineById(salesOrderLineId);
+		final int orderLineId = ListUtils.singleElement(request.getFilterOnlyIds());
+		Check.assumeGreaterThanZero(orderLineId, "salesOrderLineId");
+		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId);
+		final I_C_Order order = orderLine.getC_Order();
+		final boolean isSOTrx = order.isSOTrx();
 
 		final PriceNetCalculator priceNetCalculator = PriceNetCalculator.builder()
-				.basePriceCalculator(createBasePriceCalculator(salesOrderLine))
+				.basePriceCalculator(createBasePriceCalculator(orderLine))
 				.build();
 
 		final PricingConditionsRowData rowsData = preparePricingConditionsRowData()
-				.pricingConditionsBreaksExtractor(createPricingConditionsBreaksExtractor(salesOrderLine))
+				.pricingConditionsBreaksExtractor(createPricingConditionsBreaksExtractor(orderLine))
 				.priceNetCalculator(priceNetCalculator)
 				.filters(extractFilters(request))
-				.adClientId(salesOrderLine.getAD_Client_ID())
-				.sourceDocumentLine(createSourceDocumentLine(salesOrderLine))
+				.adClientId(orderLine.getAD_Client_ID())
+				.sourceDocumentLine(createSourceDocumentLine(orderLine, isSOTrx))
 				.load();
 		return rowsData;
 	}
@@ -132,21 +136,21 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 				.build();
 	}
 
-	private final SourceDocumentLine createSourceDocumentLine(final I_C_OrderLine salesOrderLine)
+	private final SourceDocumentLine createSourceDocumentLine(final I_C_OrderLine orderLine, final boolean isSOTrx)
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 
 		return SourceDocumentLine.builder()
-				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
-				.isSOTrx(true)
-				.bpartnerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))
+				.orderLineId(OrderLineId.ofRepoIdOrNull(orderLine.getC_OrderLine_ID()))
+				.isSOTrx(isSOTrx)
+				.bpartnerId(BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()))
 				.productId(productId)
 				.productCategoryId(productCategoryId)
-				.priceEntered(salesOrderLine.getPriceEntered())
-				.discount(Percent.of(salesOrderLine.getDiscount()))
-				.paymentTermId(salesOrderLine.getC_PaymentTerm_Override_ID())
+				.priceEntered(orderLine.getPriceEntered())
+				.discount(Percent.of(orderLine.getDiscount()))
+				.paymentTermId(orderLine.getC_PaymentTerm_Override_ID())
 				.build();
 	}
 }
