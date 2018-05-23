@@ -65,7 +65,7 @@
         }
     }
 
-    .col-xs-12, .col-sm-12 {
+    .col-12, .col-sm-12 {
         position: static;
     }
 

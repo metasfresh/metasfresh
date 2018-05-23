@@ -8,7 +8,7 @@ class Separator extends Component {
   render() {
     const { title } = this.props;
     return (
-      <div className="separator col-xs-12">
+      <div className="separator col-12">
         <span className="separator-title">{title}</span>
       </div>
     );
