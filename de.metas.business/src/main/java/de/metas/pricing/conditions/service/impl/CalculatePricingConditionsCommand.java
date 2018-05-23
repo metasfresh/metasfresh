@@ -17,12 +17,13 @@ import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsDiscountType;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
-import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
-import de.metas.pricing.conditions.service.CalculatePricingConditionsResult.CalculatePricingConditionsResultBuilder;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
+import de.metas.pricing.conditions.service.PricingConditionsResult.PricingConditionsResultBuilder;
 import de.metas.pricing.service.IPricingBL;
 import lombok.NonNull;
 
@@ -65,7 +66,7 @@ import lombok.NonNull;
 		this.request = request;
 	}
 
-	public CalculatePricingConditionsResult calculate()
+	public PricingConditionsResult calculate()
 	{
 		final PricingConditionsDiscountType discountType = getDiscountType();
 		if (discountType == PricingConditionsDiscountType.FLAT_PERCENT)
@@ -75,7 +76,7 @@ import lombok.NonNull;
 		else if (discountType == PricingConditionsDiscountType.FORMULA
 				|| discountType == PricingConditionsDiscountType.PRICE_LIST)
 		{
-			return CalculatePricingConditionsResult.ZERO;
+			return PricingConditionsResult.ZERO;
 		}
 		else if (discountType == PricingConditionsDiscountType.BREAKS)
 		{
@@ -114,7 +115,7 @@ import lombok.NonNull;
 		return pricingConditions;
 	}
 
-	private CalculatePricingConditionsResult computeFlatDiscount()
+	private PricingConditionsResult computeFlatDiscount()
 	{
 		final Percent flatDiscount;
 		final PricingConditions pricingConditions = getPricingConditions();
@@ -126,24 +127,27 @@ import lombok.NonNull;
 		{
 			flatDiscount = pricingConditions.getFlatDiscount();
 		}
-		
-		return CalculatePricingConditionsResult.builder()
+
+		return PricingConditionsResult.builder()
 				.pricingConditionsId(pricingConditions.getId())
 				.discount(flatDiscount)
 				.build();
 
 	}
 
-	private CalculatePricingConditionsResult computeBreaksDiscount()
+	private PricingConditionsResult computeBreaksDiscount()
 	{
 		final PricingConditionsBreak breakApplied = findMatchingPricingConditionBreak();
 		if (breakApplied == null)
 		{
-			return CalculatePricingConditionsResult.ZERO;
+			return PricingConditionsResult.ZERO;
 		}
 
-		final CalculatePricingConditionsResultBuilder result = CalculatePricingConditionsResult.builder()
-				.pricingConditionsBreakId(breakApplied.getId())
+		final PricingConditionsBreakId pricingConditionsBreakId = breakApplied.getId();
+
+		final PricingConditionsResultBuilder result = PricingConditionsResult.builder()
+				.pricingConditionsId(pricingConditionsBreakId != null ? pricingConditionsBreakId.getPricingConditionsId() : null)
+				.pricingConditionsBreakId(pricingConditionsBreakId)
 				.paymentTermId(breakApplied.getPaymentTermId());
 
 		computePriceForPricingConditionsBreak(result, breakApplied.getPriceOverride());
@@ -152,7 +156,7 @@ import lombok.NonNull;
 		return result.build();
 	}
 
-	private void computePriceForPricingConditionsBreak(final CalculatePricingConditionsResultBuilder result, final PriceOverride priceOverride)
+	private void computePriceForPricingConditionsBreak(final PricingConditionsResultBuilder result, final PriceOverride priceOverride)
 	{
 		final PriceOverrideType priceOverrideType = priceOverride.getType();
 		if (priceOverrideType == PriceOverrideType.NONE)
@@ -212,7 +216,7 @@ import lombok.NonNull;
 		return newPricingCtx;
 	}
 
-	private void computeDiscountForPricingConditionsBreak(final CalculatePricingConditionsResultBuilder result, final PricingConditionsBreak pricingConditionsBreak)
+	private void computeDiscountForPricingConditionsBreak(final PricingConditionsResultBuilder result, final PricingConditionsBreak pricingConditionsBreak)
 	{
 		final Percent discount;
 		if (pricingConditionsBreak.isBpartnerFlatDiscount())

@@ -34,7 +34,7 @@ import de.metas.lang.Percent;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
-import de.metas.pricing.PricingConditionsResult;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import lombok.Getter;
 import lombok.Setter;

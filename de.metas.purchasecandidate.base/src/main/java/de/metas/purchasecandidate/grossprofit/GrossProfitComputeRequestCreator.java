@@ -40,7 +40,7 @@ public class GrossProfitComputeRequestCreator
 {
 	public static GrossProfitComputeRequest of(@NonNull final PurchaseCandidate purchaseCandidate)
 	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(purchaseCandidate.getVendorBPartnerId());
+		final BPartnerId bPartnerId = purchaseCandidate.getVendorBPartnerId();
 		final ProductId productId = ProductId.ofRepoId(purchaseCandidate.getProductId());
 		final LocalDate date = purchaseCandidate.getDateRequired().toLocalDate();
 

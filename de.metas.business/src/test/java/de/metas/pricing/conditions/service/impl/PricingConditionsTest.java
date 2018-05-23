@@ -65,7 +65,7 @@ import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
-import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.product.ProductAndCategoryId;
 
@@ -436,7 +436,7 @@ public class PricingConditionsTest
 
 	private BigDecimal calculatePrice(final BigDecimal price, final CalculatePricingConditionsRequest request)
 	{
-		final CalculatePricingConditionsResult result = service.calculatePricingConditions(request);
+		final PricingConditionsResult result = service.calculatePricingConditions(request);
 
 		final Percent discount = result.getDiscount();
 		return discount.subtractFromBase(price, 6);

@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.metas.lang.Percent;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 
 /**

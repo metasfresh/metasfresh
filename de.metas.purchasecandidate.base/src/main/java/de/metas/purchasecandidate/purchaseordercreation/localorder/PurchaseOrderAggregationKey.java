@@ -2,6 +2,8 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import java.time.LocalDateTime;
 
+import org.adempiere.bpartner.BPartnerId;
+
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
@@ -51,6 +53,6 @@ import lombok.Value;
 
 	private final int orgId;
 	private final int warehouseId;
-	private final int vendorBPartnerId;
+	private final BPartnerId vendorBPartnerId;
 	private final LocalDateTime datePromised;
 }
