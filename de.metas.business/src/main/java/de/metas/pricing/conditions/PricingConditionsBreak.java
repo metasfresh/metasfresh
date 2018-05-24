@@ -52,6 +52,7 @@ public class PricingConditionsBreak
 	BigDecimal qualityDiscountPercentage;
 
 	LocalDateTime dateCreated;
+	boolean hasChanges;
 
 	@Builder(toBuilder = true)
 	public PricingConditionsBreak(
@@ -62,7 +63,8 @@ public class PricingConditionsBreak
 			final Percent discount,
 			final int paymentTermId,
 			final BigDecimal qualityDiscountPercentage,
-			final LocalDateTime dateCreated)
+			final LocalDateTime dateCreated,
+			final boolean hasChanges)
 	{
 		this.id = id;
 		this.matchCriteria = matchCriteria;
@@ -72,6 +74,7 @@ public class PricingConditionsBreak
 		this.paymentTermId = paymentTermId > 0 ? paymentTermId : -1;
 		this.qualityDiscountPercentage = qualityDiscountPercentage;
 		this.dateCreated = dateCreated;
+		this.hasChanges = hasChanges;
 	}
 
 	public PricingConditionsId getPricingConditionsId()
@@ -100,7 +103,7 @@ public class PricingConditionsBreak
 
 	public boolean isTemporaryPricingConditionsBreak()
 	{
-		return id == null;
+		return hasChanges || id == null;
 	}
 
 	public PricingConditionsBreak toTemporaryPricingConditionsBreak()

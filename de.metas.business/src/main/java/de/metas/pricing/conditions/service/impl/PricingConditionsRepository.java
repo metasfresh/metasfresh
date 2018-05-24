@@ -174,6 +174,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				//
 				//
 				.dateCreated(TimeUtil.asLocalDateTime(schemaBreakRecord.getCreated()))
+				.hasChanges(false)
 				.build();
 	}
 
