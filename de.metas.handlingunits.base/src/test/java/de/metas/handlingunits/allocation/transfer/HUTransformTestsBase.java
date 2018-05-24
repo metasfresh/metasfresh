@@ -77,7 +77,6 @@ import de.metas.quantity.Quantity;
  */
 public class HUTransformTestsBase
 {
-
 	private LUTUProducerDestinationTestSupport data;
 
 	private IHandlingUnitsDAO handlingUnitsDAO;

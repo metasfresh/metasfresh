@@ -354,7 +354,6 @@ import lombok.NonNull;
 
 		for (final IProductStorage productStorage : productStorages)
 		{
-
 			if (uom.getC_UOM_ID() != productStorage.getC_UOM().getC_UOM_ID())
 			{
 				final BigDecimal qtyInInitialUOM = uomConvertionBL.convertQty(productStorage.getM_Product_ID(), productStorage.getQty(), productStorage.getC_UOM(), uom);
@@ -372,7 +371,6 @@ import lombok.NonNull;
 	@Override
 	public Quantity getQtyForProductStorages()
 	{
-
 		final List<IHUProductStorage> productStorages = getProductStorages();
 		if (Check.isEmpty(productStorages))
 		{
@@ -380,9 +378,7 @@ import lombok.NonNull;
 
 			return Quantity.zero(Util.coalesce(getC_UOMOrNull(), uomWEach));
 		}
-
 		return getQtyForProductStorages(productStorages.get(0).getC_UOM());
-
 	}
 
 	private final IHUProductStorage createProductStorage(final I_M_HU_Storage storage)

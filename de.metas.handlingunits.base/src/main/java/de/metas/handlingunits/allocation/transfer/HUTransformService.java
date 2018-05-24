@@ -534,9 +534,9 @@ public class HUTransformService
 	 * @param isOwnPackingMaterials
 	 */
 	public List<I_M_HU> cuToNewTUs(
-			final I_M_HU cuHU, 
-			final Quantity qtyCU, 
-			final I_M_HU_PI_Item_Product tuPIItemProduct, 
+			final I_M_HU cuHU,
+			final Quantity qtyCU,
+			final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final boolean isOwnPackingMaterials)
 	{
 		Preconditions.checkNotNull(cuHU, "Param 'cuHU' may not be null");
@@ -1023,7 +1023,7 @@ public class HUTransformService
 			final List<I_M_HU> currentResult = huToNewCUs(sourceHU, qtyCuLeft);
 			result.addAll(currentResult);
 
-			qtyCuLeft = qtyCuLeft.subtract(calculateTotalQtyCU(currentResult, qtyCuLeft.getUOM()));
+			qtyCuLeft = qtyCuLeft.subtract(calculateTotalQtyOfCUs(currentResult, qtyCuLeft.getUOM()));
 
 			if (qtyCuLeft.signum() <= 0)
 			{
@@ -1059,40 +1059,36 @@ public class HUTransformService
 
 		Quantity qtyCUsRemaining = qtyCU; // how many CUs we still have to extract
 
-		for (int i = 0; i <= handlingUnitsDAO.retrieveIncludedHUs(sourceLU).size(); i++)
+		for (int i = 0; i < handlingUnitsDAO.retrieveIncludedHUs(sourceLU).size(); i++)
 		{
 			if (qtyCUsRemaining.signum() <= 0)
 			{
 				break;
 			}
 
-			final List<I_M_HU> luExtractTUs = luExtractTUs(sourceLU, 1);
+			final List<I_M_HU> extractedTUs = luExtractTUs(sourceLU, 1);
 
-			for (final I_M_HU tu : luExtractTUs)
+			for (final I_M_HU tu : extractedTUs)
 			{
 				if (qtyCUsRemaining.signum() <= 0)
 				{
 					break;
 				}
 
-				final List<I_M_HU> tuExtractCUs = tuExtractCUs(tu, qtyCUsRemaining);
+				final List<I_M_HU> cusFromTU = tuExtractCUs(tu, qtyCUsRemaining);
 
-				extractedCUs.addAll(tuExtractCUs);
+				extractedCUs.addAll(cusFromTU);
 
-				qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyCU(tuExtractCUs, qtyCU.getUOM()));
+				qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCU.getUOM()));
 			}
 		}
-
 		return extractedCUs.build();
-
 	}
 
-	private List<I_M_HU> tuExtractCUs(@NonNull final I_M_HU sourceTU, final Quantity qtyCU)
+	private List<I_M_HU> tuExtractCUs(@NonNull final I_M_HU sourceTU, @NonNull final Quantity qtyCU)
 	{
-		Preconditions.checkArgument(qtyCU.signum() > 0, "qtyCU > 0");
-
 		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
-		Quantity qtyCUsRemaining = qtyCU; // how many TUs we still have to extract
+		Quantity qtyCUsRemaining = qtyCU;
 
 		for (final I_M_HU cu : handlingUnitsDAO.retrieveIncludedHUs(sourceTU))
 		{
@@ -1101,29 +1097,25 @@ public class HUTransformService
 				break;
 			}
 
-			final List<I_M_HU> cuToNewCU = cuToNewCU(cu, qtyCUsRemaining);
+			final List<I_M_HU> newCUs = cuToNewCU(cu, qtyCUsRemaining);
 
-			extractedCUs.addAll(cuToNewCU);
+			extractedCUs.addAll(newCUs);
 
-			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyCU(cuToNewCU, qtyCU.getUOM()));
-
-		} // each TU
-
+			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(newCUs, qtyCU.getUOM()));
+		}
 		return extractedCUs.build();
 	}
 
-	private Quantity calculateTotalQtyCU(final List<I_M_HU> cus, final I_C_UOM uom)
+	private Quantity calculateTotalQtyOfCUs(final List<I_M_HU> cus, final I_C_UOM uom)
 	{
 		Quantity totalQtyCU = Quantity.zero(uom);
-		
-		for(final I_M_HU cu: cus)
+
+		for (final I_M_HU cu : cus)
 		{
 			final Quantity qtyToAdd = getMaximumQtyCU(cu, uom);
-			
+
 			totalQtyCU.add(qtyToAdd);
-	
 		}
-		
 		return totalQtyCU;
 	}
 }
