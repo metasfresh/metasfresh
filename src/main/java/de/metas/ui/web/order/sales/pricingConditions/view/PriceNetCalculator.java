@@ -40,10 +40,10 @@ public class PriceNetCalculator
 	private static final Logger logger = LogManager.getLogger(PriceNetCalculator.class);
 
 	// params
-	private final BasePriceCalculator basePriceCalculator;
+	private final BasePricingSystemPriceCalculator basePriceCalculator;
 
 	@Builder
-	private PriceNetCalculator(@NonNull final BasePriceCalculator basePriceCalculator)
+	private PriceNetCalculator(@NonNull final BasePricingSystemPriceCalculator basePriceCalculator)
 	{
 		this.basePriceCalculator = basePriceCalculator;
 	}
@@ -116,7 +116,7 @@ public class PriceNetCalculator
 	}
 
 	@FunctionalInterface
-	public static interface BasePriceCalculator
+	public static interface BasePricingSystemPriceCalculator
 	{
 		BigDecimal calculate(PriceNetCalculateRequest request);
 	}

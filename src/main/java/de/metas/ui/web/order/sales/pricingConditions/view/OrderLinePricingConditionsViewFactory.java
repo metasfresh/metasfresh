@@ -26,7 +26,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.ui.web.order.sales.pricingConditions.view.PriceNetCalculator.BasePriceCalculator;
+import de.metas.ui.web.order.sales.pricingConditions.view.PriceNetCalculator.BasePricingSystemPriceCalculator;
 import de.metas.ui.web.order.sales.pricingConditions.view.PriceNetCalculator.PriceNetCalculateRequest;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.PricingConditionsBreaksExtractor;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.SourceDocumentLine;
@@ -145,7 +145,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 				.build();
 	}
 
-	private static class OrderLineBasePricingSystemPriceCalculator implements BasePriceCalculator
+	private static class OrderLineBasePricingSystemPriceCalculator implements BasePricingSystemPriceCalculator
 	{
 		private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		private final I_C_OrderLine orderLine;

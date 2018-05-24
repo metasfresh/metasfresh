@@ -1,10 +1,17 @@
 package de.metas.ui.web.order.sales.pricingConditions.process;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
+
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsId;
+import de.metas.pricing.conditions.service.IPricingConditionsRepository;
+import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
+import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest.PricingConditionsBreakChangeRequestBuilder;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsSaver;
 
 /*
  * #%L
@@ -30,6 +37,7 @@ import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsS
 
 public class PricingConditionsView_SaveEditableRow extends PricingConditionsViewBasedProcess
 {
+	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -61,10 +69,7 @@ public class PricingConditionsView_SaveEditableRow extends PricingConditionsView
 	@Override
 	protected String doIt()
 	{
-		final PricingConditionsBreak pricingConditionsBreak = PricingConditionsRowsSaver.builder()
-				.row(getEditableRow())
-				.build()
-				.save();
+		final PricingConditionsBreak pricingConditionsBreak = pricingConditionsRepo.changePricingConditionsBreak(createPricingConditionsBreakChangeRequest(getEditableRow()));
 
 		patchEditableRow(PricingConditionsRowChangeRequest.saved(pricingConditionsBreak.getId(), pricingConditionsBreak.getDateCreated()));
 
@@ -76,4 +81,37 @@ public class PricingConditionsView_SaveEditableRow extends PricingConditionsView
 	{
 		invalidateView();
 	}
+
+	private static PricingConditionsBreakChangeRequest createPricingConditionsBreakChangeRequest(final PricingConditionsRow row)
+	{
+		if (!row.isEditable())
+		{
+			throw new AdempiereException("Saving not editable rows is not allowed")
+					.setParameter("row", row);
+		}
+
+		final PricingConditionsId pricingConditionsId = row.getPricingConditionsId();
+		final PricingConditionsBreak pricingConditionsBreak = row.getPricingConditionsBreak();
+		final PricingConditionsBreakId updateFromPricingConditionsBreakId = row.getCopiedFromPricingConditionsBreakId();
+
+		return preparePricingConditionsBreakChangeRequest(pricingConditionsBreak)
+				.pricingConditionsId(pricingConditionsId)
+				.updateFromPricingConditionsBreakId(updateFromPricingConditionsBreakId)
+				.build();
+	}
+
+	private static PricingConditionsBreakChangeRequestBuilder preparePricingConditionsBreakChangeRequest(final PricingConditionsBreak pricingConditionsBreak)
+	{
+		return PricingConditionsBreakChangeRequest.builder()
+				// .pricingConditionsId(pricingConditionsId)
+				.pricingConditionsBreakId(pricingConditionsBreak.getId())
+				.matchCriteria(pricingConditionsBreak.getMatchCriteria())
+				//
+				// .updateFromPricingConditionsBreakId(updateFromPricingConditionsBreakId)
+				//
+				.price(pricingConditionsBreak.getPriceOverride())
+				.discount(pricingConditionsBreak.getDiscount())
+				.paymentTermId(pricingConditionsBreak.getPaymentTermId());
+	}
+
 }

@@ -7,11 +7,14 @@ import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PriceOverride;
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -64,7 +67,7 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 	@Override
 	protected String doIt()
 	{
-		patchEditableRow(createChangeRequest());
+		patchEditableRow(createChangeRequest(getSingleSelectedRow()));
 		return MSG_OK;
 	}
 
@@ -74,30 +77,30 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 		invalidateView();
 	}
 
-	private PricingConditionsRowChangeRequest createChangeRequest()
+	private PricingConditionsRowChangeRequest createChangeRequest(@NonNull final PricingConditionsRow templateRow)
 	{
-		final PricingConditionsRow templateRow = getSingleSelectedRow();
-		final PriceOverride price = extractPriceFromTemplate(templateRow);
+		final PricingConditionsBreak templatePricingConditionsBreak = templateRow.getPricingConditionsBreak();
+		final Percent discount = templatePricingConditionsBreak.getDiscount();
+		final int paymentTermId = templatePricingConditionsBreak.getPaymentTermId();
+		PriceOverride price = templatePricingConditionsBreak.getPriceOverride();
+		if (price.isNoPrice())
+		{
+			// In case row does not have a price then use BPartner's pricing system
+			final BPartnerId bpartnerId = templateRow.getBpartnerId();
+			final boolean isSOTrx = templateRow.isCustomer();
+			price = createDefaultPriceOverride(bpartnerId, isSOTrx);
+		}
 
 		return PricingConditionsRowChangeRequest.builder()
 				.priceChange(CompletePriceChange.of(price))
-				.discount(templateRow.getDiscount())
-				.paymentTermId(templateRow.getPaymentTermId() > 0 ? OptionalInt.of(templateRow.getPaymentTermId()) : OptionalInt.empty())
-				.sourcePricingConditionsBreakId(templateRow.getPricingConditionsBreakId())
+				.discount(discount)
+				.paymentTermId(paymentTermId > 0 ? OptionalInt.of(paymentTermId) : OptionalInt.empty())
+				.sourcePricingConditionsBreakId(templatePricingConditionsBreak.getId())
 				.build();
 	}
 
-	private PriceOverride extractPriceFromTemplate(final PricingConditionsRow templateRow)
+	private PriceOverride createDefaultPriceOverride(final BPartnerId bpartnerId, final boolean isSOTrx)
 	{
-		final PriceOverride price = templateRow.getPrice();
-		if (!price.isNoPrice())
-		{
-			return price;
-		}
-
-		// In case row does not have a price then use BPartner's pricing system
-		final BPartnerId bpartnerId = templateRow.getBpartnerId();
-		final boolean isSOTrx = templateRow.isCustomer();
 		final int pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, isSOTrx);
 		if (pricingSystemId <= 0)
 		{
