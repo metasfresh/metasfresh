@@ -79,4 +79,9 @@ public class PricingConditionsBreakId
 	{
 		return pricingConditionsId.getDiscountSchemaId() == discountSchemaId;
 	}
+
+	public int getDiscountSchemaId()
+	{
+		return pricingConditionsId.getDiscountSchemaId();
+	}
 }
