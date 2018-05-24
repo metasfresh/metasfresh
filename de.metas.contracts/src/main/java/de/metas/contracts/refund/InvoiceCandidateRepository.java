@@ -2,11 +2,6 @@ package de.metas.contracts.refund;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.time.LocalDate;
 import java.util.Iterator;
@@ -17,6 +12,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
@@ -26,6 +22,12 @@ import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
@@ -364,18 +366,18 @@ public class InvoiceCandidateRepository
 		final boolean soTrx = assignableInvoiceCandidateRecord.isSOTrx();
 		refundInvoiceCandidateRecord.setIsSOTrx(soTrx);
 
-//		try
-//		{
-//			final int docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundConfig);
-//			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId);
-//		}
-//		catch (final RuntimeException e)
-//		{
-//			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
-//					.setParameter("invoiceCandidate", invoiceCandidate)
-//					.setParameter("refundConfig", refundConfig)
-//					.setParameter("assignableInvoiceCandidateRecord", assignableInvoiceCandidateRecord);
-//		}
+		try
+		{
+			final int docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundConfig);
+			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+					.setParameter("invoiceCandidate", invoiceCandidate)
+					.setParameter("refundConfig", refundConfig)
+					.setParameter("assignableInvoiceCandidateRecord", assignableInvoiceCandidateRecord);
+		}
 
 		saveRecord(refundInvoiceCandidateRecord);
 
@@ -395,32 +397,30 @@ public class InvoiceCandidateRepository
 				.adOrgId(assignableInvoiceCandidateRecord.getAD_Org_ID())
 				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE);
 
-		docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
-		// switch (refundConfig.getRefundInvoiceType())
-		// {
-		// case INVOICE:
-		// if (soTrx)
-		// {
-		// docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_ARInvoice); // Rechnung (Debitorenkonten) = outgoing "they pay" invoice
-		// }
-		// else
-		// {
-		// docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice); // Rechnung (Kreditorenkonten) = incoming "we pay" invoice
-		// }
-		// break;
-		// case CREDITMEMO:
-		// if (soTrx)
-		// {
-		// docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo); // Gutschrift (Debitorenkonten)
-		// }
-		// else
-		// {
-		// docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_ARInvoice); // Gutschrift (Debitorenkonten)
-		// }
-		// break;
-		// default:
-		// Check.fail("The current refundConfig has an ussupported invoice type={}", refundConfig.getRefundInvoiceType());
-		// }
+		if (soTrx)
+		{
+			docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo); // ARC_Gutschrift (Debitorenkonten) = outgoing "they pay" invoice
+
+		}
+		else
+		{
+			docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo); // APC_Gutschrift (Lieferant) = incoming "we pay" invoice
+		}
+
+		switch (refundConfig.getRefundInvoiceType())
+		{
+			case INVOICE:
+
+				docTypeQueryBuilder.docSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung);
+
+				break;
+			case CREDITMEMO:
+
+				docTypeQueryBuilder.docSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsgutschrift);
+
+			default:
+				Check.fail("The current refundConfig has an ussupported invoice type={}", refundConfig.getRefundInvoiceType());
+		}
 
 		final int docTypeId = Services.get(IDocTypeDAO.class)
 				.getDocTypeIdOrNull(docTypeQueryBuilder.build());
