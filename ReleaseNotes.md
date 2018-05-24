@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#4094](https://github.com/metasfresh/metasfresh/issues/4094) Create Mandatory Logic in Contract terms
+    * Improved WIndow for contract terms, now having a mandatory Logic for fields not needed for Refund Contract Types.
 
 ## Fixes
 * metasfresh-webui-frontend
