@@ -79,6 +79,13 @@ public class PricingConditionsRow implements IViewRow
 		return (PricingConditionsRow)row;
 	}
 
+	public static final String FIELDNAME_StatusColor = "statusColor";
+	@ViewColumn(fieldName = FIELDNAME_StatusColor, captionKey = " ", widgetType = DocumentFieldWidgetType.Color, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 1),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 1)
+	})
+	private final String statusColor;
+
 	@ViewColumn(captionKey = "C_BPartner_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
@@ -201,6 +208,8 @@ public class PricingConditionsRow implements IViewRow
 		this.lookups = lookups;
 		this.bpartner = bpartner;
 		this.customer = customer;
+
+		this.statusColor = pricingConditionsBreak.isTemporaryPricingConditionsBreak() ? lookups.getTemporaryPriceConditionsColor() : null;
 
 		PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreak.getId());
 		this.pricingConditionsId = pricingConditionsId;
