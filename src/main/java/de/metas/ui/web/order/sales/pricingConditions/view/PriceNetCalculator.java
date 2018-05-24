@@ -98,11 +98,6 @@ public class PriceNetCalculator
 
 	private BigDecimal subtractDiscount(final BigDecimal basePrice, final PricingConditionsBreak pricingConditionsBreak)
 	{
-		if (basePrice.signum() == 0)
-		{
-			return BigDecimal.ZERO;
-		}
-
 		final int precision = 2; // TODO: hardcoded
 		final BigDecimal priceAfterDiscount = pricingConditionsBreak.getDiscount().subtractFromBase(basePrice, precision);
 		return priceAfterDiscount;

@@ -182,6 +182,7 @@ public class PricingConditionsRow implements IViewRow
 
 	@Getter
 	private final PricingConditionsId pricingConditionsId;
+	@Getter
 	private final PricingConditionsBreak pricingConditionsBreak;
 
 	private final PriceNetCalculator priceNetCalculator;
