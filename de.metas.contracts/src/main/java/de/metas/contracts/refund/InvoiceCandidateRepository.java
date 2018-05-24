@@ -349,7 +349,7 @@ public class InvoiceCandidateRepository
 		return Optional.of(assignementToRefundCandidate);
 	}
 
-	public void save(@NonNull final InvoiceCandidate invoiceCandidate)
+	public void save(@NonNull final RefundInvoiceCandidate invoiceCandidate)
 	{
 		final I_C_Invoice_Candidate invoiceCandidateRecord = load(invoiceCandidate.getId().getRepoId(), I_C_Invoice_Candidate.class);
 		final Money money = invoiceCandidate.getMoney();

@@ -166,7 +166,6 @@ public class InvoiceCandidateAssignmentService
 
 		final AssignableInvoiceCandidate withoutRefundInvoiceCandidate = assignableInvoiceCandidate
 				.withoutRefundInvoiceCandidate();
-		invoiceCandidateRepository.save(withoutRefundInvoiceCandidate);
 
 		final RefundInvoiceCandidate withSubtractedMoneyAmount = assignementToRefundCandidate
 				.getRefundInvoiceCandidate()
