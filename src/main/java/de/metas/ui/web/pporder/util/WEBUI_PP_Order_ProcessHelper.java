@@ -19,7 +19,7 @@ import lombok.experimental.UtilityClass;
 public class WEBUI_PP_Order_ProcessHelper
 {
 
-	public final ProcessPreconditionsResolution checkPreconditionsApplicable(final PPOrderLineRow ppOrderLineRow)
+	public final ProcessPreconditionsResolution checkIssueSourceDefaultPreconditionsApplicable(final PPOrderLineRow ppOrderLineRow)
 	{
 		if (!ppOrderLineRow.isIssue())
 		{

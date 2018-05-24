@@ -64,6 +64,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	private static final IPPOrderBOMBL ppOrderBomBL = Services.get(IPPOrderBOMBL.class);
 
 	private static final String PARAM_QtyCU = "QtyCU";
+
 	/**
 	 * Qty CU to be issued
 	 */
@@ -80,7 +81,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 
 		final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
 
-		return WEBUI_PP_Order_ProcessHelper.checkPreconditionsApplicable(singleSelectedRow);
+		return WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(singleSelectedRow);
 	}
 
 	@Override
@@ -100,7 +101,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				.peek(sourceHu -> huId2SourceHu.put(sourceHu.getM_HU_ID(), sourceHu))
 				.map(I_M_Source_HU::getM_HU)
 				.collect(ImmutableList.toImmutableList());
-	
+
 		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
 				.qtyCU(Quantity.of(qtyCU, row.getC_UOM()))
@@ -134,7 +135,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	}
 
 	@Override
-	public Object getParameterDefaultValue(IProcessDefaultParameter parameter)
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
 		if (PARAM_QtyCU.equals(parameter.getColumnName()))
 		{
@@ -143,8 +144,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 			final I_PP_Order_BOMLine bomLine = load(row.getPP_Order_BOMLine_ID(), I_PP_Order_BOMLine.class);
 			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx());
 			final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
-			
-			
+
 			final I_M_HU hu = activeSourceHus.get(0).getM_HU();
 			final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
 

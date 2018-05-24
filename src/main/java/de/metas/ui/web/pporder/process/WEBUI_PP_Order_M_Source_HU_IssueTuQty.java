@@ -63,14 +63,14 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 		}
 
 		final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
-		
+
 		if (singleSelectedRow.isProcessed())
 		{
 			final String internalReason = StringUtils.formatMessage("The selected row is already processed; row={}", singleSelectedRow);
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 		}
 
-		return WEBUI_PP_Order_ProcessHelper.checkPreconditionsApplicable(singleSelectedRow);
+		return WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(singleSelectedRow);
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 				.peek(sourceHu -> huId2SourceHu.put(sourceHu.getM_HU_ID(), sourceHu))
 				.map(I_M_Source_HU::getM_HU)
 				.collect(ImmutableList.toImmutableList());
-	
+
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
 				.qtyTU(qtyTU.intValue())
@@ -122,5 +122,4 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 
 		return MSG_OK;
 	}
-
 }
