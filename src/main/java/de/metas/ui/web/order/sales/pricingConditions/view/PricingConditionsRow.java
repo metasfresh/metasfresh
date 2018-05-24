@@ -157,6 +157,7 @@ public class PricingConditionsRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 100)
 	})
+	@Getter
 	private final BigDecimal priceNet;
 
 	@ViewColumn(captionKey = "LastInOutDate", widgetType = DocumentFieldWidgetType.Date, layouts = {

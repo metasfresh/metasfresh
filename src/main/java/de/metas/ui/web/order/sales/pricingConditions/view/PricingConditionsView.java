@@ -164,6 +164,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			else if (type == PriceOverrideType.BASE_PRICING_SYSTEM)
 			{
 				orderLine.setIsManualPrice(true);
+				orderLine.setPriceEntered(editableRow.getPriceNet());
 				orderLine.setBase_PricingSystem_ID(editableRow.getBasePriceSystemId());
 
 			}
