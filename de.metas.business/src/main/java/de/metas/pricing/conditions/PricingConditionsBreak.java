@@ -80,6 +80,11 @@ public class PricingConditionsBreak
 		return id.getPricingConditionsId();
 	}
 
+	public PricingConditionsId getPricingConditionsIdOrNull()
+	{
+		return id != null ? id.getPricingConditionsId() : null;
+	}
+
 	public boolean equalsByPriceRelevantFields(@NonNull final PricingConditionsBreak reference)
 	{
 		if (this == reference)
