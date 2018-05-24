@@ -43,42 +43,42 @@
 		<groupHeader>
 			<band height="84">
 				<textField isBlankWhenNull="true">
-					<reportElement x="50" y="56" width="110" height="28" uuid="b6447f7c-4a8d-47c6-9ec1-38c69d3205c2"/>
+					<reportElement x="50" y="56" width="105" height="28" uuid="b6447f7c-4a8d-47c6-9ec1-38c69d3205c2"/>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{manufacturer}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="160" y="56" width="92" height="28" uuid="ca866056-17c7-43db-9c6b-0f9b66423023"/>
+					<reportElement x="155" y="56" width="92" height="28" uuid="ca866056-17c7-43db-9c6b-0f9b66423023"/>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{product_no}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="347" y="56" width="105" height="28" uuid="47b6773e-88b1-469a-bb4c-f004990705ac"/>
+					<reportElement x="342" y="56" width="105" height="28" uuid="47b6773e-88b1-469a-bb4c-f004990705ac"/>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{sched}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="252" y="56" width="95" height="28" uuid="76871aba-21b6-495c-a340-ea25baf74882"/>
+					<reportElement x="247" y="56" width="95" height="28" uuid="76871aba-21b6-495c-a340-ea25baf74882"/>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="567" y="56" width="75" height="28" uuid="3cb8e538-ce6a-4728-9d1e-f0a2f4c36813"/>
+					<reportElement x="572" y="56" width="70" height="28" uuid="3cb8e538-ce6a-4728-9d1e-f0a2f4c36813"/>
 					<textElement textAlignment="Right">
 						<font isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="452" y="56" width="115" height="28" uuid="6ecff1a9-3a9c-4fc6-8d76-c5c242063b6f"/>
+					<reportElement x="447" y="56" width="125" height="28" uuid="6ecff1a9-3a9c-4fc6-8d76-c5c242063b6f"/>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
@@ -130,42 +130,42 @@
 	<detail>
 		<band height="14" splitType="Stretch">
 			<textField isBlankWhenNull="true">
-				<reportElement x="50" y="0" width="110" height="14" uuid="c7ecc20e-d1ff-4ff5-9c97-b5424a373dbd"/>
+				<reportElement x="50" y="0" width="105" height="14" uuid="c7ecc20e-d1ff-4ff5-9c97-b5424a373dbd"/>
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{manufacturer}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="160" y="0" width="92" height="14" uuid="43a182bf-3830-4728-abb9-9ab064b93b38"/>
+				<reportElement x="155" y="0" width="92" height="14" uuid="43a182bf-3830-4728-abb9-9ab064b93b38"/>
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="347" y="0" width="105" height="14" uuid="170314b3-3764-4c29-a282-151318fcca4b"/>
+				<reportElement x="342" y="0" width="105" height="14" uuid="170314b3-3764-4c29-a282-151318fcca4b"/>
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{scheduler}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="252" y="0" width="95" height="14" uuid="43d3bde3-3b80-4c4e-87f7-cfeb50305235"/>
+				<reportElement x="247" y="0" width="95" height="14" uuid="43d3bde3-3b80-4c4e-87f7-cfeb50305235"/>
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month_to_invoice}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
-				<reportElement x="567" y="0" width="75" height="14" uuid="f261f7da-22f5-4063-a3e9-a3e381dbb2db"/>
+				<reportElement x="572" y="0" width="70" height="14" uuid="f261f7da-22f5-4063-a3e9-a3e381dbb2db"/>
 				<textElement textAlignment="Right">
 					<font isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty_ordered_sum}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="452" y="0" width="115" height="14" uuid="529d608b-6261-4efb-b33c-55ff42f8ade2"/>
+				<reportElement x="447" y="0" width="125" height="14" uuid="529d608b-6261-4efb-b33c-55ff42f8ade2"/>
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
