@@ -53,3 +53,11 @@ UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-17 15:52:5
 UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-17 15:54:24','YYYY-MM-DD HH24:MI:SS'),Name='Issue CUs from source HUs' WHERE AD_Process_ID=540969 AND AD_Language='en_US'
 ;
 
+
+
+
+-- 2018-05-21T15:38:40.955
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET AD_Reference_ID=22,Updated=TO_TIMESTAMP('2018-05-21 15:38:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541302
+;
+
