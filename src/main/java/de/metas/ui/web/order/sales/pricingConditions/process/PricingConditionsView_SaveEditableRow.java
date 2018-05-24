@@ -71,7 +71,7 @@ public class PricingConditionsView_SaveEditableRow extends PricingConditionsView
 	{
 		final PricingConditionsBreak pricingConditionsBreak = pricingConditionsRepo.changePricingConditionsBreak(createPricingConditionsBreakChangeRequest(getEditableRow()));
 
-		patchEditableRow(PricingConditionsRowActions.saved(pricingConditionsBreak.getId(), pricingConditionsBreak.getDateCreated()));
+		patchEditableRow(PricingConditionsRowActions.saved(pricingConditionsBreak));
 
 		return MSG_OK;
 	}

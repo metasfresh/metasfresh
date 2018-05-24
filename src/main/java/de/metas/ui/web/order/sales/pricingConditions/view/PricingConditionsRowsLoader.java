@@ -2,16 +2,14 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -27,6 +25,7 @@ import com.google.common.base.Predicates;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.inout.IInOutDAO;
@@ -36,6 +35,7 @@ import de.metas.order.OrderLineId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
@@ -122,15 +122,19 @@ class PricingConditionsRowsLoader
 
 	public PricingConditionsRowData load()
 	{
-		final ArrayList<PricingConditionsRow> rows = getAllPricingConditionsId()
+		final List<PricingConditionsRow> rows = getAllPricingConditionsId()
 				.stream()
 				.flatMap(this::streamMatchingSchemaBreaks)
 				.filter(Predicates.notNull())
 				.flatMap(this::createPricingConditionsRows)
 				.sorted(ROWS_SORTING)
-				.collect(Collectors.toCollection(ArrayList::new));
+				.collect(ImmutableList.toImmutableList());
 
-		final PricingConditionsRow editableRow = createEditablePricingConditionsRowOrNull();
+		final PricingConditionsRow editableRow = rows.stream()
+				.filter(this::isCurrentConditions)
+				.findFirst()
+				.map(PricingConditionsRow::copyAndChangeToEditable)
+				.orElseGet(this::createEditablePricingConditionsRowOrNull);
 
 		return PricingConditionsRowData.builder()
 				.editableRow(editableRow)
@@ -220,26 +224,21 @@ class PricingConditionsRowsLoader
 				.build();
 	}
 
-	private Optional<PricingConditionsRow> removeCurrentPricingConditionsRow(final ArrayList<PricingConditionsRow> rows)
-	{
-		for (final Iterator<PricingConditionsRow> it = rows.iterator(); it.hasNext();)
-		{
-			final PricingConditionsRow row = it.next();
-			if (isCurrentConditions(row))
-			{
-				it.remove();
-				return Optional.of(row);
-			}
-		}
-
-		return Optional.empty();
-	}
-
 	private boolean isCurrentConditions(final PricingConditionsRow row)
 	{
-		return sourceDocumentLine != null
-				&& Objects.equals(row.getBpartnerId(), sourceDocumentLine.getBpartnerId())
-				&& (sourceDocumentLine.isSOTrx() ? row.isCustomer() : row.isVendor());
+		if (sourceDocumentLine == null)
+		{
+			return false;
+		}
+		else if (sourceDocumentLine.getPricingConditionsBreakId() != null)
+		{
+			return sourceDocumentLine.getPricingConditionsBreakId().equals(row.getPricingConditionsBreak().getId());
+		}
+		else
+		{
+			return Objects.equals(row.getBpartnerId(), sourceDocumentLine.getBpartnerId())
+					&& (sourceDocumentLine.isSOTrx() ? row.isCustomer() : row.isVendor());
+		}
 	}
 
 	private PricingConditionsRow createEditablePricingConditionsRowOrNull()
@@ -346,6 +345,8 @@ class PricingConditionsRowsLoader
 		Percent discount = Percent.ZERO;
 
 		int paymentTermId;
+
+		PricingConditionsBreakId pricingConditionsBreakId;
 	}
 
 	@lombok.Value

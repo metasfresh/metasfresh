@@ -1,13 +1,12 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.OptionalInt;
 
 import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PriceOverrideType;
-import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange.PartialPriceChangeBuilder;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PricingConditionsRowChangeRequestBuilder;
@@ -41,11 +40,10 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class PricingConditionsRowActions
 {
-	public static final PricingConditionsRowChangeRequest saved(@NonNull final PricingConditionsBreakId pricingConditionsBreakId, @NonNull final LocalDateTime dateCreated)
+	public static final PricingConditionsRowChangeRequest saved(@NonNull final PricingConditionsBreak pricingConditionsBreak)
 	{
 		return PricingConditionsRowChangeRequest.builder()
-				.pricingConditionsBreakId(pricingConditionsBreakId)
-				.dateCreated(dateCreated)
+				.pricingConditionsBreak(pricingConditionsBreak)
 				.build();
 	}
 

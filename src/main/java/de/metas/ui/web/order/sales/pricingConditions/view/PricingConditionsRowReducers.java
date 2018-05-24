@@ -77,15 +77,17 @@ class PricingConditionsRowReducers
 				.build();
 	}
 
-	private static PricingConditionsBreak applyTo(final PricingConditionsRowChangeRequest request, final PricingConditionsBreak pricingConditionsBreak)
+	private static PricingConditionsBreak applyTo(final PricingConditionsRowChangeRequest request, final PricingConditionsBreak rowPricingConditionsBreak)
 	{
-		final PricingConditionsBreakBuilder builder = pricingConditionsBreak.toBuilder();
+		final PricingConditionsBreak pricingConditionsBreakEffective = Util.coalesce(request.getPricingConditionsBreak(), rowPricingConditionsBreak);
+		final PricingConditionsBreakBuilder builder = pricingConditionsBreakEffective.toBuilder();
 
 		//
 		// Discount%
 		if (request.getDiscount() != null)
 		{
 			builder.discount(request.getDiscount());
+			builder.hasChanges(true);
 		}
 
 		//
@@ -99,25 +101,17 @@ class PricingConditionsRowReducers
 		// Price
 		if (request.getPriceChange() != null)
 		{
-			final PriceOverride price = applyPriceChangeTo(request.getPriceChange(), pricingConditionsBreak.getPriceOverride());
+			final PriceOverride price = applyPriceChangeTo(request.getPriceChange(), rowPricingConditionsBreak.getPriceOverride());
 			builder.priceOverride(price);
 		}
 
-		//
-		// ID
-		if (request.getPricingConditionsBreakId() != null)
+		PricingConditionsBreak newPricingConditionsBreak = builder.build();
+		if (!Objects.equals(newPricingConditionsBreak, pricingConditionsBreakEffective))
 		{
-			builder.id(request.getPricingConditionsBreakId());
+			newPricingConditionsBreak = newPricingConditionsBreak.toBuilder().hasChanges(true).build();
 		}
 
-		//
-		// DateCreated
-		if (request.getDateCreated() != null)
-		{
-			builder.dateCreated(request.getDateCreated());
-		}
-
-		return builder.build();
+		return newPricingConditionsBreak;
 	}
 
 	private static PriceOverride applyPriceChangeTo(final PriceChange priceChange, final PriceOverride price)
