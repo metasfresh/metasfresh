@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2091267563L;
+	private static final long serialVersionUID = 1911083632L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -1358,6 +1358,43 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class);
+	}
+
+	@Override
+	public void setM_DiscountSchema(org.compiere.model.I_M_DiscountSchema M_DiscountSchema)
+	{
+		set_ValueFromPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class, M_DiscountSchema);
+	}
+
+	/** Set Rabatt Schema.
+		@param M_DiscountSchema_ID 
+		Schema um den prozentualen Rabatt zu berechnen
+	  */
+	@Override
+	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID)
+	{
+		if (M_DiscountSchema_ID < 1) 
+			set_Value (COLUMNNAME_M_DiscountSchema_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_DiscountSchema_ID, Integer.valueOf(M_DiscountSchema_ID));
+	}
+
+	/** Get Rabatt Schema.
+		@return Schema um den prozentualen Rabatt zu berechnen
+	  */
+	@Override
+	public int getM_DiscountSchema_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_DiscountSchemaBreak_ID, org.compiere.model.I_M_DiscountSchemaBreak.class);
@@ -1691,6 +1728,28 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.math.BigDecimal getPriceEntered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Rohertragspreis.
+		@param PriceGrossProfit 
+		Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	  */
+	@Override
+	public void setPriceGrossProfit (java.math.BigDecimal PriceGrossProfit)
+	{
+		set_Value (COLUMNNAME_PriceGrossProfit, PriceGrossProfit);
+	}
+
+	/** Get Rohertragspreis.
+		@return Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	  */
+	@Override
+	public java.math.BigDecimal getPriceGrossProfit () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceGrossProfit);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

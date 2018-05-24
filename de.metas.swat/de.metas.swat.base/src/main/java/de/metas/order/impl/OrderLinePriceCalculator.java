@@ -18,7 +18,10 @@ import de.metas.order.PriceAndDiscount;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleContext;
@@ -54,6 +57,7 @@ class OrderLinePriceCalculator
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	private final OrderLineBL orderLineBL;
 	private final OrderLinePriceUpdateRequest request;
@@ -139,28 +143,81 @@ class OrderLinePriceCalculator
 
 	private void updateOrderLineFromPricingConditionsResult(final I_C_OrderLine orderLine, final PricingConditionsResult pricingConditionsResult)
 	{
-		final PricingConditionsBreakId pricingConditionsBreakId;
 		final int basePricingSystemId;
 		final int paymentTermId;
+		final int discountSchemaId;
+		final int discountSchemaBreakId;
+		final boolean tempPricingConditions;
 		if (pricingConditionsResult != null)
 		{
-			pricingConditionsBreakId = pricingConditionsResult.getPricingConditionsBreakId();
 			basePricingSystemId = pricingConditionsResult.getBasePricingSystemId();
 			paymentTermId = pricingConditionsResult.getPaymentTermId();
+
+			final PricingConditionsBreak pricingConditionsBreak = pricingConditionsResult.getPricingConditionsBreak();
+			if (pricingConditionsBreak != null
+					&& pricingConditionsBreak.getId() != null
+					&& hasSameValues(orderLine, pricingConditionsResult))
+			{
+				final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
+				discountSchemaId = pricingConditionsBreakId.getDiscountSchemaId();
+				discountSchemaBreakId = pricingConditionsBreakId.getDiscountSchemaBreakId();
+				tempPricingConditions = false;
+			}
+			else
+			{
+				discountSchemaId = -1;
+				discountSchemaBreakId = -1;
+				tempPricingConditions = true;
+			}
 		}
 		else
 		{
-			pricingConditionsBreakId = null;
 			basePricingSystemId = -1;
 			paymentTermId = -1;
+
+			discountSchemaId = -1;
+			discountSchemaBreakId = -1;
+			tempPricingConditions = false;
 		}
 
-		orderLine.setM_DiscountSchemaBreak_ID(pricingConditionsBreakId != null ? pricingConditionsBreakId.getDiscountSchemaBreakId() : 0);
 		orderLine.setBase_PricingSystem_ID(basePricingSystemId);
 		orderLine.setC_PaymentTerm_Override_ID(paymentTermId);
+
+		orderLine.setM_DiscountSchema_ID(discountSchemaId);
+		orderLine.setM_DiscountSchemaBreak_ID(discountSchemaBreakId);
+		orderLine.setIsTempPricingConditions(tempPricingConditions);
 	}
 
-	public IEditablePricingContext createPricingContext()
+	private static boolean hasSameValues(final I_C_OrderLine orderLine, final PricingConditionsResult pricingConditionsResult)
+	{
+		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();
+		if (priceStdOverride != null && priceStdOverride.compareTo(orderLine.getPriceEntered()) != 0)
+		{
+			return false;
+		}
+
+		final Percent discount = pricingConditionsResult.getDiscount();
+		if (discount != null && !discount.equals(Percent.of(orderLine.getDiscount())))
+		{
+			return false;
+		}
+
+		final int paymentTermId = pricingConditionsResult.getPaymentTermId();
+		if (paymentTermId > 0 && paymentTermId != orderLine.getC_PaymentTerm_Override_ID())
+		{
+			return false;
+		}
+
+		final int basePricingSystemId = pricingConditionsResult.getBasePricingSystemId();
+		if (basePricingSystemId > 0 && basePricingSystemId != orderLine.getBase_PricingSystem_ID())
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	private IEditablePricingContext createPricingContext()
 	{
 		final I_C_OrderLine orderLine = request.getOrderLine();
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
@@ -197,18 +254,19 @@ class OrderLinePriceCalculator
 		// 03152: setting the 'ol' to allow the subscription system to compute the right price
 		pricingCtx.setReferencedObject(orderLine);
 
-		//
-		// Pricing System / List
-		final int pricingSystemId = request.getPricingSystemIdOverride() > 0 ? request.getPricingSystemIdOverride() : pricingCtx.getM_PricingSystem_ID();
-		final int priceListId = request.getPriceListIdOverride() > 0 ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
-		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
-		pricingCtx.setM_PriceList_ID(priceListId);
-		pricingCtx.setM_PriceList_Version_ID(-1);
-
-		final int countryId = getCountryIdOrZero(orderLine);
-		pricingCtx.setC_Country_ID(countryId);
-
 		pricingCtx.setConvertPriceToContextUOM(isConvertPriceToContextUOM(request, pricingCtx.isConvertPriceToContextUOM()));
+
+		//
+		// Pricing System / List / Country
+		{
+			final int pricingSystemId = request.getPricingSystemIdOverride() > 0 ? request.getPricingSystemIdOverride() : pricingCtx.getM_PricingSystem_ID();
+			final int priceListId = request.getPriceListIdOverride() > 0 ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
+			final int countryId = getCountryIdOrZero(orderLine);
+			pricingCtx.setM_PricingSystem_ID(pricingSystemId);
+			pricingCtx.setM_PriceList_ID(priceListId);
+			pricingCtx.setM_PriceList_Version_ID(-1);
+			pricingCtx.setC_Country_ID(countryId);
+		}
 
 		//
 		// Don't calculate the discount in case we are dealing with a percentage discount compensation group line (task 3149)
@@ -218,8 +276,9 @@ class OrderLinePriceCalculator
 		{
 			pricingCtx.setDisallowDiscount(true);
 		}
-		
-		pricingCtx.setForcePricingConditionsBreak(request.getPricingConditionsBreakOverride());
+
+		//
+		pricingCtx.setForcePricingConditionsBreak(getPricingConditionsBreakFromRequest());
 
 		return pricingCtx;
 	}
@@ -239,6 +298,24 @@ class OrderLinePriceCalculator
 
 		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
 		return countryId;
+	}
+
+	private PricingConditionsBreak getPricingConditionsBreakFromRequest()
+	{
+		if (request.getPricingConditionsBreakOverride() != null)
+		{
+			return request.getPricingConditionsBreakOverride();
+		}
+
+		final I_C_OrderLine orderLine = request.getOrderLine();
+		if (orderLine.getM_DiscountSchema_ID() > 0 && orderLine.getM_DiscountSchemaBreak_ID() > 0)
+		{
+			final PricingConditionsBreakId pricingConditionsBreakId = PricingConditionsBreakId.of(orderLine.getM_DiscountSchema_ID(), orderLine.getM_DiscountSchemaBreak_ID());
+			final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsBreakId.getPricingConditionsId());
+			return pricingConditions.getBreakById(pricingConditionsBreakId);
+		}
+
+		return null;
 	}
 
 	private static boolean isConvertPriceToContextUOM(final OrderLinePriceUpdateRequest request, final boolean defaultValue)
