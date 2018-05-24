@@ -1,7 +1,10 @@
 package de.metas.contracts.refund;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
+import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,31 +34,38 @@ import lombok.Value;
 @Value
 public class UnassignedPairOfCandidates
 {
-	@NonNull
 	RefundInvoiceCandidate refundInvoiceCandidate;
 
-	@NonNull
 	AssignableInvoiceCandidate assignableInvoiceCandidate;
+
+	Money moneyToAssign;
 
 	@Builder(toBuilder = true)
 	private UnassignedPairOfCandidates(
 			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate,
-			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
+			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,
+			@Nullable final Money moneyToAssign)
 	{
 		Check.assume(
-				assignableInvoiceCandidate.getRefundInvoiceCandidate() == null,
+				!assignableInvoiceCandidate.isAssigned(),
 				"The given assignableInvoiceCandidate may not have an assignment; assignableInvoiceCandidate={}; refundInvoiceCandidate={}",
 				assignableInvoiceCandidate, refundInvoiceCandidate);
+		Check.assume(
+				moneyToAssign == null || moneyToAssign.getCurrency().equals(refundInvoiceCandidate.getMoney().getCurrency()),
+				"The given moneyToAssign needs to be in the given refundInvoiceCandidate's currency; moneyToAssign={}; refundInvoiceCandidate={}",
+				moneyToAssign, refundInvoiceCandidate);
 
 		this.refundInvoiceCandidate = refundInvoiceCandidate;
 		this.assignableInvoiceCandidate = assignableInvoiceCandidate;
+		this.moneyToAssign = moneyToAssign;
 	}
 
-	public UnassignedPairOfCandidates withRefundInvoiceCandidate(
-			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate)
+	public UnassignedPairOfCandidates withAssignementToRefundCandidate(
+			@NonNull final AssignementToRefundCandidate assignementToRefundCandidate)
 	{
 		return toBuilder()
-				.refundInvoiceCandidate(refundInvoiceCandidate)
+				.refundInvoiceCandidate(assignementToRefundCandidate.getRefundInvoiceCandidate())
+				.moneyToAssign(assignementToRefundCandidate.getMoneyAssignedToRefundCandidate())
 				.build();
 	}
 }

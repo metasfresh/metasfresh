@@ -95,15 +95,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		try
 		{
 			final AssignableInvoiceCandidate assignableInvoiceCandidate = invoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
-			final RefundInvoiceCandidate refundInvoiceCandidate = assignableInvoiceCandidate.getRefundInvoiceCandidate();
-
-			if (refundInvoiceCandidate == null)
-			{
-				invoiceCandidateAssignmentService.createOrFindRefundCandidateAndAssignIfFeasible(assignableInvoiceCandidate);
-				return;
-			}
-
-			invoiceCandidateRepository.save(refundInvoiceCandidate.withUpdatedMoneyAmout(assignableInvoiceCandidate));
+			invoiceCandidateAssignmentService.createOrFindRefundCandidateAndAssignIfFeasible(assignableInvoiceCandidate);
 		}
 		catch (final RuntimeException e)
 		{

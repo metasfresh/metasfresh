@@ -31,7 +31,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
@@ -52,6 +51,7 @@ import de.metas.contracts.refund.RefundConfigRepository;
 
 public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 {
+	private final RefundConfigRepository refundConfigRepository = Adempiere.getBean(RefundConfigRepository.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private int p_flatrateconditionsID;
@@ -74,7 +74,6 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 
 		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund.equals(conditions.getType_Conditions()))
 		{
-			final RefundConfigRepository refundConfigRepository = Adempiere.getBean(RefundConfigRepository.class);
 			final List<RefundConfig> allConfigs = refundConfigRepository.getByConditionsId(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID()));
 			for (final RefundConfig config : allConfigs)
 			{
@@ -97,26 +96,22 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 			final I_AD_User userInCharge= loadOutOfTrx(p_adUserInChargeId, I_AD_User.class);
 			setUserInCharge(userInCharge);
 		}
-
 		setStartDate(p_startDate);
 	}
 
 	@Override
-	public Iterable<I_C_BPartner> getBPartners()
+	protected Iterable<I_C_BPartner> getBPartners()
 	{
 		final IQueryFilter<I_C_BPartner> selectedPartners = getProcessInfo().getQueryFilter();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class, getCtx(), ITrx.TRXNAME_ThreadInherited);
 
-		// ordering by value to make it easier for the user to browse the logging.
-		final IQueryOrderBy orderBy = queryBuilder.orderBy().addColumn(I_C_BPartner.COLUMNNAME_Value).createQueryOrderBy();
-
 		final Iterator<I_C_BPartner> it = queryBuilder
 				.filter(selectedPartners)
 				.addOnlyActiveRecordsFilter()
+				.orderBy().addColumn(I_C_BPartner.COLUMNNAME_Value).endOrderBy() // to make it easier for the user to browse the logging.
 				.create()
-				.setOrderBy(orderBy)
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.iterate(I_C_BPartner.class);
