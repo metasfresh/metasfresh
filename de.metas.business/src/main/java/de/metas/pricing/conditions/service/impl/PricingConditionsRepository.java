@@ -157,8 +157,11 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 	public static PricingConditionsBreak toPricingConditionsBreak(final I_M_DiscountSchemaBreak schemaBreakRecord)
 	{
+		final int discountSchemaBreakId = schemaBreakRecord.getM_DiscountSchemaBreak_ID();
+		final PricingConditionsBreakId id = discountSchemaBreakId > 0 ? PricingConditionsBreakId.of(schemaBreakRecord.getM_DiscountSchema_ID(), discountSchemaBreakId) : null;
+		
 		return PricingConditionsBreak.builder()
-				.id(PricingConditionsBreakId.of(schemaBreakRecord.getM_DiscountSchema_ID(), schemaBreakRecord.getM_DiscountSchemaBreak_ID()))
+				.id(id)
 				.matchCriteria(toPricingConditionsBreakMatchCriteria(schemaBreakRecord))
 				//
 				.priceOverride(toPriceOverride(schemaBreakRecord))
