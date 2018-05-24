@@ -10,12 +10,12 @@ package de.metas.freighcost.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -65,7 +65,7 @@ public class FreightCostBL implements IFreightCostBL
 
 	/**
 	 * Checks if the order or shipment is without freight cost for different simple reasons
-	 * 
+	 *
 	 * @param orderOrInOut
 	 * @return
 	 */
@@ -310,8 +310,8 @@ public class FreightCostBL implements IFreightCostBL
 	{
 		return !MFreightCost.retriveFor(ctx, productId, trxName).isEmpty();
 	}
-	
-	
+
+
 	/**
 	 * If there is a freight amt!=0 and if this is a prepay order, then we create an order line for the freight costs.
 	 * We can assume at this point that:
@@ -319,7 +319,7 @@ public class FreightCostBL implements IFreightCostBL
 	 * <li>there is an MFreightCost instance for this order (needed to the ol's product)</li>
 	 * <li>the freight amount is correct</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param order
 	 */
 	@Override
@@ -362,11 +362,10 @@ public class FreightCostBL implements IFreightCostBL
 	private boolean isPrepayOrder(final MOrder order)
 	{
 		final String docSubType = order.getC_DocType().getDocSubType();
-		final boolean prepayOrder = X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType)
-				|| de.metas.prepayorder.model.I_C_DocType.DOCSUBTYPE_PrepayOrder_metas.equals(docSubType);
+		final boolean prepayOrder = X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
 		return prepayOrder;
 	}
-	
+
 	private boolean hasFreightCostLine(final MOrder order)
 	{
 		final IFreightCostBL freighCostBL = Services.get(IFreightCostBL.class);
@@ -380,8 +379,8 @@ public class FreightCostBL implements IFreightCostBL
 		return false;
 	}
 
-	private final List<IFreightCostFreeEvaluator> freighCostFreeEvaluators = new ArrayList<IFreightCostFreeEvaluator>();
-	
+	private final List<IFreightCostFreeEvaluator> freighCostFreeEvaluators = new ArrayList<>();
+
 	@Override
 	public void registerFreightCostFreeEvaluator(IFreightCostFreeEvaluator evaluator)
 	{
