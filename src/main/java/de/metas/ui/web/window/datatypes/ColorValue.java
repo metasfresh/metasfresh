@@ -79,7 +79,7 @@ public class ColorValue
 		}
 	}
 
-	private static String toHexString(final int red, final int green, final int blue)
+	public static String toHexString(final int red, final int green, final int blue)
 	{
 		return String.format("#%02x%02x%02x", red, green, blue);
 	}
