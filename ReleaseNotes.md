@@ -16,8 +16,12 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3323](https://github.com/metasfresh/metasfresh/issues/3323) Webui Window Design: Improve window Rechnungskandidaten - Handler
+    * Improved Invoicecandidate Handler Window in WebUI.
   * [#4094](https://github.com/metasfresh/metasfresh/issues/4094) Create Mandatory Logic in Contract terms
     * Improved WIndow for contract terms, now having a mandatory Logic for fields not needed for Refund Contract Types.
+  * [#4089](https://github.com/metasfresh/metasfresh/issues/4089) Create missing fields for Bonus in WebUI
+    * New Fields added to Purchase Orderline and Invoice Candidate for Refund Contracts.
 
 ## Fixes
 * metasfresh-webui-frontend
