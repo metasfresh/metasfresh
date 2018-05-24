@@ -9,12 +9,14 @@ import rootReducer from '../reducers';
 export default function configureStore(history) {
   const middleware = [thunk, promiseMiddleware, routerMiddleware(history)];
   const store = createStore(
-    rootReducer,
+    null,
     compose(
       applyMiddleware(...middleware),
       window.devToolsExtension ? window.devToolsExtension() : f => f
     )
   );
+
+  store.attachReducers(rootReducer);
 
   if (module.hot) {
     module.hot.accept('../reducers', () => {
