@@ -581,6 +581,6 @@ public class PricingConditionsRow implements IViewRow
 
 	public boolean isTemporaryPricingConditions()
 	{
-		return pricingConditionsBreak.getId() == null;
+		return pricingConditionsBreak.isTemporaryPricingConditionsBreak();
 	}
 }
