@@ -139,25 +139,68 @@ class OrderLinePriceCalculator
 
 	private void updateOrderLineFromPricingConditionsResult(final I_C_OrderLine orderLine, final PricingConditionsResult pricingConditionsResult)
 	{
-		final PricingConditionsBreakId pricingConditionsBreakId;
 		final int basePricingSystemId;
 		final int paymentTermId;
+		final int discountSchemaId;
+		final boolean tempPricingConditions;
 		if (pricingConditionsResult != null)
 		{
-			pricingConditionsBreakId = pricingConditionsResult.getPricingConditionsBreakId();
 			basePricingSystemId = pricingConditionsResult.getBasePricingSystemId();
 			paymentTermId = pricingConditionsResult.getPaymentTermId();
+
+			final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsResult.getPricingConditionsBreakId();
+			if (pricingConditionsBreakId != null && hasSameValues(orderLine, pricingConditionsResult))
+			{
+				discountSchemaId = pricingConditionsBreakId.getDiscountSchemaBreakId();
+				tempPricingConditions = false;
+			}
+			else
+			{
+				discountSchemaId = -1;
+				tempPricingConditions = true;
+			}
 		}
 		else
 		{
-			pricingConditionsBreakId = null;
 			basePricingSystemId = -1;
 			paymentTermId = -1;
+			discountSchemaId = -1;
+			tempPricingConditions = false;
 		}
 
-		orderLine.setM_DiscountSchemaBreak_ID(pricingConditionsBreakId != null ? pricingConditionsBreakId.getDiscountSchemaBreakId() : 0);
 		orderLine.setBase_PricingSystem_ID(basePricingSystemId);
 		orderLine.setC_PaymentTerm_Override_ID(paymentTermId);
+		orderLine.setM_DiscountSchemaBreak_ID(discountSchemaId);
+		orderLine.setIsTempPricingConditions(tempPricingConditions);
+	}
+
+	private static boolean hasSameValues(final I_C_OrderLine orderLine, final PricingConditionsResult pricingConditionsResult)
+	{
+		final BigDecimal priceListOverride = pricingConditionsResult.getPriceListOverride();
+		if (priceListOverride != null && priceListOverride.compareTo(orderLine.getPriceEntered()) != 0)
+		{
+			return false;
+		}
+
+		final Percent discount = pricingConditionsResult.getDiscount();
+		if (discount != null && !discount.equals(Percent.of(orderLine.getDiscount())))
+		{
+			return false;
+		}
+
+		final int paymentTermId = pricingConditionsResult.getPaymentTermId();
+		if (paymentTermId > 0 && paymentTermId != orderLine.getC_PaymentTerm_Override_ID())
+		{
+			return false;
+		}
+
+		final int basePricingSystemId = pricingConditionsResult.getBasePricingSystemId();
+		if (basePricingSystemId > 0 && basePricingSystemId != orderLine.getBase_PricingSystem_ID())
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	public IEditablePricingContext createPricingContext()
@@ -218,7 +261,7 @@ class OrderLinePriceCalculator
 		{
 			pricingCtx.setDisallowDiscount(true);
 		}
-		
+
 		pricingCtx.setForcePricingConditionsBreak(request.getPricingConditionsBreakOverride());
 
 		return pricingCtx;
