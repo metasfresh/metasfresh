@@ -138,7 +138,7 @@ export default class App extends Component {
         const waitForChunk = () =>
           // import(`./../../plugins/${plugin}/index.js`)
           import(`./../../../mf15-webui-frontend/dist/index.js`)
-          
+
             .then(module => module)
             .catch(() => {
               // eslint-disable-next-line no-console
@@ -156,8 +156,13 @@ export default class App extends Component {
         const plugins = res.reduce((prev, current) => prev.concat(current), []);
         store.dispatch(addPlugins(plugins));
 
-        // plugins.forEach(plugin => store.attachReducers(plugin.reducers));
-        // store.attachReducers(plugin)
+        plugins.forEach(plugin => {
+          store.attachReducers({
+            plugins: {
+              [`${plugin.reducers.name}`]: plugin.reducers.reducer,
+            },
+          });
+        });
 
         this.setState({
           pluginsLoading: false,
