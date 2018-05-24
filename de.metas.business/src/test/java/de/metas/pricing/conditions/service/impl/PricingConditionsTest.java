@@ -58,14 +58,14 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.order.PriceAndDiscount;
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
-import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.product.ProductAndCategoryId;
 
@@ -353,7 +353,7 @@ public class PricingConditionsTest
 						.qty(new BigDecimal(100))
 						.price(price)
 						.build())
-				.bpartnerFlatDiscount(new BigDecimal(1))
+				.bpartnerFlatDiscount(Percent.of(1))
 				.build();
 
 		final BigDecimal priceAfterConditions1 = calculatePrice(price, request);
@@ -405,7 +405,7 @@ public class PricingConditionsTest
 						.attributeInstance(createAttributeInstance(attr1, attrValue1))
 						.attributeInstance(createAttributeInstance(attr1, attrValue2))
 						.build())
-				.bpartnerFlatDiscount(new BigDecimal(1))
+				.bpartnerFlatDiscount(Percent.of(1))
 				.build();
 
 		final BigDecimal priceAfterConditions1 = calculatePrice(price, request);
@@ -436,14 +436,9 @@ public class PricingConditionsTest
 
 	private BigDecimal calculatePrice(final BigDecimal price, final CalculatePricingConditionsRequest request)
 	{
-		final CalculatePricingConditionsResult result = service.calculatePricingConditions(request);
+		final PricingConditionsResult result = service.calculatePricingConditions(request);
 
-		final BigDecimal discount = result.getDiscount();
-		if (discount == null || discount.signum() == 0)
-		{
-			return price;
-		}
-
-		return PriceAndDiscount.subtractDiscount(price, discount, 6);
+		final Percent discount = result.getDiscount();
+		return discount.subtractFromBase(price, 6);
 	}
 }

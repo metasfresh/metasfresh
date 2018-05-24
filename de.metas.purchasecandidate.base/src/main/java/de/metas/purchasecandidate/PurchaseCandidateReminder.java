@@ -2,7 +2,7 @@ package de.metas.purchasecandidate;
 
 import java.time.LocalDateTime;
 
-import org.adempiere.util.Check;
+import org.adempiere.bpartner.BPartnerId;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -40,18 +40,16 @@ import lombok.Value;
 public class PurchaseCandidateReminder
 {
 	@JsonProperty("vendorBPartnerId")
-	int vendorBPartnerId;
+	BPartnerId vendorBPartnerId;
 	@JsonProperty("notificationTime")
 	LocalDateTime notificationTime;
 
 	@Builder
 	@JsonCreator
 	private PurchaseCandidateReminder(
-			@JsonProperty("vendorBPartnerId") final int vendorBPartnerId,
+			@JsonProperty("vendorBPartnerId") @NonNull final BPartnerId vendorBPartnerId,
 			@JsonProperty("notificationTime") @NonNull final LocalDateTime notificationTime)
 	{
-		Check.assumeGreaterThanZero(vendorBPartnerId, "vendorBPartnerId");
-
 		this.vendorBPartnerId = vendorBPartnerId;
 		this.notificationTime = notificationTime;
 	}

@@ -39,6 +39,11 @@ public class PricingConditionsId
 		return new PricingConditionsId(discountSchemaId);
 	}
 
+	public static final PricingConditionsId ofDiscountSchemaIdOrNull(final int discountSchemaId)
+	{
+		return discountSchemaId > 0 ? new PricingConditionsId(discountSchemaId) : null;
+	}
+
 	public static final Set<PricingConditionsId> ofDiscountSchemaIds(final Collection<Integer> discountSchemaIds)
 	{
 		return discountSchemaIds.stream()

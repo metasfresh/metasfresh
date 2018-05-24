@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,7 +52,7 @@ public class NullVendorGatewayInvokerTest
 	public void placeRemotePurchaseOrder()
 	{
 		final int productId = 20;
-		final int vendorBPartnerId = 30;
+		final BPartnerId vendorBPartnerId = BPartnerId.ofRepoId(30);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)

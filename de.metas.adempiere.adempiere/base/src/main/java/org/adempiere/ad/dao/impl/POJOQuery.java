@@ -679,6 +679,25 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 				}
 			};
 		}
+		else if(Comparable.class.isAssignableFrom(type))
+		{
+			return (result, value) -> {
+				final Comparable resultCmp = (Comparable)result;
+				final Comparable valueCmp = (Comparable)value;
+				if (resultCmp == null)
+				{
+					@SuppressWarnings("unchecked")
+					final R newResult = (R)valueCmp;
+					return newResult;
+				}
+				else
+				{
+					@SuppressWarnings("unchecked")
+					final R newResult = (R)(resultCmp.compareTo(valueCmp) >= 0 ? resultCmp : valueCmp);
+					return newResult;
+				}
+			};
+		}
 		else
 		{
 			throw new AdempiereException("Unsupported returnType '" + type + "' for MAX aggregation");

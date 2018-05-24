@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -38,7 +39,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.service.impl.PricingContext;
 
 public class PricingContextTest
 {
@@ -64,7 +64,7 @@ public class PricingContextTest
 		InterfaceWrapperHelper.save(referencedObject);
 
 		pricingCtx.setAD_Table_ID(nextId++);
-		pricingCtx.setC_BPartner_ID(nextId++);
+		pricingCtx.setBPartnerId(BPartnerId.ofRepoId(nextId++));
 		pricingCtx.setC_Currency_ID(nextId++);
 		pricingCtx.setC_UOM_ID(nextId++);
 		pricingCtx.setConvertPriceToContextUOM(true);

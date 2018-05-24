@@ -25,6 +25,10 @@ package de.metas.pricing;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.bpartner.BPartnerId;
+
+import de.metas.pricing.conditions.PricingConditionsBreak;
+
 /**
  * A {@link IPricingContext} which also have setters.
  *
@@ -47,7 +51,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	void setQty(final BigDecimal qty);
 
-	void setC_BPartner_ID(final int c_BPartner_ID);
+	void setBPartnerId(final BPartnerId bpartnerId);
 
 	void setC_Currency_ID(final int c_Currency_ID);
 
@@ -69,6 +73,8 @@ public interface IEditablePricingContext extends IPricingContext
 	 * @param disallowDiscount
 	 */
 	void setDisallowDiscount(boolean disallowDiscount);
+
+	void setForcePricingConditionsBreak(PricingConditionsBreak forcePricingConditionsBreak);
 
 	void setTrxName(String trxName);
 

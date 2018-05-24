@@ -1,9 +1,14 @@
-package de.metas.pricing;
+/**
+ *
+ */
+package de.metas.pricing.conditions.service;
 
+import java.math.BigDecimal;
+
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -28,27 +33,51 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Value
 public class PricingConditionsResult
 {
-	PricingConditionsId pricingConditionsId;
-	PricingConditionsBreakId pricingConditionsBreakId;
-	int basePricingSystemId;
+	public static final PricingConditionsResult ZERO = builder().build();
+
+	Percent discount;
 	int paymentTermId;
 
+	BigDecimal priceListOverride;
+	BigDecimal priceStdOverride;
+	BigDecimal priceLimitOverride;
+
+	PricingConditionsId pricingConditionsId;
+	PricingConditionsBreakId pricingConditionsBreakId;
+
+	int basePricingSystemId;
+
 	@Builder
-	private PricingConditionsResult(
-			@NonNull final PricingConditionsId pricingConditionsId,
+	public PricingConditionsResult(
+			final Percent discount,
+			final int paymentTermId,
+			final BigDecimal priceListOverride,
+			final BigDecimal priceStdOverride,
+			final BigDecimal priceLimitOverride,
+			final PricingConditionsId pricingConditionsId,
 			final PricingConditionsBreakId pricingConditionsBreakId,
-			final int basePricingSystemId,
-			final int paymentTermId)
+			final int basePricingSystemId)
 	{
 		PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreakId);
 
+		this.discount = discount != null ? discount : Percent.ZERO;
+		this.paymentTermId = paymentTermId;
+
+		this.priceListOverride = priceListOverride;
+		this.priceStdOverride = priceStdOverride;
+		this.priceLimitOverride = priceLimitOverride;
+
 		this.pricingConditionsId = pricingConditionsId;
 		this.pricingConditionsBreakId = pricingConditionsBreakId;
+
 		this.basePricingSystemId = basePricingSystemId;
-		this.paymentTermId = paymentTermId;
 	}
 
 }
