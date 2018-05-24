@@ -130,9 +130,7 @@ class PricingConditionsRowsLoader
 				.sorted(ROWS_SORTING)
 				.collect(Collectors.toCollection(ArrayList::new));
 
-		final PricingConditionsRow editableRow = removeCurrentPricingConditionsRow(rows)
-				.map(PricingConditionsRow::copyAndChangeToEditable)
-				.orElseGet(this::createEditablePricingConditionsRowOrNull);
+		final PricingConditionsRow editableRow = createEditablePricingConditionsRowOrNull();
 
 		return PricingConditionsRowData.builder()
 				.editableRow(editableRow)

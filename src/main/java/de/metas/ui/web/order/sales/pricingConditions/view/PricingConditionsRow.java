@@ -194,8 +194,6 @@ public class PricingConditionsRow implements IViewRow
 			final PricingConditionsBreakId copiedFromPricingConditionsBreakId,
 			final boolean editable)
 	{
-		id = buildDocumentId(bpartner, customer);
-
 		this.lookups = lookups;
 		this.bpartner = bpartner;
 		this.customer = customer;
@@ -233,11 +231,21 @@ public class PricingConditionsRow implements IViewRow
 		viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(editable, price.getType());
 
 		this.copiedFromPricingConditionsBreakId = copiedFromPricingConditionsBreakId;
+
+		id = buildDocumentId(this.bpartner, this.customer, this.editable);
 	}
 
-	private static final DocumentId buildDocumentId(final LookupValue bpartner, final boolean customer)
+	private static final DocumentId buildDocumentId(final LookupValue bpartner, final boolean customer, final boolean editableRow)
 	{
-		return DocumentId.of(bpartner.getIdAsString() + "-" + (customer ? "C" : "V"));
+		final StringBuilder idStr = new StringBuilder();
+		idStr.append(bpartner.getIdAsString());
+		idStr.append("-").append(customer ? "C" : "V");
+		if (editableRow)
+		{
+			idStr.append("-").append("editable");
+		}
+
+		return DocumentId.ofString(idStr.toString());
 	}
 
 	private static final ImmutableMap<String, ViewEditorRenderMode> buildViewEditorRenderModeByFieldName(final boolean editable, final PriceOverrideType priceType)

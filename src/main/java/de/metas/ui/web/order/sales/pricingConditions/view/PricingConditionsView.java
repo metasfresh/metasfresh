@@ -16,6 +16,7 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
@@ -154,6 +155,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 
 		if (pricingConditionsBreak.isTemporaryPricingConditionsBreak())
 		{
+			orderLine.setM_DiscountSchema_ID(-1);
 			orderLine.setM_DiscountSchemaBreak_ID(-1);
 
 			final PriceOverride price = pricingConditionsBreak.getPriceOverride();
@@ -181,9 +183,15 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 		}
 		else
 		{
+			final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
+			orderLine.setM_DiscountSchema_ID(pricingConditionsBreakId.getDiscountSchemaId());
+			orderLine.setM_DiscountSchemaBreak_ID(pricingConditionsBreakId.getDiscountSchemaBreakId());
+
 			orderLine.setIsManualDiscount(false);
 			orderLine.setIsManualPrice(false);
-			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.ofOrderLine(orderLine));
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
+					.pricingConditionsBreakOverride(pricingConditionsBreak)
+					.build());
 		}
 
 		orderLineBL.updateLineNetAmt(orderLine);
