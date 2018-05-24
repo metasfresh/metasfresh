@@ -43,3 +43,7 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=190,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=200,Updated=TO_TIMESTAMP('2018-05-24 13:30:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548022
 ;
 
+-- 2018-05-24T13:33:05.355
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-24 13:33:05','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Gross Profit Price',Description='' WHERE AD_Field_ID=564251 AND AD_Language='en_US'
+;
