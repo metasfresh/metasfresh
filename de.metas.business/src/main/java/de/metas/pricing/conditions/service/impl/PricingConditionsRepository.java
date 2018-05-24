@@ -314,6 +314,10 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 		else
 		{
+			if(pricingConditionsId == null)
+			{
+				throw new AdempiereException("Cannot create new break because no pricingConditionsId found: " + request);
+			}
 			final int discountSchemaId = pricingConditionsId.getDiscountSchemaId();
 
 			schemaBreak = newInstance(I_M_DiscountSchemaBreak.class);
