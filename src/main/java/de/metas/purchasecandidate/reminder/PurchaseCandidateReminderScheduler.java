@@ -249,7 +249,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 		return DocumentFilter.builder()
 				.setFilterId("filterByVendorIdAndReminderDate")
 				.setCaption(caption)
-				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, Operator.EQUAL, vendorBPartnerId))
+				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, Operator.EQUAL, vendorBPartnerId.getRepoId()))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate, Operator.LESS_OR_EQUAL, notificationTime))
 				.build();
 	}
