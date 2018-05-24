@@ -11,7 +11,7 @@ import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest.PricingConditionsBreakChangeRequestBuilder;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest;
+import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowActions;
 
 /*
  * #%L
@@ -71,7 +71,7 @@ public class PricingConditionsView_SaveEditableRow extends PricingConditionsView
 	{
 		final PricingConditionsBreak pricingConditionsBreak = pricingConditionsRepo.changePricingConditionsBreak(createPricingConditionsBreakChangeRequest(getEditableRow()));
 
-		patchEditableRow(PricingConditionsRowChangeRequest.saved(pricingConditionsBreak.getId(), pricingConditionsBreak.getDateCreated()));
+		patchEditableRow(PricingConditionsRowActions.saved(pricingConditionsBreak.getId(), pricingConditionsBreak.getDateCreated()));
 
 		return MSG_OK;
 	}

@@ -8,16 +8,17 @@ import java.util.Map;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.logging.LogManager;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsId;
-import de.metas.ui.web.order.sales.pricingConditions.view.PriceNetCalculator.PriceNetCalculateRequest;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
@@ -112,12 +113,13 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final LookupValue basePricingSystem;
 
-	static final String FIELDNAME_FixedPrice = "fixedPrice";
-	@ViewColumn(fieldName = FIELDNAME_FixedPrice, captionKey = "Price", widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
+	static final String FIELDNAME_Price = "price";
+	@ViewColumn(fieldName = FIELDNAME_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
-	private final BigDecimal fixedPrice;
+	@Getter
+	private final BigDecimal basePrice;
 
 	static final String FIELDNAME_BasePriceAddAmt = "basePriceAddAmt";
 	@ViewColumn(fieldName = FIELDNAME_BasePriceAddAmt, captionKey = "Std_AddAmt", widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
@@ -144,8 +146,7 @@ public class PricingConditionsRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 100)
 	})
-	@Getter
-	private final BigDecimal priceNet;
+	private final BigDecimal netPrice;
 
 	@ViewColumn(captionKey = "LastInOutDate", widgetType = DocumentFieldWidgetType.Date, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110),
@@ -159,6 +160,8 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final LocalDateTime dateCreated;
 
+	private static final Logger logger = LogManager.getLogger(PricingConditionsRow.class);
+
 	//
 	private final PricingConditionsRowLookups lookups;
 
@@ -171,8 +174,7 @@ public class PricingConditionsRow implements IViewRow
 	private final PricingConditionsId pricingConditionsId;
 	@Getter
 	private final PricingConditionsBreak pricingConditionsBreak;
-
-	private final PriceNetCalculator priceNetCalculator;
+	private final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator;
 
 	@Getter
 	private final PricingConditionsBreakId copiedFromPricingConditionsBreakId;
@@ -188,7 +190,7 @@ public class PricingConditionsRow implements IViewRow
 			final PricingConditionsId pricingConditionsId,
 			@NonNull final PricingConditionsBreak pricingConditionsBreak,
 			final LocalDate dateLastInOut,
-			@NonNull final PriceNetCalculator priceNetCalculator,
+			@NonNull final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator,
 			final PricingConditionsBreakId copiedFromPricingConditionsBreakId,
 			final boolean editable)
 	{
@@ -198,33 +200,34 @@ public class PricingConditionsRow implements IViewRow
 		this.bpartner = bpartner;
 		this.customer = customer;
 
-		this.statusColor = pricingConditionsBreak.isTemporaryPricingConditionsBreak() ? lookups.getTemporaryPriceConditionsColor() : null;
+		statusColor = pricingConditionsBreak.isTemporaryPricingConditionsBreak() ? lookups.getTemporaryPriceConditionsColor() : null;
 
 		PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreak.getId());
 		this.pricingConditionsId = pricingConditionsId;
 		this.pricingConditionsBreak = pricingConditionsBreak;
 
-		this.product = lookups.lookupProduct(pricingConditionsBreak.getMatchCriteria().getProductId());
-		this.breakValue = pricingConditionsBreak.getMatchCriteria().getBreakValue();
+		product = lookups.lookupProduct(pricingConditionsBreak.getMatchCriteria().getProductId());
+		breakValue = pricingConditionsBreak.getMatchCriteria().getBreakValue();
 
-		this.paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId());
-		this.discount = pricingConditionsBreak.getDiscount().getValueAsBigDecimal();
+		paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId());
+		discount = pricingConditionsBreak.getDiscount().getValueAsBigDecimal();
 
 		final PriceOverride price = pricingConditionsBreak.getPriceOverride();
-		this.priceType = lookups.lookupPriceType(price.getType());
-		this.basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
-		this.basePriceAddAmt = price.getBasePriceAddAmt();
-		this.fixedPrice = price.getFixedPrice();
+		priceType = lookups.lookupPriceType(price.getType());
+		basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
+		basePriceAddAmt = price.getBasePriceAddAmt();
 
-		this.priceNetCalculator = priceNetCalculator;
-		this.priceNet = priceNetCalculator.calculate(PriceNetCalculateRequest.builder()
+		this.basePricingSystemPriceCalculator = basePricingSystemPriceCalculator;
+		basePrice = calculateBasePrice(basePricingSystemPriceCalculator, BasePricingSystemPriceCalculatorRequest.builder()
 				.pricingConditionsBreak(pricingConditionsBreak)
 				.bpartnerId(BPartnerId.ofRepoId(bpartner.getIdAsInt()))
 				.isSOTrx(customer)
 				.build());
 
+		netPrice = calculateNetPrice(basePrice, pricingConditionsBreak);
+
 		this.dateLastInOut = dateLastInOut;
-		this.dateCreated = pricingConditionsBreak.getDateCreated();
+		dateCreated = pricingConditionsBreak.getDateCreated();
 
 		this.editable = editable;
 		viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(editable, price.getType());
@@ -252,7 +255,7 @@ public class PricingConditionsRow implements IViewRow
 		result.put(FIELDNAME_PriceType, ViewEditorRenderMode.ALWAYS);
 		if (priceType == PriceOverrideType.FIXED_PRICE)
 		{
-			result.put(FIELDNAME_FixedPrice, ViewEditorRenderMode.ALWAYS);
+			result.put(FIELDNAME_Price, ViewEditorRenderMode.ALWAYS);
 		}
 		else if (priceType == PriceOverrideType.BASE_PRICING_SYSTEM)
 		{
@@ -261,6 +264,55 @@ public class PricingConditionsRow implements IViewRow
 		}
 
 		return result.build();
+	}
+
+	private static BigDecimal calculateBasePrice(
+			@NonNull final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator,
+			@NonNull final BasePricingSystemPriceCalculatorRequest request)
+	{
+		try
+		{
+			final PricingConditionsBreak pricingConditionsBreak = request.getPricingConditionsBreak();
+			final PriceOverride price = pricingConditionsBreak.getPriceOverride();
+			final PriceOverrideType type = price.getType();
+			if (type == PriceOverrideType.NONE)
+			{
+				return null;
+			}
+			else if (type == PriceOverrideType.BASE_PRICING_SYSTEM)
+			{
+				final BigDecimal basePrice = basePricingSystemPriceCalculator.calculate(request);
+				// NOTE: assume BasePriceAddAmt was added
+				// basePrice = basePrice.add(price.getBasePriceAddAmt());
+
+				return basePrice;
+			}
+			else if (type == PriceOverrideType.FIXED_PRICE)
+			{
+				return price.getFixedPrice();
+			}
+			else
+			{
+				throw new AdempiereException("Unknown " + PriceOverrideType.class + ": " + type);
+			}
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed calculating net price for {}. Returning null.", request, ex);
+			return null;
+		}
+	}
+
+	private static BigDecimal calculateNetPrice(final BigDecimal basePrice, @NonNull final PricingConditionsBreak pricingConditionsBreak)
+	{
+		if (basePrice == null)
+		{
+			return null;
+		}
+
+		final int precision = 2; // TODO: hardcoded
+		final BigDecimal priceAfterDiscount = pricingConditionsBreak.getDiscount().subtractFromBase(basePrice, precision);
+		return priceAfterDiscount;
 	}
 
 	@Override

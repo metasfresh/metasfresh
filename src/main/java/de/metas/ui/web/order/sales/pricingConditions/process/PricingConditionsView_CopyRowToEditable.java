@@ -88,7 +88,7 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 			// In case row does not have a price then use BPartner's pricing system
 			final BPartnerId bpartnerId = templateRow.getBpartnerId();
 			final boolean isSOTrx = templateRow.isCustomer();
-			price = createDefaultPriceOverride(bpartnerId, isSOTrx);
+			price = createBasePricingSystemPrice(bpartnerId, isSOTrx);
 		}
 
 		return PricingConditionsRowChangeRequest.builder()
@@ -99,7 +99,7 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 				.build();
 	}
 
-	private PriceOverride createDefaultPriceOverride(final BPartnerId bpartnerId, final boolean isSOTrx)
+	private PriceOverride createBasePricingSystemPrice(final BPartnerId bpartnerId, final boolean isSOTrx)
 	{
 		final int pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, isSOTrx);
 		if (pricingSystemId <= 0)

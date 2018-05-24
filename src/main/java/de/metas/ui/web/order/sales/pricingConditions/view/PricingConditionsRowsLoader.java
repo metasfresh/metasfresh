@@ -83,7 +83,7 @@ class PricingConditionsRowsLoader
 
 	private final PricingConditionsRowLookups lookups;
 	private final PricingConditionsBreaksExtractor pricingConditionsBreaksExtractor;
-	private final PriceNetCalculator priceNetCalculator;
+	private final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator;
 	private final DocumentFiltersList filters;
 	private final int adClientId;
 	private final SourceDocumentLine sourceDocumentLine;
@@ -105,7 +105,7 @@ class PricingConditionsRowsLoader
 	private PricingConditionsRowsLoader(
 			@NonNull final PricingConditionsRowLookups lookups,
 			@NonNull final PricingConditionsBreaksExtractor pricingConditionsBreaksExtractor,
-			@NonNull final PriceNetCalculator priceNetCalculator,
+			@NonNull final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator,
 			final DocumentFiltersList filters,
 			final int adClientId,
 			@Nullable final SourceDocumentLine sourceDocumentLine)
@@ -114,7 +114,7 @@ class PricingConditionsRowsLoader
 
 		this.lookups = lookups;
 		this.pricingConditionsBreaksExtractor = pricingConditionsBreaksExtractor;
-		this.priceNetCalculator = priceNetCalculator;
+		this.basePricingSystemPriceCalculator = basePricingSystemPriceCalculator;
 		this.filters = filters != null ? filters : DocumentFiltersList.EMPTY;
 		this.adClientId = adClientId;
 		this.sourceDocumentLine = sourceDocumentLine;
@@ -217,7 +217,7 @@ class PricingConditionsRowsLoader
 				.pricingConditionsId(pricingConditionsInfo.getPricingConditionsId())
 				.pricingConditionsBreak(pricingConditionsBreak)
 				.dateLastInOut(getLastInOutDate(pricingConditionsInfo.getBPartnerId(), pricingConditionsInfo.isSOTrx(), pricingConditionsBreak))
-				.priceNetCalculator(priceNetCalculator)
+				.basePricingSystemPriceCalculator(basePricingSystemPriceCalculator)
 				//
 				.build();
 	}
@@ -276,7 +276,7 @@ class PricingConditionsRowsLoader
 				//
 				.pricingConditionsId(pricingConditionsId)
 				.pricingConditionsBreak(pricingConditionsBreak)
-				.priceNetCalculator(priceNetCalculator)
+				.basePricingSystemPriceCalculator(basePricingSystemPriceCalculator)
 				//
 				.dateLastInOut(getLastInOutDate(sourceDocumentLine.getBpartnerId(), sourceDocumentLine.isSOTrx(), pricingConditionsBreak))
 				//

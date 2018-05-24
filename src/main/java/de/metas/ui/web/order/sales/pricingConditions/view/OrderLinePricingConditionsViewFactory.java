@@ -26,8 +26,6 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.ui.web.order.sales.pricingConditions.view.PriceNetCalculator.BasePricingSystemPriceCalculator;
-import de.metas.ui.web.order.sales.pricingConditions.view.PriceNetCalculator.PriceNetCalculateRequest;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.PricingConditionsBreaksExtractor;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.SourceDocumentLine;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -85,13 +83,9 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		final I_C_Order order = orderLine.getC_Order();
 		final boolean isSOTrx = order.isSOTrx();
 
-		final PriceNetCalculator priceNetCalculator = PriceNetCalculator.builder()
-				.basePriceCalculator(new OrderLineBasePricingSystemPriceCalculator(orderLine))
-				.build();
-
 		final PricingConditionsRowData rowsData = preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(createPricingConditionsBreaksExtractor(orderLine))
-				.priceNetCalculator(priceNetCalculator)
+				.basePricingSystemPriceCalculator(new OrderLineBasePricingSystemPriceCalculator(orderLine))
 				.filters(extractFilters(request))
 				.adClientId(orderLine.getAD_Client_ID())
 				.sourceDocumentLine(createSourceDocumentLine(orderLine, isSOTrx))
@@ -158,7 +152,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		}
 
 		@Override
-		public BigDecimal calculate(final PriceNetCalculateRequest request)
+		public BigDecimal calculate(final BasePricingSystemPriceCalculatorRequest request)
 		{
 			final PricingConditionsBreak pricingConditionsBreak = request.getPricingConditionsBreak();
 			return basePricesCache.computeIfAbsent(pricingConditionsBreak, this::calculate);

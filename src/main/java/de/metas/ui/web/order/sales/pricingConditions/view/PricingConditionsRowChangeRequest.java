@@ -38,16 +38,9 @@ import lombok.Value;
 @Builder
 public class PricingConditionsRowChangeRequest
 {
-	public static final PricingConditionsRowChangeRequest saved(@NonNull final PricingConditionsBreakId pricingConditionsBreakId, final LocalDateTime dateCreated)
-	{
-		return builder()
-				.pricingConditionsBreakId(pricingConditionsBreakId)
-				.build();
-	}
-
 	PricingConditionsBreakId pricingConditionsBreakId;
 	LocalDateTime dateCreated;
-	
+
 	PricingConditionsBreakId sourcePricingConditionsBreakId;
 
 	Percent discount;
