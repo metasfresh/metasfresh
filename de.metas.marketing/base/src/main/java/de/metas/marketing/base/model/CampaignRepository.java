@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
@@ -41,7 +42,7 @@ import lombok.NonNull;
 @Repository
 public class CampaignRepository
 {
-	public Campaign getById(final CampaignId campaignId)
+	public Campaign getById(@NonNull final CampaignId campaignId)
 	{
 		final I_MKTG_Campaign campaignRecord = load(campaignId.getRepoId(), I_MKTG_Campaign.class);
 		return createFromModel(campaignRecord);
@@ -68,6 +69,7 @@ public class CampaignRepository
 				campaignRecord.getRemoteRecordId(),
 				PlatformId.ofRepoId(campaignRecord.getMKTG_Platform_ID()),
 				CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
+
 	}
 
 	public void addContactPersonToCampaign(
@@ -94,7 +96,7 @@ public class CampaignRepository
 		saveRecord(newAssociation);
 	}
 
-	public Campaign save(@NonNull final Campaign campaign)
+	public Campaign saveCampaign(@NonNull final Campaign campaign)
 	{
 		final I_MKTG_Campaign campaignRecord = createOrUpdateRecordDontSave(campaign);
 		saveRecord(campaignRecord);
@@ -149,5 +151,31 @@ public class CampaignRepository
 		campaignRecord.setRemoteRecordId(campaign.getRemoteId());
 		campaignRecord.setMKTG_Platform_ID(campaign.getPlatformId().getRepoId());
 		return campaignRecord;
+	}
+
+	public Optional<CampaignId> getDefaultNewsletterCampaignId(final int orgId)
+	{
+		final int defaultCampaignId = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign.COLUMN_IsDefaultNewsletter, true)
+				.addInArrayFilter(I_MKTG_Campaign.COLUMNNAME_AD_Org_ID, orgId, 0)
+				.orderByDescending(I_MKTG_Campaign.COLUMNNAME_AD_Org_ID)
+				.create()
+				.firstId();
+
+		return defaultCampaignId <= 0 ? Optional.empty() : Optional.of(CampaignId.ofRepoId(defaultCampaignId));
+	}
+
+	public void removeContactPersonFromCampaign(
+			@NonNull final ContactPerson contactPerson,
+			@NonNull final Campaign campaign)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaign.getCampaignId().getRepoId())
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, contactPerson.getContactPersonId().getRepoId())
+				.create()
+				.delete();
 	}
 }

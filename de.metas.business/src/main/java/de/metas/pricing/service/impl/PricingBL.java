@@ -29,7 +29,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -83,7 +85,7 @@ public class PricingBL implements IPricingBL
 	{
 		final IEditablePricingContext pricingCtx = createPricingContext();
 		pricingCtx.setM_Product_ID(M_Product_ID);
-		pricingCtx.setC_BPartner_ID(C_BPartner_ID);
+		pricingCtx.setBPartnerId(BPartnerId.ofRepoIdOrNull(C_BPartner_ID));
 		pricingCtx.setConvertPriceToContextUOM(true); // backward compatibility
 
 		if (Qty != null && Qty.signum() != 0)
@@ -432,5 +434,11 @@ public class PricingBL implements IPricingBL
 	public PriceLimitRuleResult computePriceLimit(final PriceLimitRuleContext context)
 	{
 		return priceLimitRules.compute(context);
+	}
+
+	@Override
+	public Set<Integer> getPriceLimitCountryIds()
+	{
+		return priceLimitRules.getPriceCountryIds();
 	}
 }

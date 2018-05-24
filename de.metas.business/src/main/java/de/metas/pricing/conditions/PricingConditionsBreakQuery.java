@@ -3,11 +3,11 @@ package de.metas.pricing.conditions;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.product.ProductAndCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -38,31 +38,23 @@ import lombok.Value;
 @Value
 public class PricingConditionsBreakQuery
 {
-//	int discountSchemaId;
+	ProductAndCategoryId productAndCategoryId;
 	List<I_M_AttributeInstance> attributeInstances;
-	int productId;
-	int productCategoryId;
 	BigDecimal qty;
+	BigDecimal price;
 	BigDecimal amt;
 
 	@Builder
 	private PricingConditionsBreakQuery(
-//			final int discountSchemaId,
+			@NonNull ProductAndCategoryId productAndCategoryId,
 			@Singular final List<I_M_AttributeInstance> attributeInstances,
-			final int productId,
-			final int productCategoryId,
 			@NonNull final BigDecimal qty,
-			@NonNull final BigDecimal amt)
+			@NonNull final BigDecimal price)
 	{
-//		Check.assumeGreaterThanZero(discountSchemaId, "discountSchemaId");
-		Check.assumeGreaterThanZero(productId, "productId");
-		Check.assumeGreaterThanZero(productCategoryId, "productCategoryId");
-
-//		this.discountSchemaId = discountSchemaId;
+		this.productAndCategoryId = productAndCategoryId;
 		this.attributeInstances = attributeInstances != null ? ImmutableList.copyOf(attributeInstances) : ImmutableList.of();
-		this.productId = productId;
-		this.productCategoryId = productCategoryId;
 		this.qty = qty;
-		this.amt = amt;
+		this.price = price;
+		this.amt = qty.multiply(price);
 	}
 }

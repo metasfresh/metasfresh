@@ -22,10 +22,11 @@ import java.sql.Timestamp;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
+import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderLineBL;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 
 /**
@@ -101,7 +102,7 @@ public class MProductPricing
 	 * 
 	 * @return Discount
 	 */
-	public BigDecimal getDiscount()
+	public Percent getDiscount()
 	{
 		return result.getDiscount();
 	}	// getDiscount
@@ -303,7 +304,7 @@ public class MProductPricing
 	public BigDecimal mkPriceStdMinusDiscount()
 	{
 		calculatePrice(false);
-		return Services.get(IOrderLineBL.class).subtractDiscount(result.getPriceStd(), result.getDiscount(), result.getPrecision());
+		return result.getDiscount().subtractFromBase(result.getPriceStd(), result.getPrecision());
 	}
 
 	@Override
@@ -313,11 +314,6 @@ public class MProductPricing
 				+ pricingCtx
 				+ ", " + result
 				+ "]";
-	}
-
-	public int getC_BPartner_ID()
-	{
-		return pricingCtx.getC_BPartner_ID();
 	}
 
 	public int getAD_Table_ID()
@@ -369,5 +365,10 @@ public class MProductPricing
 	public void setManualPrice(boolean manualPrice)
 	{
 		pricingCtx.setManualPrice(manualPrice);
+	}
+	
+	public void throwProductNotOnPriceListException()
+	{
+		throw new ProductNotOnPriceListException(pricingCtx);
 	}
 }	// MProductPrice

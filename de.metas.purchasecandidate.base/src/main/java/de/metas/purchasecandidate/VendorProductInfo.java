@@ -1,10 +1,11 @@
 package de.metas.purchasecandidate;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.util.OptionalInt;
 
+import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
@@ -40,7 +41,7 @@ public class VendorProductInfo
 {
 	OptionalInt bpartnerProductId;
 
-	int vendorBPartnerId;
+	BPartnerId vendorBPartnerId;
 
 	int productId;
 	String productNo;
@@ -50,14 +51,14 @@ public class VendorProductInfo
 
 	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProduct)
 	{
-		final int bpartnerVendorIdOverride = -1;
+		final BPartnerId bpartnerVendorIdOverride = null;
 		final Boolean aggregatePOsOverride = null; // N/A
 		return fromDataRecord(bpartnerProduct, bpartnerVendorIdOverride, aggregatePOsOverride);
 	}
 
 	public static VendorProductInfo fromDataRecord(
 			@NonNull final I_C_BPartner_Product bpartnerProduct,
-			final int bpartnerVendorIdOverride,
+			final BPartnerId bpartnerVendorIdOverride,
 			final Boolean aggregatePOsOverride)
 	{
 		final String productNo = Util.coalesceSuppliers(
@@ -69,9 +70,9 @@ public class VendorProductInfo
 				() -> bpartnerProduct.getProductName(),
 				() -> bpartnerProduct.getM_Product().getName());
 
-		final int bpartnerVendorId = Util.firstGreaterThanZero(
-				bpartnerVendorIdOverride,
-				bpartnerProduct.getC_BPartner_ID());
+		final BPartnerId bpartnerVendorId = Util.coalesceSuppliers(
+				() -> bpartnerVendorIdOverride,
+				() -> BPartnerId.ofRepoIdOrNull(bpartnerProduct.getC_BPartner_ID()));
 
 		final boolean aggregatePOs;
 		if (aggregatePOsOverride != null)
@@ -80,7 +81,7 @@ public class VendorProductInfo
 		}
 		else
 		{
-			final I_C_BPartner bpartner = loadOutOfTrx(bpartnerVendorId, I_C_BPartner.class);
+			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerVendorId);
 			aggregatePOs = bpartner.isAggregatePO();
 		}
 
@@ -97,13 +98,12 @@ public class VendorProductInfo
 	@Builder
 	private VendorProductInfo(
 			final int bpartnerProductId,
-			final int vendorBPartnerId,
+			@NonNull final BPartnerId vendorBPartnerId,
 			final int productId,
 			@NonNull final String productNo,
 			@NonNull final String productName,
 			final boolean aggregatePOs)
 	{
-		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
 		Check.assume(productId > 0, "productId > 0");
 
 		this.bpartnerProductId = bpartnerProductId > 0 ? OptionalInt.of(bpartnerProductId) : OptionalInt.empty();

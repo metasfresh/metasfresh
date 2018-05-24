@@ -3,6 +3,7 @@ package de.metas.purchasecandidate;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.time.SystemTime;
 
 /*
@@ -47,7 +48,7 @@ public final class PurchaseCandidateTestTool
 				.uomId(6)
 				.vendorProductInfo(VendorProductInfo.builder()
 						.bpartnerProductId(10)
-						.vendorBPartnerId(7)
+						.vendorBPartnerId(BPartnerId.ofRepoId(7))
 						.productId(20)
 						.productNo("productNo")
 						.productName("productName")

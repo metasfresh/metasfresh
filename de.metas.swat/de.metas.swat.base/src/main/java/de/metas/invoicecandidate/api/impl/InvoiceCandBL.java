@@ -3,6 +3,7 @@
  */
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
@@ -47,6 +48,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -124,6 +126,7 @@ import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
 
@@ -221,16 +224,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		ic.setDateToInvoice(dateToInvoice);
 	}
 
-	private Timestamp mkDateToInvoiceForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSched, final Timestamp deliveryDate)
+	private Timestamp mkDateToInvoiceForInvoiceSchedule(
+			@NonNull final I_C_InvoiceSchedule invoiceSched,
+			@NonNull final Timestamp deliveryDate)
 	{
-		Check.assumeNotNull(invoiceSched, " param 'invoiceSched' not null");
-		Check.assumeNotNull(deliveryDate, " param 'deliveryDate' not null");
-
 		final Timestamp dateToInvoice;
+
+		final int offset = Integer.max(invoiceSched.getInvoiceDistance() - 1, 0);
 
 		if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily.equals(invoiceSched.getInvoiceFrequency()))
 		{
-			dateToInvoice = deliveryDate;
+			dateToInvoice = TimeUtil.addDays(deliveryDate, offset);
 		}
 		else if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Weekly.equals(invoiceSched.getInvoiceFrequency()))
 		{
@@ -241,11 +245,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final Timestamp dateDayOfWeek = new Timestamp(calToday.getTimeInMillis());
 			if (dateDayOfWeek.before(deliveryDate))
 			{
-				dateToInvoice = TimeUtil.addWeeks(dateDayOfWeek, 1);
+				dateToInvoice = TimeUtil.addWeeks(dateDayOfWeek, 1 + offset);
 			}
 			else
 			{
-				dateToInvoice = dateDayOfWeek;
+				dateToInvoice = TimeUtil.addWeeks(dateDayOfWeek, offset);
 			}
 		}
 		else if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly.equals(invoiceSched.getInvoiceFrequency())
@@ -265,12 +269,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				if (dateDayOfMonth.before(deliveryDate))
 				{
 
-					dateToInvoice = TimeUtil.addMonths(dateDayOfMonth, 1);
-
+					dateToInvoice = TimeUtil.addMonths(dateDayOfMonth, 1 + offset);
 				}
 				else
 				{
-					dateToInvoice = dateDayOfMonth;
+					dateToInvoice = TimeUtil.addMonths(dateDayOfMonth, offset);
 				}
 			}
 		}
@@ -512,9 +515,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * If the ic's invoice rule is "CustomerScheduleAfterDelivery", this method tries to get the BPartner's invoice schedule id.
-	 *
-	 * @param ic
-	 * @return
 	 */
 	private int retrieveInvoiceScheduleId(final I_C_Invoice_Candidate ic)
 	{
@@ -995,22 +995,21 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public I_C_Invoice_Candidate splitCandidate(final I_C_Invoice_Candidate ic, final String trxName)
+	public I_C_Invoice_Candidate splitCandidate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// services
 		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 
 		final BigDecimal splitAmt = ic.getSplitAmt();
-		Check.assume(splitAmt.signum() != 0, "Split amount shall not be zero: {}", ic);
+		// splitAmt may be zero, if we are going to compute&set priceactual etc later.
+		// Check.assume(splitAmt.signum() != 0, "Split amount shall not be zero: {}", ic);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+		final I_C_Invoice_Candidate splitCand = newInstance(I_C_Invoice_Candidate.class, ic);
 
-		final I_C_Invoice_Candidate splitCand = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
-
-		// splitCand.setAD_Client_ID(ic.getAD_Client_ID());
 		Check.assume(splitCand.getAD_Client_ID() == ic.getAD_Client_ID(), "Same AD_Client_ID (split's AD_Client_ID={}, IC's AD_Client_ID={}", splitCand.getAD_Client_ID(), ic.getAD_Client_ID());
 		splitCand.setAD_Org_ID(ic.getAD_Org_ID());
 
+		splitCand.setAD_Table_ID(ic.getAD_Table_ID());
 		splitCand.setRecord_ID(ic.getRecord_ID()); // even if 0, we can't leave it empty, as the column is mandatory
 
 		splitCand.setIsActive(true);
@@ -1066,7 +1065,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setC_Tax(ic.getC_Tax());
 		splitCand.setC_Tax_Override(ic.getC_Tax_Override());
 
-		InterfaceWrapperHelper.save(splitCand);
 		return splitCand;
 	}
 
@@ -1074,7 +1072,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public String getInvoiceRule(final I_C_Invoice_Candidate ic)
 	{
 		final String invoiceRuleOverride = ic.getInvoiceRule_Override();
-		if (invoiceRuleOverride != null)
+		if (!Check.isEmpty(invoiceRuleOverride, true))
 		{
 			return invoiceRuleOverride;
 		}
@@ -2023,7 +2021,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(ic.getBill_BPartner_ID(), ic.isSOTrx());
+		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), ic.isSOTrx());
 		if (discountSchemaId <= 0)
 		{
 			// do nothing
@@ -2043,15 +2041,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 		}
-		final BigDecimal amt = ic.getPriceActual().multiply(qty);
+		
+		final BigDecimal priceActual = ic.getPriceActual();
+		final int productId = ic.getM_Product_ID();
+		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
 		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
 				.attributeInstances(instances)
-				.productId(ic.getM_Product_ID())
-				.productCategoryId(productsRepo.retrieveProductCategoryByProductId(ic.getM_Product_ID()))
+				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
 				.qty(qty)
-				.amt(amt)
+				.price(priceActual)
 				.build());
 
 		final BigDecimal qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;

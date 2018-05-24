@@ -24,6 +24,7 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.math.BigDecimal;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
@@ -128,7 +129,7 @@ public class PricingContextBuilder
 
 		//
 		// Extract infos from original invoice candidate
-		final int billBPartnerId = vendorInvoicingInfo.getBill_BPartner_ID();
+		final BPartnerId billBPartnerId = vendorInvoicingInfo.getBill_BPartner_ID();
 		final int pricingSytemId = vendorInvoicingInfo.getM_PricingSystem().getM_PricingSystem_ID();
 		final int currencyId = vendorInvoicingInfo.getC_Currency_ID();
 		final I_M_PriceList_Version priceListVersion = vendorInvoicingInfo.getM_PriceList_Version();
@@ -137,7 +138,7 @@ public class PricingContextBuilder
 		//
 		// Update pricing context
 		pricingCtx.setSOTrx(isSOTrx);
-		pricingCtx.setC_BPartner_ID(billBPartnerId);
+		pricingCtx.setBPartnerId(billBPartnerId);
 		pricingCtx.setC_Currency_ID(currencyId);
 		pricingCtx.setM_PricingSystem_ID(pricingSytemId);
 		pricingCtx.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());

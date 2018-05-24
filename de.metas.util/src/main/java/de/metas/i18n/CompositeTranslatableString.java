@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import lombok.EqualsAndHashCode;
+
 /*
  * #%L
  * de.metas.util
@@ -29,13 +31,14 @@ import com.google.common.collect.ImmutableSet;
  * #L%
  */
 
+@EqualsAndHashCode
 class CompositeTranslatableString implements ITranslatableString
 {
 	private final ImmutableList<ITranslatableString> list;
 	private final String joinString;
 
-	private transient String defaultValue;
-	private transient ImmutableSet<String> adLanguages;
+	private transient String defaultValue; // lazy
+	private transient ImmutableSet<String> adLanguages; // lazy
 
 	public CompositeTranslatableString(final List<ITranslatableString> list, final String joinString)
 	{
@@ -75,7 +78,7 @@ class CompositeTranslatableString implements ITranslatableString
 		}
 		return adLanguages;
 	}
-	
+
 	@Override
 	public boolean isTranslatedTo(final String adLanguage)
 	{

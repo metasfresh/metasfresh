@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -16,7 +17,13 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
@@ -49,6 +56,9 @@ import mockit.Verifications;
  * #L%
  */
 
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseOrderFromItemFactoryTest
 {
 	private static final LocalDateTime PURCHASE_CANDIDATE_DATE_REQUIRED = SystemTime.asLocalDateTime();
@@ -164,7 +174,7 @@ public class PurchaseOrderFromItemFactoryTest
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
-				.vendorBPartnerId(vendor.getC_BPartner_ID())
+				.vendorBPartnerId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
 				.productId(20)
 				.productName("productName")
 				.productNo("productNo")

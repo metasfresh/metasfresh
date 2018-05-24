@@ -24,7 +24,6 @@ package de.metas.printing.exception;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
 
 import de.metas.printing.api.IPrintJobLinesAggregator;
 
@@ -45,7 +44,7 @@ public class PrintingQueueAggregationException extends AdempiereException
 
 	public PrintingQueueAggregationException(final int printingQueueId)
 	{
-		super(Env.getAD_Language(Env.getCtx()), MSG, new Object[] { printingQueueId });
+		super(MSG, new Object[] { printingQueueId });
 	}
 	
 	public PrintingQueueAggregationException(final int printingQueueId, final Throwable cause)

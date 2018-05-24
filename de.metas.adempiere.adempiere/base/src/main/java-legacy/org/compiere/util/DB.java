@@ -2634,6 +2634,16 @@ public final class DB
 			final Timestamp ts = rs.getTimestamp(columnIndex);
 			value = (AT)ts;
 		}
+		else if(returnType.isAssignableFrom(LocalDateTime.class))
+		{
+			final Timestamp ts = rs.getTimestamp(columnIndex);
+			value = (AT)TimeUtil.asLocalDateTime(ts);
+		}
+		else if(returnType.isAssignableFrom(LocalDate.class))
+		{
+			final Timestamp ts = rs.getTimestamp(columnIndex);
+			value = (AT)TimeUtil.asLocalDate(ts);
+		}
 		else if (returnType.isAssignableFrom(Boolean.class) || returnType == boolean.class)
 		{
 			value = (AT)StringUtils.toBoolean(rs.getString(columnIndex), Boolean.FALSE);
@@ -2695,4 +2705,42 @@ public final class DB
 			close(rs, pstmt);
 		}
 	}
+
+	@FunctionalInterface
+	public static interface ResultSetRowLoader<T>
+	{
+		T retrieveRow(ResultSet rs) throws SQLException;
+	}
+
+	public static <T> T retrieveFirstRowOrNull(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+			if(rs.next())
+			{
+				return loader.retrieveRow(rs);
+			}
+			else
+			{
+				return null;
+			}
+		}
+		catch(SQLException ex)
+		{
+			throw new DBException(sql);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
+	}
+
 } // DB

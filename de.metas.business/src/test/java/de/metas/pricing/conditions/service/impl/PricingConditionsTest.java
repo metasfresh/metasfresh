@@ -37,7 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -46,7 +45,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -60,14 +58,16 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
-import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
-import de.metas.pricing.conditions.service.impl.PricingConditionsRepository;
-import de.metas.pricing.conditions.service.impl.PricingConditionsService;
-import lombok.NonNull;
+import de.metas.product.ProductAndCategoryId;
 
 public class PricingConditionsTest
 {
@@ -162,11 +162,11 @@ public class PricingConditionsTest
 		schemaBreak.setM_Product_ID(product.getM_Product_ID());
 		save(schemaBreak);
 
-		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema.getM_DiscountSchema_ID());
+		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema));
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product, 15));
 
 		assertThat(actualSchemaBreak1).isNotNull();
-		assertThat(actualSchemaBreak1.getDiscountSchemaBreakId()).isEqualTo(schemaBreak.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak1.getId()).isEqualTo(id(schemaBreak));
 	}
 
 	@Test
@@ -180,11 +180,11 @@ public class PricingConditionsTest
 		schemaBreak.setM_Product_ID(-1);
 		save(schemaBreak);
 
-		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema.getM_DiscountSchema_ID());
+		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema));
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product, 15));
 
 		assertThat(actualSchemaBreak1).isNotNull();
-		assertThat(actualSchemaBreak1.getDiscountSchemaBreakId()).isEqualTo(schemaBreak.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak1.getId()).isEqualTo(id(schemaBreak));
 	}
 
 	@Test
@@ -198,11 +198,11 @@ public class PricingConditionsTest
 		schemaBreak.setM_Product_ID(-1);
 		save(schemaBreak);
 
-		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema.getM_DiscountSchema_ID());
+		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema));
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product, 15));
 
 		assertThat(actualSchemaBreak1).isNotNull();
-		assertThat(actualSchemaBreak1.getDiscountSchemaBreakId()).isEqualTo(schemaBreak.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak1.getId()).isEqualTo(id(schemaBreak));
 	}
 
 	@Test
@@ -230,12 +230,12 @@ public class PricingConditionsTest
 		schemaBreak2.setBreakDiscount(BigDecimal.valueOf(2));
 		save(schemaBreak2);
 
-		PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
+		PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema1));
 
 		//
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQtyAndAttributeValues(product1, 15, attrValue1));
 		assertThat(actualSchemaBreak1).isNotNull();
-		assertThat(actualSchemaBreak1.getDiscountSchemaBreakId()).isEqualTo(schemaBreak1.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak1.getId()).isEqualTo(id(schemaBreak1));
 
 		//
 		final PricingConditionsBreak actualSchemaBreak2 = pricingConditions.pickApplyingBreak(createQueryForQty(product1, 15));
@@ -244,16 +244,16 @@ public class PricingConditionsTest
 		//
 		final PricingConditionsBreak actualSchemaBreak3 = pricingConditions.pickApplyingBreak(createQueryForQtyAndAttributeValues(product1, 15, attrValue2));
 		assertThat(actualSchemaBreak3).isNotNull();
-		assertThat(actualSchemaBreak3.getDiscountSchemaBreakId()).isEqualTo(schemaBreak2.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak3.getId()).isEqualTo(id(schemaBreak2));
 
 		// test also if seqNo is still respected
 		schemaBreak1.setM_AttributeValue(null);
 		save(schemaBreak1);
-		pricingConditions = repo.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
+		pricingConditions = repo.retrievePricingConditionsById(id(schema1));
 
 		final PricingConditionsBreak actualSchemaBreak4 = pricingConditions.pickApplyingBreak(createQueryForQtyAndAttributeValues(product1, 15, attrValue2));
 		assertThat(actualSchemaBreak4).isNotNull();
-		assertThat(actualSchemaBreak4.getDiscountSchemaBreakId()).isEqualTo(schemaBreak1.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak4.getId()).isEqualTo(id(schemaBreak1));
 	}
 
 	@Test
@@ -279,11 +279,11 @@ public class PricingConditionsTest
 		schemaBreak2.setM_AttributeValue(null);
 		save(schemaBreak2);
 
-		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
+		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema1));
 
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product1, 15));
 		assertThat(actualSchemaBreak1).isNotNull();
-		assertThat(actualSchemaBreak1.getDiscountSchemaBreakId()).isEqualTo(schemaBreak2.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak1.getId()).isEqualTo(id(schemaBreak2));
 	}
 
 	@Test
@@ -310,11 +310,11 @@ public class PricingConditionsTest
 		schemaBreak2.setM_AttributeValue(attrValue2);
 		save(schemaBreak2);
 
-		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
+		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(id(schema1));
 
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQtyAndAttributeValues(product1, 15, attrValue1, attrValue2));
 		assertThat(actualSchemaBreak1).isNotNull();
-		assertThat(actualSchemaBreak1.getDiscountSchemaBreakId()).isEqualTo(schemaBreak1.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak1.getId()).isEqualTo(id(schemaBreak1));
 	}
 
 	@Test
@@ -343,33 +343,28 @@ public class PricingConditionsTest
 		schemaBreak2.setBreakDiscount(new BigDecimal(25));
 		save(schemaBreak2);
 
-		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
-		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
-
-		final List<I_M_AttributeInstance> instances = new ArrayList<>();
-		instances.add(instance1);
-		instances.add(instance2);
+		final BigDecimal price = BigDecimal.valueOf(1);
 
 		// Discount 0 (because no breaks were applied)
-
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
-				.discountSchemaId(schema1.getM_DiscountSchema_ID())
-				.qty(new BigDecimal(100))
-				.price(new BigDecimal(1))
-				.productId(product1.getM_Product_ID())
-				.bpartnerFlatDiscount(new BigDecimal(1))
+				.pricingConditionsId(id(schema1))
+				.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
+						.productAndCategoryId(productAndCategoryId(product1))
+						.qty(new BigDecimal(100))
+						.price(price)
+						.build())
+				.bpartnerFlatDiscount(Percent.of(1))
 				.build();
 
-		final BigDecimal price = calculatePrice(request);
+		final BigDecimal priceAfterConditions1 = calculatePrice(price, request);
 
-		assertThat(price).isEqualByComparingTo(BigDecimal.ONE);
+		assertThat(priceAfterConditions1).isEqualByComparingTo(BigDecimal.ONE);
 
 		schemaBreak1.setM_AttributeValue(null);
 		save(schemaBreak1);
 
-		final BigDecimal price2 = calculatePrice(request);
-		final BigDecimal expectedPrice = new BigDecimal("0.500000");
-		assertThat(expectedPrice).isEqualByComparingTo(price2);
+		final BigDecimal priceAfterConditions2 = calculatePrice(price, request);
+		assertThat(priceAfterConditions2).isEqualByComparingTo(new BigDecimal("0.500000"));
 	}
 
 	@Test
@@ -398,62 +393,52 @@ public class PricingConditionsTest
 		schemaBreak2.setBreakDiscount(new BigDecimal(25));
 		save(schemaBreak2);
 
-		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
-		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
-
-		final List<I_M_AttributeInstance> instances = new ArrayList<>();
-		instances.add(instance1);
-		instances.add(instance2);
+		final BigDecimal price = BigDecimal.valueOf(1);
 
 		// Discount 0 (because no breaks were applied)
-
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
-				.discountSchemaId(schema1.getM_DiscountSchema_ID())
-				.qty(new BigDecimal(100))
-				.price(new BigDecimal(1))
-				.productId(product1.getM_Product_ID())
-				.attributeInstances(instances)
-				.bpartnerFlatDiscount(new BigDecimal(1))
+				.pricingConditionsId(id(schema1))
+				.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
+						.productAndCategoryId(productAndCategoryId(product1))
+						.qty(new BigDecimal(100))
+						.price(price)
+						.attributeInstance(createAttributeInstance(attr1, attrValue1))
+						.attributeInstance(createAttributeInstance(attr1, attrValue2))
+						.build())
+				.bpartnerFlatDiscount(Percent.of(1))
 				.build();
 
-		final BigDecimal price = calculatePrice(request);
-
-		BigDecimal expectedPrice = new BigDecimal("0.500000");
-		assertThat(expectedPrice).isEqualByComparingTo(price);
+		final BigDecimal priceAfterConditions1 = calculatePrice(price, request);
+		assertThat(priceAfterConditions1).isEqualByComparingTo(new BigDecimal("0.500000"));
 
 		final I_M_AttributeValue attrValue3 = createAttrValue(attr1, "Attr Value 3");
 		schemaBreak1.setM_AttributeValue(attrValue3);
 		save(schemaBreak1);
 
-		final BigDecimal price2 = calculatePrice(request);
-
-		expectedPrice = new BigDecimal("0.750000");
-		assertThat(expectedPrice).isEqualByComparingTo(price2);
+		final BigDecimal priceAfterConditions2 = calculatePrice(price, request);
+		assertThat(priceAfterConditions2).isEqualByComparingTo(new BigDecimal("0.750000"));
 	}
 
-	private BigDecimal calculatePrice(final CalculatePricingConditionsRequest request)
+	private static PricingConditionsId id(final I_M_DiscountSchema record)
 	{
-
-		if (request.getPrice() == null || request.getPrice().signum() == 0)
-		{
-			return request.getPrice();
-		}
-
-		final CalculatePricingConditionsResult result = service.calculatePricingConditions(request);
-
-		final BigDecimal discount = result.getDiscount();
-		if (discount == null || discount.signum() == 0)
-		{
-			return request.getPrice();
-		}
-
-		return applyDiscount(request.getPrice(), discount);
+		return PricingConditionsId.ofDiscountSchemaId(record.getM_DiscountSchema_ID());
 	}
 
-	private BigDecimal applyDiscount(@NonNull final BigDecimal price, @NonNull final BigDecimal discount)
+	private static PricingConditionsBreakId id(final I_M_DiscountSchemaBreak record)
 	{
-		BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount);
-		multiplier = multiplier.divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP);
-		return price.multiply(multiplier);
+		return PricingConditionsBreakId.of(record.getM_DiscountSchema_ID(), record.getM_DiscountSchemaBreak_ID());
+	}
+
+	private static final ProductAndCategoryId productAndCategoryId(final I_M_Product product)
+	{
+		return ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID());
+	}
+
+	private BigDecimal calculatePrice(final BigDecimal price, final CalculatePricingConditionsRequest request)
+	{
+		final PricingConditionsResult result = service.calculatePricingConditions(request);
+
+		final Percent discount = result.getDiscount();
+		return discount.subtractFromBase(price, 6);
 	}
 }

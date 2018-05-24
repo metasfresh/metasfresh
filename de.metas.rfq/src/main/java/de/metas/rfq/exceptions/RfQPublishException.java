@@ -1,5 +1,7 @@
 package de.metas.rfq.exceptions;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.rfq.RfQResponsePublisherRequest;
 
 /*
@@ -60,17 +62,17 @@ public class RfQPublishException extends RfQException
 	}
 
 	@Override
-	protected String buildMessage()
+	protected ITranslatableString buildMessage()
 	{
-		final StringBuilder sb = new StringBuilder();
-		sb.append("@Error@");
+		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		message.appendADMessage("Error");
 		if (request != null)
 		{
-			sb.append(" ").append(request.getSummary());
+			message.append(" ").append(request.getSummary());
 		}
-		sb.append(": ");
-		sb.append(getOriginalMessage());
+		message.append(": ");
+		message.append(getOriginalMessage());
 
-		return sb.toString();
+		return message.build();
 	}
 }
