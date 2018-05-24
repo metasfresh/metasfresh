@@ -187,8 +187,8 @@ class OrderLinePriceCalculator
 
 	private static boolean hasSameValues(final I_C_OrderLine orderLine, final PricingConditionsResult pricingConditionsResult)
 	{
-		final BigDecimal priceListOverride = pricingConditionsResult.getPriceListOverride();
-		if (priceListOverride != null && priceListOverride.compareTo(orderLine.getPriceEntered()) != 0)
+		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();
+		if (priceStdOverride != null && priceStdOverride.compareTo(orderLine.getPriceEntered()) != 0)
 		{
 			return false;
 		}
