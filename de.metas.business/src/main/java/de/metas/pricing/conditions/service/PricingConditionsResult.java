@@ -6,6 +6,7 @@ package de.metas.pricing.conditions.service;
 import java.math.BigDecimal;
 
 import de.metas.lang.Percent;
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsId;
 import lombok.Builder;
@@ -50,7 +51,7 @@ public class PricingConditionsResult
 	BigDecimal priceLimitOverride;
 
 	PricingConditionsId pricingConditionsId;
-	PricingConditionsBreakId pricingConditionsBreakId;
+	PricingConditionsBreak pricingConditionsBreak;
 
 	int basePricingSystemId;
 
@@ -62,11 +63,9 @@ public class PricingConditionsResult
 			final BigDecimal priceStdOverride,
 			final BigDecimal priceLimitOverride,
 			final PricingConditionsId pricingConditionsId,
-			final PricingConditionsBreakId pricingConditionsBreakId,
+			final PricingConditionsBreak pricingConditionsBreak,
 			final int basePricingSystemId)
 	{
-		PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreakId);
-
 		this.discount = discount != null ? discount : Percent.ZERO;
 		this.paymentTermId = paymentTermId;
 
@@ -74,10 +73,31 @@ public class PricingConditionsResult
 		this.priceStdOverride = priceStdOverride;
 		this.priceLimitOverride = priceLimitOverride;
 
-		this.pricingConditionsId = pricingConditionsId;
-		this.pricingConditionsBreakId = pricingConditionsBreakId;
+		this.pricingConditionsBreak = pricingConditionsBreak;
+		this.pricingConditionsId = extractPricingConditionsId(pricingConditionsId, pricingConditionsBreak);
 
 		this.basePricingSystemId = basePricingSystemId;
+	}
+
+	private static PricingConditionsId extractPricingConditionsId(PricingConditionsId pricingConditionsId, PricingConditionsBreak pricingConditionsBreak)
+	{
+		if (pricingConditionsBreak == null)
+		{
+			return pricingConditionsId;
+		}
+		else if (pricingConditionsId == null)
+		{
+			return pricingConditionsBreak.getPricingConditionsIdOrNull();
+		}
+		else if (pricingConditionsBreak.getId() == null)
+		{
+			return pricingConditionsId;
+		}
+		else
+		{
+			PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreak.getId());
+			return pricingConditionsId;
+		}
 	}
 
 }

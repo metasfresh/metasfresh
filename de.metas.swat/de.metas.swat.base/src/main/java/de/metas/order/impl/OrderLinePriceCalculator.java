@@ -153,9 +153,12 @@ class OrderLinePriceCalculator
 			basePricingSystemId = pricingConditionsResult.getBasePricingSystemId();
 			paymentTermId = pricingConditionsResult.getPaymentTermId();
 
-			final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsResult.getPricingConditionsBreakId();
-			if (pricingConditionsBreakId != null && hasSameValues(orderLine, pricingConditionsResult))
+			final PricingConditionsBreak pricingConditionsBreak = pricingConditionsResult.getPricingConditionsBreak();
+			if (pricingConditionsBreak != null
+					&& pricingConditionsBreak.getId() != null
+					&& hasSameValues(orderLine, pricingConditionsResult))
 			{
+				final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
 				discountSchemaId = pricingConditionsBreakId.getDiscountSchemaId();
 				discountSchemaBreakId = pricingConditionsBreakId.getDiscountSchemaBreakId();
 				tempPricingConditions = false;
