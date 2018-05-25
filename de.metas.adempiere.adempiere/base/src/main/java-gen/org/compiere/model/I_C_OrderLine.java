@@ -1280,10 +1280,39 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+	 * Set Rabatt Schema.
+	 * Schema um den prozentualen Rabatt zu berechnen
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
+
+	/**
+	 * Get Rabatt Schema.
+	 * Schema um den prozentualen Rabatt zu berechnen
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_DiscountSchema_ID();
+
+	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema();
+
+	public void setM_DiscountSchema(org.compiere.model.I_M_DiscountSchema M_DiscountSchema);
+
+    /** Column definition for M_DiscountSchema_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchema> COLUMN_M_DiscountSchema_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchema>(I_C_OrderLine.class, "M_DiscountSchema_ID", org.compiere.model.I_M_DiscountSchema.class);
+    /** Column name M_DiscountSchema_ID */
+    public static final String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
+
+	/**
 	 * Set Discount Schema Break.
 	 * Trade Discount Break
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1293,7 +1322,7 @@ public interface I_C_OrderLine
 	 * Get Discount Schema Break.
 	 * Trade Discount Break
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1592,6 +1621,31 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceEntered = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PriceEntered", null);
     /** Column name PriceEntered */
     public static final String COLUMNNAME_PriceEntered = "PriceEntered";
+
+	/**
+	 * Set Rohertragspreis.
+	 * Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPriceGrossProfit (java.math.BigDecimal PriceGrossProfit);
+
+	/**
+	 * Get Rohertragspreis.
+	 * Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPriceGrossProfit();
+
+    /** Column definition for PriceGrossProfit */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceGrossProfit = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PriceGrossProfit", null);
+    /** Column name PriceGrossProfit */
+    public static final String COLUMNNAME_PriceGrossProfit = "PriceGrossProfit";
 
 	/**
 	 * Set Mindestpreis.

@@ -1,6 +1,9 @@
 package de.metas.contracts.refund;
 
+import java.time.LocalDate;
+
 import de.metas.contracts.FlatrateTermId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -27,11 +30,18 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class RefundContract
 {
 	@NonNull
-	FlatrateTermId flatrateTermId;
+	FlatrateTermId id;
 
 	@NonNull
 	RefundConfig refundConfig;
+
+	@NonNull
+	LocalDate startDate;
+
+	@NonNull
+	LocalDate endDate;
 }
