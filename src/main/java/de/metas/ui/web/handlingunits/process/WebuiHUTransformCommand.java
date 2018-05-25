@@ -20,6 +20,7 @@ import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommandResult.WebuiHUTransformCommandResultBuilder;
@@ -182,11 +183,11 @@ public class WebuiHUTransformCommand
 		{
 			case CU_To_NewCU:
 			{
-				return action_SplitCU_To_NewCU(row, parameters.getQtyCU());
+				return action_SplitCU_To_NewCU(row, Quantity.of(parameters.getQtyCU(), row.getC_UOM()));
 			}
 			case CU_To_ExistingTU:
 			{
-				return action_SplitCU_To_ExistingTU(row, parameters.getTuHU(), parameters.getQtyCU());
+				return action_SplitCU_To_ExistingTU(row, parameters.getTuHU(), Quantity.of(parameters.getQtyCU(), row.getC_UOM()));
 			}
 			case CU_To_NewTUs:
 			{
@@ -194,7 +195,7 @@ public class WebuiHUTransformCommand
 				{
 					throw new FillMandatoryException(WEBUI_M_HU_Transform.PARAM_M_HU_PI_Item_Product_ID);
 				}
-				return action_SplitCU_To_NewTUs(row, parameters.getHuPIItemProduct(), parameters.getQtyCU(), parameters.isHuPlanningReceiptOwnerPM_TU());
+				return action_SplitCU_To_NewTUs(row, parameters.getHuPIItemProduct(), Quantity.of(parameters.getQtyCU(), row.getC_UOM()), parameters.isHuPlanningReceiptOwnerPM_TU());
 			}
 			case TU_Set_Ownership:
 			{
@@ -256,7 +257,7 @@ public class WebuiHUTransformCommand
 	 * @param qtyCU quantity to split
 	 * @return
 	 */
-	private WebuiHUTransformCommandResult action_SplitCU_To_ExistingTU(final HUEditorRow cuRow, final I_M_HU tuHU, final BigDecimal qtyCU)
+	private WebuiHUTransformCommandResult action_SplitCU_To_ExistingTU(final HUEditorRow cuRow, final I_M_HU tuHU, final Quantity qtyCU)
 	{
 		final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
 
@@ -274,7 +275,7 @@ public class WebuiHUTransformCommand
 	 * @param qtyCU
 	 * @return
 	 */
-	private WebuiHUTransformCommandResult action_SplitCU_To_NewCU(final HUEditorRow cuRow, final BigDecimal qtyCU)
+	private WebuiHUTransformCommandResult action_SplitCU_To_NewCU(final HUEditorRow cuRow, final Quantity qtyCU)
 	{
 		// TODO: if qtyCU is the "maximum", then don't do anything, but show a user message
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewCU(cuRow.getM_HU(), qtyCU);
@@ -298,7 +299,7 @@ public class WebuiHUTransformCommand
 	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_NewTUs(
-			final HUEditorRow cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final BigDecimal qtyCU, final boolean isOwnPackingMaterials)
+			final HUEditorRow cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final Quantity qtyCU, final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewTUs(cuRow.getM_HU(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
 		final ImmutableSet<Integer> createdHUIds = createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
