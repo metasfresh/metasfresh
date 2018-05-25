@@ -104,8 +104,8 @@ class PurchaseRowsLoader
 				rows.add(candidateRow);
 			}
 
-			final PurchaseDemand requisitionLine = createRequisitionLine(salesOrderLine);
-			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(requisitionLine, rows.build());
+			final PurchaseDemand demand = createDemand(salesOrderLine);
+			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(demand, rows.build());
 			result.add(groupRow);
 		}
 
@@ -114,7 +114,7 @@ class PurchaseRowsLoader
 		return result.build();
 	}
 
-	private static PurchaseDemand createRequisitionLine(final I_C_OrderLine salesOrderLine)
+	private static PurchaseDemand createDemand(final I_C_OrderLine salesOrderLine)
 	{
 		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(salesOrderLine.getM_Product_ID());
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
