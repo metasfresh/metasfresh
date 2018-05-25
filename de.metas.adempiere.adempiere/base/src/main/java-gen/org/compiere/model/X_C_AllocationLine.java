@@ -20,13 +20,14 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.Env;
 
 /** Generated Model for C_AllocationLine
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_AllocationLine, org.compiere.model.I_Persistent 
+public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_AllocationLine, org.compiere.model.I_Persistent
 {
 
 	/**
@@ -66,7 +67,7 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
     }
 
 	/** Set Betrag.
-		@param Amount 
+		@param Amount
 		Amount in a defined currency
 	  */
 	@Override
@@ -79,11 +80,13 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		@return Amount in a defined currency
 	  */
 	@Override
-	public java.math.BigDecimal getAmount () 
+	public java.math.BigDecimal getAmount ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Amount);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
@@ -100,52 +103,64 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	}
 
 	/** Set Zuordnung.
-		@param C_AllocationHdr_ID 
+		@param C_AllocationHdr_ID
 		Payment allocation
 	  */
 	@Override
 	public void setC_AllocationHdr_ID (int C_AllocationHdr_ID)
 	{
-		if (C_AllocationHdr_ID < 1) 
+		if (C_AllocationHdr_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_AllocationHdr_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_AllocationHdr_ID, Integer.valueOf(C_AllocationHdr_ID));
+		}
 	}
 
 	/** Get Zuordnung.
 		@return Payment allocation
 	  */
 	@Override
-	public int getC_AllocationHdr_ID () 
+	public int getC_AllocationHdr_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AllocationHdr_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
 	/** Set Zuordnungs-Position.
-		@param C_AllocationLine_ID 
+		@param C_AllocationLine_ID
 		Allocation Line
 	  */
 	@Override
 	public void setC_AllocationLine_ID (int C_AllocationLine_ID)
 	{
-		if (C_AllocationLine_ID < 1) 
+		if (C_AllocationLine_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_AllocationLine_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_AllocationLine_ID, Integer.valueOf(C_AllocationLine_ID));
+		}
 	}
 
 	/** Get Zuordnungs-Position.
 		@return Allocation Line
 	  */
 	@Override
-	public int getC_AllocationLine_ID () 
+	public int getC_AllocationLine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AllocationLine_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -162,27 +177,33 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	}
 
 	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
+		@param C_BPartner_ID
 		Identifies a Business Partner
 	  */
 	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
+		if (C_BPartner_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+		}
 	}
 
 	/** Get Geschäftspartner.
 		@return Identifies a Business Partner
 	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -199,27 +220,33 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	}
 
 	/** Set Cash Journal Line.
-		@param C_CashLine_ID 
+		@param C_CashLine_ID
 		Cash Journal Line
 	  */
 	@Override
 	public void setC_CashLine_ID (int C_CashLine_ID)
 	{
-		if (C_CashLine_ID < 1) 
+		if (C_CashLine_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_CashLine_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_CashLine_ID, Integer.valueOf(C_CashLine_ID));
+		}
 	}
 
 	/** Get Cash Journal Line.
 		@return Cash Journal Line
 	  */
 	@Override
-	public int getC_CashLine_ID () 
+	public int getC_CashLine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_CashLine_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -236,64 +263,33 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	}
 
 	/** Set Rechnung.
-		@param C_Invoice_ID 
+		@param C_Invoice_ID
 		Invoice Identifier
 	  */
 	@Override
 	public void setC_Invoice_ID (int C_Invoice_ID)
 	{
-		if (C_Invoice_ID < 1) 
+		if (C_Invoice_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+		}
 	}
 
 	/** Get Rechnung.
 		@return Invoice Identifier
 	  */
 	@Override
-	public int getC_Invoice_ID () 
+	public int getC_Invoice_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
 		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_Order(org.compiere.model.I_C_Order C_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
-	}
-
-	/** Set Auftrag.
-		@param C_Order_ID 
-		Order
-	  */
-	@Override
-	public void setC_Order_ID (int C_Order_ID)
-	{
-		if (C_Order_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
-	}
-
-	/** Get Auftrag.
-		@return Order
-	  */
-	@Override
-	public int getC_Order_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
-		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -302,20 +298,26 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	@Override
 	public void setCounter_AllocationLine_ID (int Counter_AllocationLine_ID)
 	{
-		if (Counter_AllocationLine_ID < 1) 
+		if (Counter_AllocationLine_ID < 1)
+		{
 			set_Value (COLUMNNAME_Counter_AllocationLine_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_Counter_AllocationLine_ID, Integer.valueOf(Counter_AllocationLine_ID));
+		}
 	}
 
 	/** Get Counter_AllocationLine_ID.
 		@return Counter_AllocationLine_ID	  */
 	@Override
-	public int getCounter_AllocationLine_ID () 
+	public int getCounter_AllocationLine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Counter_AllocationLine_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -332,32 +334,38 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	}
 
 	/** Set Zahlung.
-		@param C_Payment_ID 
+		@param C_Payment_ID
 		Payment identifier
 	  */
 	@Override
 	public void setC_Payment_ID (int C_Payment_ID)
 	{
-		if (C_Payment_ID < 1) 
+		if (C_Payment_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
+		}
 	}
 
 	/** Get Zahlung.
 		@return Payment identifier
 	  */
 	@Override
-	public int getC_Payment_ID () 
+	public int getC_Payment_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
 	/** Set Vorgangsdatum.
-		@param DateTrx 
+		@param DateTrx
 		Transaction Date
 	  */
 	@Override
@@ -370,13 +378,13 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		@return Transaction Date
 	  */
 	@Override
-	public java.sql.Timestamp getDateTrx () 
+	public java.sql.Timestamp getDateTrx ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTrx);
 	}
 
 	/** Set Discount Amount.
-		@param DiscountAmt 
+		@param DiscountAmt
 		Calculated amount of discount
 	  */
 	@Override
@@ -389,16 +397,18 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		@return Calculated amount of discount
 	  */
 	@Override
-	public java.math.BigDecimal getDiscountAmt () 
+	public java.math.BigDecimal getDiscountAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DiscountAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
 	/** Set Manuell.
-		@param IsManual 
+		@param IsManual
 		This is a manual process
 	  */
 	@Override
@@ -411,20 +421,22 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		@return This is a manual process
 	  */
 	@Override
-	public boolean isManual () 
+	public boolean isManual ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsManual);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Over/Under Payment.
-		@param OverUnderAmt 
+		@param OverUnderAmt
 		Over-Payment (unallocated) or Under-Payment (partial payment) Amount
 	  */
 	@Override
@@ -437,16 +449,18 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		@return Over-Payment (unallocated) or Under-Payment (partial payment) Amount
 	  */
 	@Override
-	public java.math.BigDecimal getOverUnderAmt () 
+	public java.math.BigDecimal getOverUnderAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverUnderAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
 	/** Set Payment Write-off Amount.
-		@param PaymentWriteOffAmt 
+		@param PaymentWriteOffAmt
 		Amount to write-off
 	  */
 	@Override
@@ -459,11 +473,13 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		@return Amount to write-off
 	  */
 	@Override
-	public java.math.BigDecimal getPaymentWriteOffAmt () 
+	public java.math.BigDecimal getPaymentWriteOffAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PaymentWriteOffAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
@@ -484,25 +500,31 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	@Override
 	public void setReversalLine_ID (int ReversalLine_ID)
 	{
-		if (ReversalLine_ID < 1) 
+		if (ReversalLine_ID < 1)
+		{
 			set_Value (COLUMNNAME_ReversalLine_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_ReversalLine_ID, Integer.valueOf(ReversalLine_ID));
+		}
 	}
 
 	/** Get Storno-Zeile.
 		@return Storno-Zeile	  */
 	@Override
-	public int getReversalLine_ID () 
+	public int getReversalLine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_ReversalLine_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
 	/** Set Write-off Amount.
-		@param WriteOffAmt 
+		@param WriteOffAmt
 		Amount to write-off
 	  */
 	@Override
@@ -515,11 +537,13 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		@return Amount to write-off
 	  */
 	@Override
-	public java.math.BigDecimal getWriteOffAmt () 
+	public java.math.BigDecimal getWriteOffAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_WriteOffAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 }

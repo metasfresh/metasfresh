@@ -147,7 +147,6 @@ public class MAllocationLine extends X_C_AllocationLine
 	public void setDocInfo (int C_BPartner_ID, int C_Order_ID, int C_Invoice_ID)
 	{
 		setC_BPartner_ID(C_BPartner_ID);
-		setC_Order_ID(C_Order_ID);
 		setC_Invoice_ID(C_Invoice_ID);
 	}	//	setDocInfo
 
@@ -204,10 +203,6 @@ public class MAllocationLine extends X_C_AllocationLine
 		if (getC_BPartner_ID() == 0 && getInvoice() != null)
 		{
 			setC_BPartner_ID(getInvoice().getC_BPartner_ID());
-		}
-		if (getC_Order_ID() == 0 && getInvoice() != null)
-		{
-			setC_Order_ID(getInvoice().getC_Order_ID());
 		}
 		//
 		return true;
