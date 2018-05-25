@@ -100,8 +100,8 @@ public class PurchaseRowFactory
 
 		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.lineId(purchaseCandidate.getSalesOrderLineId(), bpartnerId, processedPurchaseCandidateId))
-				.salesOrderId(purchaseCandidate.getSalesOrderId())
-				.rowType(PurchaseRowType.LINE).product(product)
+				.rowType(PurchaseRowType.LINE)
+				.product(product)
 				.grossProfitPrice(purchaseCandidate.getGrossProfitPrice())
 				.uomOrAvailablility(uom)
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
@@ -133,7 +133,6 @@ public class PurchaseRowFactory
 
 		final PurchaseRow groupRow = PurchaseRow.builder()
 				.rowId(PurchaseRowId.groupId(salesOrderLine.getC_OrderLine_ID()))
-				.salesOrderId(salesOrderLine.getC_Order_ID())
 				.rowType(PurchaseRowType.GROUP)
 				.product(product)
 				.attributeSetInstance(attributeSetInstance)
@@ -159,7 +158,6 @@ public class PurchaseRowFactory
 
 		return parentRow.toBuilder()
 				.rowId(parentRow.getRowId().withAvailability(availabilityResult.getType(), createRandomString()))
-				.salesOrderId(parentRow.getSalesOrderId())
 				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(availabilityResult.getQty())
 				.readonly(true)
@@ -175,13 +173,11 @@ public class PurchaseRowFactory
 	{
 		return parentRow.toBuilder()
 				.rowId(parentRow.getRowId().withAvailability(Type.NOT_AVAILABLE, createRandomString()))
-				.salesOrderId(parentRow.getSalesOrderId())
 				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(BigDecimal.ZERO)
 				.readonly(true)
 				.uomOrAvailablility(Util.coalesce(throwable.getLocalizedMessage(), throwable.getMessage(), throwable.getClass().getName()))
-				.datePromised(null)
-				.build();
+				.datePromised(null).build();
 	}
 
 	private static String createRandomString()
