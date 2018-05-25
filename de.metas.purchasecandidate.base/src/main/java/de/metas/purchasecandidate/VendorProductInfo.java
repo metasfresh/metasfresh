@@ -99,8 +99,8 @@ public class VendorProductInfo
 	@Builder
 	private VendorProductInfo(
 			final int bpartnerProductId,
-			final BPartnerId vendorBPartnerId,
-			final ProductId productId,
+			@NonNull final BPartnerId vendorBPartnerId,
+			@NonNull final ProductId productId,
 			@NonNull final String productNo,
 			@NonNull final String productName,
 			final boolean aggregatePOs)

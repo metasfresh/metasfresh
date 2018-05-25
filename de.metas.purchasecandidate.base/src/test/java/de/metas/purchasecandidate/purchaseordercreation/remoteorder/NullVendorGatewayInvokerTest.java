@@ -66,7 +66,7 @@ public class NullVendorGatewayInvokerTest
 				.orgId(10)
 				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
-				.productId(productId)
+				.productId(productId.getRepoId())
 				.qtyToPurchase(TEN)
 				.salesOrderId(40)
 				.salesOrderLineId(50)

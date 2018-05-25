@@ -2,7 +2,7 @@ package de.metas.material.dispo.commons.repository;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -114,7 +114,7 @@ public class AvailableToPromiseRepository
 
 	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
-		final MemoizingFunction<Date, Timestamp> maxDateLessOrEqualFunction //
+		final MemoizingFunction<LocalDate, Timestamp> maxDateLessOrEqualFunction //
 				= Functions.memoizing(date -> retrieveMaxDateLessOrEqual(date));
 
 		final UnaryOperator<AvailableToPromiseQuery> setStockQueryDataParameter = //
@@ -142,7 +142,7 @@ public class AvailableToPromiseRepository
 				.orElse(null);
 	}
 
-	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final Date date)
+	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final LocalDate date)
 	{
 		return Services.get(IQueryBL.class)
 
