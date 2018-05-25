@@ -10,8 +10,10 @@ import org.adempiere.impexp.IImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 
+import de.metas.vertical.pharma.model.I_AD_User;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_I_BPartner;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -51,19 +53,82 @@ public class PharmaImportPartnerInterceptor implements IImportInterceptor
 	@Override
 	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing)
 	{
-		if (timing != IImportInterceptor.TIMING_AFTER_IMPORT || !(targetModel instanceof org.compiere.model.I_C_BPartner))
+		if (timing != IImportInterceptor.TIMING_AFTER_IMPORT )
 		{
 			return;
 		}
 
 		final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(importModel, I_I_BPartner.class);
+
+		if (targetModel instanceof org.compiere.model.I_C_BPartner)
+		{
+			importBPartnerPharmaFields(ibpartner, targetModel);
+		}
+		else if (targetModel instanceof I_AD_User)
+		{
+			importContactPharmaFields(ibpartner, targetModel);
+		}
+	}
+
+	private void importBPartnerPharmaFields(@NonNull final I_I_BPartner ibpartner, @NonNull final Object targetModel)
+	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(targetModel, I_C_BPartner.class);
 		bpartner.setIsPharmaciePermission(ibpartner.isPharmaciePermission());
 		if (!Check.isEmpty(ibpartner.getPharmaproductpermlaw52(),true))
 		{
 			bpartner.setPharmaproductpermlaw52(ibpartner.getPharmaproductpermlaw52());
 		}
+		//
+		if (!Check.isEmpty(ibpartner.getRegion(),true))
+		{
+			bpartner.setRegion(ibpartner.getRegion());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getSalesResponsible(),true))
+		{
+			bpartner.setSalesResponsible(ibpartner.getSalesResponsible());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getPurchaseGroup(),true))
+		{
+			bpartner.setPurchaseGroup(ibpartner.getPurchaseGroup());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getAssociationMembership(),true))
+		{
+			bpartner.setAssociationMembership(ibpartner.getAssociationMembership());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getShipmentPermissionPharma_Old(),true))
+		{
+			bpartner.setShipmentPermissionPharma_Old(ibpartner.getShipmentPermissionPharma_Old());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getPermissionPharmaType(),true))
+		{
+			bpartner.setPermissionPharmaType(ibpartner.getPermissionPharmaType());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getWeekendOpeningTimes(),true))
+		{
+			bpartner.setWeekendOpeningTimes(ibpartner.getWeekendOpeningTimes());
+		}
+		bpartner.setShelfLifeMinDays(ibpartner.getShelfLifeMinDays());
+
+		de.metas.invoicecandidate.model.I_C_BPartner partner = InterfaceWrapperHelper.create(bpartner, de.metas.invoicecandidate.model.I_C_BPartner.class);
+		partner.setSO_InvoiceLine_Aggregation_ID(ibpartner.getC_Aggregation_ID());
+
 		save(bpartner);
+	}
+
+	private void importContactPharmaFields(@NonNull final I_I_BPartner ibpartner, @NonNull final Object targetModel)
+	{
+		final I_AD_User contact = InterfaceWrapperHelper.create(targetModel, I_AD_User.class);
+		contact.setIsDecider(ibpartner.isDecider());
+		contact.setIsManagement(ibpartner.isManagement());
+		contact.setIsMultiplier(ibpartner.isMultiplier());
+
+		save(contact);
 	}
 
 }
