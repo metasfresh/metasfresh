@@ -26,10 +26,7 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Display,AD_Key,AD_Org_ID,AD_Reference_
  VALUES (0,545845,545845,0,540867,540321,540092,TO_TIMESTAMP('2018-05-24 18:19:33','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.contracts','Y','N',TO_TIMESTAMP('2018-05-24 18:19:33','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2018-05-24T18:24:19.810
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Ref_Table SET WhereClause=' exists (  select 1 from C_Invoice_Candidate refund  join C_Invoice_Candidate_Assignment ica on refund.C_Invoice_Candidate_ID = ica.C_Invoice_Candidate_Term_ID  join C_Invoice_Candidate normal on ica.C_Invoice_Candidate_Assigned_ID  where normal.C_Invoice_Candidate_ID = @C_Invoice_Candidate_ID/-1@ and refund.C_Invoice_Candidate_ID = C_Invoice_Candidate.C_Invoice_Candidate_ID  )',Updated=TO_TIMESTAMP('2018-05-24 18:24:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540867
-;
+
 
 -- 2018-05-24T18:24:43.326
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -39,12 +36,6 @@ UPDATE AD_RelationType SET AD_Reference_Target_ID=540867,Updated=TO_TIMESTAMP('2
 -- 2018-05-24T18:24:51.734
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_RelationType SET IsDirected='Y',Updated=TO_TIMESTAMP('2018-05-24 18:24:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540204
-;
-
-
--- 2018-05-25T10:27:35.321
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Ref_Table SET WhereClause=' exists (  select 1 from C_Invoice_Candidate refund  join C_Invoice_Candidate_Assignment ica on refund.C_Invoice_Candidate_ID = ica.C_Invoice_Candidate_Term_ID  join C_Invoice_Candidate normal on ica.C_Invoice_Candidate_Assigned_ID = normal.C_Invoice_Candidate_ID  where normal.C_Invoice_Candidate_ID = @C_Invoice_Candidate_ID/-1@ and refund.C_Invoice_Candidate_ID = C_Invoice_Candidate.C_Invoice_Candidate_ID  )',Updated=TO_TIMESTAMP('2018-05-25 10:27:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540867
 ;
 
 
