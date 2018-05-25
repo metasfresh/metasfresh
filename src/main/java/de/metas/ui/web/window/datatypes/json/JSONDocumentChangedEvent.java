@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -136,6 +137,11 @@ public class JSONDocumentChangedEvent
 	public java.util.Date getValueAsDateTime()
 	{
 		return JSONDate.fromObject(value, DocumentFieldWidgetType.DateTime);
+	}
+
+	public LocalDateTime getValueAsLocalDateTime()
+	{
+		return JSONDate.localDateTimeFromObject(value);
 	}
 
 	public LookupValue getValueAsIntegerLookupValue()
