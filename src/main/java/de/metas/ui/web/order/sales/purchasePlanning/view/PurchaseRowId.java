@@ -46,21 +46,21 @@ import lombok.ToString;
 @EqualsAndHashCode
 public final class PurchaseRowId
 {
-	public static PurchaseRowId groupId(final int salesOrderLineId)
+	public static PurchaseRowId groupId(final PurchaseDemandId purchaseDemandId)
 	{
 		return PurchaseRowId.builder()
-				.salesOrderLineId(salesOrderLineId)
+				.purchaseDemandId(purchaseDemandId)
 				.vendorBPartnerId(null)
 				.build();
 	}
 
 	public static PurchaseRowId lineId(
-			final int salesOrderLineId,
+			final PurchaseDemandId purchaseDemandId,
 			final BPartnerId vendorBPartnerId,
 			final int processedPurchaseCandidateId)
 	{
 		return PurchaseRowId.builder()
-				.salesOrderLineId(salesOrderLineId)
+				.purchaseDemandId(purchaseDemandId)
 				.vendorBPartnerId(vendorBPartnerId)
 				.processedPurchaseCandidateId(processedPurchaseCandidateId)
 				.build();
@@ -74,7 +74,7 @@ public final class PurchaseRowId
 				"The method withAvailabilityId may only be invoked on a line row id; this={}", this);
 
 		return builder()
-				.salesOrderLineId(salesOrderLineId)
+				.purchaseDemandId(purchaseDemandId)
 				.vendorBPartnerId(vendorBPartnerId)
 				.processedPurchaseCandidateId(processedPurchaseCandidateId)
 				.availabilityType(availabilityType)
@@ -99,21 +99,24 @@ public final class PurchaseRowId
 	{
 		final List<String> parts = PARTS_SPLITTER.splitToList(json);
 		final int partsCount = parts.size();
-		if (partsCount < 1 || partsCount == 4 || partsCount > 5)
+		if (partsCount <= 0 || partsCount > 6)
 		{
 			throw new AdempiereException("Invalid format: " + json);
 		}
 
 		try
 		{
-			final int salesOrderLineId = Integer.parseInt(parts.get(0));
-			final BPartnerId vendorBPartnerId = partsCount >= 2 ? BPartnerId.ofRepoIdOrNull(Integer.parseInt(parts.get(1))) : null;
-			final int processedPurchaseCandidateId = partsCount >= 3 ? Integer.parseInt(parts.get(2)) : -1;
-			final Type availabilityType = partsCount >= 4 ? Type.valueOf(parts.get(3)) : null;
-			final String availabilityDistinguisher = partsCount >= 5 ? parts.get(4) : null;
+			final String purchaseDemandId_tableName = parts.get(0);
+			final int purchaseDemandId_recordId = Integer.parseInt(parts.get(1));
+			final PurchaseDemandId purchaseDemandId = PurchaseDemandId.ofTableAndRecordId(purchaseDemandId_tableName, purchaseDemandId_recordId);
 
-			return PurchaseRowId.builder()
-					.salesOrderLineId(salesOrderLineId)
+			final BPartnerId vendorBPartnerId = partsCount >= 3 ? BPartnerId.ofRepoIdOrNull(Integer.parseInt(parts.get(2))) : null;
+			final int processedPurchaseCandidateId = partsCount >= 4 ? Integer.parseInt(parts.get(3)) : -1;
+			final Type availabilityType = partsCount >= 5 ? Type.valueOf(parts.get(4)) : null;
+			final String availabilityDistinguisher = partsCount >= 6 ? parts.get(5) : null;
+
+			return builder()
+					.purchaseDemandId(purchaseDemandId)
 					.vendorBPartnerId(vendorBPartnerId)
 					.processedPurchaseCandidateId(processedPurchaseCandidateId)
 					.availabilityType(availabilityType)
@@ -133,7 +136,7 @@ public final class PurchaseRowId
 	private static final Splitter PARTS_SPLITTER = Splitter.on(PARTS_SEPARATOR).omitEmptyStrings();
 
 	@Getter
-	private final int salesOrderLineId;
+	private final PurchaseDemandId purchaseDemandId;
 
 	@Getter(AccessLevel.PACKAGE) // visible for testing
 	private final BPartnerId vendorBPartnerId;
@@ -150,15 +153,13 @@ public final class PurchaseRowId
 
 	@Builder
 	private PurchaseRowId(
-			final int salesOrderLineId,
+			@NonNull final PurchaseDemandId purchaseDemandId,
 			final BPartnerId vendorBPartnerId,
 			final int processedPurchaseCandidateId,
 			final Type availabilityType,
 			final String availabilityDistinguisher,
 			final DocumentId documentId)
 	{
-		Check.errorIf(salesOrderLineId <= 0, "The given salesOrderLineId={} may not be <= 0", salesOrderLineId);
-
 		Check.errorIf(availabilityType == null ^ Check.isEmpty(availabilityDistinguisher, true),
 				"The given availabilityType and availabilityDistinguisher need to be both either null/empty or both not-null/not-empty; availabilityType={}; availabilityDistinguisher={}",
 				availabilityType, availabilityDistinguisher);
@@ -167,7 +168,7 @@ public final class PurchaseRowId
 				"The given availabilityDistinguisher string may not contain the PARTS_SEPARATOR string; PARTS_SEPARATOR={};availabilityDistinguisher={}",
 				PARTS_SEPARATOR, availabilityDistinguisher);
 
-		this.salesOrderLineId = salesOrderLineId;
+		this.purchaseDemandId = purchaseDemandId;
 		this.vendorBPartnerId = vendorBPartnerId;
 		this.processedPurchaseCandidateId = processedPurchaseCandidateId > 0 ? processedPurchaseCandidateId : 0;
 
@@ -182,7 +183,11 @@ public final class PurchaseRowId
 		if (_documentId == null)
 		{
 			final StringBuilder sb = new StringBuilder();
-			sb.append(salesOrderLineId);
+
+			sb.append(purchaseDemandId.getTableName());
+			sb.append(PARTS_SEPARATOR);
+			sb.append(purchaseDemandId.getRecordId());
+
 			if (vendorBPartnerId != null || processedPurchaseCandidateId > 0)
 			{
 				sb.append(PARTS_SEPARATOR);
@@ -211,8 +216,7 @@ public final class PurchaseRowId
 		}
 		else
 		{
-			return PurchaseRowId.builder()
-					.salesOrderLineId(salesOrderLineId).build();
+			return builder().purchaseDemandId(purchaseDemandId).build();
 		}
 	}
 
@@ -224,10 +228,11 @@ public final class PurchaseRowId
 		}
 		else
 		{
-			return PurchaseRowId.builder()
-					.salesOrderLineId(salesOrderLineId)
+			return builder()
+					.purchaseDemandId(purchaseDemandId)
 					.vendorBPartnerId(vendorBPartnerId)
-					.processedPurchaseCandidateId(processedPurchaseCandidateId).build();
+					.processedPurchaseCandidateId(processedPurchaseCandidateId)
+					.build();
 		}
 	}
 

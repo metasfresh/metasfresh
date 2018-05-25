@@ -1,7 +1,7 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -138,7 +138,8 @@ public class PurchaseRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 70)
 	})
-	private Date datePromised;
+	@Getter
+	private LocalDateTime datePromised;
 
 	//
 	private final PurchaseRowId rowId;
@@ -150,7 +151,9 @@ public class PurchaseRow implements IViewRow
 
 	@Getter
 	private final int purchaseCandidateId;
+	@Getter
 	private final int orgId;
+	@Getter
 	private final int warehouseId;
 	private final boolean readonly;
 
@@ -179,7 +182,7 @@ public class PurchaseRow implements IViewRow
 			@Nullable final BigDecimal qtyToDeliver,
 			@Nullable final BigDecimal qtyToPurchase,
 			@Nullable final BigDecimal purchasedQty,
-			@Nullable final Date datePromised,
+			@Nullable final LocalDateTime datePromised,
 			@Singular final ImmutableList<PurchaseRow> includedRows,
 			final int purchaseCandidateId,
 			final int orgId,
@@ -276,9 +279,9 @@ public class PurchaseRow implements IViewRow
 		return rowId.toDocumentId();
 	}
 
-	public int getSalesOrderLineId()
+	public PurchaseDemandId getPurchaseDemandId()
 	{
-		return rowId.getSalesOrderLineId();
+		return rowId.getPurchaseDemandId();
 	}
 
 	@Override
@@ -378,9 +381,9 @@ public class PurchaseRow implements IViewRow
 		this.setPurchasedQty(purchasedQtySum);
 	}
 
-	private void setDatePromised(@NonNull final Date datePromised)
+	private void setDatePromised(@NonNull final LocalDateTime datePromised)
 	{
-		this.datePromised = (Date)datePromised.clone();
+		this.datePromised = datePromised;
 		resetFieldNameAndJsonValues();
 	}
 
@@ -407,7 +410,7 @@ public class PurchaseRow implements IViewRow
 
 	public void changeDatePromised(
 			@NonNull final PurchaseRowId rowId,
-			@NonNull final Date datePromised)
+			@NonNull final LocalDateTime datePromised)
 	{
 		Check.errorUnless(rowType == PurchaseRowType.GROUP,
 				"The method changeDatePromisedOfIncludedRow() is only allowed for group rows; this={}", this);
@@ -426,21 +429,6 @@ public class PurchaseRow implements IViewRow
 	public int getVendorBPartnerId()
 	{
 		return vendorBPartner.getKeyAsInt();
-	}
-
-	public Date getDatePromised()
-	{
-		return datePromised;
-	}
-
-	public int getOrgId()
-	{
-		return orgId;
-	}
-
-	public int getWarehouseId()
-	{
-		return warehouseId;
 	}
 
 	public void setAvailabilityInfoRows(@NonNull final ImmutableList<PurchaseRow> availabilityResultRows)

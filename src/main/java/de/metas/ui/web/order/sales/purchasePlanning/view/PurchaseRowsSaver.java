@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -58,8 +59,10 @@ class PurchaseRowsSaver
 	public List<PurchaseCandidate> save()
 	{
 		final Set<Integer> salesOrderLineIds = groupingRows.stream()
-				.map(PurchaseRow::getSalesOrderLineId)
-				.filter(id -> id > 0)
+				.map(PurchaseRow::getPurchaseDemandId)
+				.filter(id -> id != null)
+				.filter(id -> I_C_OrderLine.Table_Name.equals(id.getTableName()))
+				.map(PurchaseDemandId::getRecordId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final Map<Integer, PurchaseCandidate> existingPurchaseCandidatesById = purchaseCandidatesRepo

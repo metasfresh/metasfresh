@@ -22,6 +22,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
@@ -74,14 +75,14 @@ public class PurchaseRowFactoryTest
 				.rowFromPurchaseCandidateBuilder()
 				.purchaseCandidate(purchaseCandidate)
 				.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
-				.datePromised(LocalDateTime.now())
+				.datePromised(SystemTime.asLocalDateTime())
 				.build();
 
 		final DocumentId id = candidateRow.getId();
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(id);
 
 		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(purchaseCandidate.getVendorBPartnerId());
-		assertThat(purchaseRowId.getSalesOrderLineId()).isEqualTo(purchaseCandidate.getSalesOrderLineId());
+		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId(I_C_OrderLine.Table_Name, purchaseCandidate.getSalesOrderLineId()));
 		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(30);
 
 	}
