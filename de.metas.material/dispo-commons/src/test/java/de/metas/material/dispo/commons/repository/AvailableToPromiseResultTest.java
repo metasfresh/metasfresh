@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.collections.ListUtils;
+import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -80,7 +81,7 @@ public class AvailableToPromiseResultTest
 						.productId(10)
 						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY_OTHER)
-						.date(NOW)
+						.date(TimeUtil.asLocalDate(NOW))
 						.build());
 
 		final List<ResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
@@ -113,7 +114,7 @@ public class AvailableToPromiseResultTest
 	{
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.of(AvailableToPromiseQuery.builder()
 				.productId(10)
-				.date(NOW)
+				.date(TimeUtil.asLocalDate(NOW))
 				.build());
 
 		final List<ResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();

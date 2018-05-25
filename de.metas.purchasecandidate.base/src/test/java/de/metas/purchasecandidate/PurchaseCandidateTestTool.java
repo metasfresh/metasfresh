@@ -6,6 +6,8 @@ import java.time.temporal.ChronoUnit;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.time.SystemTime;
 
+import de.metas.product.ProductId;
+
 /*
  * #%L
  * de.metas.purchasecandidate.base
@@ -49,7 +51,7 @@ public final class PurchaseCandidateTestTool
 				.vendorProductInfo(VendorProductInfo.builder()
 						.bpartnerProductId(10)
 						.vendorBPartnerId(BPartnerId.ofRepoId(7))
-						.productId(20)
+						.productId(ProductId.ofRepoId(20))
 						.productNo("productNo")
 						.productName("productName")
 						.build())

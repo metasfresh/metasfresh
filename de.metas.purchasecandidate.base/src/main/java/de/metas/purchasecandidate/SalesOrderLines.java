@@ -210,7 +210,7 @@ public class SalesOrderLines
 				.dateRequired(purchaseDatePromised)
 				.reminderTime(reminderTime)
 				.orgId(salesOrderLine.getAD_Org_ID())
-				.productId(vendorProductInfo.getProductId())
+				.productId(vendorProductInfo.getProductId().getRepoId())
 				.qtyToPurchase(BigDecimal.ZERO)
 				.salesOrderId(salesOrderLine.getC_Order_ID())
 				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())

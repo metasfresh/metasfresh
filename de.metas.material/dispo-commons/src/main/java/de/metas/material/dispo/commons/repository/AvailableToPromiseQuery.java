@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -7,6 +8,7 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -47,7 +49,7 @@ public class AvailableToPromiseQuery
 	{
 		return AvailableToPromiseQuery.builder()
 				.warehouseId(materialDescriptor.getWarehouseId())
-				.date(materialDescriptor.getDate())
+				.date(TimeUtil.asLocalDate(materialDescriptor.getDate()))
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
 				.bpartnerId(materialDescriptor.getBPartnerId())
@@ -55,7 +57,7 @@ public class AvailableToPromiseQuery
 	}
 
 	private final ImmutableSet<Integer> warehouseIds;
-	private final Date date;
+	private final LocalDate date;
 	private final ImmutableList<Integer> productIds;
 	private final ImmutableList<AttributesKey> storageAttributesKeys;
 
@@ -66,7 +68,7 @@ public class AvailableToPromiseQuery
 	@Builder(toBuilder = true)
 	private AvailableToPromiseQuery(
 			@Singular final Set<Integer> warehouseIds,
-			final Date date,
+			final LocalDate date,
 			@Singular final List<Integer> productIds,
 			@Singular final List<AttributesKey> storageAttributesKeys,
 			final int bpartnerId)
@@ -74,7 +76,7 @@ public class AvailableToPromiseQuery
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
 		this.warehouseIds = warehouseIds == null || warehouseIds.isEmpty() ? ImmutableSet.of() : ImmutableSet.copyOf(warehouseIds);
-		this.date = date != null ? (Date)date.clone() : SystemTime.asDate();
+		this.date = date != null ? date : SystemTime.asLocalDate();
 		this.productIds = ImmutableList.copyOf(productIds);
 		this.storageAttributesKeys = ImmutableList.copyOf(storageAttributesKeys);
 
@@ -93,16 +95,16 @@ public class AvailableToPromiseQuery
 
 	public AvailableToPromiseQuery withDate(@NonNull final Date newDate)
 	{
+		return withDate(TimeUtil.asLocalDate(newDate));
+	}
+
+	public AvailableToPromiseQuery withDate(@NonNull final LocalDate newDate)
+	{
 		if (Objects.equals(this.date, newDate))
 		{
 			return this;
 		}
 		return toBuilder().date(newDate).build();
-	}
-
-	public Date getDate()
-	{
-		return (Date)date.clone();
 	}
 
 	public boolean isBPartnerMatching(final int bpartnerIdToMatch)

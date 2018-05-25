@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
@@ -51,7 +52,7 @@ public class NullVendorGatewayInvokerTest
 	@Test
 	public void placeRemotePurchaseOrder()
 	{
-		final int productId = 20;
+		final ProductId productId = ProductId.ofRepoId(20);
 		final BPartnerId vendorBPartnerId = BPartnerId.ofRepoId(30);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
@@ -65,7 +66,7 @@ public class NullVendorGatewayInvokerTest
 				.orgId(10)
 				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
-				.productId(productId)
+				.productId(productId.getRepoId())
 				.qtyToPurchase(TEN)
 				.salesOrderId(40)
 				.salesOrderLineId(50)

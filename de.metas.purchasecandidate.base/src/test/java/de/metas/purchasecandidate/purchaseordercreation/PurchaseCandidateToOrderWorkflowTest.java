@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -213,7 +214,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.vendorProductInfo(VendorProductInfo.builder()
 						.bpartnerProductId(10)
 						.vendorBPartnerId(BPartnerId.ofRepoId(vendorId))
-						.productId(20)
+						.productId(ProductId.ofRepoId(20))
 						.productNo("productNo")
 						.productName("productName").build())
 				.qtyToPurchase(BigDecimal.ONE)

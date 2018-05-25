@@ -4,12 +4,12 @@ import java.util.OptionalInt;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
 
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,7 +43,7 @@ public class VendorProductInfo
 
 	BPartnerId vendorBPartnerId;
 
-	int productId;
+	ProductId productId;
 	String productNo;
 	String productName;
 
@@ -88,7 +88,7 @@ public class VendorProductInfo
 		return builder()
 				.bpartnerProductId(bpartnerProduct.getC_BPartner_Product_ID())
 				.vendorBPartnerId(bpartnerVendorId)
-				.productId(bpartnerProduct.getM_Product_ID())
+				.productId(ProductId.ofRepoId(bpartnerProduct.getM_Product_ID()))
 				.productNo(productNo)
 				.productName(productName)
 				.aggregatePOs(aggregatePOs)
@@ -99,13 +99,11 @@ public class VendorProductInfo
 	private VendorProductInfo(
 			final int bpartnerProductId,
 			@NonNull final BPartnerId vendorBPartnerId,
-			final int productId,
+			@NonNull final ProductId productId,
 			@NonNull final String productNo,
 			@NonNull final String productName,
 			final boolean aggregatePOs)
 	{
-		Check.assume(productId > 0, "productId > 0");
-
 		this.bpartnerProductId = bpartnerProductId > 0 ? OptionalInt.of(bpartnerProductId) : OptionalInt.empty();
 		this.vendorBPartnerId = vendorBPartnerId;
 		this.productId = productId;

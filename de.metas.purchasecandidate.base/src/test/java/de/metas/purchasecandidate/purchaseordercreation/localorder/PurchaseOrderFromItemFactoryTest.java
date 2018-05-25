@@ -28,6 +28,7 @@ import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.model.I_C_Order;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
@@ -175,7 +176,7 @@ public class PurchaseOrderFromItemFactoryTest
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
 				.vendorBPartnerId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
-				.productId(20)
+				.productId(ProductId.ofRepoId(20))
 				.productName("productName")
 				.productNo("productNo")
 				.build();

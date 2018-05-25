@@ -24,6 +24,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
@@ -76,7 +77,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		vendor.setName("Vendor");
 		save(vendor);
 
-		final int productId = 20;
+		final ProductId productId = ProductId.ofRepoId(20);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
@@ -89,7 +90,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.orgId(10)
 				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
-				.productId(productId)
+				.productId(productId.getRepoId())
 				.qtyToPurchase(TEN)
 				.salesOrderId(salesOrder.getC_Order_ID())
 				.salesOrderLineId(50)

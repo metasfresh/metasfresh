@@ -15,14 +15,15 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.EventTestHelper;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 
 /*
@@ -95,7 +96,7 @@ public class StockRepositorySqlHelperTest
 				.productId(10)
 				.productId(20)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.date(NOW)
+				.date(TimeUtil.asLocalDate(NOW))
 				.build();
 
 		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
@@ -118,7 +119,7 @@ public class StockRepositorySqlHelperTest
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
-				.date(NOW)
+				.date(TimeUtil.asLocalDate(NOW))
 				.build();
 
 		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
@@ -144,7 +145,7 @@ public class StockRepositorySqlHelperTest
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
 				.storageAttributesKey(AttributesKey.OTHER)
-				.date(NOW)
+				.date(TimeUtil.asLocalDate(NOW))
 				.build();
 
 		// invoke the method under test
