@@ -172,13 +172,18 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	{
 		try
 		{
-			final List<PurchaseCandidateReminder> remindersToDispatch = reminders.removeAllUntil(LocalDateTime.now());
+			final List<PurchaseCandidateReminder> remindersToDispatch = removeAllRemindersUntil(LocalDateTime.now());
 			remindersToDispatch.forEach(this::dispatchNotificationNoFail);
 		}
 		finally
 		{
 			scheduleNextDispatch();
 		}
+	}
+
+	private synchronized List<PurchaseCandidateReminder> removeAllRemindersUntil(final LocalDateTime maxNotificationTime)
+	{
+		return reminders.removeAllUntil(maxNotificationTime);
 	}
 
 	private void dispatchNotificationNoFail(final PurchaseCandidateReminder reminder)
