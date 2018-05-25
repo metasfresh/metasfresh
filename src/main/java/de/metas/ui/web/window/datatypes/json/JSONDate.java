@@ -90,6 +90,12 @@ public final class JSONDate
 		}
 	}
 
+	public static LocalDateTime localDateTimeFromJson(final String valueStr)
+	{
+		// TODO: optimize, convert directly
+		return TimeUtil.asLocalDateTime(fromDateTimeString(valueStr));
+	}
+
 	public static Date fromObject(final Object value, final DocumentFieldWidgetType widgetType)
 	{
 		if (value == null)
@@ -102,6 +108,21 @@ public final class JSONDate
 		}
 		final String valueStr = value.toString().trim();
 		return JSONDate.fromJson(valueStr, widgetType);
+	}
+
+	public static LocalDateTime localDateTimeFromObject(final Object value)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		if (value instanceof LocalDateTime)
+		{
+			return (LocalDateTime)value;
+		}
+
+		final String valueStr = value.toString().trim();
+		return localDateTimeFromJson(valueStr);
 	}
 
 	public static Date fromTimestamp(final Timestamp ts)
