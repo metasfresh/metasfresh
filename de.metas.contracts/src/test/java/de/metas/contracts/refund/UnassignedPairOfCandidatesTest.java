@@ -33,22 +33,27 @@ import de.metas.contracts.refund.UnassignedPairOfCandidates.UnassignedPairOfCand
 
 public class UnassignedPairOfCandidatesTest
 {
+	private RefundTestTools refundTestTools;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		refundTestTools = new RefundTestTools();
 	}
 
 	@Test
 	public void build()
 	{
-		final RefundInvoiceCandidate refundInvoiceCandidate = RefundTestTools.createRefundCandidate();
-		final AssignableInvoiceCandidate assignableInvoiceCandidate = RefundTestTools.createAssignableCandidate(refundInvoiceCandidate);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateWithAssignment();
 
 		final UnassignedPairOfCandidatesBuilder builder = UnassignedPairOfCandidates
 				.builder()
 				.assignableInvoiceCandidate(assignableInvoiceCandidate)
-				.refundInvoiceCandidate(refundInvoiceCandidate);
+				.refundInvoiceCandidate(assignableInvoiceCandidate
+						.getAssignmentToRefundCandidate()
+						.getRefundInvoiceCandidate());
 
 		final Throwable thrown = catchThrowable(() -> builder.build());
 		assertThat(thrown)

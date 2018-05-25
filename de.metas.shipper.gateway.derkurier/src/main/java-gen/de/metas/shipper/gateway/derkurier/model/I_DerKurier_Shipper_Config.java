@@ -266,6 +266,52 @@ public interface I_DerKurier_Shipper_Config
     public static final String COLUMNNAME_DK_CustomerNumber = "DK_CustomerNumber";
 
 	/**
+	 * Set Gewünschte Lieferuhrzeit von.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_DesiredDeliveryTime_From (java.sql.Timestamp DK_DesiredDeliveryTime_From);
+
+	/**
+	 * Get Gewünschte Lieferuhrzeit von.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDK_DesiredDeliveryTime_From();
+
+    /** Column definition for DK_DesiredDeliveryTime_From */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_DK_DesiredDeliveryTime_From = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "DK_DesiredDeliveryTime_From", null);
+    /** Column name DK_DesiredDeliveryTime_From */
+    public static final String COLUMNNAME_DK_DesiredDeliveryTime_From = "DK_DesiredDeliveryTime_From";
+
+	/**
+	 * Set Gewünschte Lieferuhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_DesiredDeliveryTime_To (java.sql.Timestamp DK_DesiredDeliveryTime_To);
+
+	/**
+	 * Get Gewünschte Lieferuhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDK_DesiredDeliveryTime_To();
+
+    /** Column definition for DK_DesiredDeliveryTime_To */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_DK_DesiredDeliveryTime_To = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "DK_DesiredDeliveryTime_To", null);
+    /** Column name DK_DesiredDeliveryTime_To */
+    public static final String COLUMNNAME_DK_DesiredDeliveryTime_To = "DK_DesiredDeliveryTime_To";
+
+	/**
 	 * Set EMail Empfänger.
 	 * EMail address to send requests to - e.g. edi@manufacturer.com
 	 *
