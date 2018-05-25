@@ -94,7 +94,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		try
 		{
 			final AssignableInvoiceCandidate assignableInvoiceCandidate = invoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
-			invoiceCandidateAssignmentService.createOrFindRefundCandidateAndAssignIfFeasible(assignableInvoiceCandidate);
+			invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
 		}
 		catch (final RuntimeException e)
 		{

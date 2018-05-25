@@ -51,7 +51,7 @@ public class InvoiceCandidateAssignmentService
 		this.invoiceCandidateRepository = invoiceCandidateRepository;
 	}
 
-	public AssignableInvoiceCandidate createOrFindRefundCandidateAndAssignIfFeasible(
+	public AssignableInvoiceCandidate updateAssignment(
 			@NonNull final AssignableInvoiceCandidate invoiceCandidate)
 	{
 		final RefundContractQuery refundContractQuery = RefundContractQuery.of(invoiceCandidate);
@@ -89,13 +89,13 @@ public class InvoiceCandidateAssignmentService
 			if (assignedRefundCandidateIdChanges || assignedMoneyChanges)
 			{
 				// the refund candidate matching the given invoiceCandidate parameter changed;
-				// unassign (which also subtracts the assigned money)
+				// unassign (which also subtracts the assigned money);
 				final UnassignedPairOfCandidates unassignResult = unassignCandidate(reloadedInvoiceCandidate);
 				refundInvoiceCandidateToAssign = unassignResult.getRefundInvoiceCandidate();
 			}
 			else
 			{
-				// the given invoiceCandidate parameter was not up to date with the backend storage; nothing to do here
+				// the given invoiceCandidate was already up to date with the backend storage; nothing to do here
 				return reloadedInvoiceCandidate;
 			}
 		}
