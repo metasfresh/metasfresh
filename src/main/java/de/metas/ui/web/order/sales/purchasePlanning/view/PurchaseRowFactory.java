@@ -159,9 +159,13 @@ public class PurchaseRowFactory
 
 		return parentRow.toBuilder()
 				.rowId(parentRow.getRowId().withAvailability(availabilityResult.getType(), createRandomString()))
-				.salesOrderId(parentRow.getSalesOrderId()).rowType(PurchaseRowType.AVAILABILITY_DETAIL)
-				.qtyToPurchase(availabilityResult.getQty()).readonly(true).uomOrAvailablility(availability)
-				.datePromised(TimeUtil.asTimestamp(availabilityResult.getDatePromised())).build();
+				.salesOrderId(parentRow.getSalesOrderId())
+				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
+				.qtyToPurchase(availabilityResult.getQty())
+				.readonly(true)
+				.uomOrAvailablility(availability)
+				.datePromised(TimeUtil.asTimestamp(availabilityResult.getDatePromised()))
+				.build();
 	}
 
 	@Builder(builderMethodName = "rowFromThrowableBuilder", builderClassName = "RowFromThrowableBuilder")
@@ -171,11 +175,13 @@ public class PurchaseRowFactory
 	{
 		return parentRow.toBuilder()
 				.rowId(parentRow.getRowId().withAvailability(Type.NOT_AVAILABLE, createRandomString()))
-				.salesOrderId(parentRow.getSalesOrderId()).rowType(PurchaseRowType.AVAILABILITY_DETAIL)
-				.qtyToPurchase(BigDecimal.ZERO).readonly(true)
-				.uomOrAvailablility(Util.coalesce(throwable.getLocalizedMessage(), throwable.getMessage(),
-						throwable.getClass().getName()))
-				.datePromised(null).build();
+				.salesOrderId(parentRow.getSalesOrderId())
+				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
+				.qtyToPurchase(BigDecimal.ZERO)
+				.readonly(true)
+				.uomOrAvailablility(Util.coalesce(throwable.getLocalizedMessage(), throwable.getMessage(), throwable.getClass().getName()))
+				.datePromised(null)
+				.build();
 	}
 
 	private static String createRandomString()
