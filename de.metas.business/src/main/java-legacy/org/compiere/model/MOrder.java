@@ -976,7 +976,7 @@ public class MOrder extends X_C_Order implements IDocument
 			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), null));
 		}
 		// No Bill - get from Ship
-		if (getBill_BPartner_ID() == 0)
+		if (getBill_BPartner_ID() <= 0)
 		{
 			setBill_BPartner_ID(getC_BPartner_ID());
 			setBill_Location_ID(getC_BPartner_Location_ID());
