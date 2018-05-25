@@ -13,18 +13,18 @@ package org.adempiere.util.time;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
@@ -38,11 +38,14 @@ import java.util.GregorianCalendar;
  * @author ts
  * 
  */
-public final class SystemTime {
+public final class SystemTime
+{
 
-	private static final TimeSource defaultTimeSource = new TimeSource() {
+	private static final TimeSource defaultTimeSource = new TimeSource()
+	{
 		@Override
-		public long millis() {
+		public long millis()
+		{
 			return System.currentTimeMillis();
 		}
 
@@ -50,11 +53,13 @@ public final class SystemTime {
 
 	private static TimeSource timeSource;
 
-	public static long millis() {
+	public static long millis()
+	{
 		return getTimeSource().millis();
 	}
 
-	public static GregorianCalendar asGregorianCalendar() {
+	public static GregorianCalendar asGregorianCalendar()
+	{
 
 		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTimeInMillis(millis());
@@ -62,21 +67,30 @@ public final class SystemTime {
 		return cal;
 	}
 
-	public static Date asDate() {
+	public static Date asDate()
+	{
 
 		return new Date(millis());
 	}
-	
-	public static Timestamp asTimestamp() {
+
+	public static Timestamp asTimestamp()
+	{
 
 		return new Timestamp(millis());
 	}
-	
+
 	public static LocalDateTime asLocalDateTime()
 	{
 		return Instant.ofEpochMilli(millis())
 				.atZone(ZoneId.systemDefault())
 				.toLocalDateTime();
+	}
+
+	public static LocalDate asLocalDate()
+	{
+		return Instant.ofEpochMilli(millis())
+				.atZone(ZoneId.systemDefault())
+				.toLocalDate();
 	}
 
 	/**
@@ -94,7 +108,8 @@ public final class SystemTime {
 		return new Timestamp(cal.getTimeInMillis());
 	}
 
-	private static TimeSource getTimeSource() {
+	private static TimeSource getTimeSource()
+	{
 		return timeSource == null ? defaultTimeSource : timeSource;
 	}
 
@@ -102,7 +117,8 @@ public final class SystemTime {
 	 * After invocation of this method, the time returned will be the system
 	 * time again.
 	 */
-	public static void resetTimeSource() {
+	public static void resetTimeSource()
+	{
 		timeSource = null;
 	}
 
@@ -113,7 +129,8 @@ public final class SystemTime {
 	 *            methods of this class (unless it is null).
 	 * 
 	 */
-	public static void setTimeSource(TimeSource newTimeSource) {
+	public static void setTimeSource(TimeSource newTimeSource)
+	{
 		timeSource = newTimeSource;
 	}
 }
