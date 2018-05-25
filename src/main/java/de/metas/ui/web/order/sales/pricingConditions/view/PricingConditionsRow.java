@@ -232,10 +232,10 @@ public class PricingConditionsRow implements IViewRow
 
 		this.copiedFromPricingConditionsBreakId = copiedFromPricingConditionsBreakId;
 
-		id = buildDocumentId(this.bpartner, this.customer, this.editable);
+		id = buildDocumentId(this.pricingConditionsBreak, this.bpartner, this.customer, this.editable);
 	}
 
-	private static final DocumentId buildDocumentId(final LookupValue bpartner, final boolean customer, final boolean editableRow)
+	private static final DocumentId buildDocumentId(final PricingConditionsBreak pricingConditionsBreak, final LookupValue bpartner, final boolean customer, final boolean editableRow)
 	{
 		final StringBuilder idStr = new StringBuilder();
 		idStr.append(bpartner.getIdAsString());
@@ -243,6 +243,14 @@ public class PricingConditionsRow implements IViewRow
 		if (editableRow)
 		{
 			idStr.append("-").append("editable");
+		}
+		else if (pricingConditionsBreak.getId() != null)
+		{
+			// In case the row is not editable, we shall also append the pricing conditions break ID to make it unique,
+			// else would fail in case we are showing all pricing conditions, for all break levels for a given product.
+			// (e.g. when we are opening it from material cockpit)
+			final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
+			idStr.append("-").append(pricingConditionsBreakId.getDiscountSchemaBreakId());
 		}
 
 		return DocumentId.ofString(idStr.toString());
