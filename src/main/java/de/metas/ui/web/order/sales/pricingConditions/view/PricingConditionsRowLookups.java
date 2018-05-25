@@ -1,19 +1,27 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
+import java.awt.Color;
+
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.CCache;
 import org.compiere.util.Evaluatees;
 
+import de.metas.order.IOrderLinePricingConditions;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.product.ProductId;
+import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.IColorRepository;
+import de.metas.util.MFColor;
 import lombok.NonNull;
 
 /*
@@ -51,6 +59,8 @@ public class PricingConditionsRowLookups
 	private final LookupDataSource pricingSystemLookup;
 	private final LookupDataSource paymentTermLookup;
 
+	private CCache<Integer, String> temporaryPriceConditionsColorCache = CCache.newCache("temporaryPriceConditionsColor", 1, CCache.EXPIREMINUTES_Never);
+
 	private PricingConditionsRowLookups()
 	{
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
@@ -72,7 +82,7 @@ public class PricingConditionsRowLookups
 
 	public LookupValue lookupProduct(final ProductId productId)
 	{
-		if(productId == null)
+		if (productId == null)
 		{
 			return null;
 		}
@@ -123,4 +133,27 @@ public class PricingConditionsRowLookups
 			throw new AdempiereException("Field " + fieldName + " does not exist or it's not a lookup field");
 		}
 	}
+
+	public String getTemporaryPriceConditionsColor()
+	{
+		return temporaryPriceConditionsColorCache.getOrLoad(0, this::retrieveTemporaryPriceConditionsColor);
+	}
+
+	private String retrieveTemporaryPriceConditionsColor()
+	{
+		final int temporaryPriceConditionsColorId = Services.get(IOrderLinePricingConditions.class).getTemporaryPriceConditionsColorId();
+		return toHexString(Services.get(IColorRepository.class).getColorById(temporaryPriceConditionsColorId));
+	}
+
+	private static final String toHexString(final MFColor color)
+	{
+		if (color == null)
+		{
+			return null;
+		}
+
+		final Color awtColor = color.toFlatColor().getFlatColor();
+		return ColorValue.toHexString(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
+	}
+
 }

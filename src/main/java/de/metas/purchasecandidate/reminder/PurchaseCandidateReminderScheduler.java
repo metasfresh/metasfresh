@@ -172,13 +172,18 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	{
 		try
 		{
-			final List<PurchaseCandidateReminder> remindersToDispatch = reminders.removeAllUntil(LocalDateTime.now());
+			final List<PurchaseCandidateReminder> remindersToDispatch = removeAllRemindersUntil(LocalDateTime.now());
 			remindersToDispatch.forEach(this::dispatchNotificationNoFail);
 		}
 		finally
 		{
 			scheduleNextDispatch();
 		}
+	}
+
+	private synchronized List<PurchaseCandidateReminder> removeAllRemindersUntil(final LocalDateTime maxNotificationTime)
+	{
+		return reminders.removeAllUntil(maxNotificationTime);
 	}
 
 	private void dispatchNotificationNoFail(final PurchaseCandidateReminder reminder)
@@ -249,7 +254,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 		return DocumentFilter.builder()
 				.setFilterId("filterByVendorIdAndReminderDate")
 				.setCaption(caption)
-				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, Operator.EQUAL, vendorBPartnerId))
+				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, Operator.EQUAL, vendorBPartnerId.getRepoId()))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate, Operator.LESS_OR_EQUAL, notificationTime))
 				.build();
 	}

@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.adempiere.bpartner.BPartnerId;
@@ -20,17 +21,18 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.ui.web.order.sales.pricingConditions.view.PriceNetCalculator.BasePriceCalculator;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.PricingConditionsBreaksExtractor;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.SourceDocumentLine;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -82,30 +84,14 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		final I_C_Order order = orderLine.getC_Order();
 		final boolean isSOTrx = order.isSOTrx();
 
-		final PriceNetCalculator priceNetCalculator = PriceNetCalculator.builder()
-				.basePriceCalculator(createBasePriceCalculator(orderLine))
-				.build();
-
 		final PricingConditionsRowData rowsData = preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(createPricingConditionsBreaksExtractor(orderLine))
-				.priceNetCalculator(priceNetCalculator)
+				.basePricingSystemPriceCalculator(new OrderLineBasePricingSystemPriceCalculator(orderLine))
 				.filters(extractFilters(request))
 				.adClientId(orderLine.getAD_Client_ID())
 				.sourceDocumentLine(createSourceDocumentLine(orderLine, isSOTrx))
 				.load();
 		return rowsData;
-	}
-
-	private final BasePriceCalculator createBasePriceCalculator(final I_C_OrderLine orderLine)
-	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
-		return request -> orderLineBL.computePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(orderLine)
-				.pricingConditionsBreakOverride(request.getPricingConditionsBreak())
-				.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
-				.build())
-				.getPriceStd();
 	}
 
 	private final PricingConditionsBreaksExtractor createPricingConditionsBreaksExtractor(final I_C_OrderLine salesOrderLine)
@@ -151,6 +137,38 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 				.priceEntered(orderLine.getPriceEntered())
 				.discount(Percent.of(orderLine.getDiscount()))
 				.paymentTermId(orderLine.getC_PaymentTerm_Override_ID())
+				.pricingConditionsBreakId(PricingConditionsBreakId.ofOrNull(orderLine.getM_DiscountSchema_ID(), orderLine.getM_DiscountSchemaBreak_ID()))
 				.build();
+	}
+
+	private static class OrderLineBasePricingSystemPriceCalculator implements BasePricingSystemPriceCalculator
+	{
+		private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		private final I_C_OrderLine orderLine;
+
+		private final ConcurrentHashMap<PricingConditionsBreak, BigDecimal> basePricesCache = new ConcurrentHashMap<>();
+
+		public OrderLineBasePricingSystemPriceCalculator(@NonNull final I_C_OrderLine orderLine)
+		{
+			this.orderLine = orderLine;
+		}
+
+		@Override
+		public BigDecimal calculate(final BasePricingSystemPriceCalculatorRequest request)
+		{
+			final PricingConditionsBreak pricingConditionsBreak = request.getPricingConditionsBreak();
+			return basePricesCache.computeIfAbsent(pricingConditionsBreak, this::calculate);
+		}
+
+		private BigDecimal calculate(final PricingConditionsBreak pricingConditionsBreak)
+		{
+			return orderLineBL.computePrices(OrderLinePriceUpdateRequest.builder()
+					.orderLine(orderLine)
+					.pricingConditionsBreakOverride(pricingConditionsBreak)
+					.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
+					.build())
+					.getPriceStd();
+		}
+
 	}
 }
