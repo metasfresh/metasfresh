@@ -1,7 +1,10 @@
 package de.metas.contracts.refund;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -13,40 +16,22 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
-import de.metas.document.IDocTypeDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.Money;
 import de.metas.money.MoneyFactory;
 import lombok.AccessLevel;
@@ -84,8 +69,6 @@ public class InvoiceCandidateRepository
 	@Getter(AccessLevel.PACKAGE)
 	private final InvoiceCandidateFactory invoiceCandidateFactory;
 
-	private final RefundContractRepository refundContractRepository;
-
 	public InvoiceCandidateRepository(
 			@NonNull final RefundContractRepository refundContractRepository,
 			@NonNull final MoneyFactory moneyFactory)
@@ -94,8 +77,6 @@ public class InvoiceCandidateRepository
 				this,
 				refundContractRepository,
 				moneyFactory);
-
-		this.refundContractRepository = refundContractRepository;
 	}
 
 	public <T extends InvoiceCandidate> T ofRecord(@NonNull final I_C_Invoice_Candidate record)
@@ -383,122 +364,6 @@ public class InvoiceCandidateRepository
 				.iterator();
 	}
 
-	public RefundInvoiceCandidate createRefundInvoiceCandidate(
-			@NonNull final AssignableInvoiceCandidate invoiceCandidate,
-			@NonNull final FlatrateTermId contractId)
-	{
-		final I_C_Invoice_Candidate assignableInvoiceCandidateRecord = load(invoiceCandidate.getId().getRepoId(), I_C_Invoice_Candidate.class);
-
-		final I_C_Invoice_Candidate refundInvoiceCandidateRecord = Services.get(IInvoiceCandBL.class)
-				.splitCandidate(assignableInvoiceCandidateRecord);
-
-		final I_C_ILCandHandler handlerRecord = Services.get(IInvoiceCandidateHandlerDAO.class)
-				.retrieveForClassOneOnly(Env.getCtx(), FlatrateTerm_Handler.class);
-		refundInvoiceCandidateRecord.setC_ILCandHandler(handlerRecord);
-
-		refundInvoiceCandidateRecord.setC_Order(null);
-		refundInvoiceCandidateRecord.setC_OrderLine(null);
-
-		final I_C_Flatrate_Term contractRecord = loadOutOfTrx(contractId.getRepoId(), I_C_Flatrate_Term.class);
-		refundInvoiceCandidateRecord.setRecord_ID(contractRecord.getC_Flatrate_Term_ID());
-		refundInvoiceCandidateRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
-
-		refundInvoiceCandidateRecord.setPriceActual(ZERO);
-		refundInvoiceCandidateRecord.setPriceEntered(ZERO);
-
-		refundInvoiceCandidateRecord.setQtyOrdered(ONE);
-		refundInvoiceCandidateRecord.setQtyDelivered(ONE);
-
-		final RefundConfig refundConfig = retrieveConfig(refundInvoiceCandidateRecord);
-
-		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(refundConfig.getInvoiceScheduleId().getRepoId());
-		refundInvoiceCandidateRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
-		refundInvoiceCandidateRecord.setInvoiceRule_Override(null);
-		refundInvoiceCandidateRecord.setDateToInvoice_Override(null);
-
-		final boolean soTrx = assignableInvoiceCandidateRecord.isSOTrx();
-		refundInvoiceCandidateRecord.setIsSOTrx(soTrx);
-
-		try
-		{
-			final int docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundConfig);
-			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId);
-		}
-		catch (final RuntimeException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
-					.setParameter("invoiceCandidate", invoiceCandidate)
-					.setParameter("refundConfig", refundConfig)
-					.setParameter("assignableInvoiceCandidateRecord", assignableInvoiceCandidateRecord);
-		}
-
-		saveRecord(refundInvoiceCandidateRecord);
-
-		invalidateNewRefundRecordIfNeeded(refundInvoiceCandidateRecord);
-
-		return invoiceCandidateFactory.ofNullableRefundRecord(refundInvoiceCandidateRecord).get();
-	}
-
-	private void invalidateNewRefundRecordIfNeeded(@NonNull final I_C_Invoice_Candidate refundInvoiceCandidateRecord)
-	{
-		if (!Services.get(IInvoiceCandBL.class).isUpdateProcessInProgress())
-		{
-			return; // it's not necessary to make an explicit call because that's already done by a model interceptor
-		}
-		Services.get(IInvoiceCandDAO.class).invalidateCand(refundInvoiceCandidateRecord);
-	}
-
-	private int computeDocType(
-			final I_C_Invoice_Candidate assignableInvoiceCandidateRecord,
-			final RefundConfig refundConfig)
-	{
-		final boolean soTrx = !assignableInvoiceCandidateRecord.isSOTrx();
-
-		final DocTypeQueryBuilder docTypeQueryBuilder = DocTypeQuery
-				.builder()
-				.isSOTrx(soTrx)
-				.adClientId(assignableInvoiceCandidateRecord.getAD_Client_ID())
-				.adOrgId(assignableInvoiceCandidateRecord.getAD_Org_ID())
-				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE);
-
-		if (soTrx)
-		{
-			docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo); // ARC_Gutschrift (Debitorenkonten) = outgoing "they pay" invoice
-
-		}
-		else
-		{
-			docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo); // APC_Gutschrift (Lieferant) = incoming "we pay" invoice
-		}
-
-		switch (refundConfig.getRefundInvoiceType())
-		{
-			case INVOICE:
-
-				docTypeQueryBuilder.docSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung);
-
-				break;
-			case CREDITMEMO:
-
-				docTypeQueryBuilder.docSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsgutschrift);
-
-			default:
-				Check.fail("The current refundConfig has an ussupported invoice type={}", refundConfig.getRefundInvoiceType());
-		}
-
-		final int docTypeId = Services.get(IDocTypeDAO.class)
-				.getDocTypeIdOrNull(docTypeQueryBuilder.build());
-		return Check.assumeGreaterThanZero(docTypeId, "doctype");
-	}
-
-	private RefundConfig retrieveConfig(@NonNull final I_C_Invoice_Candidate refundInvoiceCandidateRecord)
-	{
-		final FlatrateTermId contractId = FlatrateTermId.ofRepoId(refundInvoiceCandidateRecord.getRecord_ID());
-		final RefundContract refundContract = refundContractRepository.getById(contractId);
-
-		return refundContract.getRefundConfig();
-	}
-
 	public IQueryFilter<I_C_Invoice_Candidate> createDateToInvoiceEffectiveFilter(
 			@NonNull final Timestamp startDate,
 			@NonNull final Timestamp endDate)
@@ -523,4 +388,11 @@ public class InvoiceCandidateRepository
 
 		return dateToInvoiceEffectiveFilter;
 }
+
+	public RefundInvoiceCandidate createRefundInvoiceCandidate(
+			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,
+			@NonNull final FlatrateTermId contractId)
+	{
+		return invoiceCandidateFactory.createRefundInvoiceCandidate(assignableInvoiceCandidate, contractId);
+	}
 }
