@@ -114,7 +114,7 @@ public final class Check
 		}
 	}
 
-	private static void throwOrLogEx(final Class<? extends RuntimeException> exClazz, final String msg)
+	private static RuntimeException throwOrLogEx(final Class<? extends RuntimeException> exClazz, final String msg)
 	{
 		final RuntimeException ex = mkEx(exClazz, msg);
 
@@ -127,6 +127,7 @@ public final class Check
 		else
 		{
 			logger.error(msg, ex);
+			return ex;
 		}
 	}
 
@@ -493,10 +494,10 @@ public final class Check
 		}
 	}
 
-	public static void fail(final String errMsg, final Object... params)
+	public static RuntimeException fail(final String errMsg, final Object... params)
 	{
 		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
-		throwOrLogEx(defaultExClazz, "Error: " + errMsgFormated);
+		return throwOrLogEx(defaultExClazz, "Error: " + errMsgFormated);
 	}
 
 	/**
@@ -531,6 +532,11 @@ public final class Check
 	public static boolean isEmpty(final String str)
 	{
 		return isEmpty(str, false);
+	}
+
+	public static boolean isEmptyTrimWhitespaces(final String str)
+	{
+		return isEmpty(str, true);
 	}
 
 	/**

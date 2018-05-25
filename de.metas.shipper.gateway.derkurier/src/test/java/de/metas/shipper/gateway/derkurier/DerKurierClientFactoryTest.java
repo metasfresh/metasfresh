@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import java.time.LocalTime;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -68,13 +70,17 @@ public class DerKurierClientFactoryTest
 				.restApiBaseUrl(REST_API_BASE_URL)
 				.customerNumber("12345")
 				.parcelNumberAdSequenceId(ParcelNumberGenerator.NO_AD_SEQUENCE_ID_FOR_TESTING)
+				.collectorCode("01")
+				.customerCode("02")
+				.desiredTimeFrom(LocalTime.of(9, 0))
+				.desiredTimeTo(LocalTime.of(17, 0))
 				.build();
 
 		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
 
 		final MockRestServiceServer mockServer = MockRestServiceServer.createServer(client.getRestTemplate());
 
-		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest();
+		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest_times_with_seconds();
 
 		mockServer.expect(requestTo(REST_API_BASE_URL + "/routing/request"))
 				.andRespond(withSuccess(ROUTING_RESPONSE_JSON, MediaType.APPLICATION_JSON));

@@ -1,14 +1,18 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalTime;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_Sequence;
+import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 
@@ -74,6 +78,9 @@ public class DerKurierShipperConfigRepositoryTest
 
 		configRecord.setAD_MailBox_ID(mailbox.getAD_MailBox_ID());
 		configRecord.setEMail_To("we@us.test");
+		configRecord.setDK_DesiredDeliveryTime_From(TimeUtil.asTimestamp(LocalTime.of(9, 0)));
+		configRecord.setDK_DesiredDeliveryTime_To(TimeUtil.asTimestamp(LocalTime.of(17, 30)));
+		
 		save(configRecord);
 
 		final DerKurierShipperConfig config = new DerKurierShipperConfigRepository().retrieveConfigForShipperId(20);
@@ -93,6 +100,10 @@ public class DerKurierShipperConfigRepositoryTest
 		configRecord.setAD_Sequence(sequenceRecord);
 		configRecord.setAPIServerBaseURL("https://testurl");
 		configRecord.setM_Shipper_ID(20);
+		configRecord.setCollectorCode("01");
+		configRecord.setCustomerCode("02");
+		configRecord.setDK_DesiredDeliveryTime_From(TimeUtil.asTimestamp(LocalTime.of(9, 0)));
+		configRecord.setDK_DesiredDeliveryTime_To(TimeUtil.asTimestamp(LocalTime.of(17, 30)));
 		save(configRecord);
 		return configRecord;
 	}

@@ -11,6 +11,8 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.StringUtils;
+import org.adempiere.util.StringUtils.TruncateAt;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.springframework.stereotype.Service;
@@ -60,8 +62,8 @@ import lombok.NonNull;
 @Service
 public class Converters
 {
-	private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DerKurierConstants.DATE_FORMAT);
-	private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(DerKurierConstants.TIME_FORMAT);
+	private static final DateTimeFormatter CSV_DATE_FORMATTER = DateTimeFormatter.ofPattern(DerKurierConstants.CSV_DATE_FORMAT);
+	private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(DerKurierConstants.TIME_FORMAT);
 
 	public RoutingRequest createRoutingRequestFrom(@NonNull final DeliveryOrder deliveryOrder)
 	{
@@ -119,7 +121,6 @@ public class Converters
 
 	public List<String> createCsv(@NonNull final DeliveryOrder deliveryOrder)
 	{
-
 		final Address deliveryAddress = Check.assumeNotNull(deliveryOrder.getDeliveryAddress(),
 				"The given deliveryOrder's deliveryAddress may not be null; deliveryOrder={}", deliveryOrder);
 
@@ -141,20 +142,20 @@ public class Converters
 
 			final String csvLine = Joiner
 					.on(";")
-					.skipNulls()
+					.useForNull("")
 					.join(
-							dateToString(deliveryOrder.getPickupDate().getDate()),
+							dateToCsvString(deliveryOrder.getPickupDate().getDate()),
 							derKurierDeliveryData.getCustomerNumber(),
 							deliveryAddress.getCompanyName1(),
 							deliveryAddress.getCompanyName2(),
-							"", // FirmaD3
+							null, // FirmaD3
 							deliveryAddress.getCountry().getAlpha2(),
 							deliveryAddress.getZipCode(),
 							deliveryAddress.getCity(),
 							joinStreet1AndStreet2(deliveryAddress),
 							deliveryAddress.getHouseNo(),
 							derKurierDeliveryData.getStation(),
-							dateToString(deliveryDate.getDate()),
+							dateToCsvString(deliveryDate.getDate()),
 							timeToString(deliveryDate.getTimeFrom()),
 							timeToString(deliveryDate.getTimeTo()),
 							intToString(posCounter),
@@ -162,15 +163,15 @@ public class Converters
 							intToString(packageDimensions.map(PackageDimensions::getLengthInCM)),
 							intToString(packageDimensions.map(PackageDimensions::getWidthInCM)),
 							intToString(packageDimensions.map(PackageDimensions::getHeightInCM)),
-							derKurierDeliveryData.getParcelNumber(),
+							truncateCheckDigitFromParcelNo(derKurierDeliveryData.getParcelNumber()),
 							deliveryOrder.getCustomerReference(),
 							orderId.getOrderIdAsString(),
-							"", // cReferenz
+							null, // cReferenz
 							stringToString(deliveryContact.map(ContactPerson::getPhoneAsStringOrNull)),
-							"", // EA
-							"", // EB
-							"", // EC
-							"", // NN
+							null, // EA
+							null, // EB
+							null, // EC
+							null, // NN
 							intToString(deliveryPosition.getNumberOfPackages()),
 							stringToString(deliveryContact.map(ContactPerson::getEmailAddress)));
 			csv.add(csvLine);
@@ -201,13 +202,13 @@ public class Converters
 				list.size() > 1 ? list.get(1) : null);
 	}
 
-	private static String dateToString(@Nullable final LocalDate date)
+	private static String dateToCsvString(@Nullable final LocalDate date)
 	{
 		if (date == null)
 		{
 			return "";
 		}
-		return date.format(dateFormatter);
+		return date.format(CSV_DATE_FORMATTER);
 	}
 
 	private static String timeToString(@Nullable final LocalTime time)
@@ -216,7 +217,7 @@ public class Converters
 		{
 			return "";
 		}
-		return time.format(timeFormatter);
+		return time.format(TIME_FORMATTER);
 	}
 
 	private static String intToString(@NonNull final Optional<Integer> integer)
@@ -244,5 +245,10 @@ public class Converters
 			return string.get();
 		}
 		return "";
+	}
+
+	private String truncateCheckDigitFromParcelNo(@NonNull final String parcelNumber)
+	{
+		return StringUtils.trunc(parcelNumber, 11, TruncateAt.STRING_END);
 	}
 }

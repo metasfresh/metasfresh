@@ -33,6 +33,8 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import lombok.NonNull;
+
 public interface IProductBL extends ISingletonService
 {
 	int getUOMPrecision(I_M_Product product);
@@ -113,6 +115,11 @@ public interface IProductBL extends ISingletonService
 	/** @return UOM used in material storage; never return null; */
 	I_C_UOM getStockingUOM(int productId);
 
+	default int getStockingUOMId(@NonNull final ProductId productId)
+	{
+		return getStockingUOM(productId.getRepoId()).getC_UOM_ID();
+	}
+
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.
 	 *
@@ -140,4 +147,7 @@ public interface IProductBL extends ISingletonService
 	boolean isInstanceAttribute(I_M_Product product);
 
 	boolean isProductInCategory(int productId, int expectedProductCategoryId);
+
+	String getProductValueAndName(int productId);
+
 }

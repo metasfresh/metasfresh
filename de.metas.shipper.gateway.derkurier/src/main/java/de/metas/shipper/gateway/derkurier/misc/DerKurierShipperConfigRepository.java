@@ -1,12 +1,13 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_MailBox;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import de.metas.email.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
@@ -53,6 +54,10 @@ public class DerKurierShipperConfigRepository
 				.parcelNumberAdSequenceId(shipperConfigRecord.getAD_Sequence_ID())
 				.deliveryOrderMailBoxOrNull(loadMailboxOrNull(shipperConfigRecord.getAD_MailBox_ID()))
 				.deliveryOrderRecipientEmailOrNull(shipperConfigRecord.getEMail_To())
+				.collectorCode(shipperConfigRecord.getCollectorCode())
+				.customerCode(shipperConfigRecord.getCustomerCode())
+				.desiredTimeFrom(TimeUtil.asLocalTime(shipperConfigRecord.getDK_DesiredDeliveryTime_From()))
+				.desiredTimeTo(TimeUtil.asLocalTime(shipperConfigRecord.getDK_DesiredDeliveryTime_To()))
 				.build();
 
 		return shipperConfig;

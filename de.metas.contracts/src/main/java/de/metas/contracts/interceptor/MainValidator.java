@@ -40,10 +40,10 @@ import de.metas.contracts.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigM
 import de.metas.contracts.inoutcandidate.ShipmentScheduleFromSubscriptionOrderLineVetoer;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
-import de.metas.contracts.invoicecandidate.ExcludeSubscriptionInOutLines;
-import de.metas.contracts.invoicecandidate.ExcludeSubscriptionOrderLines;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
+import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionInOutLines;
+import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionOrderLines;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;

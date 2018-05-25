@@ -26,16 +26,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
-/**
- * Pricing context
- *
- * @author tsa
- *
- */
+import de.metas.pricing.conditions.PricingConditionsBreak;
+
 public interface IPricingContext extends IContextAware
 {
 	int getM_Product_ID();
@@ -64,7 +61,7 @@ public interface IPricingContext extends IContextAware
 
 	int getC_Currency_ID();
 
-	int getC_BPartner_ID();
+	BPartnerId getBPartnerId();
 
 	BigDecimal getQty();
 
@@ -79,6 +76,8 @@ public interface IPricingContext extends IContextAware
 	int getPP_Product_BOMLine_ID();
 
 	boolean isDisallowDiscount();
+
+	PricingConditionsBreak getForcePricingConditionsBreak();
 
 	Object getReferencedObject();
 
@@ -107,6 +106,8 @@ public interface IPricingContext extends IContextAware
 
 	<T> T getProperty(String propertyName, Class<T> clazz);
 
+	boolean isPropertySet(String propertyName);
+
 	/**
 	 * Specifies if the pricing engine shall calculate a price or not.
 	 *
@@ -118,6 +119,6 @@ public interface IPricingContext extends IContextAware
 	int getC_Country_ID();
 
 	boolean isFailIfNotCalculated();
-	
+
 	boolean isSkipCheckingPriceListSOTrxFlag();
 }

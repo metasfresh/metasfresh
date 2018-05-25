@@ -34,12 +34,14 @@ public class DerKurierConstants
 
 	public static final String SYSCONFIG_DERKURIER_LABEL_PROCESS_ID = "de.metas.shipper.gateway.derkurier.PackageLabel.AD_Process_ID";
 
-	public static final String DATE_FORMAT = "yyyy-MM-dd";
+	public static final String API_DATE_FORMAT = "yyyy-MM-dd";
+
+	public static final String CSV_DATE_FORMAT = "dd.MM.yyyy";
 
 	public static final String TIME_FORMAT = "HH:mm";
 
 	/** used to join&split the street1 and street2 that we have in {@link Address} into the one "street" field that we have at "Der Kurier" */
 	public static final String STREET_DELIMITER = " - ";
 
-	public static final Charset CSV_DATA_CHARSET = StandardCharsets.UTF_8;
+	public static final Charset CSV_DATA_CHARSET = StandardCharsets.ISO_8859_1;
 }

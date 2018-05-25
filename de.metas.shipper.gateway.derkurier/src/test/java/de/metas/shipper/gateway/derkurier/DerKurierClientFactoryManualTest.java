@@ -59,7 +59,7 @@ public class DerKurierClientFactoryManualTest
 				.build();
 		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
 
-		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest();
+		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest_times_with_seconds();
 		final Routing routing = client.postRoutingRequest(routingRequest);
 		assertThat(routing).isNotNull();
 	}

@@ -1,5 +1,7 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+import java.time.LocalTime;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
@@ -46,13 +48,23 @@ public class DerKurierShipperConfig
 
 	int parcelNumberAdSequenceId;
 
+	String collectorCode;
+	String customerCode;
+
+	LocalTime desiredTimeFrom;
+	LocalTime desiredTimeTo;
+
 	@Builder
 	private DerKurierShipperConfig(
 			@NonNull final String restApiBaseUrl,
 			@NonNull final String customerNumber,
 			@Nullable final Mailbox deliveryOrderMailBoxOrNull,
 			@Nullable String deliveryOrderRecipientEmailOrNull,
-			final int parcelNumberAdSequenceId)
+			@NonNull String collectorCode,
+			@NonNull String customerCode,
+			final int parcelNumberAdSequenceId,
+			@NonNull LocalTime desiredTimeFrom,
+			@NonNull LocalTime desiredTimeTo)
 	{
 		this.customerNumber = Check.assumeNotEmpty(customerNumber, "Parameter customerNumber is not empty");
 		this.restApiBaseUrl = Check.assumeNotEmpty(restApiBaseUrl, "Parameter restApiBaseUrl is not empty");
@@ -67,5 +79,11 @@ public class DerKurierShipperConfig
 				"Parameter parcelNumberAdSequenceId is > 0");
 		this.parcelNumberAdSequenceId = parcelNumberAdSequenceId;
 		this.parcelNumberGenerator = new ParcelNumberGenerator(parcelNumberAdSequenceId);
+
+		this.collectorCode = collectorCode;
+		this.customerCode = customerCode;
+		
+		this.desiredTimeFrom = desiredTimeFrom;
+		this.desiredTimeTo = desiredTimeTo;
 	}
 }

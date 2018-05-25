@@ -76,7 +76,8 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		}
 	}
 
-	private int getTemporaryPriceConditionsColorId()
+	@Override
+	public int getTemporaryPriceConditionsColorId()
 	{
 		return getColorIdBySysConfig(SYSCONFIG_TemporaryPriceConditionsColorName);
 	}
@@ -108,7 +109,7 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order);
 		final boolean existsOrderLineWithNoPricingConditions = orderLines
 				.stream()
-				.anyMatch(this::isPricingConditionsMissing);
+				.anyMatch(this::isPricingConditionsMissingButRequired);
 
 		if (existsOrderLineWithNoPricingConditions)
 		{
@@ -123,8 +124,14 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		return noPriceConditionsColorId > 0;
 	}
 
-	private boolean isPricingConditionsMissing(final I_C_OrderLine orderLine)
+	private boolean isPricingConditionsMissingButRequired(final I_C_OrderLine orderLine)
 	{
+		// Pricing conditions are not required for packing material line (task 3925)
+		if (orderLine.isPackagingMaterial())
+		{
+			return false;
+		}
+
 		return hasPricingConditions(orderLine) == HasPricingConditions.NO;
 	}
 

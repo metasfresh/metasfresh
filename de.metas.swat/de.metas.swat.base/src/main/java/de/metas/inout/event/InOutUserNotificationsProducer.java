@@ -40,6 +40,7 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import lombok.NonNull;
 
 /**
@@ -130,7 +131,7 @@ public final class InOutUserNotificationsProducer
 				.contentADMessageParam(inoutRef)
 				.contentADMessageParam(bpValue)
 				.contentADMessageParam(bpName)
-				.targetRecord(inoutRef)
+				.targetAction(TargetRecordAction.of(inoutRef))
 				.build();
 	}
 
@@ -188,12 +189,12 @@ public final class InOutUserNotificationsProducer
 
 	private void postNotification(final UserNotificationRequest notification)
 	{
-		notificationBL.notifyUserAfterCommit(notification);
+		notificationBL.sendAfterCommit(notification);
 	}
 
 	private void postNotifications(final List<UserNotificationRequest> notifications)
 	{
-		Services.get(INotificationBL.class).notifyUserAfterCommit(notifications);
+		Services.get(INotificationBL.class).sendAfterCommit(notifications);
 	}
 
 }

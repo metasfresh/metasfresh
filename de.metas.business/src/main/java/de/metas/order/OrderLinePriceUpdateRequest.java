@@ -3,6 +3,7 @@ package de.metas.order;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -37,10 +38,14 @@ public class OrderLinePriceUpdateRequest
 {
 	public static OrderLinePriceUpdateRequest ofOrderLine(final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		return prepare(orderLine).build();
+	}
+
+	public static OrderLinePriceUpdateRequestBuilder prepare(final org.compiere.model.I_C_OrderLine orderLine)
+	{
 		return builder()
 				.orderLine(InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class))
-				.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
-				.build();
+				.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW);
 	}
 
 	public static enum ResultUOM
@@ -51,16 +56,22 @@ public class OrderLinePriceUpdateRequest
 	@NonNull
 	I_C_OrderLine orderLine;
 
-	int priceListId;
-	Quantity qty;
+	//
+	// Pricing context overrides
+	int pricingSystemIdOverride;
+	int priceListIdOverride;
+	Quantity qtyOverride;
+	PricingConditionsBreak pricingConditionsBreakOverride;
 
+	//
+	// Result options
 	@NonNull
 	ResultUOM resultUOM;
 
+	//
+	// Updating the order line options
 	boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet; // task 06727
-
 	boolean updateLineNetAmt;
-
 	@Default
 	boolean applyPriceLimitRestrictions = true;
 

@@ -1,5 +1,7 @@
 package de.metas.order.impl;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,6 +26,7 @@ package de.metas.order.impl;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -35,14 +38,29 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import lombok.NonNull;
 
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
+	@Override
+	public I_C_OrderLine getOrderLineById(final int orderLineId)
+	{
+		return InterfaceWrapperHelper.load(orderLineId, I_C_OrderLine.class);
+	}
+
+	@Override
+	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
+	{
+		return InterfaceWrapperHelper.load(orderLineId.getRepoId(), I_C_OrderLine.class);
+	}
+
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLines(final org.compiere.model.I_C_Order order)
 	{
@@ -62,16 +80,15 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		orderLines.forEach(orderLine -> orderLine.setC_Order(order));
 		return orderLines;
 	}
-	
+
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLines(final int orderId)
 	{
 		return retrieveOrderLines(Env.getCtx(), orderId, ITrx.TRXNAME_ThreadInherited, I_C_OrderLine.class);
 	}
 
-
 	// tsa: commented out because it's not safe to cache the list of order lines and return it without even cloning.
-	// @Cached(cacheName = I_C_OrderLine.Table_Name + "#via#" + I_C_OrderLine.COLUMNNAME_C_Order_ID) 
+	// @Cached(cacheName = I_C_OrderLine.Table_Name + "#via#" + I_C_OrderLine.COLUMNNAME_C_Order_ID)
 	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
 			@CacheCtx final Properties ctx,
 			final int orderId,
@@ -146,5 +163,21 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.filterByClientId()
 				.addOnlyActiveRecordsFilter()
 				.orderByDescending(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID);
+	}
+
+	@Override
+	public Set<Integer> retriveOrderCreatedByUserIds(@NonNull final Collection<Integer> orderIds)
+	{
+		if (orderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final List<Integer> userIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
+				.create()
+				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class);
+		return ImmutableSet.copyOf(userIds);
 	}
 }

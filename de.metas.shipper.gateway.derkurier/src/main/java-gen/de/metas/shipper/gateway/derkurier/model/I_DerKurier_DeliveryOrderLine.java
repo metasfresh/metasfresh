@@ -98,6 +98,29 @@ public interface I_DerKurier_DeliveryOrderLine
     public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
 
 	/**
+	 * Set Abholer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCollectorCode (java.lang.String CollectorCode);
+
+	/**
+	 * Get Abholer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCollectorCode();
+
+    /** Column definition for CollectorCode */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrderLine, Object> COLUMN_CollectorCode = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrderLine, Object>(I_DerKurier_DeliveryOrderLine.class, "CollectorCode", null);
+    /** Column name CollectorCode */
+    public static final String COLUMNNAME_CollectorCode = "CollectorCode";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -126,6 +149,29 @@ public interface I_DerKurier_DeliveryOrderLine
     public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrderLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrderLine, org.compiere.model.I_AD_User>(I_DerKurier_DeliveryOrderLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Auftraggeber.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomerCode (java.lang.String CustomerCode);
+
+	/**
+	 * Get Auftraggeber.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCustomerCode();
+
+    /** Column definition for CustomerCode */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrderLine, Object> COLUMN_CustomerCode = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrderLine, Object>(I_DerKurier_DeliveryOrderLine.class, "CustomerCode", null);
+    /** Column name CustomerCode */
+    public static final String COLUMNNAME_CustomerCode = "CustomerCode";
 
 	/**
 	 * Set DerKurier_DeliveryOrder.

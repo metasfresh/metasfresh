@@ -5,23 +5,27 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
+import de.metas.payment.api.IPaymentTermRepository;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.limit.IPriceLimitRestrictionsRepository;
+import de.metas.pricing.limit.IPriceLimitRule;
 import de.metas.pricing.limit.PriceLimitRestrictions;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.vertical.pharma.PharmaCustomerPermission;
 import de.metas.vertical.pharma.PharmaCustomerPermissions;
-import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_M_Product;
 
 /*
@@ -49,6 +53,8 @@ import de.metas.vertical.pharma.model.I_M_Product;
 class PharmaPriceLimitRuleInstance
 {
 	private final transient IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final transient IPaymentTermRepository paymentTermsRepo = Services.get(IPaymentTermRepository.class);
+	private final transient IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
 	private final PriceLimitRuleContext context;
 
@@ -65,8 +71,9 @@ class PharmaPriceLimitRuleInstance
 		{
 			return PriceLimitRuleResult.notApplicable("no PriceLimitRestrictions defined");
 		}
+
 		final IPricingContext pricingContext = context.getPricingContext();
-		if (!isEligibleBPartner(pricingContext.getC_BPartner_ID()))
+		if (!isEligibleBPartner(pricingContext))
 		{
 			return PriceLimitRuleResult.notApplicable("BPartner not eligible");
 		}
@@ -87,25 +94,36 @@ class PharmaPriceLimitRuleInstance
 
 	private boolean hasPriceLimitRestrictions()
 	{
-		final PriceLimitRestrictions priceLimitRestrictions = Services.get(IPriceLimitRestrictionsRepository.class).get();
-		return priceLimitRestrictions != null;
+		return Services.get(IPriceLimitRestrictionsRepository.class)
+				.get()
+				.isPresent();
 	}
 
 	private PriceLimitRestrictions getPriceLimitRestrictions()
 	{
-		final PriceLimitRestrictions priceLimitRestrictions = Services.get(IPriceLimitRestrictionsRepository.class).get();
-		Check.assumeNotNull(priceLimitRestrictions, "priceLimitRestrictions shall not be null");
-		return priceLimitRestrictions;
+		return Services.get(IPriceLimitRestrictionsRepository.class)
+				.get()
+				.orElseThrow(() -> new AdempiereException("No price limit restrictions defined"));
 	}
 
-	private static boolean isEligibleBPartner(final int bpartnerId)
+	private boolean isEligibleBPartner(final IPricingContext pricingContext)
 	{
-		if (bpartnerId <= 0)
+		if (pricingContext.isPropertySet(IPriceLimitRule.OPTION_SkipCheckingBPartnerEligible))
+		{
+			return true;
+		}
+
+		return isEligibleBPartner(pricingContext.getBPartnerId());
+	}
+
+	private boolean isEligibleBPartner(final BPartnerId bpartnerId)
+	{
+		if (bpartnerId == null)
 		{
 			return false;
 		}
 
-		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
 		if (bpartner == null || !bpartner.isActive())
 		{
 			return false;
@@ -180,13 +198,7 @@ class PharmaPriceLimitRuleInstance
 			return BigDecimal.ZERO;
 		}
 
-		final I_C_PaymentTerm paymentTerm = loadOutOfTrx(paymentTermId, I_C_PaymentTerm.class);
-		if (paymentTerm == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		return paymentTerm.getDiscount();
+		return paymentTermsRepo.getPaymentTermDiscount(paymentTermId);
 	}
 
 	@lombok.Value

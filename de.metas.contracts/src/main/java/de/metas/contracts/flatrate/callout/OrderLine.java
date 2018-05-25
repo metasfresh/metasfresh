@@ -104,7 +104,7 @@ public class OrderLine extends CalloutEngine
 
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 					.orderLine(ol)
-					.qty(qty)
+					.qtyOverride(qty)
 					.resultUOM(ResultUOM.CONTEXT_UOM)
 					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
 					.updateLineNetAmt(true)

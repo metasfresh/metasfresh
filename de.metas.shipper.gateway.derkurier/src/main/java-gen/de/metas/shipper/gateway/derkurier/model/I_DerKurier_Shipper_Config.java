@@ -144,6 +144,29 @@ public interface I_DerKurier_Shipper_Config
     public static final String COLUMNNAME_APIServerBaseURL = "APIServerBaseURL";
 
 	/**
+	 * Set Abholer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCollectorCode (java.lang.String CollectorCode);
+
+	/**
+	 * Get Abholer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCollectorCode();
+
+    /** Column definition for CollectorCode */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_CollectorCode = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "CollectorCode", null);
+    /** Column name CollectorCode */
+    public static final String COLUMNNAME_CollectorCode = "CollectorCode";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -172,6 +195,29 @@ public interface I_DerKurier_Shipper_Config
     public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, org.compiere.model.I_AD_User>(I_DerKurier_Shipper_Config.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Auftraggeber.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomerCode (java.lang.String CustomerCode);
+
+	/**
+	 * Get Auftraggeber.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCustomerCode();
+
+    /** Column definition for CustomerCode */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_CustomerCode = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "CustomerCode", null);
+    /** Column name CustomerCode */
+    public static final String COLUMNNAME_CustomerCode = "CustomerCode";
 
 	/**
 	 * Set DerKurier Shipper Configuration.
@@ -218,6 +264,52 @@ public interface I_DerKurier_Shipper_Config
     public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_DK_CustomerNumber = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "DK_CustomerNumber", null);
     /** Column name DK_CustomerNumber */
     public static final String COLUMNNAME_DK_CustomerNumber = "DK_CustomerNumber";
+
+	/**
+	 * Set Gewünschte Lieferuhrzeit von.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_DesiredDeliveryTime_From (java.sql.Timestamp DK_DesiredDeliveryTime_From);
+
+	/**
+	 * Get Gewünschte Lieferuhrzeit von.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDK_DesiredDeliveryTime_From();
+
+    /** Column definition for DK_DesiredDeliveryTime_From */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_DK_DesiredDeliveryTime_From = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "DK_DesiredDeliveryTime_From", null);
+    /** Column name DK_DesiredDeliveryTime_From */
+    public static final String COLUMNNAME_DK_DesiredDeliveryTime_From = "DK_DesiredDeliveryTime_From";
+
+	/**
+	 * Set Gewünschte Lieferuhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_DesiredDeliveryTime_To (java.sql.Timestamp DK_DesiredDeliveryTime_To);
+
+	/**
+	 * Get Gewünschte Lieferuhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDK_DesiredDeliveryTime_To();
+
+    /** Column definition for DK_DesiredDeliveryTime_To */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_DK_DesiredDeliveryTime_To = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "DK_DesiredDeliveryTime_To", null);
+    /** Column name DK_DesiredDeliveryTime_To */
+    public static final String COLUMNNAME_DK_DesiredDeliveryTime_To = "DK_DesiredDeliveryTime_To";
 
 	/**
 	 * Set EMail Empfänger.

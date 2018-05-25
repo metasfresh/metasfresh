@@ -10,14 +10,132 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.59 (2018-22)
+
+**release for week 2018-22**
+
+## Features
+* metasfresh
+  * [#3323](https://github.com/metasfresh/metasfresh/issues/3323) Webui Window Design: Improve window Rechnungskandidaten - Handler
+    * Improved Invoicecandidate Handler Window in WebUI.
+  * [#4094](https://github.com/metasfresh/metasfresh/issues/4094) Create Mandatory Logic in Contract terms
+    * Improved WIndow for contract terms, now having a mandatory Logic for fields not needed for Refund Contract Types.
+  * [#4089](https://github.com/metasfresh/metasfresh/issues/4089) Create missing fields for Bonus in WebUI
+    * New Fields added to Purchase Orderline and Invoice Candidate for Refund Contracts.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1717](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1717) Date Format in date range picker is not localized
+    * Fixes the Localization of Dates in Date Range Picker Widget.
+  * [#1805](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1805) Multi Line Text fields are displayed infinitely
+    * Now restricting the length of Multiline Text fields in Data Grids.
+
+# metasfresh 5.58 (2018-21)
+
+**release for week 2018-21**
+
+## Features
+* metasfresh
+  * [#3753](https://github.com/metasfresh/metasfresh/issues/3753) Inventory: Prepare Inventorylines shall update existing lines
+    * Improvement of the Inventory Prepare Action, now updateing existing lines instead of creating new ones.
+  * [#3879](https://github.com/metasfresh/metasfresh/issues/3879) Add link and templates for email notification
+    * New Feature in eMail Notifications, now allowing to add Links and using Mail Templates.
+  * [#3999](https://github.com/metasfresh/metasfresh/issues/3999) New contract Type: Yearly Bonus from vendors
+    * New Contract Type for vendors "Refund Bonus".
+  * [#4001](https://github.com/metasfresh/metasfresh/issues/4001) Calculate Purchase price with yearly Bonus
+    * Calculating of Purchase Cost Prices now also reflecting the new Contract Type Terms for "Refund Bonus".
+  * [#4002](https://github.com/metasfresh/metasfresh/issues/4002) Purchase Order Aggregation
+    * New Functionality for Purchase Order Aggregations. Allowing to set lead times for Vendors and latest Purchasing times per Day. When date and time is reached, then Notification can be sent to notification Group. The Purchase Order candidates for the vendor are then automatically aggragated into a Purchase Order.
+  * [#4030](https://github.com/metasfresh/metasfresh/issues/4030) create webui windows for marketing and cleverreach settings
+    * New WebUI Windows for the new Marketing Feature of Cleverreach.
+  * [#4032](https://github.com/metasfresh/metasfresh/issues/4032) Show Pricing Conditions of Business Partner
+    * New Feature in Material Cocpit. Now it's possible to show the Pricing Conditions of Businessparters for a selected Product via Material Cockpt window in WebUI.
+  * [#4070](https://github.com/metasfresh/metasfresh/issues/4070) WebUI Windows for new contract Type "Yearly Bonus from vendors"
+    * New WebUI Windows for the new Contract Type "Refund Bonus".
+  * [#4073](https://github.com/metasfresh/metasfresh/issues/4073) Virtual Tabs implementation
+    * New Feature in Application Dictionary that allows to define Tabs as Virtual, and then reuse it in multiple windows.
+  * [#4047](https://github.com/metasfresh/metasfresh/issues/4047) CleverReach get paginated receivers list
+    * Reacting now on maximum allowed Batch sizes when receiving data from Cleverreach.
+  * [#4056](https://github.com/metasfresh/metasfresh/issues/4056) webui: pimp Partner Pharma - Purchase schedule tab
+    * New Subtab in Pharma Partner Window, now allowing to configure Purchase Schedules for the new Purchase Aggregation Functionality.
+  * [#4062](https://github.com/metasfresh/metasfresh/issues/4062) Pricing conditions modal: allow changing pricing type, edit pricing system etc
+    * Improved Pricing Conditions overview. Now possible to edit more data in Pricing Conditions modal.
+  * [#4071](https://github.com/metasfresh/metasfresh/issues/4071) exception handling: make them more translatable
+    * Improving the Error Handling and Notifications, now showing translateable Error Messages.
+
+* metasfresh-webui-frontend
+  * [#1789](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1789) User notifications: handle view target type
+    * Improved Handling of User notificaitons in WebUI, now handling the view target type.
+
+* metasfresh-dist
+  * [#18](https://github.com/metasfresh/metasfresh-dist/issues/18) create docker image automatically via jenkins
+    * Now automatically creating metasfresh docker images via jenkins and uploading them to dockerhub.
+
+* metasfresh-dist-orgs
+  * [#93](https://github.com/metasfresh/metasfresh-dist-orgs/issues/92) Postal Lookup for Switzerland CH
+    * Imported and fresh Postal Data for the Postal Lookup in Switzerland.
+
+## Fixes
+* metasfresh
+  * [#3792](https://github.com/metasfresh/metasfresh/issues/3729) Setting a different invoice bpartner causes error
+    * Fixes an Error in Sales Order, that lead to an Exception when selecting a different Invoice Partner.
+  * [#4018](https://github.com/metasfresh/metasfresh/issues/4018) QtyCU not respected in Quarantine DD_Orderline
+    * Fixes the wrong Quantity in Distribution Orderlines for Movements to Quarantine Warehouse.
+  * [#4052](https://github.com/metasfresh/metasfresh/issues/4052) NPE when deleting inoutline with empty product
+    * Fixes a Null Pointer Exception when deleting Inout Lines without a Product set.
+  * [#4063](https://github.com/metasfresh/metasfresh/issues/4063) Enhanced Pricing: Discount Break is falsely invalidated
+    * Improvement of the Enhanced Pricing Rules.
+
+* metasfresh-webui-frontend
+  * [#1790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1790) View: refresh after removing a static filter
+    * Improvement in WebUI Frontend, now refreshing the view after removing a static filter.
+
 # metasfresh 5.57 (2018-20)
 
 **release for week 2018-20**
 
 ## Features
 * metasfresh
+  * [#3754](https://github.com/metasfresh/metasfresh/issues/3754) Inventory: Allow only "Active" and "Issued" HUs in inventorylines
+  * [#3975](https://github.com/metasfresh/metasfresh/issues/3975) Allow annotating data as personal
+    * New Feature for GDPR Compliance that allows to annotate data as personal Data via Application Dictionary.
+  * [#3991](https://github.com/metasfresh/metasfresh/issues/3991) Implement "Der Kurier" parcel number check digit
+  * [#3993](https://github.com/metasfresh/metasfresh/issues/3993) Eliminate the ampersand from all AD_Messages
+  * [#4003](https://github.com/metasfresh/metasfresh/issues/4003) Adjust Window "Der Kurier Versandauftrag"
+    * New Window for a new Logistics Partner Order window of "Der Kurier".
   * [#4004](https://github.com/metasfresh/metasfresh/issues/4004) WebUI: Adjust new Window Discount Schema Pharma
     * Improved Window for Discount Schema Pharma.
+  * [#4029](https://github.com/metasfresh/metasfresh/pull/4029) CleverReach Interface generic marketing datamodel
+  * [#4034](https://github.com/metasfresh/metasfresh/issues/4034) Add CustomerCode and CollectorCode to Der Kurier
+
+* metasfresh-webui-frontend
+  * [#1613](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1613) Display field changes warnings
+    * New Field notification feature. This allow to add user notifications to fields about infos or error messages.
+  * [#1624](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1624) Material Cockpit Filter Name + switch date = invalid date
+    * Improvement of the Filtering and Navigation in Material Cockpit.
+
+* metasfresh-dist
+  * [#41](https://github.com/metasfresh/metasfresh-dist/issues/41) Fix and improvement around picking/shipping
+
+# Fixes
+* metasfresh
+  * [#4013](https://github.com/metasfresh/metasfresh/issues/4013) Lot No Action error when running multiple times
+  * [#4017](https://github.com/metasfresh/metasfresh/issues/4017) Vendor Action for adding (temp.) Pricing Conditions in Purchase Order missing
+  * [#4020](https://github.com/metasfresh/metasfresh/issues/4020) eventlog data needs to be stored out-of-trx
+    * Internal Housekeeping improvement, now storing eventlog data out of transaction.
+  * [#4027](https://github.com/metasfresh/metasfresh/issues/4027) "To Be Updated" in shipment schedule and "In Verarbeitung" in workpackage getting stuck
+  * [#3980](https://github.com/metasfresh/metasfresh/issues/3980) Notifications in Swing Client show no info
+    * Fixes the Notification feature in Swing Client, now showing detailed information body again.
+  * [#4016](https://github.com/metasfresh/metasfresh/issues/4016) Pricing Conditions error when save
+  * [#4028](https://github.com/metasfresh/metasfresh/issues/4028) Multiple shipment lines for one order line all have the order line's TU-Qty
+
+* metasfresh-webui-frontend
+  * [#1751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1751) HU Editor: selection jumps from your line to first line
+    * Improved behavior of seletion lines in Handling Unit Editor when changing referenced data. Now the selection is not jumping away anymore.
+  * [#1765](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1765) Modal view: editing lookups not working
+    * Fixes the usage of Lookup widgets in modal Overlays. Now accessing the correct endpoints.
+  * [#1784](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1784) Search fields in filters are not working
+    * Fixes a Bug in Lookup Filters.
 
 ## Fixes
 
@@ -32,19 +150,25 @@ Here come the actual release notes:
   * [#3812](https://github.com/metasfresh/metasfresh/issues/3812) Add process for creating missing M_Product_acct records to WebUI
     * New Action added to Product Catregory window, allowing to copy Acctounting Setting to all Products of a Product Category.
   * [#3926](https://github.com/metasfresh/metasfresh/issues/3926) Implement support for `der Kurier` shipper
+    * New Logistic Provider Implementation of "Der Kurier".
   * [#3965](https://github.com/metasfresh/metasfresh/issues/3965) Translate Actions Update Pharma Conditions
     * New Translations for Pharma Condition Parms in Updatte Pharma Permissions Action for de_DE, en_US.
   * [#3967](https://github.com/metasfresh/metasfresh/issues/3967) Translate Process Parm in Update Pharma Conditions for Customers
     * Improved Translations for Action Parms. Languages de_DE, en_US.
   * [#3969](https://github.com/metasfresh/metasfresh/issues/3969) Pharma: If Shipment Auth Type B then show in Order Header
+    * New Feature in Sales Order, now showing The Shipment Auth Type if it's Type B.
   * [#3973](https://github.com/metasfresh/metasfresh/issues/3973) Manufacturing Workflow adjustments in WebUI
     * Improved Manufacturing Workflow Window in WebUI.
   * [#3982](https://github.com/metasfresh/metasfresh/issues/3982) Pharma vertical for Discount Schema Window
-  * [#3989](https://github.com/metasfresh/metasfresh/issues/3989) pharma: repack number attributes
+    * New Window for Discount Schema for Pharma verticals.
+  * [#3989](https://github.com/metasfresh/metasfresh/issues/3989) Pharma: repack number attributes
+    * New Functionality for Pharma Verticals, allowing to define the need of recording repack No in Material Receipt.
 
 * metasfresh-webui-api
   * [#952](https://github.com/metasfresh/metasfresh-webui-api/issues/952) Shorten the ViewIds
+    * New Feature for WebUI that shortens the View IDs.
   * [#954](https://github.com/metasfresh/metasfresh-webui-api/issues/954) Allow configuring lookup cache reset on table record changes
+    * Improved cache resetting. Now it's able to configure the caching behavior for lookups on table record changes.
 
 * metasfresh-webui-frontend
   * [#1772](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1772) Harmonize List widget Icon Look&Feel when not empty
@@ -53,15 +177,21 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#2558](https://github.com/metasfresh/metasfresh/issues/2558) All existing configs available in Gebindekonfiguration in PP_Order
+    * Fixes the available Picking Instructions in manufacturing Order. Now only showing those which fit for the selected Product.
   * [#3916](https://github.com/metasfresh/metasfresh/issues/3916) QtyPicked not updated in shipment schedule after reactivate & unpick in picking terminal
+    * Fixes the Quantity Picked amount after reactivating and unpicking in Picking Terminal.
   * [#3971](https://github.com/metasfresh/metasfresh/issues/3971) New Manufacturing Workflow not saved
     * Adds missing Field to Manufacturing Workflow View in WebUI, allowing to save a workflow record again.
   * [#3977](https://github.com/metasfresh/metasfresh/issues/3977) Pharma: Prices from IFA import are in cents
+    * Fixes the Import Format for the IFA Pharma Product Import.
   * [#3984](https://github.com/metasfresh/metasfresh/issues/3984) Invoice candidate for canceled term and reactivated sales order keeps invalidating itself
+    * Fixes an infinite loop of recomputes of invoice canidates for cancelled flatrate terms after reactivating sales orders.
   * [#4022](https://github.com/metasfresh/metasfresh/issues/4022) NPE in FlatrateBL.extendContract()
+    * Fixes a Null Pointer Exception in Flatrate term contract handling.
 
 * metasfresh-webui-api
   * [#959](https://github.com/metasfresh/metasfresh-webui-api/issues/959) NPE when opening Manufacturing Issue/Receipt
+    * Fixes a Null Pointer Exception when opening a Manufacturing Issue or Receipt.
 
 * metasfresh-webui-frontend
   * [#1410](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1410) Shortcuts for Clone & Letter not working

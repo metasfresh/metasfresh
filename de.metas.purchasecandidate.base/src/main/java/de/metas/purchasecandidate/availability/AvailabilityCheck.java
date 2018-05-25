@@ -7,6 +7,7 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
@@ -61,7 +62,7 @@ public class AvailabilityCheck
 		return new AvailabilityCheck(purchaseCandidates);
 	}
 
-	private final ImmutableListMultimap<Integer, PurchaseCandidate> vendorBParterId2PurchaseCandidates;
+	private final ImmutableListMultimap<BPartnerId, PurchaseCandidate> vendorBParterId2PurchaseCandidates;
 
 	private AvailabilityCheck(
 			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
@@ -73,7 +74,7 @@ public class AvailabilityCheck
 	{
 		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
 
-		for (final int vendorId : vendorBParterId2PurchaseCandidates.keySet())
+		for (final BPartnerId vendorId : vendorBParterId2PurchaseCandidates.keySet())
 		{
 			final Multimap<PurchaseCandidate, AvailabilityResult> singleResult = checkAvailabilityAndConvertThrowable(vendorId);
 			result.putAll(singleResult);
@@ -90,7 +91,7 @@ public class AvailabilityCheck
 	{
 		final Properties localCtx = Env.copyCtx(Env.getCtx());
 
-		for (final int vendorId : vendorBParterId2PurchaseCandidates.keySet())
+		for (final BPartnerId vendorId : vendorBParterId2PurchaseCandidates.keySet())
 		{
 			CompletableFuture
 					.supplyAsync(() -> {
@@ -111,15 +112,14 @@ public class AvailabilityCheck
 		}
 	}
 
-	private Multimap<PurchaseCandidate, AvailabilityResult> checkAvailabilityAndConvertThrowable(final int vendorId)
+	private Multimap<PurchaseCandidate, AvailabilityResult> checkAvailabilityAndConvertThrowable(final BPartnerId vendorId)
 	{
 		if (!vendorProvidesAvailabilityCheck(vendorId))
 		{
 			return ImmutableMultimap.of();
 		}
 
-		final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate = //
-				createRequestItems(vendorId);
+		final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate = createRequestItems(vendorId);
 		if (requestItem2purchaseCandidate.isEmpty())
 		{
 			return ImmutableMultimap.of();
@@ -136,19 +136,19 @@ public class AvailabilityCheck
 	}
 
 	private Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability0(
-			final int vendorId,
+			@NonNull final BPartnerId vendorId,
 			@NonNull final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate)
 	{
 		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
 
 		final AvailabilityRequest availabilityRequest = AvailabilityRequest.builder()
-				.vendorId(vendorId)
+				.vendorId(vendorId.getRepoId())
 				.availabilityRequestItems(requestItem2purchaseCandidate.keySet())
 				.build();
 
 		final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
 		final Optional<VendorGatewayService> vendorGatewayService = //
-				vendorGatewayRegistry.getSingleVendorGatewayService(vendorId);
+				vendorGatewayRegistry.getSingleVendorGatewayService(vendorId.getRepoId());
 		if (!vendorGatewayService.isPresent())
 		{
 			return result;
@@ -197,7 +197,7 @@ public class AvailabilityCheck
 		return new AvailabilityException(purchseCandidate2Throwable);
 	}
 
-	private Map<AvailabilityRequestItem, PurchaseCandidate> createRequestItems(final int vendorId)
+	private Map<AvailabilityRequestItem, PurchaseCandidate> createRequestItems(final BPartnerId vendorId)
 	{
 		final ImmutableMap.Builder<AvailabilityRequestItem, PurchaseCandidate> result = ImmutableMap.builder();
 
@@ -211,12 +211,11 @@ public class AvailabilityCheck
 		return result.build();
 	}
 
-	private boolean vendorProvidesAvailabilityCheck(
-			final int vendorBPartnerId)
+	private boolean vendorProvidesAvailabilityCheck(@NonNull final BPartnerId vendorBPartnerId)
 	{
 		final VendorGatewayService vendorGatewayService = Adempiere.getBean(VendorGatewayService.class);
 
-		final boolean providedForVendor = vendorGatewayService.isProvidedForVendor(vendorBPartnerId);
+		final boolean providedForVendor = vendorGatewayService.isProvidedForVendor(vendorBPartnerId.getRepoId());
 		return providedForVendor;
 	}
 }

@@ -1,5 +1,7 @@
 package de.metas.pricing.limit;
 
+import java.util.Set;
+
 /*
  * #%L
  * de.metas.business
@@ -24,5 +26,9 @@ package de.metas.pricing.limit;
 
 public interface IPriceLimitRule
 {
+	String OPTION_SkipCheckingBPartnerEligible = IPriceLimitRule.class.getName() + "." + "SkipCheckingBPartnerEligible";
+
 	PriceLimitRuleResult compute(PriceLimitRuleContext context);
+
+	Set<Integer> getPriceCountryIds();
 }

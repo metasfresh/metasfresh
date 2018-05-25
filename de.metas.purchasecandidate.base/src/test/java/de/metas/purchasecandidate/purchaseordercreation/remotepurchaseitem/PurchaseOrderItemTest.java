@@ -6,7 +6,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 
@@ -32,6 +38,8 @@ import de.metas.purchasecandidate.PurchaseCandidateTestTool;
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseOrderItemTest
 {
 	@Test
@@ -41,7 +49,7 @@ public class PurchaseOrderItemTest
 
 		final PurchaseOrderItem purchaseOrderItem = purchaseCandidate.createOrderItem()
 				.purchasedQty(TEN)
-				.datePromised(SystemTime.asTimestamp())
+				.datePromised(SystemTime.asLocalDateTime())
 				.transactionReference(TableRecordReference.of("sometable", 40))
 				.remotePurchaseOrderId("remotePurchaseOrderId")
 				.buildAndAddToParent();

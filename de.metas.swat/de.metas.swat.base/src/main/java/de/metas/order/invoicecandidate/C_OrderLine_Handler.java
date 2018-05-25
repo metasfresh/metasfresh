@@ -192,14 +192,19 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_Activity(activity);
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, ic, orderLine.getC_TaxCategory_ID(), orderLine.getM_Product_ID(), orderLine.getC_Charge_ID() // chargeId
-				, order.getDatePromised() // billDate
-				, order.getDatePromised() // shipDate
-				, order.getAD_Org_ID(), order.getM_Warehouse(), order.getBill_Location_ID() // bill location id
-				, order.getC_BPartner_Location_ID() // ship location id
-				, order.isSOTrx() // isSOTrx
-				, trxName);
-
+				ctx,
+				ic,
+				orderLine.getC_TaxCategory_ID(),
+				orderLine.getM_Product_ID(),
+				orderLine.getC_Charge_ID(), // chargeId
+				order.getDatePromised(), // billDate
+				order.getDatePromised(), // shipDate
+				order.getAD_Org_ID(),
+				order.getM_Warehouse(),
+				order.getBill_Location_ID(), // bill location id
+				order.getC_BPartner_Location_ID(), // ship location id
+				order.isSOTrx(), // isSOTrx
+				trxName);
 		ic.setC_Tax_ID(taxId);
 
 		// set Quality Issue Percentage Override

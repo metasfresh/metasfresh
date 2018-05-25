@@ -42,12 +42,9 @@ public class RoutingTest
 	@Test
 	public void test_deserialize() throws JsonParseException, JsonMappingException, IOException
 	{
-
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-//		objectMapper.registerModule(new JavaTimeModule());
-//		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
 		final Routing routing = objectMapper.readValue(ROUTING_RESPONSE_JSON.getInputStream(), Routing.class);
 		assertThat(routing.getMessage()).isEqualTo("OK");
