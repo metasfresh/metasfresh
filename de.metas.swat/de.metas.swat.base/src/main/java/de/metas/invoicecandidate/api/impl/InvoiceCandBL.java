@@ -243,7 +243,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			calToday.set(Calendar.DAY_OF_WEEK, MInvoiceSchedule.getCalendarDay(invoiceSched.getInvoiceWeekDay()));
 
 			final Timestamp dateDayOfWeek = new Timestamp(calToday.getTimeInMillis());
-			if (dateDayOfWeek.before(deliveryDate))
+			if (!dateDayOfWeek.after(deliveryDate))
 			{
 				dateToInvoice = TimeUtil.addWeeks(dateDayOfWeek, 1 + offset);
 			}
@@ -266,9 +266,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 			else
 			{
-				if (dateDayOfMonth.before(deliveryDate))
+				if (!dateDayOfMonth.after(deliveryDate))
 				{
-
 					dateToInvoice = TimeUtil.addMonths(dateDayOfMonth, 1 + offset);
 				}
 				else
@@ -2041,7 +2040,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 		}
-		
+
 		final BigDecimal priceActual = ic.getPriceActual();
 		final int productId = ic.getM_Product_ID();
 		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);

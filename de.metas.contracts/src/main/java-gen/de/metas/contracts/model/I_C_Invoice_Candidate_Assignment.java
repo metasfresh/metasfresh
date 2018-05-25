@@ -69,6 +69,31 @@ public interface I_C_Invoice_Candidate_Assignment
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Zugeordneter Betrag.
+	 * Zugeordneter Betrag in der Währung des zugeordneten Rechnungskandidaten
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAssignedAmount (java.math.BigDecimal AssignedAmount);
+
+	/**
+	 * Get Zugeordneter Betrag.
+	 * Zugeordneter Betrag in der Währung des zugeordneten Rechnungskandidaten
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getAssignedAmount();
+
+    /** Column definition for AssignedAmount */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_AssignedAmount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "AssignedAmount", null);
+    /** Column name AssignedAmount */
+    public static final String COLUMNNAME_AssignedAmount = "AssignedAmount";
+
+	/**
 	 * Set Pauschale - Vertragsperiode.
 	 *
 	 * <br>Type: Search

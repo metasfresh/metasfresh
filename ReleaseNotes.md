@@ -37,38 +37,58 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3753](https://github.com/metasfresh/metasfresh/issues/3753) Inventory: Prepare Inventorylines shall update existing lines
+    * Improvement of the Inventory Prepare Action, now updateing existing lines instead of creating new ones.
   * [#3879](https://github.com/metasfresh/metasfresh/issues/3879) Add link and templates for email notification
+    * New Feature in eMail Notifications, now allowing to add Links and using Mail Templates.
   * [#3999](https://github.com/metasfresh/metasfresh/issues/3999) New contract Type: Yearly Bonus from vendors
+    * New Contract Type for vendors "Refund Bonus".
   * [#4001](https://github.com/metasfresh/metasfresh/issues/4001) Calculate Purchase price with yearly Bonus
+    * Calculating of Purchase Cost Prices now also reflecting the new Contract Type Terms for "Refund Bonus".
   * [#4002](https://github.com/metasfresh/metasfresh/issues/4002) Purchase Order Aggregation
+    * New Functionality for Purchase Order Aggregations. Allowing to set lead times for Vendors and latest Purchasing times per Day. When date and time is reached, then Notification can be sent to notification Group. The Purchase Order candidates for the vendor are then automatically aggragated into a Purchase Order.
   * [#4030](https://github.com/metasfresh/metasfresh/issues/4030) create webui windows for marketing and cleverreach settings
+    * New WebUI Windows for the new Marketing Feature of Cleverreach.
   * [#4032](https://github.com/metasfresh/metasfresh/issues/4032) Show Pricing Conditions of Business Partner
+    * New Feature in Material Cocpit. Now it's possible to show the Pricing Conditions of Businessparters for a selected Product via Material Cockpt window in WebUI.
   * [#4070](https://github.com/metasfresh/metasfresh/issues/4070) WebUI Windows for new contract Type "Yearly Bonus from vendors"
-  * [#4071](https://github.com/metasfresh/metasfresh/issues/4071) exception handling: make them more translatable
+    * New WebUI Windows for the new Contract Type "Refund Bonus".
   * [#4073](https://github.com/metasfresh/metasfresh/issues/4073) Virtual Tabs implementation
+    * New Feature in Application Dictionary that allows to define Tabs as Virtual, and then reuse it in multiple windows.
   * [#4047](https://github.com/metasfresh/metasfresh/issues/4047) CleverReach get paginated receivers list
+    * Reacting now on maximum allowed Batch sizes when receiving data from Cleverreach.
   * [#4056](https://github.com/metasfresh/metasfresh/issues/4056) webui: pimp Partner Pharma - Purchase schedule tab
+    * New Subtab in Pharma Partner Window, now allowing to configure Purchase Schedules for the new Purchase Aggregation Functionality.
   * [#4062](https://github.com/metasfresh/metasfresh/issues/4062) Pricing conditions modal: allow changing pricing type, edit pricing system etc
+    * Improved Pricing Conditions overview. Now possible to edit more data in Pricing Conditions modal.
   * [#4071](https://github.com/metasfresh/metasfresh/issues/4071) exception handling: make them more translatable
+    * Improving the Error Handling and Notifications, now showing translateable Error Messages.
 
 * metasfresh-webui-frontend
-  * [#1789](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1789) user notifications: handle view target type
+  * [#1789](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1789) User notifications: handle view target type
+    * Improved Handling of User notificaitons in WebUI, now handling the view target type.
 
 * metasfresh-dist
   * [#18](https://github.com/metasfresh/metasfresh-dist/issues/18) create docker image automatically via jenkins
+    * Now automatically creating metasfresh docker images via jenkins and uploading them to dockerhub.
 
 * metasfresh-dist-orgs
   * [#93](https://github.com/metasfresh/metasfresh-dist-orgs/issues/92) Postal Lookup for Switzerland CH
+    * Imported and fresh Postal Data for the Postal Lookup in Switzerland.
 
 ## Fixes
 * metasfresh
   * [#3792](https://github.com/metasfresh/metasfresh/issues/3729) Setting a different invoice bpartner causes error
+    * Fixes an Error in Sales Order, that lead to an Exception when selecting a different Invoice Partner.
   * [#4018](https://github.com/metasfresh/metasfresh/issues/4018) QtyCU not respected in Quarantine DD_Orderline
+    * Fixes the wrong Quantity in Distribution Orderlines for Movements to Quarantine Warehouse.
   * [#4052](https://github.com/metasfresh/metasfresh/issues/4052) NPE when deleting inoutline with empty product
+    * Fixes a Null Pointer Exception when deleting Inout Lines without a Product set.
   * [#4063](https://github.com/metasfresh/metasfresh/issues/4063) Enhanced Pricing: Discount Break is falsely invalidated
+    * Improvement of the Enhanced Pricing Rules.
 
 * metasfresh-webui-frontend
-  * [#1790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1790) view: refresh after removing a static filter
+  * [#1790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1790) View: refresh after removing a static filter
+    * Improvement in WebUI Frontend, now refreshing the view after removing a static filter.
 
 # metasfresh 5.57 (2018-20)
 

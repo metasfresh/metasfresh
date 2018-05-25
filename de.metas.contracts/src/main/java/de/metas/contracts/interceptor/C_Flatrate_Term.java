@@ -507,7 +507,7 @@ public class C_Flatrate_Term
 		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(term);
 		if (hasOverlappingTerms)
 		{
-			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() });
+			throw AdempiereException.ofADMessage(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue());
 		}
 	}
 

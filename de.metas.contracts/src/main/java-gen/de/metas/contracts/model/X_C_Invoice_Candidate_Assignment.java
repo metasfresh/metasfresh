@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.contracts.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1451023648L;
+	private static final long serialVersionUID = -1331444003L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Assignment (Properties ctx, int C_Invoice_Candidate_Assignment_ID, String trxName)
@@ -42,6 +43,28 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Zugeordneter Betrag.
+		@param AssignedAmount 
+		Zugeordneter Betrag in der Währung des zugeordneten Rechnungskandidaten
+	  */
+	@Override
+	public void setAssignedAmount (java.math.BigDecimal AssignedAmount)
+	{
+		set_Value (COLUMNNAME_AssignedAmount, AssignedAmount);
+	}
+
+	/** Get Zugeordneter Betrag.
+		@return Zugeordneter Betrag in der Währung des zugeordneten Rechnungskandidaten
+	  */
+	@Override
+	public java.math.BigDecimal getAssignedAmount () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AssignedAmount);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
 
 	@Override
 	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException

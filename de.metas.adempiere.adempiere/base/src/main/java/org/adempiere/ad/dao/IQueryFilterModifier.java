@@ -10,12 +10,12 @@ package org.adempiere.ad.dao;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,11 +27,9 @@ import java.util.List;
 
 /**
  * Used in some {@link IQueryFilter}s as modifiers for column names and values.
- * 
+ *
  * Use this interface if you want to implement modifiers like UPPER, TRUNC etc.
- * 
- * @author tsa
- * 
+ *
  */
 public interface IQueryFilterModifier
 {
@@ -42,7 +40,7 @@ public interface IQueryFilterModifier
 
 	/**
 	 * Decorates given <code>columnSql</code>
-	 * 
+	 *
 	 * @param columnSql
 	 * @return decorated (modified) column SQL
 	 */
@@ -50,18 +48,14 @@ public interface IQueryFilterModifier
 
 	/**
 	 * Converts given <code>value</code> to SQL code and optionally adds the parameters to given <code>param</code>.
-	 * 
-	 * @param value
-	 * @param params
-	 * @return sql value
 	 */
 	String getValueSql(Object value, List<Object> params);
 
 	/**
 	 * Converts given <code>value</code> to normalized form (ready for comparation).
-	 * 
+	 *
 	 * Mainly this method is called in non-SQL mode, by {@link IQueryFilter#accept(Object)}.
-	 * 
+	 *
 	 * @param columnName column name or {@link #COLUMNNAME_Constant} (if it's a constant)
 	 * @param value
 	 * @model model model which is evaluated
