@@ -70,7 +70,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Effective,
 					I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice,
 					I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced })
-	public void associateDuringUpdateProcess(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	public void associateWithRefundCandidate(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		if (!Services.get(IInvoiceCandBL.class).isUpdateProcessInProgress())
 		{
@@ -86,7 +86,6 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		{
 			return;
 		}
-
 		associateDuringUpdateProcess0(invoiceCandidateRecord);
 	}
 
@@ -95,15 +94,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		try
 		{
 			final AssignableInvoiceCandidate assignableInvoiceCandidate = invoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
-			final RefundInvoiceCandidate refundInvoiceCandidate = assignableInvoiceCandidate.getRefundInvoiceCandidate();
-
-			if (refundInvoiceCandidate == null)
-			{
-				invoiceCandidateAssignmentService.createOrFindRefundCandidateAndAssignIfFeasible(assignableInvoiceCandidate);
-				return;
-			}
-
-			invoiceCandidateRepository.save(refundInvoiceCandidate.withUpdatedMoneyAmout(assignableInvoiceCandidate));
+			invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
 		}
 		catch (final RuntimeException e)
 		{

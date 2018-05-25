@@ -141,9 +141,9 @@ public class PriceAndDiscount
 		BigDecimal discount = priceEntered.subtract(priceActual)
 				.divide(priceEntered, 12, RoundingMode.HALF_UP)
 				.multiply(Env.ONEHUNDRED);
-		if (discount.scale() > 2)
+		if (discount.scale() > precision)
 		{
-			discount = discount.setScale(2, BigDecimal.ROUND_HALF_UP);
+			discount = discount.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
 
 		return Percent.of(discount);

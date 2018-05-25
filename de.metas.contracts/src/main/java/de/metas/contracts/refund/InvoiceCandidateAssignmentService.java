@@ -8,8 +8,8 @@ import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Objects;
 
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.InvoiceCandidateRepository.DeleteAssignmentsRequest;
 import de.metas.contracts.refund.InvoiceCandidateRepository.RefundInvoiceCandidateQuery;
 import lombok.NonNull;
@@ -51,50 +51,100 @@ public class InvoiceCandidateAssignmentService
 		this.invoiceCandidateRepository = invoiceCandidateRepository;
 	}
 
-	public AssignableInvoiceCandidate createOrFindRefundCandidateAndAssignIfFeasible(
+	public AssignableInvoiceCandidate updateAssignment(
 			@NonNull final AssignableInvoiceCandidate invoiceCandidate)
 	{
-		final Optional<FlatrateTermId> flatrateTermId = refundContractRepository
-				.getIdByQuery(RefundContractQuery.of(invoiceCandidate));
+		final RefundContractQuery refundContractQuery = RefundContractQuery.of(invoiceCandidate);
+		final Optional<RefundContract> refundContract = refundContractRepository.getByQuery(refundContractQuery);
 
-		if (!flatrateTermId.isPresent())
+		if (!refundContract.isPresent())
 		{
-			deleteAssignmentIfExists(invoiceCandidate);
-			return invoiceCandidate.toBuilder()
-					.refundInvoiceCandidate(null).build();
+			// unassign (which also subtracts the assigned money)
+			final UnassignedPairOfCandidates unassignResult = unassignCandidate(invoiceCandidate);
+			return unassignResult.getAssignableInvoiceCandidate();
 		}
 
-		final RefundInvoiceCandidateQuery query = RefundInvoiceCandidateQuery.builder()
-				.refundContractId(flatrateTermId.get())
-				.invoicableFrom(invoiceCandidate.getInvoiceableFrom())
-				.build();
+		final RefundInvoiceCandidate matchingRefundInvoiceCandidate = //
+				retrieveOrCreateMatchingRefundCandidate(invoiceCandidate, refundContract);
 
-		final Supplier<? extends RefundInvoiceCandidate> refundCandidateSupplier = //
-				() -> invoiceCandidateRepository.createRefundInvoiceCandidate(invoiceCandidate, flatrateTermId.get());
-		final RefundInvoiceCandidate refundInvoiceCandidate = //
-				invoiceCandidateRepository
-						.getRefundInvoiceCandidate(query)
-						.orElseGet(refundCandidateSupplier);
+		final RefundInvoiceCandidate refundInvoiceCandidateToAssign;
+
+		final AssignableInvoiceCandidate reloadedInvoiceCandidate = invoiceCandidateRepository.getById(invoiceCandidate.getId());
+		if (reloadedInvoiceCandidate.isAssigned())
+		{
+			// figure out if the assigned refund candidate changes
+			final AssignmentToRefundCandidate reloadedAssigment = reloadedInvoiceCandidate.getAssignmentToRefundCandidate();
+
+			final boolean assignedRefundCandidateIdChanges = !Objects.equal(
+					reloadedAssigment.getRefundInvoiceCandidate().getId(),
+					matchingRefundInvoiceCandidate.getId());
+
+			// figure out if the assigned money changes
+			final AssignmentToRefundCandidate newAssigment = matchingRefundInvoiceCandidate.withAddedMoneyAmount(invoiceCandidate);
+
+			final boolean assignedMoneyChanges = !Objects.equal(
+					reloadedAssigment.getMoneyAssignedToRefundCandidate(),
+					newAssigment.getMoneyAssignedToRefundCandidate());
+
+			if (assignedRefundCandidateIdChanges || assignedMoneyChanges)
+			{
+				// the refund candidate matching the given invoiceCandidate parameter changed;
+				// unassign (which also subtracts the assigned money);
+				final UnassignedPairOfCandidates unassignResult = unassignCandidate(reloadedInvoiceCandidate);
+				refundInvoiceCandidateToAssign = unassignResult.getRefundInvoiceCandidate();
+			}
+			else
+			{
+				// the given invoiceCandidate was already up to date with the backend storage; nothing to do here
+				return reloadedInvoiceCandidate;
+			}
+		}
+		else
+		{
+			refundInvoiceCandidateToAssign = matchingRefundInvoiceCandidate;
+		}
 
 		final UnassignedPairOfCandidates request = UnassignedPairOfCandidates
 				.builder()
-				.assignableInvoiceCandidate(invoiceCandidate)
-				.refundInvoiceCandidate(refundInvoiceCandidate)
+				.assignableInvoiceCandidate(invoiceCandidate.withoutRefundInvoiceCandidate())
+				.refundInvoiceCandidate(refundInvoiceCandidateToAssign)
 				.build();
 
 		return assignCandidates(request);
+	}
+
+	private RefundInvoiceCandidate retrieveOrCreateMatchingRefundCandidate(
+			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,
+			@NonNull final Optional<RefundContract> refundContract)
+	{
+		final RefundInvoiceCandidateQuery refundCandidateQuery = RefundInvoiceCandidateQuery.builder()
+				.refundContract(refundContract.get())
+				.invoicableFrom(assignableInvoiceCandidate.getInvoiceableFrom())
+				.build();
+
+		final Supplier<? extends RefundInvoiceCandidate> refundCandidateSupplier = //
+				() -> invoiceCandidateRepository.createRefundInvoiceCandidate(assignableInvoiceCandidate, refundContract.get().getId());
+
+		final RefundInvoiceCandidate matchingRefundInvoiceCandidate = //
+				invoiceCandidateRepository
+						.getRefundInvoiceCandidate(refundCandidateQuery)
+						.orElseGet(refundCandidateSupplier);
+		return matchingRefundInvoiceCandidate;
 	}
 
 	@VisibleForTesting
 	AssignableInvoiceCandidate assignCandidates(
 			@NonNull final UnassignedPairOfCandidates unAssignedPairOfCandidates)
 	{
-		final RefundInvoiceCandidate updateRefundCandidate = unAssignedPairOfCandidates.getRefundInvoiceCandidate()
+		final AssignmentToRefundCandidate assignmentToRefundCandidate = unAssignedPairOfCandidates
+				.getRefundInvoiceCandidate()
 				.withAddedMoneyAmount(unAssignedPairOfCandidates.getAssignableInvoiceCandidate());
-		invoiceCandidateRepository.save(updateRefundCandidate);
+
+		final RefundInvoiceCandidate updatedRefundCandidate = assignmentToRefundCandidate.getRefundInvoiceCandidate();
+		invoiceCandidateRepository.save(updatedRefundCandidate);
 
 		final UnassignedPairOfCandidates updatedPair = unAssignedPairOfCandidates
-				.withRefundInvoiceCandidate(updateRefundCandidate);
+				.withAssignmentToRefundCandidate(assignmentToRefundCandidate);
 
 		return invoiceCandidateRepository
 				.saveCandidateAssignment(updatedPair);
@@ -116,9 +166,9 @@ public class InvoiceCandidateAssignmentService
 	 */
 	public UnassignedPairOfCandidates unassignCandidate(@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
-		final RefundInvoiceCandidate refundInvoiceCandidate = Check
+		final AssignmentToRefundCandidate assignmentToRefundCandidate = Check
 				.assumeNotNull(
-						assignableInvoiceCandidate.getRefundInvoiceCandidate(),
+						assignableInvoiceCandidate.getAssignmentToRefundCandidate(),
 						"The given assignableInvoiceCandidate to unassign needs to have a non-null refundInvoiceCandidate",
 						assignableInvoiceCandidate);
 
@@ -126,10 +176,10 @@ public class InvoiceCandidateAssignmentService
 
 		final AssignableInvoiceCandidate withoutRefundInvoiceCandidate = assignableInvoiceCandidate
 				.withoutRefundInvoiceCandidate();
-		invoiceCandidateRepository.save(withoutRefundInvoiceCandidate);
 
-		final RefundInvoiceCandidate withSubtractedMoneyAmount = refundInvoiceCandidate
-				.withSubtractedMoneyAmount(assignableInvoiceCandidate);
+		final RefundInvoiceCandidate withSubtractedMoneyAmount = assignmentToRefundCandidate
+				.withSubtractedMoneyAmount()
+				.getRefundInvoiceCandidate();
 		invoiceCandidateRepository.save(withSubtractedMoneyAmount);
 
 		return UnassignedPairOfCandidates
@@ -166,7 +216,9 @@ public class InvoiceCandidateAssignmentService
 		while (allAssigned.hasNext())
 		{
 			final AssignableInvoiceCandidate assigned = allAssigned.next();
-			updatedCandidate = updatedCandidate.withAddedMoneyAmount(assigned);
+			updatedCandidate = updatedCandidate
+					.withAddedMoneyAmount(assigned)
+					.getRefundInvoiceCandidate();
 		}
 
 		invoiceCandidateRepository.save(updatedCandidate);

@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1051207302L;
+	private static final long serialVersionUID = -288425655L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -24,6 +25,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
         {
 			setI_BPartner_ID (0);
 			setI_IsImported (false); // N
+			setIsActiveStatus (true); // Y
 			setIsBillTo (false); // N
 			setIsBillToContact_Default (false); // N
 			setIsBillToDefault (false); // N
@@ -32,6 +34,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 			setIsShipTo (false); // N
 			setIsShipToContact_Default (false); // N
 			setIsShipToDefault (false); // N
+			setIsShowDeliveryNote (false); // N
         } */
     }
 
@@ -182,6 +185,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Address4);
 	}
 
+	/** Set Aggregation Name.
+		@param AggregationName Aggregation Name	  */
+	@Override
+	public void setAggregationName (java.lang.String AggregationName)
+	{
+		set_Value (COLUMNNAME_AggregationName, AggregationName);
+	}
+
+	/** Get Aggregation Name.
+		@return Aggregation Name	  */
+	@Override
+	public java.lang.String getAggregationName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AggregationName);
+	}
+
 	/** Set Geburtstag.
 		@param Birthday 
 		Birthday or Anniversary day
@@ -218,6 +237,28 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getBPContactGreeting () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BPContactGreeting);
+	}
+
+	/** Set Aggregation Definition.
+		@param C_Aggregation_ID Aggregation Definition	  */
+	@Override
+	public void setC_Aggregation_ID (int C_Aggregation_ID)
+	{
+		if (C_Aggregation_ID < 1) 
+			set_Value (COLUMNNAME_C_Aggregation_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Aggregation_ID, Integer.valueOf(C_Aggregation_ID));
+	}
+
+	/** Get Aggregation Definition.
+		@return Aggregation Definition	  */
+	@Override
+	public int getC_Aggregation_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Aggregation_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -289,6 +330,40 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getC_BP_Group_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_PrintFormat getC_BP_PrintFormat() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_PrintFormat_ID, org.compiere.model.I_C_BP_PrintFormat.class);
+	}
+
+	@Override
+	public void setC_BP_PrintFormat(org.compiere.model.I_C_BP_PrintFormat C_BP_PrintFormat)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_PrintFormat_ID, org.compiere.model.I_C_BP_PrintFormat.class, C_BP_PrintFormat);
+	}
+
+	/** Set Geschäftspartner - Druck - Format.
+		@param C_BP_PrintFormat_ID Geschäftspartner - Druck - Format	  */
+	@Override
+	public void setC_BP_PrintFormat_ID (int C_BP_PrintFormat_ID)
+	{
+		if (C_BP_PrintFormat_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_PrintFormat_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_PrintFormat_ID, Integer.valueOf(C_BP_PrintFormat_ID));
+	}
+
+	/** Get Geschäftspartner - Druck - Format.
+		@return Geschäftspartner - Druck - Format	  */
+	@Override
+	public int getC_BP_PrintFormat_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_PrintFormat_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -406,6 +481,40 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public org.compiere.model.I_C_DataImport getC_DataImport() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class);
+	}
+
+	@Override
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
+	}
+
+	/** Set Data import.
+		@param C_DataImport_ID Data import	  */
+	@Override
+	public void setC_DataImport_ID (int C_DataImport_ID)
+	{
+		if (C_DataImport_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
+	}
+
+	/** Get Data import.
+		@return Data import	  */
+	@Override
+	public int getC_DataImport_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_Greeting getC_Greeting() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
@@ -474,6 +583,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getC_InvoiceSchedule_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Job getC_Job() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Job_ID, org.compiere.model.I_C_Job.class);
+	}
+
+	@Override
+	public void setC_Job(org.compiere.model.I_C_Job C_Job)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Job_ID, org.compiere.model.I_C_Job.class, C_Job);
+	}
+
+	/** Set Position.
+		@param C_Job_ID 
+		Position in der Firma
+	  */
+	@Override
+	public void setC_Job_ID (int C_Job_ID)
+	{
+		if (C_Job_ID < 1) 
+			set_Value (COLUMNNAME_C_Job_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Job_ID, Integer.valueOf(C_Job_ID));
+	}
+
+	/** Get Position.
+		@return Position in der Firma
+	  */
+	@Override
+	public int getC_Job_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Job_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -589,6 +735,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_ContactDescription);
 	}
 
+	/** Set Kontakt-Name.
+		@param ContactName 
+		Business Partner Contact Name
+	  */
+	@Override
+	public void setContactName (java.lang.String ContactName)
+	{
+		set_Value (COLUMNNAME_ContactName, ContactName);
+	}
+
+	/** Get Kontakt-Name.
+		@return Business Partner Contact Name
+	  */
+	@Override
+	public java.lang.String getContactName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ContactName);
+	}
+
 	/** Set ISO Ländercode.
 		@param CountryCode 
 		Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
@@ -606,6 +771,100 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getCountryCode () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CountryCode);
+	}
+
+	/** Set Credit limit.
+		@param CreditLimit 
+		Amount of Credit allowed
+	  */
+	@Override
+	public void setCreditLimit (java.math.BigDecimal CreditLimit)
+	{
+		set_Value (COLUMNNAME_CreditLimit, CreditLimit);
+	}
+
+	/** Get Credit limit.
+		@return Amount of Credit allowed
+	  */
+	@Override
+	public java.math.BigDecimal getCreditLimit () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CreditLimit);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Credit limit 2.
+		@param CreditLimit2 
+		Amount of Credit allowed
+	  */
+	@Override
+	public void setCreditLimit2 (java.math.BigDecimal CreditLimit2)
+	{
+		set_Value (COLUMNNAME_CreditLimit2, CreditLimit2);
+	}
+
+	/** Get Credit limit 2.
+		@return Amount of Credit allowed
+	  */
+	@Override
+	public java.math.BigDecimal getCreditLimit2 () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CreditLimit2);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Debitoren-Nr.
+		@param DebtorId Debitoren-Nr	  */
+	@Override
+	public void setDebtorId (int DebtorId)
+	{
+		set_Value (COLUMNNAME_DebtorId, Integer.valueOf(DebtorId));
+	}
+
+	/** Get Debitoren-Nr.
+		@return Debitoren-Nr	  */
+	@Override
+	public int getDebtorId () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DebtorId);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * DeliveryViaRule AD_Reference_ID=152
+	 * Reference name: C_Order DeliveryViaRule
+	 */
+	public static final int DELIVERYVIARULE_AD_Reference_ID=152;
+	/** Pickup = P */
+	public static final String DELIVERYVIARULE_Pickup = "P";
+	/** Delivery = D */
+	public static final String DELIVERYVIARULE_Delivery = "D";
+	/** Shipper = S */
+	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Set Lieferung.
+		@param DeliveryViaRule 
+		Wie der Auftrag geliefert wird
+	  */
+	@Override
+	public void setDeliveryViaRule (java.lang.String DeliveryViaRule)
+	{
+
+		set_Value (COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
+	}
+
+	/** Get Lieferung.
+		@return Wie der Auftrag geliefert wird
+	  */
+	@Override
+	public java.lang.String getDeliveryViaRule () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DeliveryViaRule);
 	}
 
 	/** Set Beschreibung.
@@ -859,6 +1118,29 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_InvoiceSchedule);
 	}
 
+	/** Set Active Status.
+		@param IsActiveStatus Active Status	  */
+	@Override
+	public void setIsActiveStatus (boolean IsActiveStatus)
+	{
+		set_Value (COLUMNNAME_IsActiveStatus, Boolean.valueOf(IsActiveStatus));
+	}
+
+	/** Get Active Status.
+		@return Active Status	  */
+	@Override
+	public boolean isActiveStatus () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsActiveStatus);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Vorbelegung Rechnung.
 		@param IsBillTo 
 		Rechnungs-Adresse für diesen Geschäftspartner
@@ -1101,6 +1383,29 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return false;
 	}
 
+	/** Set Show Delivery Note.
+		@param IsShowDeliveryNote Show Delivery Note	  */
+	@Override
+	public void setIsShowDeliveryNote (boolean IsShowDeliveryNote)
+	{
+		set_Value (COLUMNNAME_IsShowDeliveryNote, Boolean.valueOf(IsShowDeliveryNote));
+	}
+
+	/** Get Show Delivery Note.
+		@return Show Delivery Note	  */
+	@Override
+	public boolean isShowDeliveryNote () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsShowDeliveryNote);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Vendor.
 		@param IsVendor 
 		Indicates if this Business Partner is a Vendor
@@ -1127,6 +1432,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return false;
 	}
 
+	/** Set JobName.
+		@param JobName JobName	  */
+	@Override
+	public void setJobName (java.lang.String JobName)
+	{
+		set_Value (COLUMNNAME_JobName, JobName);
+	}
+
+	/** Get JobName.
+		@return JobName	  */
+	@Override
+	public java.lang.String getJobName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_JobName);
+	}
+
 	/** Set Nachname.
 		@param Lastname Nachname	  */
 	@Override
@@ -1141,6 +1462,119 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getLastname () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Lastname);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
+	}
+
+	/** Set Lieferweg.
+		@param M_Shipper_ID 
+		Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public void setM_Shipper_ID (int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+	}
+
+	/** Get Lieferweg.
+		@return Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public int getM_Shipper_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Memo.
+		@param Memo 
+		Memo Text
+	  */
+	@Override
+	public void setMemo (java.lang.String Memo)
+	{
+		set_Value (COLUMNNAME_Memo, Memo);
+	}
+
+	/** Get Memo.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo);
+	}
+
+	/** Set Memo1.
+		@param Memo1 
+		Memo Text
+	  */
+	@Override
+	public void setMemo1 (java.lang.String Memo1)
+	{
+		set_Value (COLUMNNAME_Memo1, Memo1);
+	}
+
+	/** Get Memo1.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo1 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo1);
+	}
+
+	/** Set Memo2.
+		@param Memo2 
+		Memo Text
+	  */
+	@Override
+	public void setMemo2 (java.lang.String Memo2)
+	{
+		set_Value (COLUMNNAME_Memo2, Memo2);
+	}
+
+	/** Get Memo2.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo2 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo2);
+	}
+
+	/** Set Memo3.
+		@param Memo3 
+		Memo Text
+	  */
+	@Override
+	public void setMemo3 (java.lang.String Memo3)
+	{
+		set_Value (COLUMNNAME_Memo3, Memo3);
+	}
+
+	/** Get Memo3.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo3 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo3);
 	}
 
 	/** Set NAICS/SIC.
@@ -1239,9 +1673,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	/** Set Kennwort.
-		@param Password 
-		Password of any length (case sensitive)
-	  */
+		@param Password Kennwort	  */
 	@Override
 	public void setPassword (java.lang.String Password)
 	{
@@ -1249,8 +1681,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	/** Get Kennwort.
-		@return Password of any length (case sensitive)
-	  */
+		@return Kennwort	  */
 	@Override
 	public java.lang.String getPassword () 
 	{
@@ -1570,6 +2001,72 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getRegionName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RegionName);
+	}
+
+	/** 
+	 * Salesgroup AD_Reference_ID=540635
+	 * Reference name: C_BPartner_Salesgroup
+	 */
+	public static final int SALESGROUP_AD_Reference_ID=540635;
+	/** Klassischer Detailhandel = 0030 */
+	public static final String SALESGROUP_KlassischerDetailhandel = "0030";
+	/** Discounter = 0010 */
+	public static final String SALESGROUP_Discounter = "0010";
+	/** Gastronomie und Grosshandel = 0020 */
+	public static final String SALESGROUP_GastronomieUndGrosshandel = "0020";
+	/** Set Statistik Gruppe.
+		@param Salesgroup Statistik Gruppe	  */
+	@Override
+	public void setSalesgroup (java.lang.String Salesgroup)
+	{
+
+		set_Value (COLUMNNAME_Salesgroup, Salesgroup);
+	}
+
+	/** Get Statistik Gruppe.
+		@return Statistik Gruppe	  */
+	@Override
+	public java.lang.String getSalesgroup () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Salesgroup);
+	}
+
+	/** Set Mindesthaltbarkeit Tage.
+		@param ShelfLifeMinDays 
+		Mindesthaltbarkeit in Tagen, bezogen auf das Mindesthaltbarkeitsdatum einer Produktinstanz
+	  */
+	@Override
+	public void setShelfLifeMinDays (int ShelfLifeMinDays)
+	{
+		set_Value (COLUMNNAME_ShelfLifeMinDays, Integer.valueOf(ShelfLifeMinDays));
+	}
+
+	/** Get Mindesthaltbarkeit Tage.
+		@return Mindesthaltbarkeit in Tagen, bezogen auf das Mindesthaltbarkeitsdatum einer Produktinstanz
+	  */
+	@Override
+	public int getShelfLifeMinDays () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_ShelfLifeMinDays);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Shipper name.
+		@param ShipperName Shipper name	  */
+	@Override
+	public void setShipperName (java.lang.String ShipperName)
+	{
+		set_Value (COLUMNNAME_ShipperName, ShipperName);
+	}
+
+	/** Get Shipper name.
+		@return Shipper name	  */
+	@Override
+	public java.lang.String getShipperName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ShipperName);
 	}
 
 	/** Set Short Description.
