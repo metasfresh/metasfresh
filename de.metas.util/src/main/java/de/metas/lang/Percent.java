@@ -67,24 +67,40 @@ public class Percent
 	}
 
 	/**
+	 * Like {@link #of(BigDecimal, BigDecimal, int)} with a scale of 2.
+	 */
+	public static Percent of(@NonNull final BigDecimal numerator, @NonNull final BigDecimal denominator)
+	{
+		return of(numerator, denominator, 2);
+	}
+
+	/**
 	 * Examples:
-	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("4"))} returns and instance of "25%".
-	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("3"))} returns and instance of "33.33%".
+	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("4"), 2)} returns an instance of "25%".
+	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("3"), 2)} returns an instance of "33.33%".
 	 *
 	 * @param denominator if zero, then {@value #ZERO} percent is returned.
 	 * @return a percent instance with max. two digits after the decimal point.
 	 */
-	public static Percent of(@NonNull final BigDecimal numerator, @NonNull final BigDecimal denominator)
+	public static Percent of(
+			@NonNull final BigDecimal numerator,
+			@NonNull final BigDecimal denominator,
+			final int precision)
 	{
+		Check.assumeGreaterOrEqualToZero(precision, "precision");
+
 		if (denominator.signum() == 0)
 		{
 			return ZERO;
 		}
 
+		final int scale = precision + 2; // +2 because i guess if we multiply by 100 in the end, everything shifts by two digits
+
 		final BigDecimal percentValue = numerator
-				.setScale(4, RoundingMode.HALF_UP)
+				.setScale(scale, RoundingMode.HALF_UP)
 				.divide(denominator, RoundingMode.HALF_UP)
 				.multiply(ONE_HUNDRED_VALUE);
+
 		return Percent.of(percentValue);
 	}
 

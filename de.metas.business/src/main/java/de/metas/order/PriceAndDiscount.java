@@ -138,15 +138,8 @@ public class PriceAndDiscount
 			return Percent.ZERO;
 		}
 
-		BigDecimal discount = priceEntered.subtract(priceActual)
-				.divide(priceEntered, 12, RoundingMode.HALF_UP)
-				.multiply(Env.ONEHUNDRED);
-		if (discount.scale() > precision)
-		{
-			discount = discount.setScale(precision, BigDecimal.ROUND_HALF_UP);
-		}
-
-		return Percent.of(discount);
+		final BigDecimal delta = priceEntered.subtract(priceActual);
+		return Percent.of(delta, priceEntered, precision);
 	}
 
 	public static BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(final BigDecimal priceActual, final BigDecimal discount, final int precision)
