@@ -227,6 +227,11 @@ public final class Quantity implements Comparable<Quantity>
 		return uom.getC_UOM_ID();
 	}
 
+	public String getUOMSymbol()
+	{
+		return uom.getUOMSymbol();
+	}
+
 	/**
 	 *
 	 * @param uom
@@ -529,11 +534,11 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity multiply(final BigDecimal multiplicand)
 	{
-		if(multiplicand.compareTo(BigDecimal.ONE) == 0)
+		if (multiplicand.compareTo(BigDecimal.ONE) == 0)
 		{
 			return this;
 		}
-		
+
 		return new Quantity(qty.multiply(multiplicand), uom, sourceQty.multiply(multiplicand), sourceUom);
 	}
 }
