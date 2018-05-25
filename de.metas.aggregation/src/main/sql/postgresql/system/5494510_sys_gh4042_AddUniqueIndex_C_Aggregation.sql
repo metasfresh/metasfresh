@@ -18,3 +18,18 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 CREATE UNIQUE INDEX C_Aggregation_UniqueName ON C_Aggregation (Name)
 ;
 
+-- 2018-05-25T13:19:30.532
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Table SET WhereClause='IsActive=''Y''',Updated=TO_TIMESTAMP('2018-05-25 13:19:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540440
+;
+
+-- 2018-05-25T13:19:35.934
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DROP INDEX IF EXISTS c_aggregation_uniquename
+;
+
+-- 2018-05-25T13:19:35.935
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE UNIQUE INDEX C_Aggregation_UniqueName ON C_Aggregation (Name) WHERE IsActive='Y'
+;
+
