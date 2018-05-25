@@ -882,7 +882,7 @@ public class Doc_AllocationHdr extends Doc
 				InterfaceWrapperHelper.getTableId(I_C_Invoice.class), invoice.getC_Invoice_ID(),
 				getTrxName());
 		docInvoice.loadDocumentDetails();
-		allocationAccounted = docInvoice.createFactCash(as, fact, new BigDecimal(percent));
+		allocationAccounted = docInvoice.createFactCash(as, fact, BigDecimal.valueOf(percent));
 		log.info("Allocation Accounted=" + allocationAccounted);
 
 		// Cash Based Commitment Release
@@ -893,7 +893,7 @@ public class Doc_AllocationHdr extends Doc
 			for (MInvoiceLine line2 : lines)
 			{
 				Fact factC = Doc_Order.getCommitmentRelease(as, this,
-						line2.getQtyInvoiced(), line2.getC_InvoiceLine_ID(), new BigDecimal(percent));
+						line2.getQtyInvoiced(), line2.getC_InvoiceLine_ID(), BigDecimal.valueOf(percent));
 				if (factC == null)
 				{
 					return null;
