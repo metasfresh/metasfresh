@@ -41,7 +41,7 @@ public class OrderLineRepository
 {
 	private final CurrencyRepository currencyRepository;
 
-	private OrderLineRepository(@NonNull final CurrencyRepository currencyRepository)
+	public OrderLineRepository(@NonNull final CurrencyRepository currencyRepository)
 	{
 		this.currencyRepository = currencyRepository;
 	}

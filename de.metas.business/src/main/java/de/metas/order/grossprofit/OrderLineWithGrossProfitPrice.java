@@ -1,13 +1,8 @@
-package de.metas.money.grossprofit;
-
-import java.util.List;
-
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+package de.metas.order.grossprofit;
 
 import de.metas.money.Money;
-import lombok.Builder;
+import de.metas.order.OrderLine;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -33,31 +28,11 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class GrossProfitPrice
+public class OrderLineWithGrossProfitPrice
 {
-	boolean soTrx;
+	@NonNull
+	OrderLine orderLine;
 
 	@NonNull
-	Money basePrice;
-
-	@Singular
-	List<GrossProfitComponent> profitCompponents;
-
-	ExtendedMemorizingSupplier<Money> value = ExtendedMemorizingSupplier.of(() -> computeProfitPrice0());
-
-	public Money compute()
-	{
-		return value.get();
-	}
-
-	private Money computeProfitPrice0()
-	{
-		Money intermediateResult = basePrice;
-		for (final GrossProfitComponent profitComponent : profitCompponents)
-		{
-			intermediateResult = profitComponent.applyToInput(intermediateResult);
-		}
-		return intermediateResult;
-	}
+	Money grossProfitPrice;
 }

@@ -1,18 +1,13 @@
-package de.metas.money.grossprofit;
-
-import java.util.List;
-
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+package de.metas.purchasecandidate.grossprofit;
 
 import de.metas.money.Money;
+import de.metas.pricing.PriceListVersionId;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.purchasecandidate.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -34,30 +29,13 @@ import lombok.Value;
 
 @Value
 @Builder
-public class GrossProfitPrice
+public class PurchaseProfitInfo
 {
-	boolean soTrx;
+	PriceListVersionId priceListVersionId;
 
-	@NonNull
-	Money basePrice;
+	Money purchasePriceActual;
 
-	@Singular
-	List<GrossProfitComponent> profitCompponents;
+	Money customerPriceGrossProfit;
 
-	ExtendedMemorizingSupplier<Money> value = ExtendedMemorizingSupplier.of(() -> computeProfitPrice0());
-
-	public Money compute()
-	{
-		return value.get();
-	}
-
-	private Money computeProfitPrice0()
-	{
-		Money intermediateResult = basePrice;
-		for (final GrossProfitComponent profitComponent : profitCompponents)
-		{
-			intermediateResult = profitComponent.applyToInput(intermediateResult);
-		}
-		return intermediateResult;
-	}
+	Money priceGrossProfit;
 }

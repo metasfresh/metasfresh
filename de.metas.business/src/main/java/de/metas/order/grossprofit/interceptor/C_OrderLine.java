@@ -64,7 +64,7 @@ public class C_OrderLine
 		final GrossProfitPrice grossProfitPrice = //
 				grossProfitPriceFactory.createGrossProfitPrice(grossProfitComputeRequest);
 
-		final Money profitPrice = grossProfitPrice.computeProfitPrice();
+		final Money profitPrice = grossProfitPrice.compute();
 		orderLineRecord.setPriceGrossProfit(profitPrice.getValue());
 	}
 }

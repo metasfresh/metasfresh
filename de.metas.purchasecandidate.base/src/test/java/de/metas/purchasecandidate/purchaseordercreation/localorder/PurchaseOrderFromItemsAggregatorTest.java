@@ -90,7 +90,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.orgId(10)
 				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
-				.productId(productId.getRepoId())
+				.productId(productId)
 				.qtyToPurchase(TEN)
 				.salesOrderId(salesOrder.getC_Order_ID())
 				.salesOrderLineId(50)

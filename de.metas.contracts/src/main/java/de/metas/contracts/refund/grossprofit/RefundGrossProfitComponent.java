@@ -46,12 +46,6 @@ public class RefundGrossProfitComponent implements GrossProfitComponent
 	}
 
 	@Override
-	public String getName()
-	{
-		return "RefundGrossProfitComponent";
-	}
-
-	@Override
 	public Money applyToInput(@NonNull final Money input)
 	{
 		final RefundContractQuery query = RefundContractQuery.of(request);
