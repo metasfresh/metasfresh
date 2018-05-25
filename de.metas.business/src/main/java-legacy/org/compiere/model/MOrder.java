@@ -53,7 +53,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
-import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IStorageBL;
@@ -1723,12 +1722,6 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public String completeIt()
 	{
-		final String result = Services.get(IPrepayOrderAllocationBL.class).orderBeforeCompleteIt(this);
-		if (!Check.isEmpty(result))
-		{
-			return result; // there is nothing more to be done.
-		}
-
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		final String DocSubType = dt.getDocSubType();
 
@@ -1764,8 +1757,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		// Waiting Payment - until we have a payment
 		if (!m_forceCreation
-				&& (MDocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType)
-						|| de.metas.prepayorder.model.I_C_DocType.DOCSUBTYPE_PrepayOrder_metas.equals(DocSubType))  // cg fix for task US682
+				&& X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType)
 				&& getC_Payment_ID() == 0 && getC_CashLine_ID() == 0)
 		{
 			setProcessed(true);
@@ -1803,8 +1795,7 @@ public class MOrder extends X_C_Order implements IDocument
 		MInOut shipment = null;
 		if (MDocType.DOCSUBTYPE_OnCreditOrder.equals(DocSubType)		// (W)illCall(I)nvoice
 				|| MDocType.DOCSUBTYPE_WarehouseOrder.equals(DocSubType)	// (W)illCall(P)ickup
-				|| MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType)			// (W)alkIn(R)eceipt
-				|| MDocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType))
+				|| MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType))			// (W)alkIn(R)eceipt
 		{
 			if (!DELIVERYRULE_Force.equals(getDeliveryRule()))
 			{
@@ -1827,7 +1818,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// Create SO Invoice - Always invoice complete Order
 		if (MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType)
 				|| MDocType.DOCSUBTYPE_OnCreditOrder.equals(DocSubType)
-				|| MDocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType))
+				)
 		{
 			final MInvoice invoice = createInvoice(dt, shipment, realTimePOS ? null : getDateOrdered());
 			if (invoice == null)

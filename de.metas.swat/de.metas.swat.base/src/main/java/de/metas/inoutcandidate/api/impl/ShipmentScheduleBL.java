@@ -941,8 +941,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final I_C_Order order = sched.getC_Order();
 
 		final String docSubType = order.getC_DocType().getDocSubType();
-		final boolean isPrePayOrder = de.metas.prepayorder.model.I_C_DocType.DOCSUBTYPE_PrepayOrder_metas.equals(docSubType)
-				|| X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
+		final boolean isPrePayOrder =  X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
 		if (isPrePayOrder)
 		{
 			logger.debug("Because '" + order + "' is a prepay order, consolidation into one shipment is not allowed");
