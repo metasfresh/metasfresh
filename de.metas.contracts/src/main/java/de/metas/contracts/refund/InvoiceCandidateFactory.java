@@ -1,8 +1,6 @@
 package de.metas.contracts.refund;
 
-import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
-import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -56,15 +54,15 @@ import lombok.NonNull;
 class InvoiceCandidateFactory
 {
 	private final InvoiceCandidateRepository invoiceCandidateRepository;
-	private final RefundConfigRepository refundConfigRepository;
+	private final RefundContractRepository refundContractRepository;
 	private final MoneyFactory moneyFactory;
 
 	public InvoiceCandidateFactory(
 			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository,
-			@NonNull final RefundConfigRepository refundConfigRepository,
+			@NonNull final RefundContractRepository refundContractRepository,
 			@NonNull final MoneyFactory moneyFactory)
 	{
-		this.refundConfigRepository = refundConfigRepository;
+		this.refundContractRepository = refundContractRepository;
 		this.invoiceCandidateRepository = invoiceCandidateRepository;
 		this.moneyFactory = moneyFactory;
 	}
@@ -106,31 +104,31 @@ class InvoiceCandidateFactory
 			return Optional.empty();
 		}
 
-		final TableRecordReference reference = refundRecord.getAD_Table_ID() > 0 ? TableRecordReference.ofReferenced(refundRecord) : null;
-		final Optional<FlatrateTermId> refundContractId = retrieveRefundContractIdOrNull(reference);
+		final TableRecordReference reference = refundRecord.getAD_Table_ID() > 0
+				? TableRecordReference.ofReferenced(refundRecord)
+				: null;
 
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(refundRecord.getC_Invoice_Candidate_ID());
-
-		if (!refundContractId.isPresent())
+		final Optional<RefundContract> refundContract = retrieveRefundContractOrNull(reference);
+		if (!refundContract.isPresent())
 		{
 			return Optional.empty();
 		}
 
-		final Timestamp invoicableFromDate = getValueOverrideOrValue(refundRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(refundRecord.getC_Invoice_Candidate_ID());
 
-		final RefundConfig config = refundConfigRepository.getByRefundContractId(refundContractId.get());
+		final Timestamp invoicableFromDate = getValueOverrideOrValue(refundRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
 
 		final BigDecimal priceActual = getValueOverrideOrValue(refundRecord, I_C_Invoice_Candidate.COLUMNNAME_PriceActual);
 		final Money money = moneyFactory.forAmountAndCurrencyId(
 				priceActual,
 				CurrencyId.ofRepoId(refundRecord.getC_Currency_ID()));
 
-		final RefundInvoiceCandidate invoiceCandidate = RefundInvoiceCandidate.builder()
+		final RefundInvoiceCandidate invoiceCandidate = RefundInvoiceCandidate
+				.builder()
 				.id(invoiceCandidateId)
-				.refundContractId(refundContractId.get())
+				.refundContract(refundContract.get())
 				.bpartnerId(BPartnerId.ofRepoId(refundRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
-				.refundConfig(config)
 				.money(money)
 				.build();
 		return Optional.of(invoiceCandidate);
@@ -140,8 +138,8 @@ class InvoiceCandidateFactory
 	{
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(assignableRecord.getC_Invoice_Candidate_ID());
 
-		final Optional<RefundInvoiceCandidate> refundInvoiceCandidate = //
-				invoiceCandidateRepository.getRefundInvoiceCandidate(invoiceCandidateId);
+		final Optional<AssignmentToRefundCandidate> assignmentToRefundCandidate = //
+				invoiceCandidateRepository.getAssignmentToRefundCandidate(invoiceCandidateId);
 
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(assignableRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
 		final BigDecimal moneyAmount = assignableRecord
@@ -151,34 +149,19 @@ class InvoiceCandidateFactory
 		final CurrencyId currencyId = CurrencyId.ofRepoId(assignableRecord.getC_Currency_ID());
 		final Money money = moneyFactory.forAmountAndCurrencyId(moneyAmount, currencyId);
 
-		final Money oldMoney;
-		if (isNew(assignableRecord))
-		{
-			oldMoney = moneyFactory.zero(currencyId);
-		}
-		else
-		{
-			final I_C_Invoice_Candidate oldAssignableRecord = createOld(assignableRecord, I_C_Invoice_Candidate.class);
-			final BigDecimal oldMoneyValue = oldAssignableRecord
-					.getNetAmtInvoiced()
-					.add(assignableRecord.getNetAmtToInvoice());
-			oldMoney = moneyFactory.forAmountAndCurrencyId(oldMoneyValue, currencyId);
-		}
-
 		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
-				.refundInvoiceCandidate(refundInvoiceCandidate.orElse(null))
+				.assignmentToRefundCandidate(assignmentToRefundCandidate.orElse(null))
 				.bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
-				.oldMoney(oldMoney)
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
 				.build();
 
 		return invoiceCandidate;
 	}
 
-	private Optional<FlatrateTermId> retrieveRefundContractIdOrNull(@Nullable final TableRecordReference reference)
+	private Optional<RefundContract> retrieveRefundContractOrNull(@Nullable final TableRecordReference reference)
 	{
 		if (reference == null)
 		{
@@ -196,6 +179,7 @@ class InvoiceCandidateFactory
 			return Optional.empty();
 		}
 
-		return Optional.of(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		final RefundContract refundContract = refundContractRepository.getById(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		return Optional.of(refundContract);
 	}
 }

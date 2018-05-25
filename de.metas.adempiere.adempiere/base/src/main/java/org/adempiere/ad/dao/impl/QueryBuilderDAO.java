@@ -36,6 +36,8 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 
+import lombok.NonNull;
+
 public class QueryBuilderDAO extends AbstractQueryBuilderDAO
 {
 	private final PlainQueryBuilderDAO memDAO = new PlainQueryBuilderDAO();
@@ -89,7 +91,7 @@ public class QueryBuilderDAO extends AbstractQueryBuilderDAO
 		final int queryLimit = queryBuildCtx.getQueryLimit();
 		final int queryOnlySelectionId = queryBuildCtx.getQueryOnlySelectionId();
 		final Map<String, Object> queryOptions = queryBuildCtx.getQueryOptions();
-		return new TypedSqlQuery<T>(ctx, modelClass, modelTableName, sqlWhereClause, trxName)
+		return new TypedSqlQuery<>(ctx, modelClass, modelTableName, sqlWhereClause, trxName)
 				.setParameters(sqlParams)
 				.setPostQueryFilter(nonSqlFilters)
 				.setOrderBy(queryOrderBy)
@@ -99,11 +101,11 @@ public class QueryBuilderDAO extends AbstractQueryBuilderDAO
 	}
 
 	@Override
-	public <T> String getSql(final Properties ctx, final ICompositeQueryFilter<T> filter, final List<Object> sqlParamsOut)
+	public <T> String getSql(
+			@NonNull final Properties ctx,
+			@NonNull final ICompositeQueryFilter<T> filter,
+			final List<Object> sqlParamsOut)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
-		Check.assumeNotNull(filter, "filter not null");
-
 		// Make sure given filter does not have nonSQL parts
 		final IQueryFilter<T> nonSqlFilters = filter.asPartialNonSqlFilterOrNull();
 		if (nonSqlFilters != null)

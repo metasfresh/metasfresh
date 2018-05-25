@@ -1,15 +1,14 @@
-package de.metas.contracts.refund;
+package de.metas.money;
 
-import java.time.LocalDate;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import de.metas.contracts.FlatrateTermId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.math.BigDecimal;
+
+import org.junit.Test;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -29,19 +28,18 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class RefundContract
+public class MoneyTest
 {
-	@NonNull
-	FlatrateTermId id;
+	@Test
+	public void equals()
+	{
+		final Currency currency = Currency
+				.builder()
+				.precision(2)
+				.id(CurrencyId.ofRepoId(20))
+				.build();
 
-	@NonNull
-	RefundConfig refundConfig;
-
-	@NonNull
-	LocalDate startDate;
-
-	@NonNull
-	LocalDate endDate;
+		assertThat(Money.of(new BigDecimal("4.00"), currency))
+				.isEqualTo(Money.of(new BigDecimal("4"), currency));
+	}
 }

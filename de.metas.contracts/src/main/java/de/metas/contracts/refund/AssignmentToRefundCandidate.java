@@ -1,9 +1,6 @@
 package de.metas.contracts.refund;
 
-import java.time.LocalDate;
-
-import de.metas.contracts.FlatrateTermId;
-import lombok.Builder;
+import de.metas.money.Money;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -30,18 +27,27 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class RefundContract
+public class AssignmentToRefundCandidate
 {
 	@NonNull
-	FlatrateTermId id;
+	RefundInvoiceCandidate refundInvoiceCandidate;
 
 	@NonNull
-	RefundConfig refundConfig;
+	Money moneyAssignedToRefundCandidate;
 
-	@NonNull
-	LocalDate startDate;
+	public AssignmentToRefundCandidate withSubtractedMoneyAmount()
+	{
+		final Money subtrahent = getMoneyAssignedToRefundCandidate();
+		final Money newMoneyAmount = refundInvoiceCandidate
+				.getMoney()
+				.subtract(subtrahent);
 
-	@NonNull
-	LocalDate endDate;
+		final RefundInvoiceCandidate newRefundCandidate = refundInvoiceCandidate.toBuilder()
+				.money(newMoneyAmount)
+				.build();
+
+		return new AssignmentToRefundCandidate(
+				newRefundCandidate,
+				moneyAssignedToRefundCandidate.toZero());
+	}
 }
