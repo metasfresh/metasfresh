@@ -94,7 +94,7 @@ class DatetimeRange extends Component {
           className={classnames(
             'btn',
             'btn-block',
-            'text-xs-left',
+            'text-left',
             'btn-meta-outline-secondary',
             'btn-distance',
             'btn-sm input-icon-container',

@@ -114,7 +114,7 @@ class Notification extends Component {
             item.msg &&
             !isDisplayedMore && (
               <u
-                className="text-xs-right text-small pointer"
+                className="text-right text-small pointer"
                 onClick={this.handleToggleMore}
               >
                 (read more)

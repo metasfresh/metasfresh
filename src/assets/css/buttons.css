@@ -61,7 +61,7 @@ button, .btn {
     font-size: 18px;
 }
 
-.btn-xs {
+.btn {
     padding: .25rem .6rem;
     font-size: .65rem;
     line-height: 1.5;
@@ -82,7 +82,7 @@ button, .btn {
 
 @media only screen and (min-width: $breakpoint-md){
     .desktop {
-        .btn-xs {
+        .btn {
             padding: .25rem .6rem;
             line-height: 1.5;
         }
@@ -101,7 +101,7 @@ button, .btn {
     pointer-events: none;
 }
 
-.btn-xs.dropdown-toggle {
+.btn.dropdown-toggle {
     padding: .25rem;
 }
 

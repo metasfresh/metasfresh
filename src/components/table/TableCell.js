@@ -186,7 +186,7 @@ class TableCell extends PureComponent {
         onContextMenu={handleRightClick}
         className={classnames(
           {
-            [`text-xs-${item.gridAlign}`]: item.gridAlign,
+            [`text-${item.gridAlign}`]: item.gridAlign,
             'cell-disabled': widgetData[0].readonly,
             'cell-mandatory': widgetData[0].mandatory,
           },

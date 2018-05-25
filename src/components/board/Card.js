@@ -95,7 +95,7 @@ class Card extends Component {
             {mouseOn &&
               onDelete && (
                 <i
-                  className="pointer meta-icon-close-1 float-xs-right"
+                  className="pointer meta-icon-close-1 float-right"
                   onClick={() => onDelete(laneId, cardId)}
                 />
               )}
@@ -107,7 +107,7 @@ class Card extends Component {
               <Avatar
                 key={i}
                 id={user.avatarId}
-                className="float-xs-right"
+                className="float-right"
                 size="sm"
                 title={user.fullname}
               />

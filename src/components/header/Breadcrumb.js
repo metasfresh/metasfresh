@@ -153,7 +153,7 @@ class Breadcrumb extends Component {
       <div key="summary-1" className="divider">
         /
       </div>,
-      <div key="summary-2" className="hidden-xs-down header-breadcrumb-line">
+      <div key="summary-2" className="hidden-down header-breadcrumb-line">
         <span className="header-breadcrumb-sitename" title={text}>
           {text}
         </span>
