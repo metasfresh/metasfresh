@@ -5,8 +5,15 @@ import static java.math.BigDecimal.ZERO;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
+import org.adempiere.util.collections.ListUtils;
+
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 
 import de.metas.currency.Amount;
 import de.metas.lang.Percent;
@@ -184,5 +191,18 @@ public class Money
 	public Amount toAmount()
 	{
 		return Amount.of(getValue(), currency.getThreeLetterCode());
+	}
+
+	public static Currency getCommonCurrencyOfAll(@NonNull final Money... moneys)
+	{
+		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
+
+		final ImmutableListMultimap<Currency, Money> currency2moneys = Multimaps.index(Stream.of(moneys).iterator(), Money::getCurrency);
+
+		final ImmutableSet<Currency> currencies = currency2moneys.keySet();
+		Check.errorIf(currencies.size() > 1,
+				"at least two money instances have different currencies: ", currency2moneys);
+
+		return ListUtils.singleElement(currencies.asList());
 	}
 }

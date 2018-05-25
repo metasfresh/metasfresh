@@ -34,6 +34,7 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.money.Currency;
+import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -231,6 +232,21 @@ public class PurchaseCandidateRepository
 		record.setC_BPartner_Product_ID(purchaseCandidate.getBpartnerProductId().orElse(-1));
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
 
+		// set monetary values
+		final Money customerPriceGrossProfit = purchaseCandidate.getCustomerPriceGrossProfit();
+		final Money priceGrossProfit = purchaseCandidate.getPriceGrossProfit();
+		final Money purchasePriceActual = purchaseCandidate.getPurchasePriceActual();
+		final CurrencyId commonCurrencyOfAll = //
+				Money.getCommonCurrencyOfAll(
+						customerPriceGrossProfit,
+						priceGrossProfit,
+						purchasePriceActual);
+
+		record.setCustomerPriceGrossProfit(customerPriceGrossProfit.getValue());
+		record.setPriceGrossProfit(priceGrossProfit.getValue());
+		record.setPurchasePriceActual(purchasePriceActual.getValue());
+		record.setC_Currency_ID(commonCurrencyOfAll.getRepoId());
+
 		record.setProcessed(purchaseCandidate.isProcessed());
 
 		InterfaceWrapperHelper.save(record);
@@ -272,10 +288,10 @@ public class PurchaseCandidateRepository
 				.vendorProductInfo(vendorProductInfo)
 				.qtyToPurchase(purchaseCandidateRecord.getQtyToPurchase())
 				.dateRequired(TimeUtil.asLocalDateTime(purchaseCandidateRecord.getDateRequired()))
-				.processed(purchaseCandidateRecord.isProcessed())
 				.purchasePriceActual(Money.of(purchaseCandidateRecord.getPurchasePriceActual(), currency))
 				.customerPriceGrossProfit(Money.of(purchaseCandidateRecord.getCustomerPriceGrossProfit(), currency))
 				.priceGrossProfit(Money.of(purchaseCandidateRecord.getPriceGrossProfit(), currency))
+				.processed(purchaseCandidateRecord.isProcessed())
 				.build();
 
 		purchaseItemRepository.retrieveForPurchaseCandidate(purchaseCandidate);
