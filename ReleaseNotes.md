@@ -64,13 +64,16 @@ Here come the actual release notes:
     * Improving the Error Handling and Notifications, now showing translateable Error Messages.
 
 * metasfresh-webui-frontend
-  * [#1789](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1789) user notifications: handle view target type
+  * [#1789](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1789) User notifications: handle view target type
+    * Improved Handling of User notificaitons in WebUI, now handling the view target type.
 
 * metasfresh-dist
   * [#18](https://github.com/metasfresh/metasfresh-dist/issues/18) create docker image automatically via jenkins
+    * Now automatically creating metasfresh docker images via jenkins and uploading them to dockerhub.
 
 * metasfresh-dist-orgs
   * [#93](https://github.com/metasfresh/metasfresh-dist-orgs/issues/92) Postal Lookup for Switzerland CH
+    * Imported and fresh Postal Data for the Postal Lookup in Switzerland.
 
 ## Fixes
 * metasfresh
