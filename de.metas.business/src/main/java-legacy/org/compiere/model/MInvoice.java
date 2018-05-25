@@ -67,7 +67,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.logging.LogManager;
-import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.tax.api.ITaxBL;
 
@@ -1647,8 +1646,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	public String completeIt()
 	{
 		final String result = completeIt0();
-		Services.get(IPrepayOrderAllocationBL.class).invoiceAfterCompleteIt(this);
-
 		return result;
 	}
 
@@ -2142,8 +2139,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		Services.get(IPrepayOrderAllocationBL.class).invoiceBeforeReverseCorrectIt(this);
-
 		log.debug("{}", toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
