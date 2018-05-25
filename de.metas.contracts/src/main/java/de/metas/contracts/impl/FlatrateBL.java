@@ -1698,11 +1698,8 @@ public class FlatrateBL implements IFlatrateBL
 			{
 				return true;
 			}
-
 		}
-
 		return false;
-
 	}
 
 	/**
@@ -1719,8 +1716,11 @@ public class FlatrateBL implements IFlatrateBL
 
 		final org.compiere.model.I_M_Product newProduct = newTerm.getM_Product();
 		final org.compiere.model.I_M_Product product = term.getM_Product();
-
-		if (newProduct != null)
+		if (newProduct != null && product != null)
+		{
+			return newProduct.getM_Product_ID() == product.getM_Product_ID();
+		}
+		else if (newProduct != null)
 		{
 
 			final List<I_C_Flatrate_Matching> flatrateMatchings = flatrateDAO.retrieveFlatrateMatchings(term.getC_Flatrate_Conditions());
@@ -1853,7 +1853,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (ancestor != null)
 		{
-			I_C_Flatrate_Term nextAncestor = getInitialFlatrateTerm(ancestor);
+			final I_C_Flatrate_Term nextAncestor = getInitialFlatrateTerm(ancestor);
 			if (nextAncestor != null)
 			{
 				ancestor = nextAncestor;
