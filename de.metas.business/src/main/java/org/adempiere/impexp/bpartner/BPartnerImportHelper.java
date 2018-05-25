@@ -119,6 +119,12 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
 		bpartner.setAD_Language(importRecord.getAD_Language());
 		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
+		bpartner.setIsActive(importRecord.isActiveStatus());
+		bpartner.setDebtorId(importRecord.getDebtorId());
+		bpartner.setMemo(importRecord.getMemo());
+		bpartner.setDeliveryRule(importRecord.getDeliveryViaRule());
+		bpartner.setM_Shipper_ID(importRecord.getM_Shipper_ID());
+
 		return bpartner;
 	}
 
@@ -205,6 +211,18 @@ import org.compiere.model.ModelValidationEngine;
 			bpartner.setPaymentRulePO(importRecord.getPaymentRulePO());
 		}
 		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
+		bpartner.setIsActive(importRecord.isActiveStatus());
+		bpartner.setDebtorId(importRecord.getDebtorId());
+		bpartner.setMemo(importRecord.getMemo());
+
+		if (!Check.isEmpty(importRecord.getDeliveryViaRule(), true))
+		{
+			bpartner.setDeliveryRule(importRecord.getDeliveryViaRule());
+		}
+		if (importRecord.getM_Shipper_ID() > 0)
+		{
+			bpartner.setM_Shipper_ID(importRecord.getM_Shipper_ID());
+		}
 		return bpartner;
 	}
 
