@@ -1,8 +1,5 @@
 package de.metas.ui.web.handlingunits.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
-
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +18,9 @@ import org.compiere.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -31,6 +31,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -153,7 +154,7 @@ public class WEBUIHUCreationWithSerialNumberService
 
 			for (int i = 0; i < numberOfCUsToCreate; i++)
 			{
-				final List<I_M_HU> createdCUs = newHUTransformation().cuToNewCU(huToSplit, BigDecimal.ONE);
+				final List<I_M_HU> createdCUs = newHUTransformation().cuToNewCU(huToSplit, Quantity.of(BigDecimal.ONE, cuRow.getC_UOM()));
 				splitCUIDs.addAll(createdCUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()));
 			}
 		}
@@ -176,7 +177,7 @@ public class WEBUIHUCreationWithSerialNumberService
 
 			for (int i = 0; i < numberOfCUsToCreate; i++)
 			{
-				final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(huToSplit, BigDecimal.ONE, parentHU);
+				final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(huToSplit, Quantity.of(BigDecimal.ONE, cuRow.getC_UOM()), parentHU);
 
 				splitCUIDs.addAll(createdCUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()));
 			}

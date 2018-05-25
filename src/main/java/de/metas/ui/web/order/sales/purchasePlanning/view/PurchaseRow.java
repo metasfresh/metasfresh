@@ -144,9 +144,6 @@ public class PurchaseRow implements IViewRow
 	private final PurchaseRowId rowId;
 
 	@Getter
-	private final int salesOrderId;
-
-	@Getter
 	private final IViewRowType rowType;
 
 	private ImmutableList<PurchaseRow> includedRows;
@@ -170,7 +167,6 @@ public class PurchaseRow implements IViewRow
 	@Builder(toBuilder = true)
 	private PurchaseRow(
 			@NonNull final PurchaseRowId rowId,
-			final int salesOrderId,
 			@NonNull final IViewRowType rowType,
 			@NonNull final JSONLookupValue product,
 			@Nullable final JSONLookupValue attributeSetInstance,
@@ -190,10 +186,7 @@ public class PurchaseRow implements IViewRow
 			final int warehouseId,
 			final boolean readonly)
 	{
-		Check.assume(salesOrderId > 0, "salesOrderId > 0");
-
 		this.rowId = rowId;
-		this.salesOrderId = salesOrderId;
 		this.rowType = rowType;
 		this.product = product;
 		this.attributeSetInstance = attributeSetInstance;
@@ -239,7 +232,6 @@ public class PurchaseRow implements IViewRow
 	private PurchaseRow(@NonNull final PurchaseRow from)
 	{
 		this.rowId = from.rowId;
-		this.salesOrderId = from.salesOrderId;
 		this.rowType = from.rowType;
 		this.product = from.product;
 		this.attributeSetInstance = from.attributeSetInstance;

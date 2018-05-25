@@ -11,14 +11,12 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
-import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
-import de.metas.ui.web.order.sales.pricingConditions.view.PriceNetCalculator.PriceNetCalculateRequest;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -67,18 +65,14 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 
 		final int adClientId = Env.getAD_Client_ID();
 
-		final PriceNetCalculator priceNetCalculator = PriceNetCalculator.builder()
-				.basePriceCalculator(this::calculateBasePrice)
-				.build();
-
 		return preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(pricingConditions -> pricingConditions.streamBreaksMatchingAnyOfProducts(productAndCategoryIds))
-				.priceNetCalculator(priceNetCalculator)
+				.basePricingSystemPriceCalculator(this::calculateBasePricingSystemPrice)
 				.adClientId(adClientId)
 				.load();
 	}
 
-	private BigDecimal calculateBasePrice(final PriceNetCalculateRequest request)
+	private BigDecimal calculateBasePricingSystemPrice(final BasePricingSystemPriceCalculatorRequest request)
 	{
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 
@@ -90,7 +84,7 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 		return result.getPriceStdOverride();
 	}
 
-	private IPricingContext createPricingContext(final PriceNetCalculateRequest request)
+	private IPricingContext createPricingContext(final BasePricingSystemPriceCalculatorRequest request)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 

@@ -73,7 +73,7 @@ public final class PurchaseRowId
 		Check.errorUnless(this.isLineRowId(),
 				"The method withAvailabilityId may only be invoked on a line row id; this={}", this);
 
-		return PurchaseRowId.builder()
+		return builder()
 				.salesOrderLineId(salesOrderLineId)
 				.vendorBPartnerId(vendorBPartnerId)
 				.processedPurchaseCandidateId(processedPurchaseCandidateId)

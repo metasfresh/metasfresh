@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -178,6 +179,8 @@ public final class ViewColumnHelper
 
 	private static ClassViewColumnDescriptor createClassViewColumnDescriptor(final Field field)
 	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 		final ViewColumn viewColumnAnn = field.getAnnotation(ViewColumn.class);
 		final String fieldName = !Check.isEmpty(viewColumnAnn.fieldName(), true) ? viewColumnAnn.fieldName().trim() : field.getName();
 		final String captionKey = !Check.isEmpty(viewColumnAnn.captionKey()) ? viewColumnAnn.captionKey() : fieldName;
@@ -192,7 +195,7 @@ public final class ViewColumnHelper
 
 		return ClassViewColumnDescriptor.builder()
 				.fieldName(fieldName)
-				.caption(Services.get(IMsgBL.class).translatable(captionKey))
+				.caption(!Check.isEmpty(captionKey, true) ? msgBL.translatable(captionKey) : ImmutableTranslatableString.empty())
 				.widgetType(viewColumnAnn.widgetType())
 				.editorRenderMode(viewColumnAnn.editor())
 				.allowSorting(viewColumnAnn.sorting())

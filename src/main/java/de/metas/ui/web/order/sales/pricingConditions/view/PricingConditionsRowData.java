@@ -182,12 +182,13 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 	@Override
 	public void patchRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		changeRow(ctx.getRowId(), row -> row.copyAndChange(fieldChangeRequests));
+		final PricingConditionsRowChangeRequest request = PricingConditionsRowActions.toChangeRequest(fieldChangeRequests);
+		changeRow(ctx.getRowId(), row -> PricingConditionsRowReducers.copyAndChange(request, row));
 	}
 
-	public void patchEditableRow(PricingConditionsRowChangeRequest request)
+	public void patchEditableRow(final PricingConditionsRowChangeRequest request)
 	{
-		changeRow(getEditableRowId(), editableRow -> editableRow.copyAndChange(request));
+		changeRow(getEditableRowId(), editableRow -> PricingConditionsRowReducers.copyAndChange(request, editableRow));
 	}
 
 	public boolean hasEditableRow()
