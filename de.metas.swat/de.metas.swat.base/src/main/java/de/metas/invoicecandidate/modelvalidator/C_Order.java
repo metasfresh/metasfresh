@@ -133,7 +133,7 @@ public class C_Order
 		}
 
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getC_BPartner_ID());
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getBill_BPartner_ID());
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
 		{
 			return false;
