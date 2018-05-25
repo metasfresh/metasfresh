@@ -1,7 +1,5 @@
 package de.metas.ui.web.pporder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -10,10 +8,14 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.X_PP_Order_BOMLine;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
@@ -81,6 +83,7 @@ public class PPOrderLineRowTest
 		save(ppOrder);
 
 		final I_PP_Order_BOMLine ppOrderBomLine = newInstance(I_PP_Order_BOMLine.class);
+		ppOrderBomLine.setIssueMethod(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived);
 		ppOrderBomLine.setPP_Order(ppOrder);
 		save(ppOrderBomLine);
 
@@ -97,6 +100,7 @@ public class PPOrderLineRowTest
 		assertThat(result.getType()).isEqualTo(PPOrderLineType.BOMLine_Component);
 		assertThat(result.isTopLevelHU()).isFalse();
 		assertThat(result.isHUStatusActive()).isFalse();
+		assertThat(result.getIssueMethod()).isEqualTo(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived);
 	}
 
 	@Test
