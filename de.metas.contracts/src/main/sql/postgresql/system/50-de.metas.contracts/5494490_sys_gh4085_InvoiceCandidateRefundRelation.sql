@@ -60,3 +60,9 @@ UPDATE AD_Ref_Table SET WhereClause=' exists (  select 1 from C_Invoice_Candidat
 UPDATE AD_Ref_Table SET AD_Display=NULL, AD_Key=544906, AD_Table_ID=540270,Updated=TO_TIMESTAMP('2018-05-25 11:20:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540867
 ;
 
+-- 2018-05-25T15:21:07.542
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='exists (  select 1 from C_Invoice_Candidate_Assignment ica  join C_Invoice_Candidate ic on ica.C_Invoice_Candidate_Assigned_ID = ic.C_Invoice_Candidate_ID  where ic.C_Invoice_Candidate_ID = @C_Invoice_Candidate_ID/-1@ and ica.C_Invoice_Candidate_Term_ID = C_Invoice_Candidate.C_Invoice_Candidate_ID  )  ',Updated=TO_TIMESTAMP('2018-05-25 15:21:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540867
+;
+
+
