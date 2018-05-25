@@ -21,8 +21,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -69,14 +71,14 @@ public class PurchaseRowFactoryTest
 				.rowFromPurchaseCandidateBuilder()
 				.purchaseCandidate(purchaseCandidate)
 				.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
-				.datePromised(SystemTime.asTimestamp())
+				.datePromised(SystemTime.asLocalDateTime())
 				.build();
 
 		final DocumentId id = candidateRow.getId();
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(id);
 
 		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(purchaseCandidate.getVendorBPartnerId());
-		assertThat(purchaseRowId.getSalesOrderLineId()).isEqualTo(purchaseCandidate.getSalesOrderLineId());
+		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId(I_C_OrderLine.Table_Name, purchaseCandidate.getSalesOrderLineId()));
 		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(30);
 
 	}
@@ -97,7 +99,7 @@ public class PurchaseRowFactoryTest
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.bpartnerProductId(10)
 				.vendorBPartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
-				.productId(product.getM_Product_ID())
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.productNo("productNo")
 				.productName("productName")
 				.build();

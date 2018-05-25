@@ -1,7 +1,7 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -181,7 +181,7 @@ class PurchaseRowsCollection
 			}
 			else if (PurchaseRow.FIELDNAME_DatePromised.equals(fieldName))
 			{
-				final Date datePromised = fieldChangeRequest.getValueAsDateTime();
+				final LocalDateTime datePromised = fieldChangeRequest.getValueAsLocalDateTime();
 				editableGroupRow.changeDatePromised(includedRowId, datePromised);
 			}
 			else

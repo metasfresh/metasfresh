@@ -1,5 +1,7 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -9,7 +11,10 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
@@ -17,11 +22,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.availability.AvailabilityException;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -89,21 +97,42 @@ class PurchaseRowsLoader
 						.rowFromPurchaseCandidateBuilder()
 						.purchaseCandidate(purchaseCandidate)
 						.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
-						.datePromised(salesOrderLine.getDatePromised())
+						.datePromised(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
 						.build();
 
 				purchaseCandidate2purchaseRowBuilder.put(purchaseCandidate, candidateRow);
 				rows.add(candidateRow);
 			}
 
-			final PurchaseRow groupRow = //
-					purchaseRowFactory.createGroupRow(salesOrderLine, rows.build());
+			final PurchaseDemand requisitionLine = createRequisitionLine(salesOrderLine);
+			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(requisitionLine, rows.build());
 			result.add(groupRow);
 		}
 
 		purchaseCandidate2purchaseRow = purchaseCandidate2purchaseRowBuilder.build();
 
 		return result.build();
+	}
+
+	private static PurchaseDemand createRequisitionLine(final I_C_OrderLine salesOrderLine)
+	{
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(salesOrderLine.getM_Product_ID());
+		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
+		final Timestamp preparationDate = salesOrderLine.getC_Order().getPreparationDate();
+
+		return PurchaseDemand.builder()
+				.id(PurchaseDemandId.ofTableAndRecordId(I_C_OrderLine.Table_Name, salesOrderLine.getC_OrderLine_ID()))
+				//
+				.orgId(salesOrderLine.getAD_Org_ID())
+				.warehouseId(salesOrderLine.getM_Warehouse_ID())
+				//
+				.productId(ProductId.ofRepoId(salesOrderLine.getM_Product_ID()))
+				.attributeSetInstanceId(salesOrderLine.getM_AttributeSetInstance_ID())
+				.qtyToDeliver(Quantity.of(qtyToDeliver, uom))
+				//
+				.datePromised(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
+				.preparationDate(TimeUtil.asLocalDateTime(preparationDate))
+				.build();
 	}
 
 	public void createAndAddAvailabilityResultRows()
