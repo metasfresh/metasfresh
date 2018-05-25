@@ -78,12 +78,17 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3792](https://github.com/metasfresh/metasfresh/issues/3729) Setting a different invoice bpartner causes error
+    * Fixes an Error in Sales Order, that lead to an Exception when selecting a different Invoice Partner.
   * [#4018](https://github.com/metasfresh/metasfresh/issues/4018) QtyCU not respected in Quarantine DD_Orderline
+    * Fixes the wrong Quantity in Distribution Orderlines for Movements to Quarantine Warehouse.
   * [#4052](https://github.com/metasfresh/metasfresh/issues/4052) NPE when deleting inoutline with empty product
+    * Fixes a Null Pointer Exception when deleting Inout Lines without a Product set.
   * [#4063](https://github.com/metasfresh/metasfresh/issues/4063) Enhanced Pricing: Discount Break is falsely invalidated
+    * Improvement of the Enhanced Pricing Rules.
 
 * metasfresh-webui-frontend
-  * [#1790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1790) view: refresh after removing a static filter
+  * [#1790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1790) View: refresh after removing a static filter
+    * Improvement in WebUI Frontend, now refreshing the view after removing a static filter.
 
 # metasfresh 5.57 (2018-20)
 
