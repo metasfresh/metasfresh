@@ -18,6 +18,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
@@ -1059,28 +1060,23 @@ public class HUTransformService
 
 		Quantity qtyCUsRemaining = qtyCU; // how many CUs we still have to extract
 
-		for (int i = 0; i < handlingUnitsDAO.retrieveIncludedHUs(sourceLU).size(); i++)
+		final int numberOfIncludedHUs = handlingUnitsDAO.retrieveIncludedHUs(sourceLU).size();
+
+		for (int i = 0; i < numberOfIncludedHUs; i++)
 		{
 			if (qtyCUsRemaining.signum() <= 0)
 			{
 				break;
 			}
 
-			final List<I_M_HU> extractedTUs = luExtractTUs(sourceLU, 1);
+			final I_M_HU extractedTU = ListUtils.singleElement(luExtractTUs(sourceLU, 1));
 
-			for (final I_M_HU tu : extractedTUs)
-			{
-				if (qtyCUsRemaining.signum() <= 0)
-				{
-					break;
-				}
+			final List<I_M_HU> cusFromTU = tuExtractCUs(extractedTU, qtyCUsRemaining);
 
-				final List<I_M_HU> cusFromTU = tuExtractCUs(tu, qtyCUsRemaining);
+			extractedCUs.addAll(cusFromTU);
 
-				extractedCUs.addAll(cusFromTU);
+			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCU.getUOM()));
 
-				qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCU.getUOM()));
-			}
 		}
 		return extractedCUs.build();
 	}
