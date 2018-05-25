@@ -27,7 +27,7 @@ import lombok.Value;
  */
 
 @Value
-public class AssignementToRefundCandidate
+public class AssignmentToRefundCandidate
 {
 	@NonNull
 	RefundInvoiceCandidate refundInvoiceCandidate;
@@ -35,7 +35,7 @@ public class AssignementToRefundCandidate
 	@NonNull
 	Money moneyAssignedToRefundCandidate;
 
-	public AssignementToRefundCandidate withSubtractedMoneyAmount()
+	public AssignmentToRefundCandidate withSubtractedMoneyAmount()
 	{
 		final Money subtrahent = getMoneyAssignedToRefundCandidate();
 		final Money newMoneyAmount = refundInvoiceCandidate
@@ -46,7 +46,7 @@ public class AssignementToRefundCandidate
 				.money(newMoneyAmount)
 				.build();
 
-		return new AssignementToRefundCandidate(
+		return new AssignmentToRefundCandidate(
 				newRefundCandidate,
 				moneyAssignedToRefundCandidate.toZero());
 	}

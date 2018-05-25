@@ -188,12 +188,12 @@ public class InvoiceCandidateRepository
 		assignmentRecord.setAssignedAmount(request.getMoneyToAssign().getValue());
 		saveRecord(assignmentRecord);
 
-		final AssignementToRefundCandidate assignementToRefundCandidate = //
-				new AssignementToRefundCandidate(refundInvoiceCandidate, request.getMoneyToAssign());
+		final AssignmentToRefundCandidate assignmentToRefundCandidate = //
+				new AssignmentToRefundCandidate(refundInvoiceCandidate, request.getMoneyToAssign());
 		return request
 				.getAssignableInvoiceCandidate()
 				.toBuilder()
-				.assignmentToRefundCandidate(assignementToRefundCandidate)
+				.assignmentToRefundCandidate(assignmentToRefundCandidate)
 				.build();
 	}
 
@@ -313,7 +313,7 @@ public class InvoiceCandidateRepository
 		}
 	}
 
-	public Optional<AssignementToRefundCandidate> getAssignmentToRefundCandidate(
+	public Optional<AssignmentToRefundCandidate> getAssignmentToRefundCandidate(
 			@NonNull final InvoiceCandidateId assignableInvoiceCandidateId)
 	{
 		final I_C_Invoice_Candidate_Assignment assignmentRecord = Services.get(IQueryBL.class)
@@ -344,10 +344,10 @@ public class InvoiceCandidateRepository
 				assignmentRecord.getAssignedAmount(),
 				refundCandidate.get().getMoney().getCurrency());
 
-		final AssignementToRefundCandidate assignementToRefundCandidate = new AssignementToRefundCandidate(
+		final AssignmentToRefundCandidate assignmentToRefundCandidate = new AssignmentToRefundCandidate(
 				refundCandidate.get(),
 				assignedMoney);
-		return Optional.of(assignementToRefundCandidate);
+		return Optional.of(assignmentToRefundCandidate);
 	}
 
 	public void save(@NonNull final RefundInvoiceCandidate invoiceCandidate)

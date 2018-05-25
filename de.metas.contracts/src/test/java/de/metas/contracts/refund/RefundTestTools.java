@@ -209,7 +209,7 @@ public class RefundTestTools
 		assignmentRecord.setAssignedAmount(TWO);
 		saveRecord(assignmentRecord);
 
-		final AssignementToRefundCandidate assignementToRefundCandidate = new AssignementToRefundCandidate(
+		final AssignmentToRefundCandidate assignementToRefundCandidate = new AssignmentToRefundCandidate(
 				refundCandidate,
 				Money.of(TWO, refundCandidate.getMoney().getCurrency()));
 		return assignableInvoiceCandidate

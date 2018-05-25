@@ -56,7 +56,7 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 	@NonNull
 	Money money;
 
-	public AssignementToRefundCandidate withAddedMoneyAmount(
+	public AssignmentToRefundCandidate withAddedMoneyAmount(
 			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
 		final Money augend = assignableInvoiceCandidate
@@ -67,6 +67,6 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 				.money(money.add(augend))
 				.build();
 
-		return new AssignementToRefundCandidate(updatedRefundCandidate, augend);
+		return new AssignmentToRefundCandidate(updatedRefundCandidate, augend);
 	}
 }

@@ -138,7 +138,7 @@ class InvoiceCandidateFactory
 	{
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(assignableRecord.getC_Invoice_Candidate_ID());
 
-		final Optional<AssignementToRefundCandidate> assignementToRefundCandidate = //
+		final Optional<AssignmentToRefundCandidate> assignmentToRefundCandidate = //
 				invoiceCandidateRepository.getAssignmentToRefundCandidate(invoiceCandidateId);
 
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(assignableRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
@@ -151,7 +151,7 @@ class InvoiceCandidateFactory
 
 		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
-				.assignmentToRefundCandidate(assignementToRefundCandidate.orElse(null))
+				.assignmentToRefundCandidate(assignmentToRefundCandidate.orElse(null))
 				.bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)

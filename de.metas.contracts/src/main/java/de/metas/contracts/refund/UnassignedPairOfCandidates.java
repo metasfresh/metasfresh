@@ -60,12 +60,12 @@ public class UnassignedPairOfCandidates
 		this.moneyToAssign = moneyToAssign;
 	}
 
-	public UnassignedPairOfCandidates withAssignementToRefundCandidate(
-			@NonNull final AssignementToRefundCandidate assignementToRefundCandidate)
+	public UnassignedPairOfCandidates withAssignmentToRefundCandidate(
+			@NonNull final AssignmentToRefundCandidate assignmentToRefundCandidate)
 	{
 		return toBuilder()
-				.refundInvoiceCandidate(assignementToRefundCandidate.getRefundInvoiceCandidate())
-				.moneyToAssign(assignementToRefundCandidate.getMoneyAssignedToRefundCandidate())
+				.refundInvoiceCandidate(assignmentToRefundCandidate.getRefundInvoiceCandidate())
+				.moneyToAssign(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate())
 				.build();
 	}
 }

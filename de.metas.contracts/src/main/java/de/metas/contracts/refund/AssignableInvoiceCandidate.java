@@ -49,7 +49,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 	LocalDate invoiceableFrom;
 	Money money;
 
-	AssignementToRefundCandidate assignmentToRefundCandidate;
+	AssignmentToRefundCandidate assignmentToRefundCandidate;
 
 	@Builder(toBuilder = true)
 	private AssignableInvoiceCandidate(
@@ -58,7 +58,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
-			@Nullable final AssignementToRefundCandidate assignmentToRefundCandidate)
+			@Nullable final AssignmentToRefundCandidate assignmentToRefundCandidate)
 	{
 		this.id = id;
 		this.bpartnerId = bpartnerId;
