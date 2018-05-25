@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import { merge } from 'lodash';
 
 import {
   VIEW_EDITOR_RENDER_MODES_ALWAYS,
@@ -150,7 +151,7 @@ class TableItem extends PureComponent {
 
   onCellChange = (rowId, property, value, ret) => {
     const { onItemChange } = this.props;
-    const editedCells = { ...this.state.editedCells };
+    let editedCells = { ...this.state.editedCells };
 
     // this is something we're not doing usually as all field
     // layouts come from the server. But in cases of modals
@@ -159,13 +160,7 @@ class TableItem extends PureComponent {
     if (ret) {
       ret.then(resp => {
         if (resp[0] && resp[0].fieldsByName) {
-          for (let [k, v] of Object.entries(resp[0].fieldsByName)) {
-            if (v.viewEditorRenderMode) {
-              editedCells[k] = {
-                viewEditorRenderMode: v.viewEditorRenderMode,
-              };
-            }
-          }
+          editedCells = merge(editedCells, resp[0].fieldsByName);
         }
 
         this.setState(
@@ -201,10 +196,9 @@ class TableItem extends PureComponent {
     } = this.props;
     let { readonly } = this.props;
     const { edited, updatedRow, listenOnKeys, editedCells } = this.state;
-    const cells = fieldsByName;
+    const cells = merge({}, fieldsByName, editedCells);
 
     // Iterate over layout settings
-
     if (colspan) {
       return <td colSpan={cols.length}>{caption}</td>;
     } else {
@@ -219,9 +213,6 @@ class TableItem extends PureComponent {
               ((cells &&
                 cells[property] &&
                 cells[property].viewEditorRenderMode) ||
-                // fields altered by the response from widget patch
-                (editedCells[property] &&
-                  editedCells[property].viewEditorRenderMode) ||
                 item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
             const isEdited = edited === property;
 
@@ -242,10 +233,8 @@ class TableItem extends PureComponent {
                   };
                   readonly = false;
                 }
-
                 return cellWidget;
               }
-
               return -1;
             });
 
@@ -471,6 +460,13 @@ class TableItem extends PureComponent {
 
 TableItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  onClick: PropTypes.func.isRequired,
+  handleSelect: PropTypes.func,
+  onDoubleClick: PropTypes.func,
+  indentSupported: PropTypes.bool,
+  collapsed: PropTypes.bool,
+  processed: PropTypes.bool,
+  notSaved: PropTypes.bool,
 };
 
 export default connect(false, false, false, { withRef: true })(TableItem);
