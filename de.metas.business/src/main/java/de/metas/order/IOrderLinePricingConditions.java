@@ -44,4 +44,6 @@ public interface IOrderLinePricingConditions extends ISingletonService
 	 */
 	void failForMissingPricingConditions(I_C_Order order);
 
+	int getTemporaryPriceConditionsColorId();
+
 }
