@@ -183,7 +183,6 @@ public class PurchaseRowFactory
 				.rowId(parentRow
 						.getRowId()
 						.withAvailability(availabilityResult.getType(), createRandomString()))
-				.salesOrderId(parentRow.getSalesOrderId())
 				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(availabilityResult.getQty())
 				.readonly(true)
@@ -199,7 +198,6 @@ public class PurchaseRowFactory
 	{
 		return parentRow.toBuilder()
 				.rowId(parentRow.getRowId().withAvailability(Type.NOT_AVAILABLE, createRandomString()))
-				.salesOrderId(parentRow.getSalesOrderId())
 				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(BigDecimal.ZERO)
 				.readonly(true)
