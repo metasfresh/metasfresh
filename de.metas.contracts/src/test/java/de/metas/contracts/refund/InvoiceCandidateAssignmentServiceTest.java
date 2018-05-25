@@ -1,6 +1,5 @@
 package de.metas.contracts.refund;
 
-import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -81,6 +80,7 @@ public class InvoiceCandidateAssignmentServiceTest
 	public void unassignCandidate()
 	{
 		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateWithAssignment();
+
 		final RefundInvoiceCandidate refundInvoiceCandidate = assignableInvoiceCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate();
 		assertThat(refundInvoiceCandidate.getMoney().getValue()).isEqualByComparingTo(HUNDRED.add(TWO)); // guard
 
@@ -89,9 +89,6 @@ public class InvoiceCandidateAssignmentServiceTest
 
 		final AssignableInvoiceCandidate unassignedAssignableInvoiceCandidate = unAssignedPairOfCandidates.getAssignableInvoiceCandidate();
 		assertThat(unassignedAssignableInvoiceCandidate.isAssigned()).isFalse();
-
-		final I_C_Invoice_Candidate unassigneAssignableInvoiceCandidateRecord = RefundTestTools.retrieveRecord(unassignedAssignableInvoiceCandidate.getId());
-		assertThat(unassigneAssignableInvoiceCandidateRecord.getPriceActual()).isEqualByComparingTo(TEN); // still unchanged
 
 		final RefundInvoiceCandidate unAssignedRefundInvoiceCandidate = unAssignedPairOfCandidates.getRefundInvoiceCandidate();
 
