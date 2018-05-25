@@ -25,7 +25,6 @@ package de.metas.testsupport;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -49,6 +48,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -69,18 +69,11 @@ public class AbstractTestSupport
 	{
 		return product(productValue, productId, 0);
 	}
-	
+
 	public I_M_Product product(final String productValue, final int productId, final int orgId)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_Product product = db.getFirstOnly(I_M_Product.class, new IQueryFilter<I_M_Product>()
-		{
-			@Override
-			public boolean accept(final I_M_Product pojo)
-			{
-				return Objects.equals(pojo.getValue(), productValue) && pojo.getM_Product_ID() == productId;
-			}
-		});
+		I_M_Product product = db.getFirstOnly(I_M_Product.class, pojo -> Objects.equals(pojo.getValue(), productValue) && pojo.getM_Product_ID() == productId);
 
 		if (product == null)
 		{
@@ -97,7 +90,7 @@ public class AbstractTestSupport
 
 	/**
 	 * Create an organization with a given name
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
@@ -115,15 +108,7 @@ public class AbstractTestSupport
 	protected I_M_ProductPrice productPrice(final int productPriceId)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_ProductPrice productPrice = db.getFirstOnly(I_M_ProductPrice.class, new IQueryFilter<I_M_ProductPrice>()
-		{
-
-			@Override
-			public boolean accept(final I_M_ProductPrice pojo)
-			{
-				return Objects.equals(pojo.getM_ProductPrice_ID(), productPriceId);
-			}
-		});
+		I_M_ProductPrice productPrice = db.getFirstOnly(I_M_ProductPrice.class, pojo -> Objects.equals(pojo.getM_ProductPrice_ID(), productPriceId));
 
 		if (productPrice == null)
 		{
@@ -139,15 +124,7 @@ public class AbstractTestSupport
 	protected I_M_DiscountSchemaLine discountSchemaLine(final int discountSchemaLineId)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_DiscountSchemaLine discountSchemaLine = db.getFirstOnly(I_M_DiscountSchemaLine.class, new IQueryFilter<I_M_DiscountSchemaLine>()
-		{
-
-			@Override
-			public boolean accept(final I_M_DiscountSchemaLine pojo)
-			{
-				return Objects.equals(pojo.getM_DiscountSchemaLine_ID(), discountSchemaLineId);
-			}
-		});
+		I_M_DiscountSchemaLine discountSchemaLine = db.getFirstOnly(I_M_DiscountSchemaLine.class, pojo -> Objects.equals(pojo.getM_DiscountSchemaLine_ID(), discountSchemaLineId));
 
 		if (discountSchemaLine == null)
 		{
@@ -163,15 +140,7 @@ public class AbstractTestSupport
 	protected I_M_PriceList priceList(final int priceListId)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_PriceList priceList = db.getFirstOnly(I_M_PriceList.class, new IQueryFilter<I_M_PriceList>()
-		{
-
-			@Override
-			public boolean accept(final I_M_PriceList pojo)
-			{
-				return Objects.equals(pojo.getM_PriceList_ID(), priceListId);
-			}
-		});
+		I_M_PriceList priceList = db.getFirstOnly(I_M_PriceList.class, pojo -> Objects.equals(pojo.getM_PriceList_ID(), priceListId));
 
 		if (priceList == null)
 		{
@@ -187,15 +156,7 @@ public class AbstractTestSupport
 	protected I_M_PriceList_Version priceListVersion(final int priceListVersionId)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_PriceList_Version priceListVersion = db.getFirstOnly(I_M_PriceList_Version.class, new IQueryFilter<I_M_PriceList_Version>()
-		{
-
-			@Override
-			public boolean accept(final I_M_PriceList_Version pojo)
-			{
-				return Objects.equals(pojo.getM_PriceList_Version_ID(), priceListVersionId);
-			}
-		});
+		I_M_PriceList_Version priceListVersion = db.getFirstOnly(I_M_PriceList_Version.class, pojo -> Objects.equals(pojo.getM_PriceList_Version_ID(), priceListVersionId));
 
 		if (priceListVersion == null)
 		{
@@ -211,15 +172,7 @@ public class AbstractTestSupport
 	protected I_M_AttributeSetInstance attributeSetInstance(final int id)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_AttributeSetInstance attributeSetInstance = db.getFirstOnly(I_M_AttributeSetInstance.class, new IQueryFilter<I_M_AttributeSetInstance>()
-		{
-
-			@Override
-			public boolean accept(final I_M_AttributeSetInstance pojo)
-			{
-				return Objects.equals(pojo.getM_AttributeSetInstance_ID(), id);
-			}
-		});
+		I_M_AttributeSetInstance attributeSetInstance = db.getFirstOnly(I_M_AttributeSetInstance.class, pojo -> Objects.equals(pojo.getM_AttributeSetInstance_ID(), id));
 
 		if (attributeSetInstance == null)
 		{
@@ -234,15 +187,7 @@ public class AbstractTestSupport
 	protected I_M_AttributeInstance attributeInstance(final int setId, final String value)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_AttributeInstance attributeInstance = db.getFirstOnly(I_M_AttributeInstance.class, new IQueryFilter<I_M_AttributeInstance>()
-		{
-
-			@Override
-			public boolean accept(final I_M_AttributeInstance pojo)
-			{
-				return Objects.equals(pojo.getM_AttributeValue(), value) && Objects.equals(pojo.getM_AttributeSetInstance_ID(), setId);
-			}
-		});
+		I_M_AttributeInstance attributeInstance = db.getFirstOnly(I_M_AttributeInstance.class, pojo -> Objects.equals(pojo.getM_AttributeValue(), value) && Objects.equals(pojo.getM_AttributeSetInstance_ID(), setId));
 
 		if (attributeInstance == null)
 		{
@@ -264,15 +209,7 @@ public class AbstractTestSupport
 	protected I_M_AttributeValue attributeValue(final String value)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_AttributeValue attributeValue = db.getFirstOnly(I_M_AttributeValue.class, new IQueryFilter<I_M_AttributeValue>()
-		{
-
-			@Override
-			public boolean accept(final I_M_AttributeValue pojo)
-			{
-				return Objects.equals(pojo.getValue(), value);
-			}
-		});
+		I_M_AttributeValue attributeValue = db.getFirstOnly(I_M_AttributeValue.class, pojo -> Objects.equals(pojo.getValue(), value));
 
 		if (attributeValue == null)
 		{
@@ -287,15 +224,7 @@ public class AbstractTestSupport
 	protected I_C_DocType docType(final String baseType, final String subType)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_DocType docType = db.getFirstOnly(I_C_DocType.class, new IQueryFilter<I_C_DocType>()
-		{
-
-			@Override
-			public boolean accept(final I_C_DocType pojo)
-			{
-				return Objects.equals(pojo.getDocBaseType(), baseType) && Objects.equals(pojo.getDocSubType(), baseType);
-			}
-		});
+		I_C_DocType docType = db.getFirstOnly(I_C_DocType.class, pojo -> Objects.equals(pojo.getDocBaseType(), baseType) && Objects.equals(pojo.getDocSubType(), baseType));
 
 		if (docType == null)
 		{
@@ -311,15 +240,7 @@ public class AbstractTestSupport
 	protected I_C_Tax tax(final BigDecimal rate)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_Tax tax = db.getFirstOnly(I_C_Tax.class, new IQueryFilter<I_C_Tax>()
-		{
-
-			@Override
-			public boolean accept(final I_C_Tax pojo)
-			{
-				return Objects.equals(pojo.getRate(), rate);
-			}
-		});
+		I_C_Tax tax = db.getFirstOnly(I_C_Tax.class, pojo -> Objects.equals(pojo.getRate(), rate));
 
 		if (tax == null)
 		{
@@ -340,14 +261,7 @@ public class AbstractTestSupport
 	public I_C_BPartner bpartner(final String bpValue)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_BPartner bpartner = db.getFirstOnly(I_C_BPartner.class, new IQueryFilter<I_C_BPartner>()
-		{
-			@Override
-			public boolean accept(final I_C_BPartner pojo)
-			{
-				return Objects.equals(pojo.getValue(), bpValue);
-			}
-		});
+		I_C_BPartner bpartner = db.getFirstOnly(I_C_BPartner.class, pojo -> Objects.equals(pojo.getValue(), bpValue));
 
 		if (bpartner == null)
 		{
@@ -366,33 +280,27 @@ public class AbstractTestSupport
 	{
 
 		final I_C_BPartner_Product bpProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
-		
+
 		bpProduct.setC_BPartner(bpartner);
 		bpProduct.setM_Product(product);
 		bpProduct.setAD_Org(org);
-		
+
 		InterfaceWrapperHelper.save(bpProduct);
-		
+
 		return bpProduct;
 	}
 
 	public I_C_Order order(final String orderDocNo)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_Order order = db.getFirstOnly(I_C_Order.class, new IQueryFilter<I_C_Order>()
-		{
-
-			@Override
-			public boolean accept(final I_C_Order pojo)
-			{
-				return Objects.equals(pojo.getDocumentNo(), orderDocNo);
-			}
-		});
+		I_C_Order order = db.getFirstOnly(I_C_Order.class, pojo -> Objects.equals(pojo.getDocumentNo(), orderDocNo));
 
 		if (order == null)
 		{
 			order = db.newInstance(Env.getCtx(), I_C_Order.class);
 			order.setDocumentNo(orderDocNo);
+			final I_C_DocType docType = docType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
+			order.setC_DocType(docType);
 			InterfaceWrapperHelper.save(order);
 		}
 
@@ -402,14 +310,7 @@ public class AbstractTestSupport
 	protected I_AD_User user(final String userName)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_AD_User user = db.getFirstOnly(I_AD_User.class, new IQueryFilter<I_AD_User>()
-		{
-			@Override
-			public boolean accept(final I_AD_User pojo)
-			{
-				return Objects.equals(pojo.getName(), userName);
-			}
-		});
+		I_AD_User user = db.getFirstOnly(I_AD_User.class, pojo -> Objects.equals(pojo.getName(), userName));
 
 		if (user == null)
 		{
@@ -429,14 +330,7 @@ public class AbstractTestSupport
 	public <T> T orderLine(final String orderLineDescription, final Class<T> clazz)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_OrderLine orderLine = db.getFirstOnly(I_C_OrderLine.class, new IQueryFilter<I_C_OrderLine>()
-		{
-			@Override
-			public boolean accept(final I_C_OrderLine pojo)
-			{
-				return Objects.equals(pojo.getDescription(), orderLineDescription);
-			}
-		});
+		I_C_OrderLine orderLine = db.getFirstOnly(I_C_OrderLine.class, pojo -> Objects.equals(pojo.getDescription(), orderLineDescription));
 
 		if (orderLine == null)
 		{
@@ -454,15 +348,7 @@ public class AbstractTestSupport
 	protected I_C_InvoiceSchedule schedule(final String scheduleName, final String scheduleFrequency)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_InvoiceSchedule schedule = db.getFirstOnly(I_C_InvoiceSchedule.class, new IQueryFilter<I_C_InvoiceSchedule>()
-		{
-
-			@Override
-			public boolean accept(final I_C_InvoiceSchedule pojo)
-			{
-				return Objects.equals(pojo.getName(), scheduleName);
-			}
-		});
+		I_C_InvoiceSchedule schedule = db.getFirstOnly(I_C_InvoiceSchedule.class, pojo -> Objects.equals(pojo.getName(), scheduleName));
 
 		if (schedule == null)
 		{
@@ -478,15 +364,7 @@ public class AbstractTestSupport
 	protected I_C_Charge charge(final String chargeName)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_Charge charge = db.getFirstOnly(I_C_Charge.class, new IQueryFilter<I_C_Charge>()
-		{
-
-			@Override
-			public boolean accept(final I_C_Charge pojo)
-			{
-				return Objects.equals(pojo.getName(), chargeName);
-			}
-		});
+		I_C_Charge charge = db.getFirstOnly(I_C_Charge.class, pojo -> Objects.equals(pojo.getName(), chargeName));
 
 		if (charge == null)
 		{
@@ -506,14 +384,7 @@ public class AbstractTestSupport
 	protected <T extends I_M_InOut> T inOut(final String inoutDocumentNo, final Class<T> clazz)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_InOut inOut = db.getFirstOnly(I_M_InOut.class, new IQueryFilter<I_M_InOut>()
-		{
-			@Override
-			public boolean accept(final I_M_InOut pojo)
-			{
-				return Objects.equals(pojo.getDocumentNo(), inoutDocumentNo);
-			}
-		});
+		I_M_InOut inOut = db.getFirstOnly(I_M_InOut.class, pojo -> Objects.equals(pojo.getDocumentNo(), inoutDocumentNo));
 
 		if (inOut == null)
 		{
@@ -542,14 +413,7 @@ public class AbstractTestSupport
 			final Class<T> clazz)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_InOutLine inOutLine = db.getFirstOnly(I_M_InOutLine.class, new IQueryFilter<I_M_InOutLine>()
-		{
-			@Override
-			public boolean accept(final I_M_InOutLine pojo)
-			{
-				return Objects.equals(pojo.getDescription(), inOutLineDescription);
-			}
-		});
+		I_M_InOutLine inOutLine = db.getFirstOnly(I_M_InOutLine.class, pojo -> Objects.equals(pojo.getDescription(), inOutLineDescription));
 
 		Check.errorIf(assumeNew && inOutLine != null,
 				"Param 'assumeNew'==true, still there is an existing inOutline with description '{}: {}", inOutLineDescription, inOutLine);
