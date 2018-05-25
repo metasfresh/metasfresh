@@ -681,10 +681,9 @@ class RawWidget extends Component {
       case 'Label':
         return (
           <div
-            className={
-              'tag tag-warning ' +
-              (gridAlign ? 'text-' + gridAlign + ' ' : '')
-            }
+            className={classnames('tag tag-warning ', {
+              [`text-${gridAlign}`]: gridAlign,
+            })}
             tabIndex={tabIndex}
             ref={c => (this.rawWidget = c)}
           >
