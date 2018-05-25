@@ -299,12 +299,22 @@ public class AbstractTestSupport
 		{
 			order = db.newInstance(Env.getCtx(), I_C_Order.class);
 			order.setDocumentNo(orderDocNo);
-			final I_C_DocType docType = docType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
-			order.setC_DocType(docType);
+			final I_C_DocType orderDocType = createSalesOrderDocType();
+			order.setC_DocType(orderDocType);
 			InterfaceWrapperHelper.save(order);
 		}
 
 		return order;
+	}
+
+	private I_C_DocType createSalesOrderDocType()
+	{
+		final I_C_DocType orderDocType = docType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
+		final I_C_DocType invoiceDocType = docType(X_C_DocType.DOCBASETYPE_ARInvoice, null);
+		orderDocType.setC_DocTypeInvoice(invoiceDocType);
+		InterfaceWrapperHelper.save(orderDocType);
+
+		return orderDocType;
 	}
 
 	protected I_AD_User user(final String userName)
