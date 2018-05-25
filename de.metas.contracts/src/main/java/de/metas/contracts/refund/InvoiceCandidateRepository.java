@@ -40,6 +40,7 @@ import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -178,7 +179,7 @@ public class InvoiceCandidateRepository
 
 	public AssignableInvoiceCandidate saveCandidateAssignment(@Nullable final UnassignedPairOfCandidates request)
 	{
-		final I_C_Invoice_Candidate_Assignment assignmentRecord = loadOrCreateAssignmentRecord(request);
+		final I_C_Invoice_Candidate_Assignment assignmentRecord = loadOrCreateAssignmentRecord(request.getAssignableInvoiceCandidate());
 
 		final RefundInvoiceCandidate refundInvoiceCandidate = request.getRefundInvoiceCandidate();
 
@@ -196,9 +197,9 @@ public class InvoiceCandidateRepository
 				.build();
 	}
 
-	private I_C_Invoice_Candidate_Assignment loadOrCreateAssignmentRecord(@NonNull final UnassignedPairOfCandidates request)
+	private I_C_Invoice_Candidate_Assignment loadOrCreateAssignmentRecord(@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
-		final int repoId = request.getAssignableInvoiceCandidate().getId().getRepoId();
+		final int repoId = assignableInvoiceCandidate.getId().getRepoId();
 
 		final I_C_Invoice_Candidate_Assignment existingAssignment = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
@@ -269,7 +270,7 @@ public class InvoiceCandidateRepository
 		if (removeForAssignedCandidateId != null)
 		{
 			invoiceCandidateIDsOrFilter.addEqualsFilter(
-					I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assignment_ID,
+					I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assigned_ID,
 					removeForAssignedCandidateId.getRepoId());
 		}
 
@@ -355,6 +356,7 @@ public class InvoiceCandidateRepository
 		final Money money = invoiceCandidate.getMoney();
 
 		invoiceCandidateRecord.setPriceActual(money.getValue());
+		invoiceCandidateRecord.setPriceEntered(money.getValue());
 		invoiceCandidateRecord.setC_Currency_ID(money.getCurrency().getId().getRepoId());
 		saveRecord(invoiceCandidateRecord);
 	}
@@ -403,6 +405,7 @@ public class InvoiceCandidateRepository
 		refundInvoiceCandidateRecord.setPriceEntered(ZERO);
 
 		refundInvoiceCandidateRecord.setQtyOrdered(ONE);
+		refundInvoiceCandidateRecord.setQtyDelivered(ONE);
 
 		final RefundConfig refundConfig = retrieveConfig(refundInvoiceCandidateRecord);
 
@@ -429,7 +432,18 @@ public class InvoiceCandidateRepository
 
 		saveRecord(refundInvoiceCandidateRecord);
 
+		invalidateNewRefundRecordIfNeeded(refundInvoiceCandidateRecord);
+
 		return invoiceCandidateFactory.ofNullableRefundRecord(refundInvoiceCandidateRecord).get();
+	}
+
+	private void invalidateNewRefundRecordIfNeeded(@NonNull final I_C_Invoice_Candidate refundInvoiceCandidateRecord)
+	{
+		if (!Services.get(IInvoiceCandBL.class).isUpdateProcessInProgress())
+		{
+			return; // it's not necessary to make an explicit call because that's already done by a model interceptor
+		}
+		Services.get(IInvoiceCandDAO.class).invalidateCand(refundInvoiceCandidateRecord);
 	}
 
 	private int computeDocType(

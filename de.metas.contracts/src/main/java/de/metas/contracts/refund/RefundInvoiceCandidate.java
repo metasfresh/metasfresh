@@ -56,18 +56,6 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 	@NonNull
 	Money money;
 
-	public RefundInvoiceCandidate withSubtractedMoneyAmount(
-			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
-	{
-		final Money subtrahent = assignableInvoiceCandidate
-				.getMoney()
-				.percentage(refundContract.getRefundConfig().getPercent());
-
-		return toBuilder()
-				.money(money.subtract(subtrahent))
-				.build();
-	}
-
 	public AssignementToRefundCandidate withAddedMoneyAmount(
 			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
