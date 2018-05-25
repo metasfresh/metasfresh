@@ -44,12 +44,12 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProductPricing;
 import org.compiere.model.PO;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_OrderOrInOut;
+import de.metas.document.IDocTypeBL;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.spi.IFreightCostFreeEvaluator;
 import de.metas.interfaces.I_C_BPartner;
@@ -208,7 +208,7 @@ public class FreightCostBL implements IFreightCostBL
 				{
 					final MInOutLine iol = (MInOutLine)poLine;
 
-					for(IFreightCostFreeEvaluator freightCostFreeEvaluator: freighCostFreeEvaluators)
+					for(final IFreightCostFreeEvaluator freightCostFreeEvaluator: freighCostFreeEvaluators)
 					{
 						if(freightCostFreeEvaluator.isFreighCostFree(iol))
 						{
@@ -361,8 +361,7 @@ public class FreightCostBL implements IFreightCostBL
 
 	private boolean isPrepayOrder(final MOrder order)
 	{
-		final String docSubType = order.getC_DocType().getDocSubType();
-		final boolean prepayOrder = X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
+		final boolean prepayOrder = Services.get(IDocTypeBL.class).isPrepay(order.getC_DocType());
 		return prepayOrder;
 	}
 
