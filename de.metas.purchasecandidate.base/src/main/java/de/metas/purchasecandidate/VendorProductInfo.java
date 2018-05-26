@@ -2,6 +2,8 @@ package de.metas.purchasecandidate;
 
 import java.util.OptionalInt;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
@@ -45,6 +47,7 @@ public class VendorProductInfo
 
 	BPartnerId vendorBPartnerId;
 
+	/** can be null if the resp. vendor can no payment term and none is flagged as default. */
 	PaymentTermId paymentTermId;
 
 	ProductId productId;
@@ -119,7 +122,7 @@ public class VendorProductInfo
 	private VendorProductInfo(
 			final int bpartnerProductId,
 			@NonNull final BPartnerId vendorBPartnerId,
-			@NonNull final PaymentTermId paymentTermId,
+			@Nullable final PaymentTermId paymentTermId,
 			@NonNull final ProductId productId,
 			@NonNull final String productNo,
 			@NonNull final String productName,
