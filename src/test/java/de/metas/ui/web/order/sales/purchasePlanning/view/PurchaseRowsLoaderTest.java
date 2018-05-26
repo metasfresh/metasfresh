@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -85,7 +84,6 @@ public class PurchaseRowsLoaderTest
 	private I_M_Product product;
 	private I_C_Order salesOrderRecord;
 	private I_C_BPartner bPartnerVendor;
-	private I_C_BPartner bPartnerCustomer;
 
 	private I_C_Currency currency;
 
@@ -116,7 +114,7 @@ public class PurchaseRowsLoaderTest
 		product.setC_UOM(uom);
 		saveRecord(product);
 
-		bPartnerCustomer = newInstance(I_C_BPartner.class);
+		final I_C_BPartner bPartnerCustomer = newInstance(I_C_BPartner.class);
 		bPartnerCustomer.setName("bPartnerCustomer.Name");
 		saveRecord(bPartnerCustomer);
 
@@ -176,7 +174,7 @@ public class PurchaseRowsLoaderTest
 		final Multimap<PurchaseCandidate, AvailabilityResult> checkAvailabilityResult = ArrayListMultimap.create();
 		checkAvailabilityResult.put(purchaseCandidate, AvailabilityResult.builder()
 				.purchaseCandidate(purchaseCandidate)
-				.qty(BigDecimal.TEN)
+				.qty(TEN)
 				.type(Type.AVAILABLE).build());
 
 		// @formatter:off

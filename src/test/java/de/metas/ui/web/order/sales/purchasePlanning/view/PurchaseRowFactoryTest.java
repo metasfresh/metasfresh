@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.bpartner.BPartnerId;
@@ -139,7 +138,7 @@ public class PurchaseRowFactoryTest
 				.productId(productId)
 				.uomId(uom.getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)
-				.qtyToPurchase(BigDecimal.ONE)
+				.qtyToPurchase(ONE)
 				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.profitInfo(profitInfo)
 				.processed(true) // imporant if we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
