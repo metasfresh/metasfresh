@@ -10,6 +10,7 @@ import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.money.Money;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -67,6 +68,9 @@ public class OrderLine
 	WarehouseId warehouseId;
 
 	int line;
+
+	@NonNull
+	PaymentTermId PaymentTermId;
 
 	// Note: i think that the following two should go to "Order" once we have it.
 	@NonNull

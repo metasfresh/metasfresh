@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -66,6 +67,10 @@ public class OrderLineRepository
 				() -> orderLineRecord.getC_BPartner_ID(),
 				() -> orderLineRecord.getC_Order().getC_BPartner_ID());
 
+		final int paymentTermId = Util.firstGreaterThanZeroSupplier(
+				() -> orderLineRecord.getC_PaymentTerm_Override_ID(),
+				() -> orderLineRecord.getC_Order().getC_PaymentTerm_ID());
+
 		return OrderLine.builder()
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
 				.orderId(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()))
@@ -78,6 +83,7 @@ public class OrderLineRepository
 				.orderedQty(quantityOfRecordsQtyEntered(orderLineRecord))
 				.asiId(AttributeSetInstanceId.ofRepoId(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
+				.PaymentTermId(PaymentTermId.ofRepoId(paymentTermId))
 				.build();
 	}
 

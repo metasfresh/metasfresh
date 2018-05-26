@@ -52,7 +52,7 @@ public class OrderLineWithGrossProfitPriceRepository
 
 	public OrderLineWithGrossProfitPrice getForOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		final I_C_OrderLine orderLineRecord = load(orderLineId.getRepoId(), de.metas.order.grossprofit.model.I_C_OrderLine.class);
+		final I_C_OrderLine orderLineRecord = load(orderLineId.getRepoId(), I_C_OrderLine.class);
 
 		final OrderLine orderLine = orderLineRepository.getById(orderLineId);
 

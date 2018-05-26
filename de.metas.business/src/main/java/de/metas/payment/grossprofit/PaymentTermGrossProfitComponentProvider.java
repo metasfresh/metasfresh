@@ -1,12 +1,15 @@
-package de.metas.order.grossprofit;
+package de.metas.payment.grossprofit;
 
+import org.springframework.stereotype.Service;
+
+import de.metas.money.grossprofit.GrossProfitComponent;
+import de.metas.money.grossprofit.GrossProfitComponentProvider;
 import de.metas.money.grossprofit.GrossProfitComputeRequest;
-import de.metas.order.OrderLine;
 import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.contracts
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -26,16 +29,12 @@ import lombok.NonNull;
  * #L%
  */
 
-public class GrossProfitComputeRequestCreator
+@Service
+public class PaymentTermGrossProfitComponentProvider implements GrossProfitComponentProvider
 {
-	public static GrossProfitComputeRequest of(@NonNull final OrderLine orderLine)
+	@Override
+	public GrossProfitComponent provideForRequest(@NonNull final GrossProfitComputeRequest request)
 	{
-		return GrossProfitComputeRequest.builder()
-				.bPartnerId(orderLine.getBPartnerId())
-				.productId(orderLine.getProductId())
-				.date(orderLine.getDatePromised().toLocalDate())
-				.baseAmount(orderLine.getPriceActual())
-				.paymentTermId(orderLine.getPaymentTermId())
-				.build();
+		return new PaymentTermGrossProfitComponent(request.getPaymentTermId());
 	}
 }
