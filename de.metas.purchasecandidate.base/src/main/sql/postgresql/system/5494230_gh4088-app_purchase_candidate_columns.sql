@@ -291,6 +291,3 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-23 10:16:2
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(544092,'de_CH') 
 ;
 
-/* DDL */ SELECT public.db_alter_table('C_PurchaseCandidate','ALTER TABLE public.C_PurchaseCandidate ADD COLUMN PurchasePriceActual NUMERIC')
-;
-
