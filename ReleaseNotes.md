@@ -18,14 +18,16 @@ Here come the actual release notes:
 * metasfresh
   * [#3263](https://github.com/metasfresh/metasfresh/issues/3263) WebUI: Translation Window for Bill of Materials and Formula
     * New Translation Window in WebUI for Bill of Materials and Formula.
-  * [#3323](https://github.com/metasfresh/metasfresh/issues/3323) Webui Window Design: Improve window Rechnungskandidaten - Handler
+  * [#3323](https://github.com/metasfresh/metasfresh/issues/3323) WebUI Window Design: Improve window Rechnungskandidaten - Handler
     * Improved Invoicecandidate Handler Window in WebUI.
-  * [#3996](https://github.com/metasfresh/metasfresh/issues/3996) webui: Client window: EMail fields layout
+  * [#3996](https://github.com/metasfresh/metasfresh/issues/3996) WebUI: Client window: EMail fields layout
     * Improved Client Window in WebUI. Grouping eMail Fields and new Translations for de_DE Language.
   * [#4094](https://github.com/metasfresh/metasfresh/issues/4094) Create Mandatory Logic in Contract terms
     * Improved WIndow for contract terms, now having a mandatory Logic for fields not needed for Refund Contract Types.
   * [#4089](https://github.com/metasfresh/metasfresh/issues/4089) Create missing fields for Bonus in WebUI
     * New Fields added to Purchase Orderline and Invoice Candidate for Refund Contracts.
+  * [#4102](https://github.com/metasfresh/metasfresh/issues/4102) WebUI: Purchase schedule tab - trl and display
+    * Improved Purchase Schedule Subtab in WebUI. New Translations added.
 
 ## Fixes
 * metasfresh-webui-frontend
