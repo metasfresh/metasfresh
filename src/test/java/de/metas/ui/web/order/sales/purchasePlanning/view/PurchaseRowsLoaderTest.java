@@ -1,7 +1,9 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -9,12 +11,15 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,42 +83,75 @@ public class PurchaseRowsLoaderTest
 	private SalesOrderLines salesOrderLines;
 
 	private I_M_Product product;
-	private I_C_Order order;
+	private I_C_Order salesOrderRecord;
 	private I_C_BPartner bPartnerVendor;
+	private I_C_BPartner bPartnerCustomer;
+
+	private I_C_Currency currency;
+
+	private I_C_UOM uom;
+
+	private I_M_Warehouse warehouse;
+
+	private I_AD_Org org;
+
+	private static CurrencyRepository currencyRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+
+		uom = newInstance(I_C_UOM.class);
 		uom.setUOMSymbol("testUOMSympol");
-		save(uom);
+		saveRecord(uom);
+
+		warehouse = newInstance(I_M_Warehouse.class);
+		saveRecord(warehouse);
 
 		product = newInstance(I_M_Product.class);
 		product.setC_UOM(uom);
-		save(product);
+		saveRecord(product);
 
-		order = newInstance(I_C_Order.class);
-		save(order);
+		bPartnerCustomer = newInstance(I_C_BPartner.class);
+		bPartnerCustomer.setName("bPartnerCustomer.Name");
+		saveRecord(bPartnerCustomer);
+
+		salesOrderRecord = newInstance(I_C_Order.class);
+		salesOrderRecord.setC_BPartner(bPartnerCustomer);
+		saveRecord(salesOrderRecord);
 
 		bPartnerVendor = newInstance(I_C_BPartner.class);
 		bPartnerVendor.setName("bPartnerVendor.Name");
-		save(bPartnerVendor);
+		saveRecord(bPartnerVendor);
+
+		currency = newInstance(I_C_Currency.class);
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+
+		currencyRepository = new CurrencyRepository();
 	}
 
 	@Test
-	public void test()
+	public void load()
 	{
+		final I_C_OrderLine salesOrderLineRecord = newInstance(I_C_OrderLine.class);
+		salesOrderLineRecord.setAD_Org(org);
+		salesOrderLineRecord.setM_Product(product);
+		salesOrderLineRecord.setM_Warehouse(warehouse);
+		salesOrderLineRecord.setC_Order(salesOrderRecord);
+		salesOrderLineRecord.setC_Currency(currency);
+		salesOrderLineRecord.setC_UOM(uom);
+		salesOrderLineRecord.setQtyEntered(TEN);
+		salesOrderLineRecord.setQtyOrdered(TEN);
+		salesOrderLineRecord.setDatePromised(SystemTime.asTimestamp());
+		save(salesOrderLineRecord);
 
-		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
-		orderLineRecord.setM_Product(product);
-		orderLineRecord.setC_Order(order);
-		orderLineRecord.setDatePromised(SystemTime.asTimestamp());
-		save(orderLineRecord);
-
-		final SalesOrderLineRepository salesOrderLineRepository = new SalesOrderLineRepository(new OrderLineRepository(new CurrencyRepository()));
-		final SalesOrderLine salesOrderLine = salesOrderLineRepository.ofRecord(orderLineRecord);
+		final SalesOrderLineRepository salesOrderLineRepository = new SalesOrderLineRepository(new OrderLineRepository(currencyRepository));
+		final SalesOrderLine salesOrderLine = salesOrderLineRepository.ofRecord(salesOrderLineRecord);
 
 		final I_C_BPartner_Product bPartnerProduct = newInstance(I_C_BPartner_Product.class);
 		bPartnerProduct.setC_BPartner(bPartnerVendor);
@@ -122,7 +160,7 @@ public class PurchaseRowsLoaderTest
 		bPartnerProduct.setProductName("bPartnerProduct.ProductName");
 		save(bPartnerProduct);
 
-		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(orderLineRecord, bPartnerProduct);
+		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, bPartnerProduct);
 
 		final ImmutableList<SalesOrderLineWithCandidates> salesOrderLinesWithPurchaseCandidates = //
 				createSalesOrderLinesWithPurchaseCandidates(salesOrderLine, purchaseCandidate);
@@ -147,15 +185,19 @@ public class PurchaseRowsLoaderTest
 			result = checkAvailabilityResult;
 		}};	// @formatter:on
 
-		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
+		final PurchaseRowsLoader loader = PurchaseRowsLoader
+				.builder()
 				.salesOrderLines(salesOrderLines)
 				.purchaseRowFactory(new PurchaseRowFactory(
 						new AvailableToPromiseRepository(),
 						new MoneyService()))
 				.viewSupplier(() -> null)
+				.orderLineRepository(new OrderLineRepository(new CurrencyRepository()))
 				.build();
 
+		// invoke the method under test
 		final List<PurchaseRow> groupRows = loader.load();
+		
 		assertThat(groupRows).hasSize(1);
 		final PurchaseRow groupRow = groupRows.get(0);
 		assertThat(groupRow.getRowType()).isEqualTo(PurchaseRowType.GROUP);
@@ -179,7 +221,7 @@ public class PurchaseRowsLoaderTest
 	{
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(bPartnerProduct);
 
-		final Currency currency = PurchaseRowTestTools.createCurrency();
+		final Currency currency = currencyRepository.ofRecord(orderLine.getC_Currency());
 
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currency);
 

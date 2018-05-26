@@ -110,8 +110,8 @@ class PurchaseRowsLoader
 				rows.add(candidateRow);
 			}
 
-			final PurchaseDemand requisitionLine = createRequisitionLine(salesOrderLine);
-			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(requisitionLine, rows.build());
+			final PurchaseDemand demand = createDemand(salesOrderLine);
+			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(demand, rows.build());
 			result.add(groupRow);
 
 		}
@@ -120,7 +120,7 @@ class PurchaseRowsLoader
 		return result.build();
 	}
 
-	private static PurchaseDemand createRequisitionLine(final SalesOrderLine salesOrderLine)
+	private static PurchaseDemand createDemand(final SalesOrderLine salesOrderLine)
 	{
 		final SalesOrder salesOrder = salesOrderLine.getOrder();
 

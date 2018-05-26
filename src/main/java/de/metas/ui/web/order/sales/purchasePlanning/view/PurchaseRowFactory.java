@@ -146,33 +146,33 @@ public class PurchaseRowFactory
 				.build();
 	}
 
-	public PurchaseRow createGroupRow(final PurchaseDemand requisitionLine, final List<PurchaseRow> rows)
+	public PurchaseRow createGroupRow(final PurchaseDemand demand, final List<PurchaseRow> rows)
 	{
-		final JSONLookupValue product = createProductLookupValue(requisitionLine.getProductId());
-		final JSONLookupValue attributeSetInstance = createASILookupValue(requisitionLine.getAttributeSetInstanceId());
+		final JSONLookupValue product = createProductLookupValue(demand.getProductId());
+		final JSONLookupValue attributeSetInstance = createASILookupValue(demand.getAttributeSetInstanceId());
 
-		final Quantity qtyToDeliver = requisitionLine.getQtyToDeliver();
-		final LocalDateTime preparationDate = requisitionLine.getPreparationDate();
+		final Quantity qtyToDeliver = demand.getQtyToDeliver();
+		final LocalDateTime preparationDate = demand.getPreparationDate();
 
 		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository.retrieveAvailableStockQtySum(AvailableToPromiseQuery.builder()
-				.productId(requisitionLine.getProductId().getRepoId())
+				.productId(demand.getProductId().getRepoId())
 				.date(preparationDate != null ? preparationDate.toLocalDate() : null)
 				.storageAttributesKey(AttributesKeys
-						.createAttributesKeyFromASIStorageAttributes(requisitionLine.getAttributeSetInstanceId())
+						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId())
 						.orElse(AttributesKey.ALL))
 				.build());
 
 		final PurchaseRow groupRow = PurchaseRow.builder()
-				.rowId(PurchaseRowId.groupId(requisitionLine.getId()))
+				.rowId(PurchaseRowId.groupId(demand.getId()))
 				.rowType(PurchaseRowType.GROUP)
 				.product(product)
 				.attributeSetInstance(attributeSetInstance)
 				.uomOrAvailablility(qtyToDeliver.getUOMSymbol())
 				.qtyAvailableToPromise(qtyAvailableToPromise)
 				.qtyToDeliver(qtyToDeliver.getQty())
-				.datePromised(requisitionLine.getDatePromised())
-				.orgId(requisitionLine.getOrgId())
-				.warehouseId(requisitionLine.getWarehouseId())
+				.datePromised(demand.getDatePromised())
+				.orgId(demand.getOrgId())
+				.warehouseId(demand.getWarehouseId())
 				.includedRows(rows).readonly(true) // grouping lines are always readonly
 				.build();
 		return groupRow;
@@ -214,7 +214,8 @@ public class PurchaseRowFactory
 								throwable.getLocalizedMessage(),
 								throwable.getMessage(),
 								throwable.getClass().getName()))
-				.datePromised(null).build();
+				.datePromised(null)
+				.build();
 	}
 
 	private static String createRandomString()
