@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3263](https://github.com/metasfresh/metasfresh/issues/3263) WebUI: Translation Window for Bill of Materials and Formula
+    * New Translation Window in WebUI for Bill of Materials and Formula.
   * [#3323](https://github.com/metasfresh/metasfresh/issues/3323) Webui Window Design: Improve window Rechnungskandidaten - Handler
     * Improved Invoicecandidate Handler Window in WebUI.
   * [#4094](https://github.com/metasfresh/metasfresh/issues/4094) Create Mandatory Logic in Contract terms
