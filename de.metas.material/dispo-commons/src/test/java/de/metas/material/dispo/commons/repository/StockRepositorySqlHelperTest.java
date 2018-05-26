@@ -96,14 +96,14 @@ public class StockRepositorySqlHelperTest
 				.productId(10)
 				.productId(20)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.date(TimeUtil.asLocalDate(NOW))
+				.date(TimeUtil.asLocalDateTime(NOW))
 				.build();
 
 		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
-		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, TimeUtil.asLocalDate(NOW));
+		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, TimeUtil.asTimestamp(NOW));
 
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();
@@ -119,14 +119,14 @@ public class StockRepositorySqlHelperTest
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
-				.date(TimeUtil.asLocalDate(NOW))
+				.date(TimeUtil.asLocalDateTime(NOW))
 				.build();
 
 		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
-		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, TimeUtil.asLocalDate(NOW));
+		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, TimeUtil.asTimestamp(NOW));
 
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();
@@ -145,7 +145,7 @@ public class StockRepositorySqlHelperTest
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
 				.storageAttributesKey(AttributesKey.OTHER)
-				.date(TimeUtil.asLocalDate(NOW))
+				.date(TimeUtil.asLocalDateTime(NOW))
 				.build();
 
 		// invoke the method under test
@@ -153,7 +153,7 @@ public class StockRepositorySqlHelperTest
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
-		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, TimeUtil.asLocalDate(NOW));
+		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, TimeUtil.asTimestamp(NOW));
 
 		assertThat(dbFilter).hasCompositeOrFilter();
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);

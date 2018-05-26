@@ -81,7 +81,7 @@ public class AvailableToPromiseResultTest
 						.productId(10)
 						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY_OTHER)
-						.date(TimeUtil.asLocalDate(NOW))
+						.date(TimeUtil.asLocalDateTime(NOW))
 						.build());
 
 		final List<ResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
@@ -114,7 +114,7 @@ public class AvailableToPromiseResultTest
 	{
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.of(AvailableToPromiseQuery.builder()
 				.productId(10)
-				.date(TimeUtil.asLocalDate(NOW))
+				.date(TimeUtil.asLocalDateTime(NOW))
 				.build());
 
 		final List<ResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
