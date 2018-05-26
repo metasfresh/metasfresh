@@ -433,7 +433,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		return null; // not relevant
 	}
-	
+
 	@Override
 	public void cacheInvalidate()
 	{
@@ -499,7 +499,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(AvailableToPromiseQuery.builder()
 				.productIds(productLookupValues.getKeysAsInt())
 				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
-				.date(TimeUtil.asLocalDate(dateOrNull))
+				.date(TimeUtil.asLocalDateTime(dateOrNull))
 				.build());
 		final List<Group> availableStockGroups = availableStock.getGroups();
 

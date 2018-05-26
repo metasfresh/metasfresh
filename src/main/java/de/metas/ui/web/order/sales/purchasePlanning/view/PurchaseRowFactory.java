@@ -156,7 +156,7 @@ public class PurchaseRowFactory
 
 		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository.retrieveAvailableStockQtySum(AvailableToPromiseQuery.builder()
 				.productId(demand.getProductId().getRepoId())
-				.date(preparationDate != null ? preparationDate.toLocalDate() : null)
+				.date(preparationDate != null ? preparationDate : null)
 				.storageAttributesKey(AttributesKeys
 						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId())
 						.orElse(AttributesKey.ALL))
