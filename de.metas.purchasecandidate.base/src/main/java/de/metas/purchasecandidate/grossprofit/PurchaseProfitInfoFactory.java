@@ -28,7 +28,7 @@ import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.service.impl.PricingBL;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -152,7 +152,7 @@ public class PurchaseProfitInfoFactory
 
 		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(vendorProductInfo.getVendorBPartnerId(), soTrx);
 
-		final PricingBL pricingBL = Services.get(PricingBL.class);
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
 		final Quantity orderedQty = salesOrderLine.getOrderedQty();
 
