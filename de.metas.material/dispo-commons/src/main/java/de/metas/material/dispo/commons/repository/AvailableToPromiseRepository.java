@@ -2,7 +2,7 @@ package de.metas.material.dispo.commons.repository;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -62,7 +62,7 @@ import lombok.Value;
 public class AvailableToPromiseRepository
 {
 	private static final String SYSCONFIG_ATP_ATTRIBUTES_KEYS = "de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.AttributesKeys";
-	
+
 	@NonNull
 	public BigDecimal retrieveAvailableStockQtySum(@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
@@ -70,7 +70,7 @@ public class AvailableToPromiseRepository
 				.getResultGroups()
 				.stream().map(ResultGroup::getQty).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
-	
+
 	@NonNull
 	public BigDecimal retrieveAvailableStockQtySum(@NonNull final AvailableToPromiseQuery query)
 	{
@@ -112,12 +112,13 @@ public class AvailableToPromiseRepository
 		return retrieveAvailableStock(AvailableToPromiseMultiQuery.of(query));
 	}
 
-	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(@NonNull final AvailableToPromiseMultiQuery multiQuery)
+	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(
+			@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
-		final MemoizingFunction<LocalDate, Timestamp> maxDateLessOrEqualFunction //
+		final MemoizingFunction<LocalDateTime, Timestamp> maxDateLessOrEqualFunction //
 				= Functions.memoizing(date -> retrieveMaxDateLessOrEqual(date));
 
-		final UnaryOperator<AvailableToPromiseQuery> setStockQueryDataParameter = //
+		final UnaryOperator<AvailableToPromiseQuery> setStockQueryDateParameter = //
 				stockQuery -> {
 					final Timestamp latestDateOrNull = maxDateLessOrEqualFunction.apply(stockQuery.getDate());
 					if (latestDateOrNull == null)
@@ -135,14 +136,14 @@ public class AvailableToPromiseRepository
 
 		return multiQuery.getQueries()
 				.stream()
-				.map(setStockQueryDataParameter)
+				.map(setStockQueryDateParameter)
 				.filter(Predicates.notNull())
 				.map(createDbQueryForSingleStockQuery)
 				.reduce(IQuery.unionDistict())
 				.orElse(null);
 	}
 
-	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final LocalDate date)
+	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final LocalDateTime date)
 	{
 		return Services.get(IQueryBL.class)
 
@@ -177,7 +178,7 @@ public class AvailableToPromiseRepository
 				.qty(stockRecord.getQty())
 				.build();
 	}
-	
+
 	public Set<AttributesKey> getPredefinedStorageAttributeKeys()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -213,7 +214,7 @@ public class AvailableToPromiseRepository
 			return AttributesKey.ofString(storageAttributesKey);
 		}
 	}
-	
+
 
 	@Value
 	private static class ProductAndAttributeKey

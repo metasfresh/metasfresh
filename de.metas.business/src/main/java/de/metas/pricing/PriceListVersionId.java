@@ -1,4 +1,4 @@
-package de.metas.order;
+package de.metas.pricing;
 
 import org.adempiere.util.Check;
 
@@ -25,17 +25,18 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Value
-public class OrderId
+public class PriceListVersionId
 {
 	int repoId;
 
-	public static OrderId ofRepoId(final int repoId)
+	public static PriceListVersionId ofRepoId(final int repoId)
 	{
-		return new OrderId(repoId);
+		return new PriceListVersionId(repoId);
 	}
 
-	private OrderId(final int repoId)
+	private PriceListVersionId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}

@@ -22,9 +22,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
@@ -206,10 +208,10 @@ public class PurchaseCandidateToOrderWorkflowTest
 		return PurchaseCandidate.builder()
 				.purchaseCandidateId(purchaseCandidateId)
 				.salesOrderId(1)
-				.salesOrderLineId(2)
+				.salesOrderLineId(OrderLineId.ofRepoId(2))
 				.orgId(3)
 				.warehouseId(4)
-				.productId(5)
+				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
 				.vendorProductInfo(VendorProductInfo.builder()
 						.bpartnerProductId(10)
@@ -217,6 +219,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 						.productId(ProductId.ofRepoId(20))
 						.productNo("productNo")
 						.productName("productName").build())
+				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(BigDecimal.ONE)
 				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)

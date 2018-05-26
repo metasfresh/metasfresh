@@ -6,6 +6,7 @@ import org.adempiere.bpartner.BPartnerId;
 
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -31,6 +32,7 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class GrossProfitComputeRequest
 {
 	BPartnerId bPartnerId;

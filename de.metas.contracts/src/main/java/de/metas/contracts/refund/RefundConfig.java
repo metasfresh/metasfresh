@@ -1,11 +1,10 @@
 package de.metas.contracts.refund;
 
-import java.math.BigDecimal;
-
 import javax.annotation.Nullable;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.invoice.InvoiceScheduleId;
+import de.metas.lang.Percent;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -46,7 +45,7 @@ public class RefundConfig
 	RefundInvoiceType refundInvoiceType;
 
 	@NonNull
-	BigDecimal percent;
+	Percent percent;
 
 	/** {@code null} means that every product is matched. */
 	@Nullable

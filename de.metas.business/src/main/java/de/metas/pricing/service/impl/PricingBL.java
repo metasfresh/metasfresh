@@ -67,6 +67,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.IPricingDAO;
 import de.metas.pricing.service.ProductPrices;
+import lombok.NonNull;
 
 public class PricingBL implements IPricingBL
 {
@@ -81,7 +82,12 @@ public class PricingBL implements IPricingBL
 	}
 
 	@Override
-	public IEditablePricingContext createInitialContext(int M_Product_ID, int C_BPartner_ID, int C_UOM_ID, BigDecimal Qty, boolean isSOTrx)
+	public IEditablePricingContext createInitialContext(
+			final int M_Product_ID,
+			final int C_BPartner_ID,
+			final int C_UOM_ID,
+			@NonNull final BigDecimal Qty,
+			final boolean isSOTrx)
 	{
 		final IEditablePricingContext pricingCtx = createPricingContext();
 		pricingCtx.setM_Product_ID(M_Product_ID);

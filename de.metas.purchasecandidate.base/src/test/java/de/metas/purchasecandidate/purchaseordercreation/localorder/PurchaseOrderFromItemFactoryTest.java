@@ -24,12 +24,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderLineId;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import mockit.Mocked;
@@ -182,12 +184,13 @@ public class PurchaseOrderFromItemFactoryTest
 				.build();
 		return PurchaseCandidate.builder()
 				.salesOrderId(salesOrder.getC_Order_ID())
-				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
+				.salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
 				.orgId(3)
 				.warehouseId(4)
-				.productId(5)
+				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
 				.vendorProductInfo(vendorProductInfo)
+				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)
 				.dateRequired(PURCHASE_CANDIDATE_DATE_REQUIRED)
 				.processed(false)

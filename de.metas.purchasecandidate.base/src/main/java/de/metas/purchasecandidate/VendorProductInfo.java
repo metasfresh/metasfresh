@@ -44,6 +44,7 @@ public class VendorProductInfo
 	BPartnerId vendorBPartnerId;
 
 	ProductId productId;
+
 	String productNo;
 	String productName;
 
@@ -105,8 +106,10 @@ public class VendorProductInfo
 			final boolean aggregatePOs)
 	{
 		this.bpartnerProductId = bpartnerProductId > 0 ? OptionalInt.of(bpartnerProductId) : OptionalInt.empty();
+
 		this.vendorBPartnerId = vendorBPartnerId;
 		this.productId = productId;
+
 		this.productNo = productNo;
 		this.productName = productName;
 		this.aggregatePOs = aggregatePOs;

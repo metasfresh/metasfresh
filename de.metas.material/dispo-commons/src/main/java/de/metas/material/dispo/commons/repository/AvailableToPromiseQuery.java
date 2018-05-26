@@ -1,6 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -49,7 +49,7 @@ public class AvailableToPromiseQuery
 	{
 		return AvailableToPromiseQuery.builder()
 				.warehouseId(materialDescriptor.getWarehouseId())
-				.date(TimeUtil.asLocalDate(materialDescriptor.getDate()))
+				.date(TimeUtil.asLocalDateTime(materialDescriptor.getDate()))
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
 				.bpartnerId(materialDescriptor.getBPartnerId())
@@ -57,7 +57,7 @@ public class AvailableToPromiseQuery
 	}
 
 	private final ImmutableSet<Integer> warehouseIds;
-	private final LocalDate date;
+	private final LocalDateTime date;
 	private final ImmutableList<Integer> productIds;
 	private final ImmutableList<AttributesKey> storageAttributesKeys;
 
@@ -68,7 +68,7 @@ public class AvailableToPromiseQuery
 	@Builder(toBuilder = true)
 	private AvailableToPromiseQuery(
 			@Singular final Set<Integer> warehouseIds,
-			final LocalDate date,
+			final LocalDateTime date,
 			@Singular final List<Integer> productIds,
 			@Singular final List<AttributesKey> storageAttributesKeys,
 			final int bpartnerId)
@@ -76,7 +76,7 @@ public class AvailableToPromiseQuery
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
 		this.warehouseIds = warehouseIds == null || warehouseIds.isEmpty() ? ImmutableSet.of() : ImmutableSet.copyOf(warehouseIds);
-		this.date = date != null ? date : SystemTime.asLocalDate();
+		this.date = date != null ? date : SystemTime.asLocalDateTime();
 		this.productIds = ImmutableList.copyOf(productIds);
 		this.storageAttributesKeys = ImmutableList.copyOf(storageAttributesKeys);
 
@@ -95,10 +95,10 @@ public class AvailableToPromiseQuery
 
 	public AvailableToPromiseQuery withDate(@NonNull final Date newDate)
 	{
-		return withDate(TimeUtil.asLocalDate(newDate));
+		return withDateTime(TimeUtil.asLocalDateTime(newDate));
 	}
 
-	public AvailableToPromiseQuery withDate(@NonNull final LocalDate newDate)
+	public AvailableToPromiseQuery withDateTime(@NonNull final LocalDateTime newDate)
 	{
 		if (Objects.equals(this.date, newDate))
 		{

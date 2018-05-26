@@ -1,12 +1,13 @@
-package de.metas.order;
+package de.metas.purchasecandidate.grossprofit;
 
-import org.adempiere.util.Check;
-
+import de.metas.money.Money;
+import de.metas.pricing.PriceListVersionId;
+import lombok.Builder;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.purchasecandidate.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -17,26 +18,25 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Value
-public class OrderId
+@Builder
+public class PurchaseProfitInfo
 {
-	int repoId;
+	PriceListVersionId purchasePlvId;
 
-	public static OrderId ofRepoId(final int repoId)
-	{
-		return new OrderId(repoId);
-	}
+	Money purchasePriceActual;
 
-	private OrderId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
+	/** sales priceActual minus skonto minus refund/bonus (if any) */
+	Money customerPriceGrossProfit;
+
+	Money priceGrossProfit;
 }

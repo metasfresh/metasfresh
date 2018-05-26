@@ -1,6 +1,7 @@
-package de.metas.money;
+package org.adempiere.mm.attributes;
 
-import lombok.Builder;
+import org.adempiere.util.Check;
+
 import lombok.Value;
 
 /*
@@ -26,12 +27,30 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class Currency
+public class AttributeSetInstanceId
 {
-	CurrencyId id;
-	int precision;
+	int repoId;
 
-	/** Three letter ISO 4217 Code of the Currency **/
-	String threeLetterCode;
+	public static AttributeSetInstanceId ofRepoId(final int repoId)
+	{
+		return new AttributeSetInstanceId(repoId);
+	}
+
+	public static AttributeSetInstanceId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId >= 0
+				? new AttributeSetInstanceId(repoId)
+				: null;
+	}
+
+	public static int toRepoId(final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		return attributeSetInstanceId != null ? attributeSetInstanceId.getRepoId() : -1;
+	}
+
+	private AttributeSetInstanceId(final int repoId)
+	{
+		// note that there is a special ASI which in fact does have ID=0
+		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "repoId");
+	}
 }

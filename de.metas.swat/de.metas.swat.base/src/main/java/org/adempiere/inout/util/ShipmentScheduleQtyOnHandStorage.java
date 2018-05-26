@@ -144,7 +144,7 @@ public class ShipmentScheduleQtyOnHandStorage
 				.warehouseIds(warehouseIds)
 				.productId(productId)
 				.bpartnerId(bpartnerId)
-				.date(TimeUtil.asLocalDate(date));
+				.date(TimeUtil.asLocalDateTime(date));
 
 		// Add query attributes
 		final int asiId = sched.getM_AttributeSetInstance_ID();

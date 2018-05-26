@@ -2,8 +2,6 @@ package de.metas.purchasecandidate;
 
 import java.util.List;
 
-import org.compiere.model.I_C_OrderLine;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -36,7 +34,7 @@ import lombok.Value;
 public class SalesOrderLineWithCandidates
 {
 	@NonNull
-	I_C_OrderLine salesOrderLine;
+	SalesOrderLine salesOrderLine;
 
 	@Singular
 	List<PurchaseCandidate> purchaseCandidates;

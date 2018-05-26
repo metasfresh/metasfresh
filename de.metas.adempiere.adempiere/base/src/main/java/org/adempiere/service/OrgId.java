@@ -1,4 +1,4 @@
-package de.metas.order;
+package org.adempiere.service;
 
 import org.adempiere.util.Check;
 
@@ -17,26 +17,38 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Value
-public class OrderId
+public class OrgId
 {
 	int repoId;
 
-	public static OrderId ofRepoId(final int repoId)
+	public static OrgId ofRepoId(final int repoId)
 	{
-		return new OrderId(repoId);
+		return new OrgId(repoId);
 	}
 
-	private OrderId(final int repoId)
+	public static OrgId ofRepoIdOrNull(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		return repoId >= 0 ? new OrgId(repoId) : null;
+	}
+
+	public static int toRepoId(final OrgId orgId)
+	{
+		return orgId != null ? orgId.getRepoId() : -1;
+	}
+
+	private OrgId(final int repoId)
+	{
+		// note that AD_Org_ID=0 means * (i.e. any org)
+		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "repoId");
 	}
 }

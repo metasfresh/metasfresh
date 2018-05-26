@@ -10,12 +10,12 @@ package org.adempiere.util.time;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,22 +34,14 @@ import java.util.GregorianCalendar;
 /**
  * Code taken from the book "Test Driven", Chapter 7 ("Test-driving the
  * unpredictable") by Lasse Koskela.
- * 
+ *
  * @author ts
- * 
+ *
  */
 public final class SystemTime
 {
 
-	private static final TimeSource defaultTimeSource = new TimeSource()
-	{
-		@Override
-		public long millis()
-		{
-			return System.currentTimeMillis();
-		}
-
-	};
+	private static final TimeSource defaultTimeSource = () -> System.currentTimeMillis();
 
 	private static TimeSource timeSource;
 
@@ -69,7 +61,6 @@ public final class SystemTime
 
 	public static Date asDate()
 	{
-
 		return new Date(millis());
 	}
 
@@ -95,7 +86,7 @@ public final class SystemTime
 
 	/**
 	 * Same as {@link #asTimestamp()} but the returned date will be truncated to DAY.
-	 * 
+	 *
 	 * @return
 	 */
 	public static Timestamp asDayTimestamp()
@@ -123,11 +114,11 @@ public final class SystemTime
 	}
 
 	/**
-	 * 
+	 *
 	 * @param newTimeSource
 	 *            the given TimeSource will be used for the time returned by the
 	 *            methods of this class (unless it is null).
-	 * 
+	 *
 	 */
 	public static void setTimeSource(TimeSource newTimeSource)
 	{

@@ -1,12 +1,20 @@
 package de.metas.purchasecandidate;
 
+import static java.math.BigDecimal.TEN;
+
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.time.SystemTime;
 
+import de.metas.money.Currency;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.OrderLineId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 
 /*
  * #%L
@@ -32,7 +40,12 @@ import de.metas.product.ProductId;
 
 public final class PurchaseCandidateTestTool
 {
-	public static final int SALES_ORDER_LINE_ID = 2;
+	public static final OrderLineId SALES_ORDER_LINE_ID = OrderLineId.ofRepoId(2);
+
+	public static final Currency CURRENCY = Currency.builder()
+			.id(CurrencyId.ofRepoId(40))
+			.precision(20)
+			.build();
 
 	private PurchaseCandidateTestTool()
 	{
@@ -46,8 +59,9 @@ public final class PurchaseCandidateTestTool
 				.salesOrderLineId(SALES_ORDER_LINE_ID)
 				.orgId(3)
 				.warehouseId(4)
-				.productId(5)
+				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
+				.profitInfo(createPurchaseProfitInfo())
 				.vendorProductInfo(VendorProductInfo.builder()
 						.bpartnerProductId(10)
 						.vendorBPartnerId(BPartnerId.ofRepoId(7))
@@ -62,4 +76,13 @@ public final class PurchaseCandidateTestTool
 				.build();
 	}
 
+	public static PurchaseProfitInfo createPurchaseProfitInfo()
+	{
+		return PurchaseProfitInfo.builder()
+				.purchasePlvId(PriceListVersionId.ofRepoId(10))
+				.customerPriceGrossProfit(Money.of(TEN, CURRENCY))
+				.purchasePriceActual(Money.of(TEN, CURRENCY))
+				.priceGrossProfit(Money.of(TEN, CURRENCY))
+				.build();
+	}
 }
