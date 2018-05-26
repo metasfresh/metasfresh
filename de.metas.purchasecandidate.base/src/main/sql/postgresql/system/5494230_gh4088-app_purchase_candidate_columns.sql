@@ -124,6 +124,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 /* DDL */ SELECT public.db_alter_table('C_PurchaseCandidate','ALTER TABLE public.C_PurchaseCandidate DROP COLUMN PriceActual')
+;
+
 -- 2018-05-23T09:55:12.185
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Element SET ColumnName='PurchaseGrossProfitPrice', Description='Effektiver Verkaufspreis minus Skonto und Rückerstattung', Name='Kd-Rohertragspreis', PrintName='Kd-Rohertragspreis',Updated=TO_TIMESTAMP('2018-05-23 09:55:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=544093
