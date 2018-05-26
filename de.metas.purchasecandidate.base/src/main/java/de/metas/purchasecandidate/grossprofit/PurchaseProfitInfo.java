@@ -31,10 +31,11 @@ import lombok.Value;
 @Builder
 public class PurchaseProfitInfo
 {
-	PriceListVersionId priceListVersionId;
+	PriceListVersionId purchasePlvId;
 
 	Money purchasePriceActual;
 
+	/** sales priceActual minus skonto minus refund/bonus (if any) */
 	Money customerPriceGrossProfit;
 
 	Money priceGrossProfit;

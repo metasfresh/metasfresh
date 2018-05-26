@@ -101,7 +101,7 @@ public class PurchaseProfitInfoFactory
 					purchasePriceActual);
 
 			final PurchaseProfitInfo info = PurchaseProfitInfo.builder()
-					.priceListVersionId(entry.getKey())
+					.purchasePlvId(entry.getKey())
 					.purchasePriceActual(purchasePriceActual)
 					.customerPriceGrossProfit(customerGrossProfitPrice)
 					.priceGrossProfit(grossProfitPrice.compute())

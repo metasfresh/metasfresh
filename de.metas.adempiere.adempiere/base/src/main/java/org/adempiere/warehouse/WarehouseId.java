@@ -1,4 +1,4 @@
-package de.metas.order;
+package org.adempiere.warehouse;
 
 import org.adempiere.util.Check;
 
@@ -17,25 +17,36 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Value
-public class OrderId
+public class WarehouseId
 {
 	int repoId;
 
-	public static OrderId ofRepoId(final int repoId)
+	public static WarehouseId ofRepoId(final int repoId)
 	{
-		return new OrderId(repoId);
+		return new WarehouseId(repoId);
 	}
 
-	private OrderId(final int repoId)
+	public static WarehouseId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new WarehouseId(repoId) : null;
+	}
+
+	public static int toRepoId(final WarehouseId productId)
+	{
+		return productId != null ? productId.getRepoId() : -1;
+	}
+
+	private WarehouseId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}

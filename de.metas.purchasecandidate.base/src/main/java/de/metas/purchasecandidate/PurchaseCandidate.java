@@ -19,8 +19,9 @@ import org.compiere.model.I_C_OrderLine;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.money.Money;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
@@ -75,16 +76,8 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToPurchaseInitial;
 
-	/** sales priceActual minus skonto minus refund/bonus (if any) */
 	@Setter(AccessLevel.NONE)
-	private Money customerPriceGrossProfit;
-
-	@Setter(AccessLevel.NONE)
-	private Money purchasePriceActual;
-
-	/** sales price minus all discounts and refunds */
-	@Setter(AccessLevel.NONE)
-	private Money priceGrossProfit;
+	private PurchaseProfitInfo profitInfo;
 
 	@NonNull
 	private LocalDateTime dateRequired;
@@ -111,7 +104,7 @@ public class PurchaseCandidate
 	private PurchaseCandidate(
 			final int purchaseCandidateId,
 			final int salesOrderId,
-			final int salesOrderLineId,
+			@NonNull final OrderLineId salesOrderLineId, // for now this shall be always set; might be that in future this won't be mandatory
 			final int purchaseOrderLineId,
 			final int orgId,
 			final int warehouseId,
@@ -123,13 +116,10 @@ public class PurchaseCandidate
 			final Duration reminderTime,
 			final boolean processed,
 			final boolean locked,
-			final Money priceGrossProfit,
-			final Money purchasePriceActual,
-			final Money customerPriceGrossProfit,
+			@NonNull final PurchaseProfitInfo profitInfo,
 			@Singular final List<PurchaseItem> purchaseItems)
 	{
 		Check.assume(salesOrderId > 0, "salesOrderId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
-		Check.assume(salesOrderLineId > 0, "salesOrderLineId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
 		Check.assume(orgId > 0, "orgId > 0");
 		Check.assume(warehouseId > 0, "warehouseId > 0");
 		Check.assume(uomId > 0, "uomId > 0");
@@ -158,9 +148,7 @@ public class PurchaseCandidate
 		this.reminderTime = reminderTime;
 		this.dateRequiredInitial = dateRequired;
 
-		this.customerPriceGrossProfit = customerPriceGrossProfit;
-		this.purchasePriceActual = purchasePriceActual;
-		this.priceGrossProfit = priceGrossProfit;
+		this.profitInfo = profitInfo;
 
 		this.purchaseOrderItems = purchaseItems
 				.stream()
@@ -221,7 +209,7 @@ public class PurchaseCandidate
 		return getIdentifier().getSalesOrderId();
 	}
 
-	public int getSalesOrderLineId()
+	public OrderLineId getSalesOrderLineId()
 	{
 		return getIdentifier().getSalesOrderLineId();
 	}
@@ -294,7 +282,7 @@ public class PurchaseCandidate
 		return AvailabilityRequestItem.builder()
 				.productAndQuantity(productAndQuantity)
 				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderLineId(getSalesOrderLineId())
+				.salesOrderLineId(getSalesOrderLineId().getRepoId())
 				.build();
 	}
 
@@ -310,7 +298,7 @@ public class PurchaseCandidate
 		final String productValue = identifier.getVendorProductInfo().getProductNo();
 
 		// FIXME: don't use load in POJOs!!!
-		final I_C_OrderLine salesOrderLine = load(identifier.getSalesOrderLineId(), I_C_OrderLine.class);
+		final I_C_OrderLine salesOrderLine = load(identifier.getSalesOrderLineId().getRepoId(), I_C_OrderLine.class);
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
 
 		final ProductAndQuantity productAndQuantity = new ProductAndQuantity(

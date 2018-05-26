@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -51,13 +54,25 @@ public class OrderLine
 	@NonNull
 	ProductId productId;
 
-	/** note: besides the name "datePromised", it's also in the application dictionary declared as date+time, and some businesses need it that way. */
 	@NonNull
-	LocalDateTime datePromised;
+	AttributeSetInstanceId asiId;
 
 	@NonNull
 	Money priceActual;
 
 	@NonNull
 	Quantity orderedQty;
+
+	@NonNull
+	WarehouseId warehouseId;
+
+	int line;
+
+	// Note: i think that the following two should go to "Order" once we have it.
+	@NonNull
+	OrgId orgId;
+
+	/** note: besides the name "datePromised", it's also in the application dictionary declared as date+time, and some businesses need it that way. */
+	@NonNull
+	LocalDateTime datePromised;
 }

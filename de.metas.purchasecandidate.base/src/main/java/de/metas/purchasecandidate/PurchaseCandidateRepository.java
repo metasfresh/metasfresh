@@ -36,7 +36,9 @@ import de.metas.lock.api.LockOwner;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import lombok.NonNull;
@@ -80,16 +82,21 @@ public class PurchaseCandidateRepository
 		this.currencyRepository = currencyRepository;
 	}
 
-	public Stream<PurchaseCandidate> streamAllBySalesOrderLineIds(final Collection<Integer> salesOrderLineIds)
+	public Stream<PurchaseCandidate> streamAllBySalesOrderLineIds(@NonNull final Collection<OrderLineId> salesOrderLineIds)
 	{
 		if (salesOrderLineIds.isEmpty())
 		{
 			return Stream.empty();
 		}
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addInArrayFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, salesOrderLineIds)
+		final ImmutableList<Integer> idsAsIn = salesOrderLineIds
+				.stream()
+				.map(OrderLineId::getRepoId)
+				.collect(ImmutableList.toImmutableList());
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addInArrayFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, idsAsIn)
 				.create()
 				.stream(I_C_PurchaseCandidate.class)
 				.map(this::toPurchaseCandidate);
@@ -216,7 +223,7 @@ public class PurchaseCandidateRepository
 		}
 
 		record.setC_OrderSO_ID(purchaseCandidate.getSalesOrderId());
-		record.setC_OrderLineSO_ID(purchaseCandidate.getSalesOrderLineId());
+		record.setC_OrderLineSO_ID(purchaseCandidate.getSalesOrderLineId().getRepoId());
 
 		record.setAD_Org_ID(purchaseCandidate.getOrgId());
 		record.setM_WarehousePO_ID(purchaseCandidate.getWarehouseId());
@@ -232,9 +239,9 @@ public class PurchaseCandidateRepository
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
 
 		// set monetary values
-		final Money customerPriceGrossProfit = purchaseCandidate.getCustomerPriceGrossProfit();
-		final Money priceGrossProfit = purchaseCandidate.getPriceGrossProfit();
-		final Money purchasePriceActual = purchaseCandidate.getPurchasePriceActual();
+		final Money customerPriceGrossProfit = purchaseCandidate.getProfitInfo().getCustomerPriceGrossProfit();
+		final Money priceGrossProfit = purchaseCandidate.getProfitInfo().getPriceGrossProfit();
+		final Money purchasePriceActual = purchaseCandidate.getProfitInfo().getPurchasePriceActual();
 
 		final Currency commonCurrencyOfAll = Money.getCommonCurrencyOfAll(
 				customerPriceGrossProfit,
@@ -274,12 +281,18 @@ public class PurchaseCandidateRepository
 
 		final Currency currency = currencyRepository.ofRecord(purchaseCandidateRecord.getC_Currency());
 
+		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo.builder()
+				.purchasePriceActual(Money.of(purchaseCandidateRecord.getPurchasePriceActual(), currency))
+				.customerPriceGrossProfit(Money.of(purchaseCandidateRecord.getCustomerPriceGrossProfit(), currency))
+				.priceGrossProfit(Money.of(purchaseCandidateRecord.getPriceGrossProfit(), currency))
+				.build();
+
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate
 				.builder()
 				.locked(locked)
 				.purchaseCandidateId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.salesOrderId(purchaseCandidateRecord.getC_OrderSO_ID())
-				.salesOrderLineId(purchaseCandidateRecord.getC_OrderLineSO_ID())
+				.salesOrderLineId(OrderLineId.ofRepoId(purchaseCandidateRecord.getC_OrderLineSO_ID()))
 				.orgId(purchaseCandidateRecord.getAD_Org_ID())
 				.warehouseId(purchaseCandidateRecord.getM_WarehousePO_ID())
 				.productId(ProductId.ofRepoId(purchaseCandidateRecord.getM_Product_ID()))
@@ -287,9 +300,7 @@ public class PurchaseCandidateRepository
 				.vendorProductInfo(vendorProductInfo)
 				.qtyToPurchase(purchaseCandidateRecord.getQtyToPurchase())
 				.dateRequired(TimeUtil.asLocalDateTime(purchaseCandidateRecord.getDateRequired()))
-				.purchasePriceActual(Money.of(purchaseCandidateRecord.getPurchasePriceActual(), currency))
-				.customerPriceGrossProfit(Money.of(purchaseCandidateRecord.getCustomerPriceGrossProfit(), currency))
-				.priceGrossProfit(Money.of(purchaseCandidateRecord.getPriceGrossProfit(), currency))
+				.profitInfo(profitInfo)
 				.processed(purchaseCandidateRecord.isProcessed())
 				.build();
 

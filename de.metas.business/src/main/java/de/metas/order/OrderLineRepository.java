@@ -3,8 +3,11 @@ package de.metas.order;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import de.metas.money.Currency;
@@ -54,14 +57,21 @@ public class OrderLineRepository
 
 	public OrderLine ofRecord(@NonNull final I_C_OrderLine orderLineRecord)
 	{
+		final int warehouseRepoId = Util.firstGreaterThanZeroSupplier(
+				() -> orderLineRecord.getM_Warehouse_ID(),
+				() -> orderLineRecord.getC_Order().getM_Warehouse_ID());
+
 		return OrderLine.builder()
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
 				.orderId(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()))
+				.line(orderLineRecord.getLine())
 				.bPartnerId(BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()))
 				.datePromised(TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.priceActual(moneyOfRecordsPriceActual(orderLineRecord))
 				.orderedQty(quantityOfRecordsQtyEntered(orderLineRecord))
+				.asiId(AttributeSetInstanceId.ofRepoId(orderLineRecord.getM_AttributeSetInstance_ID()))
+				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
 				.build();
 	}
 
