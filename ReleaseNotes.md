@@ -20,6 +20,8 @@ Here come the actual release notes:
     * New Translation Window in WebUI for Bill of Materials and Formula.
   * [#3323](https://github.com/metasfresh/metasfresh/issues/3323) Webui Window Design: Improve window Rechnungskandidaten - Handler
     * Improved Invoicecandidate Handler Window in WebUI.
+  * [#3996](https://github.com/metasfresh/metasfresh/issues/3996) webui: Client window: EMail fields layout
+    * Improved Client Window in WebUI. Grouping eMail Fields and new Translations for de_DE Language.
   * [#4094](https://github.com/metasfresh/metasfresh/issues/4094) Create Mandatory Logic in Contract terms
     * Improved WIndow for contract terms, now having a mandatory Logic for fields not needed for Refund Contract Types.
   * [#4089](https://github.com/metasfresh/metasfresh/issues/4089) Create missing fields for Bonus in WebUI
