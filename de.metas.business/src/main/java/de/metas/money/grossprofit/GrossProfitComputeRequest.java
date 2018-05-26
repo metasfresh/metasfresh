@@ -2,9 +2,12 @@ package de.metas.money.grossprofit;
 
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.bpartner.BPartnerId;
 
 import de.metas.money.Money;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Value;
@@ -40,6 +43,9 @@ public class GrossProfitComputeRequest
 	ProductId productId;
 
 	LocalDate date;
+
+	@Nullable
+	PaymentTermId paymentTermId;
 
 	Money baseAmount;
 }

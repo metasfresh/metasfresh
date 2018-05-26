@@ -122,11 +122,16 @@ public class PurchaseProfitInfoFactory
 			@NonNull final PurchaseProfitInfoRequest request,
 			@NonNull final Money purchasePriceActual)
 	{
-		final GrossProfitComputeRequest grossProfitComputeRequest = GrossProfitComputeRequest.builder()
+		final VendorProductInfo vendorProductInfo = request.getVendorProductInfo();
+		final OrderLine salesOrderLine = request.getSalesOrderLine();
+
+		final GrossProfitComputeRequest grossProfitComputeRequest = GrossProfitComputeRequest
+				.builder()
 				.baseAmount(purchasePriceActual)
-				.bPartnerId(request.getVendorProductInfo().getVendorBPartnerId())
-				.date(request.getSalesOrderLine().getDatePromised().toLocalDate())
-				.productId(request.salesOrderLine.getProductId())
+				.bPartnerId(vendorProductInfo.getVendorBPartnerId())
+				.paymentTermId(vendorProductInfo.getPaymentTermId())
+				.date(salesOrderLine.getDatePromised().toLocalDate())
+				.productId(salesOrderLine.getProductId())
 				.build();
 
 		final GrossProfitPrice grossProfitPrice = grossProfitPriceFactory.createGrossProfitPrice(grossProfitComputeRequest);

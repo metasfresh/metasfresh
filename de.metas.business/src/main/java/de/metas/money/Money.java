@@ -172,8 +172,14 @@ public class Money
 		return new Money(value.subtract(amtToSubtract), currency);
 	}
 
+	/** example: if this instance is 100CHF and {@code percent} is 80%, then the result is 80CHF*/
 	public Money percentage(@NonNull final Percent percent)
 	{
+		if(percent.isOneHundred())
+		{
+			return this;
+		}
+
 		final BigDecimal newValue = percent
 				.multiply(value, currency.getPrecision());
 		return new Money(newValue, currency);
