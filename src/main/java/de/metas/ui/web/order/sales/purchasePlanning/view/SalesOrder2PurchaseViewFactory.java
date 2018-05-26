@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.OrderLineId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.purchasecandidate.BPPurchaseScheduleService;
@@ -197,7 +198,11 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	@Override
 	public PurchaseView createView(@NonNull final CreateViewRequest request)
 	{
-		final Set<Integer> salesOrderLineIds = request.getFilterOnlyIds();
+		final Set<OrderLineId> salesOrderLineIds = request
+				.getFilterOnlyIds()
+				.stream()
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 		Check.assumeNotEmpty(salesOrderLineIds, "salesOrderLineIds is not empty");
 
 		final ViewId viewId = ViewId.random(WINDOW_ID);

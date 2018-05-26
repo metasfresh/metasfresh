@@ -29,15 +29,22 @@ import com.google.common.collect.Multimap;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.money.Currency;
+import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderLineId;
+import de.metas.order.OrderLineRepository;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.SalesOrderLine;
+import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -99,11 +106,14 @@ public class PurchaseRowsLoaderTest
 	public void test()
 	{
 
-		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
-		orderLine.setM_Product(product);
-		orderLine.setC_Order(order);
-		orderLine.setDatePromised(SystemTime.asTimestamp());
-		save(orderLine);
+		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
+		orderLineRecord.setM_Product(product);
+		orderLineRecord.setC_Order(order);
+		orderLineRecord.setDatePromised(SystemTime.asTimestamp());
+		save(orderLineRecord);
+
+		final SalesOrderLineRepository salesOrderLineRepository = new SalesOrderLineRepository(new OrderLineRepository(new CurrencyRepository()));
+		final SalesOrderLine salesOrderLine = salesOrderLineRepository.ofRecord(orderLineRecord);
 
 		final I_C_BPartner_Product bPartnerProduct = newInstance(I_C_BPartner_Product.class);
 		bPartnerProduct.setC_BPartner(bPartnerVendor);
@@ -112,10 +122,10 @@ public class PurchaseRowsLoaderTest
 		bPartnerProduct.setProductName("bPartnerProduct.ProductName");
 		save(bPartnerProduct);
 
-		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(orderLine, bPartnerProduct);
+		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(orderLineRecord, bPartnerProduct);
 
 		final ImmutableList<SalesOrderLineWithCandidates> salesOrderLinesWithPurchaseCandidates = //
-				createSalesOrderLinesWithPurchaseCandidates(orderLine, purchaseCandidate);
+				createSalesOrderLinesWithPurchaseCandidates(salesOrderLine, purchaseCandidate);
 
 		// @formatter:off
 		new Expectations()
@@ -169,22 +179,27 @@ public class PurchaseRowsLoaderTest
 	{
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(bPartnerProduct);
 
+		final Currency currency = PurchaseRowTestTools.createCurrency();
+
+		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currency);
+
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(20)
 				.dateRequired(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.qtyToPurchase(orderLine.getQtyOrdered())
 				.salesOrderId(orderLine.getC_Order_ID())
-				.salesOrderLineId(orderLine.getC_OrderLine_ID())
+				.salesOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
 				.uomId(orderLine.getM_Product().getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(30)
+				.profitInfo(profitInfo)
 				.build();
 		return purchaseCandidate;
 	}
 
 	private static ImmutableList<SalesOrderLineWithCandidates> createSalesOrderLinesWithPurchaseCandidates(
-			final I_C_OrderLine orderLine,
+			final SalesOrderLine orderLine,
 			final PurchaseCandidate purchaseCandidate)
 	{
 		final SalesOrderLineWithCandidates salesOrderLineWithPurchaseCandidates //

@@ -39,6 +39,7 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Builder;
@@ -113,11 +114,14 @@ public class PurchaseRowFactory
 				? purchaseCandidate.getPurchaseCandidateId()
 				: 0;
 
-		final PurchaseDemandId requisitionLineId = PurchaseDemandId.ofTableAndRecordId(I_C_OrderLine.Table_Name, purchaseCandidate.getSalesOrderLineId());
+		final PurchaseDemandId requisitionLineId = PurchaseDemandId.ofTableAndRecordId(
+				I_C_OrderLine.Table_Name,
+				purchaseCandidate.getSalesOrderLineId().getRepoId());
 
-		final Money purchasePriceActual = moneyService.convertMoneyToCurrency(purchaseCandidate.getPurchasePriceActual(), currencyOfParentRow);
-		final Money customerPriceGrossProfit = moneyService.convertMoneyToCurrency(purchaseCandidate.getCustomerPriceGrossProfit(), currencyOfParentRow);
-		final Money priceGrossProfit = moneyService.convertMoneyToCurrency(purchaseCandidate.getPriceGrossProfit(), currencyOfParentRow);
+		final PurchaseProfitInfo profitInfo = purchaseCandidate.getProfitInfo();
+		final Money purchasePriceActual = moneyService.convertMoneyToCurrency(profitInfo.getPurchasePriceActual(), currencyOfParentRow);
+		final Money customerPriceGrossProfit = moneyService.convertMoneyToCurrency(profitInfo.getCustomerPriceGrossProfit(), currencyOfParentRow);
+		final Money priceGrossProfit = moneyService.convertMoneyToCurrency(profitInfo.getPriceGrossProfit(), currencyOfParentRow);
 
 		final Percent percentGrossProfit = Percent
 				.of(customerPriceGrossProfit.getValue(), priceGrossProfit.getValue())
