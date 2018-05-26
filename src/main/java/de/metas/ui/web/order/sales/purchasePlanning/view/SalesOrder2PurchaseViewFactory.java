@@ -34,6 +34,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.purchasecandidate.BPPurchaseScheduleService;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoFactory;
@@ -89,6 +90,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	private final PurchaseRowFactory purchaseRowFactory;
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
 	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
+	private final SalesOrderLineRepository salesOrderLineRepository;
 
 	private final CCache<ArrayKey, ViewLayout> viewLayoutCache = //
 			CCache.newCache(SalesOrder2PurchaseViewFactory.class + "#ViewLayout", 1, 0);
@@ -99,17 +101,18 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 			.removalListener(notification -> onViewRemoved(notification))
 			.build();
 
-
 	public SalesOrder2PurchaseViewFactory(
 			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo,
 			@NonNull final PurchaseRowFactory purchaseRowFactory,
 			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
-			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory)
+			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory,
+			@NonNull final SalesOrderLineRepository salesOrderLineRepository)
 	{
 		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
 		this.purchaseRowFactory = purchaseRowFactory;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
 		this.purchaseProfitInfoFactory = purchaseProfitInfoFactory;
+		this.salesOrderLineRepository = salesOrderLineRepository;
 	}
 
 	@Override
@@ -212,6 +215,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 				.purchaseCandidateRepository(purchaseCandidatesRepo)
 				.bpPurchaseScheduleService(bpPurchaseScheduleService)
 				.purchaseProfitInfoFactory(purchaseProfitInfoFactory)
+				.salesOrderLineRepository(salesOrderLineRepository)
 				.build();
 
 		final PurchaseRowsLoader rowsLoader = PurchaseRowsLoader.builder()

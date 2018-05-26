@@ -122,6 +122,7 @@ public class PurchaseRowsLoaderTest
 
 		salesOrderRecord = newInstance(I_C_Order.class);
 		salesOrderRecord.setC_BPartner(bPartnerCustomer);
+		salesOrderRecord.setPreparationDate(SystemTime.asTimestamp());
 		saveRecord(salesOrderRecord);
 
 		bPartnerVendor = newInstance(I_C_BPartner.class);
@@ -192,12 +193,11 @@ public class PurchaseRowsLoaderTest
 						new AvailableToPromiseRepository(),
 						new MoneyService()))
 				.viewSupplier(() -> null)
-				.orderLineRepository(new OrderLineRepository(new CurrencyRepository()))
 				.build();
 
 		// invoke the method under test
 		final List<PurchaseRow> groupRows = loader.load();
-		
+
 		assertThat(groupRows).hasSize(1);
 		final PurchaseRow groupRow = groupRows.get(0);
 		assertThat(groupRow.getRowType()).isEqualTo(PurchaseRowType.GROUP);

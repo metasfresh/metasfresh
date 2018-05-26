@@ -18,7 +18,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 import de.metas.money.Currency;
-import de.metas.order.OrderLineRepository;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrder;
@@ -65,7 +64,6 @@ class PurchaseRowsLoader
 	private final SalesOrderLines salesOrderLines;
 	private final PurchaseRowFactory purchaseRowFactory;
 	private final Supplier<IView> viewSupplier;
-	private final OrderLineRepository orderLineRepository;
 
 	private ImmutableMap<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRow;
 
@@ -73,10 +71,8 @@ class PurchaseRowsLoader
 	private PurchaseRowsLoader(
 			@NonNull final SalesOrderLines salesOrderLines,
 			@NonNull final Supplier<IView> viewSupplier,
-			@NonNull final PurchaseRowFactory purchaseRowFactory,
-			@NonNull final OrderLineRepository orderLineRepository)
+			@NonNull final PurchaseRowFactory purchaseRowFactory)
 	{
-		this.orderLineRepository = orderLineRepository;
 		this.salesOrderLines = salesOrderLines;
 		this.viewSupplier = viewSupplier;
 		this.purchaseRowFactory = purchaseRowFactory;
