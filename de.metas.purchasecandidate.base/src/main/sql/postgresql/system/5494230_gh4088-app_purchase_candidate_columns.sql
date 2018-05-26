@@ -249,7 +249,7 @@ UPDATE AD_Process_Para SET ColumnName='CustomerPriceGrossProfit', Name='Kd-Roher
 /* DDL */ SELECT public.db_alter_table('C_PurchaseCandidate','ALTER TABLE public.C_PurchaseCandidate ADD COLUMN CustomerPriceGrossProfit NUMERIC')
 ;
 
-/* DDL */ SELECT public.db_alter_table('C_PurchaseCandidate','ALTER TABLE public.C_PurchaseCandidate DROP COLUMN SalesPriceActual')
+/* DDL */ SELECT public.db_alter_table('C_PurchaseCandidate','ALTER TABLE public.C_PurchaseCandidate DROP COLUMN IF EXISTS SalesPriceActual')
 ;
 -- 2018-05-23T10:16:19.806
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
