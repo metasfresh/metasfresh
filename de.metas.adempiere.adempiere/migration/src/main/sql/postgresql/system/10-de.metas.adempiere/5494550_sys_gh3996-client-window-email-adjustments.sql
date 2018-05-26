@@ -158,3 +158,78 @@ UPDATE AD_UI_Element SET SeqNo=150,Updated=TO_TIMESTAMP('2018-05-26 11:17:24','Y
 UPDATE AD_UI_ElementGroup SET UIStyle='primary',Updated=TO_TIMESTAMP('2018-05-26 11:18:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=540476
 ;
 
+-- 2018-05-26T11:23:00.386
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Archiv im Dateisystem speichern',Updated=TO_TIMESTAMP('2018-05-26 11:23:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=50184
+;
+
+-- 2018-05-26T11:23:16.622
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anhänge im Dateisystem speichern',Updated=TO_TIMESTAMP('2018-05-26 11:23:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=50158
+;
+
+-- 2018-05-26T11:23:26.153
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Windows Pfad Anhänge',Updated=TO_TIMESTAMP('2018-05-26 11:23:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=50159
+;
+
+-- 2018-05-26T11:23:37.834
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Unix Phad Anhänge',Updated=TO_TIMESTAMP('2018-05-26 11:23:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=50160
+;
+
+-- 2018-05-26T11:23:46.149
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Windows Pfad Archiv',Updated=TO_TIMESTAMP('2018-05-26 11:23:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=50185
+;
+
+-- 2018-05-26T11:23:55.359
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Unix Pfad Archiv',Updated=TO_TIMESTAMP('2018-05-26 11:23:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=50186
+;
+
+-- 2018-05-26T11:24:36.482
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Modell Validierungs Klassen',Updated=TO_TIMESTAMP('2018-05-26 11:24:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=11024
+;
+
+-- 2018-05-26T11:24:47.781
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='SMTP Anmeldung',Updated=TO_TIMESTAMP('2018-05-26 11:24:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5887
+;
+
+-- 2018-05-26T11:24:50.850
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='EMail Server',Updated=TO_TIMESTAMP('2018-05-26 11:24:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3813
+;
+
+-- 2018-05-26T11:24:53.897
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anfrage Nutzer',Updated=TO_TIMESTAMP('2018-05-26 11:24:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5163
+;
+
+-- 2018-05-26T11:24:56.607
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anfrage Verzeichnis',Updated=TO_TIMESTAMP('2018-05-26 11:24:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5162
+;
+
+-- 2018-05-26T11:25:02.662
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Passwort Anfrage Nutzer',Updated=TO_TIMESTAMP('2018-05-26 11:25:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5164
+;
+
+-- 2018-05-26T11:25:07.029
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Replizierung Strategie',Updated=TO_TIMESTAMP('2018-05-26 11:25:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=54680
+;
+
+-- 2018-05-26T11:25:17.645
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Dokumenten Verzeichnis',Updated=TO_TIMESTAMP('2018-05-26 11:25:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12103
+;
+
+-- 2018-05-26T11:26:05.963
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anfrage EMail',Updated=TO_TIMESTAMP('2018-05-26 11:26:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5161
+;
+
