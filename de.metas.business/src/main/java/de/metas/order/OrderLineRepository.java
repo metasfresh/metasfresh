@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
@@ -61,11 +62,16 @@ public class OrderLineRepository
 				() -> orderLineRecord.getM_Warehouse_ID(),
 				() -> orderLineRecord.getC_Order().getM_Warehouse_ID());
 
+		final int bPartnerRepoId = Util.firstGreaterThanZeroSupplier(
+				() -> orderLineRecord.getC_BPartner_ID(),
+				() -> orderLineRecord.getC_Order().getC_BPartner_ID());
+
 		return OrderLine.builder()
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
 				.orderId(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()))
+				.orgId(OrgId.ofRepoId(orderLineRecord.getAD_Org_ID()))
 				.line(orderLineRecord.getLine())
-				.bPartnerId(BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()))
+				.bPartnerId(BPartnerId.ofRepoId(bPartnerRepoId))
 				.datePromised(TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.priceActual(moneyOfRecordsPriceActual(orderLineRecord))

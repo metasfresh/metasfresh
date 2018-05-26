@@ -12,6 +12,7 @@ import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -40,23 +41,24 @@ public class SalesOrderLineRepository
 {
 	private final OrderLineRepository orderLineRepository;
 
-	public SalesOrderLineRepository(OrderLineRepository orderLineRepository)
+	public SalesOrderLineRepository(@NonNull final OrderLineRepository orderLineRepository)
 	{
 		this.orderLineRepository = orderLineRepository;
 	}
 
-	public SalesOrderLine getById(OrderLineId orderLineId)
+	public SalesOrderLine getById(@NonNull final OrderLineId orderLineId)
 	{
 		final I_C_OrderLine orderLineRecord = load(orderLineId.getRepoId(), I_C_OrderLine.class);
 		return ofRecord(orderLineRecord);
 	}
 
-	public SalesOrderLine ofRecord(I_C_OrderLine salesOrderLineRecord)
+	public SalesOrderLine ofRecord(@NonNull final I_C_OrderLine salesOrderLineRecord)
 	{
 		final OrderLine orderLine = orderLineRepository.ofRecord(salesOrderLineRecord);
 
-		final LocalDateTime datePromised = TimeUtil.asLocalDateTime(salesOrderLineRecord.getC_Order().getDatePromised());
-		final SalesOrder salesOrder = new SalesOrder(datePromised);
+		final LocalDateTime preparationDate = TimeUtil.asLocalDateTime(salesOrderLineRecord.getC_Order().getPreparationDate());
+
+		final SalesOrder salesOrder = new SalesOrder(preparationDate);
 		final Quantity deliveredQty = Quantity.of(
 				salesOrderLineRecord.getQtyDelivered(),
 				orderLine.getOrderedQty().getUOM());

@@ -1,7 +1,9 @@
 package de.metas.money;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
@@ -40,11 +42,11 @@ public class MoneyService
 {
 	public Money convertMoneyToCurrency(
 			@NonNull final Money money,
-			@NonNull final Currency tragetCurrency)
+			@NonNull final Currency targetCurrency)
 	{
 		if (Objects.equals(
 				money.getCurrency().getId(),
-				tragetCurrency.getId()))
+				targetCurrency.getId()))
 		{
 			return money;
 		}
@@ -58,14 +60,17 @@ public class MoneyService
 						Env.getAD_Client_ID(),
 						Env.getAD_Org_ID(Env.getCtx()));
 
-		final ICurrencyConversionResult convertedValue = currencyBL.convert(
+		final ICurrencyConversionResult conversionResult = currencyBL.convert(
 				currencyConversionContext,
 				money.getValue(),
 				money.getCurrency().getId().getRepoId(),
-				tragetCurrency.getId().getRepoId());
+				targetCurrency.getId().getRepoId());
 
-		return Money.of(
-				convertedValue.getAmount(),
-				tragetCurrency);
+		final BigDecimal convertedAmount = Check.assumeNotNull(
+				conversionResult.getAmount(),
+				"CurrencyConversion from currency={} to currency={} needs to work; currencyConversionContext={}, currencyConversionResult={}",
+				money.getCurrency(), targetCurrency, currencyConversionContext, conversionResult);
+
+		return Money.of(convertedAmount, targetCurrency);
 	}
 }
