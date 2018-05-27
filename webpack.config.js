@@ -1,6 +1,10 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+var WebpackGitHash = require('webpack-git-hash');
+var commitHash = require('child_process')
+  .execSync('git rev-parse --short HEAD')
+  .toString();
 
 module.exports = {
   devtool: 'eval',
@@ -11,15 +15,19 @@ module.exports = {
   ],
   output: {
     path: '/',
-    filename: 'bundle[hash].js',
+    filename: 'bundle-[hash]-git-[githash].js',
     publicPath: '/',
   },
   plugins: [
+    new webpack.DefinePlugin({
+      COMMIT_HASH: JSON.stringify(commitHash),
+    }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
     new HtmlWebpackPlugin({
       template: 'index.html',
     }),
+    new WebpackGitHash(),
   ],
   module: {
     loaders: [

@@ -1,13 +1,17 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+var WebpackGitHash = require('webpack-git-hash');
+var commitHash = require('child_process')
+  .execSync('git rev-parse --short HEAD')
+  .toString();
 
 module.exports = {
   devtool: 'cheap-module-source-map',
   entry: ['./src/index.jsx', './favicon.png'],
   output: {
     path: './dist',
-    filename: 'bundle[hash].js',
+    filename: 'bundle-[hash]-git-[githash].js',
     publicPath: '/',
   },
   plugins: [
@@ -15,10 +19,12 @@ module.exports = {
       'process.env': {
         NODE_ENV: JSON.stringify('production'),
       },
+      COMMIT_HASH: JSON.stringify(commitHash),
     }),
     new HtmlWebpackPlugin({
       template: './index.html',
     }),
+    new WebpackGitHash(),
   ],
   module: {
     loaders: [
