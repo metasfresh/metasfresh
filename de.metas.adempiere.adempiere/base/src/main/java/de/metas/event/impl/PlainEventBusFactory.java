@@ -35,7 +35,7 @@ public class PlainEventBusFactory implements IEventBusFactory
 	@Override
 	public IEventBus getEventBus(Topic topic)
 	{
-		return null;
+		return new EventBus(topic.getFullName(), null);
 	}
 
 	@Override

@@ -18,6 +18,7 @@ import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -84,7 +85,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 			eventBus.postEvent(event);
 
 			final long durationMillis = System.currentTimeMillis() - event.getWhen().toEpochMilli();
-			System.out.println("Received event in " + durationMillis + "ms, topic=" + topicName + ": " + event);
+			logger.debug("Received event in {}ms, topic={}: {}", durationMillis, topicName, event);
 		}
 		catch (final Exception ex)
 		{
@@ -131,12 +132,10 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	}
 
 	@Override
-	public boolean bindIfNeeded(final IEventBus eventBus)
+	public boolean bindIfNeeded(@NonNull final IEventBus eventBus)
 	{
 		eventBus.subscribe(eventBus2amqpListener);
-
-		// TODO Auto-generated method stub
-		return false;
+		return true; // need to return true, otherwise, the system will only create "local" topics
 	}
 
 	@Override
@@ -150,7 +149,6 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	public void checkConnection()
 	{
 		// TODO Auto-generated method stub
-
 	}
 
 }
