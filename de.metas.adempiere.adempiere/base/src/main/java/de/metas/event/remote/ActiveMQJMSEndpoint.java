@@ -67,7 +67,6 @@ import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 import lombok.NonNull;
 
-// @Component
 public class ActiveMQJMSEndpoint implements IEventBusRemoteEndpoint
 {
 	// services
@@ -80,14 +79,7 @@ public class ActiveMQJMSEndpoint implements IEventBusRemoteEndpoint
 	public static final IEventSerializer DEFAULT_EVENT_SERIALIZER = JacksonJsonEventSerializer.instance;
 	private final IEventSerializer eventSerializer = DEFAULT_EVENT_SERIALIZER;
 
-	private final ExceptionListener exceptionListener = new ExceptionListener()
-	{
-		@Override
-		public void onException(final JMSException jmsException)
-		{
-			ActiveMQJMSEndpoint.this.onJMSException(jmsException);
-		}
-	};
+	private final ExceptionListener exceptionListener = jmsException -> ActiveMQJMSEndpoint.this.onJMSException(jmsException);
 
 	/** Is connected ? */
 	private final AtomicBoolean connected = new AtomicBoolean(false);

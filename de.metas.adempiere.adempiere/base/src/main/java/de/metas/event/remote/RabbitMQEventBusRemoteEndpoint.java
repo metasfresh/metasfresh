@@ -41,7 +41,6 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-// @Component
 public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 {
 	private static final Logger logger = LogManager.getLogger(RabbitMQEventBusRemoteEndpoint.class);
