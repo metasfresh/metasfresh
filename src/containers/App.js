@@ -2,7 +2,7 @@ import axios from 'axios';
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import { Provider } from 'react-redux';
-import { browserHistory, Router } from 'react-router';
+import { browserHistory } from 'react-router';
 import { push, syncHistoryWithStore } from 'react-router-redux';
 
 import {
@@ -13,12 +13,13 @@ import {
   setProcessSaved,
 } from '../actions/AppActions';
 import { noConnection } from '../actions/WindowActions';
+import { addPlugins } from '../actions/PluginActions';
 import '../assets/css/styles.css';
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
+import CustomRouter from './CustomRouter';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
 import { LOCAL_LANG } from '../constants/Constants';
-import { getRoutes } from '../routes.js';
 import Auth from '../services/Auth';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
@@ -27,10 +28,15 @@ import configureStore from '../store/configureStore';
 const hotkeys = generateHotkeys({ keymap, blacklist });
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
+const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
 export default class App extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      pluginsLoading: !!APP_PLUGINS.length,
+    };
 
     this.auth = new Auth();
 
@@ -52,8 +58,8 @@ export default class App extends Component {
         }
 
         /*
-             * Authorization error
-             */
+         * Authorization error
+         */
         if (error.response.status == 401) {
           store.dispatch(setProcessSaved());
           logoutSuccess(this.auth);
@@ -71,7 +77,6 @@ export default class App extends Component {
               }
             };
             const { data, status } = error.response;
-
             const errorTitle = errorMessenger(status);
 
             // eslint-disable-next-line no-console
@@ -126,15 +131,54 @@ export default class App extends Component {
     });
 
     counterpart.setMissingEntryGenerator(() => '');
+
+    if (APP_PLUGINS.length) {
+      const plugins = APP_PLUGINS.map(plugin => {
+        const waitForChunk = () =>
+          import(`./../../plugins/${plugin}/index.js`)
+            .then(module => module)
+            .catch(() => {
+              // eslint-disable-next-line no-console
+              console.error(`Error loading plugin ${plugin}`);
+            });
+
+        return new Promise(resolve =>
+          waitForChunk().then(file => {
+            resolve(file);
+          })
+        );
+      });
+
+      Promise.all(plugins).then(res => {
+        const plugins = res.reduce((prev, current) => prev.concat(current), []);
+        store.dispatch(addPlugins(plugins));
+
+        plugins.forEach(plugin => {
+          store.attachReducers({
+            plugins: {
+              [`${plugin.reducers.name}`]: plugin.reducers.reducer,
+            },
+          });
+        });
+
+        this.setState({
+          pluginsLoading: false,
+        });
+      });
+    }
   }
 
   render() {
+    if (APP_PLUGINS.length && this.state.pluginsLoading) {
+      return null;
+    }
+
     return (
       <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
         <Provider store={store}>
           <Translation>
             <NotificationHandler>
-              <Router history={history} routes={getRoutes(store, this.auth)} />
+              <CustomRouter store={store} history={history} auth={this.auth} />
             </NotificationHandler>
           </Translation>
         </Provider>

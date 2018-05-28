@@ -49,6 +49,30 @@ class UserDropdown extends Component {
     }
   };
 
+  renderPlugins = () => {
+    const { handleUDOpen, redirect, toggleTooltip, plugins } = this.props;
+
+    if (plugins.length) {
+      return plugins.map((plugin, i) => {
+        return (
+          <div
+            key={`menu-item-${i}`}
+            className="user-dropdown-item"
+            onClick={() => {
+              redirect(plugin.userDropdownLink.url);
+              handleUDOpen(false);
+              toggleTooltip('');
+            }}
+            tabIndex={0}
+          >
+            <i className="meta-icon-settings" />
+            {plugin.userDropdownLink.text}
+          </div>
+        );
+      });
+    }
+  };
+
   render() {
     const {
       open,
@@ -58,6 +82,7 @@ class UserDropdown extends Component {
       toggleTooltip,
       tooltipOpen,
       me,
+      plugins,
     } = this.props;
     return (
       <div
@@ -106,6 +131,9 @@ class UserDropdown extends Component {
               <i className="meta-icon-settings" />
               {counterpart.translate('window.settings.caption')}
             </div>
+            {plugins.length > 0 && <hr className="context-menu-separator" />}
+            {this.renderPlugins()}
+            {plugins.length > 0 && <hr className="context-menu-separator" />}
             <div
               className="user-dropdown-item"
               onClick={() => {

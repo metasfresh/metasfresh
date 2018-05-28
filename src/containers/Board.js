@@ -233,7 +233,7 @@ class Board extends Component {
           <div className="board">
             <div key="board-header" className="board-header clearfix">
               <button
-                className="btn btn-meta-outline-secondary btn-sm float-xs-right"
+                className="btn btn-meta-outline-secondary btn-sm float-right"
                 onClick={() => this.setState({ sidenav: true })}
               >
                 Add new
