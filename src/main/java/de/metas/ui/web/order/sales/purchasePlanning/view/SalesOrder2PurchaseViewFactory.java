@@ -26,13 +26,16 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.OrderLineId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.purchasecandidate.BPPurchaseScheduleService;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoFactory;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_Apply_Availability_Row;
 import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_PurchaseView_Launcher;
@@ -85,6 +88,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	private final PurchaseRowFactory purchaseRowFactory;
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
 	private final PurchaseViewLayoutFactory viewLayoutFactory;
+	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
 
 	//
 	private final Cache<ViewId, PurchaseView> views = CacheBuilder.newBuilder()
@@ -95,11 +99,15 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	public SalesOrder2PurchaseViewFactory(
 			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo,
 			@NonNull final PurchaseRowFactory purchaseRowFactory,
-			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService)
+			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
+			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory,
+			@NonNull final SalesOrderLineRepository salesOrderLineRepository)
 	{
 		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
 		this.purchaseRowFactory = purchaseRowFactory;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
+		this.purchaseProfitInfoFactory = purchaseProfitInfoFactory;
+		this.salesOrderLineRepository = salesOrderLineRepository;
 
 		final IADProcessDAO adProcessRepo = Services.get(IADProcessDAO.class);
 		final ITranslatableString caption = adProcessRepo
@@ -175,7 +183,11 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	@Override
 	public PurchaseView createView(@NonNull final CreateViewRequest request)
 	{
-		final Set<Integer> salesOrderLineIds = request.getFilterOnlyIds();
+		final Set<OrderLineId> salesOrderLineIds = request
+				.getFilterOnlyIds()
+				.stream()
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 		Check.assumeNotEmpty(salesOrderLineIds, "salesOrderLineIds is not empty");
 
 		final ViewId viewId = ViewId.random(WINDOW_ID);
@@ -184,6 +196,8 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 				.salesOrderLineIds(salesOrderLineIds)
 				.purchaseCandidateRepository(purchaseCandidatesRepo)
 				.bpPurchaseScheduleService(bpPurchaseScheduleService)
+				.purchaseProfitInfoFactory(purchaseProfitInfoFactory)
+				.salesOrderLineRepository(salesOrderLineRepository)
 				.build();
 
 		final PurchaseRowsLoader rowsLoader = PurchaseRowsLoader.builder()
