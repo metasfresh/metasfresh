@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
@@ -137,7 +138,7 @@ class Lookup extends Component {
   };
 
   dropdownListToggle = value => {
-    const { onFocus, onHandleBlur } = this.props;
+    const { onFocus, onBlur } = this.props;
 
     this.setState({
       isDropdownListOpen: value,
@@ -145,8 +146,8 @@ class Lookup extends Component {
 
     if (value && onFocus) {
       onFocus();
-    } else if (!value && onHandleBlur) {
-      onHandleBlur();
+    } else if (!value && onBlur) {
+      onBlur();
     }
   };
 
@@ -210,7 +211,7 @@ class Lookup extends Component {
         [`${fieldName}`]: false,
       },
     });
-    this.props.onHandleBlur();
+    this.props.onBlur();
   };
 
   getFocused = fieldName => {
@@ -288,7 +289,7 @@ class Lookup extends Component {
       scanning,
       barcodeSelected,
       scannerElement,
-      onHandleBlur,
+      onBlur,
       onFocus,
     } = this.props;
 
@@ -373,8 +374,8 @@ class Lookup extends Component {
                   fireDropdownList={fireDropdownList}
                   handleInputEmptyStatus={this.handleInputEmptyStatus}
                   enableAutofocus={this.enableAutofocus}
-                  onHandleBlur={onHandleBlur}
-                  onHandleFocus={onFocus}
+                  onBlur={onBlur}
+                  onFocus={onFocus}
                   isOpen={isDropdownListOpen}
                   onDropdownListToggle={this.dropdownListToggle}
                   {...{
@@ -449,7 +450,7 @@ class Lookup extends Component {
                     disableAutofocus={this.disableAutofocus}
                     enableAutofocus={this.enableAutofocus}
                     onFocus={() => this.handleFocus(item.field)}
-                    onHandleBlur={() => this.handleBlur(item.field)}
+                    onBlur={() => this.handleBlur(item.field)}
                     {...{
                       dataId,
                       entity,
@@ -475,5 +476,10 @@ class Lookup extends Component {
     );
   }
 }
+
+Lookup.propTypes = {
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
+};
 
 export default connect()(BarcodeScanner(onClickOutside(Lookup)));

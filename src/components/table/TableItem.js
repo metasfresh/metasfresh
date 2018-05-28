@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import { merge } from 'lodash';
 
 import {
   VIEW_EDITOR_RENDER_MODES_ALWAYS,
@@ -18,6 +19,7 @@ class TableItem extends PureComponent {
       activeCell: '',
       updatedRow: false,
       listenOnKeys: true,
+      editedCells: {},
     };
   }
 
@@ -147,13 +149,40 @@ class TableItem extends PureComponent {
     return item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
   };
 
-  renderCells = (cols, cells) => {
+  onCellChange = (rowId, property, value, ret) => {
+    const { onItemChange } = this.props;
+    let editedCells = { ...this.state.editedCells };
+
+    // this is something we're not doing usually as all field
+    // layouts come from the server. But in cases of modals
+    // sometimes we need to modify the state of fields that are displayed
+    // for instance to show/hide them
+    if (ret) {
+      ret.then(resp => {
+        if (resp[0] && resp[0].fieldsByName) {
+          editedCells = merge(editedCells, resp[0].fieldsByName);
+        }
+
+        this.setState(
+          {
+            editedCells,
+          },
+          () => onItemChange(rowId, property, value)
+        );
+      });
+    } else {
+      onItemChange(rowId, property, value);
+    }
+  };
+
+  renderCells = () => {
     const {
+      cols,
+      fieldsByName,
       type,
       docId,
       rowId,
       tabId,
-      readonly,
       mainTable,
       newRow,
       changeListenOnTrue,
@@ -163,14 +192,13 @@ class TableItem extends PureComponent {
       handleRightClick,
       caption,
       colspan,
-      onItemChange,
       viewId,
     } = this.props;
-
-    const { edited, updatedRow, listenOnKeys } = this.state;
+    let { readonly } = this.props;
+    const { edited, updatedRow, listenOnKeys, editedCells } = this.state;
+    const cells = merge({}, fieldsByName, editedCells);
 
     // Iterate over layout settings
-
     if (colspan) {
       return <td colSpan={cols.length}>{caption}</td>;
     } else {
@@ -186,6 +214,7 @@ class TableItem extends PureComponent {
                 cells[property] &&
                 cells[property].viewEditorRenderMode) ||
                 item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+            const isEdited = edited === property;
 
             let widgetData = item.fields.map(prop => {
               if (cells) {
@@ -202,11 +231,10 @@ class TableItem extends PureComponent {
                     mandatory: true,
                     readonly: false,
                   };
+                  readonly = false;
                 }
-
                 return cellWidget;
               }
-
               return -1;
             });
 
@@ -230,7 +258,7 @@ class TableItem extends PureComponent {
                 }}
                 key={`${rowId}-${property}`}
                 isRowSelected={this.props.isSelected}
-                isEdited={isEditable || edited === property}
+                isEdited={isEdited}
                 handleDoubleClick={e =>
                   this.handleEditProperty(e, property, true, widgetData[0])
                 }
@@ -239,7 +267,7 @@ class TableItem extends PureComponent {
                   changeListenOnTrue();
                 }}
                 disableOnClickOutside={edited !== property}
-                onCellChange={onItemChange}
+                onCellChange={this.onCellChange}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
                 handleKeyDown={e =>
@@ -392,8 +420,6 @@ class TableItem extends PureComponent {
     const {
       key,
       isSelected,
-      fieldsByName,
-      cols,
       onClick,
       onDoubleClick,
       odd,
@@ -426,7 +452,7 @@ class TableItem extends PureComponent {
           indent && (
             <td className="indented">{this.renderTree(contextType)}</td>
           )}
-        {this.renderCells(cols, fieldsByName)}
+        {this.renderCells()}
       </tr>
     );
   }
@@ -434,6 +460,13 @@ class TableItem extends PureComponent {
 
 TableItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  onClick: PropTypes.func.isRequired,
+  handleSelect: PropTypes.func,
+  onDoubleClick: PropTypes.func,
+  indentSupported: PropTypes.bool,
+  collapsed: PropTypes.bool,
+  processed: PropTypes.bool,
+  notSaved: PropTypes.bool,
 };
 
 export default connect(false, false, false, { withRef: true })(TableItem);

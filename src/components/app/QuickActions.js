@@ -25,6 +25,12 @@ class QuickActions extends Component {
     // from <DocumentList>
     childView: PropTypes.object.isRequired,
     parentView: PropTypes.object.isRequired,
+    windowType: PropTypes.string.isRequired,
+    viewId: PropTypes.string,
+    fetchOnInit: PropTypes.bool,
+    inBackground: PropTypes.bool,
+    inModal: PropTypes.bool,
+    disabled: PropTypes.bool,
   };
 
   unmounted = false;
@@ -179,9 +185,7 @@ class QuickActions extends Component {
 
   render() {
     const { actions, isDropdownOpen, isTooltip, loading } = this.state;
-
     const { shouldNotUpdate, processStatus, disabled } = this.props;
-
     const disabledDuringProcessing = processStatus === 'pending' || loading;
 
     if (actions.length) {

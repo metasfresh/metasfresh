@@ -1,4 +1,5 @@
 import Moment from 'moment';
+import PropTypes from 'prop-types';
 import numeral from 'numeral';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
@@ -161,7 +162,7 @@ class TableCell extends PureComponent {
     } = this.props;
     // TODO: Hack, Color fields should be readonly
     const readonly = item.widgetType === 'Color' ? true : this.props.readonly;
-    const docId = this.props.docId + '';
+    const docId = `${this.props.docId}`;
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(
           widgetData[0].value,
@@ -243,6 +244,15 @@ class TableCell extends PureComponent {
     );
   }
 }
+
+TableCell.propTypes = {
+  handleRightClick: PropTypes.func,
+  handleKeyDown: PropTypes.func,
+  handleDoubleClick: PropTypes.func,
+  onClickOutside: PropTypes.func,
+  onCellChange: PropTypes.func,
+  isEdited: PropTypes.bool,
+};
 
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,

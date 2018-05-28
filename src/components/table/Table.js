@@ -268,7 +268,7 @@ class Table extends Component {
           }
 
           if (!selectedIndex) {
-            this.selectOneProduct(rows[0]);
+            this.selectOneProduct(rows[0].id);
           }
 
           document.getElementsByClassName('js-table')[0].focus();

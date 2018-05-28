@@ -140,7 +140,13 @@ class RawModal extends Component {
   };
 
   render() {
-    const { modalTitle, children, modalDescription } = this.props;
+    const {
+      modalTitle,
+      children,
+      modalDescription,
+      modalVisible,
+      rawModalVisible,
+    } = this.props;
 
     const { scrolled, isTooltipShow } = this.state;
 
@@ -163,7 +169,7 @@ class RawModal extends Component {
               <button
                 className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
                 onClick={this.handleClose}
-                tabIndex={0}
+                tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
                 onMouseEnter={() => this.toggleTooltip(true)}
                 onMouseLeave={() => this.toggleTooltip(false)}
               >
@@ -196,13 +202,18 @@ class RawModal extends Component {
 
 const mapStateToProps = state => ({
   modalVisible: state.windowHandler.modal.visible || false,
+  rawModalVisible: state.windowHandler.rawModal.visible || false,
   requests: state.windowHandler.patches.requests,
   success: state.windowHandler.patches.success,
 });
 
 RawModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  children: PropTypes.node,
+  modalTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+  modalDescription: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalVisible: PropTypes.bool,
+  rawModalVisible: PropTypes.bool,
   requests: PropTypes.object.isRequired,
   success: PropTypes.bool.isRequired,
 };
