@@ -124,7 +124,7 @@ public class PurchaseRowFactory
 		final Money priceGrossProfit = moneyService.convertMoneyToCurrency(profitInfo.getPriceGrossProfit(), currencyOfParentRow);
 
 		final Percent percentGrossProfit = Percent
-				.of(customerPriceGrossProfit.getValue(), priceGrossProfit.getValue())
+				.ofDelta(priceGrossProfit.getValue(), customerPriceGrossProfit.getValue())
 				.roundToHalf(RoundingMode.HALF_UP);
 
 		return PurchaseRow.builder()
