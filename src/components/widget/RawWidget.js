@@ -681,10 +681,9 @@ class RawWidget extends Component {
       case 'Label':
         return (
           <div
-            className={
-              'tag tag-warning ' +
-              (gridAlign ? 'text-xs-' + gridAlign + ' ' : '')
-            }
+            className={classnames('tag tag-warning ', {
+              [`text-${gridAlign}`]: gridAlign,
+            })}
             tabIndex={tabIndex}
             ref={c => (this.rawWidget = c)}
           >
@@ -696,7 +695,7 @@ class RawWidget extends Component {
           <button
             className={
               'btn btn-sm btn-meta-primary ' +
-              (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+              (gridAlign ? 'text-' + gridAlign + ' ' : '') +
               (readonly ? 'tag-disabled disabled ' : '')
             }
             onClick={() => this.handlePatch(widgetField)}
@@ -712,7 +711,7 @@ class RawWidget extends Component {
           <button
             className={
               'btn btn-sm btn-meta-primary ' +
-              (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+              (gridAlign ? 'text-' + gridAlign + ' ' : '') +
               (readonly ? 'tag-disabled disabled ' : '')
             }
             onClick={this.handleProcess}
@@ -789,7 +788,7 @@ class RawWidget extends Component {
           <button
             className={
               'btn btn-sm btn-meta-primary ' +
-              (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+              (gridAlign ? 'text-' + gridAlign + ' ' : '') +
               (readonly ? 'tag-disabled disabled ' : '')
             }
             onClick={() => handleZoomInto(fields[0].field)}

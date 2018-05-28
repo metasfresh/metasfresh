@@ -961,6 +961,18 @@ td.pulse-off input {
 .login-form {
     width: 20%;
     min-width: 300px;
+
+    > div {
+        position: relative;
+    }
+
+    .mt-2 {
+        margin-top: 1.5rem !important;
+    }
+
+    .mb-2 {
+        margin-bottom: 1.5rem !important;
+    }
 }
 
 .login-form > div {

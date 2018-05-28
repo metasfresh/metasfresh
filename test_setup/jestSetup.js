@@ -20,8 +20,9 @@ global.render = render;
 global.mount = mount;
 global.config = {
   API_URL: 'http://api.test.url',
-  WS_URL: 'http://ws.test.url',
+  WS_URL: 'http://ws.test.url'
 };
+global.PLUGINS = [];
 
 Object.defineProperty(document, 'activeElement', {
   value: function() { return {nodeName: 'FOO'} },

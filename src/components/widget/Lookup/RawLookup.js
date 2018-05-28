@@ -429,9 +429,7 @@ class RawLookup extends Component {
           ref={ref => (this.wrapper = ref)}
         >
           <div className={'input-dropdown input-block'}>
-            <div
-              className={'input-editable' + (align ? ' text-xs-' + align : '')}
-            >
+            <div className={'input-editable' + (align ? ' text-' + align : '')}>
               <input
                 ref={c => (this.inputSearch = c)}
                 type="text"

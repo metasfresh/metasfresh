@@ -7,5 +7,4 @@
 echo "const config =  {"
 echo "    API_URL: '$API_URL/rest/api',"
 echo "    WS_URL:  '$API_URL/stomp'"
-echo "}"
-
+echo "};"

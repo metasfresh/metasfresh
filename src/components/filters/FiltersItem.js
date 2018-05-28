@@ -242,7 +242,7 @@ class FiltersItem extends Component {
                     />
                   ))}
               </div>
-              <div className="col-sm-12 text-xs-right">
+              <div className="col-sm-12 text-right">
                 {notValidFields && (
                   <div className="input-error">
                     {counterpart.translate('window.noMandatory.caption')}
