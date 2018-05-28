@@ -1,7 +1,5 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -9,12 +7,16 @@ import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.i18n.ITranslatableString;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
@@ -79,9 +81,9 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 		this.relatedProcessDescriptors = from.relatedProcessDescriptors;
 	}
 
-	public int getSalesOrderLineId()
+	public OrderLineId getOrderLineId()
 	{
-		return rowsData.getSalesOrderLineId();
+		return rowsData.getOrderLineId();
 	}
 
 	@Override
@@ -142,19 +144,21 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			return;
 		}
 
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		final PricingConditionsRow editableRow = getEditableRow();
+		final PricingConditionsBreak pricingConditionsBreak = editableRow.getPricingConditionsBreak();
 
-		final I_C_OrderLine salesOrderLine = load(getSalesOrderLineId(), I_C_OrderLine.class);
-		salesOrderLine.setC_PaymentTerm_Override_ID(editableRow.getPaymentTermId());
-		salesOrderLine.setIsTempPricingConditions(editableRow.isTemporaryPricingConditions());
+		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(getOrderLineId());
+		orderLine.setIsTempPricingConditions(pricingConditionsBreak.isTemporaryPricingConditionsBreak());
 
-		if (editableRow.isTemporaryPricingConditions())
+		if (pricingConditionsBreak.isTemporaryPricingConditionsBreak())
 		{
-			salesOrderLine.setM_DiscountSchemaBreak_ID(-1);
+			orderLine.setM_DiscountSchema_ID(-1);
+			orderLine.setM_DiscountSchemaBreak_ID(-1);
 
-			final PriceOverride price = editableRow.getPrice();
+			final PriceOverride price = pricingConditionsBreak.getPriceOverride();
 			final PriceOverrideType type = price.getType();
 			if (type == PriceOverrideType.NONE)
 			{
@@ -162,34 +166,37 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			}
 			else if (type == PriceOverrideType.BASE_PRICING_SYSTEM)
 			{
-				salesOrderLine.setIsManualPrice(true);
-				salesOrderLine.setBase_PricingSystem_ID(editableRow.getBasePriceSystemId());
+				orderLine.setIsManualPrice(true);
+				orderLine.setPriceEntered(editableRow.getBasePrice());
+				orderLine.setBase_PricingSystem_ID(price.getBasePricingSystemId());
 
 			}
 			else if (type == PriceOverrideType.FIXED_PRICE)
 			{
-				salesOrderLine.setIsManualPrice(true);
-				salesOrderLine.setPriceEntered(price.getFixedPrice());
+				orderLine.setIsManualPrice(true);
+				orderLine.setPriceEntered(price.getFixedPrice());
 			}
 
-			salesOrderLine.setIsManualDiscount(true);
-			salesOrderLine.setDiscount(editableRow.getDiscount());
-
-			if (editableRow.getPaymentTermId() > 0)
-			{
-				salesOrderLine.setC_PaymentTerm_Override_ID(editableRow.getPaymentTermId());
-			}
+			orderLine.setIsManualDiscount(true);
+			orderLine.setDiscount(pricingConditionsBreak.getDiscount().getValueAsBigDecimal());
+			orderLine.setC_PaymentTerm_Override_ID(pricingConditionsBreak.getPaymentTermId());
 		}
 		else
 		{
-			salesOrderLine.setIsManualDiscount(false);
-			salesOrderLine.setIsManualPrice(false);
-			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.ofOrderLine(salesOrderLine));
+			final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
+			orderLine.setM_DiscountSchema_ID(pricingConditionsBreakId.getDiscountSchemaId());
+			orderLine.setM_DiscountSchemaBreak_ID(pricingConditionsBreakId.getDiscountSchemaBreakId());
+
+			orderLine.setIsManualDiscount(false);
+			orderLine.setIsManualPrice(false);
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
+					.pricingConditionsBreakOverride(pricingConditionsBreak)
+					.build());
 		}
 
-		orderLineBL.updateLineNetAmt(salesOrderLine);
-		orderLineBL.setTaxAmtInfo(salesOrderLine);
+		orderLineBL.updateLineNetAmt(orderLine);
+		orderLineBL.setTaxAmtInfo(orderLine);
 
-		InterfaceWrapperHelper.save(salesOrderLine);
+		InterfaceWrapperHelper.save(orderLine);
 	}
 }

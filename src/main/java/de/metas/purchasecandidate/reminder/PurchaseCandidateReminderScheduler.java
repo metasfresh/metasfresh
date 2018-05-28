@@ -11,6 +11,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Services;
@@ -131,7 +132,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 		return nextDispatch != null ? nextDispatch.getNotificationTime() : null;
 	}
 
-	public void scheduleNotification(final int vendorBPartnerId, final LocalDateTime notificationTime)
+	public void scheduleNotification(final BPartnerId vendorBPartnerId, final LocalDateTime notificationTime)
 	{
 		scheduleNotification(PurchaseCandidateReminder.builder()
 				.vendorBPartnerId(vendorBPartnerId)
@@ -171,13 +172,18 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	{
 		try
 		{
-			final List<PurchaseCandidateReminder> remindersToDispatch = reminders.removeAllUntil(LocalDateTime.now());
+			final List<PurchaseCandidateReminder> remindersToDispatch = removeAllRemindersUntil(LocalDateTime.now());
 			remindersToDispatch.forEach(this::dispatchNotificationNoFail);
 		}
 		finally
 		{
 			scheduleNextDispatch();
 		}
+	}
+
+	private synchronized List<PurchaseCandidateReminder> removeAllRemindersUntil(final LocalDateTime maxNotificationTime)
+	{
+		return reminders.removeAllUntil(maxNotificationTime);
 	}
 
 	private void dispatchNotificationNoFail(final PurchaseCandidateReminder reminder)
@@ -209,7 +215,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 				.recipient(Recipient.allRolesContainingGroup(NOTIFICATION_GROUP_NAME))
 				.contentADMessage(MSG_PurchaseCandidatesDue)
 				.contentADMessageParam(count)
-				.contentADMessageParam(TableRecordReference.of(I_C_BPartner.Table_Name, reminder.getVendorBPartnerId()))
+				.contentADMessageParam(TableRecordReference.of(I_C_BPartner.Table_Name, reminder.getVendorBPartnerId().getRepoId()))
 				.targetAction(TargetViewAction.builder()
 						.adWindowId(viewId.getWindowId().toIntOr(-1))
 						.viewId(viewId.toJson())
@@ -237,7 +243,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 
 	private final DocumentFilter createViewStickyFilter(final PurchaseCandidateReminder reminder)
 	{
-		final int vendorBPartnerId = reminder.getVendorBPartnerId();
+		final BPartnerId vendorBPartnerId = reminder.getVendorBPartnerId();
 		final String vendorName = Services.get(IBPartnerBL.class).getBPartnerValueAndName(vendorBPartnerId);
 		final LocalDateTime notificationTime = reminder.getNotificationTime();
 
@@ -248,7 +254,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 		return DocumentFilter.builder()
 				.setFilterId("filterByVendorIdAndReminderDate")
 				.setCaption(caption)
-				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, Operator.EQUAL, vendorBPartnerId))
+				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, Operator.EQUAL, vendorBPartnerId.getRepoId()))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate, Operator.LESS_OR_EQUAL, notificationTime))
 				.build();
 	}

@@ -10,18 +10,23 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
+import de.metas.money.Currency;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.SalesOrder;
+import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.availability.AvailabilityException;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -80,7 +85,11 @@ class PurchaseRowsLoader
 
 		for (final SalesOrderLineWithCandidates salesOrderLineWithCandidates : salesOrderLines.getSalesOrderLinesWithCandidates())
 		{
-			final I_C_OrderLine salesOrderLine = salesOrderLineWithCandidates.getSalesOrderLine();
+			final SalesOrderLine salesOrderLine = salesOrderLineWithCandidates.getSalesOrderLine();
+
+			final Currency currencyOfParentRow = salesOrderLine
+					.getPriceActual()
+					.getCurrency();
 
 			final ImmutableList.Builder<PurchaseRow> rows = ImmutableList.builder();
 			for (final PurchaseCandidate purchaseCandidate : salesOrderLineWithCandidates.getPurchaseCandidates())
@@ -89,21 +98,43 @@ class PurchaseRowsLoader
 						.rowFromPurchaseCandidateBuilder()
 						.purchaseCandidate(purchaseCandidate)
 						.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
-						.datePromised(salesOrderLine.getDatePromised())
+						.datePromised(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
+						.currencyOfParentRow(currencyOfParentRow)
 						.build();
 
 				purchaseCandidate2purchaseRowBuilder.put(purchaseCandidate, candidateRow);
 				rows.add(candidateRow);
 			}
 
-			final PurchaseRow groupRow = //
-					purchaseRowFactory.createGroupRow(salesOrderLine, rows.build());
+			final PurchaseDemand demand = createDemand(salesOrderLine);
+			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(demand, rows.build());
 			result.add(groupRow);
-		}
 
+		}
 		purchaseCandidate2purchaseRow = purchaseCandidate2purchaseRowBuilder.build();
 
 		return result.build();
+	}
+
+	private static PurchaseDemand createDemand(final SalesOrderLine salesOrderLine)
+	{
+		final SalesOrder salesOrder = salesOrderLine.getOrder();
+
+		final Quantity qtyToPurchase = salesOrderLine.getOrderedQty().subtract(salesOrderLine.getDeliveredQty());
+
+		return PurchaseDemand.builder()
+				.id(PurchaseDemandId.ofTableAndRecordId(I_C_OrderLine.Table_Name, salesOrderLine.getId().getRepoId()))
+				//
+				.orgId(salesOrderLine.getOrgId().getRepoId())
+				.warehouseId(salesOrderLine.getWarehouseId().getRepoId())
+				//
+				.productId(salesOrderLine.getProductId())
+				.attributeSetInstanceId(salesOrderLine.getAsiId().getRepoId())
+				.qtyToDeliver(qtyToPurchase)
+				//
+				.datePromised(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
+				.preparationDate(salesOrder.getPreparationDate())
+				.build();
 	}
 
 	public void createAndAddAvailabilityResultRows()

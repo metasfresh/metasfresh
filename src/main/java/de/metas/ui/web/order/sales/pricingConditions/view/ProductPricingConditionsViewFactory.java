@@ -1,13 +1,22 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
+import de.metas.pricing.conditions.service.IPricingConditionsService;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -56,15 +65,39 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 
 		final int adClientId = Env.getAD_Client_ID();
 
-		final PriceNetCalculator priceNetCalculator = PriceNetCalculator.builder()
-				// .basePriceFromBasePricingSystemCalculator(basePriceFromBasePricingSystemCalculator) // TODO
-				.build();
-
 		return preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(pricingConditions -> pricingConditions.streamBreaksMatchingAnyOfProducts(productAndCategoryIds))
-				.priceNetCalculator(priceNetCalculator)
+				.basePricingSystemPriceCalculator(this::calculateBasePricingSystemPrice)
 				.adClientId(adClientId)
 				.load();
+	}
+
+	private BigDecimal calculateBasePricingSystemPrice(final BasePricingSystemPriceCalculatorRequest request)
+	{
+		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
+
+		final PricingConditionsResult result = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
+				.forcePricingConditionsBreak(request.getPricingConditionsBreak())
+				.pricingCtx(createPricingContext(request))
+				.build());
+
+		return result.getPriceStdOverride();
+	}
+
+	private IPricingContext createPricingContext(final BasePricingSystemPriceCalculatorRequest request)
+	{
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
+		final PricingConditionsBreak pricingConditionsBreak = request.getPricingConditionsBreak();
+
+		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
+		final ProductId productId = pricingConditionsBreak.getMatchCriteria().getProductId();
+		pricingCtx.setM_Product_ID(productId != null ? productId.getRepoId() : -1);
+		pricingCtx.setQty(BigDecimal.ONE);
+		pricingCtx.setBPartnerId(request.getBpartnerId());
+		pricingCtx.setSOTrx(request.isSOTrx());
+
+		return pricingCtx;
 	}
 
 }

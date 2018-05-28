@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.order.OrderLineId;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
@@ -58,7 +59,7 @@ import lombok.ToString;
 class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow>
 {
 	@Getter
-	private final int salesOrderLineId;
+	private final OrderLineId orderLineId;
 	private final DocumentFiltersList filters;
 	private final PricingConditionsRowData allRowsData;
 
@@ -68,13 +69,13 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 
 	@Builder
 	private PricingConditionsRowData(
-			final int salesOrderLineId,
+			final OrderLineId orderLineId,
 			@Nullable final PricingConditionsRow editableRow,
 			@NonNull final List<PricingConditionsRow> rows)
 	{
 		// Check.assumeGreaterThanZero(salesOrderLineId, "salesOrderLineId"); // OK to not be set
 
-		this.salesOrderLineId = salesOrderLineId;
+		this.orderLineId = orderLineId;
 		this.allRowsData = null;
 		this.filters = DocumentFiltersList.EMPTY;
 
@@ -91,7 +92,7 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 	{
 		this.allRowsData = from.getAllRowsData();
 		this.filters = filters;
-		this.salesOrderLineId = allRowsData.getSalesOrderLineId();
+		this.orderLineId = allRowsData.getOrderLineId();
 
 		rowsById = allRowsData.rowsById;
 		final ImmutableSet<DocumentId> rowIdsNotOrdered = allRowsData.rowsById.values()
@@ -181,12 +182,13 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 	@Override
 	public void patchRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		changeRow(ctx.getRowId(), row -> row.copyAndChange(fieldChangeRequests));
+		final PricingConditionsRowChangeRequest request = PricingConditionsRowActions.toChangeRequest(fieldChangeRequests);
+		changeRow(ctx.getRowId(), row -> PricingConditionsRowReducers.copyAndChange(request, row));
 	}
 
-	public void patchEditableRow(PricingConditionsRowChangeRequest request)
+	public void patchEditableRow(final PricingConditionsRowChangeRequest request)
 	{
-		changeRow(getEditableRowId(), editableRow -> editableRow.copyAndChange(request));
+		changeRow(getEditableRowId(), editableRow -> PricingConditionsRowReducers.copyAndChange(request, editableRow));
 	}
 
 	public boolean hasEditableRow()

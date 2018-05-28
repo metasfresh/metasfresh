@@ -5,28 +5,20 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.logging.LogManager;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
-import de.metas.pricing.conditions.PricingConditionsBreak.PricingConditionsBreakBuilder;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
-import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.pricing.conditions.PricingConditionsId;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange.PartialPriceChangeBuilder;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PriceChange;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PricingConditionsRowChangeRequestBuilder;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
@@ -38,7 +30,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
@@ -76,11 +67,17 @@ public class PricingConditionsRow implements IViewRow
 		return (PricingConditionsRow)row;
 	}
 
+	public static final String FIELDNAME_StatusColor = "statusColor";
+	@ViewColumn(fieldName = FIELDNAME_StatusColor, captionKey = " ", widgetType = DocumentFieldWidgetType.Color, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 1),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 1)
+	})
+	private final String statusColor;
+
 	@ViewColumn(captionKey = "C_BPartner_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
 	})
-	@Getter
 	private final LookupValue bpartner;
 
 	@ViewColumn(captionKey = "IsCustomer", widgetType = DocumentFieldWidgetType.YesNo, layouts = {
@@ -116,26 +113,26 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final LookupValue basePricingSystem;
 
-	private static final String FIELDNAME_FixedPrice = "fixedPrice";
-	@ViewColumn(fieldName = FIELDNAME_FixedPrice, captionKey = "Price", widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
+	static final String FIELDNAME_Price = "price";
+	@ViewColumn(fieldName = FIELDNAME_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
-	private final BigDecimal fixedPrice;
+	@Getter
+	private final BigDecimal basePrice;
 
-	private static final String FIELDNAME_BasePriceAddAmt = "basePriceAddAmt";
+	static final String FIELDNAME_BasePriceAddAmt = "basePriceAddAmt";
 	@ViewColumn(fieldName = FIELDNAME_BasePriceAddAmt, captionKey = "Std_AddAmt", widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 45),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 45)
 	})
 	private final BigDecimal basePriceAddAmt;
 
-	private static final String FIELDNAME_Discount = "discount";
+	static final String FIELDNAME_Discount = "discount";
 	@ViewColumn(fieldName = FIELDNAME_Discount, captionKey = "Discount", widgetType = DocumentFieldWidgetType.Number, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 	})
-	@Getter
 	private final BigDecimal discount;
 
 	public static final String FIELDNAME_PaymentTerm = "paymentTerm";
@@ -143,14 +140,13 @@ public class PricingConditionsRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
 	})
-	@Getter
 	private final LookupValue paymentTerm;
 
 	@ViewColumn(captionKey = "PriceNet", widgetType = DocumentFieldWidgetType.Number, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 100)
 	})
-	private final BigDecimal priceNet;
+	private final BigDecimal netPrice;
 
 	@ViewColumn(captionKey = "LastInOutDate", widgetType = DocumentFieldWidgetType.Date, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110),
@@ -164,6 +160,8 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final LocalDateTime dateCreated;
 
+	private static final Logger logger = LogManager.getLogger(PricingConditionsRow.class);
+
 	//
 	private final PricingConditionsRowLookups lookups;
 
@@ -174,9 +172,9 @@ public class PricingConditionsRow implements IViewRow
 
 	@Getter
 	private final PricingConditionsId pricingConditionsId;
+	@Getter
 	private final PricingConditionsBreak pricingConditionsBreak;
-
-	private final PriceNetCalculator priceNetCalculator;
+	private final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator;
 
 	@Getter
 	private final PricingConditionsBreakId copiedFromPricingConditionsBreakId;
@@ -192,47 +190,70 @@ public class PricingConditionsRow implements IViewRow
 			final PricingConditionsId pricingConditionsId,
 			@NonNull final PricingConditionsBreak pricingConditionsBreak,
 			final LocalDate dateLastInOut,
-			@NonNull final PriceNetCalculator priceNetCalculator,
+			@NonNull final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator,
 			final PricingConditionsBreakId copiedFromPricingConditionsBreakId,
 			final boolean editable)
 	{
-		id = buildDocumentId(bpartner, customer);
-
 		this.lookups = lookups;
 		this.bpartner = bpartner;
 		this.customer = customer;
+
+		statusColor = pricingConditionsBreak.isTemporaryPricingConditionsBreak() ? lookups.getTemporaryPriceConditionsColor() : null;
 
 		PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreak.getId());
 		this.pricingConditionsId = pricingConditionsId;
 		this.pricingConditionsBreak = pricingConditionsBreak;
 
-		this.product = lookups.lookupProduct(pricingConditionsBreak.getMatchCriteria().getProductId());
-		this.breakValue = pricingConditionsBreak.getMatchCriteria().getBreakValue();
+		product = lookups.lookupProduct(pricingConditionsBreak.getMatchCriteria().getProductId());
+		breakValue = pricingConditionsBreak.getMatchCriteria().getBreakValue();
 
-		this.paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId());
-		this.discount = pricingConditionsBreak.getDiscount();
+		paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId());
+		discount = pricingConditionsBreak.getDiscount().getValueAsBigDecimal();
 
 		final PriceOverride price = pricingConditionsBreak.getPriceOverride();
-		this.priceType = lookups.lookupPriceType(price.getType());
-		this.basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
-		this.basePriceAddAmt = price.getBasePriceAddAmt();
-		this.fixedPrice = price.getFixedPrice();
+		priceType = lookups.lookupPriceType(price.getType());
+		basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
+		basePriceAddAmt = price.getBasePriceAddAmt();
 
-		this.priceNetCalculator = priceNetCalculator;
-		this.priceNet = priceNetCalculator.calculate(pricingConditionsBreak);
+		this.basePricingSystemPriceCalculator = basePricingSystemPriceCalculator;
+		basePrice = calculateBasePrice(basePricingSystemPriceCalculator, BasePricingSystemPriceCalculatorRequest.builder()
+				.pricingConditionsBreak(pricingConditionsBreak)
+				.bpartnerId(BPartnerId.ofRepoId(bpartner.getIdAsInt()))
+				.isSOTrx(customer)
+				.build());
+
+		netPrice = calculateNetPrice(basePrice, pricingConditionsBreak);
 
 		this.dateLastInOut = dateLastInOut;
-		this.dateCreated = pricingConditionsBreak.getDateCreated();
+		dateCreated = pricingConditionsBreak.getDateCreated();
 
 		this.editable = editable;
 		viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(editable, price.getType());
 
 		this.copiedFromPricingConditionsBreakId = copiedFromPricingConditionsBreakId;
+
+		id = buildDocumentId(this.pricingConditionsBreak, this.bpartner, this.customer, this.editable);
 	}
 
-	private static final DocumentId buildDocumentId(final LookupValue bpartner, final boolean customer)
+	private static final DocumentId buildDocumentId(final PricingConditionsBreak pricingConditionsBreak, final LookupValue bpartner, final boolean customer, final boolean editableRow)
 	{
-		return DocumentId.of(bpartner.getIdAsString() + "-" + (customer ? "C" : "V"));
+		final StringBuilder idStr = new StringBuilder();
+		idStr.append(bpartner.getIdAsString());
+		idStr.append("-").append(customer ? "C" : "V");
+		if (editableRow)
+		{
+			idStr.append("-").append("editable");
+		}
+		else if (pricingConditionsBreak.getId() != null)
+		{
+			// In case the row is not editable, we shall also append the pricing conditions break ID to make it unique,
+			// else would fail in case we are showing all pricing conditions, for all break levels for a given product.
+			// (e.g. when we are opening it from material cockpit)
+			final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
+			idStr.append("-").append(pricingConditionsBreakId.getDiscountSchemaBreakId());
+		}
+
+		return DocumentId.ofString(idStr.toString());
 	}
 
 	private static final ImmutableMap<String, ViewEditorRenderMode> buildViewEditorRenderModeByFieldName(final boolean editable, final PriceOverrideType priceType)
@@ -250,7 +271,7 @@ public class PricingConditionsRow implements IViewRow
 		result.put(FIELDNAME_PriceType, ViewEditorRenderMode.ALWAYS);
 		if (priceType == PriceOverrideType.FIXED_PRICE)
 		{
-			result.put(FIELDNAME_FixedPrice, ViewEditorRenderMode.ALWAYS);
+			result.put(FIELDNAME_Price, ViewEditorRenderMode.ALWAYS);
 		}
 		else if (priceType == PriceOverrideType.BASE_PRICING_SYSTEM)
 		{
@@ -259,6 +280,55 @@ public class PricingConditionsRow implements IViewRow
 		}
 
 		return result.build();
+	}
+
+	private static BigDecimal calculateBasePrice(
+			@NonNull final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator,
+			@NonNull final BasePricingSystemPriceCalculatorRequest request)
+	{
+		try
+		{
+			final PricingConditionsBreak pricingConditionsBreak = request.getPricingConditionsBreak();
+			final PriceOverride price = pricingConditionsBreak.getPriceOverride();
+			final PriceOverrideType type = price.getType();
+			if (type == PriceOverrideType.NONE)
+			{
+				return null;
+			}
+			else if (type == PriceOverrideType.BASE_PRICING_SYSTEM)
+			{
+				final BigDecimal basePrice = basePricingSystemPriceCalculator.calculate(request);
+				// NOTE: assume BasePriceAddAmt was added
+				// basePrice = basePrice.add(price.getBasePriceAddAmt());
+
+				return basePrice;
+			}
+			else if (type == PriceOverrideType.FIXED_PRICE)
+			{
+				return price.getFixedPrice();
+			}
+			else
+			{
+				throw new AdempiereException("Unknown " + PriceOverrideType.class + ": " + type);
+			}
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed calculating net price for {}. Returning null.", request, ex);
+			return null;
+		}
+	}
+
+	private static BigDecimal calculateNetPrice(final BigDecimal basePrice, @NonNull final PricingConditionsBreak pricingConditionsBreak)
+	{
+		if (basePrice == null)
+		{
+			return null;
+		}
+
+		final int precision = 2; // TODO: hardcoded
+		final BigDecimal priceAfterDiscount = pricingConditionsBreak.getDiscount().subtractFromBase(basePrice, precision);
+		return priceAfterDiscount;
 	}
 
 	@Override
@@ -308,69 +378,12 @@ public class PricingConditionsRow implements IViewRow
 		return ImmutableList.of();
 	}
 
-	private final void assertEditable()
+	final void assertEditable()
 	{
 		if (!editable)
 		{
 			throw new AdempiereException("Row is not editable");
 		}
-	}
-
-	public PricingConditionsRow copyAndChange(final List<JSONDocumentChangedEvent> fieldChangeRequests)
-	{
-		return copyAndChange(toChangeRequest(fieldChangeRequests));
-	}
-
-	private static PricingConditionsRowChangeRequest toChangeRequest(final List<JSONDocumentChangedEvent> fieldChangeRequests)
-	{
-		final PricingConditionsRowChangeRequestBuilder builder = PricingConditionsRowChangeRequest.builder()
-				.priceChange(toPriceChangeRequest(fieldChangeRequests));
-
-		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
-		{
-			final String fieldName = fieldChangeRequest.getPath();
-			if (FIELDNAME_Discount.equals(fieldName))
-			{
-				builder.discount(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
-			}
-			else if (FIELDNAME_PaymentTerm.equals(fieldName))
-			{
-				builder.paymentTerm(Optional.ofNullable(fieldChangeRequest.getValueAsIntegerLookupValue()));
-			}
-		}
-
-		return builder.build();
-	}
-
-	private static PartialPriceChange toPriceChangeRequest(final List<JSONDocumentChangedEvent> fieldChangeRequests)
-	{
-		final PartialPriceChangeBuilder builder = PartialPriceChange.builder();
-		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
-		{
-			final String fieldName = fieldChangeRequest.getPath();
-			if (FIELDNAME_PriceType.equals(fieldName))
-			{
-				final LookupValue priceTypeLookupValue = fieldChangeRequest.getValueAsStringLookupValue();
-				final PriceOverrideType priceType = priceTypeLookupValue != null ? PriceOverrideType.ofCode(priceTypeLookupValue.getIdAsString()) : null;
-				builder.priceType(priceType);
-			}
-			else if (FIELDNAME_BasePricingSystem.equals(fieldName))
-			{
-				final LookupValue pricingSystem = fieldChangeRequest.getValueAsIntegerLookupValue();
-				final OptionalInt pricingSystemId = pricingSystem != null ? OptionalInt.of(pricingSystem.getIdAsInt()) : OptionalInt.empty();
-				builder.basePricingSystemId(pricingSystemId);
-			}
-			else if (FIELDNAME_BasePriceAddAmt.equals(fieldName))
-			{
-				builder.basePriceAddAmt(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
-			}
-			else if (FIELDNAME_FixedPrice.equals(fieldName))
-			{
-				builder.fixedPrice(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
-			}
-		}
-
-		return builder.build();
 	}
 
 	public PricingConditionsRow copyAndChangeToEditable()
@@ -381,133 +394,6 @@ public class PricingConditionsRow implements IViewRow
 		}
 
 		return toBuilder().editable(true).build();
-	}
-
-	public PricingConditionsRow copyAndChange(final PricingConditionsRowChangeRequest request)
-	{
-		assertEditable();
-
-		boolean changed = false;
-
-		final PricingConditionsBreak pricingConditionsBreak = applyTo(request, this.pricingConditionsBreak)
-				.toTemporaryPricingConditionsBreakIfPriceRelevantFieldsChanged(this.pricingConditionsBreak);
-		if (!Objects.equals(pricingConditionsBreak, this.pricingConditionsBreak))
-		{
-			changed = true;
-		}
-
-		//
-		// Copied from ID
-		PricingConditionsBreakId copiedFromPricingConditionsBreakId = this.copiedFromPricingConditionsBreakId;
-		if (!Objects.equals(request.getSourcePricingConditionsBreakId(), copiedFromPricingConditionsBreakId))
-		{
-			copiedFromPricingConditionsBreakId = request.getSourcePricingConditionsBreakId();
-			changed = true;
-		}
-
-		//
-		if (!changed)
-		{
-			return this;
-		}
-
-		return toBuilder()
-				.pricingConditionsBreak(pricingConditionsBreak)
-				.copiedFromPricingConditionsBreakId(copiedFromPricingConditionsBreakId)
-				.build();
-	}
-
-	private static PricingConditionsBreak applyTo(final PricingConditionsRowChangeRequest request, final PricingConditionsBreak pricingConditionsBreak)
-	{
-		final PricingConditionsBreakBuilder builder = pricingConditionsBreak.toBuilder();
-
-		//
-		// Discount%
-		if (request.getDiscount() != null)
-		{
-			builder.discount(request.getDiscount());
-		}
-
-		//
-		// Payment Term
-		if (request.getPaymentTerm() != null)
-		{
-			builder.paymentTermId(request.getPaymentTerm().map(LookupValue::getIdAsInt).orElse(-1));
-		}
-
-		//
-		// Price
-		if (request.getPriceChange() != null)
-		{
-			final PriceOverride price = applyPriceChangeTo(request.getPriceChange(), pricingConditionsBreak.getPriceOverride());
-			builder.priceOverride(price);
-		}
-
-		//
-		// ID
-		if (request.getPricingConditionsBreakId() != null)
-		{
-			builder.id(request.getPricingConditionsBreakId());
-		}
-
-		//
-		// DateCreated
-		if (request.getDateCreated() != null)
-		{
-			builder.dateCreated(request.getDateCreated());
-		}
-
-		return builder.build();
-	}
-
-	private static PriceOverride applyPriceChangeTo(final PriceChange priceChange, final PriceOverride price)
-	{
-		if (priceChange == null)
-		{
-			// no change
-			return price;
-		}
-		else if (priceChange instanceof CompletePriceChange)
-		{
-			return ((CompletePriceChange)priceChange).getPrice();
-		}
-		else if (priceChange instanceof PartialPriceChange)
-		{
-			return applyPartialPriceChangeTo((PartialPriceChange)priceChange, price);
-		}
-		else
-		{
-			throw new AdempiereException("Unknow price change request: " + priceChange);
-		}
-
-	}
-
-	private static PriceOverride applyPartialPriceChangeTo(final PartialPriceChange changes, final PriceOverride price)
-	{
-		final PriceOverrideType priceType = changes.getPriceType() != null ? changes.getPriceType() : price.getType();
-		if (priceType == PriceOverrideType.NONE)
-		{
-			return PriceOverride.none();
-		}
-		else if (priceType == PriceOverrideType.BASE_PRICING_SYSTEM)
-		{
-			final int basePricingSystemId = changes.getBasePricingSystemId() != null
-					? changes.getBasePricingSystemId().orElse(price.getBasePricingSystemId())
-					: price.getBasePricingSystemId();
-			final BigDecimal basePriceAddAmt = changes.getBasePriceAddAmt() != null ? changes.getBasePriceAddAmt() : price.getBasePriceAddAmt();
-			return PriceOverride.basePricingSystem(
-					basePricingSystemId,
-					basePriceAddAmt != null ? basePriceAddAmt : BigDecimal.ZERO);
-		}
-		else if (priceType == PriceOverrideType.FIXED_PRICE)
-		{
-			final BigDecimal fixedPrice = changes.getFixedPrice() != null ? changes.getFixedPrice() : price.getFixedPrice();
-			return PriceOverride.fixedPrice(fixedPrice);
-		}
-		else
-		{
-			throw new AdempiereException("Unknow price type: " + priceType);
-		}
 	}
 
 	public LookupValuesList getFieldTypeahead(final String fieldName, final String query)
@@ -525,38 +411,13 @@ public class PricingConditionsRow implements IViewRow
 		return BPartnerId.ofRepoId(bpartner.getIdAsInt());
 	}
 
+	public String getBpartnerDisplayName()
+	{
+		return bpartner.getDisplayName();
+	}
+
 	public boolean isVendor()
 	{
 		return !isCustomer();
-	}
-
-	public int getBasePriceSystemId()
-	{
-		return pricingConditionsBreak.getPriceOverride().getBasePricingSystemId();
-	}
-
-	public int getPaymentTermId()
-	{
-		return pricingConditionsBreak.getPaymentTermId();
-	}
-
-	public PriceOverride getPrice()
-	{
-		return pricingConditionsBreak.getPriceOverride();
-	}
-
-	public PricingConditionsBreakId getPricingConditionsBreakId()
-	{
-		return pricingConditionsBreak.getId();
-	}
-
-	public PricingConditionsBreakMatchCriteria getBreakMatchCriteria()
-	{
-		return pricingConditionsBreak.getMatchCriteria();
-	}
-
-	public boolean isTemporaryPricingConditions()
-	{
-		return pricingConditionsBreak.getId() == null;
 	}
 }

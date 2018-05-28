@@ -27,6 +27,7 @@ import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
 import com.google.common.base.Joiner;
@@ -432,7 +433,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		return null; // not relevant
 	}
-	
+
 	@Override
 	public void cacheInvalidate()
 	{
@@ -498,7 +499,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(AvailableToPromiseQuery.builder()
 				.productIds(productLookupValues.getKeysAsInt())
 				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
-				.date(dateOrNull)
+				.date(TimeUtil.asLocalDateTime(dateOrNull))
 				.build());
 		final List<Group> availableStockGroups = availableStock.getGroups();
 
