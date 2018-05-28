@@ -321,7 +321,7 @@ class RawList extends PureComponent {
           >
             <div
               className={classnames('input-editable input-dropdown-focused', {
-                [`text-xs-${align}`]: align,
+                [`text-${align}`]: align,
               })}
             >
               <input

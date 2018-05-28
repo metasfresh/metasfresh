@@ -8,7 +8,7 @@ class Loader extends Component {
 
   render() {
     return (
-      <div className="order-list-loader text-xs-center">
+      <div className="order-list-loader text-center">
         <ReactCSSTransitionGroup
           transitionName="rotate"
           transitionEnterTimeout={1000}

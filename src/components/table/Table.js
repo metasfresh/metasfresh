@@ -1189,7 +1189,7 @@ class Table extends Component {
           )}
           {!readonly && (
             <div className="row">
-              <div className="col-xs-12">
+              <div className="col-12">
                 <TableFilter
                   openModal={() => this.openModal(type, tabid, 'NEW')}
                   {...{

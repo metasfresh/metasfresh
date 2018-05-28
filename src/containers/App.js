@@ -31,8 +31,8 @@ const history = syncHistoryWithStore(browserHistory, store);
 const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
 export default class App extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       pluginsLoading: !!APP_PLUGINS.length,
@@ -58,8 +58,8 @@ export default class App extends Component {
         }
 
         /*
-             * Authorization error
-             */
+         * Authorization error
+         */
         if (error.response.status == 401) {
           store.dispatch(setProcessSaved());
           logoutSuccess(this.auth);
@@ -77,7 +77,6 @@ export default class App extends Component {
               }
             };
             const { data, status } = error.response;
-
             const errorTitle = errorMessenger(status);
 
             // eslint-disable-next-line no-console
@@ -154,6 +153,14 @@ export default class App extends Component {
         const plugins = res.reduce((prev, current) => prev.concat(current), []);
         store.dispatch(addPlugins(plugins));
 
+        plugins.forEach(plugin => {
+          store.attachReducers({
+            plugins: {
+              [`${plugin.reducers.name}`]: plugin.reducers.reducer,
+            },
+          });
+        });
+
         this.setState({
           pluginsLoading: false,
         });
@@ -162,17 +169,16 @@ export default class App extends Component {
   }
 
   render() {
+    if (APP_PLUGINS.length && this.state.pluginsLoading) {
+      return null;
+    }
+
     return (
       <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
         <Provider store={store}>
           <Translation>
             <NotificationHandler>
-              <CustomRouter
-                store={store}
-                history={history}
-                auth={this.auth}
-                pluginsLoading={this.state.pluginsLoading}
-              />
+              <CustomRouter store={store} history={history} auth={this.auth} />
             </NotificationHandler>
           </Translation>
         </Provider>

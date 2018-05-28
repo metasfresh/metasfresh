@@ -80,7 +80,7 @@ export const getRoutes = (store, auth, plugins) => {
 
   const getPluginsRoutes = plugins => {
     if (plugins.length) {
-      return plugins.map(plugin => {
+      const routes = plugins.map(plugin => {
         const pluginRoutes = [...plugin.routes];
         const ParentComponent = pluginRoutes[0].component;
 
@@ -98,6 +98,8 @@ export const getRoutes = (store, auth, plugins) => {
 
         return pluginRoutes[0];
       });
+
+      return routes;
     }
 
     return [];

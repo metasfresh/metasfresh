@@ -1,17 +1,28 @@
-import React from 'react';
+import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
 import { Router } from 'react-router';
-
 import { connect } from 'react-redux';
+
 import { getRoutes } from '../routes.js';
 
-const CustomRouter = ({ history, plugins, pluginsLoading, store, auth }) => {
-  const routes = getRoutes(store, auth, plugins);
+class CustomRouter extends PureComponent {
+  componentWillMount() {
+    const { plugins, store, auth } = this.props;
 
-  if (pluginsLoading) {
-    return null;
+    this.routes = getRoutes(store, auth, plugins);
   }
 
-  return <Router history={history} routes={routes} />;
+  render() {
+    const { history } = this.props;
+
+    return <Router history={history} routes={this.routes} />;
+  }
+}
+
+CustomRouter.propTypes = {
+  store: PropTypes.object.isRequired,
+  auth: PropTypes.object.isRequired,
+  plugins: PropTypes.array,
 };
 
 const mapStateToProps = state => ({
