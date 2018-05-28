@@ -13,10 +13,12 @@ spec:
     port: 5432
     protocol: TCP
     targetPort: 5432
+    nodePort: 30040
   selector:
     de.metas.deployment.type: metasfresh-postgresql
     de.metas.deployment.user: "demouser"
     de.metas.deployment.stage: "demo"
   sessionAffinity: None
+# use nodeport such that we can also use postgresql as part of the developement environment
 # see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
   type: NodePort

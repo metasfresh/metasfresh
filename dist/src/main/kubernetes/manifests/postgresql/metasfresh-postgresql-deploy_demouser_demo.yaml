@@ -39,13 +39,16 @@ spec:
           name: postgresql-data
       initContainers:
         - name: init-postgres
-          image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-10-3:gh18_dist_LATEST
+          image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-10-3:master_LATEST
           imagePullPolicy: Always
           env:
           - name: DEBUG_PRINT_BASH_CMDS
             value: "n"
-#          - name: URL_MIGRATION_SCRIPTS_PACKAGE
-#            value: "https://repo.metasfresh.com/content/repositories/mvn-gh18-dist-releases/de/metas/dist/metasfresh-dist-dist/5.54.2-89+gh18dist/metasfresh-dist-dist-5.54.2-89+gh18dist-sql-only.tar.gz"
+          - name: URL_SEED_DUMP
+            value: "https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump"
+          # apply the latest master build's migration scripts
+          - name: URL_MIGRATION_SCRIPTS_PACKAGE
+            value: "https://repo.metasfresh.com/service/local/artifact/maven/redirect?g=de.metas.dist&a=metasfresh-dist-dist&v=LATEST&r=mvn-master&p=tar.gz&c=sql-only"
           volumeMounts:
           - name: host-localtime
             mountPath: /etc/localtime
