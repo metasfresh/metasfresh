@@ -24,6 +24,7 @@
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
+			<version>2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.transaction</groupId>
@@ -113,6 +114,20 @@
 			spring-dependencies here, with our version 4.2.4 and we explicitly exclude their dependencies
 			which might otherwise be resolved to 4.1.8
 		-->
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
@@ -163,7 +178,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+ 		-->
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
@@ -171,14 +186,14 @@
 
 	</dependencies>
 
-
+	<!-- Pull in the cxf-parents as import scope to re-use the dependenecyManagement 
+		sections of those poms. Those sections define the versions of various third 
+		party deps that CXF used to build with and test with and we would like to 
+		make sure the same versions are used for the samples 
+	-->
+	<!-- 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Pull in the cxf-parents as import scope to re-use the dependenecyManagement 
-				sections of those poms. Those sections define the versions of various third 
-				party deps that CXF used to build with and test with and we would like to 
-				make sure the same versions are used for the samples 
-			-->
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-parent</artifactId>
@@ -195,5 +210,5 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
+ 	-->
 </project>
