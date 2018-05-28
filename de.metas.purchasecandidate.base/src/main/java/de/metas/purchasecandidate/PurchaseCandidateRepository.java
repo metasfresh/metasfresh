@@ -101,6 +101,11 @@ public class PurchaseCandidateRepository
 				.map(this::toPurchaseCandidate);
 	}
 
+	public List<PurchaseCandidate> getAllByIds(final Collection<Integer> purchaseCandidateIds)
+	{
+		return streamAllByIds(purchaseCandidateIds).collect(ImmutableList.toImmutableList());
+	}
+
 	public List<Integer> retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(final int salesOrderId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
