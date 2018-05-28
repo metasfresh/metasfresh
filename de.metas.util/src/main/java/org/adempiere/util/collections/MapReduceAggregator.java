@@ -1,5 +1,7 @@
 package org.adempiere.util.collections;
 
+import java.util.ArrayList;
+
 /*
  * #%L
  * de.metas.util
@@ -24,12 +26,15 @@ package org.adempiere.util.collections;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.apache.commons.collections4.map.LRUMap;
+
+import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -62,6 +67,8 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	private int _countGroups = 0;
 	/** How many items were added */
 	private int _countItems = 0;
+
+	private List<GroupType> closedGroupsCollector = null;
 
 	public MapReduceAggregator()
 	{
@@ -131,6 +138,21 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		return this._itemAggregationKeyBuilder;
 	}
 
+	public void collectClosedGroups()
+	{
+		assertConfigurable();
+		this.closedGroupsCollector = new ArrayList<>();
+	}
+
+	public List<GroupType> getClosedGroups()
+	{
+		if (closedGroupsCollector == null)
+		{
+			throw new IllegalStateException("Not collecting groups");
+		}
+		return ImmutableList.copyOf(closedGroupsCollector);
+	}
+
 	/**
 	 * Sets how many groups you want to keep in memory. If the value is zero then all groups will be kept in memory.
 	 *
@@ -165,7 +187,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 					final GroupType group = entry.getValue();
 					if (group != null)
 					{
-						closeGroup(group);
+						closeGroupAndCollect(group);
 					}
 					return true; // accept to remove it
 				}
@@ -255,6 +277,15 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		return group;
 	}
 
+	private final void closeGroupAndCollect(final GroupType group)
+	{
+		closeGroup(group);
+		if (closedGroupsCollector != null)
+		{
+			closedGroupsCollector.add(group);
+		}
+	}
+
 	/**
 	 * Close all groups from buffer. As a result, after this call the groups buffer will be empty.
 	 */
@@ -294,7 +325,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 				continue;
 			}
 
-			closeGroup(group);
+			closeGroupAndCollect(group);
 			groups.remove();
 		}
 	}
