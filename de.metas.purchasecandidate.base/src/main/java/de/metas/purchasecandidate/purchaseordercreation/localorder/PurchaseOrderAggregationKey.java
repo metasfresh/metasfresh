@@ -35,8 +35,7 @@ import lombok.Value;
 @Builder
 /* package */ final class PurchaseOrderAggregationKey
 {
-	public static PurchaseOrderAggregationKey formPurchaseOrderItem(
-			@NonNull final PurchaseOrderItem purchaseOrderItem)
+	public static PurchaseOrderAggregationKey fromPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseOrderItem.getOrgId())
