@@ -16,9 +16,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
-import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
@@ -86,9 +84,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	private final PurchaseCandidateRepository purchaseCandidatesRepo;
 	private final PurchaseRowFactory purchaseRowFactory;
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
-
-	private final CCache<ArrayKey, ViewLayout> viewLayoutCache = //
-			CCache.newCache(SalesOrder2PurchaseViewFactory.class + "#ViewLayout", 1, 0);
+	private final PurchaseViewLayoutFactory viewLayoutFactory;
 
 	//
 	private final Cache<ViewId, PurchaseView> views = CacheBuilder.newBuilder()
@@ -104,6 +100,14 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
 		this.purchaseRowFactory = purchaseRowFactory;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
+
+		final IADProcessDAO adProcessRepo = Services.get(IADProcessDAO.class);
+		final ITranslatableString caption = adProcessRepo
+				.retrieveProcessNameByClassIfUnique(WEBUI_SalesOrder_PurchaseView_Launcher.class)
+				.orElse(null);
+		this.viewLayoutFactory = PurchaseViewLayoutFactory.builder()
+				.caption(caption)
+				.build();
 	}
 
 	@Override
@@ -118,28 +122,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 			@NonNull final JSONViewDataType viewDataType,
 			@Nullable final ViewProfileId profileId)
 	{
-		final ArrayKey key = ArrayKey.of(windowId, viewDataType);
-		return viewLayoutCache.getOrLoad(key, () -> createViewLayout(windowId, viewDataType));
-	}
-
-	private ViewLayout createViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
-	{
-		final ITranslatableString caption = Services.get(IADProcessDAO.class)
-				.retrieveProcessNameByClassIfUnique(WEBUI_SalesOrder_PurchaseView_Launcher.class)
-				.orElse(null);
-
-		return ViewLayout.builder()
-				.setWindowId(windowId)
-				.setCaption(caption)
-				//
-				.setHasAttributesSupport(false)
-				.setHasTreeSupport(true)
-				.setTreeCollapsible(true)
-				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_AllCollapsed)
-				//
-				.addElementsFromViewRowClass(PurchaseRow.class, viewDataType)
-				//
-				.build();
+		return viewLayoutFactory.getViewLayout(windowId, viewDataType);
 	}
 
 	@Override
