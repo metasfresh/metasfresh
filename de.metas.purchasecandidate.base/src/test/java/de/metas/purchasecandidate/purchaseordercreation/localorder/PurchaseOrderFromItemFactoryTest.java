@@ -150,7 +150,7 @@ public class PurchaseOrderFromItemFactoryTest
 		Services.get(ITrxManager.class).run(() -> {
 
 			final PurchaseOrderFromItemFactory purchaseOrderFromItemFactory = PurchaseOrderFromItemFactory.builder()
-					.orderAggregationKey(PurchaseOrderAggregationKey.formPurchaseOrderItem(pruchaseOrderItem))
+					.orderAggregationKey(PurchaseOrderAggregationKey.fromPurchaseOrderItem(pruchaseOrderItem))
 					.userNotifications(orderUserNotifications)
 					.build();
 
