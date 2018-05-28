@@ -10,6 +10,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -206,7 +207,9 @@ class InvoiceCandidateFactory
 			@NonNull final AssignableInvoiceCandidate invoiceCandidate,
 			@NonNull final FlatrateTermId contractId)
 	{
-		final I_C_Invoice_Candidate assignableInvoiceCandidateRecord = load(invoiceCandidate.getId().getRepoId(), I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate assignableInvoiceCandidateRecord = load(
+				invoiceCandidate.getId().getRepoId(),
+				I_C_Invoice_Candidate.class);
 
 		final I_C_Invoice_Candidate refundInvoiceCandidateRecord = Services.get(IInvoiceCandBL.class)
 				.splitCandidate(assignableInvoiceCandidateRecord);
@@ -230,13 +233,19 @@ class InvoiceCandidateFactory
 
 		final RefundConfig refundConfig = retrieveConfig(refundInvoiceCandidateRecord);
 
-		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(refundConfig.getInvoiceScheduleId().getRepoId());
+		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(refundConfig.getInvoiceSchedule().getId().getRepoId());
 		refundInvoiceCandidateRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
 		refundInvoiceCandidateRecord.setInvoiceRule_Override(null);
 		refundInvoiceCandidateRecord.setDateToInvoice_Override(null);
 
 		final boolean soTrx = assignableInvoiceCandidateRecord.isSOTrx();
 		refundInvoiceCandidateRecord.setIsSOTrx(soTrx);
+
+		final LocalDate dateToInvoice = refundConfig
+				.getInvoiceSchedule()
+				.calculateNextDateToInvoice(invoiceCandidate.getInvoiceableFrom());
+		refundInvoiceCandidateRecord.setDateOrdered(TimeUtil.asTimestamp(dateToInvoice));
+		refundInvoiceCandidateRecord.setDeliveryDate(TimeUtil.asTimestamp(dateToInvoice));
 
 		try
 		{
@@ -282,7 +291,6 @@ class InvoiceCandidateFactory
 		if (soTrx)
 		{
 			docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo);
-
 		}
 		else
 		{

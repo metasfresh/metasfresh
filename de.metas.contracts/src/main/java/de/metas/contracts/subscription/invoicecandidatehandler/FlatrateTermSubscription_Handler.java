@@ -23,20 +23,26 @@ package de.metas.contracts.subscription.invoicecandidatehandler;
  */
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.tax.api.ITaxBL;
@@ -106,7 +112,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 	}
 
 	@Override
-	public BigDecimal calculateQtyQtyOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	public BigDecimal calculateQtyOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(invoiceCandidateRecord);
 		return term.getPlannedQtyPerUnit(); // Set the quantity from the term.
@@ -116,5 +122,61 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 	public Consumer<I_C_Invoice_Candidate> getSetInvoiceScheduleImplementation(@NonNull final Consumer<I_C_Invoice_Candidate> defaultImplementation)
 	{
 		return defaultImplementation;
+	}
+
+	@Override
+	public Timestamp calculateDateOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	{
+		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(invoiceCandidateRecord);
+
+		final Timestamp dateOrdered;
+		final boolean termHasAPredecessor = Services.get(IContractsDAO.class).termHasAPredecessor(term);
+		if (!termHasAPredecessor)
+		{
+			dateOrdered = term.getStartDate();
+		}
+		// If the term was extended (meaning that there is a predecessor term),
+		// C_Invoice_Candidate.DateOrdered should rather be the StartDate minus TermOfNoticeDuration/TermOfNoticeUnit
+		else
+		{
+			final Timestamp firstDayOfNewTerm = getGetExtentionDateOfNewTerm(term);
+			dateOrdered = firstDayOfNewTerm;
+		}
+		return dateOrdered;
+	}
+
+	/**
+	 * For the given <code>term</code> and its <code>C_Flatrate_Transition</code> record, this method returns the term's start date minus the period specified by <code>TermOfNoticeDuration</code> and
+	 * <code>TermOfNoticeUnit</code>.
+	 */
+	private static Timestamp getGetExtentionDateOfNewTerm(@NonNull final I_C_Flatrate_Term term)
+	{
+		final Timestamp startDateOfTerm = term.getStartDate();
+
+		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
+		final I_C_Flatrate_Transition transition = conditions.getC_Flatrate_Transition();
+		final String termOfNoticeUnit = transition.getTermOfNoticeUnit();
+		final int termOfNotice = transition.getTermOfNotice();
+
+		final Timestamp minimumDateToStart;
+		if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE.equals(termOfNoticeUnit))
+		{
+			minimumDateToStart = TimeUtil.addMonths(startDateOfTerm, termOfNotice * -1);
+		}
+		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_WocheN.equals(termOfNoticeUnit))
+		{
+			minimumDateToStart = TimeUtil.addWeeks(startDateOfTerm, termOfNotice * -1);
+		}
+		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_TagE.equals(termOfNoticeUnit))
+		{
+			minimumDateToStart = TimeUtil.addDays(startDateOfTerm, termOfNotice * -1);
+		}
+		else
+		{
+			Check.assume(false, "TermOfNoticeDuration " + transition.getTermOfNoticeUnit() + " doesn't exist");
+			minimumDateToStart = null; // code won't be reached
+		}
+
+		return minimumDateToStart;
 	}
 }

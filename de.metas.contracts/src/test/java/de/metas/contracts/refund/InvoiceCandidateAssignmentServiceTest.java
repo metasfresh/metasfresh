@@ -9,6 +9,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyRepository;
@@ -53,7 +54,7 @@ public class InvoiceCandidateAssignmentServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository();
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 
 		invoiceCandidateRepository = new InvoiceCandidateRepository(
 				new RefundContractRepository(refundConfigRepository),

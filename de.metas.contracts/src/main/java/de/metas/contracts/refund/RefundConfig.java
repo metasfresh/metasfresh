@@ -3,7 +3,7 @@ package de.metas.contracts.refund;
 import javax.annotation.Nullable;
 
 import de.metas.contracts.ConditionsId;
-import de.metas.invoice.InvoiceScheduleId;
+import de.metas.invoice.InvoiceSchedule;
 import de.metas.lang.Percent;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -52,7 +52,7 @@ public class RefundConfig
 	ProductId productId;
 
 	@NonNull
-	InvoiceScheduleId invoiceScheduleId;
+	InvoiceSchedule invoiceSchedule;
 
 	@NonNull
 	ConditionsId conditionsId;
