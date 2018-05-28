@@ -67,6 +67,18 @@ public class Percent
 	}
 
 	/**
+	 * Convenience method, similar to {@link #of(BigDecimal, BigDecimal, int)}, but the {@code numerator} is {@code compareValue - baseValue}.
+	 * <p>
+	 * Examples:
+	 * <li>{@code Percent.ofDelta(BigDecimal.ONE, new BigDecimal("1.2"))} returns an instance of "20%".
+	 * <li>{@code Percent.ofDelta(BigDecimal.ONE, new BigDecimal("0.75"))} returns an instance of "-25%".
+	 **/
+	public static Percent ofDelta(@NonNull final BigDecimal baseValue, @NonNull final BigDecimal compareValue)
+	{
+		return of(compareValue.subtract(baseValue), baseValue, 2);
+	}
+
+	/**
 	 * Like {@link #of(BigDecimal, BigDecimal, int)} with a scale of 2.
 	 */
 	public static Percent of(@NonNull final BigDecimal numerator, @NonNull final BigDecimal denominator)
