@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 
 import org.junit.Test;
 
+import de.metas.lang.Percent;
+
 /*
  * #%L
  * de.metas.business
@@ -30,16 +32,34 @@ import org.junit.Test;
 
 public class MoneyTest
 {
+	private final static Currency CURRENCY = Currency
+			.builder()
+			.precision(2)
+			.id(CurrencyId.ofRepoId(20))
+			.build();
+
 	@Test
 	public void equals()
 	{
-		final Currency currency = Currency
-				.builder()
-				.precision(2)
-				.id(CurrencyId.ofRepoId(20))
-				.build();
+		assertThat(Money.of(new BigDecimal("4.00"), CURRENCY))
+				.isEqualTo(Money.of(new BigDecimal("4"), CURRENCY));
+	}
 
-		assertThat(Money.of(new BigDecimal("4.00"), currency))
-				.isEqualTo(Money.of(new BigDecimal("4"), currency));
+	@Test
+	public void percentage()
+	{
+		final Money result = Money.of(new BigDecimal("200.00"), CURRENCY).percentage(Percent.of(80));
+		assertThat(result.getCurrency()).isEqualTo(CURRENCY);
+		assertThat(result.getValue()).isEqualByComparingTo("160");
+	}
+
+	@Test
+	public void percentage_zero()
+	{
+		final Money result = Money.of(new BigDecimal("200.00"), CURRENCY).percentage(Percent.of(0));
+
+		assertThat(result.getCurrency()).isEqualTo(CURRENCY);
+		assertThat(result.getValue()).isEqualByComparingTo("0");
+		assertThat(result.isZero()).isTrue();
 	}
 }

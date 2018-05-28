@@ -24,8 +24,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
@@ -71,7 +73,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final I_C_Order salesOrder = newInstance(I_C_Order.class);
 		save(salesOrder);
 
-		// neede to construct the user notification message
+		// needed to construct the user notification message
 		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
 		vendor.setValue("Vendor");
 		vendor.setName("Vendor");
@@ -90,12 +92,13 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.orgId(10)
 				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
-				.productId(productId.getRepoId())
+				.productId(productId)
 				.qtyToPurchase(TEN)
 				.salesOrderId(salesOrder.getC_Order_ID())
-				.salesOrderLineId(50)
+				.salesOrderLineId(OrderLineId.ofRepoId(50))
 				.warehouseId(60)
 				.uomId(70)
+				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();
 
 		final PurchaseOrderFromItemsAggregator aggregator = PurchaseOrderFromItemsAggregator.newInstance();

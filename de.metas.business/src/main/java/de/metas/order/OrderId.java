@@ -2,6 +2,8 @@ package de.metas.order;
 
 import org.adempiere.util.Check;
 
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.business
@@ -23,7 +25,7 @@ import org.adempiere.util.Check;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Value
 public class OrderId
 {
 	int repoId;

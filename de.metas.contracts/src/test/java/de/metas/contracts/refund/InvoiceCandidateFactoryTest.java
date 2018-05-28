@@ -168,7 +168,7 @@ public class InvoiceCandidateFactoryTest
 
 		final RefundConfig refundConfig = cast.getRefundContract().getRefundConfig();
 		assertThat(refundConfig.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
-		assertThat(refundConfig.getPercent()).isEqualByComparingTo(THREE);
+		assertThat(refundConfig.getPercent().getValueAsBigDecimal()).isEqualByComparingTo(THREE);
 	}
 
 	@Test

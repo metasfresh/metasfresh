@@ -28,6 +28,7 @@ import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.Percent;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -131,12 +132,12 @@ public class RefundTestTools
 		final Money money = Money.of(moneyValue, currency);
 
 		final RefundConfig refundConfig = RefundConfig
-				.builder()
+						.builder()
 				.productId(PRODUCT_ID)
-				.percent(TWENTY)
+						.percent(Percent.of(TWENTY))
 				.conditionsId(ConditionsId.ofRepoId(contractRecord.getC_Flatrate_Conditions_ID()))
 				.invoiceScheduleId(INVOICE_SCHEDULE_ID)
-				.refundInvoiceType(RefundInvoiceType.CREDITMEMO)
+						.refundInvoiceType(RefundInvoiceType.CREDITMEMO)
 				.build();
 
 		final RefundContract refundContract = RefundContract.builder()
@@ -216,7 +217,7 @@ public class RefundTestTools
 				.toBuilder()
 				.assignmentToRefundCandidate(assignementToRefundCandidate)
 				.build();
-	}
+}
 
 	public I_C_Invoice_Candidate createAssignableInvoiceCandidateRecord()
 	{

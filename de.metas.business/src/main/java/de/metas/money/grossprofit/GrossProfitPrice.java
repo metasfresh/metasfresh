@@ -2,6 +2,8 @@ package de.metas.money.grossprofit;
 
 import java.util.List;
 
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+
 import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,14 +44,20 @@ public class GrossProfitPrice
 	@Singular
 	List<GrossProfitComponent> profitCompponents;
 
-	public Money computeProfitPrice()
+	ExtendedMemorizingSupplier<Money> value = ExtendedMemorizingSupplier.of(() -> computeProfitPrice0());
+
+	public Money compute()
+	{
+		return value.get();
+	}
+
+	private Money computeProfitPrice0()
 	{
 		Money intermediateResult = basePrice;
 		for (final GrossProfitComponent profitComponent : profitCompponents)
 		{
 			intermediateResult = profitComponent.applyToInput(intermediateResult);
 		}
-
 		return intermediateResult;
 	}
 }

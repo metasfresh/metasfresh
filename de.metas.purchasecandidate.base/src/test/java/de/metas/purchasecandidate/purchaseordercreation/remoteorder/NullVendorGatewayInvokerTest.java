@@ -17,8 +17,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
@@ -66,10 +68,11 @@ public class NullVendorGatewayInvokerTest
 				.orgId(10)
 				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
-				.productId(productId.getRepoId())
+				.productId(productId)
 				.qtyToPurchase(TEN)
 				.salesOrderId(40)
-				.salesOrderLineId(50)
+				.salesOrderLineId(OrderLineId.ofRepoId(50))
+				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.warehouseId(60)
 				.uomId(70)
 				.build();

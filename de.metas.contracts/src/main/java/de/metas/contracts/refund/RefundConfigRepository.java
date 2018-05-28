@@ -26,6 +26,7 @@ import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.invoice.InvoiceScheduleId;
+import de.metas.lang.Percent;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -162,7 +163,8 @@ public class RefundConfigRepository
 				.conditionsId(ConditionsId.ofRepoId(record.getC_Flatrate_Conditions_ID()))
 				.refundInvoiceType(refundInvoiceType)
 				.invoiceScheduleId(InvoiceScheduleId.ofRepoId(record.getC_InvoiceSchedule_ID()))
-				.percent(record.getPercent());
+				.percent(Percent.of(record.getPercent()));
+
 		if (record.getM_Product_ID() > 0)
 		{
 			builder.productId(ProductId.ofRepoId(record.getM_Product_ID()));
