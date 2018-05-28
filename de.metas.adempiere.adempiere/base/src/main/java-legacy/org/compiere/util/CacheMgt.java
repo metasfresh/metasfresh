@@ -37,6 +37,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.WeakList;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -371,7 +372,12 @@ public final class CacheMgt
 	public int reset(final String tableName, final int recordId)
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, recordId);
-		return reset(request, ResetMode.LOCAL_AND_BROADCAST);
+
+		final ResetMode mode = Adempiere.isUnitTestMode()
+				? ResetMode.LOCAL
+				: ResetMode.LOCAL_AND_BROADCAST;
+
+		return reset(request, mode);
 	}
 
 	/**
