@@ -28,6 +28,10 @@ import java.util.Arrays;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+
 /**
  * Exception thrown when a value could not be retrieved from cache because of inconsistencies or because some parameters were not valid.
  * 
@@ -49,41 +53,41 @@ public class CacheGetException extends AdempiereException
 
 	public CacheGetException(final String message)
 	{
-		super(message);
-		setParseTranslation(false); // don't try to translate the build message because it's not translatable
+		// NOTE: don't try to translate the build message because it's not translatable
+		super(ImmutableTranslatableString.constant(message));
 	}
 
 	@Override
-	protected String buildMessage()
+	protected ITranslatableString buildMessage()
 	{
-		final StringBuilder message = new StringBuilder();
+		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
 		message.append(super.buildMessage());
 
 		if (targetObject != null)
 		{
-			message.append("\n Target object: ").append(targetObject);
+			message.append("\n Target object: ").append(targetObject.toString());
 		}
 
 		if (methodArgs != null)
 		{
-			message.append("\n Method Arguments: ").append(Arrays.asList(methodArgs));
+			message.append("\n Method Arguments: ").append(Arrays.asList(methodArgs).toString());
 		}
 
 		if (parameterSet)
 		{
-			message.append("\n Invalid parameter at index ").append(parameterIndex).append(": ").append(parameter);
+			message.append("\n Invalid parameter at index ").append(parameterIndex).append(": ").append(String.valueOf(parameter));
 			if (parameter != null)
 			{
-				message.append(" (").append(parameter.getClass()).append(")");
+				message.append(" (").append(parameter.getClass().toString()).append(")");
 			}
 		}
 
 		if (annotationType != null)
 		{
-			message.append("\n Annotation: ").append(annotationType);
+			message.append("\n Annotation: ").append(annotationType.toString());
 		}
 
-		return message.toString();
+		return message.build();
 	}
 
 	public CacheGetException setTargetObject(final Object targetObject)

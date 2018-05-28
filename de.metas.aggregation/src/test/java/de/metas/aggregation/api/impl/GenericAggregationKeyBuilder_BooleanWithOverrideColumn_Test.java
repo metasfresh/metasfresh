@@ -27,10 +27,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.junit.Assert;

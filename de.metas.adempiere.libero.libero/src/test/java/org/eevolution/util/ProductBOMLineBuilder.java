@@ -25,9 +25,9 @@ package org.eevolution.util;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;

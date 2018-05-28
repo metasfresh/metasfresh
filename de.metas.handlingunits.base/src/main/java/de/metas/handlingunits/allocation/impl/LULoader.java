@@ -34,6 +34,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 
@@ -47,7 +48,7 @@ public class LULoader
 {
 	private final IHUContext huContext;
 
-	private final List<LULoaderInstance> luInstances = new ArrayList<LULoaderInstance>();
+	private final List<LULoaderInstance> luInstances = new ArrayList<>();
 
 	public LULoader(final IHUContext huContext)
 	{
@@ -107,7 +108,7 @@ public class LULoader
 		final int bpartnerLocationId = tuHU.getC_BPartner_Location_ID();
 		final I_M_Locator locator = tuHU.getM_Locator();
 		final String huStatus = tuHU.getHUStatus();
-		final I_M_HU_PI_Version tuPIVersion = tuHU.getM_HU_PI_Version();
+		final I_M_HU_PI_Version tuPIVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(tuHU);
 		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartner, bpartnerLocationId, locator, huStatus, tuPIVersion);
 
 		luInstances.add(luInstance);
@@ -126,7 +127,7 @@ public class LULoader
 			return Collections.emptyList();
 		}
 
-		final List<I_M_HU> luHUs = new ArrayList<I_M_HU>(luInstances.size());
+		final List<I_M_HU> luHUs = new ArrayList<>(luInstances.size());
 		for (final LULoaderInstance luInstance : luInstances)
 		{
 			final I_M_HU luHU = luInstance.getLU_HU();

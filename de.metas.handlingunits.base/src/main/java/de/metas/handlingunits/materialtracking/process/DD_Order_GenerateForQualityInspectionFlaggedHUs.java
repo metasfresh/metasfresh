@@ -6,9 +6,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
 
+import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer;
@@ -53,6 +58,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 	// services
 	private final transient IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	//
 	// Parameters
@@ -92,9 +98,18 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
+		//
+		// Organization BPartner & Location
+		final I_AD_Org org = warehouseTo.getAD_Org();
+		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
+		Check.assumeNotNull(orgBPartner, "Org BPartner shall exist for {}", org);
+		final org.compiere.model.I_C_BPartner_Location orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(Env.getCtx(), org.getAD_Org_ID(), ITrx.TRXNAME_None);
+
 		HUs2DDOrderProducer.newProducer()
 				.setContext(getCtx())
 				.setM_Warehouse_To(warehouseTo)
+				.setBpartnerId(orgBPartner.getC_BPartner_ID())
+				.setBpartnerLocationId(orgBPLocation.getC_BPartner_Location_ID())
 				.setHUs(retriveHUs())
 				.process();
 		return MSG_OK;
@@ -111,18 +126,8 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 				.addFilter(huDDOrderDAO.getHUsNotAlreadyScheduledToMoveFilter())
 				//
 				.createQuery()
-
-				.list(I_M_HU.class)
-				.stream()
-				.map(hu -> createHUToDistribute(hu))
+				.stream(I_M_HU.class)
+				.map(HUToDistribute::ofHU)
 				.iterator();
-	}
-
-	private HUToDistribute createHUToDistribute(final I_M_HU hu)
-	{
-		return HUToDistribute
-				.builder()
-				.hu(hu)
-				.build();
 	}
 }

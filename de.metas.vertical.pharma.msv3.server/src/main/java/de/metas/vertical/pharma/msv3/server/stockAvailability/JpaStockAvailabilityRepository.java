@@ -28,5 +28,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface JpaStockAvailabilityRepository extends JpaRepository<JpaStockAvailability, Long>
 {
-	JpaStockAvailability findByPzn(final long pzn);
+	JpaStockAvailability findByPzn(long pzn);
+
+	long deleteInBatchBySyncTokenNot(String syncToken);
+	
+	long deleteInBatchByPzn(long pzn);
 }

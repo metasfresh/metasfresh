@@ -33,7 +33,8 @@ import javax.swing.JButton;
 
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.AdempierePLAF;
-import org.compiere.plaf.CompiereColor;
+
+import de.metas.util.MFColor;
 
 /**
  * Adempiere Button supporting colored Background
@@ -111,7 +112,7 @@ public class CButton extends JButton implements CEditor {
 		if (bg.equals(getBackground()))
 			return;
 		super.setBackground(bg);
-		setBackgroundColor(new CompiereColor(bg));
+		setBackgroundColor(MFColor.ofFlatColor(bg));
 		this.repaint();
 	} // setBackground
 
@@ -138,9 +139,9 @@ public class CButton extends JButton implements CEditor {
 	 * @param bg
 	 *            AdempiereColor for Background, if null set standard background
 	 */
-	public void setBackgroundColor(CompiereColor bg) {
+	public void setBackgroundColor(MFColor bg) {
 		if (bg == null)
-			bg = new CompiereColor(AdempierePLAF.getFormBackground());
+			bg = MFColor.ofFlatColor(AdempierePLAF.getFormBackground());
 		putClientProperty(AdempiereLookAndFeel.BACKGROUND, bg);
 		super.setBackground(bg.getFlatColor());
 		this.repaint();
@@ -151,9 +152,9 @@ public class CButton extends JButton implements CEditor {
 	 * 
 	 * @return Color for Background
 	 */
-	public CompiereColor getBackgroundColor() {
+	public MFColor getBackgroundColor() {
 		try {
-			return (CompiereColor) getClientProperty(AdempiereLookAndFeel.BACKGROUND);
+			return (MFColor) getClientProperty(AdempiereLookAndFeel.BACKGROUND);
 		} catch (Exception e) {
 			System.err.println("CButton - ClientProperty: " + e.getMessage());
 		}

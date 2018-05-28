@@ -27,9 +27,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.apache.commons.collections4.IteratorUtils;
 import org.junit.Assert;
 
@@ -80,7 +80,9 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 
 		if (qtyPicked != null)
 		{
-			final BigDecimal qtyPickedActual = shipmentScheduleAllocBL.getQtyPicked(shipmentSchedule);
+			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+			final BigDecimal qtyPickedActual = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule);
+
 			assertEquals(prefix + "QtyPicked", qtyPicked, qtyPickedActual);
 		}
 
@@ -126,7 +128,7 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 	{
 		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
 
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = Services.get(IShipmentScheduleAllocDAO.class).retrievePickedNotDeliveredRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
 
 		return assertExpected(message, qtyPickedRecords);
 	}

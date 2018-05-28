@@ -31,7 +31,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.IProcessor;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -45,11 +44,13 @@ import de.metas.invoicecandidate.api.IAggregationDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_HeaderAggregation;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import lombok.NonNull;
 
 public class AggregationBL implements IAggregationBL
 {
@@ -217,7 +218,7 @@ public class AggregationBL implements IAggregationBL
 	}
 
 	@Override
-	public void setHeaderAggregationKey(final I_C_Invoice_Candidate ic)
+	public void setHeaderAggregationKey(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// If the invoice candidate is flagged as "IsToClear", we shall reset the header aggregation key and invoicing group ASAP (08637)
 		if (ic.isToClear())

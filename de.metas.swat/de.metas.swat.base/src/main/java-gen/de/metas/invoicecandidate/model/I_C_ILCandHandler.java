@@ -224,31 +224,6 @@ public interface I_C_ILCandHandler
     public static final String COLUMNNAME_EntityType = "EntityType";
 
 	/**
-	 * Set Betreuer ist Benutzer-Editierbar.
-	 * Sagt aus, ob der Berteuer durch den Benutzer eingestelltwerden soll oder nicht
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIs_AD_User_InCharge_UI_Setting (boolean Is_AD_User_InCharge_UI_Setting);
-
-	/**
-	 * Get Betreuer ist Benutzer-Editierbar.
-	 * Sagt aus, ob der Berteuer durch den Benutzer eingestelltwerden soll oder nicht
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean is_AD_User_InCharge_UI_Setting();
-
-    /** Column definition for Is_AD_User_InCharge_UI_Setting */
-    public static final org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object> COLUMN_Is_AD_User_InCharge_UI_Setting = new org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object>(I_C_ILCandHandler.class, "Is_AD_User_InCharge_UI_Setting", null);
-    /** Column name Is_AD_User_InCharge_UI_Setting */
-    public static final String COLUMNNAME_Is_AD_User_InCharge_UI_Setting = "Is_AD_User_InCharge_UI_Setting";
-
-	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -272,6 +247,31 @@ public interface I_C_ILCandHandler
     public static final org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object>(I_C_ILCandHandler.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Betreuer ist Benutzer-Editierbar.
+	 * Sagt aus, ob der Berteuer durch den Benutzer eingestelltwerden soll oder nicht
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIs_AD_User_InCharge_UI_Setting (boolean Is_AD_User_InCharge_UI_Setting);
+
+	/**
+	 * Get Betreuer ist Benutzer-Editierbar.
+	 * Sagt aus, ob der Berteuer durch den Benutzer eingestelltwerden soll oder nicht
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean is_AD_User_InCharge_UI_Setting();
+
+    /** Column definition for Is_AD_User_InCharge_UI_Setting */
+    public static final org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object> COLUMN_Is_AD_User_InCharge_UI_Setting = new org.adempiere.model.ModelColumn<I_C_ILCandHandler, Object>(I_C_ILCandHandler.class, "Is_AD_User_InCharge_UI_Setting", null);
+    /** Column name Is_AD_User_InCharge_UI_Setting */
+    public static final String COLUMNNAME_Is_AD_User_InCharge_UI_Setting = "Is_AD_User_InCharge_UI_Setting";
 
 	/**
 	 * Set Name.

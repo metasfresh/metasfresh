@@ -1,14 +1,12 @@
 package de.metas.contracts.spi;
 
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
@@ -17,7 +15,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /*
  * #%L
@@ -43,6 +40,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * This one is invoked by {@link IFlatrateTermEventService} if no other listener was registered for a particular conditions type.
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -74,10 +72,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 			// However, we want to give a user-friendly explanation to the user.
 			if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(entry.getDocStatus()))
 			{
-				final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-
 				throw new AdempiereException(
-						Env.getLanguage(ctx).getAD_Language(),
 						MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P,
 						new Object[] { entry.getC_UOM().getName(), entry.getC_Period().getName() });
 			}
@@ -102,22 +97,14 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	}
 
 	/**
-	 * When a term is reactivated, it's invoice candidate needs to be deleted. Note that we assume the deletion will fail with a meaningful error message if the invoice candidate has already been
-	 * invoiced.
-	 *
-	 * @param term
+	 * When a term is reactivated, its invoice candidate needs to be deleted.
+	 * Note that we assume the deletion will fail with a meaningful error message if the invoice candidate has already been invoiced.
 	 */
 	public void deleteInvoiceCandidates(final I_C_Flatrate_Term term)
 	{
-		//
-		// Delete invoice candidates
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-		for (final I_C_Invoice_Candidate icToDelete : invoiceCandDB.retrieveReferencing(term))
-		{
-			InterfaceWrapperHelper.delete(icToDelete);
-		}
+		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(term);
 	}
-	
+
 	/**
 	 * Does nothing; Feel free to override.
 	 */
@@ -126,7 +113,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	{
 		// nothing
 	}
-	
+
 	/**
 	 * Does nothing; Feel free to override.
 	 */
@@ -140,7 +127,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	 * Does nothing; Feel free to override.
 	 */
 	@Override
-	public void beforeSaveOfNextTermForPredecessor(I_C_Flatrate_Term next,  I_C_Flatrate_Term predecessor)
+	public void beforeSaveOfNextTermForPredecessor(I_C_Flatrate_Term next, I_C_Flatrate_Term predecessor)
 	{
 		// nothing
 	}

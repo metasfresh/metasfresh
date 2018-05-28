@@ -1,42 +1,34 @@
 package de.metas.handlingunits.ddorder.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
-import org.compiere.util.TrxRunnableAdapter;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_OrderLine;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 
 import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
+import de.metas.handlingunits.ddorder.api.QuarantineInOutLine;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
+import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.i18n.IMsgBL;
-import de.metas.product.model.I_M_Product_LotNumber_Lock;
-import lombok.NonNull;
+import lombok.Builder;
 import lombok.Value;
 
 public class HUDDOrderBL implements IHUDDOrderBL
 {
-	private static final String ERR_M_Warehouse_NoQuarantineWarehouse = "M_Warehouse_NoQuarantineWarehouse";
-
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private static final String MSG_M_Warehouse_NoQuarantineWarehouse = "M_Warehouse_NoQuarantineWarehouse";
 
 	@Override
 	public DDOrderLinesAllocator createMovements()
@@ -72,13 +64,9 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	public void createQuarantineDDOrderForReceiptLines(final List<QuarantineInOutLine> receiptLines)
 	{
 
-		final List<HUToDistribute> husToQuarantine = new ArrayList<>();
-
-		receiptLines.stream()
-				.map(receiptLine -> createHUsToQuarantine(receiptLine))
-				.collect(ImmutableList.toImmutableList())
-				.stream()
-				.forEach(hus -> husToQuarantine.addAll(hus));
+		final List<HUToDistribute> husToQuarantine = receiptLines.stream()
+				.flatMap(receiptLine -> createHUsToQuarantine(receiptLine).stream())
+				.collect(ImmutableList.toImmutableList());
 
 		createQuarantineDDOrderForHUs(husToQuarantine);
 
@@ -86,11 +74,15 @@ public class HUDDOrderBL implements IHUDDOrderBL
 
 	private List<HUToDistribute> createHUsToQuarantine(final QuarantineInOutLine receiptLine)
 	{
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-
-		return huAssignmentDAO.retrieveTopLevelHUsForModel(receiptLine.getInOutLine())
+		final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+		return huInOutDAO.retrieveHUsForReceiptLineId(receiptLine.getReceiptLineId())
 				.stream()
-				.map(hu -> HUToDistribute.of(hu, receiptLine.getLockLotNo()))
+				.map(hu -> HUToDistribute.builder()
+						.hu(hu)
+						.lockLotNo(receiptLine.getLockLotNo())
+						.bpartnerId(receiptLine.getBpartnerId())
+						.bpartnerLocationId(receiptLine.getBpartnerLocationId())
+						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -98,45 +90,43 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	public void createQuarantineDDOrderForHUs(final List<HUToDistribute> husToDistribute)
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		final I_M_Warehouse quarantineWarehouse = warehouseDAO.retrieveQuarantineWarehouseOrNull();
-
 		if (quarantineWarehouse == null)
 		{
-			throw new AdempiereException(msgBL.getMsg(Env.getCtx(), ERR_M_Warehouse_NoQuarantineWarehouse));
+			throw new AdempiereException("@" + MSG_M_Warehouse_NoQuarantineWarehouse + "@");
 		}
 
-		// Make sure this runs out of trx because there is a safety check in HUs2DDOrderProducer.process() about it being so.
-		// Please, check de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.process() for more details.
-		trxManager.runOutOfTransaction(createQuarantineDDOrder(husToDistribute, quarantineWarehouse));
+		husToDistribute.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(this::extractBPartnerAndLocationId, Function.identity()))
+				.asMap()
+				.forEach((bpartnerAndLocationId, hus) -> createDDOrders(bpartnerAndLocationId, quarantineWarehouse, hus));
 	}
 
-	private TrxRunnable createQuarantineDDOrder(final List<HUToDistribute> hus, final I_M_Warehouse quarantineWarehouse)
+	private void createDDOrders(final BPartnerAndLocationId bpartnerAndLocationId, final I_M_Warehouse warehouseTo, Collection<HUToDistribute> hus)
 	{
-		final TrxRunnable trxRunnable = new TrxRunnableAdapter()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				HUs2DDOrderProducer.newProducer()
-						.setContext(Env.getCtx())
-						.setM_Warehouse_To(create(quarantineWarehouse, de.metas.handlingunits.model.I_M_Warehouse.class))
-						.setHUs(hus.iterator())
-						.process();
-			}
-		};
+		HUs2DDOrderProducer.newProducer()
+				.setContext(Env.getCtx())
+				.setM_Warehouse_To(warehouseTo)
+				.setBpartnerId(bpartnerAndLocationId.getBpartnerId())
+				.setBpartnerLocationId(bpartnerAndLocationId.getBpartnerLocationId())
+				.setHUs(hus.iterator())
+				.process();
+	}
 
-		return trxRunnable;
+	private BPartnerAndLocationId extractBPartnerAndLocationId(final HUToDistribute huToDistribute)
+	{
+		return BPartnerAndLocationId.builder()
+				.bpartnerId(huToDistribute.getBpartnerId())
+				.bpartnerLocationId(huToDistribute.getBpartnerLocationId())
+				.build();
 	}
 
 	@Value
-	public static final class QuarantineInOutLine
+	@Builder
+	private static final class BPartnerAndLocationId
 	{
-		@NonNull
-		I_M_InOutLine inOutLine;
-
-		@NonNull
-		I_M_Product_LotNumber_Lock lockLotNo;
+		int bpartnerId;
+		int bpartnerLocationId;
 	}
 }

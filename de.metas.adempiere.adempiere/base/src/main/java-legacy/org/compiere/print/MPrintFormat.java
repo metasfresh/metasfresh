@@ -145,7 +145,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	public int[] getOrderAD_Column_IDs()
 	{
 		final MPrintFormatItem[] items = getItems();
-		HashMap<Integer,Integer> map = new HashMap<Integer,Integer>();	//	SortNo - AD_Column_ID
+		HashMap<Integer,Integer> map = new HashMap<>();	//	SortNo - AD_Column_ID
 		for (int i = 0; i < items.length; i++)
 		{
 			//	Sort Order and Column must be > 0
@@ -174,7 +174,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	public int[] getAD_Column_IDs()
 	{
 		final MPrintFormatItem[] items = getItems();
-		ArrayList<Integer> list = new ArrayList<Integer>();
+		ArrayList<Integer> list = new ArrayList<>();
 		for (int i = 0; i < items.length; i++)
 		{
 			if (items[i].getAD_Column_ID() != 0 && items[i].isPrinted())
@@ -221,7 +221,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 		final List<MPrintFormatItem> list = new Query(getCtx(), I_AD_PrintFormatItem.Table_Name, whereClause, get_TrxName())
 				.setParameters(getAD_PrintFormat_ID())
 				.setOrderBy(I_AD_PrintFormatItem.COLUMNNAME_SeqNo)
-				.list();
+				.list(MPrintFormatItem.class);
 		
 		final IUserRolePermissions role = Env.getUserRolePermissions(getCtx());
 		for(Iterator<MPrintFormatItem> it = list.iterator(); it.hasNext();)
@@ -621,7 +621,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	static private MPrintFormatItem[] createItems (Properties ctx, MPrintFormat format)
 	{
 		s_log.debug("From window Tab ...");
-		ArrayList<MPrintFormatItem> list = new ArrayList<MPrintFormatItem>();
+		ArrayList<MPrintFormatItem> list = new ArrayList<>();
 		//	Get Column List from Tab
 		String sql = "SELECT AD_Column_ID " //, Name, IsDisplayed, SeqNo
 			+ "FROM AD_Field "
@@ -704,7 +704,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	static private MPrintFormatItem[] copyItems (MPrintFormat fromFormat, MPrintFormat toFormat)
 	{
 		s_log.info("From=" + fromFormat);
-		ArrayList<MPrintFormatItem> list = new ArrayList<MPrintFormatItem>();
+		ArrayList<MPrintFormatItem> list = new ArrayList<>();
 
 		MPrintFormatItem[] items = fromFormat.getItems();
 		for (int i = 0; i < items.length; i++)

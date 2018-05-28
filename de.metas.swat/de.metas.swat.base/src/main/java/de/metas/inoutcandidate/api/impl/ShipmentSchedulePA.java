@@ -643,7 +643,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
 		logger.debug("Invalidated {} shipment schedules for M_ShipmentSchedule_IDs={}", count, shipmentScheduleIds);
-		//
+
 		if (count > 0)
 		{
 			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);

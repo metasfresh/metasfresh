@@ -8,7 +8,7 @@ import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.shipper.gateway.api.model.OrderStatus;
+import de.metas.shipper.gateway.spi.model.OrderStatus;
 import lombok.Getter;
 import lombok.NonNull;
 

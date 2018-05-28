@@ -64,7 +64,7 @@ public class OrderCreateRequestPackage
 			@JsonProperty("orderType") @NonNull final OrderType orderType,
 			@JsonProperty("orderIdentification") @NonNull final String orderIdentification,
 			@JsonProperty("supportId") @NonNull final SupportIDType supportId,
-			@JsonProperty("packingMaterialId") @NonNull final String packingMaterialId,
+			@JsonProperty("packingMaterialId") final String packingMaterialId,
 			@JsonProperty("items") @Singular @NonNull final List<OrderCreateRequestPackageItem> items)
 	{
 		if (items.isEmpty())

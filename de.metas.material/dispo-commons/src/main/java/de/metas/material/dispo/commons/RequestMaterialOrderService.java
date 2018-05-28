@@ -159,7 +159,7 @@ public class RequestMaterialOrderService
 		ppOrderBuilder.materialDispoGroupId(firstGroupMember.getEffectiveGroupId());
 
 		return PPOrderRequestedEvent.builder()
-				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.dateOrdered(SystemTime.asDate())
 				.ppOrder(ppOrderBuilder.build())
 				.build();
@@ -221,7 +221,7 @@ public class RequestMaterialOrderService
 		final Candidate firstGroupMember = group.get(0);
 
 		return DDOrderRequestedEvent.builder()
-				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.dateOrdered(SystemTime.asDate())
 				.ddOrder(ddOrderBuilder
 						.line(ddOrderLineBuilder

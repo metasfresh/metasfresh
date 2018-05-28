@@ -1,5 +1,6 @@
 package de.metas.printing.model.validator;
 
+import java.util.List;
 import java.util.Properties;
 
 /*
@@ -40,8 +41,10 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.async.api.IAsyncBatchListeners;
-import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.printing.Printing_Constants;
@@ -64,7 +67,7 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.spi.impl.DefaultPrintingNotificationCtxProvider;
+import de.metas.printing.spi.impl.DefaultPrintingRecordTextProvider;
 import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
 
 /**
@@ -87,6 +90,8 @@ public class Main extends AbstractModuleInterceptor
 			logger.info("Printing is disabled; not registering any printing MIs, callouts etc");
 			return;
 		}
+		
+		super.onInit(engine, client);
 
 		//
 		// Configure tables which are skipped when we record migration scripts
@@ -154,13 +159,9 @@ public class Main extends AbstractModuleInterceptor
 
 		// task 09833
 		// Register the Default Printing Info ctx provider
-		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingNotificationCtxProvider.instance);
+		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingRecordTextProvider.instance);
 
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new PDFPrintingAsyncBatchListener(), Printing_Constants.C_Async_Batch_InternalName_PDFPrinting);
-
-		//
-		// Setup event bus topics on which swing client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(Printing_Constants.TOPIC_Printing);
 	}
 
 	@Override
@@ -171,6 +172,12 @@ public class Main extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_PrinterRouting.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Config.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Matching.Table_Name);
+	}
+	
+	@Override
+	protected List<Topic> getAvailableUserNotificationsTopics()
+	{
+		return ImmutableList.of(Printing_Constants.USER_NOTIFICATIONS_TOPIC);
 	}
 
 	@Override

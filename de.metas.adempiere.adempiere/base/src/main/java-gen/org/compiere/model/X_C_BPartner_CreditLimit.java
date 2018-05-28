@@ -15,7 +15,7 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 760573499L;
+	private static final long serialVersionUID = 1332095921L;
 
     /** Standard Constructor */
     public X_C_BPartner_CreditLimit (Properties ctx, int C_BPartner_CreditLimit_ID, String trxName)
@@ -26,7 +26,7 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 			setAmount (BigDecimal.ZERO);
 			setC_BPartner_CreditLimit_ID (0);
 			setC_CreditLimit_Type_ID (0);
-			setIsApproved (false); // N
+			setProcessed (false); // N
         } */
     }
 
@@ -247,22 +247,22 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 	}
 
 	/** Set Freigegeben.
-		@param IsApproved 
-		Zeigt an, ob dieser Beleg eine Freigabe braucht
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
 	@Override
-	public void setIsApproved (boolean IsApproved)
+	public void setProcessed (boolean Processed)
 	{
-		set_Value (COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
 	/** Get Freigegeben.
-		@return Zeigt an, ob dieser Beleg eine Freigabe braucht
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
 	@Override
-	public boolean isApproved () 
+	public boolean isProcessed () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsApproved);
+		Object oo = get_Value(COLUMNNAME_Processed);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

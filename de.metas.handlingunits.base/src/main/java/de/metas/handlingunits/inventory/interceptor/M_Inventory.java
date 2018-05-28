@@ -23,23 +23,34 @@ import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
+import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
+import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -51,12 +62,12 @@ import de.metas.quantity.Quantity;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -86,8 +97,51 @@ public class M_Inventory
 			{
 				subtractQtyDiffFromHU(inventoryLine);
 			}
+
+			final I_M_HU hu = InterfaceWrapperHelper.load(inventoryLine.getM_HU_ID(), I_M_HU.class);
+			transferAttributesToHU(inventoryLine, hu);
+			InterfaceWrapperHelper.save(hu);
 		}
 	}
+
+	private final void transferAttributesToHU(
+			@NonNull final I_M_InventoryLine inventoryLine,
+			@NonNull final I_M_HU hu)
+	{
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor();
+
+		executor.run((IHUContextProcessor)huContext -> {
+			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
+			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+
+			//
+			// Transfer ASI attributes from inventory line to our HU
+			final IAttributeStorage asiAttributeStorageFrom = attributeStorageFactory.getAttributeStorageIfHandled(inventoryLine);
+			if (asiAttributeStorageFrom == null)
+			{
+				return IHUContextProcessor.NULL_RESULT; // can't transfer from nothing
+			}
+			final IAttributeStorage huAttributeStorageTo = attributeStorageFactory.getAttributeStorage(hu);
+
+			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
+
+			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
+					.setProduct(inventoryLine.getM_Product())
+					.setQty(Services.get(IInventoryBL.class).getMovementQty(inventoryLine).getQty())
+					.setUOM(inventoryLine.getC_UOM())
+					.setAttributeStorageFrom(asiAttributeStorageFrom)
+					.setAttributeStorageTo(huAttributeStorageTo)
+					.setHUStorageFrom(huStorageFrom)
+					.create();
+
+			trxAttributesBuilder.transferAttributes(request);
+
+			return IHUContextProcessor.NULL_RESULT; // we don't care
+		});
+	}
+
 
 	private void addQtyDiffToHU(final I_M_InventoryLine inventoryLine)
 	{
@@ -214,7 +268,7 @@ public class M_Inventory
 					.stream()
 					.map(I_M_InventoryLine::getM_HU_ID)
 					.collect(ImmutableList.toImmutableList());
-			
+
 			Services.get(IHUSnapshotDAO.class).restoreHUs()
 					.setContext(PlainContextAware.newWithThreadInheritedTrx())
 					.setSnapshotId(snapshotId)

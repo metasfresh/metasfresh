@@ -34,14 +34,11 @@ import java.util.function.Predicate;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
@@ -78,8 +75,6 @@ import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.logging.LogManager;
-import de.metas.product.acct.api.IProductAcctDAO;
-import de.metas.product.acct.api.impl.ProductAcctDAO;
 
 /**
  * DD Order (Bereitsteller) process:
@@ -137,8 +132,6 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		setupMRP();
 		setupHandlingUnits();
 		setupPOS();
-
-		setupMiscWorkaroundsAndMocks();
 
 		// Misc masterdata
 		bpartner_Customer01 = createBPartner("BP_Customer01");
@@ -208,21 +201,6 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 	protected void setupMRP_MasterData()
 	{
 		// nothing
-	}
-
-	private void setupMiscWorkaroundsAndMocks()
-	{
-		Services.registerService(IProductAcctDAO.class, new ProductAcctDAO()
-		{
-			@Override
-			public I_C_Activity retrieveActivityForAcct(final IContextAware contextProvider, final I_AD_Org org, final I_M_Product product)
-			{
-				// skip this because:
-				// 1. retrieving acct schema calls database
-				// 2. we don't have an acct schema defined anyway
-				return null;
-			}
-		});
 	}
 
 	@Override

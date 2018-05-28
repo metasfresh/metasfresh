@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -28,11 +29,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -358,6 +361,21 @@ public class ProcessExecutionResult
 		}
 		else
 		{
+			recordsToOpen = new RecordsToOpen(records, adWindowId, OpenTarget.GridView);
+		}
+	}
+	
+	public void setRecordsToOpen(@NonNull final String tableName, final Collection<Integer> recordIds, final String adWindowId)
+	{
+		if (recordIds == null || recordIds.isEmpty())
+		{
+			recordsToOpen = null;
+		}
+		else
+		{
+			final Set<TableRecordReference> records = recordIds.stream()
+					.map(recordId -> TableRecordReference.of(tableName, recordId))
+					.collect(ImmutableSet.toImmutableSet());
 			recordsToOpen = new RecordsToOpen(records, adWindowId, OpenTarget.GridView);
 		}
 	}

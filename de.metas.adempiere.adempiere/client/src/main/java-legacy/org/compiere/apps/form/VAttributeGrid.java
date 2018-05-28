@@ -64,7 +64,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.service.ProductPrices;
 
 
 /**

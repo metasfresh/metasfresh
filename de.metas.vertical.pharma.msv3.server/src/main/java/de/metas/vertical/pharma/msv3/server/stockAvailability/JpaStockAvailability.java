@@ -1,8 +1,13 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability;
 
+import java.util.UUID;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 import de.metas.vertical.pharma.msv3.server.jpa.AbstractEntity;
 import lombok.Getter;
@@ -32,16 +37,20 @@ import lombok.ToString;
  */
 
 @Entity
-@Table(name = "msv3_stock_availability", uniqueConstraints = @UniqueConstraint(name = "stock_availability_uq", columnNames = { "pzn" }))
+@Table(name = "msv3_stock_availability", //
+		uniqueConstraints = @UniqueConstraint(name = "stock_availability_uq", columnNames = { "pzn" }), //
+		indexes = @Index(name = "stock_availability_sync_token", columnList = "sync_token") //
+)
+@Getter
+@Setter
 @ToString
 public class JpaStockAvailability extends AbstractEntity
 {
 	/** Pharma-Zentral-Nummer */
-	@Getter
-	@Setter
 	private long pzn;
-
-	@Getter
-	@Setter
 	private int qty;
+
+	@Column(name = "sync_token")
+	@NotNull
+	private String syncToken = UUID.randomUUID().toString();
 }

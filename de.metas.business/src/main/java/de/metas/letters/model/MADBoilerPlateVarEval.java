@@ -47,7 +47,7 @@ public class MADBoilerPlateVarEval extends X_AD_BoilerPlate_Var_Eval
 	 */
 	private static final long serialVersionUID = 6355649371361977481L;
 	
-	private static CCache<Integer, MADBoilerPlateVarEval[]> s_cache = new CCache<Integer, MADBoilerPlateVarEval[]>(Table_Name+"_Client", 2);
+	private static CCache<Integer, MADBoilerPlateVarEval[]> s_cache = new CCache<>(Table_Name+"_Client", 2);
 
 	public static MADBoilerPlateVarEval[] getAll(Properties ctx)
 	{
@@ -59,7 +59,7 @@ public class MADBoilerPlateVarEval extends X_AD_BoilerPlate_Var_Eval
 			final List<MADBoilerPlateVarEval> list = new Query (ctx, Table_Name, whereClause, null)
 			.setParameters(new Object[]{AD_Client_ID})
 			.setOrderBy(COLUMNNAME_AD_BoilerPlate_Var_ID+","+COLUMNNAME_C_DocType_ID)
-			.list();
+			.list(MADBoilerPlateVarEval.class);
 			arr = list.toArray(new MADBoilerPlateVarEval[list.size()]);
 			s_cache.put(AD_Client_ID, arr);
 		}

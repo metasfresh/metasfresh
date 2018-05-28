@@ -39,7 +39,7 @@ public class ModuleInterceptor extends AbstractModuleInterceptor
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_MD_Cockpit.Table_Name);
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_MD_Stock.Table_Name);
 
-		// currently as this window is opend via MD_Cockpit_DocumentDetail_Display,
+		// currently as this window is opened via MD_Cockpit_DocumentDetail_Display,
 		// changes MD_Cockpit_DocumentDetail don't cause and view change
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_MD_Cockpit_DocumentDetail.Table_Name);
 	}

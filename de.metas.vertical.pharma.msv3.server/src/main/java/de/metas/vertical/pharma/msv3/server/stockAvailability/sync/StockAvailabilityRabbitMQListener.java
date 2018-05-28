@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityService;
 
@@ -41,7 +42,7 @@ public class StockAvailabilityRabbitMQListener
 	private StockAvailabilityService stockAvailabilityService;
 
 	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent)
-	public void onEvent(final MSV3StockAvailabilityUpdatedEvent event)
+	public void onStockAvailabilityUpdatedEvent(final MSV3StockAvailabilityUpdatedEvent event)
 	{
 		try
 		{
@@ -52,4 +53,18 @@ public class StockAvailabilityRabbitMQListener
 			logger.warn("Failed handling event: {}", event, ex);
 		}
 	}
+
+	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_ProductExcludeUpdatedEvents)
+	public void onProductExcludesUpdateEvent(final MSV3ProductExcludesUpdateEvent event)
+	{
+		try
+		{
+			stockAvailabilityService.handleEvent(event);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed handling event: {}", event, ex);
+		}
+	}
+
 }

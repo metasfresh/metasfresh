@@ -7,7 +7,7 @@ import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.shipper.gateway.api.model.ServiceType;
+import de.metas.shipper.gateway.spi.model.ServiceType;
 import lombok.Getter;
 import lombok.NonNull;
 

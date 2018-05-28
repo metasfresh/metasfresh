@@ -114,7 +114,7 @@ public final class Check
 		}
 	}
 
-	private static void throwOrLogEx(final Class<? extends RuntimeException> exClazz, final String msg)
+	private static RuntimeException throwOrLogEx(final Class<? extends RuntimeException> exClazz, final String msg)
 	{
 		final RuntimeException ex = mkEx(exClazz, msg);
 
@@ -127,6 +127,7 @@ public final class Check
 		else
 		{
 			logger.error(msg, ex);
+			return ex;
 		}
 	}
 
@@ -238,23 +239,19 @@ public final class Check
 	 * @param params message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static void assumeNotNull(final Object object, final String assumptionMessage, final Object... params)
+	public static <T> T assumeNotNull(final T object, final String assumptionMessage, final Object... params)
 	{
-		assumeNotNull(object, defaultExClazz, assumptionMessage, params);
+		return assumeNotNull(object, defaultExClazz, assumptionMessage, params);
 	}
 
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param object
-	 * @param exceptionClass
-	 * @param assumptionMessage
-	 * @param params
 	 */
-	public static void assumeNotNull(final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	public static <T> T assumeNotNull(final T object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean cond = object != null;
 		assume(cond, exceptionClass, assumptionMessage, params);
+		return object;
 	}
 
 	/**
@@ -321,9 +318,12 @@ public final class Check
 	 * @param params message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static void assumeNotEmpty(final Collection<? extends Object> collection, final String assumptionMessage, final Object... params)
+	public static <T extends Collection<? extends Object>> T assumeNotEmpty(
+			final T collection,
+			final String assumptionMessage,
+			final Object... params)
 	{
-		assumeNotEmpty(collection, defaultExClazz, assumptionMessage, params);
+		return assumeNotEmpty(collection, defaultExClazz, assumptionMessage, params);
 	}
 
 	/**
@@ -335,11 +335,12 @@ public final class Check
 	 * @param assumptionMessage
 	 * @param params
 	 */
-	public static void assumeNotEmpty(final Collection<? extends Object> collection, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	public static <T extends Collection<? extends Object>> T assumeNotEmpty(final T collection, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean cond = !isEmpty(collection);
 
 		assume(cond, exceptionClass, assumptionMessage, params);
+		return collection;
 	}
 
 	/**
@@ -395,6 +396,43 @@ public final class Check
 	{
 		final boolean cond = map != null && !map.isEmpty();
 		assume(cond, exceptionClass, assumptionMessage, params);
+	}
+
+	public static int assumeGreaterThanZero(final int valueInt, final String valueName)
+	{
+		if (valueInt <= 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueInt);
+		}
+		return valueInt;
+	}
+
+	public static long assumeGreaterThanZero(final long valueLong, final String valueName)
+	{
+		if (valueLong <= 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueLong);
+		}
+		return valueLong;
+	}
+
+	public static int assumeGreaterOrEqualToZero(final int valueInt, final String valueName)
+	{
+		if (valueInt < 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " >= 0 but it was " + valueInt);
+		}
+		return valueInt;
+	}
+
+	public static BigDecimal assumeGreaterOrEqualToZero(final BigDecimal valueBD, final String valueName)
+	{
+		assumeNotNull(valueName, "" + valueName + " is not null");
+		if (valueBD == null || valueBD.signum() < 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " >= 0 but it was " + valueBD);
+		}
+		return valueBD;
 	}
 
 	/**
@@ -455,11 +493,11 @@ public final class Check
 			throwOrLogEx(exceptionClass, "Error: " + errMsgFormated);
 		}
 	}
-	
-	public static void fail(final String errMsg, final Object... params)
+
+	public static RuntimeException fail(final String errMsg, final Object... params)
 	{
 		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
-		throwOrLogEx(defaultExClazz, "Error: " + errMsgFormated);
+		return throwOrLogEx(defaultExClazz, "Error: " + errMsgFormated);
 	}
 
 	/**
@@ -494,6 +532,11 @@ public final class Check
 	public static boolean isEmpty(final String str)
 	{
 		return isEmpty(str, false);
+	}
+
+	public static boolean isEmptyTrimWhitespaces(final String str)
+	{
+		return isEmpty(str, true);
 	}
 
 	/**
@@ -542,7 +585,7 @@ public final class Check
 	 * @param collection
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
-	public static <T> boolean isEmpty(final Collection<T> collection)
+	public static boolean isEmpty(final Collection<?> collection)
 	{
 		return collection == null || collection.isEmpty();
 	}

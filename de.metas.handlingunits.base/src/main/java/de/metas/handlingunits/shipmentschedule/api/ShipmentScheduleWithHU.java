@@ -36,10 +36,10 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -67,13 +67,14 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import lombok.Getter;
@@ -97,6 +98,8 @@ public class ShipmentScheduleWithHU
 
 	/**
 	 * Create an "empty" instance with no HUs inside. Used if a shipment without HU allocation has to be created.
+	 *
+	 * @param qtyPicked in this case qtyPicked can only be the quantity of an "unconfirmed" (i.e. drafted) shipment line.
 	 */
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
@@ -373,8 +376,9 @@ public class ShipmentScheduleWithHU
 			updateQtyTUAndQtyLU();
 		}
 
-		// Set shipment line link
+		// Set shipment line link and processed flag
 		shipmentScheduleQtyPicked.setM_InOutLine(shipmentLine);
+		shipmentScheduleQtyPicked.setProcessed(inout.isProcessed());
 
 		// Save allocation
 		save(shipmentScheduleQtyPicked);
@@ -414,14 +418,11 @@ public class ShipmentScheduleWithHU
 	}
 
 	/**
-	 *
 	 * @return never returns {@code null}. If none is found, it returns the "virtual" packing instruction (i.e. "No Packing Item").
 	 */
 	public I_M_HU_PI_Item_Product retrieveM_HU_PI_Item_Product()
 	{
 		final I_M_HU topLevelHU = getTopLevelHU();
-
-		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		if (topLevelHU == null)
 		{
 			return retrievePiipForReferencedRecord();
@@ -448,8 +449,16 @@ public class ShipmentScheduleWithHU
 		final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(shipmentSchedule);
 		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
 
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+
+		final I_M_HU_PI_Item huPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(huMaterialItem);
+		if(huPIItem == null)
+		{
+			return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
+		}
+
 		final I_M_HU_PI_Item_Product matchingPiip = hupiItemProductDAO.retrievePIMaterialItemProduct(
-				huMaterialItem.getM_HU_PI_Item(),
+				huPIItem,
 				bPartner,
 				getM_Product(),
 				preparationDate);

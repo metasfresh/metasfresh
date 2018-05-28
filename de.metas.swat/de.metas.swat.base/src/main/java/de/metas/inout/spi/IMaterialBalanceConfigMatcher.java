@@ -10,12 +10,12 @@ package de.metas.inout.spi;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,9 +29,9 @@ import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inout.api.IMaterialBalanceDetailBL;
 
 /**
- * Implement this SPI and register the implementation using {@link IMaterialBalanceConfigBL#addMaterialBalanceConfigMather(IMaterialBalanceConfigMatcher)} in order to make sure that certain {@link I_M_InOutLine} are
- * considered for the material balance.
- * 
+ * Implement this SPI and register the implementation using {@link IMaterialBalanceConfigBL#addMaterialBalanceConfigMather(IMaterialBalanceConfigMatcher)}
+ * in order to make sure that certain {@link I_M_InOutLine} are considered for the material balance.
+ *
  * @see IMaterialBalanceDetailBL#addInOutToBalance(de.metas.inout.model.I_M_InOut)
  */
 public interface IMaterialBalanceConfigMatcher

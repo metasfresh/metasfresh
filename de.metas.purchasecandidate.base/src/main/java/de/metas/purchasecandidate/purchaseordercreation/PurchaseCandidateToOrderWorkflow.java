@@ -1,16 +1,17 @@
 package de.metas.purchasecandidate.purchaseordercreation;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
+import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
@@ -81,7 +82,7 @@ public class PurchaseCandidateToOrderWorkflow
 
 	public void executeForPurchaseCandidates(@NonNull final List<PurchaseCandidate> purchaseCandidates)
 	{
-		final int vendorId = assertValidAndExtractVendorId(purchaseCandidates);
+		final BPartnerId vendorId = assertValidAndExtractVendorId(purchaseCandidates);
 		try
 		{
 			createPurchaseOrder0(vendorId, purchaseCandidates);
@@ -92,7 +93,7 @@ public class PurchaseCandidateToOrderWorkflow
 		}
 	}
 
-	private int assertValidAndExtractVendorId(@NonNull final List<PurchaseCandidate> purchaseCandidates)
+	private BPartnerId assertValidAndExtractVendorId(@NonNull final List<PurchaseCandidate> purchaseCandidates)
 	{
 		if (purchaseCandidates.isEmpty())
 		{
@@ -110,7 +111,7 @@ public class PurchaseCandidateToOrderWorkflow
 					.setParameter("distinctIds", distinctIds);
 		}
 
-		final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate = //
+		final ImmutableListMultimap<BPartnerId, PurchaseCandidate> vendorId2purchaseCandidate = //
 				Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
 
 		Check.errorIf(vendorId2purchaseCandidate.keySet().size() != 1,
@@ -118,11 +119,10 @@ public class PurchaseCandidateToOrderWorkflow
 				vendorId2purchaseCandidate.keySet(), purchaseCandidates);
 
 		return vendorId2purchaseCandidate.keySet().iterator().next();
-
 	}
 
 	private void createPurchaseOrder0(
-			final int vendorId,
+			@NonNull final BPartnerId vendorId,
 			@NonNull final Collection<PurchaseCandidate> purchaseCandidatesWithVendorId)
 	{
 		final ILoggable loggable = Loggables.get();
@@ -130,8 +130,7 @@ public class PurchaseCandidateToOrderWorkflow
 		loggable.addLog("vendorId={} - now invoking placeRemotePurchaseOrder with purchaseCandidates={}",
 				vendorId, purchaseCandidatesWithVendorId);
 
-		final VendorGatewayInvoker vendorGatewayInvoker = vendorGatewayInvokerFactory
-				.createForVendorId(vendorId);
+		final VendorGatewayInvoker vendorGatewayInvoker = vendorGatewayInvokerFactory.createForVendorId(vendorId.getRepoId());
 
 		final List<PurchaseItem> remotePurchaseItems = vendorGatewayInvoker
 				.placeRemotePurchaseOrder(purchaseCandidatesWithVendorId);
@@ -161,11 +160,11 @@ public class PurchaseCandidateToOrderWorkflow
 	private void thowExceptionIfEmptyResult(
 			final List<PurchaseItem> remotePurchaseItems,
 			final Collection<PurchaseCandidate> purchaseCandidatesWithVendorId,
-			final int vendorId)
+			final BPartnerId vendorId)
 	{
 		if (remotePurchaseItems.isEmpty())
 		{
-			final I_C_BPartner vendor = load(vendorId, I_C_BPartner.class);
+			final I_C_BPartner vendor = Services.get(IBPartnerDAO.class).getById(vendorId);
 
 			throw new AdempiereException(
 					MSG_NO_REMOTE_PURCHASE_ORDER_WAS_PLACED,
@@ -178,7 +177,7 @@ public class PurchaseCandidateToOrderWorkflow
 	private void throwExceptionIfErrorItemsExist(
 			final List<PurchaseItem> remotePurchaseItems,
 			final Collection<PurchaseCandidate> purchaseCandidatesWithVendorId,
-			final int vendorId)
+			final BPartnerId vendorId)
 	{
 		final List<PurchaseErrorItem> purchaseErrorItems = remotePurchaseItems.stream()
 				.filter(item -> item instanceof PurchaseErrorItem)
@@ -190,7 +189,7 @@ public class PurchaseCandidateToOrderWorkflow
 			return; // nothing to do
 		}
 
-		final I_C_BPartner vendor = load(vendorId, I_C_BPartner.class);
+		final I_C_BPartner vendor = Services.get(IBPartnerDAO.class).getById(vendorId);
 		throw new AdempiereException(
 				MSG_ERROR_WHILE_PLACING_REMOTE_PURCHASE_ORDER,
 				new Object[] { vendor.getValue(), vendor.getName() })
@@ -201,7 +200,7 @@ public class PurchaseCandidateToOrderWorkflow
 
 	private void logAndRethrow(
 			final Throwable throwable,
-			final Integer vendorId,
+			final BPartnerId vendorId,
 			final Collection<PurchaseCandidate> purchaseCandidates)
 	{
 		final ILoggable loggable = Loggables.get();

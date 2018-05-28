@@ -127,6 +127,11 @@ node('agent && linux')
 						.withWorkDir('de.metas.printing.rest-api-impl/target/docker');
 					dockerBuildAndPush(printDockerConf)
 
+					final DockerConf msv3ServerDockerConf = materialDispoDockerConf
+						.withArtifactName('de.metas.vertical.pharma.msv3.server')
+						.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
+					dockerBuildAndPush(msv3ServerDockerConf)
+
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
 

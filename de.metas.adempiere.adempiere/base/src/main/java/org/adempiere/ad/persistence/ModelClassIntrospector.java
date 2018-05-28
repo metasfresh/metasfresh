@@ -10,12 +10,12 @@ package org.adempiere.ad.persistence;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,12 +31,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.collections.IdentityHashSet;
 
 /**
  * Used to fetch {@link IModelClassInfo}s from model classes.
- * 
+ *
  * @author tsa
  *
  */
@@ -49,8 +51,8 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 		return instance;
 	}
 
-	private final Map<Class<?>, IModelClassInfo> class2info = new IdentityHashMap<Class<?>, IModelClassInfo>(500);
-	private final Set<Class<?>> classesWhichAreNotModels = new IdentityHashSet<Class<?>>(100);
+	private final Map<Class<?>, IModelClassInfo> class2info = new IdentityHashMap<>(500);
+	private final Set<Class<?>> classesWhichAreNotModels = new IdentityHashSet<>(100);
 	private final ReentrantLock lock = new ReentrantLock();
 
 	private ModelClassIntrospector()
@@ -59,7 +61,7 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 	}
 
 	@Override
-	public IModelClassInfo getModelClassInfo(final Class<?> clazz)
+	public IModelClassInfo getModelClassInfo(@Nullable final Class<?> clazz)
 	{
 		if (clazz == null)
 		{
@@ -120,7 +122,7 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 
 	public Map<Method, IModelMethodInfo> createModelMethodInfos(final Class<?> clazz)
 	{
-		final Map<Method, IModelMethodInfo> modelMethodsInfo = new HashMap<Method, IModelMethodInfo>();
+		final Map<Method, IModelMethodInfo> modelMethodsInfo = new HashMap<>();
 		for (final Method method : clazz.getMethods())
 		{
 			final IModelMethodInfo modelMethodInfo = createModelMethodInfo(method);
@@ -132,7 +134,7 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 
 	/**
 	 * Creates {@link IModelMethodInfo} for given <code>method</code>
-	 * 
+	 *
 	 * @param method
 	 * @return method info; never return null
 	 */

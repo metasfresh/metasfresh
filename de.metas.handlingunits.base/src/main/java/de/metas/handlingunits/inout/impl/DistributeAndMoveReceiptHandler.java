@@ -3,14 +3,14 @@ package de.metas.handlingunits.inout.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.QuarantineInOutLine;
+import de.metas.handlingunits.ddorder.api.QuarantineInOutLine;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
@@ -21,7 +21,9 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.product.model.I_M_Product_LotNumber_Lock;
+import de.metas.product.LotNumberLock;
+import de.metas.product.LotNumberLockRepository;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -48,31 +50,32 @@ import lombok.NonNull;
 
 public class DistributeAndMoveReceiptHandler
 {
-
-	public static final DistributeAndMoveReceiptHandler newInstance()
-	{
-		return new DistributeAndMoveReceiptHandler();
-	}
-
-	private I_M_InOut receipt;
-
-	private List<QuarantineInOutLine> linesToQuarantine = new ArrayList<>();
-	private List<I_M_InOutLine> linesToDD_Order = new ArrayList<>();
-	private List<de.metas.inout.model.I_M_InOutLine> linesToMove = new ArrayList<>();
-
+	// services
 	private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final ILotNumberBL lotNoBL = Services.get(ILotNumberBL.class);
 	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final IInOutDDOrderBL inoutDDOrderBL = Services.get(IInOutDDOrderBL.class);
 	private final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
+	private final LotNumberLockRepository lotNumberLockRepository = Adempiere.getBean(LotNumberLockRepository.class);
+	
+	private final I_M_InOut receipt;
 
-	public void onReceiptComplete(@NonNull final I_M_InOut receipt)
+	private List<QuarantineInOutLine> linesToQuarantine = new ArrayList<>();
+	private List<I_M_InOutLine> linesToDD_Order = new ArrayList<>();
+	private List<de.metas.inout.model.I_M_InOutLine> linesToMove = new ArrayList<>();
+
+	@Builder
+	private DistributeAndMoveReceiptHandler(@NonNull final I_M_InOut receipt)
 	{
 		Check.assume(!receipt.isSOTrx(), "InOut shall be a receipt: {}", receipt);
 		Check.assume(!inoutBL.isReversal(receipt), "InOut shall not be a reversal", receipt);
-
+		
 		this.receipt = receipt;
+	}
+
+	public void process()
+	{
 
 		partitionLines();
 
@@ -119,7 +122,7 @@ public class DistributeAndMoveReceiptHandler
 				continue;
 			}
 
-			final I_M_Product_LotNumber_Lock lockedLotNo = getLockedLotNoOrNull(inOutLine);
+			final LotNumberLock lockedLotNo = getLockedLotNoOrNull(inOutLine);
 			if (lockedLotNo != null)
 			{
 				final QuarantineInOutLine quarantineInOutLine = new QuarantineInOutLine(inOutLine, lockedLotNo);
@@ -138,12 +141,11 @@ public class DistributeAndMoveReceiptHandler
 
 	}
 
-	private I_M_Product_LotNumber_Lock getLockedLotNoOrNull(final I_M_InOutLine inOutLine)
+	private LotNumberLock getLockedLotNoOrNull(final I_M_InOutLine inOutLine)
 	{
 		final int productId = inOutLine.getM_Product_ID();
 
 		final I_M_AttributeSetInstance receiptLineASI = inOutLine.getM_AttributeSetInstance();
-
 		if (receiptLineASI == null)
 		{
 			// if it has no attributes set it means it has no lot number set either.
@@ -151,30 +153,16 @@ public class DistributeAndMoveReceiptHandler
 		}
 
 		final String lotNumberAttributeValue = lotNoBL.getLotNumberAttributeValueOrNull(receiptLineASI);
-
 		if (Check.isEmpty(lotNumberAttributeValue))
 		{
 			// if the attribute is not present or set it automatically means the lotno is not to quarantine, either
 			return null;
 		}
 
-		final I_M_Product_LotNumber_Lock lotNumberLock = retrieveLotNumberLock(productId, lotNumberAttributeValue);
-
-		return lotNumberLock;
+		return lotNumberLockRepository.getByProductIdAndLot(productId, lotNumberAttributeValue);
 	}
 
-	private I_M_Product_LotNumber_Lock retrieveLotNumberLock(final int productId, final String lotNo)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_LotNumber_Lock.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Product_LotNumber_Lock.COLUMN_M_Product_ID, productId)
-				.addEqualsFilter(I_M_Product_LotNumber_Lock.COLUMNNAME_Lot, lotNo)
-				.orderBy(I_M_Product_LotNumber_Lock.COLUMN_M_Product_ID)
-				.create()
-				.first();
-
-	}
+	
 
 	private boolean isCreateDDOrder(final I_M_InOutLine inOutLine)
 	{
@@ -191,4 +179,12 @@ public class DistributeAndMoveReceiptHandler
 		return false;
 	}
 
+	
+	public static class DistributeAndMoveReceiptHandlerBuilder
+	{
+		public void process()
+		{
+			build().process();
+		}
+	}
 }

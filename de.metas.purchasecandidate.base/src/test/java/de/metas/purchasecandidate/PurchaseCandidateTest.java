@@ -5,15 +5,20 @@ import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Table;
-import org.compiere.util.TimeUtil;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 
@@ -39,6 +44,8 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseCandidateTest
 {
 	@Test
@@ -90,7 +97,7 @@ public class PurchaseCandidateTest
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
-		final Date newDatePromised = TimeUtil.addDays(candidate.getDateRequired(), +1);
+		final LocalDateTime newDatePromised = candidate.getDateRequired().plusDays(1);
 		candidate.setDateRequired(newDatePromised);
 
 		assertThat(candidate.hasChanges()).isTrue();
@@ -132,14 +139,14 @@ public class PurchaseCandidateTest
 
 		candidate1.createOrderItem()
 				.purchasedQty(TEN)
-				.datePromised(SystemTime.asTimestamp())
+				.datePromised(SystemTime.asLocalDateTime())
 				.remotePurchaseOrderId("remotePurchaseOrderId")
 				.transactionReference(TableRecordReference.of(I_AD_Table.Table_Name, 30))
 				.buildAndAddToParent();
 
 		candidate1.createOrderItem()
 				.purchasedQty(ONE)
-				.datePromised(SystemTime.asTimestamp())
+				.datePromised(SystemTime.asLocalDateTime())
 				.remotePurchaseOrderId("remotePurchaseOrderId-2")
 				.transactionReference(TableRecordReference.of(I_AD_Table.Table_Name, 40))
 				.buildAndAddToParent();

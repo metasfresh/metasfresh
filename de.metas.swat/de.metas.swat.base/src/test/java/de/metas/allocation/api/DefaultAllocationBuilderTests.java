@@ -26,9 +26,9 @@ package de.metas.allocation.api;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.exceptions.TrxException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.junit.Before;
 import org.junit.Test;
 

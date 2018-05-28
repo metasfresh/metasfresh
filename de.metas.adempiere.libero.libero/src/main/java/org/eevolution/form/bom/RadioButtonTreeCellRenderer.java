@@ -22,7 +22,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -94,16 +93,16 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 	JLabel label = new JLabel();
 	//ButtonGroup group = new ButtonGroup();
 	boolean toggle = false;
-	private Vector<Vector<Comparable<?>>> dataBOM = new Vector<Vector<Comparable<?>>>();
+	private Vector<Vector<Comparable<?>>> dataBOM = new Vector<>();
 	public DefaultMutableTreeNode root = null;
 
-	public HashSet<TreePath> checkedPathsSet =  new HashSet<TreePath>();
+	public HashSet<TreePath> checkedPathsSet =  new HashSet<>();
 
-	public HashSet<TreePath> greyedPathsSet =  new HashSet<TreePath>();
+	public HashSet<TreePath> greyedPathsSet =  new HashSet<>();
 
-	public HashSet<TreePath> disabledPathsSet =  new HashSet<TreePath>();
+	public HashSet<TreePath> disabledPathsSet =  new HashSet<>();
 
-	public HashSet<TreePath> checkBoxPathsSet =  new HashSet<TreePath>();
+	public HashSet<TreePath> checkBoxPathsSet =  new HashSet<>();
 	private static Logger log = LogManager.getLogger(RadioButtonTreeCellRenderer.class);
 
 
@@ -155,7 +154,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 			String whereClause = "M_Product_ID=?";
 			List<MPPProductBOMLine> bomlines = new Query(Env.getCtx(),MPPProductBOMLine.Table_Name,whereClause, null)
 			.setParameters(new Object[]{M_Product_ID})
-			.list();    
+			.list(MPPProductBOMLine.class);
 			for (MPPProductBOMLine bomline : bomlines)
 			{
 				 root.add(parent(bomline)); 
@@ -167,7 +166,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 			List<MPPProductBOM> boms = new Query(Env.getCtx(),MPPProductBOM.Table_Name,whereClause, null)
 			.setParameters(new Object[]{M_Product_ID})
 			.setOnlyActiveRecords(true)
-			.list();    
+			.list(MPPProductBOM.class);
 			for (MPPProductBOM bom : boms)
 			{
 				DefaultMutableTreeNode child = parent(bom);
@@ -198,33 +197,33 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 		DefaultMutableTreeNode parent = new DefaultMutableTreeNode(new nodeUserObject(Msg.translate(Env.getCtx(), "M_Product_ID") + Msg.translate(Env.getCtx(), "key") + ": " + M_Product.getValue() + " " + Msg.translate(Env.getCtx(), "Name") + ": "  +M_Product.getName() + " " +  Msg.translate(Env.getCtx(), "C_UOM_ID") + ": " + UOM.getName(), M_Product, bomproduct, bomline));
 
 
-		Vector<Comparable<?>> line = new Vector<Comparable<?>>(17);
+		Vector<Comparable<?>> line = new Vector<>(17);
 		line.add( new Boolean(false));  //  0 Select
 		line.add( new Boolean(true));   //  1 IsActive
 		line.add( new Integer(bomline.getLine())); // 2 Line                
-		line.add( (Timestamp) bomline.getValidFrom()); //  3 ValidDrom
-		line.add( (Timestamp) bomline.getValidTo()); //  4 ValidTo
+		line.add( bomline.getValidFrom()); //  3 ValidDrom
+		line.add( bomline.getValidTo()); //  4 ValidTo
 		KeyNamePair pp = new KeyNamePair(M_Product.getM_Product_ID(),M_Product.getName());
 		line.add(pp); //  5 M_Product_ID
 		KeyNamePair uom = new KeyNamePair(bomline.getC_UOM_ID(),"");
 		line.add(uom); //  6 C_UOM_ID
 		line.add(new Boolean(bomline.isQtyPercentage())); //  7 IsQtyPorcentage
-		line.add((BigDecimal) bomline.getQtyBatch());  //  8 BatchPercent
-		line.add((BigDecimal) ((bomline.getQtyBOM()!=null) ? bomline.getQtyBOM() : new BigDecimal(0)));  //  9 QtyBOM
+		line.add(bomline.getQtyBatch());  //  8 BatchPercent
+		line.add((bomline.getQtyBOM()!=null) ? bomline.getQtyBOM() : new BigDecimal(0));  //  9 QtyBOM
 		line.add(new Boolean(bomline.isCritical())); //  10 IsCritical                  
-		line.add( (Integer) bomline.getLeadTimeOffset()); // 11 LTOffSet
-		line.add( (BigDecimal) bomline.getAssay()); // 12 Assay
-		line.add( (BigDecimal) (bomline.getScrap())); // 13 Scrap
-		line.add( (String) bomline.getIssueMethod()); // 14 IssueMethod
-		line.add( (String) bomline.getBackflushGroup());  // 15 BackflushGroup
-		line.add( (BigDecimal) bomline.getForecast()); // 16 Forecast
+		line.add( bomline.getLeadTimeOffset()); // 11 LTOffSet
+		line.add( bomline.getAssay()); // 12 Assay
+		line.add( (bomline.getScrap())); // 13 Scrap
+		line.add( bomline.getIssueMethod()); // 14 IssueMethod
+		line.add( bomline.getBackflushGroup());  // 15 BackflushGroup
+		line.add( bomline.getForecast()); // 16 Forecast
 		dataBOM.add(line);
 
 		String whereClause = "M_Product_ID=?";
 		List<MPPProductBOM> boms = new Query(Env.getCtx(),MPPProductBOM.Table_Name,whereClause, null)
 		.setParameters(new Object[]{bomproduct.getM_Product_ID()})
 		.setOnlyActiveRecords(true)
-		.list();    
+		.list(MPPProductBOM.class);
 		for (MPPProductBOM bom : boms)
 		{        
 			MProduct component = MProduct.get(Env.getCtx(), bom.getM_Product_ID());
@@ -246,32 +245,32 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 		String whereClause = "PP_Product_BOM_ID=?";
 		List<MPPProductBOMLine> bomlines = new Query(Env.getCtx(),MPPProductBOMLine.Table_Name,whereClause, null)
 		.setParameters(new Object[]{bom.getPP_Product_BOM_ID()})
-		.list();    
+		.list(MPPProductBOMLine.class);
 		for (MPPProductBOMLine bomline : bomlines)
 		{            
 			MProduct component = MProduct.get(Env.getCtx(), bomline.getM_Product_ID());
 			//System.out.println("Componente :" + component.getValue() + "[" + component.getName() + "]");
 			//component(component);
-			Vector<Comparable<?>> line = new Vector<Comparable<?>>(17);
+			Vector<Comparable<?>> line = new Vector<>(17);
 			line.add( new Boolean(false));  //  0 Select
 			line.add( new Boolean(true));   //  1 IsActive
 			line.add( new Integer(bomline.getLine())); // 2 Line                
-			line.add( (Timestamp) bomline.getValidFrom()); //  3 ValidDrom
-			line.add( (Timestamp) bomline.getValidTo()); //  4 ValidTo
+			line.add( bomline.getValidFrom()); //  3 ValidDrom
+			line.add( bomline.getValidTo()); //  4 ValidTo
 			KeyNamePair pp = new KeyNamePair(component.getM_Product_ID(),component.getName());
 			line.add(pp); //  5 M_Product_ID
 			KeyNamePair uom = new KeyNamePair(bomline.getC_UOM_ID(),"");
 			line.add(uom); //  6 C_UOM_ID
 			line.add(new Boolean(bomline.isQtyPercentage())); //  7 IsQtyPercentage
-			line.add((BigDecimal) bomline.getQtyBatch());  //  8 BatchPercent
-			line.add((BigDecimal) bomline.getQtyBOM());  //  9 QtyBom
+			line.add(bomline.getQtyBatch());  //  8 BatchPercent
+			line.add(bomline.getQtyBOM());  //  9 QtyBom
 			line.add(new Boolean(bomline.isCritical())); //  10 IsCritical       
-			line.add( (Integer) bomline.getLeadTimeOffset()); // 11 LTOffSet
-			line.add( (BigDecimal) bomline.getAssay()); // 12 Assay
-			line.add( (BigDecimal) (bomline.getScrap())); // 13 Scrap
-			line.add( (String) bomline.getIssueMethod()); // 14 IssueMethod
-			line.add( (String) bomline.getBackflushGroup());  // 15 BackflushGroup
-			line.add( (BigDecimal) bomline.getForecast()); // 16 Forecast
+			line.add( bomline.getLeadTimeOffset()); // 11 LTOffSet
+			line.add( bomline.getAssay()); // 12 Assay
+			line.add( (bomline.getScrap())); // 13 Scrap
+			line.add( bomline.getIssueMethod()); // 14 IssueMethod
+			line.add( bomline.getBackflushGroup());  // 15 BackflushGroup
+			line.add( bomline.getForecast()); // 16 Forecast
 			//line.add(this.);
 			dataBOM.add(line);
 			parent.add(component(component, bom, bomline));
@@ -290,7 +289,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 		List<MPPProductBOM> boms = new Query(Env.getCtx(),MPPProductBOM.Table_Name,whereClause, null)
 		.setParameters(new Object[]{M_Product.getValue()})
 		.setOnlyActiveRecords(true)
-		.list();    
+		.list(MPPProductBOM.class);
 		for (MPPProductBOM bom : boms)
 		{
 			return parent(bom);  
@@ -298,6 +297,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 		return new DefaultMutableTreeNode(new nodeUserObject(Msg.translate(Env.getCtx(), "Value") + ": " + M_Product.getValue() + " " + Msg.translate(Env.getCtx(), "Name") + ": "  +M_Product.getName() + " " +  Msg.translate(Env.getCtx(), "C_UOM_ID") + ": " + UOM.getName(), M_Product, bomPassed, bomlinePassed));
 	}
 
+	@Override
 	public boolean isOnHotspot(int x, int y) {
 		return (button.getBounds().contains(x, y));
 	}
@@ -314,7 +314,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 	}
 
 	public TreePath getPath(TreeNode node) {
-		java.util.List<TreeNode> list = new ArrayList<TreeNode>();
+		java.util.List<TreeNode> list = new ArrayList<>();
 
 		// Add all nodes to list
 		while (node != null) {
@@ -369,6 +369,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 		return retVal;
 	}
 
+	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object  
 			value, boolean selected, boolean expanded, boolean leaf, int row,
 			boolean hasFocus) {
@@ -504,6 +505,7 @@ public class RadioButtonTreeCellRenderer implements CheckboxTreeCellRenderer {
 		tree.getCheckingModel().clearChecking();
 		tree.setCellRenderer(m_RadioButtonTreeCellRenderer);
 		tree.addTreeCheckingListener(new TreeCheckingListener() {
+			@Override
 			public void valueChanged(TreeCheckingEvent e) {
 				log.debug("Checked paths changed: user clicked on " + (e.getLeadingPath().getLastPathComponent()));
 				//       		TreeModel tm = tree.getModel();

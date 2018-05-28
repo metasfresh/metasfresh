@@ -1,6 +1,7 @@
 package de.metas.handlingunits.sourcehu.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -12,6 +13,7 @@ import org.compiere.model.IQuery;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheModel;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -69,25 +71,44 @@ public class SourceHuDAO implements ISourceHuDAO
 				.create()
 				.firstOnly(I_M_Source_HU.class);
 	}
-	
+
 	@Override
 	public List<I_M_HU> retrieveActiveSourceHus(@NonNull final MatchingSourceHusQuery query)
 	{
-		if (query.getProductIds().isEmpty())
+		final IQueryBuilder<I_M_HU> queryBuilder = retrieveActiveSourceHusQuery(query);
+		if (queryBuilder == null)
 		{
 			return ImmutableList.of();
 		}
 
-		final ICompositeQueryFilter<I_M_HU> huFilters = createHuFilter(query);
+		return queryBuilder.create().list();
+	}
+	
+	@Override
+	public Set<Integer> retrieveActiveSourceHUIds(@NonNull final MatchingSourceHusQuery query)
+	{
+		final IQueryBuilder<I_M_HU> queryBuilder = retrieveActiveSourceHusQuery(query);
+		if (queryBuilder == null)
+		{
+			return ImmutableSet.of();
+		}
 
-		final IQueryBuilder<I_M_HU> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Source_HU.class)
+		final List<Integer> huIds = queryBuilder.create().listIds();
+		return ImmutableSet.copyOf(huIds);
+	}
+
+	private IQueryBuilder<I_M_HU> retrieveActiveSourceHusQuery(@NonNull final MatchingSourceHusQuery query)
+	{
+		if (query.getProductIds().isEmpty())
+		{
+			return null;
+		}
+
+		final ICompositeQueryFilter<I_M_HU> huFilters = createHuFilter(query);
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Source_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_M_Source_HU.COLUMN_M_HU_ID)
 				.filter(huFilters);
-
-		final List<I_M_HU> result = queryBuilder.create()
-				.list();
-		return result;
 	}
 
 	@Override

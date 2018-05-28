@@ -83,7 +83,7 @@ public class PPOrderChangedHandlerTest
 		}};	// @formatter:on
 
 		final PPOrderChangedEvent ppOrderChangedEvent = PPOrderChangedEvent.builder()
-				.eventDescriptor(new EventDescriptor(10, 20))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
 				.oldDocStatus("CO")
 				.newDocStatus("CO")
 				.oldDatePromised(SystemTime.asTimestamp())

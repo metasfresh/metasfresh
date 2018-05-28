@@ -39,6 +39,8 @@ import org.compiere.model.I_C_DocType;
  */
 public interface IDocumentBL extends ISingletonService
 {
+	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
 	/**
 	 *
 	 * @param document

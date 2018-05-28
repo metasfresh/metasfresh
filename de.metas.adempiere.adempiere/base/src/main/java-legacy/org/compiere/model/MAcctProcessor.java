@@ -54,7 +54,7 @@ public class MAcctProcessor extends X_C_AcctProcessor
 	{
 		List<MAcctProcessor> list = new Query(ctx, MAcctProcessor.Table_Name, null, ITrx.TRXNAME_None)
 										.setOnlyActiveRecords(true)
-										.list();
+										.list(MAcctProcessor.class);
 		return list.toArray(new MAcctProcessor[list.size()]);		
 	}	//	getActive
 	
@@ -134,10 +134,10 @@ public class MAcctProcessor extends X_C_AcctProcessor
 	public AdempiereProcessorLog[] getLogs ()
 	{
 		String whereClause = "C_AcctProcessor_ID=? ";
-		List<MAcctProcessor> list = new Query(getCtx(), MAcctProcessorLog.Table_Name,whereClause,get_TrxName())
+		List<MAcctProcessorLog> list = new Query(getCtx(), MAcctProcessorLog.Table_Name,whereClause,get_TrxName())
 		.setParameters(new Object[]{getC_AcctProcessor_ID()})
 		.setOrderBy("Created DESC")
-		.list();
+		.list(MAcctProcessorLog.class);
 		return list.toArray(new MAcctProcessorLog[list.size()]);		
 	}	//	getLogs
 

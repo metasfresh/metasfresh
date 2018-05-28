@@ -28,10 +28,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -50,18 +46,19 @@ import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
-import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.wf.MWFNode;
 import org.compiere.wf.MWFNodeNext;
 import org.compiere.wf.MWorkflow;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 
 /**
  * WorkFlow Panel
@@ -217,7 +214,7 @@ public class WFPanel extends CPanel
 	private void jbInit() throws Exception
 	{
 		this.setLayout(mainLayout);
-		CompiereColor.setBackground(this);
+		AdempierePLAF.setDefaultBackground(this);
 		southPanel.setLayout(southLayout);
 		// Center
 		this.add(new JScrollPane(centerPanel), BorderLayout.CENTER);

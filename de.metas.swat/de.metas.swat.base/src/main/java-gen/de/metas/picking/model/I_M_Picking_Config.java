@@ -147,6 +147,29 @@ public interface I_M_Picking_Config
     public static final String COLUMNNAME_IsAllowOverdelivery = "IsAllowOverdelivery";
 
 	/**
+	 * Set IsAutoProcess.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAutoProcess (boolean IsAutoProcess);
+
+	/**
+	 * Get IsAutoProcess.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAutoProcess();
+
+    /** Column definition for IsAutoProcess */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Config, Object> COLUMN_IsAutoProcess = new org.adempiere.model.ModelColumn<I_M_Picking_Config, Object>(I_M_Picking_Config.class, "IsAutoProcess", null);
+    /** Column name IsAutoProcess */
+    public static final String COLUMNNAME_IsAutoProcess = "IsAutoProcess";
+
+	/**
 	 * Set Picking configuration.
 	 *
 	 * <br>Type: ID

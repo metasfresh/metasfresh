@@ -49,7 +49,8 @@ import lombok.experimental.UtilityClass;
 public class CtxNames
 {
 	public static final String NAME_Marker = "@";
-	public static final String MODIFIER_Old = "old";
+	static final String MODIFIER_Old = "old";
+	static final String MODIFIER_QuotedIfNotDefault = "quotedIfNotDefault";
 
 	public static final String VALUE_NULL = null;
 
@@ -58,8 +59,9 @@ public class CtxNames
 	// .omitEmptyStrings() // DO NOT omit empty strings because we want to support expressions like: @Description/@
 	;
 
-	private static final List<String> MODIFIERS = ImmutableList.<String> builder()
+	private static final ImmutableSet<String> MODIFIERS = ImmutableSet.<String> builder()
 			.add(MODIFIER_Old)
+			.add(MODIFIER_QuotedIfNotDefault)
 			.build();
 
 	/**
@@ -221,7 +223,7 @@ public class CtxNames
 	 * @param modifier
 	 * @return true if given string is a registered modifier
 	 */
-	public static boolean isModifier(final String modifier)
+	private static boolean isModifier(final String modifier)
 	{
 		if (Check.isEmpty(modifier))
 		{

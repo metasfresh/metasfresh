@@ -1,12 +1,16 @@
 package de.metas.i18n;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Set;
 
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
 
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /*
@@ -32,6 +36,7 @@ import lombok.ToString;
  */
 
 @ToString
+@EqualsAndHashCode
 public final class DateTimeTranslatableString implements ITranslatableString
 {
 	public static final DateTimeTranslatableString ofDate(final java.util.Date date)
@@ -39,17 +44,31 @@ public final class DateTimeTranslatableString implements ITranslatableString
 		return new DateTimeTranslatableString(date.getTime(), false);
 	}
 
+	public static final DateTimeTranslatableString ofDate(final LocalDate date)
+	{
+		final long epochMillis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		final boolean dateTime = false;
+		return new DateTimeTranslatableString(epochMillis, dateTime);
+	}
+
 	public static final DateTimeTranslatableString ofDateTime(final java.util.Date date)
 	{
 		return new DateTimeTranslatableString(date.getTime(), true);
 	}
 
-	private final long timestamp;
+	public static final DateTimeTranslatableString ofDateTime(final LocalDateTime date)
+	{
+		final long epochMillis = date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		final boolean dateTime = true;
+		return new DateTimeTranslatableString(epochMillis, dateTime);
+	}
+
+	private final long epochMillis;
 	private final int displayType;
 
-	private DateTimeTranslatableString(final long timestamp, final boolean dateTime)
+	private DateTimeTranslatableString(final long epochMillis, final boolean dateTime)
 	{
-		this.timestamp = timestamp;
+		this.epochMillis = epochMillis;
 		displayType = dateTime ? DisplayType.DateTime : DisplayType.Date;
 	}
 
@@ -58,7 +77,7 @@ public final class DateTimeTranslatableString implements ITranslatableString
 	{
 		final Language language = Language.getLanguage(adLanguage);
 		final SimpleDateFormat dateFormat = DisplayType.getDateFormat(displayType, language);
-		final String dateStr = dateFormat.format(new java.util.Date(timestamp));
+		final String dateStr = dateFormat.format(new java.util.Date(epochMillis));
 		return dateStr;
 	}
 
@@ -66,7 +85,7 @@ public final class DateTimeTranslatableString implements ITranslatableString
 	public String getDefaultValue()
 	{
 		final SimpleDateFormat dateFormat = DisplayType.getDateFormat(displayType);
-		final String dateStr = dateFormat.format(new java.util.Date(timestamp));
+		final String dateStr = dateFormat.format(new java.util.Date(epochMillis));
 		return dateStr;
 	}
 

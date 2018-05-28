@@ -27,9 +27,9 @@ import java.util.Properties;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
@@ -43,11 +43,9 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.acct.api.IProductAcctDAO;
 
-/**
- * @author al
- */
 public class ProductAcctDAO implements IProductAcctDAO
 {
+
 	@Override
 	public I_C_Activity retrieveActivityForAcct(
 			final IContextAware contextProvider,
@@ -87,7 +85,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 
 	@Override
 	public I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, final int productId)
-	{		
+	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(acctSchema);
 		final int acctSchemaId = acctSchema.getC_AcctSchema_ID();
 		return retrieveProductAcctOrNull(ctx, acctSchemaId, productId);

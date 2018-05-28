@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -92,7 +93,7 @@ public interface IQuery<T>
 
 	String getTableName();
 
-	<ET extends T> List<ET> list() throws DBException;
+	List<T> list() throws DBException;
 
 	/**
 	 * Return a list of all po that match the query criteria.
@@ -123,6 +124,12 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<ET extends T> Map<Integer, ET> mapById(Class<ET> clazz) throws DBException;
+	
+	default Map<Integer, T> mapById() throws DBException
+	{
+		return mapById(getModelClass());
+	}
+
 
 	int firstId();
 
@@ -136,7 +143,13 @@ public interface IQuery<T>
 
 	<ET extends T> ET first() throws DBException;
 
+	/** @return first record or null */
 	<ET extends T> ET first(Class<ET> clazz) throws DBException;
+
+	default <ET extends T> Optional<ET> firstOptional(final Class<ET> clazz) throws DBException
+	{
+		return Optional.ofNullable(first(clazz));
+	}
 
 	/**
 	 * Same as {@link #first(Class)}, but in case there is no record found an exception will be thrown too.
@@ -366,7 +379,6 @@ public interface IQuery<T>
 	int delete();
 
 	/**
-	 *
 	 * @return executor which will assist you to mass-update fields of models which are matched by this query
 	 */
 	ICompositeQueryUpdaterExecutor<T> updateDirectly();
@@ -484,7 +496,7 @@ public interface IQuery<T>
 	 * @param distinct
 	 */
 	void addUnion(IQuery<T> query, boolean distinct);
-	
+
 	default IQuery<T> addUnions(final Collection<IQuery<T>> queries, final boolean distinct)
 	{
 		queries.forEach(query -> addUnion(query, distinct));

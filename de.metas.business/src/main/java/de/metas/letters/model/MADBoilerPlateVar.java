@@ -55,8 +55,8 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 	 */
 	private static final long serialVersionUID = -7312020496358784755L;
 	
-	private static CCache<Integer, MADBoilerPlateVar> s_cache = new CCache<Integer, MADBoilerPlateVar>(Table_Name, 20, 0);
-	private static CCache<Integer, Map<String, MADBoilerPlateVar>> s_cacheByValue = new CCache<Integer, Map<String, MADBoilerPlateVar>>(Table_Name+"_Client", 2);
+	private static CCache<Integer, MADBoilerPlateVar> s_cache = new CCache<>(Table_Name, 20, 0);
+	private static CCache<Integer, Map<String, MADBoilerPlateVar>> s_cacheByValue = new CCache<>(Table_Name+"_Client", 2);
 
 	/**
 	 * 
@@ -73,9 +73,9 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 			final List<MADBoilerPlateVar> list = new Query (ctx, Table_Name, whereClause, null)
 			.setParameters(new Object[]{AD_Client_ID})
 			.setOrderBy(COLUMNNAME_Value)
-			.list();
+			.list(MADBoilerPlateVar.class);
 			
-			map = new HashMap<String, MADBoilerPlateVar>(list.size());
+			map = new HashMap<>(list.size());
 			for (MADBoilerPlateVar var : list)
 			{
 				map.put(var.getValue().toUpperCase(), var);
@@ -150,7 +150,7 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 
 		final int windowNo = context.getWindowNo();
 		final SourceDocument sourceDocument = context.getSourceDocumentOrNull();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 		final StringBuffer sql = new StringBuffer();
 
 		String inStr = code;

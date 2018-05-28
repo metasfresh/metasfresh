@@ -87,13 +87,13 @@ public class MigrationCreate extends JavaProcess
 
 		if (recordId > 0)
 		{
-			pos = new ArrayList<PO>(1);
+			pos = new ArrayList<>(1);
 			pos.add(table.getPO(recordId, get_TrxName()));
 		}
 		else
 		{
 			String where = "EntityType = ?";
-			pos = table.createQuery(where, get_TrxName()).list();
+			pos = table.createQuery(where, get_TrxName()).list(PO.class);
 		}
 
 		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(getCtx());

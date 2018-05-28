@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -33,7 +35,6 @@ import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
@@ -63,12 +64,14 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import lombok.NonNull;
 
 /**
  *
  *
- * TODO there is duplicated code from <code>de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer</code>. Please deduplicate it when there is time. my favorite solution would be to
- * create a "locking item-chump-processor" to do all the magic.
+ * TODO there is duplicated code from <code>de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer</code>.
+ * Please deduplicate it when there is time.
+ * My favorite solution would be to create a "locking item-chump-processor" to do all the magic.
  *
  */
 /* package */class InvoiceCandidateEnqueuer implements IInvoiceCandidateEnqueuer
@@ -98,14 +101,14 @@ import de.metas.lock.api.LockOwner;
 	private IInvoicingParams _invoicingParams;
 	private I_C_Async_Batch _asyncBatch = null;
 	private IWorkpackagePrioStrategy _priority = null;
-	
+
 	private boolean setWorkpackageADPInstanceCreatorId = true;
-	
+
 	@Override
 	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(final Collection<Integer> invoiceCandidateIds)
 	{
 		final int invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, ITrx.TRXNAME_None);
-		
+
 		setWorkpackageADPInstanceCreatorId = false;
 		return enqueueSelection(invoiceCandidatesSelectionId);
 	}
@@ -140,9 +143,10 @@ import de.metas.lock.api.LockOwner;
 		return resultRef.getValue();
 	}
 
-	private final IInvoiceCandidateEnqueueResult enqueueSelection0(final ILock icLock, final int adPInstanceId)
+	private final IInvoiceCandidateEnqueueResult enqueueSelection0(
+			@NonNull final ILock icLock,
+			final int adPInstanceId)
 	{
-		Check.assumeNotNull(icLock, "icLock not null");
 		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
 		final Properties ctx = getCtx();
 		final String trxName = getTrxNameNotNull();
@@ -181,8 +185,8 @@ import de.metas.lock.api.LockOwner;
 		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(ctx, trxName)
 				.setInvoiceCandidatesLock(icLock)
 				.setC_Async_Batch(_asyncBatch);
-		
-		if(setWorkpackageADPInstanceCreatorId)
+
+		if (setWorkpackageADPInstanceCreatorId)
 		{
 			workpackageAggregator.setAD_PInstance_Creator_ID(adPInstanceId);
 		}
@@ -231,21 +235,11 @@ import de.metas.lock.api.LockOwner;
 			try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 			{
 				ic.setApprovalForInvoicing(false);
-				InterfaceWrapperHelper.save(ic);
+				save(ic);
 			}
 
 			invoiceCandidateSelectionCount++; // increment AFTER validating that it was approved for invoicing etc
 			totalNetAmtToInvoiceChecksum.add(ic);
-
-			//
-			// Do an intermediate commit every 100 enqueued ICs
-			// this will also cause the previously finished (not the current one!) work package to be flagged as ready to be processed
-			// workaround: avoid the system to attempty slitting of the last WP two times which results in an exception
-			// if (workpackageAggregator.getItemsCount() % 100 == 0)
-			// {
-			// workpackageAggregator.closeAllGroupExceptLastUsed();
-			// trxManager.commit(trxName);
-			// }
 		}
 
 		//
@@ -294,7 +288,7 @@ import de.metas.lock.api.LockOwner;
 
 		//
 		// 07666: If selected, only use the invoices flagged as approved for invoicing
-		if (isOnlyApprovedForInvoicing() && !ic.isApprovalForInvoicing())
+		if (getInvoicingParams().isOnlyApprovedForInvoicing() && !ic.isApprovalForInvoicing())
 		{
 			// don't log; it's obvious for the user, and currently if won't happen anyways (die to the select's whereclause)
 			// final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
@@ -305,7 +299,7 @@ import de.metas.lock.api.LockOwner;
 		//
 		// Check other reasons no to enqueue this ic: Processed, IsError, DateToInvoice.
 		// NOTE: having this line in the middle because we will display only one skip reason and SKIPPED_QTY_TO_INVOICE is usually less informative if the IC was already processed
-		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, isIgnoreInvoiceSchedule(), loggable))
+		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, getInvoicingParams().isIgnoreInvoiceSchedule(), loggable))
 		{
 			// NOTE: we are not logging any reason because the method already logged the reason if any.
 			return false;
@@ -325,14 +319,13 @@ import de.metas.lock.api.LockOwner;
 		return true;
 	}
 
-	private final void prepareSelectionForEnqueueing(final int adPInstanceId)
+	private final void prepareSelectionForEnqueueing(final int selectionId)
 	{
 		final Timestamp today = invoiceCandBL.getToday();
-		final String trxName = getTrxNameNotNull();
 
 		//
 		// Check incomplete compensation groups
-		final Set<String> incompleteOrderDocumentNo = invoiceCandDAO.retrieveOrderDocumentNosForIncompleteGroupsFromSelection(adPInstanceId);
+		final Set<String> incompleteOrderDocumentNo = invoiceCandDAO.retrieveOrderDocumentNosForIncompleteGroupsFromSelection(selectionId);
 		if (!incompleteOrderDocumentNo.isEmpty())
 		{
 			final String incompleteOrderDocumentNoStr = Joiner.on(", ").join(incompleteOrderDocumentNo);
@@ -343,21 +336,27 @@ import de.metas.lock.api.LockOwner;
 		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
 		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
 		// this is critical because we assume that dateInvoiced is not part of the aggregation key, so different values would fail the invoicing
-		final Timestamp dateInvoiced = getDateInvoiced() != null ? getDateInvoiced() : invoiceCandBL.getToday();
-		invoiceCandDAO.updateDateInvoiced(dateInvoiced, adPInstanceId, trxName);
+		final Timestamp dateInvoiced = getInvoicingParams().getDateInvoiced() != null ? getInvoicingParams().getDateInvoiced() : invoiceCandBL.getToday();
+		invoiceCandDAO.updateDateInvoiced(dateInvoiced, selectionId);
 
 		//
 		// Updating candidates previous to enqueueing, if the parameter has been set (task 08437)
 		// task 08628: same as for dateInvoiced
-		final Timestamp dateAcct = getDateAcct() != null ? getDateAcct() : dateInvoiced;
-		invoiceCandDAO.updateDateAcct(dateAcct, adPInstanceId, trxName);
+		final Timestamp dateAcct = getInvoicingParams().getDateAcct() != null ? getInvoicingParams().getDateAcct() : dateInvoiced;
+		invoiceCandDAO.updateDateAcct(dateAcct, selectionId);
 
 		//
 		// Update POReference (task 07978)
-		final String poReference = getPOReference();
+		final String poReference = getInvoicingParams().getPOReference();
 		if (!Check.isEmpty(poReference, true))
 		{
-			invoiceCandDAO.updatePOReference(poReference, adPInstanceId, trxName);
+			invoiceCandDAO.updatePOReference(poReference, selectionId);
+		}
+
+		// issue https://github.com/metasfresh/metasfresh/issues/3809
+		if (getInvoicingParams().isSupplementMissingPaymentTermIds())
+		{
+			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
 		}
 
 		//
@@ -372,14 +371,14 @@ import de.metas.lock.api.LockOwner;
 				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,
 				today, // value
 				true, // updateOnlyIfNull
-				adPInstanceId, // selectionId
-				trxName);
+				selectionId // selectionId
+		);
 		invoiceCandDAO.updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,
 				ModelColumnNameValue.forColumnName(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced), // value
 				true, // updateOnlyIfNull
-				adPInstanceId, // selectionId
-				trxName);
+				selectionId // selectionId
+		);
 	}
 
 	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final int adPInstanceId)
@@ -437,16 +436,6 @@ import de.metas.lock.api.LockOwner;
 		this._trxName = trxName;
 	}
 
-	private final boolean isOnlyApprovedForInvoicing()
-	{
-		return getInvoicingParams().isOnlyApprovedForInvoicing();
-	}
-
-	private final boolean isIgnoreInvoiceSchedule()
-	{
-		return getInvoicingParams().isIgnoreInvoiceSchedule();
-	}
-
 	@Override
 	public IInvoiceCandidateEnqueuer setLoggable(final ILoggable loggable)
 	{
@@ -470,21 +459,6 @@ import de.metas.lock.api.LockOwner;
 	private final boolean isFailIfNothingEnqueued()
 	{
 		return _failIfNothingEnqueued;
-	}
-
-	private final Timestamp getDateInvoiced()
-	{
-		return getInvoicingParams().getDateInvoiced();
-	}
-
-	private final Timestamp getDateAcct()
-	{
-		return getInvoicingParams().getDateAcct();
-	}
-
-	private final String getPOReference()
-	{
-		return getInvoicingParams().getPOReference();
 	}
 
 	@Override

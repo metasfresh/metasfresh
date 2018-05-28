@@ -10,12 +10,12 @@ package de.metas.fresh.invoice.migrateMatchInv.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,8 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -41,7 +39,6 @@ import org.adempiere.util.IProcessor;
 import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -49,13 +46,16 @@ import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.logging.LogManager;
 
 /**
  * Helper class used by the processes which are creating/adjusting {@link I_M_MatchInv} records.
- * 
+ *
  * @author tsa
  *
  */
@@ -139,10 +139,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 				.addOnlyActiveRecordsFilter()
 				//
 				// Collect C_InvoiceCandidate_InOutLines
-				.andCollectChildren(org.compiere.model.I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, org.compiere.model.I_C_InvoiceCandidate_InOutLine.class)
+				.andCollectChildren(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, I_C_InvoiceCandidate_InOutLine.class)
 				//
 				// Collect M_InOutLines
-				.andCollect(org.compiere.model.I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
+				.andCollect(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
 				//
 				// Order M_InOutLines
 				.orderBy()
@@ -170,7 +170,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 					{
 						continue;
 					}
-					
+
 					// Make sure the direct link it's the first record to be checked
 					if (i > 0)
 					{
@@ -236,7 +236,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 		{
 			qtyInvoiced = qtyInvoiced.negate();
 		}
-		
+
 		final BigDecimal qtyMatched = matchInvDAO.retrieveQtyMatched(il);
 		final BigDecimal qtyNotMatched = qtyInvoiced.subtract(qtyMatched);
 		return qtyNotMatched;
@@ -255,7 +255,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 		{
 			qtyReceived = qtyReceived.negate();
 		}
-		
+
 		final BigDecimal qtyMatched = matchInvDAO.retrieveQtyInvoiced(iol);
 		final BigDecimal qtyNotMatched = qtyReceived.subtract(qtyMatched);
 		return qtyNotMatched;
@@ -288,7 +288,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 
 	/**
 	 * Process given <code>lines</code> using <code>processor</code>.
-	 * 
+	 *
 	 * NOTE:
 	 * <ul>
 	 * <li>user {@link #AD_USER_ID_Migration} will be used to save/update records.

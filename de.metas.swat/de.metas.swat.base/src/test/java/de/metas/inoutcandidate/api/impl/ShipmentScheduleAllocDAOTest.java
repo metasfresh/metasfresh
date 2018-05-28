@@ -59,8 +59,8 @@ public class ShipmentScheduleAllocDAOTest
 	/**
 	 * Some simple tests on
 	 * <ul>
-	 * <li>{@link IShipmentScheduleAllocDAO#retrievePickedNotDeliveredRecords(I_M_ShipmentSchedule, Class)}
-	 * <li> {@link IShipmentScheduleAllocDAO#retrievePickedAndDeliveredRecordsQuery(I_M_ShipmentSchedule)}
+	 * <li>{@link IShipmentScheduleAllocDAO#retrieveNotOnShipmentLineRecords(I_M_ShipmentSchedule, Class)}
+	 * <li> {@link IShipmentScheduleAllocDAO#retrieveOnShipmentLineRecordsQuery(I_M_ShipmentSchedule)}
 	 * </ul>
 	 *
 	 * to make sure:
@@ -81,12 +81,12 @@ public class ShipmentScheduleAllocDAOTest
 		Assert.assertEquals(
 				"Expected picked but not delivered",
 				Arrays.asList(qp1, qp3),
-				dao.retrievePickedNotDeliveredRecords(ss, I_M_ShipmentSchedule_QtyPicked.class));
+				dao.retrieveNotOnShipmentLineRecords(ss, I_M_ShipmentSchedule_QtyPicked.class));
 
 		Assert.assertEquals(
 				"Expected picked AND delivered",
 				Arrays.asList(qp2, qp4),
-				dao.retrievePickedAndDeliveredRecordsQuery(ss).create().list());
+				dao.retrieveOnShipmentLineRecordsQuery(ss).create().list());
 
 	}
 

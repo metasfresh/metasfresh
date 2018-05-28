@@ -1,14 +1,14 @@
 package de.metas.material.event.transactions;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
+import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.Singular;
@@ -51,7 +51,7 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId,
 			@JsonProperty("transactionId") final int transactionId,
 			@JsonProperty("directMovementWarehouse") final boolean directMovementWarehouse,
-			@JsonProperty("huOnHandQtyChangeDescriptor")final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors)
+			@JsonProperty("huOnHandQtyChangeDescriptor")final Collection<HUDescriptor> huOnHandQtyChangeDescriptors)
 	{
 		super(eventDescriptor,
 				materialDescriptor,

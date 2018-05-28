@@ -10,14 +10,14 @@ package org.adempiere.bpartner.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerAware;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -34,6 +35,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
@@ -49,12 +51,28 @@ import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.i18n.Language;
 import lombok.NonNull;
 
-
 public class BPartnerBL implements IBPartnerBL
 {
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
+	@Override
+	public String getBPartnerValueAndName(final BPartnerId bpartnerId)
+	{
+		if (bpartnerId == null)
+		{
+			return "?";
+		}
+
+		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
+		if (bpartner == null)
+		{
+			return "<" + bpartnerId + ">";
+		}
+
+		return bpartner.getValue() + "_" + bpartner.getName();
+	}
 
 	@Override
 	public String mkFullAddress(
@@ -85,7 +103,7 @@ public class BPartnerBL implements IBPartnerBL
 		final org.compiere.model.I_AD_User userPO = retrieveShipContact(ctx, bPartnerId, trxName);
 		return InterfaceWrapperHelper.create(userPO, I_AD_User.class);
 	}
-	
+
 	@Override
 	public I_AD_User createDraftContact(final org.compiere.model.I_C_BPartner bpartner)
 	{
@@ -160,18 +178,18 @@ public class BPartnerBL implements IBPartnerBL
 	//
 	/*
 	 * @Override public void updateNextLocation(I_C_BPartner_Location bpLocation) { final int nextId = bpLocation.getNext_ID(); if (nextId <= 0) { return; }
-	 * 
+	 *
 	 * final Properties ctx = InterfaceWrapperHelper.getCtx(bpLocation); final String trxName = InterfaceWrapperHelper.getTrxName(bpLocation);
-	 * 
+	 *
 	 * final I_C_BPartner_Location nextLocation = InterfaceWrapperHelper.create(ctx, nextId, I_C_BPartner_Location.class, trxName);
-	 * 
+	 *
 	 * // inherit the flags from the previous
-	 * 
+	 *
 	 * // Don't update the defaults if the current location is still valid. if (isTerminatedInThePast(bpLocation)) { nextLocation.setIsBillToDefault(bpLocation.isBillToDefault());
 	 * nextLocation.setIsShipToDefault(bpLocation.isShipToDefault()); }
-	 * 
+	 *
 	 * nextLocation.setIsBillTo(bpLocation.isBillTo()); nextLocation.setIsShipTo(bpLocation.isShipTo());
-	 * 
+	 *
 	 * InterfaceWrapperHelper.save(nextLocation); }
 	 */
 
@@ -208,8 +226,7 @@ public class BPartnerBL implements IBPartnerBL
 			final boolean allowConsolidateInOutOverrideDefault = false; // default=false (preserve existing logic)
 			final boolean allowConsolidateInOutOverride = Services.get(ISysConfigBL.class).getBooleanValue(
 					SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override,
-					allowConsolidateInOutOverrideDefault
-					);
+					allowConsolidateInOutOverrideDefault);
 			return allowConsolidateInOutOverride;
 		}
 		return false;
@@ -233,7 +250,7 @@ public class BPartnerBL implements IBPartnerBL
 		}
 		return null;
 	}
-	
+
 	@Override
 	public I_C_BPartner getBPartnerForModel(final Object model)
 	{
@@ -249,7 +266,6 @@ public class BPartnerBL implements IBPartnerBL
 		}
 		return InterfaceWrapperHelper.create(bpartnerAware.getC_BPartner(), I_C_BPartner.class);
 	}
-
 
 	@Override
 	public Language getLanguageForModel(final Object model)
@@ -275,12 +291,12 @@ public class BPartnerBL implements IBPartnerBL
 		Check.assumeNotNull(template, "Parameter template is not null");
 		Check.assume(!template.isProcessed(), "{} not already processed", template);
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-		
+
 		//
 		// BPartner
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
 		bpartner.setAD_Org_ID(template.getAD_Org_ID());
-		//bpartner.setValue(Value);
+		// bpartner.setValue(Value);
 		bpartner.setName(extractName(template));
 		bpartner.setName2(template.getName2());
 		bpartner.setIsCompany(template.isCompany());
@@ -297,7 +313,7 @@ public class BPartnerBL implements IBPartnerBL
 		bpartner.setPO_PricingSystem_ID(template.getPO_PricingSystem_ID());
 		//
 		InterfaceWrapperHelper.save(bpartner);
-		
+
 		//
 		// BPartner location
 		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
@@ -308,7 +324,7 @@ public class BPartnerBL implements IBPartnerBL
 		bpLocation.setIsShipTo(true);
 		bpLocation.setIsShipToDefault(true);
 		InterfaceWrapperHelper.save(bpLocation);
-		
+
 		//
 		// BPartner contact
 		final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
@@ -318,8 +334,17 @@ public class BPartnerBL implements IBPartnerBL
 		bpContact.setLastname(template.getLastname());
 		bpContact.setPhone(template.getPhone());
 		bpContact.setEMail(template.getEMail());
+		if (template.isCustomer())
+		{
+			bpContact.setIsSalesContact(true);
+			bpContact.setIsSalesContact_Default(true);
+		}
+		if (template.isVendor())
+		{
+			bpContact.setIsPurchaseContact(true);
+			bpContact.setIsPurchaseContact_Default(true);
+		}
 		InterfaceWrapperHelper.save(bpContact);
-		
 
 		//
 		// Update the template
@@ -328,13 +353,13 @@ public class BPartnerBL implements IBPartnerBL
 		template.setAD_User(bpContact);
 		template.setProcessed(true);
 		InterfaceWrapperHelper.save(template);
-		
+
 		return bpartner;
 	}
-	
+
 	private final String extractName(final I_C_BPartner_QuickInput template)
 	{
-		if(template.isCompany())
+		if (template.isCompany())
 		{
 			return template.getCompanyname();
 		}
@@ -346,5 +371,53 @@ public class BPartnerBL implements IBPartnerBL
 					.skipNulls()
 					.join(firstname, lastname);
 		}
+	}
+
+	@Override
+	public int getDiscountSchemaId(@NonNull final BPartnerId bpartnerId, final boolean soTrx)
+	{
+		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
+		return getDiscountSchemaId(bpartner, soTrx);
+	}
+
+	@Override
+	public int getDiscountSchemaId(@NonNull final I_C_BPartner bpartner, final boolean soTrx)
+	{
+		{
+			final int discountSchemaId;
+			if (soTrx)
+			{
+				discountSchemaId = bpartner.getM_DiscountSchema_ID();
+			}
+			else
+			{
+				discountSchemaId = bpartner.getPO_DiscountSchema_ID();
+			}
+			if (discountSchemaId > 0)
+			{
+				return discountSchemaId; // we are done
+			}
+		}
+
+		// didn't get the schema yet; now we try to get the discount schema from the C_BPartner's C_BP_Group
+		final I_C_BP_Group bpGroup = bpartner.getC_BP_Group();
+		if (bpGroup != null && bpGroup.getC_BP_Group_ID() > 0)
+		{
+			final int groupDiscountSchemaId;
+			if (soTrx)
+			{
+				groupDiscountSchemaId = bpGroup.getM_DiscountSchema_ID();
+			}
+			else
+			{
+				groupDiscountSchemaId = bpGroup.getPO_DiscountSchema_ID();
+			}
+			if (groupDiscountSchemaId > 0)
+			{
+				return groupDiscountSchemaId; // we are done
+			}
+		}
+
+		return -1;
 	}
 }

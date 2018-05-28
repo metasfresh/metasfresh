@@ -29,11 +29,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -100,13 +100,13 @@ public class ShipmentSchedule_QtyPicked_Test
 		// final BigDecimal qtyPickedActual = shipmentScheduleBL.getQtyPicked(shipmentSchedule);
 
 		Assert.assertThat("Invalid getQtyPicked()",
-				shipmentScheduleAllocBL.getQtyPicked(shipmentSchedule), // Actual
+				Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineQty(shipmentSchedule), // Actual
 				Matchers.comparesEqualTo(qtyPicked) // Expected
 		);
 
 		//
 		// Now check the DAO
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
 		Assert.assertNotNull("QtyPicked records not found", qtyPickedRecords);
 		Assert.assertEquals("Only one QtyPicked record expected", 1, qtyPickedRecords.size());
 
@@ -141,7 +141,7 @@ public class ShipmentSchedule_QtyPicked_Test
 		final I_M_ShipmentSchedule shipmentSchedule = createShipmentSchedule();
 
 		Assert.assertThat("Invalid initial QtyPicked",
-				shipmentScheduleAllocBL.getQtyPicked(shipmentSchedule), // Actual
+				shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule), // Actual
 				Matchers.comparesEqualTo(BigDecimal.ZERO) // Expected
 		);
 
@@ -161,7 +161,7 @@ public class ShipmentSchedule_QtyPicked_Test
 		Assert.assertNotNull("QtyPicked record was not created", qtyPickedRecord);
 
 		Assert.assertThat("Invalid getQtyPicked()",
-				shipmentScheduleAllocBL.getQtyPicked(shipmentSchedule), // Actual
+				Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineQty(shipmentSchedule), // Actual
 				Matchers.comparesEqualTo(qtyPickedExpected) // Expected
 		);
 

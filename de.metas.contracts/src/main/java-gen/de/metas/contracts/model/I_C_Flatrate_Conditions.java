@@ -686,6 +686,54 @@ public interface I_C_Flatrate_Conditions
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Behaviour when extending contract.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setOnFlatrateTermExtend (java.lang.String OnFlatrateTermExtend);
+
+	/**
+	 * Get Behaviour when extending contract.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOnFlatrateTermExtend();
+
+    /** Column definition for OnFlatrateTermExtend */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_OnFlatrateTermExtend = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "OnFlatrateTermExtend", null);
+    /** Column name OnFlatrateTermExtend */
+    public static final String COLUMNNAME_OnFlatrateTermExtend = "OnFlatrateTermExtend";
+
+	/**
+	 * Set Drucktext.
+	 * Bezeichnung, die auf dem Dokument oder der Korrespondenz gedruckt werden soll
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPrintName (java.lang.String PrintName);
+
+	/**
+	 * Get Drucktext.
+	 * Bezeichnung, die auf dem Dokument oder der Korrespondenz gedruckt werden soll
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPrintName();
+
+    /** Column definition for PrintName */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_PrintName = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "PrintName", null);
+    /** Column name PrintName */
+    public static final String COLUMNNAME_PrintName = "PrintName";
+
+	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
@@ -809,7 +857,7 @@ public interface I_C_Flatrate_Conditions
 	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setUOMType (java.lang.String UOMType);
@@ -819,7 +867,7 @@ public interface I_C_Flatrate_Conditions
 	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getUOMType();

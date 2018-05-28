@@ -34,11 +34,10 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
@@ -47,6 +46,7 @@ import org.compiere.model.I_M_InOutLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -192,41 +192,45 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	void invalidateCandsForBPartner(I_C_BPartner bpartner);
 
-	// @Deprecated
-	// void invalidateCandsForBPartnerAllowConsolidate(I_C_BPartner bPartner);
-
 	/**
-	 * Loads the invoice candidates whose <code>AD_Table_ID</code> and <code>Record_ID</code> columns match the given model.
+	 * Load the invoice candidates whose <code>AD_Table_ID</code> and <code>Record_ID</code> columns match the given model.
 	 */
 	List<I_C_Invoice_Candidate> retrieveReferencing(Object model);
 
 	/**
+	 * Delete all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
+	 *
+	 * @return number of deleted invoice candidates.
+	 */
+	int deleteAllReferencingInvoiceCandidates(Object model);
+
+	/**
 	 * Updates <code>dateInvoiced</code> of candidates from selection.
 	 *
-	 * @param dateInvoiced new value to be set
-	 * @param AD_Pinstance_ID id of the <code>T_Selection</code> containing the candidates that shall be updated.
-	 * @param trxName
+	 * @param dateInvoiced new value to be set.
+	 * @param selectionId id of the <code>T_Selection</code> containing the candidates that shall be updated.
 	 */
-	void updateDateInvoiced(Timestamp dateInvoiced, int AD_Pinstance_ID, String trxName);
+	void updateDateInvoiced(Timestamp dateInvoiced, int selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>DateAcct</code> column
+	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>DateAcct</code> column.
 	 *
-	 * @param p_DateInvoiced
-	 * @param ad_PInstance_ID
-	 * @param trxName
 	 * @task 08437
 	 */
-	void updateDateAcct(Timestamp dateAcct, int ad_PInstance_ID, String trxName);
+	void updateDateAcct(Timestamp dateAcct, int selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>POReference</code> column
-	 *
-	 * @param poReference
-	 * @param ad_PInstance_ID
-	 * @param trxName
+	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>POReference</code> column.
 	 */
-	void updatePOReference(String poReference, int ad_PInstance_ID, String trxName);
+	void updatePOReference(String poReference, int selectionId);
+
+	/**
+	 * Updates the {@link I_C_Invoice_Candidate#COLUMN_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
+	 * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/3809
+	 */
+	void updateMissingPaymentTermIds(int selectionId);
 
 	/**
 	 * Mass-update a given invoice candidate column.
@@ -237,9 +241,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @param value value to set (you can also use {@link ModelColumnNameValue})
 	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
 	 * @param selectionId invoice candidates selection (AD_PInstance_ID)
-	 * @param trxName
 	 */
-	<ValueType> void updateColumnForSelection(String invoiceCandidateColumnName, ValueType value, boolean updateOnlyIfNull, int selectionId, String trxName);
+	<ValueType> void updateColumnForSelection(String invoiceCandidateColumnName, ValueType value, boolean updateOnlyIfNull, int selectionId);
 
 	/**
 	 * Gets the sum of all {@link I_C_Invoice_Candidate#COLUMNNAME_NetAmtToInvoice} values of the invoice candidates that have the given bPartner and are invoiceable before or at the given date. The
@@ -311,7 +314,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>or by referencing the inOutLine's order line record.
 	 * </ul>
 	 *
-	 * @param inOutLine
+	 * Note: only active records are returned, as ususal.
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLineQuery(I_M_InOutLine inoutLine);
 

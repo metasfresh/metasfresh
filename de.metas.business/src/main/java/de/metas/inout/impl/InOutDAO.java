@@ -1,6 +1,7 @@
 package de.metas.inout.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 
 /*
@@ -33,15 +34,19 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 public class InOutDAO implements IInOutDAO
 {
@@ -65,13 +70,11 @@ public class InOutDAO implements IInOutDAO
 		return retrieveLines(inOut, retrieveAll, inoutLineClass);
 	}
 
-	private <T extends I_M_InOutLine> List<T> retrieveLines(final I_M_InOut inOut,
+	private <T extends I_M_InOutLine> List<T> retrieveLines(
+			@NonNull final I_M_InOut inOut,
 			final boolean retrieveAll,
-			final Class<T> inoutLineClass)
+			@NonNull final Class<T> inoutLineClass)
 	{
-		Check.assumeNotNull(inOut, "inOut not null");
-		Check.assumeNotNull(inoutLineClass, "inoutLineClass not null");
-
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, inOut)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID());
 
@@ -181,7 +184,9 @@ public class InOutDAO implements IInOutDAO
 				.createQueryBuilder(I_M_InOutLine.class, packingMaterialLine)
 				// .addOnlyActiveRecordsFilter() add all, also inactive ones
 				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_PackingMaterial_InOutLine_ID, packingMaterialLine.getM_InOutLine_ID())
-				.orderBy().addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy();
+				.orderBy()
+				.addColumn(I_M_InOutLine.COLUMNNAME_Line)
+				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy();
 
 	}
 
@@ -219,5 +224,18 @@ public class InOutDAO implements IInOutDAO
 				.addCompareFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, Operator.GREATER, BigDecimal.ZERO);
 
 		return queryBuilder;
+	}
+
+	@Override
+	public LocalDate getLastInOutDate(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId, final boolean isSOTrx)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMN_M_Product_ID, productId.getRepoId())
+				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
+				.addEqualsFilter(I_M_InOut.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
+				.addEqualsFilter(I_M_InOut.COLUMN_IsSOTrx, isSOTrx)
+				.create()
+				.aggregate(I_M_InOut.COLUMN_MovementDate, Aggregate.MAX, LocalDate.class);
 	}
 }

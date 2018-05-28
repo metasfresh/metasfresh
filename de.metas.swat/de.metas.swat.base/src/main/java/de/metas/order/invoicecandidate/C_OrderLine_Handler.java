@@ -31,13 +31,12 @@ import java.util.Properties;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
@@ -49,6 +48,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -56,6 +56,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax.PriceAndTaxBuilder;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
@@ -191,14 +192,19 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_Activity(activity);
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, ic, orderLine.getC_TaxCategory_ID(), orderLine.getM_Product_ID(), orderLine.getC_Charge_ID() // chargeId
-				, order.getDatePromised() // billDate
-				, order.getDatePromised() // shipDate
-				, order.getAD_Org_ID(), order.getM_Warehouse(), order.getBill_Location_ID() // bill location id
-				, order.getC_BPartner_Location_ID() // ship location id
-				, order.isSOTrx() // isSOTrx
-				, trxName);
-
+				ctx,
+				ic,
+				orderLine.getC_TaxCategory_ID(),
+				orderLine.getM_Product_ID(),
+				orderLine.getC_Charge_ID(), // chargeId
+				order.getDatePromised(), // billDate
+				order.getDatePromised(), // shipDate
+				order.getAD_Org_ID(),
+				order.getM_Warehouse(),
+				order.getBill_Location_ID(), // bill location id
+				order.getC_BPartner_Location_ID(), // ship location id
+				order.isSOTrx(), // isSOTrx
+				trxName);
 		ic.setC_Tax_ID(taxId);
 
 		// set Quality Issue Percentage Override
@@ -289,16 +295,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
-
-		if (orderLine.getC_PaymentTerm_Override() == null)
-		{
-			final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-			ic.setC_PaymentTerm(order.getC_PaymentTerm());
-		}
-		else
-		{
-			ic.setC_PaymentTerm(orderLine.getC_PaymentTerm_Override());
-		}
+		final int paymentTermId = Services.get(IOrderLineBL.class).getC_PaymentTerm_ID(orderLine);
+		ic.setC_PaymentTerm_ID(paymentTermId);
 	}
 
 	/**

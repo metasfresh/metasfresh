@@ -36,7 +36,7 @@ import java.util.Set;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IAggregationBL;

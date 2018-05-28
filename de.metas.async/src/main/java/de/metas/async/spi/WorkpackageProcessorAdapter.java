@@ -120,6 +120,16 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		return Services.get(IQueueDAO.class).retrieveItems(getC_Queue_WorkPackage(), modelType, ITrx.TRXNAME_ThreadInherited);
 	}
 
+	/**
+	 * retrieves all active POs, even the ones that are caught in other packages
+	 * @param modelType
+	 * @return
+	 */
+	public final <T> List<T> retrieveAllItems(final Class<T> modelType)
+	{
+		return Services.get(IQueueDAO.class).retrieveAllItems(getC_Queue_WorkPackage(), modelType);
+	}
+
 	public final List<I_C_Queue_Element> retrieveQueueElements(final boolean skipAlreadyScheduledItems)
 	{
 		return Services.get(IQueueDAO.class).retrieveQueueElements(getC_Queue_WorkPackage(), skipAlreadyScheduledItems);

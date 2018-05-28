@@ -5,12 +5,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
@@ -37,16 +47,18 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class NullVendorGatewayInvokerTest
 {
 	@Test
 	public void placeRemotePurchaseOrder()
 	{
-		final int productId = 20;
-		final int vendorBPartnerId = 30;
+		final ProductId productId = ProductId.ofRepoId(20);
+		final BPartnerId vendorBPartnerId = BPartnerId.ofRepoId(30);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bPartnerProductId(10)
+				.bpartnerProductId(10)
 				.productId(productId)
 				.vendorBPartnerId(vendorBPartnerId)
 				.productName("productName")
@@ -54,13 +66,13 @@ public class NullVendorGatewayInvokerTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(10)
-				.dateRequired(SystemTime.asTimestamp())
+				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
-				.vendorBPartnerId(vendorBPartnerId)
 				.productId(productId)
 				.qtyToPurchase(TEN)
 				.salesOrderId(40)
-				.salesOrderLineId(50)
+				.salesOrderLineId(OrderLineId.ofRepoId(50))
+				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.warehouseId(60)
 				.uomId(70)
 				.build();

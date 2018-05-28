@@ -528,7 +528,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 		List<MHRMovement> list = new Query(getCtx(), MHRMovement.Table_Name, whereClause.toString(), get_TrxName())
 				.setParameters(params)
 				.setOrderBy(orderByClause.toString())
-				.list();
+				.list(MHRMovement.class);
 		return list.toArray(new MHRMovement[list.size()]);
 	}
 
@@ -544,7 +544,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 				+ " AND " + MHRMovement.COLUMNNAME_C_BPartner_ID + "=?";
 		List<MHRMovement> list = new Query(getCtx(), MHRMovement.Table_Name, whereClause, get_TrxName())
 				.setParameters(new Object[] { getHR_Process_ID(), C_PBartner_ID })
-				.list();
+				.list(MHRMovement.class);
 		for (MHRMovement mvm : list)
 		{
 			if (movements.containsKey(mvm.getHR_Concept_ID()))
@@ -633,7 +633,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 						.setOnlyActiveRecords(true)
 						.setParameters(params)
 						.setOrderBy(MPPCostCollector.COLUMNNAME_PP_Cost_Collector_ID + " DESC")
-						.list();
+						.list(MPPCostCollector.class);
 
 		for (MPPCostCollector cc : listColector)
 		{

@@ -4,12 +4,16 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 
 import de.metas.lock.api.ILockManager;
 import de.metas.procurement.base.IPMMWeekDAO;
@@ -21,6 +25,7 @@ import de.metas.procurement.base.model.I_PMM_Week;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -57,6 +62,18 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 
 	@Override
 	public void process(final I_PMM_WeekReport_Event event)
+	{
+		try
+		{
+			process0(event);
+		}
+		catch (final Exception e)
+		{
+			markError(event, e);
+		}
+	}
+
+	private void process0(final I_PMM_WeekReport_Event event)
 	{
 		//
 		// Dimension
@@ -191,6 +208,24 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 		syncProductSupply_TwoWeeksAgo.setDay(dateTwoWeeksAgo);
 
 		Services.get(IServerSyncBL.class).reportProductSupplies(SyncProductSuppliesRequest.of(syncProductSupply_TwoWeeksAgo));
+	}
+
+	private void markError(
+			@NonNull final I_PMM_WeekReport_Event event,
+			@NonNull final Exception e)
+	{
+		event.setProcessed(true);
+
+		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(e);
+
+		final String errorMsg = Util.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
+		event.setErrorMsg(errorMsg);
+
+		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, metasfreshException);
+		event.setAD_Issue(issue);
+		InterfaceWrapperHelper.save(event);
+
+		Loggables.get().addLog("Event has error with message: {}; event={}", errorMsg, event);
 	}
 
 	public String getProcessSummary()

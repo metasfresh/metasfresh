@@ -18,14 +18,12 @@ package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.WarehouseLocatorConflictException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
@@ -54,68 +52,10 @@ public class MInOutLine extends X_M_InOutLine
 	 */
 	private static final long serialVersionUID = 8630611882798722864L;
 
-	/**
-	 * Get Ship lines Of Order Line
-	 *
-	 * @param ctx context
-	 * @param C_OrderLine_ID line
-	 * @param where optional addition where clause
-	 * @param trxName transaction
-	 * @return array of receipt lines
-	 */
-	public static MInOutLine[] getOfOrderLine(Properties ctx,
-			int C_OrderLine_ID, String where, String trxName)
-	{
-		String whereClause = "C_OrderLine_ID=?" + (!Check.isEmpty(where, true) ? " AND " + where : "");
-		List<MInOutLine> list = new Query(ctx, Table_Name, whereClause, trxName)
-				.setParameters(new Object[] { C_OrderLine_ID })
-				.list();
-		return list.toArray(new MInOutLine[list.size()]);
-	}	// getOfOrderLine
-
-	/**
-	 * Get Ship lines Of RMA Line
-	 *
-	 * @param ctx context
-	 * @param M_RMALine_ID line
-	 * @param where optional addition where clause
-	 * @param trxName transaction
-	 * @return array of receipt lines
-	 */
-	public static MInOutLine[] getOfRMALine(Properties ctx,
-			int M_RMALine_ID, String where, String trxName)
-	{
-		String whereClause = "M_RMALine_ID=? " + (!Check.isEmpty(where, true) ? " AND " + where : "");
-		List<MRMALine> list = new Query(ctx, Table_Name, whereClause, trxName)
-				.setParameters(new Object[] { M_RMALine_ID })
-				.list();
-		return list.toArray(new MInOutLine[list.size()]);
-	}	// getOfRMALine
-
-	/**
-	 * Get Ship lines Of Order Line
-	 *
-	 * @param ctx context
-	 * @param C_OrderLine_ID line
-	 * @param trxName transaction
-	 * @return array of receipt lines2
-	 */
-	public static MInOutLine[] get(Properties ctx, int C_OrderLine_ID, String trxName)
-	{
-		return getOfOrderLine(ctx, C_OrderLine_ID, null, trxName);
-	}	// get
-
-	/**************************************************************************
-	 * Standard Constructor
-	 *
-	 * @param ctx context
-	 * @param M_InOutLine_ID id
-	 * @param trxName trx name
-	 */
 	public MInOutLine(Properties ctx, int M_InOutLine_ID, String trxName)
 	{
 		super(ctx, M_InOutLine_ID, trxName);
-		if (M_InOutLine_ID == 0)
+		if (is_new())
 		{
 			// setLine (0);
 			// setM_Locator_ID (0);

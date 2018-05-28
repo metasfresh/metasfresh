@@ -53,30 +53,13 @@ public class PP_Product_BOMLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_PP_Product_BOMLine bomLine)
 	{
-		boolean valid = false;
 		if (X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomLine.getComponentType()) //
 				&& Check.isEmpty(bomLine.getVariantGroup()))
 		{
 			throw new LiberoException("@MandatoryVariant@");
 		}
 
-		if (X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomLine.getComponentType()))
-		{
-			final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
-			final List<I_PP_Product_BOMLine> bomLines = bomDAO.retrieveLines(bomLine.getPP_Product_BOM());
-			for (I_PP_Product_BOMLine bl : bomLines)
-			{
-				if (X_PP_Order_BOMLine.COMPONENTTYPE_Component.equals(bl.getComponentType()) && bomLine.getVariantGroup().equals(bl.getVariantGroup()))
-				{
-					valid = true;
-					continue;
-				}
-			}
-		}
-		else
-		{
-			valid = true;
-		}
+		final boolean valid = Services.get(IProductBOMBL.class).isValidVariantGroup(bomLine);
 		if (!valid)
 		{
 			throw new LiberoException("@NoSuchVariantGroup@");

@@ -126,7 +126,7 @@ public class MWFNodeNext extends X_AD_WF_NodeNext
 	 * 	@param requery true if requery
 	 *	@return Array of Conditions
 	 */
-	public MWFNextCondition[] getConditions(boolean requery)
+	private MWFNextCondition[] getConditions(boolean requery)
 	{
 		if (!requery && m_conditions != null)
 			return m_conditions;
@@ -136,7 +136,7 @@ public class MWFNodeNext extends X_AD_WF_NodeNext
 				.setParameters(new Object[]{getAD_WF_NodeNext_ID()})
 				.setOnlyActiveRecords(true)
 				.setOrderBy(MWFNextCondition.COLUMNNAME_SeqNo)
-				.list();
+				.list(MWFNextCondition.class);
 		m_conditions = new MWFNextCondition[list.size()];
 		list.toArray (m_conditions);
 		return m_conditions;

@@ -2,9 +2,9 @@ package de.metas.fresh.mrp_productinfo;
 
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_InfoColumn;
 
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;

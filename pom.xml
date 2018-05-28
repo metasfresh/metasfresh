@@ -110,6 +110,8 @@
 
 		<module>de.metas.fresh</module>
 
+		<module>de.metas.marketing</module>
+
 		<module>de.metas.materialtracking</module>
 
 		<module>de.metas.material</module>
@@ -141,9 +143,14 @@
 
 		<module>de.metas.swat</module>
 
-		<module>de.metas.shipper.gateway.api</module>
+		<module>de.metas.shipper.gateway.commons</module>
+		<module>de.metas.shipper.gateway.spi</module>
 		<module>de.metas.shipper.gateway.go</module>
-		<!-- commented out because we don't include it in any distribution <module>../de.metas.shipper.gateway.dpd-legacy</module> -->
+		<module>de.metas.shipper.gateway.derkurier</module>
+		<!-- commented out because we don't include it in any distribution 
+		<module>../de.metas.shipper.gateway.dpd-legacy</module> 
+		-->
+		
 		<module>de.metas.ui.web.base</module>
 
 		<module>de.metas.util</module>
@@ -270,6 +277,11 @@
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
 				<version>1.2</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.5</version>
 			</dependency>
 
 			<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->

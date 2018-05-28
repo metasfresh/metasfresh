@@ -1,6 +1,11 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh;
 
+import org.springframework.context.annotation.AdviceMode;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /*
  * #%L
@@ -25,7 +30,15 @@ import org.springframework.context.annotation.Configuration;
  */
 
 @Configuration
+@EnableAsync(mode = AdviceMode.PROXY, proxyTargetClass = true)
 public class MSV3ServerPeerMetasfreshConfiguration
 {
 	public static final String ENTITY_TYPE = "de.metas.vertical.pharma.msv3.server";
+
+	public static final String EVENTS_PUBLISHER_TASKEXECUTOR_BEAN_NAME = "eventsPublisherTaskExecutor";
+	@Bean(EVENTS_PUBLISHER_TASKEXECUTOR_BEAN_NAME)
+	public TaskExecutor eventsPublisherTaskExecutor()
+	{
+		return new ThreadPoolTaskExecutor();
+	}
 }

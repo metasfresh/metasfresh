@@ -58,10 +58,9 @@ public class MTaxCategory extends X_C_TaxCategory
 	}	//	MTaxCategory
 
 	/**
-	 * 	getDefaultTax
 	 *	Get the default tax id associated with this tax category
-	 *
 	 */
+	@Deprecated
 	public MTax getDefaultTax()
 	{
 		MTax m_tax = new MTax(getCtx(), 0, get_TrxName());
@@ -69,7 +68,7 @@ public class MTaxCategory extends X_C_TaxCategory
 		String whereClause = I_C_Tax.COLUMNNAME_C_TaxCategory_ID+"=? AND "+ I_C_Tax.COLUMNNAME_IsDefault+"='Y'";
 		List<MTax> list = new Query(getCtx(), MTax.Table_Name, whereClause,  get_TrxName())
 			.setParameters(new Object[]{getC_TaxCategory_ID()})
-			.list();
+			.list(MTax.class);
 		if (list.size() == 1)
 		{
 			m_tax = list.get(0);

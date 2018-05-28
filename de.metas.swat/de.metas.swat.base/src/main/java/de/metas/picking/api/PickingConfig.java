@@ -34,4 +34,6 @@ public class PickingConfig
 	private final String webuiPickingTerminalViewProfileId;
 	
 	private final boolean allowOverDelivery;
+	
+	private final boolean autoProcess;
 }

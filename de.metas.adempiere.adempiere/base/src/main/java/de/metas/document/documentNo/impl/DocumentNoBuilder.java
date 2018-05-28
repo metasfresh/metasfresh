@@ -10,12 +10,12 @@ package de.metas.document.documentNo.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,11 +52,12 @@ import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.documentNo.IDocumentNoBuilder;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 
 /**
- * Increment and builds document numbers.
- * 
+ * Increment and builds document numbers. Use {@link IDocumentNoBuilderFactory} to get an instance.
+ *
  * @author tsa
  *
  */
@@ -66,7 +67,6 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	private static final transient Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
 	private final transient IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
 
-	public static final String PREFIX_DOCSEQ = MSequence.PREFIX_DOCSEQ; // "public" ...to be used in tests
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
 	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
 
@@ -81,7 +81,6 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 	DocumentNoBuilder()
 	{
-		super();
 	}
 
 	@Override
@@ -404,6 +403,14 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	{
 		setDocumentSequenceInfo(() -> retrieveDocumentSequenceInfoByDocTypeId(C_DocType_ID, useDefiniteSequence));
 		return this;
+	}
+
+
+	@Override
+	public IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(int AD_Sequence_ID)
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	private DocumentSequenceInfo retrieveDocumentSequenceInfoByDocTypeId(final int C_DocType_ID, final boolean useDefiniteSequence)

@@ -6,9 +6,9 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
 import de.metas.vertical.pharma.msv3.server.order.OrderService;
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncResponse;
 import lombok.NonNull;
 
 /*
@@ -41,8 +41,8 @@ public class OrderRabbitMQListener
 	@Autowired
 	private OrderService orderService;
 
-	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_CreateOrderResponseEvents)
-	public void onEvent(@NonNull final OrderCreateResponse response)
+	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_SyncOrderResponseEvents)
+	public void onEvent(@NonNull final MSV3OrderSyncResponse response)
 	{
 		try
 		{

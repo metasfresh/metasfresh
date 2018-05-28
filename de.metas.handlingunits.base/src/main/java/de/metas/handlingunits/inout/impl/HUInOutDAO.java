@@ -33,6 +33,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOut;
@@ -158,11 +159,18 @@ public class HUInOutDAO implements IHUInOutDAO
 		}
 		return inoutLine;
 	}
-	
+
 	@Override
 	public List<I_M_InOutLine> retrieveInOutLinesForHU(final I_M_HU topLevelHU)
 	{
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		return huAssignmentDAO.retrieveModelsForHU(topLevelHU, I_M_InOutLine.class);
+	}
+
+	@Override
+	public List<I_M_HU> retrieveHUsForReceiptLineId(final int receiptLineId)
+	{
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+		return huAssignmentDAO.retrieveTopLevelHUsForModel(TableRecordReference.of(I_M_InOutLine.Table_Name, receiptLineId), ITrx.TRXNAME_ThreadInherited);
 	}
 }

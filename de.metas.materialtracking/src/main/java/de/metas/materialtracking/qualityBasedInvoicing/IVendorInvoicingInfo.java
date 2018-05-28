@@ -1,5 +1,7 @@
 package de.metas.materialtracking.qualityBasedInvoicing;
 
+import org.adempiere.bpartner.BPartnerId;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -42,7 +44,7 @@ public interface IVendorInvoicingInfo
 	/**
 	 * @return vendor billing bpartner
 	 */
-	int getBill_BPartner_ID();
+	BPartnerId getBill_BPartner_ID();
 
 	/**
 	 * @return vendor billing bpartner location

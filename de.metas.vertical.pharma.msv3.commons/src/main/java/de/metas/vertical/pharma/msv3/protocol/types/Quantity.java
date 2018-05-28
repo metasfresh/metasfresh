@@ -91,4 +91,9 @@ public class Quantity
 	{
 		return valueAsInt;
 	}
+
+	public boolean isZero()
+	{
+		return valueAsInt == 0;
+	}
 }

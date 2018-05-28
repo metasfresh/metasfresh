@@ -15,7 +15,7 @@ debug_suspend=${DEBUG_SUSPEND:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
 java_max_heap=${JAVA_MAX_HEAP:-256M}
-server_port=${SERVER_PORT:-8183}
+server_port=${SERVER_PORT:-8080}
 
 echo_variable_values()
 {

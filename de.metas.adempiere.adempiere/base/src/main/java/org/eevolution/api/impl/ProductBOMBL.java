@@ -10,12 +10,12 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,7 @@ package org.eevolution.api.impl;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
@@ -34,6 +35,7 @@ import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.IProductLowLevelUpdater;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.X_PP_Order_BOMLine;
 
 public class ProductBOMBL implements IProductBOMBL
 {
@@ -107,5 +109,30 @@ public class ProductBOMBL implements IProductBOMBL
 		final BigDecimal qtyPlusScrapPerc = BigDecimal.ONE.add(scrapPerc);
 		final BigDecimal qtyPlusScap = qty.multiply(qtyPlusScrapPerc);
 		return qtyPlusScap;
+	}
+
+
+	@Override
+	public boolean isValidVariantGroup(final I_PP_Product_BOMLine bomLine)
+	{
+		if (!X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomLine.getComponentType()))
+		{
+			return true;
+		}
+
+		boolean isComponentOrPacking = false;
+		final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
+		final List<I_PP_Product_BOMLine> bomLines = bomDAO.retrieveLines(bomLine.getPP_Product_BOM());
+		for (I_PP_Product_BOMLine bl : bomLines)
+		{
+			if ((X_PP_Order_BOMLine.COMPONENTTYPE_Component.equals(bl.getComponentType()) || X_PP_Order_BOMLine.COMPONENTTYPE_Packing.equals(bl.getComponentType()))
+					&& bomLine.getVariantGroup().equals(bl.getVariantGroup()))
+			{
+				isComponentOrPacking = true;
+				continue;
+			}
+		}
+
+		return isComponentOrPacking;
 	}
 }

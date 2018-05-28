@@ -29,7 +29,6 @@ import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator;
-import de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.QuarantineInOutLine;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.model.I_M_HU;
 

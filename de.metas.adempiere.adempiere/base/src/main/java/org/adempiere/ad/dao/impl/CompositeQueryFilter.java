@@ -697,7 +697,7 @@ import lombok.NonNull;
 		// NOTE: in case the values collection is empty then
 		// InArrayQueryFilter shall return false,
 		// so negativing the expression it will "true",
-		// which actully is the intuitive result
+		// which actually is the intuitive result
 		// i.e. when there are no values then "not in array" shall return "true".
 		filter.setDefaultReturnWhenEmpty(false);
 		final IQueryFilter<T> notFilter = NotQueryFilter.of(filter);

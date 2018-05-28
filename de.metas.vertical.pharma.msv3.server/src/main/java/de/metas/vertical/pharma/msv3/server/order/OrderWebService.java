@@ -65,8 +65,8 @@ public class OrderWebService
 		final Bestellen soapRequest = jaxbRequest.getValue();
 		authService.assertValidClientSoftwareId(soapRequest.getClientSoftwareKennung());
 
-		final BPartnerId bpartnerId = authService.getCurrentUser().getBpartnerId();
-		final OrderCreateRequest request = jaxbConverters.fromJAXB(soapRequest.getBestellung(), bpartnerId);
+		final BPartnerId bpartner = authService.getCurrentBPartner();
+		final OrderCreateRequest request = jaxbConverters.fromJAXB(soapRequest.getBestellung(), bpartner);
 		final OrderCreateResponse response = orderService.createOrder(request);
 
 		return jaxbConverters.toJAXB(response);

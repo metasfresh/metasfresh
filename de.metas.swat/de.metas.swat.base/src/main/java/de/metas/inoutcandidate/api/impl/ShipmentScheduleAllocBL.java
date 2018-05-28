@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -44,13 +45,6 @@ import lombok.NonNull;
 
 public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 {
-	@Override
-	public BigDecimal getQtyPicked(final I_M_ShipmentSchedule sched)
-	{
-		Check.assumeNotNull(sched, "sched not null");
-		return Services.get(IShipmentScheduleAllocDAO.class).retrievePickedNotDeliveredQty(sched);
-	}
-
 	private enum Mode
 	{
 		/** Just take the given {@code qtyPicked} (converted to sched's UOM ) and set it as the new {@code schedQtyPicked}'s {@code QtyPicked value}. */
@@ -88,24 +82,28 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 			@NonNull final Mode mode)
 	{
 		// Convert QtyPicked to shipment schedule's UOM
-		final org.compiere.model.I_M_Product product = sched.getM_Product();
 		final I_C_UOM schedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
-		final BigDecimal qtyPickedConv = Services.get(IUOMConversionBL.class).convertQty(product,
+		final BigDecimal qtyPickedConv = Services.get(IUOMConversionBL.class).convertQty(sched.getM_Product_ID(),
 				qtyPicked.getQty(),
 				qtyPicked.getUOM(), // from UOM
 				schedUOM // to UOM
 		);
 
 		final BigDecimal qtyPickedToAdd;
-		if (Mode.JUST_SET_QTY.equals(mode))
+		switch (mode)
 		{
-			qtyPickedToAdd = qtyPickedConv;
-		}
-		else
-		{
-			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-			final BigDecimal qtyPickedOld = shipmentScheduleAllocDAO.retrievePickedNotDeliveredQty(sched);
-			qtyPickedToAdd = qtyPickedConv.subtract(qtyPickedOld);
+			case JUST_SET_QTY:
+				qtyPickedToAdd = qtyPickedConv;
+				break;
+			case SUBTRACT_FROM_ALREADY_PICKED_QTY:
+				final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+				final BigDecimal qtyPickedOld = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(sched);
+				qtyPickedToAdd = qtyPickedConv.subtract(qtyPickedOld);
+				break;
+			default:
+				Check.errorIf(true, "Unexpected mode={}; qtyPicked={}; sched={}", mode, qtyPicked, sched);
+				qtyPickedToAdd = ZERO; // won't be reached
+				break;
 		}
 
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class, sched);

@@ -44,8 +44,8 @@ public final class Async_Constants
 
 	public static final String C_Async_Batch = "C_Async_Batch";
 
-	public static final Topic EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS = Topic.builder()
-			.name("de.metas.async.WorkpackageProcessingErrors")
+	public static final Topic WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC = Topic.builder()
+			.name("de.metas.async.UserNotifications.WorkpackageProcessingErrors")
 			.type(Type.REMOTE)
 			.build();
 }

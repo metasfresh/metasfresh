@@ -15,8 +15,6 @@ import org.adempiere.misc.service.ITablePA;
 import org.adempiere.misc.service.impl.ClientOrgPA;
 import org.adempiere.misc.service.impl.POService;
 import org.adempiere.misc.service.impl.TablePA;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.impl.PriceListDAO;
 import org.adempiere.process.event.IProcessEventSupport;
 import org.adempiere.process.event.impl.ProcessEventSupport;
 import org.adempiere.processing.service.IProcessingService;
@@ -42,6 +40,8 @@ import de.metas.adempiere.service.impl.SweepTableBL;
 import de.metas.adempiere.service.impl.TableColumnPathBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.impl.PriceListDAO;
 
 /**
  * <b>IMPORTANT</p>: this class is old. Most of the stuff done in here is obsolete and could be removed.

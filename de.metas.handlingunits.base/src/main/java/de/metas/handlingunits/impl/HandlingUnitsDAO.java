@@ -45,11 +45,11 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
@@ -366,7 +366,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				qty = BigDecimal.ONE;
 			}
 
-			final I_M_HU_PackingMaterial packingMaterial = huItem.getM_HU_PackingMaterial();
+			final I_M_HU_PackingMaterial packingMaterial = handlingUnitsBL.getHUPackingMaterial(huItem);
 
 			packingMaterials.add(ImmutablePair.of(packingMaterial, qty.intValueExact()));
 		}
@@ -782,7 +782,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(hu);
 		final I_C_BPartner bpartner = hu.getC_BPartner();
 		final I_M_HU_PackingMaterial pm = retrievePackingMaterial(piVersion, bpartner);
 		return pm;

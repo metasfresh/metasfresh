@@ -337,8 +337,7 @@ public final class Fact
 		// Convert
 		line.convert();
 		//
-		log.debug(line.toString());
-		m_lines.add(line);
+		add(line);
 		return line;
 	}   // balancingSource
 
@@ -502,8 +501,8 @@ public final class Fact
 					line.convert();
 					line.setAD_Org_ID(key.intValue());
 					//
-					m_lines.add(line);
-					log.debug("(" + elementType + ") - " + line);
+					add(line);
+					log.debug("({}) - {}", elementType, line);
 				}
 			}
 			map.clear();
@@ -623,8 +622,7 @@ public final class Fact
 					drAmt = difference.negate();
 			}
 			line.setAmtAcct(drAmt, crAmt);
-			log.debug(line.toString());
-			m_lines.add(line);
+			add(line);
 		}
 		else
 		// Adjust biggest (Balance Sheet) line amount

@@ -86,7 +86,7 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 
 		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();
 
-		final List<I_M_ShipmentSchedule_QtyPicked> pickedNotDeliveredRecords = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final List<I_M_ShipmentSchedule_QtyPicked> pickedNotDeliveredRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
 		for (final I_M_ShipmentSchedule_QtyPicked pickedNotDeliveredRecord : pickedNotDeliveredRecords)
 		{
 			if (pickedNotDeliveredRecord.getM_TU_HU_ID() > 0)

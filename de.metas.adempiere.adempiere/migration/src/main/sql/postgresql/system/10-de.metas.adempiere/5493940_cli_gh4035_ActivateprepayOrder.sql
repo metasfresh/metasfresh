@@ -1,0 +1,4 @@
+-- 2018-05-21T14:15:35.404
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_DocType SET IsActive='Y',Updated=TO_TIMESTAMP('2018-05-21 14:15:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=1000028
+;

@@ -63,4 +63,6 @@ public interface IHUInOutDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_HU> retrieveShippedHandlingUnits(I_M_InOut inOut);
+
+	List<I_M_HU> retrieveHUsForReceiptLineId(int receiptLineId);
 }

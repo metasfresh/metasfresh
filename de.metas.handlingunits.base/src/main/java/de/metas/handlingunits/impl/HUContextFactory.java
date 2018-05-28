@@ -26,9 +26,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUContext;

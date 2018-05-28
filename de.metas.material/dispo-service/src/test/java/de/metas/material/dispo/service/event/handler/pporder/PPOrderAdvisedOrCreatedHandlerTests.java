@@ -261,7 +261,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		final PPOrder ppOrder = createPpOrderWithPpOrderId(0, 0);
 
 		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
-				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.directlyPickSupply(directlyPickSupply)
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ppOrder(ppOrder)
@@ -275,7 +275,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		final PPOrder ppOrder = createPpOrderWithPpOrderId(ppOrderId, groupId);
 
 		final PPOrderCreatedEvent event = PPOrderCreatedEvent.builder()
-				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.ppOrder(ppOrder)
 				.build();
 

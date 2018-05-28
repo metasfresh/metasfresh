@@ -62,6 +62,7 @@ public final class CompositeValidationRule implements IValidationRule
 	private final boolean immutable;
 	private final IStringExpression prefilterWhereClause;
 	private final INamePairPredicate postQueryPredicates;
+	private final ImmutableSet<String> dependsOnTableNames;
 
 	private Set<String> _allParameters; // lazy
 
@@ -72,6 +73,9 @@ public final class CompositeValidationRule implements IValidationRule
 		immutable = builder.immutable;
 		prefilterWhereClause = builder.buildPrefilterWhereClause();
 		postQueryPredicates = builder.postQueryPredicates.build();
+		dependsOnTableNames = rules.stream()
+				.flatMap(rule -> rule.getDependsOnTableNames().stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private List<IValidationRule> getValidationRules()
@@ -132,17 +136,17 @@ public final class CompositeValidationRule implements IValidationRule
 	}
 
 	@Override
-	public void registerException(final String tableName, final String columnName)
-	{
-		throw new UnsupportedOperationException("There is no implementation for registering exceptions in the composite validation rule class: " + this);
-	}
-
-	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
 				.addValue(rules)
 				.toString();
+	}
+
+	@Override
+	public Set<String> getDependsOnTableNames()
+	{
+		return dependsOnTableNames;
 	}
 
 	public static final class Builder

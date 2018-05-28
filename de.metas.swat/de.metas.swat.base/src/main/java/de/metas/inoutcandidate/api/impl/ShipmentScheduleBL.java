@@ -47,7 +47,6 @@ import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -55,12 +54,14 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -136,9 +137,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IAutoCloseable onCloseCreateMissingScheds = //
 				() -> {
-					postponeMissingSchedsCreationUntilClose.set(false);
-					CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
-				};
+						postponeMissingSchedsCreationUntilClose.set(false);
+						CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
+					};
 
 		return onCloseCreateMissingScheds;
 	}
@@ -288,9 +289,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final org.compiere.model.I_M_Product product = olAndSched.getSched().getM_Product();
 			final int orgId = product.getAD_Org_ID();
 
-			final de.metas.interfaces.I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId),
-					de.metas.interfaces.I_C_BPartner_Product.class);
-
+			final I_C_BPartner_Product bpp = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
 			if (bpp == null)
 			{
 				// in case no dropship bpp entry was found, the schedule shall not be dropship
@@ -454,16 +453,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
 			// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
 			// * QtyPicked from QtyPicked records
-			BigDecimal qtyUnconfirmedShipments;
+			final BigDecimal qtyPickList;
 			{
-				qtyUnconfirmedShipments = qtyOnHands.getQtyUnconfirmedShipmentsPerShipmentSchedule(sched);
-
 				// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
-				final BigDecimal qtyPickedNotDelivered = shipmentScheduleAllocDAO.retrievePickedNotDeliveredQty(sched);
-				qtyUnconfirmedShipments = qtyUnconfirmedShipments.add(qtyPickedNotDelivered);
+				qtyPickList = shipmentScheduleAllocDAO.retrieveQtyPickedAndUnconfirmed(sched);
 
 				// Update shipment schedule's field
-				sched.setQtyPickList(qtyUnconfirmedShipments);
+				sched.setQtyPickList(qtyPickList);
 			}
 
 			final I_M_Product product = create(olAndSched.getSched().getM_Product(), I_M_Product.class);
@@ -478,7 +474,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 					continue;
 				}
 			}
-			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyUnconfirmedShipments);
+			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyPickList);
 
 			final boolean ruleCompleteOrder = DELIVERYRULE_CompleteOrder.equals(deliveryRule);
 
@@ -513,7 +509,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				// delivery rule force
 				logger.debug("Force - OnHand=" + qtyOnHandBeforeAllocation
-						+ " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver
+						+ " (QtyPickList=" + qtyPickList + "), ToDeliver=" + qtyToDeliver
 						+ ", Delivering=" + qtyToDeliver);
 
 				createLine(ctx, olAndSched, qtyToDeliver, storages, ruleForce, completeStatus, candidates, trxName);
@@ -538,7 +534,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 					// If the created line will make it into a real shipment will be
 					// decided later.
 					logger.debug("CompleteLine - OnHand=" + qtyOnHandBeforeAllocation
-							+ " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver
+							+ " (QtyPickList=" + qtyPickList + "), ToDeliver=" + qtyToDeliver
 							+ ", FullLine=" + completeStatus);
 
 					createLine(ctx, olAndSched, deliver, storages, ruleForce, completeStatus, candidates, trxName);
@@ -546,7 +542,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				else
 				{
 					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand=" + qtyOnHandBeforeAllocation
-							+ " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver
+							+ " (QtyPickList=" + qtyPickList + "), ToDeliver=" + qtyToDeliver
 							+ ", FullLine=" + completeStatus);
 				}
 			}
@@ -554,7 +550,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				throw new AdempiereException(
 						"Unsupported delivery rule: " + deliveryRule
-								+ " - OnHand=" + qtyOnHandBeforeAllocation + " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver);
+								+ " - OnHand=" + qtyOnHandBeforeAllocation + " (PickedNotDelivered=" + qtyPickList + "), ToDeliver=" + qtyToDeliver);
 			}
 		}
 
@@ -656,7 +652,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				inoutLine.setQtyToDeliver(qty);
 			}
-			
+
 			candidates.addLine(inoutLine);
 			return;
 		}
@@ -912,7 +908,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public I_C_UOM getUomOfProduct(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		return sched.getM_Product().getC_UOM();
+		return sched
+				.getM_Product()
+				.getC_UOM();
 	}
 
 	@Override
@@ -943,8 +941,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final I_C_Order order = sched.getC_Order();
 
 		final String docSubType = order.getC_DocType().getDocSubType();
-		final boolean isPrePayOrder = de.metas.prepayorder.model.I_C_DocType.DOCSUBTYPE_PrepayOrder_metas.equals(docSubType)
-				|| X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
+		final boolean isPrePayOrder =  X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
 		if (isPrePayOrder)
 		{
 			logger.debug("Because '" + order + "' is a prepay order, consolidation into one shipment is not allowed");

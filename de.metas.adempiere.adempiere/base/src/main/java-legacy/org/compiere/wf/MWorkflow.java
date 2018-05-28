@@ -103,8 +103,8 @@ public class MWorkflow extends X_AD_Workflow
 				.setParameters(new Object[]{WORKFLOWTYPE_DocumentValue, true})
 				.setOnlyActiveRecords(true)
 				.setOrderBy("AD_Client_ID, AD_Table_ID")
-				.list();
-			ArrayList<MWorkflow> list = new ArrayList<MWorkflow>();
+				.list(MWorkflow.class);
+			ArrayList<MWorkflow> list = new ArrayList<>();
 			String oldKey = "";
 			String newKey = null;
 			for (MWorkflow wf : workflows)
@@ -115,7 +115,7 @@ public class MWorkflow extends X_AD_Workflow
 					MWorkflow[] wfs = new MWorkflow[list.size()];
 					list.toArray(wfs);
 					s_cacheDocValue.put (oldKey, wfs);
-					list = new ArrayList<MWorkflow>();
+					list = new ArrayList<>();
 				}
 				oldKey = newKey;
 				list.add(wf);
@@ -152,9 +152,9 @@ public class MWorkflow extends X_AD_Workflow
 	
 	
 	/**	Single Cache					*/
-	private static CCache<Integer,MWorkflow>	s_cache = new CCache<Integer,MWorkflow>("AD_Workflow", 20);
+	private static CCache<Integer,MWorkflow>	s_cache = new CCache<>("AD_Workflow", 20);
 	/**	Document Value Cache			*/
-	private static CCache<String,MWorkflow[]>	s_cacheDocValue = new CCache<String,MWorkflow[]> ("AD_Workflow", 5);
+	private static CCache<String,MWorkflow[]>	s_cacheDocValue = new CCache<> ("AD_Workflow", 5);
 	/**	Static Logger	*/
 	private static final Logger s_log = LogManager.getLogger(MWorkflow.class);
 	
@@ -204,7 +204,7 @@ public class MWorkflow extends X_AD_Workflow
 	}	//	Workflow
 
 	/**	WF Nodes				*/
-	private List<MWFNode>	m_nodes = new ArrayList<MWFNode>();
+	private List<MWFNode>	m_nodes = new ArrayList<>();
 
 	/**	Translated Name			*/
 	private String			m_name_trl = null;
@@ -283,7 +283,7 @@ public class MWorkflow extends X_AD_Workflow
 		if (ordered)
 			return getNodesInOrder(AD_Client_ID);
 		//
-		ArrayList<MWFNode> list = new ArrayList<MWFNode>();
+		ArrayList<MWFNode> list = new ArrayList<>();
 		for (int i = 0; i < m_nodes.size(); i++)
 		{
 			MWFNode node = m_nodes.get(i);
@@ -335,7 +335,7 @@ public class MWorkflow extends X_AD_Workflow
 			return null;
 		//
 		MWFNodeNext[] nexts = node.getTransitions(AD_Client_ID);
-		ArrayList<MWFNode> list = new ArrayList<MWFNode>();
+		ArrayList<MWFNode> list = new ArrayList<>();
 		for (int i = 0; i < nexts.length; i++)
 		{
 			MWFNode next = getNode (nexts[i].getAD_WF_Next_ID());
@@ -356,7 +356,7 @@ public class MWorkflow extends X_AD_Workflow
 	 */
 	private MWFNode[] getNodesInOrder(int AD_Client_ID)
 	{
-		ArrayList<MWFNode> list = new ArrayList<MWFNode>();
+		ArrayList<MWFNode> list = new ArrayList<>();
 		addNodesSF (list, getAD_WF_Node_ID(), AD_Client_ID);	//	start with first
 		//	Remaining Nodes
 		if (m_nodes.size() != list.size())
@@ -424,7 +424,7 @@ public class MWorkflow extends X_AD_Workflow
 	 */
 	private void addNodesSF (ArrayList<MWFNode> list, int AD_WF_Node_ID, int AD_Client_ID)
 	{
-		ArrayList<MWFNode> tmplist = new ArrayList<MWFNode> ();
+		ArrayList<MWFNode> tmplist = new ArrayList<> ();
 		MWFNode node = getNode (AD_WF_Node_ID);
 		if (node != null 
 			&& (node.getAD_Client_ID() == 0 || node.getAD_Client_ID() == AD_Client_ID))

@@ -14,9 +14,9 @@ package org.adempiere.util.text;
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -48,13 +48,15 @@ import java.text.Format;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * A text format similar to <code>MessageFormat</code> but using string rather than numeric keys. You might use use this formatter like this:
@@ -397,13 +399,37 @@ public class MapFormat extends Format
 	{
 		if (map == null)
 		{
-			this._argumentsMap = Collections.emptyMap();
+			this._argumentsMap = ImmutableMap.of();
 		}
 		else
 		{
 			this._argumentsMap = new HashMap<>(map);
 		}
 		return this;
+	}
+
+	public MapFormat setArguments(final List<Object> list)
+	{
+		setArguments(toArgumentsMap(list));
+		return this;
+	}
+
+	private static final Map<String, Object> toArgumentsMap(final List<Object> list)
+	{
+		if (list == null || list.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+		else
+		{
+			final int size = list.size();
+			final Map<String, Object> map = new HashMap<>();
+			for (int i = 0; i < size; i++)
+			{
+				map.put(String.valueOf(i), list.get(i));
+			}
+			return map;
+		}
 	}
 
 	/** Pre-compiled pattern */

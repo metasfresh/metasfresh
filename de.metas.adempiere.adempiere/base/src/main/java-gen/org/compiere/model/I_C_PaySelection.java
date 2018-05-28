@@ -301,6 +301,29 @@ public interface I_C_PaySelection
     public static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
+	 * Set Sammelbuchungen exportieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsExportBatchBookings (boolean IsExportBatchBookings);
+
+	/**
+	 * Get Sammelbuchungen exportieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isExportBatchBookings();
+
+    /** Column definition for IsExportBatchBookings */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelection, Object> COLUMN_IsExportBatchBookings = new org.adempiere.model.ModelColumn<I_C_PaySelection, Object>(I_C_PaySelection.class, "IsExportBatchBookings", null);
+    /** Column name IsExportBatchBookings */
+    public static final String COLUMNNAME_IsExportBatchBookings = "IsExportBatchBookings";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *

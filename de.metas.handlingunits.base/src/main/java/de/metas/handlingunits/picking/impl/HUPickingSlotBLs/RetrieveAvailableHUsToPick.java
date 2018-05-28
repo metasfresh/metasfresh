@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
