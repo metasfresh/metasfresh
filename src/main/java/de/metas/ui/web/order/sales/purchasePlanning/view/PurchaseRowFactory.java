@@ -100,10 +100,10 @@ public class PurchaseRowFactory
 				? purchaseCandidate.getPurchaseCandidateId()
 				: 0;
 
-		final PurchaseDemandId requisitionLineId = PurchaseDemandId.ofTableAndRecordId(I_C_OrderLine.Table_Name, purchaseCandidate.getSalesOrderLineId());
+		final PurchaseDemandId demandId = PurchaseDemandId.ofTableAndRecordId(I_C_OrderLine.Table_Name, purchaseCandidate.getSalesOrderLineId());
 		
 		return PurchaseRow.builder()
-				.rowId(PurchaseRowId.lineId(requisitionLineId, bpartnerId, processedPurchaseCandidateId))
+				.rowId(PurchaseRowId.lineId(demandId, bpartnerId, processedPurchaseCandidateId))
 				.rowType(PurchaseRowType.LINE)
 				.product(product)
 				.grossProfitPrice(purchaseCandidate.getGrossProfitPrice())
