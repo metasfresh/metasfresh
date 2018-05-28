@@ -97,9 +97,9 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	{
 		try
 		{
-			// If the event comes from this JMS, don't forward it back
-			final String jmsEventBusId = createEventBusId(topicName);
-			if (event.wasReceivedByEventBusId(jmsEventBusId))
+			// If the event comes from this bus, don't forward it back
+			final String eventBusId = createEventBusId(topicName);
+			if (event.wasReceivedByEventBusId(eventBusId))
 			{
 				return;
 			}

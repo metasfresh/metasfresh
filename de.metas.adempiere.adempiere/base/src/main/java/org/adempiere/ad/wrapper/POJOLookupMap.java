@@ -68,6 +68,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.ModelValidator;
@@ -482,6 +483,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		// Reset cache
 		// Note: doesn't matter if the record is new or not, because prior to its creation, there might have been a cached "null" value and we want to get rid of that null, as we now created an actual
 		// record.
+		if (!Adempiere.isUnitTestMode())
 		{
 			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 			CacheMgt.get().reset(tableName, id);
