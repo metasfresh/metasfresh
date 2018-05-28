@@ -418,3 +418,68 @@ UPDATE AD_UI_Element SET SeqNo=40,Updated=TO_TIMESTAMP('2018-05-28 16:39:39','YY
 UPDATE AD_UI_Element SET SeqNo=50,Updated=TO_TIMESTAMP('2018-05-28 16:39:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=552124
 ;
 
+-- 2018-05-28T16:40:56.322
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:40:56','YYYY-MM-DD HH24:MI:SS'),Name='Tax Rate Translation' WHERE AD_Window_ID=540440 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:41:05.499
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:41:05','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Tax Rate Translation' WHERE AD_Tab_ID=541117 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:41:23.746
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:41:23','YYYY-MM-DD HH24:MI:SS'),Name='Tax Rate Translation',WEBUI_NameBrowse='Tax Rate Translation' WHERE AD_Menu_ID=541098 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:41:58.850
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:41:58','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Client',Description='',Help='' WHERE AD_Field_ID=564360 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:42:10.278
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:42:10','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Organisation',Description='',Help='' WHERE AD_Field_ID=564361 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:42:20.133
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:42:20','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Tax',Description='',Help='' WHERE AD_Field_ID=564362 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:42:29.609
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:42:29','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Language',Description='',Help='' WHERE AD_Field_ID=564363 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:42:41.418
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:42:41','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Active',Description='',Help='' WHERE AD_Field_ID=564364 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:42:52.473
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:42:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Translated',Description='',Help='' WHERE AD_Field_ID=564365 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:42:57.986
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:42:57','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=564366 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:43:06.551
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:43:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Description' WHERE AD_Field_ID=564367 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:43:20.201
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-28 16:43:20','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Tax Indicator',Description='',Help='' WHERE AD_Field_ID=564368 AND AD_Language='en_US'
+;
+
+-- 2018-05-28T16:43:35.955
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Steuer Indikator',Updated=TO_TIMESTAMP('2018-05-28 16:43:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=564368
+;
+
