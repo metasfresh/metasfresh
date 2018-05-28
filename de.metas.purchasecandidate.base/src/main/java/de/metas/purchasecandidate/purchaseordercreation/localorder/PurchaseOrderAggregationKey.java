@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.adempiere.bpartner.BPartnerId;
 
+import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,6 +43,16 @@ import lombok.Value;
 				.warehouseId(purchaseOrderItem.getWarehouseId())
 				.vendorBPartnerId(purchaseOrderItem.getVendorBPartnerId())
 				.datePromised(purchaseOrderItem.getDatePromised())
+				.build();
+	}
+
+	public static PurchaseOrderAggregationKey fromPurchaseCandidate(@NonNull final PurchaseCandidate purchaseCandidate)
+	{
+		return PurchaseOrderAggregationKey.builder()
+				.orgId(purchaseCandidate.getOrgId())
+				.warehouseId(purchaseCandidate.getWarehouseId())
+				.vendorBPartnerId(purchaseCandidate.getVendorBPartnerId())
+				.datePromised(purchaseCandidate.getDateRequired())
 				.build();
 	}
 
