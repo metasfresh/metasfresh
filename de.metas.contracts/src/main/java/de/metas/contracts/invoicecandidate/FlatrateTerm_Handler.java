@@ -115,6 +115,8 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate ic = HandlerTools.createIcAndSetCommonFields(term);
 		ic.setC_ILCandHandler(getHandlerRecord());
 
+		setOrderedData(ic);
+
 		// note that C_Invoice_Cand.QtyDelivered by InvoiceCandBL, so
 		// whatever InvoiceRule set in the conditions should be OK
 		ic.setInvoiceRule(term.getC_Flatrate_Conditions().getInvoiceRule());
@@ -136,10 +138,10 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
-		ic.setDateOrdered(HandlerTools.getDateOrdered(term));
-
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
-		ic.setQtyOrdered(handler.calculateQtyQtyOrdered(ic));
+
+		ic.setDateOrdered(handler.calculateDateOrdered(ic));
+		ic.setQtyOrdered(handler.calculateQtyOrdered(ic));
 	}
 
 	/**

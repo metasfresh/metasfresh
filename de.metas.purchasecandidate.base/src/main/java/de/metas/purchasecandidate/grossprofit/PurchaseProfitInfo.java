@@ -35,8 +35,9 @@ public class PurchaseProfitInfo
 
 	Money purchasePriceActual;
 
-	/** sales priceActual minus skonto minus refund/bonus (if any) */
+	/** sales priceActual minus cash discount minus refund/bonus (if any) */
 	Money customerPriceGrossProfit;
 
+	/** purchase priceActual minus cash discount minus refund/bonus (if any); should better be less than {@link #customerPriceGrossProfit}.. */
 	Money priceGrossProfit;
 }
