@@ -264,7 +264,8 @@ import lombok.NonNull;
 		final String sqlColumnName = fieldName;
 
 		//
-		final boolean isParentLinkColumn = sqlColumnName.equals(entityBindings.getSqlParentLinkColumnName());
+		final boolean isParentLinkColumn = sqlColumnName.equals(entityBindings.getSqlLinkColumnName());
+		final String parentLinkFieldName = isParentLinkColumn ? entityBindings.getSqlParentLinkColumnName() : null;
 
 		//
 		//
@@ -378,7 +379,7 @@ import lombok.NonNull;
 				.setDescription(gridFieldVO.getDescriptionTrls(), gridFieldVO.getDescription())
 				//
 				.setKey(keyColumn)
-				.setParentLink(isParentLinkColumn)
+				.setParentLink(isParentLinkColumn, parentLinkFieldName)
 				//
 				.setWidgetType(widgetType)
 				.setButtonActionDescriptor(buttonAction)
@@ -569,7 +570,6 @@ import lombok.NonNull;
 				.setDescription(trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Description, labelsUIElement.getDescription()))
 				//
 				.setKey(false)
-				.setParentLink(false)
 				//
 				.setWidgetType(DocumentFieldWidgetType.Labels)
 				.setValueClass(fieldBinding.getValueClass())
