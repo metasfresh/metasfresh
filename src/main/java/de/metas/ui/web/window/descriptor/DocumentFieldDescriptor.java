@@ -48,6 +48,7 @@ import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -90,8 +91,12 @@ public final class DocumentFieldDescriptor
 
 	/** Is this the key field ? */
 	private final boolean key;
-	private final boolean parentLink;
 	private final boolean calculated;
+	
+	@Getter
+	private final boolean parentLink;
+	@Getter
+	private final String parentLinkFieldName;
 
 	private final DocumentFieldWidgetType widgetType;
 	private final boolean allowShowPassword; // in case widgetType is Password
@@ -153,8 +158,10 @@ public final class DocumentFieldDescriptor
 		detailId = builder.getDetailId();
 
 		key = builder.isKey();
-		parentLink = builder.parentLink;
 		calculated = builder.isCalculated();
+		
+		parentLink = builder.parentLink;
+		parentLinkFieldName = builder.parentLinkFieldName;
 
 		widgetType = builder.getWidgetType();
 		allowShowPassword = builder.isAllowShowPassword();
@@ -222,11 +229,6 @@ public final class DocumentFieldDescriptor
 	public boolean isKey()
 	{
 		return key;
-	}
-
-	public boolean isParentLink()
-	{
-		return parentLink;
 	}
 
 	public boolean isVirtualField()
@@ -721,6 +723,7 @@ public final class DocumentFieldDescriptor
 
 		private boolean key = false;
 		private boolean parentLink = false;
+		private String parentLinkFieldName;
 		private boolean virtualField;
 		private Optional<IDocumentFieldValueProvider> virtualFieldValueProvider = Optional.empty();
 		private boolean calculated;
@@ -881,10 +884,11 @@ public final class DocumentFieldDescriptor
 			return key;
 		}
 
-		public Builder setParentLink(final boolean parentLink)
+		public Builder setParentLink(final boolean parentLink, final String parentLinkFieldName)
 		{
 			assertNotBuilt();
 			this.parentLink = parentLink;
+			this.parentLinkFieldName = parentLinkFieldName;
 			return this;
 		}
 

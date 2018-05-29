@@ -105,6 +105,7 @@ public class DocumentEntityDescriptor
 
 	private final ImmutableMap<String, DocumentFieldDescriptor> fields;
 	private final ImmutableList<DocumentFieldDescriptor> idFields;
+	private final DocumentFieldDescriptor parentLinkField;
 
 	private final ImmutableMap<DetailId, DocumentEntityDescriptor> includedEntitiesByDetailId;
 	private final IIncludedDocumentsCollectionFactory includedDocumentsCollectionFactory;
@@ -145,6 +146,8 @@ public class DocumentEntityDescriptor
 
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idFields = builder.getIdFields();
+		parentLinkField = builder.getParentLinkFieldOrNull();
+		
 		includedEntitiesByDetailId = builder.buildIncludedEntitiesByDetailId();
 		includedDocumentsCollectionFactory = builder.getIncludedDocumentsCollectionFactory();
 		dataBinding = builder.getOrBuildDataBinding();
@@ -321,6 +324,11 @@ public class DocumentEntityDescriptor
 				.filter(field -> field.hasCharacteristic(characteristic))
 				.map(field -> field.getFieldName())
 				.collect(GuavaCollectors.toImmutableSet());
+	}
+
+	public DocumentFieldDescriptor getParentLinkFieldOrNull()
+	{
+		return parentLinkField;
 	}
 
 	public IIncludedDocumentsCollection createIncludedDocumentsCollection(final Document parentDocument)
@@ -677,6 +685,28 @@ public class DocumentEntityDescriptor
 						.collect(GuavaCollectors.toImmutableMapByKey(field -> field.getFieldName()));
 			}
 			return _fields;
+		}
+
+		private DocumentFieldDescriptor getParentLinkFieldOrNull()
+		{
+			final List<DocumentFieldDescriptor> parentLinkFields = getFields()
+					.values()
+					.stream()
+					.filter(DocumentFieldDescriptor::isParentLink)
+					.collect(ImmutableList.toImmutableList());
+			if (parentLinkFields.isEmpty())
+			{
+				return null;
+			}
+			else if (parentLinkFields.size() == 1)
+			{
+				return parentLinkFields.get(0);
+			}
+			else
+			{
+				throw new AdempiereException("More than one parent link fields found for " + this)
+						.setParameter("parentLinkFields", parentLinkFields);
+			}
 		}
 
 		public Builder addIncludedEntity(final DocumentEntityDescriptor includedEntity)
