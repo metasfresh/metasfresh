@@ -386,10 +386,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		final int productId = rs.getInt(I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID);
 		final String name = rs.getString(COLUMNNAME_ProductDisplayName);
-		final String upc = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_UPC);
 		final String bpartnerProductNo = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo);
 
-		final String displayName = Joiner.on("_").skipNulls().join(name, upc, bpartnerProductNo);
+		final String displayName = Joiner.on("_").skipNulls().join(name, bpartnerProductNo);
 
 		return IntegerLookupValue.of(productId, displayName);
 	}
