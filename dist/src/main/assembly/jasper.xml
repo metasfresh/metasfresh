@@ -8,7 +8,7 @@
 	<formats>
 		<format>jar</format>
 	</formats>
-	<baseDirectory>dist</baseDirectory>
+	<baseDirectory></baseDirectory>
 	<fileSets>
 		<fileSet>
 			<directory>${project.build.directory}/dist/deploy/reports</directory>
