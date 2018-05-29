@@ -116,8 +116,11 @@ public final class Fact
 	 */
 	public final void dispose()
 	{
-		m_lines.clear();
-		m_lines = null;
+		if(m_lines != null)
+		{
+			m_lines.clear();
+			m_lines = null;
+		}
 	}   // dispose
 
 	/**
