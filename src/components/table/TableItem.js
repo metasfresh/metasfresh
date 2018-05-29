@@ -65,11 +65,6 @@ class TableItem extends PureComponent {
     const { activeCell } = this.state;
     const elem = document.activeElement;
 
-    // lookup field's logic causes this to be called without all
-    // the required params
-    if (!property || !item) {
-      return;
-    }
     if (activeCell !== elem && !elem.className.includes('js-input-field')) {
       this.setState({
         activeCell: elem,
@@ -220,7 +215,7 @@ class TableItem extends PureComponent {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
-            const isEditable =
+            let isEditable =
               (cells &&
                 cells[property] &&
                 cells[property].viewEditorRenderMode ===
