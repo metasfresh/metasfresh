@@ -32,6 +32,7 @@ import de.metas.order.OrderLineId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.ui.web.window.datatypes.DocumentId;

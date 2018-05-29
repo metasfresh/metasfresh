@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.adempiere.bpartner.BPartnerId;
 import org.junit.Test;
 
+import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.ui.web.window.datatypes.DocumentId;
 

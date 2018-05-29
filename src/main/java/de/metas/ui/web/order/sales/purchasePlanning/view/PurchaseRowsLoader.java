@@ -20,6 +20,8 @@ import com.google.common.collect.Multimap;
 import de.metas.money.Currency;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseDemand;
+import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.SalesOrder;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;

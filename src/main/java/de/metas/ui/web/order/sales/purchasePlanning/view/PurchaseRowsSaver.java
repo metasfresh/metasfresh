@@ -16,6 +16,7 @@ import de.metas.order.OrderLineId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseDemandId;
 import lombok.Builder;
 import lombok.NonNull;
 

@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
