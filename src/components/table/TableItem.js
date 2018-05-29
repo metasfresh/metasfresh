@@ -65,6 +65,11 @@ class TableItem extends PureComponent {
     const { activeCell } = this.state;
     const elem = document.activeElement;
 
+    // lookup field's logic causes this to be called without all
+    // the required params
+    if (!property || !item) {
+      return;
+    }
     if (activeCell !== elem && !elem.className.includes('js-input-field')) {
       this.setState({
         activeCell: elem,
@@ -193,6 +198,7 @@ class TableItem extends PureComponent {
       caption,
       colspan,
       viewId,
+      isSelected,
     } = this.props;
     let { readonly } = this.props;
     const { edited, updatedRow, listenOnKeys, editedCells } = this.state;
@@ -209,11 +215,12 @@ class TableItem extends PureComponent {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
-            let isEditable =
-              ((cells &&
+            const isEditable =
+              (cells &&
                 cells[property] &&
-                cells[property].viewEditorRenderMode) ||
-                item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+                cells[property].viewEditorRenderMode ===
+                  VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
+              item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
             const isEdited = edited === property;
 
             let widgetData = item.fields.map(prop => {
@@ -257,7 +264,7 @@ class TableItem extends PureComponent {
                   viewId,
                 }}
                 key={`${rowId}-${property}`}
-                isRowSelected={this.props.isSelected}
+                isRowSelected={isSelected}
                 isEdited={isEdited}
                 handleDoubleClick={e =>
                   this.handleEditProperty(e, property, true, widgetData[0])
