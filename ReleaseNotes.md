@@ -16,6 +16,8 @@ Here come the actual release notes:
     * New Window in WebUI for the maintenance of Tax Rate Translations.
   * [#4117](https://github.com/metasfresh/metasfresh/issues/4117) WebUI: Add missing Translations in Product Window
     * Improved the Translations for en_US in Product Window.
+  * [#4119](https://github.com/metasfresh/metasfresh/issues/4119) WebUI: Translation Window for Tax Category
+    * New Window in WebUI for the maintenance of Tax Category Translations.
 
 
 # metasfresh 5.59 (2018-22)
