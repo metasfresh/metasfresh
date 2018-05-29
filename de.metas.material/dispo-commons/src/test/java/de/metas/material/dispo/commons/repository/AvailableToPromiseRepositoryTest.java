@@ -13,16 +13,18 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.AttributesKey;
 
 /*
  * #%L
@@ -50,6 +52,9 @@ public class AvailableToPromiseRepositoryTest
 {
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 
+	@Rule
+	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
+
 	@Before
 	public void init()
 	{
@@ -62,7 +67,8 @@ public class AvailableToPromiseRepositoryTest
 				PRODUCT_ID,
 				STORAGE_ATTRIBUTES_KEY,
 				ATTRIBUTE_SET_INSTANCE_ID);
-		final MaterialDescriptor materialDescriptor = EventTestHelper.createMaterialDescriptor()
+		final MaterialDescriptor materialDescriptor = EventTestHelper
+				.createMaterialDescriptor()
 				.withProductDescriptor(productDescriptor);
 		return materialDescriptor;
 	}

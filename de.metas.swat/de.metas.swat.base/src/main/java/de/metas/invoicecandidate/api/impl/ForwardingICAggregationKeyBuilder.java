@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,12 +29,15 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_Order;
 
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.document.IDocTypeBL;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -99,6 +102,14 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+
+		final I_C_Order prepayOrder = ic.getC_Order();
+		if (prepayOrder !=null  && Services.get(IDocTypeBL.class).isPrepay(prepayOrder.getC_DocType())
+				&& X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header.equals(aggregationUsageLevel))
+		{
+			return invoiceAggregationFactory.getPrepayOrderAggregationKeyBuilder(ctx);
+		}
+
 		final boolean isSOTrx = ic.isSOTrx();
 		return invoiceAggregationFactory.getAggregationKeyBuilder(ctx, bpartner, isSOTrx, aggregationUsageLevel);
 	}

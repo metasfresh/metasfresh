@@ -1,5 +1,6 @@
 package de.metas.purchasecandidate;
 
+import de.metas.order.OrderLineId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -30,7 +31,7 @@ import lombok.Value;
 class PurchaseCandidateImmutableFields
 {
 	int salesOrderId;
-	int salesOrderLineId;
+	OrderLineId salesOrderLineId;
 
 	int orgId;
 	int warehouseId;

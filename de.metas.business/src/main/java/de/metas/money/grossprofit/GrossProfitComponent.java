@@ -27,9 +27,8 @@ import de.metas.money.Money;
 /**
  * Note: might be stateful.
  */
+@FunctionalInterface
 public interface GrossProfitComponent
 {
-	String getName();
-
 	Money applyToInput(Money input);
 }

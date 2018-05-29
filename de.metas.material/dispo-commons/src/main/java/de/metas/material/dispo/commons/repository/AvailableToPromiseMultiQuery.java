@@ -48,7 +48,10 @@ public class AvailableToPromiseMultiQuery
 		if (bPartnerQuery.getBpartnerId() != AvailableToPromiseQuery.BPARTNER_ID_ANY
 				&& bPartnerQuery.getBpartnerId() != AvailableToPromiseQuery.BPARTNER_ID_NONE)
 		{
-			final AvailableToPromiseQuery noPartnerQuery = bPartnerQuery.toBuilder().bpartnerId(AvailableToPromiseQuery.BPARTNER_ID_NONE).build();
+			final AvailableToPromiseQuery noPartnerQuery = bPartnerQuery
+					.toBuilder()
+					.bpartnerId(AvailableToPromiseQuery.BPARTNER_ID_NONE)
+					.build();
 			multiQueryBuilder.query(noPartnerQuery);
 		}
 		return multiQueryBuilder.build();

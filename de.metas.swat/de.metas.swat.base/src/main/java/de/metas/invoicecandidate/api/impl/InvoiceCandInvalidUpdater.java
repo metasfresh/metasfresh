@@ -117,7 +117,7 @@ import lombok.NonNull;
 			{
 				icTagger.untag();
 			}
-			catch (Exception untagException)
+			catch (final Exception untagException)
 			{
 				updateException.addSuppressed(untagException);
 			}

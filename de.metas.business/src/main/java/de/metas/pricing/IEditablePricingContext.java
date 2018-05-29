@@ -41,55 +41,55 @@ public interface IEditablePricingContext extends IPricingContext
 	 *
 	 * @param referencedObject
 	 */
-	void setReferencedObject(final Object referencedObject);
+	IEditablePricingContext setReferencedObject(final Object referencedObject);
 
-	void setRecord_ID(final int record_ID);
+	IEditablePricingContext setRecord_ID(final int record_ID);
 
-	void setAD_Table_ID(final int aD_Table_ID);
+	IEditablePricingContext setAD_Table_ID(final int aD_Table_ID);
 
-	void setSOTrx(final boolean isSOTrx);
+	IEditablePricingContext setSOTrx(final boolean isSOTrx);
 
-	void setQty(final BigDecimal qty);
+	IEditablePricingContext setQty(final BigDecimal qty);
 
-	void setBPartnerId(final BPartnerId bpartnerId);
+	IEditablePricingContext setBPartnerId(final BPartnerId bpartnerId);
 
-	void setC_Currency_ID(final int c_Currency_ID);
+	IEditablePricingContext setC_Currency_ID(final int c_Currency_ID);
 
-	void setC_UOM_ID(final int c_UOM_ID);
+	IEditablePricingContext setC_UOM_ID(final int c_UOM_ID);
 
-	void setPriceDate(final Timestamp priceDate);
+	IEditablePricingContext setPriceDate(final Timestamp priceDate);
 
-	void setM_PricingSystem_ID(final int pricingSystemId);
+	IEditablePricingContext setM_PricingSystem_ID(final int pricingSystemId);
 
-	void setM_PriceList_Version_ID(final int m_PriceList_Version_ID);
+	IEditablePricingContext setM_PriceList_Version_ID(final int m_PriceList_Version_ID);
 
-	void setM_PriceList_ID(final int M_PriceList_ID);
+	IEditablePricingContext setM_PriceList_ID(final int M_PriceList_ID);
 
-	void setM_Product_ID(final int m_Product_ID);
+	IEditablePricingContext setM_Product_ID(final int m_Product_ID);
 
 	/**
 	 * Set this to <code>true</code> to indicate to the pricing engine that discounts shall <b>not</b> be computed and applied to the result.
 	 *
 	 * @param disallowDiscount
 	 */
-	void setDisallowDiscount(boolean disallowDiscount);
+	IEditablePricingContext setDisallowDiscount(boolean disallowDiscount);
 
-	void setForcePricingConditionsBreak(PricingConditionsBreak forcePricingConditionsBreak);
+	IEditablePricingContext setForcePricingConditionsBreak(PricingConditionsBreak forcePricingConditionsBreak);
 
-	void setTrxName(String trxName);
+	IEditablePricingContext setTrxName(String trxName);
 
 	/**
 	 *
 	 * @param convertPriceToContextUOM
 	 * @see IPricingContext#isConvertPriceToContextUOM()
 	 */
-	void setConvertPriceToContextUOM(boolean convertPriceToContextUOM);
+	IEditablePricingContext setConvertPriceToContextUOM(boolean convertPriceToContextUOM);
 
-	void setProperty(String propertyName, Object value);
+	IEditablePricingContext setProperty(String propertyName, Object value);
 
-	default void setProperty(String propertyName)
+	default IEditablePricingContext setProperty(String propertyName)
 	{
-		setProperty(propertyName, Boolean.TRUE);
+		return setProperty(propertyName, Boolean.TRUE);
 	}
 
 	/**
@@ -97,16 +97,16 @@ public interface IEditablePricingContext extends IPricingContext
 	 *
 	 * @param isManualPrice
 	 */
-	void setManualPrice(boolean isManualPrice);
+	IEditablePricingContext setManualPrice(boolean isManualPrice);
 
 	/**
 	 * When setting this and {@link #setM_PricingSystem_ID(int)}, no <code>M_PriceList_ID</code> or <code>M_PriceListVersion_ID</code> needs to be set.
 	 *
 	 * @param c_Country_ID
 	 */
-	void setC_Country_ID(int c_Country_ID);
+	IEditablePricingContext setC_Country_ID(int c_Country_ID);
 
-	void setFailIfNotCalculated(boolean failIfNotCalculated);
+	IEditablePricingContext setFailIfNotCalculated(boolean failIfNotCalculated);
 
-	void setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag);
+	IEditablePricingContext setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag);
 }

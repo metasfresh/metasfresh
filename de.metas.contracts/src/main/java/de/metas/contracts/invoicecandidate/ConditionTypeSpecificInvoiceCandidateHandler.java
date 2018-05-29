@@ -1,6 +1,7 @@
 package de.metas.contracts.invoicecandidate;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
@@ -38,7 +39,9 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 
 	void setSpecificInvoiceCandidateValues(I_C_Invoice_Candidate ic, I_C_Flatrate_Term term);
 
-	BigDecimal calculateQtyQtyOrdered(I_C_Invoice_Candidate invoiceCandidateRecord);
+	BigDecimal calculateQtyOrdered(I_C_Invoice_Candidate invoiceCandidateRecord);
+
+	Timestamp calculateDateOrdered(I_C_Invoice_Candidate invoiceCandidateRecord);
 
 	PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate invoiceCandidateRecord);
 

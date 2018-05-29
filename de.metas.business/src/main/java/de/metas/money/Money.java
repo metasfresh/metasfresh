@@ -5,9 +5,18 @@ import static java.math.BigDecimal.ZERO;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
+import org.adempiere.util.collections.ListUtils;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+
+import de.metas.currency.Amount;
+import de.metas.lang.Percent;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,8 +47,6 @@ import lombok.Value;
 @Value
 public class Money
 {
-	private static final BigDecimal HUNDRED = new BigDecimal("100");
-
 	public static final Money of(
 			@NonNull final BigDecimal value,
 			@NonNull final Currency currency)
@@ -165,21 +172,17 @@ public class Money
 		return new Money(value.subtract(amtToSubtract), currency);
 	}
 
-	public Money percentage(@NonNull final BigDecimal percentage)
+	/** example: if this instance is 100CHF and {@code percent} is 80%, then the result is 80CHF*/
+	public Money percentage(@NonNull final Percent percent)
 	{
-		return new Money(computeFraction(percentage), currency);
-	}
+		if(percent.isOneHundred())
+		{
+			return this;
+		}
 
-	private BigDecimal computeFraction(@NonNull final BigDecimal percent)
-	{
-		final int currencyPrecision = currency.getPrecision();
-
-		final BigDecimal subtrahend = value
-				.setScale(currencyPrecision + 2)
-				.divide(HUNDRED, RoundingMode.UNNECESSARY)
-				.multiply(percent)
-				.setScale(currencyPrecision, RoundingMode.HALF_UP);
-		return subtrahend;
+		final BigDecimal newValue = percent
+				.multiply(value, currency.getPrecision());
+		return new Money(newValue, currency);
 	}
 
 	public Money toZero()
@@ -189,5 +192,23 @@ public class Money
 			return this;
 		}
 		return Money.zero(currency);
+	}
+
+	public Amount toAmount()
+	{
+		return Amount.of(getValue(), currency.getThreeLetterCode());
+	}
+
+	public static Currency getCommonCurrencyOfAll(@NonNull final Money... moneys)
+	{
+		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
+
+		final ImmutableListMultimap<Currency, Money> currency2moneys = Multimaps.index(Stream.of(moneys).iterator(), Money::getCurrency);
+
+		final ImmutableSet<Currency> currencies = currency2moneys.keySet();
+		Check.errorIf(currencies.size() > 1,
+				"at least two money instances have different currencies: ", currency2moneys);
+
+		return ListUtils.singleElement(currencies.asList());
 	}
 }

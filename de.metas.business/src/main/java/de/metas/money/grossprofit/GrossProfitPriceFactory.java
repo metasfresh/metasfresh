@@ -50,7 +50,7 @@ public class GrossProfitPriceFactory
 
 		for (final GrossProfitComponentProvider provider : providers)
 		{
-			builder.profitCompponent(provider.provideForOrderLine(grossProfitAware));
+			builder.profitCompponent(provider.provideForRequest(grossProfitAware));
 		}
 		return builder.build();
 	}

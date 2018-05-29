@@ -3,14 +3,20 @@ package de.metas.order;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import de.metas.money.Currency;
-import de.metas.money.CurrencyId;
+import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -38,6 +44,13 @@ import lombok.NonNull;
 @Repository
 public class OrderLineRepository
 {
+	private final CurrencyRepository currencyRepository;
+
+	public OrderLineRepository(@NonNull final CurrencyRepository currencyRepository)
+	{
+		this.currencyRepository = currencyRepository;
+	}
+
 	public OrderLine getById(@NonNull final OrderLineId orderLineId)
 	{
 		final I_C_OrderLine orderLineRecord = load(orderLineId.getRepoId(), I_C_OrderLine.class);
@@ -46,29 +59,48 @@ public class OrderLineRepository
 
 	public OrderLine ofRecord(@NonNull final I_C_OrderLine orderLineRecord)
 	{
+		final int warehouseRepoId = Util.firstGreaterThanZeroSupplier(
+				() -> orderLineRecord.getM_Warehouse_ID(),
+				() -> orderLineRecord.getC_Order().getM_Warehouse_ID());
+
+		final int bPartnerRepoId = Util.firstGreaterThanZeroSupplier(
+				() -> orderLineRecord.getC_BPartner_ID(),
+				() -> orderLineRecord.getC_Order().getC_BPartner_ID());
+
+		final int paymentTermId = Util.firstGreaterThanZeroSupplier(
+				() -> orderLineRecord.getC_PaymentTerm_Override_ID(),
+				() -> orderLineRecord.getC_Order().getC_PaymentTerm_ID());
+
 		return OrderLine.builder()
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
 				.orderId(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()))
-				.bPartnerId(BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()))
-				.datePromised(TimeUtil.asLocalDate(orderLineRecord.getDatePromised()))
+				.orgId(OrgId.ofRepoId(orderLineRecord.getAD_Org_ID()))
+				.line(orderLineRecord.getLine())
+				.bPartnerId(BPartnerId.ofRepoId(bPartnerRepoId))
+				.datePromised(TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.priceActual(moneyOfRecordsPriceActual(orderLineRecord))
+				.orderedQty(quantityOfRecordsQtyEntered(orderLineRecord))
+				.asiId(AttributeSetInstanceId.ofRepoId(orderLineRecord.getM_AttributeSetInstance_ID()))
+				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
+				.PaymentTermId(PaymentTermId.ofRepoId(paymentTermId))
 				.build();
 	}
 
-	private static Money moneyOfRecordsPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
+	private Money moneyOfRecordsPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final Currency currency = Currency.builder()
-				.id(CurrencyId.ofRepoId(orderLineRecord
-						.getC_Currency_ID()))
-				.precision(orderLineRecord
-						.getC_Currency()
-						.getStdPrecision())
-				.build();
+		// note that C_OrderLine.C_Currency_ID is mandatory, so there won't be an NPE
+		final Currency currency = currencyRepository.ofRecord(orderLineRecord.getC_Currency());
 
 		return Money.of(
 				orderLineRecord.getPriceActual(),
 				currency);
 	}
 
+	private Quantity quantityOfRecordsQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)
+	{
+		return Quantity.of(
+				orderLineRecord.getQtyEntered(),
+				orderLineRecord.getC_UOM());
+	}
 }

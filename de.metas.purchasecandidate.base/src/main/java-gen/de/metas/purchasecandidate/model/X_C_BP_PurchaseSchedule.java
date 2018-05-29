@@ -14,7 +14,7 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 960715355L;
+	private static final long serialVersionUID = 634698887L;
 
     /** Standard Constructor */
     public X_C_BP_PurchaseSchedule (Properties ctx, int C_BP_PurchaseSchedule_ID, String trxName)
@@ -22,8 +22,8 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
       super (ctx, C_BP_PurchaseSchedule_ID, trxName);
       /** if (C_BP_PurchaseSchedule_ID == 0)
         {
-			setC_BP_PurchaseSchedule_ID (0);
 			setC_BPartner_ID (0);
+			setC_BP_PurchaseSchedule_ID (0);
 			setFrequency (0); // 1
 			setFrequencyType (null); // W
 			setReminderTimeInMin (0); // 0
@@ -45,28 +45,6 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	/** Set BPartner's purchase schedule.
-		@param C_BP_PurchaseSchedule_ID BPartner's purchase schedule	  */
-	@Override
-	public void setC_BP_PurchaseSchedule_ID (int C_BP_PurchaseSchedule_ID)
-	{
-		if (C_BP_PurchaseSchedule_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BP_PurchaseSchedule_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_BP_PurchaseSchedule_ID, Integer.valueOf(C_BP_PurchaseSchedule_ID));
-	}
-
-	/** Get BPartner's purchase schedule.
-		@return BPartner's purchase schedule	  */
-	@Override
-	public int getC_BP_PurchaseSchedule_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_PurchaseSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
@@ -100,6 +78,28 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set BPartner's purchase schedule.
+		@param C_BP_PurchaseSchedule_ID BPartner's purchase schedule	  */
+	@Override
+	public void setC_BP_PurchaseSchedule_ID (int C_BP_PurchaseSchedule_ID)
+	{
+		if (C_BP_PurchaseSchedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BP_PurchaseSchedule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BP_PurchaseSchedule_ID, Integer.valueOf(C_BP_PurchaseSchedule_ID));
+	}
+
+	/** Get BPartner's purchase schedule.
+		@return BPartner's purchase schedule	  */
+	@Override
+	public int getC_BP_PurchaseSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_PurchaseSchedule_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

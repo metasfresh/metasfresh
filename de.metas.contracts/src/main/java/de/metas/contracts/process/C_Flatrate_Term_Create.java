@@ -78,6 +78,5 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 	 *
 	 * @return an iterator of the partners.
 	 */
-	public abstract Iterable<I_C_BPartner> getBPartners();
-
+	protected abstract Iterable<I_C_BPartner> getBPartners();
 }

@@ -157,8 +157,11 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 	public static PricingConditionsBreak toPricingConditionsBreak(final I_M_DiscountSchemaBreak schemaBreakRecord)
 	{
+		final int discountSchemaBreakId = schemaBreakRecord.getM_DiscountSchemaBreak_ID();
+		final PricingConditionsBreakId id = discountSchemaBreakId > 0 ? PricingConditionsBreakId.of(schemaBreakRecord.getM_DiscountSchema_ID(), discountSchemaBreakId) : null;
+		
 		return PricingConditionsBreak.builder()
-				.id(PricingConditionsBreakId.of(schemaBreakRecord.getM_DiscountSchema_ID(), schemaBreakRecord.getM_DiscountSchemaBreak_ID()))
+				.id(id)
 				.matchCriteria(toPricingConditionsBreakMatchCriteria(schemaBreakRecord))
 				//
 				.priceOverride(toPriceOverride(schemaBreakRecord))
@@ -171,6 +174,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				//
 				//
 				.dateCreated(TimeUtil.asLocalDateTime(schemaBreakRecord.getCreated()))
+				.hasChanges(false)
 				.build();
 	}
 
@@ -314,6 +318,10 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 		else
 		{
+			if(pricingConditionsId == null)
+			{
+				throw new AdempiereException("Cannot create new break because no pricingConditionsId found: " + request);
+			}
 			final int discountSchemaId = pricingConditionsId.getDiscountSchemaId();
 
 			schemaBreak = newInstance(I_M_DiscountSchemaBreak.class);

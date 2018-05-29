@@ -50,6 +50,7 @@ import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUM
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 /**
  * Handler for calculating CU-TU-LU quantities automatically for {@link HUSplitModel}.
@@ -311,10 +312,10 @@ import de.metas.logging.LogManager;
 		}
 		else
 		{
-			final BigDecimal qtyCUPerTU = getKeyFactory().getStorageFactory()
+			final Quantity qtyCUPerTU = getKeyFactory().getStorageFactory()
 					.getStorage(tuHU)
 					.getQtyForProductStorages();
-			model.setQtyCU(qtyCUPerTU);
+			model.setQtyCU(qtyCUPerTU.getQty());
 			model.setQtyTU(1);
 			model.setQtyLU(1); // we are currently splitting the full TU off
 		}
@@ -339,13 +340,13 @@ import de.metas.logging.LogManager;
 				return;
 			}
 
-			final BigDecimal qtyCUPerTU = getKeyFactory().getStorageFactory()
+			final Quantity qtyCUPerTU = getKeyFactory().getStorageFactory()
 					.getStorage(includedTU)
 					.getQtyForProductStorages();
 
-			if (maxQtyCUPerTU.compareTo(qtyCUPerTU) < 0)
+			if (maxQtyCUPerTU.compareTo(qtyCUPerTU.getQty()) < 0)
 			{
-				maxQtyCUPerTU = qtyCUPerTU;
+				maxQtyCUPerTU = qtyCUPerTU.getQty();
 			}
 		}
 
@@ -366,7 +367,7 @@ import de.metas.logging.LogManager;
 		final I_M_HU huToSplit = huToSplitKey.getM_HU();
 		final BigDecimal fullCUQty = getKeyFactory().getStorageFactory()
 				.getStorage(huToSplit)
-				.getQtyForProductStorages();
+				.getQtyForProductStorages().getQty();
 
 		//
 		// Calculate TU Qty (note that we should always have a TU key selected at this point)

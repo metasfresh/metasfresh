@@ -24,5 +24,5 @@ package de.metas.money.grossprofit;
 
 public interface GrossProfitComponentProvider
 {
-	GrossProfitComponent provideForOrderLine(GrossProfitComputeRequest grossProfitAware);
+	GrossProfitComponent provideForRequest(GrossProfitComputeRequest request);
 }

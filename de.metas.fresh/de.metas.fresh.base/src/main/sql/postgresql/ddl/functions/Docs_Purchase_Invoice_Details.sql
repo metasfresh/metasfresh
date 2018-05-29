@@ -9,6 +9,7 @@ RETURNS TABLE
 	IsHU boolean,
 	line numeric,
 	Description character varying(255),
+	ProductDescription character varying(255),
 	Name character varying,
 	Attributes text,
 	HUQty numeric,
@@ -44,6 +45,7 @@ SELECT
 	-- ts: QnD: appending the invoice line description to the product name.
 	-- TODO: create a dedicated field for it etc
 	il.Description,
+	il.ProductDescription,
 	COALESCE( pt.name, p.name ) AS Name,
 	COALESCE(
 		CASE WHEN Length( att.Attributes ) > 15
@@ -224,6 +226,7 @@ GROUP BY
 	-- ts: QnD: appending the invoice line description to the product name.
 	-- TODO: create a dedicated field for it etc
 	il.Description,
+	il.ProductDescription,
 	COALESCE( pt.name, p.name ),
 	COALESCE(
 		CASE WHEN Length( att.Attributes ) > 15

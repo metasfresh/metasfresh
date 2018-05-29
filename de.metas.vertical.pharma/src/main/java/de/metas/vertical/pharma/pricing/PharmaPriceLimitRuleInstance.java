@@ -15,6 +15,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
 import de.metas.payment.api.IPaymentTermRepository;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -198,7 +199,9 @@ class PharmaPriceLimitRuleInstance
 			return BigDecimal.ZERO;
 		}
 
-		return paymentTermsRepo.getPaymentTermDiscount(paymentTermId);
+		return paymentTermsRepo
+				.getPaymentTermDiscount(PaymentTermId.ofRepoId(paymentTermId))
+				.getValueAsBigDecimal();
 	}
 
 	@lombok.Value
