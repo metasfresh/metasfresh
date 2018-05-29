@@ -3,6 +3,7 @@ package de.metas.contracts.refund.invoicecandidatehandler;
 import static java.math.BigDecimal.ONE;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
@@ -14,6 +15,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.InvoiceCandidateAssignmentService;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -51,6 +53,9 @@ public class FlatrateTermRefund_Handler
 		return X_C_Flatrate_Term.TYPE_CONDITIONS_Refund;
 	}
 
+	/**
+	 * @return an empty iterator; invoice candidates that need to be there are created from {@link InvoiceCandidateAssignmentService}.
+	 */
 	@Override
 	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final int limit)
 	{
@@ -59,6 +64,9 @@ public class FlatrateTermRefund_Handler
 				.iterator();
 	}
 
+	/**
+	 * Does nothing
+	 */
 	@Override
 	public void setSpecificInvoiceCandidateValues(
 			@NonNull final I_C_Invoice_Candidate ic,
@@ -67,12 +75,18 @@ public class FlatrateTermRefund_Handler
 		// nothing to do
 	}
 
+	/**
+	 * @return always {@link BigDecimal#ONE}
+	 */
 	@Override
-	public BigDecimal calculateQtyQtyOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	public BigDecimal calculateQtyOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		return ONE;
 	}
 
+	/**
+	 * @return {@link PriceAndTax#NONE} because the tax remains unchanged and the price is updated in {@link InvoiceCandidateAssignmentService}.
+	 */
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
@@ -80,13 +94,20 @@ public class FlatrateTermRefund_Handler
 	}
 
 	@Override
-	public Consumer<I_C_Invoice_Candidate> getSetInvoiceScheduleImplementation(Consumer<I_C_Invoice_Candidate> defaultImplementation)
+	public Consumer<I_C_Invoice_Candidate> getSetInvoiceScheduleImplementation(
+			Consumer<I_C_Invoice_Candidate> IGNORED_defaultImplementation)
 	{
 		return ic -> {
 			final RefundConfigRepository refundConfigRepository = Adempiere.getBean(RefundConfigRepository.class);
 
 			final RefundConfig refundConfig = refundConfigRepository.getByRefundContractId(FlatrateTermId.ofRepoId(ic.getRecord_ID()));
-			ic.setC_InvoiceSchedule_ID(refundConfig.getInvoiceScheduleId().getRepoId());
+			ic.setC_InvoiceSchedule_ID(refundConfig.getInvoiceSchedule().getId().getRepoId());
 		};
+	}
+
+	@Override
+	public Timestamp calculateDateOrdered(I_C_Invoice_Candidate invoiceCandidateRecord)
+	{
+		return invoiceCandidateRecord.getDateOrdered();
 	}
 }

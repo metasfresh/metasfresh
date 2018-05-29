@@ -55,8 +55,8 @@ public class RefundContractRepository
 							+ I_C_Flatrate_Term.COLUMNNAME_EndDate + "#"
 							+ I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID + "#"
 							+ I_C_Flatrate_Term.COLUMNNAME_M_Product_ID,
-							0,
-							CCache.EXPIREMINUTES_Never);
+					0,
+					CCache.EXPIREMINUTES_Never);
 
 	private final RefundConfigRepository refundConfigRepository;
 
@@ -120,6 +120,12 @@ public class RefundContractRepository
 	{
 		final I_C_Flatrate_Term contractRecord = loadOutOfTrx(flatrateTermId.getRepoId(), I_C_Flatrate_Term.class);
 
+		return ofRecord(contractRecord);
+	}
+
+	public RefundContract ofRecord(@NonNull final I_C_Flatrate_Term contractRecord)
+	{
+		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID());
 		final RefundConfig refundConfig = refundConfigRepository.getByRefundContractId(flatrateTermId);
 
 		return RefundContract

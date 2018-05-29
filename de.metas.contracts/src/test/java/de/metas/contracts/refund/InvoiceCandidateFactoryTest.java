@@ -15,7 +15,9 @@ import java.sql.Timestamp;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +30,7 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyFactory;
@@ -98,11 +101,15 @@ public class InvoiceCandidateFactoryTest
 		conditionsRecord.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
 		saveRecord(conditionsRecord);
 
+		final I_C_InvoiceSchedule invoiceSchedule = newInstance(I_C_InvoiceSchedule.class);
+		invoiceSchedule.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
+		saveRecord(invoiceSchedule);
+
 		final I_C_Flatrate_RefundConfig refundConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);
 		refundConfigRecord.setC_Flatrate_Conditions(conditionsRecord);
 		refundConfigRecord.setM_Product(productRecord);
 		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
-		refundConfigRecord.setC_InvoiceSchedule_ID(40);
+		refundConfigRecord.setC_InvoiceSchedule(invoiceSchedule);
 		refundConfigRecord.setPercent(THREE);
 		saveRecord(refundConfigRecord);
 
@@ -131,7 +138,7 @@ public class InvoiceCandidateFactoryTest
 		save(assignmentRecord);
 
 		invoiceCandidateFactory = new InvoiceCandidateRepository(
-				new RefundContractRepository(new RefundConfigRepository()),
+				new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository())),
 				new MoneyFactory(new CurrencyRepository()))
 						.getInvoiceCandidateFactory();
 	}
