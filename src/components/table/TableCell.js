@@ -99,14 +99,6 @@ class TableCell extends PureComponent {
     }
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      backdropLock: false,
-    };
-  }
-
   componentWillReceiveProps(nextProps) {
     const { widgetData, updateRow, readonly, rowId } = this.props;
     // We should avoid highlighting when whole row is exchanged (sorting)
@@ -124,16 +116,17 @@ class TableCell extends PureComponent {
   }
 
   handleBackdropLock = state => {
-    this.setState(
-      {
-        backdropLock: !state,
-      },
-      () => {
-        if (!state) {
-          this.props.onClickOutside();
-        }
+    const { item } = this.props;
+
+    if (
+      !['ProductAttributes', 'Attributes', 'List', 'Lookup'].includes(
+        item.widgetType
+      )
+    ) {
+      if (!state) {
+        this.props.onClickOutside();
       }
-    );
+    }
   };
 
   render() {
@@ -159,9 +152,8 @@ class TableCell extends PureComponent {
       onCellChange,
       viewId,
       modalVisible,
+      onClickOutside,
     } = this.props;
-    // TODO: Hack, Color fields should be readonly
-    const readonly = item.widgetType === 'Color' ? true : this.props.readonly;
     const docId = `${this.props.docId}`;
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(
@@ -179,10 +171,7 @@ class TableCell extends PureComponent {
       <td
         tabIndex={modalVisible ? -1 : tabIndex}
         ref={c => (this.cell = c)}
-        onDoubleClick={e => {
-          if (isEdited) e.stopPropagation();
-          if (!readonly) handleDoubleClick(e);
-        }}
+        onDoubleClick={handleDoubleClick}
         onKeyDown={handleKeyDown}
         onContextMenu={handleRightClick}
         className={classnames(
@@ -214,6 +203,7 @@ class TableCell extends PureComponent {
             noLabel={true}
             gridAlign={item.gridAlign}
             handleBackdropLock={this.handleBackdropLock}
+            onClickOutside={onClickOutside}
             listenOnKeys={listenOnKeys}
             listenOnKeysTrue={listenOnKeysTrue}
             listenOnKeysFalse={listenOnKeysFalse}
