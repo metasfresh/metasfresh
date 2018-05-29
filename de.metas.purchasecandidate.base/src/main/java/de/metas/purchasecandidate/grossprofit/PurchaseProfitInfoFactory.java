@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -22,17 +23,14 @@ import de.metas.money.Money;
 import de.metas.money.grossprofit.GrossProfitComputeRequest;
 import de.metas.money.grossprofit.GrossProfitPrice;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderLine;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPrice;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -74,16 +72,6 @@ public class PurchaseProfitInfoFactory
 		this.grossProfitPriceFactory = grossProfitPriceFactory;
 	}
 
-	@Value
-	public static class PurchaseProfitInfoRequest
-	{
-		@NonNull
-		OrderLine salesOrderLine;
-
-		@NonNull
-		VendorProductInfo vendorProductInfo;
-	}
-
 	public List<PurchaseProfitInfo> createInfos(@NonNull final PurchaseProfitInfoRequest request)
 	{
 		final Money customerGrossProfitPrice = retrieveCustomerGrossProfitPrice(request);
@@ -113,7 +101,7 @@ public class PurchaseProfitInfoFactory
 
 	private Money retrieveCustomerGrossProfitPrice(final PurchaseProfitInfoRequest request)
 	{
-		final OrderLineWithGrossProfitPrice orderLineWithGrossProfitPrice = grossProfitPriceRepo.getForOrderLineId(request.getSalesOrderLine().getId());
+		final OrderLineWithGrossProfitPrice orderLineWithGrossProfitPrice = grossProfitPriceRepo.getForOrderLineId(request.getSalesOrderLineId());
 		final Money customerGrossProfitPrice = orderLineWithGrossProfitPrice.getGrossProfitPrice();
 		return customerGrossProfitPrice;
 	}
@@ -122,16 +110,13 @@ public class PurchaseProfitInfoFactory
 			@NonNull final PurchaseProfitInfoRequest request,
 			@NonNull final Money purchasePriceActual)
 	{
-		final VendorProductInfo vendorProductInfo = request.getVendorProductInfo();
-		final OrderLine salesOrderLine = request.getSalesOrderLine();
-
 		final GrossProfitComputeRequest grossProfitComputeRequest = GrossProfitComputeRequest
 				.builder()
 				.baseAmount(purchasePriceActual)
-				.bPartnerId(vendorProductInfo.getVendorBPartnerId())
-				.paymentTermId(vendorProductInfo.getPaymentTermId())
-				.date(salesOrderLine.getDatePromised().toLocalDate())
-				.productId(salesOrderLine.getProductId())
+				.bPartnerId(request.getVendorId())
+				.paymentTermId(request.getPaymentTermId())
+				.date(request.getDatePromised().toLocalDate())
+				.productId(request.getProductId())
 				.build();
 
 		final GrossProfitPrice grossProfitPrice = grossProfitPriceFactory.createGrossProfitPrice(grossProfitComputeRequest);
@@ -140,13 +125,10 @@ public class PurchaseProfitInfoFactory
 
 	private Map<PriceListVersionId, Money> retrievePurchasePrices(final PurchaseProfitInfoRequest request)
 	{
-		final OrderLine salesOrderLine = request.getSalesOrderLine();
-		final VendorProductInfo vendorProductInfo = request.getVendorProductInfo();
-
-		final int bPartnerId = vendorProductInfo.getVendorBPartnerId().getRepoId();
+		final BPartnerId bpartnerId = request.getVendorId();
 
 		final ImmutableList<Integer> countryIds = Services.get(IBPartnerDAO.class)
-				.retrieveBPartnerLocations(bPartnerId)
+				.retrieveBPartnerLocations(bpartnerId)
 				.stream()
 				.map(I_C_BPartner_Location::getC_Location)
 				.map(I_C_Location::getC_Country_ID)
@@ -155,11 +137,11 @@ public class PurchaseProfitInfoFactory
 
 		final boolean soTrx = false;
 
-		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(vendorProductInfo.getVendorBPartnerId(), soTrx);
+		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(bpartnerId, soTrx);
 
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
-		final Quantity orderedQty = salesOrderLine.getOrderedQty();
+		final Quantity orderedQty = request.getOrderedQty();
 
 		final ImmutableMap.Builder<PriceListVersionId, Money> result = ImmutableMap.builder();
 
@@ -167,12 +149,12 @@ public class PurchaseProfitInfoFactory
 		{
 			final IEditablePricingContext pricingCtx = pricingBL
 					.createInitialContext(
-							salesOrderLine.getProductId().getRepoId(),
-							bPartnerId,
-							orderedQty.getUOM().getC_UOM_ID(),
+							request.getProductId().getRepoId(),
+							bpartnerId.getRepoId(),
+							orderedQty.getUOMId(),
 							orderedQty.getQty(),
 							soTrx)
-					.setPriceDate(TimeUtil.asTimestamp(salesOrderLine.getDatePromised()))
+					.setPriceDate(TimeUtil.asTimestamp(request.getDatePromised()))
 					.setC_Country_ID(countryId)
 					.setM_PricingSystem_ID(pricingSystemId);
 

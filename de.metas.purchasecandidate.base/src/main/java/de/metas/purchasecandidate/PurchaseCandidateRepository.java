@@ -12,15 +12,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
@@ -29,6 +33,7 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
@@ -36,6 +41,7 @@ import de.metas.lock.api.LockOwner;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -82,21 +88,38 @@ public class PurchaseCandidateRepository
 		this.currencyRepository = currencyRepository;
 	}
 
-	public Stream<PurchaseCandidate> streamAllBySalesOrderLineIds(@NonNull final Collection<OrderLineId> salesOrderLineIds)
+	public Stream<PurchaseCandidate> streamAllByPurchaseDemandIds(@NonNull final Collection<PurchaseDemandId> purchaseDemandIds)
 	{
-		if (salesOrderLineIds.isEmpty())
+		if (purchaseDemandIds.isEmpty())
 		{
 			return Stream.empty();
 		}
 
-		final ImmutableList<Integer> idsAsIn = salesOrderLineIds
-				.stream()
-				.map(OrderLineId::getRepoId)
-				.collect(ImmutableList.toImmutableList());
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_C_PurchaseCandidate> queryBuilder = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class);
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addInArrayFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, idsAsIn)
+		final ICompositeQueryFilter<I_C_PurchaseCandidate> recordsFilter = queryBL.createCompositeQueryFilter(I_C_PurchaseCandidate.class)
+				.setJoinOr();
+
+		final Map<String, Collection<Integer>> recordIdsByTableName = purchaseDemandIds.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(PurchaseDemandId::getTableName, PurchaseDemandId::getRecordId))
+				.asMap();
+
+		for (final String tableName : recordIdsByTableName.keySet())
+		{
+			if (I_C_OrderLine.Table_Name.equals(tableName))
+			{
+				recordsFilter.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, recordIdsByTableName.get(tableName));
+			}
+			else
+			{
+				throw new AdempiereException("Unsupported purchase demand tablename: " + tableName);
+			}
+		}
+
+		return queryBuilder
+				.addOnlyActiveRecordsFilter()
+				.filter(recordsFilter)
 				.create()
 				.stream(I_C_PurchaseCandidate.class)
 				.map(this::toPurchaseCandidate);
@@ -111,7 +134,7 @@ public class PurchaseCandidateRepository
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addInArrayFilter(I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID, purchaseCandidateIds)
+				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID, purchaseCandidateIds)
 				.create()
 				.stream(I_C_PurchaseCandidate.class)
 				.map(this::toPurchaseCandidate);
@@ -126,7 +149,7 @@ public class PurchaseCandidateRepository
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, salesOrderId)
+				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, salesOrderId)
 				.andCollectChildren(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID)
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_IsAggregatePO, false) // manual
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false)
@@ -227,12 +250,12 @@ public class PurchaseCandidateRepository
 			record = newInstance(I_C_PurchaseCandidate.class);
 		}
 
-		record.setC_OrderSO_ID(purchaseCandidate.getSalesOrderId());
+		record.setC_OrderSO_ID(purchaseCandidate.getSalesOrderId().getRepoId());
 		record.setC_OrderLineSO_ID(purchaseCandidate.getSalesOrderLineId().getRepoId());
 
-		record.setAD_Org_ID(purchaseCandidate.getOrgId());
-		record.setM_WarehousePO_ID(purchaseCandidate.getWarehouseId());
-		record.setM_Product_ID(purchaseCandidate.getProductId());
+		record.setAD_Org_ID(purchaseCandidate.getOrgId().getRepoId());
+		record.setM_WarehousePO_ID(purchaseCandidate.getWarehouseId().getRepoId());
+		record.setM_Product_ID(purchaseCandidate.getProductId().getRepoId());
 		record.setC_UOM_ID(purchaseCandidate.getUomId());
 		record.setQtyToPurchase(purchaseCandidate.getQtyToPurchase());
 		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getDateRequired()));
@@ -296,10 +319,10 @@ public class PurchaseCandidateRepository
 				.builder()
 				.locked(locked)
 				.purchaseCandidateId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
-				.salesOrderId(purchaseCandidateRecord.getC_OrderSO_ID())
+				.salesOrderId(OrderId.ofRepoId(purchaseCandidateRecord.getC_OrderSO_ID()))
 				.salesOrderLineId(OrderLineId.ofRepoId(purchaseCandidateRecord.getC_OrderLineSO_ID()))
-				.orgId(purchaseCandidateRecord.getAD_Org_ID())
-				.warehouseId(purchaseCandidateRecord.getM_WarehousePO_ID())
+				.orgId(OrgId.ofRepoId(purchaseCandidateRecord.getAD_Org_ID()))
+				.warehouseId(WarehouseId.ofRepoId(purchaseCandidateRecord.getM_WarehousePO_ID()))
 				.productId(ProductId.ofRepoId(purchaseCandidateRecord.getM_Product_ID()))
 				.uomId(purchaseCandidateRecord.getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)
@@ -336,7 +359,7 @@ public class PurchaseCandidateRepository
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addInArrayFilter(I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID, purchaseCandidateIds)
+				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID, purchaseCandidateIds)
 				.create()
 				.delete();
 	}
@@ -378,5 +401,4 @@ public class PurchaseCandidateRepository
 				.notificationTime(reminderDate)
 				.build();
 	}
-
 }

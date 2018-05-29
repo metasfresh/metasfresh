@@ -1,7 +1,10 @@
 package de.metas.purchasecandidate;
 
 import org.adempiere.util.Check;
+import org.compiere.model.I_C_OrderLine;
 
+import de.metas.order.OrderLineId;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -32,6 +35,11 @@ public class PurchaseDemandId
 	public static PurchaseDemandId ofTableAndRecordId(final String tableName, final int recordId)
 	{
 		return new PurchaseDemandId(tableName, recordId);
+	}
+
+	public static PurchaseDemandId ofOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return ofTableAndRecordId(I_C_OrderLine.Table_Name, orderLineId.getRepoId());
 	}
 
 	String tableName;

@@ -8,8 +8,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -207,10 +210,10 @@ public class PurchaseCandidateToOrderWorkflowTest
 	{
 		return PurchaseCandidate.builder()
 				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderId(1)
+				.salesOrderId(OrderId.ofRepoId(1))
 				.salesOrderLineId(OrderLineId.ofRepoId(2))
-				.orgId(3)
-				.warehouseId(4)
+				.orgId(OrgId.ofRepoId(3))
+				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
 				.vendorProductInfo(VendorProductInfo.builder()

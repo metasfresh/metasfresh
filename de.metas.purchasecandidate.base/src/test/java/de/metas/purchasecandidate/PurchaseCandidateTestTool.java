@@ -6,11 +6,14 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
@@ -55,10 +58,10 @@ public final class PurchaseCandidateTestTool
 	{
 		return PurchaseCandidate.builder()
 				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderId(1)
+				.salesOrderId(OrderId.ofRepoId(1))
 				.salesOrderLineId(SALES_ORDER_LINE_ID)
-				.orgId(3)
-				.warehouseId(4)
+				.orgId(OrgId.ofRepoId(3))
+				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
 				.profitInfo(createPurchaseProfitInfo())

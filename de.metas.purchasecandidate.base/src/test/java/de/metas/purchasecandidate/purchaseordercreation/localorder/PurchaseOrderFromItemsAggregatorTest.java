@@ -9,9 +9,11 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_Order;
@@ -24,6 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -89,14 +92,14 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.productNo("productNo").build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.orgId(10)
+				.orgId(OrgId.ofRepoId(10))
 				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
 				.productId(productId)
 				.qtyToPurchase(TEN)
-				.salesOrderId(salesOrder.getC_Order_ID())
+				.salesOrderId(OrderId.ofRepoId(salesOrder.getC_Order_ID()))
 				.salesOrderLineId(OrderLineId.ofRepoId(50))
-				.warehouseId(60)
+				.warehouseId(WarehouseId.ofRepoId(60))
 				.uomId(70)
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();

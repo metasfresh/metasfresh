@@ -3,6 +3,8 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 import java.time.LocalDateTime;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
@@ -61,8 +63,8 @@ import lombok.Value;
 		return (PurchaseOrderAggregationKey)obj;
 	}
 
-	private final int orgId;
-	private final int warehouseId;
+	private final OrgId orgId;
+	private final WarehouseId warehouseId;
 	private final BPartnerId vendorBPartnerId;
 	private final LocalDateTime datePromised;
 }

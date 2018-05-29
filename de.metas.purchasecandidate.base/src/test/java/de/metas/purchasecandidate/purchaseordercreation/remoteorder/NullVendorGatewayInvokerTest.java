@@ -6,7 +6,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -65,15 +68,15 @@ public class NullVendorGatewayInvokerTest
 				.productNo("productNo").build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.orgId(10)
+				.orgId(OrgId.ofRepoId(10))
 				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
 				.productId(productId)
 				.qtyToPurchase(TEN)
-				.salesOrderId(40)
+				.salesOrderId(OrderId.ofRepoId(40))
 				.salesOrderLineId(OrderLineId.ofRepoId(50))
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
-				.warehouseId(60)
+				.warehouseId(WarehouseId.ofRepoId(60))
 				.uomId(70)
 				.build();
 

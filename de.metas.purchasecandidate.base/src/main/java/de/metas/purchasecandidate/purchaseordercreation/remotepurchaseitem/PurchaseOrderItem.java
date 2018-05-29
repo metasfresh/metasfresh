@@ -8,12 +8,16 @@ import java.time.LocalDateTime;
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 
 import com.google.common.base.Objects;
 
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import lombok.AccessLevel;
@@ -118,7 +122,7 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getPurchaseCandidateId();
 	}
 
-	public int getProductId()
+	public ProductId getProductId()
 	{
 		return getPurchaseCandidate().getProductId();
 	}
@@ -128,12 +132,12 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getUomId();
 	}
 
-	public int getOrgId()
+	public OrgId getOrgId()
 	{
 		return getPurchaseCandidate().getOrgId();
 	}
 
-	public int getWarehouseId()
+	public WarehouseId getWarehouseId()
 	{
 		return getPurchaseCandidate().getWarehouseId();
 	}
@@ -148,7 +152,7 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getDateRequired();
 	}
 
-	public int getSalesOrderId()
+	public OrderId getSalesOrderId()
 	{
 		return getPurchaseCandidate().getSalesOrderId();
 	}

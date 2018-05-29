@@ -2,6 +2,11 @@ package de.metas.purchasecandidate;
 
 import java.time.LocalDateTime;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
+
+import de.metas.money.Currency;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -21,11 +26,11 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,18 +41,27 @@ public class PurchaseDemand
 {
 	@NonNull
 	PurchaseDemandId id;
-	
-	int orgId;
-	int warehouseId;
-	
+
+	@NonNull
+	OrgId orgId;
+	WarehouseId warehouseId;
+
 	@NonNull
 	ProductId productId;
-	int attributeSetInstanceId;
-	
+	AttributeSetInstanceId attributeSetInstanceId;
+
 	@NonNull
 	Quantity qtyToDeliver;
 
 	@NonNull
+	Currency currency;
+
+	@NonNull
 	LocalDateTime datePromised;
 	LocalDateTime preparationDate;
+
+	public int getUOMId()
+	{
+		return qtyToDeliver.getUOMId();
+	}
 }

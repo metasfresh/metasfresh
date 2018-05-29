@@ -9,10 +9,12 @@ import java.time.LocalDateTime;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.Before;
@@ -24,6 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
@@ -183,10 +186,10 @@ public class PurchaseOrderFromItemFactoryTest
 				.productNo("productNo")
 				.build();
 		return PurchaseCandidate.builder()
-				.salesOrderId(salesOrder.getC_Order_ID())
+				.salesOrderId(OrderId.ofRepoId(salesOrder.getC_Order_ID()))
 				.salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
-				.orgId(3)
-				.warehouseId(4)
+				.orgId(OrgId.ofRepoId(3))
+				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
 				.vendorProductInfo(vendorProductInfo)

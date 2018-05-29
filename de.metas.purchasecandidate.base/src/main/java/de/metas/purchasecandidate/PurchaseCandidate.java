@@ -12,13 +12,16 @@ import java.util.Objects;
 import java.util.OptionalInt;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_OrderLine;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -103,11 +106,11 @@ public class PurchaseCandidate
 	@Builder
 	private PurchaseCandidate(
 			final int purchaseCandidateId,
-			final int salesOrderId,
+			@NonNull final OrderId salesOrderId, // for now this shall be always set; might be that in future this won't be mandatory
 			@NonNull final OrderLineId salesOrderLineId, // for now this shall be always set; might be that in future this won't be mandatory
 			final int purchaseOrderLineId,
-			final int orgId,
-			final int warehouseId,
+			@NonNull final OrgId orgId,
+			@NonNull final WarehouseId warehouseId,
 			final ProductId productId,
 			final int uomId,
 			@NonNull final VendorProductInfo vendorProductInfo,
@@ -119,16 +122,13 @@ public class PurchaseCandidate
 			@NonNull final PurchaseProfitInfo profitInfo,
 			@Singular final List<PurchaseItem> purchaseItems)
 	{
-		Check.assume(salesOrderId > 0, "salesOrderId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
-		Check.assume(orgId > 0, "orgId > 0");
-		Check.assume(warehouseId > 0, "warehouseId > 0");
 		Check.assume(uomId > 0, "uomId > 0");
 
 		this.purchaseCandidateId = purchaseCandidateId;
 
 		identifier = PurchaseCandidateImmutableFields.builder()
 				.orgId(orgId)
-				.productId(productId.getRepoId())
+				.productId(productId)
 				.salesOrderId(salesOrderId)
 				.salesOrderLineId(salesOrderLineId)
 				.uomId(uomId)
@@ -184,12 +184,12 @@ public class PurchaseCandidate
 		return new PurchaseCandidate(this);
 	}
 
-	public int getOrgId()
+	public OrgId getOrgId()
 	{
 		return getIdentifier().getOrgId();
 	}
 
-	public int getProductId()
+	public ProductId getProductId()
 	{
 		return getIdentifier().getProductId();
 	}
@@ -199,12 +199,12 @@ public class PurchaseCandidate
 		return getIdentifier().getUomId();
 	}
 
-	public int getWarehouseId()
+	public WarehouseId getWarehouseId()
 	{
 		return getIdentifier().getWarehouseId();
 	}
 
-	public int getSalesOrderId()
+	public OrderId getSalesOrderId()
 	{
 		return getIdentifier().getSalesOrderId();
 	}
@@ -212,6 +212,12 @@ public class PurchaseCandidate
 	public OrderLineId getSalesOrderLineId()
 	{
 		return getIdentifier().getSalesOrderLineId();
+	}
+
+	public PurchaseDemandId getSalesOrderLineIdAsDemandId()
+	{
+		// TODO: move it from here!
+		return PurchaseDemandId.ofOrderLineId(getSalesOrderLineId());
 	}
 
 	public BPartnerId getVendorBPartnerId()
@@ -317,7 +323,7 @@ public class PurchaseCandidate
 			this.parent = parent;
 			innerBuilder = PurchaseErrorItem.builder()
 					.purchaseCandidateId(parent.getPurchaseCandidateId())
-					.orgId(parent.getOrgId());
+					.orgId(parent.getOrgId().getRepoId());
 		}
 
 		public ErrorItemBuilder purchaseItemId(final int purchaseItemId)

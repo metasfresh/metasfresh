@@ -84,7 +84,7 @@ public class PurchaseItemRepository
 	{
 		final I_C_PurchaseCandidate_Alloc record = createOrLoadRecord(purchaseOrderItem);
 
-		record.setAD_Org_ID(purchaseOrderItem.getOrgId());
+		record.setAD_Org_ID(purchaseOrderItem.getOrgId().getRepoId());
 
 		record.setC_PurchaseCandidate_ID(purchaseOrderItem.getPurchaseCandidateId());
 		record.setC_OrderPO_ID(purchaseOrderItem.getPurchaseOrderId());
