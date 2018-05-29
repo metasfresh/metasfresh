@@ -140,7 +140,9 @@ class PurchaseRowsLoader
 	{
 		final SalesOrder salesOrder = salesOrderLine.getOrder();
 
-		final Quantity qtyToPurchase = salesOrderLine.getOrderedQty().subtract(salesOrderLine.getDeliveredQty());
+		final Quantity qtyOrdered = salesOrderLine.getOrderedQty();
+		final Quantity qtyDelivered = salesOrderLine.getDeliveredQty();
+		final Quantity qtyToPurchase = qtyOrdered.subtract(qtyDelivered);
 
 		return PurchaseDemand.builder()
 				.id(PurchaseDemandId.ofOrderLineId(salesOrderLine.getId()))
@@ -150,6 +152,8 @@ class PurchaseRowsLoader
 				//
 				.productId(salesOrderLine.getProductId())
 				.attributeSetInstanceId(salesOrderLine.getAsiId())
+				//
+				.qtyToDeliverTotal(qtyOrdered)
 				.qtyToDeliver(qtyToPurchase)
 				//
 				.currency(salesOrderLine.getPriceActual().getCurrency())
