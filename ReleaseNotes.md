@@ -10,6 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.60 (2018-23)
+## Features
+  * [#4116](https://github.com/metasfresh/metasfresh/issues/4116) WebUI: Translation Window for Tax Rates
+    * New Window in WebUI for the maintenance of Tax Rate Translations.
+    
+
 # metasfresh 5.59 (2018-22)
 
 **release for week 2018-22**
