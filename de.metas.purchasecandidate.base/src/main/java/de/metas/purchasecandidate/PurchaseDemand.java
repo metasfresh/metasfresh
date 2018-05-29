@@ -50,6 +50,7 @@ public class PurchaseDemand
 	ProductId productId;
 	AttributeSetInstanceId attributeSetInstanceId;
 
+	Quantity qtyToDeliverTotal;
 	@NonNull
 	Quantity qtyToDeliver;
 

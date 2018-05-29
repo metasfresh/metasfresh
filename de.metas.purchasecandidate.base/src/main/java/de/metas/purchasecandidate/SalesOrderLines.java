@@ -200,7 +200,8 @@ public class SalesOrderLines
 
 		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(
 				vendorProductInfo.getVendorBPartnerId(),
-				salesDatePromised.toLocalDate()).orElse(null);
+				salesDatePromised.toLocalDate())
+				.orElse(null);
 		if (bpPurchaseSchedule != null)
 		{
 			final LocalDateTime calculatedPurchaseDatePromised = bpPurchaseScheduleService.calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule).orElse(null);
@@ -216,7 +217,7 @@ public class SalesOrderLines
 				.salesOrderLineId(purchaseDemand.getSalesOrderLineId())
 				.datePromised(salesDatePromised)
 				.productId(purchaseDemand.getProductId())
-				.orderedQty(purchaseDemand.getOrderedQty())
+				.orderedQty(purchaseDemand.getQtyToDeliverTotal())
 				.vendorId(vendorProductInfo.getVendorBPartnerId())
 				.paymentTermId(vendorProductInfo.getPaymentTermId())
 				.build());
@@ -230,8 +231,8 @@ public class SalesOrderLines
 					.orgId(purchaseDemand.getOrgId())
 					.productId(vendorProductInfo.getProductId())
 					.qtyToPurchase(BigDecimal.ZERO)
-					.salesOrderId(salesOrderLine.getOrderId().getRepoId())
-					.salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getId().getRepoId()))
+					.salesOrderId(salesOrderLine.getOrderId())
+					.salesOrderLineId(salesOrderLine.getId())
 					.uomId(purchaseDemand.getUOMId())
 					.vendorProductInfo(vendorProductInfo)
 					.warehouseId(getPurchaseWarehouseId(purchaseDemand))
