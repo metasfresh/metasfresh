@@ -220,7 +220,6 @@ public class Doc_AllocationHdr extends Doc
 		if (countPayments > 0 && countInvoices == 0)
 		{
 			createFacts_PaymentAllocation(fact);
-			m_facts.add(fact);
 			return m_facts;
 		}
 
