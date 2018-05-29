@@ -89,12 +89,7 @@ public class StockCandidateService
 				|| previousStockOrNull.getSeqNo() < candidate.getSeqNo())
 		{
 			// since we do have an *earlier* stock candidate, we base our new candidate's qty on the former candidate
-			// TODO: i'm pretty sure there is just one, so we might drop this summing..
-			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(previousStockOrNull, DateOperator.AT);
-			final BigDecimal previousQuantity = candidateRepositoryRetrieval
-					.retrieveOrderedByDateAndSeqNo(stockQuery).stream().map(Candidate::getQuantity)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-
+			final BigDecimal previousQuantity = previousStockOrNull.getQuantity();
 			newQty = previousQuantity.add(candidate.getQuantity());
 		}
 		else

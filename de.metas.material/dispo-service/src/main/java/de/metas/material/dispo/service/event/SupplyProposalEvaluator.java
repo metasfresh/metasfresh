@@ -1,20 +1,14 @@
 package de.metas.material.dispo.service.event;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.adempiere.util.Loggables;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -60,129 +54,42 @@ public class SupplyProposalEvaluator
 		this.candidateRepository = candidateRepository;
 	}
 
-	/**
-	 * For the given {@code proposal}, look for existing demand records which match the proposal's <b>destination</b>
-	 * and are linked (directly or indirectly, via parent-references) to any supply record matching the proposal's <b>source</b>.
-	 * <p>
-	 * Background:
-	 * <ul>
-	 * <li>A {@link SupplyProposal} proposes to move stuff <b>from a source warehouse to a destination warehouse</b>.</li>
-	 * <li>A demand record which is linked (directly or indirectly, via parent references) to a supply record means that the system already plans to move stuff from the demand's warehouse to the supply's warehouse (yes, it is this was around!)</li>
-	 * <li>If the demand record is at the {@link SupplyProposal}'s source and the supply record is at the {@link SupplyProposal}'s destination, then this means that<br>
-	 * we already plan to move things from the demand record's WH to the supply record's WH, but now the proposal is coming and wants to include into that existing plan a movement in the opposite direction.<br>
-	 * That makes no sense and this method shall therefore return {@code false} on such a folly.
-	 * </li>
-	 * </ul>
-	 */
 	public boolean isProposalAccepted(@NonNull final SupplyProposal proposal)
 	{
-		final ProductDescriptor productDescriptor = proposal.getProductDescriptor();
-
-		final CandidatesQuery demandQuery = CandidatesQuery.builder()
+		final CandidatesQuery proposedDemandExistsQuery = CandidatesQuery
+				.builder()
 				.type(CandidateType.DEMAND)
-				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
-						.date(proposal.getDate())
-						.dateOperator(DateOperator.AT_OR_AFTER)
-						.productId(productDescriptor.getProductId())
-						.storageAttributesKey(productDescriptor.getStorageAttributesKey())
-						.warehouseId(proposal.getDestWarehouseId()).build())
+				.demandDetail(proposal.getDemandDetail())
+				.materialDescriptorQuery(MaterialDescriptorQuery
+						.builder()
+						.warehouseId(proposal.getDemandWarehouseId())
+						.build())
 				.build();
+		final Candidate existingDemandCandidate = candidateRepository.retrieveLatestMatchOrNull(proposedDemandExistsQuery);
+		if (existingDemandCandidate == null)
+		{
+			return true;
+		}
 
-		final MaterialDescriptorQuery sourceMaterialDescriptorQuery = MaterialDescriptorQuery.builder()
-				.productId(productDescriptor.getProductId())
-				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
-				.warehouseId(proposal.getSourceWarehouseId())
+		final CandidatesQuery proposedSupplyExistsQuery = CandidatesQuery
+				.builder()
+				.type(CandidateType.SUPPLY)
+				.demandDetail(proposal.getDemandDetail())
+				.materialDescriptorQuery(MaterialDescriptorQuery
+						.builder()
+						.warehouseId(proposal.getSupplyWarehouseId())
+						.build())
 				.build();
-
-		final CandidatesQuery directReverseForDemandQuery = demandQuery
-				.withParentMaterialDescriptorQuery(sourceMaterialDescriptorQuery);
-
-		final List<Candidate> directReversals = candidateRepository.retrieveOrderedByDateAndSeqNo(directReverseForDemandQuery);
-		if (!directReversals.isEmpty())
+		final Candidate existingsupplyCandidate = candidateRepository.retrieveLatestMatchOrNull(proposedSupplyExistsQuery);
+		if (existingsupplyCandidate == null)
 		{
-			Loggables.get().addLog("Given proposal would have closed a loop; rececting it; proposal={}", proposal);
-			return false;
+			return true;
 		}
 
-		final MaterialDescriptorQuery supplyMaterialDescriptorQuery = MaterialDescriptorQuery.builder()
-				.productId(productDescriptor.getProductId())
-				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
-				.warehouseId(proposal.getSourceWarehouseId())
-				.date(proposal.getDate())
-				.dateOperator(DateOperator.AT_OR_AFTER)
-				.build();
-
-		final CandidatesQuery supplyQuery = demandQuery
-				.withType(CandidateType.SUPPLY)
-				.withMaterialDescriptorQuery(supplyMaterialDescriptorQuery);
-
-		final List<Candidate> demands = candidateRepository.retrieveOrderedByDateAndSeqNo(demandQuery);
-		for (final Candidate demand : demands)
-		{
-			final Candidate indirectSupplyCandidate = searchRecursive(
-					demand,
-					supplyQuery,
-					new HashSet<>());
-
-			if (indirectSupplyCandidate != null)
-			{
-				Loggables.get().addLog("Given proposal would have closed a loop; rececting it; proposal={}", proposal);
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private Candidate searchRecursive(
-			@NonNull final Candidate currentCandidate,
-			@NonNull final CandidatesQuery searchTarget,
-			@NonNull final Set<Candidate> alreadySeen)
-	{
-		if (!alreadySeen.add(currentCandidate))
-		{
-			return null;
-		}
-
-		if (searchTarget.matches(currentCandidate))
-		{
-			return currentCandidate;
-		}
-
-		if (currentCandidate.getParentId() > 0)
-		{
-			final Candidate foundSearchTarget = searchRecursive(
-					candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(currentCandidate.getParentId())),
-					searchTarget,
-					alreadySeen);
-			if (foundSearchTarget != null)
-			{
-				return foundSearchTarget;
-			}
-		}
-		else /* the "else" is important to avoid a stack overflow error */
-		if (currentCandidate.getEffectiveGroupId() > 0)
-		{
-			final List<Candidate> group = candidateRepository.retrieveGroup(currentCandidate.getEffectiveGroupId());
-			for (final Candidate groupMember : group)
-			{
-				if (groupMember.getId() <= currentCandidate.getId())
-				{
-					continue; // avoid a stack overflow error
-				}
-
-				final Candidate foundSearchTarget = searchRecursive(
-						groupMember,
-						searchTarget,
-						alreadySeen);
-
-				if (foundSearchTarget != null)
-				{
-					return foundSearchTarget;
-				}
-			}
-		}
-
-		return null;
+		Loggables.get().addLog(
+				"The given proposal would repeat a step that is already planned; rejecting it; proposal={}; existing candidates: source={}; destination={}",
+				proposal, existingDemandCandidate, existingsupplyCandidate);
+		return false;
 
 	}
 
@@ -196,16 +103,17 @@ public class SupplyProposalEvaluator
 	@Builder
 	public static class SupplyProposal
 	{
+		/** The demand this proposal is actually about. Important to figure out if the proposal would close a loop. */
 		@NonNull
-		ProductDescriptor productDescriptor;
+		DemandDetail demandDetail;
 
 		@NonNull
-		Integer sourceWarehouseId;
+		Integer supplyWarehouseId;
 
+		/**
+		 * The source warehouse; this instance proposes to take something for this warehouse i.e. create a new demand in this warehouse.
+		 */
 		@NonNull
-		Integer destWarehouseId;
-
-		@NonNull
-		Date date;
+		Integer demandWarehouseId;
 	}
 }

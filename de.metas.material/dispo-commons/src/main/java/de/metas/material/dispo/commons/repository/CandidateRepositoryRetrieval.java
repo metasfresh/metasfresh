@@ -280,8 +280,8 @@ public class CandidateRepositoryRetrieval
 		return queryBuilderWithoutOrdering
 				.orderBy()
 				.addColumnDescending(I_MD_Candidate.COLUMNNAME_DateProjected)
-				.addColumnAscending(I_MD_Candidate.COLUMNNAME_SeqNo)
-				.addColumnAscending(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID)
+				.addColumnDescending(I_MD_Candidate.COLUMNNAME_SeqNo)
+				.addColumnDescending(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID)
 				.endOrderBy();
 	}
 

@@ -250,9 +250,14 @@ public class MaterialEventHandlerRegistryTests
 		ddOrderAdvisedEvent.validate();
 		materialEventListener.onEvent(ddOrderAdvisedEvent);
 
-		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(5); // one for the shipment-schedule demand, two for the distribution demand + supply and 2 stocks (one of them shared between shipment-demand and distr-supply)
+		// verify
+		// one for the shipment-schedule demand, two for the distribution demand + supply and 3 stocks (!!one for each, stock candidates are not shared anymore!!)
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(6);
+
 		final I_MD_Candidate toWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, toWarehouseId).get(0);
-		final I_MD_Candidate toWarehouseSharedStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseDemandStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(0);
+
+		final I_MD_Candidate toWarehouseSupplyStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(1);
 		final I_MD_Candidate toWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, toWarehouseId).get(0);
 
 		final I_MD_Candidate fromWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, fromWarehouseId).get(0);
@@ -261,13 +266,15 @@ public class MaterialEventHandlerRegistryTests
 		final List<I_MD_Candidate> allRecordsBySeqNo = DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords());
 		assertThat(allRecordsBySeqNo).containsExactly(
 				toWarehouseDemand,
-				toWarehouseSharedStock,
+				toWarehouseDemandStock,
+				toWarehouseSupplyStock,
 				toWarehouseSupply,
 				fromWarehouseDemand,
 				toWarehouseStock);
 
 		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo("10");
-		assertThat(toWarehouseSharedStock.getQty()).isZero();
+		assertThat(toWarehouseDemandStock.getQty()).isEqualByComparingTo("-10");
+		assertThat(toWarehouseSupplyStock.getQty()).isEqualByComparingTo("0");
 		assertThat(toWarehouseSupply.getQty()).isEqualByComparingTo("10");
 		assertThat(fromWarehouseDemand.getQty()).isEqualByComparingTo("10");
 		assertThat(toWarehouseStock.getQty()).isEqualByComparingTo("-10");

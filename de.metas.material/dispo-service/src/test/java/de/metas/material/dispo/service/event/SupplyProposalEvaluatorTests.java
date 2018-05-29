@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -32,6 +33,7 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHan
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.service.event.handler.DDOrderAdvisedHandlerTests;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
+import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import mockit.Mocked;
@@ -65,12 +67,8 @@ public class SupplyProposalEvaluatorTests
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
 	private final Date t1 = SystemTime.asDate();
-
-	private final Date t0 = TimeUtil.addMinutes(t1, -10);
-
 	private final Date t2 = TimeUtil.addMinutes(t1, 10);
 	private final Date t3 = TimeUtil.addMinutes(t1, 20);
-	private final Date t4 = TimeUtil.addMinutes(t1, 30);
 
 	private static final int SUPPLY_WAREHOUSE_ID = 4;
 
@@ -88,7 +86,6 @@ public class SupplyProposalEvaluatorTests
 
 	@Mocked
 	private PostMaterialEventService postMaterialEventService;
-
 
 	private AvailableToPromiseRepository availableToPromiseRepository;
 
@@ -115,8 +112,7 @@ public class SupplyProposalEvaluatorTests
 						candidateRepositoryCommands,
 						postMaterialEventService,
 						availableToPromiseRepository,
-						stockCandidateService
-						)));
+						stockCandidateService)));
 
 		ddOrderAdvisedHandler = new DDOrderAdvisedHandler(
 				candidateRepositoryRetrieval,
@@ -133,28 +129,9 @@ public class SupplyProposalEvaluatorTests
 	public void testEmpty()
 	{
 		final SupplyProposal supplyProposal = SupplyProposal.builder()
-				.date(t1)
-				.destWarehouseId(1)
-				.sourceWarehouseId(2)
-				.productDescriptor(createProductDescriptor())
-				.build();
-
-		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
-	}
-
-	/**
-	 * If there was nothing persisted <b>after</b> the proposal, the testee shall return <code>true</code>.
-	 */
-	@Test
-	public void testNothingAfter()
-	{
-		addSimpleSupplyDemand();
-
-		final SupplyProposal supplyProposal = SupplyProposal.builder()
-				.date(t4)
-				.destWarehouseId(1)
-				.sourceWarehouseId(2)
-				.productDescriptor(createProductDescriptor())
+				.demandWarehouseId(DEMAND_WAREHOUSE_ID)
+				.supplyWarehouseId(SUPPLY_WAREHOUSE_ID)
+				.demandDetail(createDemandDetail())
 				.build();
 
 		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
@@ -165,18 +142,17 @@ public class SupplyProposalEvaluatorTests
 	{
 		addSimpleSupplyDemand();
 
-		// OK now we have in our plan something like DEMAND_WAREHOUSE_ID => SUPPLY_WAREHOUSE_ID in the repo
-		// now let's propose something that once again amounts to DEMAND_WAREHOUSE_ID => SUPPLY_WAREHOUSE_ID.
-		// there should be nothing wrong with that.
+		// At this point we have in our plan something like DEMAND_WAREHOUSE_ID => SUPPLY_WAREHOUSE_ID in the repo.
 
+		// now let's propose again to do DEMAND_WAREHOUSE_ID => SUPPLY_WAREHOUSE_ID,
+		// with and equal same demand detail; that might be part of a loop and generally makes no sense
 		final SupplyProposal supplyProposal = SupplyProposal.builder()
-				.date(t1)
-				.sourceWarehouseId(DEMAND_WAREHOUSE_ID)
-				.destWarehouseId(SUPPLY_WAREHOUSE_ID)
-				.productDescriptor(createProductDescriptor())
+				.demandWarehouseId(DEMAND_WAREHOUSE_ID)
+				.supplyWarehouseId(SUPPLY_WAREHOUSE_ID)
+				.demandDetail(createDemandDetail())
 				.build();
 
-		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isFalse();
 	}
 
 	@Test
@@ -184,18 +160,22 @@ public class SupplyProposalEvaluatorTests
 	{
 		addSimpleSupplyDemand();
 
-		// OK now we have in our plan something like DEMAND_WAREHOUSE_ID => SUPPLY_WAREHOUSE_ID in the repo
-		// To balance the demand in DEMAND_WAREHOUSE_ID that we just created, let's propose something that amounts to SUPPLY_WAREHOUSE_ID => DEMAND_WAREHOUSE_ID.
-		// this should be rejected because it doesn't make sense to play ping-pong like that
+		// At this point we have in our plan something like DEMAND_WAREHOUSE_ID => SUPPLY_WAREHOUSE_ID in the repo.
 
+		// To balance the demand in DEMAND_WAREHOUSE_ID that we just created, let's propose something that amounts to SUPPLY_WAREHOUSE_ID => DEMAND_WAREHOUSE_ID.
+		// It doesn't make sense to play ping-pong like that, but this step is not yet a repetition of a previous step, so it's allowed.
 		final SupplyProposal supplyProposal = SupplyProposal.builder()
-				.date(t1)
-				.destWarehouseId(DEMAND_WAREHOUSE_ID)
-				.sourceWarehouseId(SUPPLY_WAREHOUSE_ID)
-				.productDescriptor(createProductDescriptor())
+				.demandWarehouseId(SUPPLY_WAREHOUSE_ID)
+				.supplyWarehouseId(DEMAND_WAREHOUSE_ID)
+				.demandDetail(createDemandDetail())
 				.build();
 
-		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isFalse();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
+	}
+
+	private DemandDetail createDemandDetail()
+	{
+		return DemandDetail.builder().shipmentScheduleId(EventTestHelper.SHIPMENT_SCHEDULE_ID).build();
 	}
 
 	/**
@@ -213,6 +193,7 @@ public class SupplyProposalEvaluatorTests
 		final Candidate supplyCandidate = Candidate.builder()
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
+				.additionalDemandDetail(createDemandDetail())
 				.type(CandidateType.SUPPLY)
 				.materialDescriptor(supplyMaterialDescriptor)
 				.build();
@@ -231,6 +212,7 @@ public class SupplyProposalEvaluatorTests
 				.orgId(ORG_ID)
 				.parentId(supplyCandidateWithId.getId())
 				.type(CandidateType.DEMAND)
+				.additionalDemandDetail(createDemandDetail())
 				.materialDescriptor(demandDescr)
 				.build();
 
@@ -238,39 +220,39 @@ public class SupplyProposalEvaluatorTests
 	}
 
 	/**
-	 * Create a chain A to B to C. Then verify that it's ok to add a proposal of A to B, A to C and B to C
+	 * Create a chain A to B to C. Then verify that it's NOT ok to add a proposal of A to B and B to C nor A to C.
 	 */
 	@Test
 	public void testWithChain()
 	{
 		DDOrderAdvisedHandlerTests.perform_twoAdvisedEvents(ddOrderAdvisedHandler);
 
-		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
+		// propose what would create an additional demand on A and an additional supply on B.
+		// shall be rejected because its repeats something we already did.
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
-				.date(t1)
-				.sourceWarehouseId(MaterialEventHandlerRegistryTests.fromWarehouseId)
-				.destWarehouseId(MaterialEventHandlerRegistryTests.intermediateWarehouseId)
-				.productDescriptor(createProductDescriptor())
+				.demandWarehouseId(MaterialEventHandlerRegistryTests.fromWarehouseId)
+				.supplyWarehouseId(MaterialEventHandlerRegistryTests.intermediateWarehouseId)
+				.demandDetail(createDemandDetail())
 				.build();
-		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal1)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal1)).isFalse();
 
-		// propose what would create an additional demand on B and an additional supply on C. nothing wrong with that either
+		// propose what would create an additional demand on B and an additional supply on C.
+		// shall also be rejected
 		final SupplyProposal supplyProposal2 = SupplyProposal.builder()
-				.date(t1)
-				.sourceWarehouseId(MaterialEventHandlerRegistryTests.intermediateWarehouseId)
-				.destWarehouseId(MaterialEventHandlerRegistryTests.toWarehouseId)
-				.productDescriptor(createProductDescriptor())
+				.demandWarehouseId(MaterialEventHandlerRegistryTests.intermediateWarehouseId)
+				.supplyWarehouseId(MaterialEventHandlerRegistryTests.toWarehouseId)
+				.demandDetail(createDemandDetail())
 				.build();
-		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal2)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal2)).isFalse();
 
-		// propose what would create an additional demand on A and an additional supply on C. nothing wrong with that either
+		// propose what would create an additional demand on A and an additional supply on C.
+		// we also have this already with the same demand detail (even if indirectly)
 		final SupplyProposal supplyProposal3 = SupplyProposal.builder()
-				.date(t1)
-				.sourceWarehouseId(MaterialEventHandlerRegistryTests.fromWarehouseId)
-				.destWarehouseId(MaterialEventHandlerRegistryTests.toWarehouseId)
-				.productDescriptor(createProductDescriptor())
+				.demandWarehouseId(MaterialEventHandlerRegistryTests.fromWarehouseId)
+				.supplyWarehouseId(MaterialEventHandlerRegistryTests.toWarehouseId)
+				.demandDetail(createDemandDetail())
 				.build();
-		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal3)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal3)).isFalse();
 	}
 
 	/**
@@ -284,13 +266,12 @@ public class SupplyProposalEvaluatorTests
 		// and we have a stock of +10 in "toWarehouseId"
 
 		// now assume that the planner would create another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
-		// note that we don't need to look at the qty at all
+		// kindof questionable, but not repeating anything that we already did
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
-				.date(t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured
-				.sourceWarehouseId(MaterialEventHandlerRegistryTests.toWarehouseId)
-				.destWarehouseId(MaterialEventHandlerRegistryTests.fromWarehouseId)
-				.productDescriptor(createProductDescriptor())
+				.demandWarehouseId(MaterialEventHandlerRegistryTests.toWarehouseId)
+				.supplyWarehouseId(MaterialEventHandlerRegistryTests.fromWarehouseId)
+				.demandDetail(createDemandDetail())
 				.build();
-		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal1)).isFalse();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal1)).isTrue();
 	}
 }

@@ -1,11 +1,9 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.Set;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -92,23 +90,16 @@ public class DDOrderAdvisedHandler
 	@Override
 	public void handleEvent(@NonNull final DDOrderAdvisedEvent event)
 	{
-		final DDOrder ddOrder = event.getDdOrder();
-		for (final DDOrderLine ddOrderLine : ddOrder.getLines())
-		{
-			final Date orderLineStartDate = computeDate(event, ddOrderLine, CandidateType.DEMAND);
+		final DemandDetail demantDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(event.getSupplyRequiredDescriptor());
 
-			final SupplyProposal proposal = SupplyProposal.builder()
-					.date(orderLineStartDate)
-					.productDescriptor(ddOrderLine.getProductDescriptor())
-					// ignoring bpartner for now..not sure if that's good or not..
-					.destWarehouseId(event.getToWarehouseId())
-					.sourceWarehouseId(event.getFromWarehouseId())
-					.build();
-			if (!supplyProposalEvaluator.isProposalAccepted(proposal))
-			{
-				Loggables.get().addLog("proposal was rejected; returning");
-				return;
-			}
+		final SupplyProposal proposal = SupplyProposal.builder()
+				.demandWarehouseId(event.getFromWarehouseId())
+				.supplyWarehouseId(event.getToWarehouseId())
+				.demandDetail(demantDetail)
+				.build();
+		if (!supplyProposalEvaluator.isProposalAccepted(proposal))
+		{
+			return;
 		}
 
 		final Set<Integer> groupIds = handleAbstractDDOrderEvent(event);
