@@ -22,6 +22,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
@@ -35,7 +37,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.Language;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.pricing.service.IPriceListDAO;
@@ -99,6 +100,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private static final Optional<String> LookupTableName = Optional.of(I_M_Product.Table_Name);
 	private static final String CONTEXT_LookupTableName = LookupTableName.get();
+
+	private static final String COLUMNNAME_ProductDisplayName = "ProductDisplayName";
 
 	private final CtxName param_C_BPartner_ID;
 	private final CtxName param_PricingDate;
@@ -230,17 +233,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final LookupDataSourceContext evalCtx)
 	{
 		//
-		// Get language
-		final String adLanguage = evalCtx.getAD_Language();
-		final boolean isBaseLanguage = Language.isBaseLanguage(adLanguage);
-		final String trlAlias = isBaseLanguage ? "p" : "trl";
-
-		//
 		// Build the SQL filter
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		final SqlParamsCollector sqlWhereClauseParams = SqlParamsCollector.newInstance();
 		appendFilterByIsActive(sqlWhereClause, sqlWhereClauseParams);
-		appendFilterBySearchString(sqlWhereClause, sqlWhereClauseParams, evalCtx, trlAlias);
+		appendFilterBySearchString(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterById(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByBPartner(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByPriceList(sqlWhereClause, sqlWhereClauseParams, evalCtx);
@@ -249,18 +246,22 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		//
 		// SQL: SELECT ... FROM
+		final String sqlDisplayName = MLookupFactory.getLookup_TableDirEmbed(
+				LanguageInfo.ofSpecificLanguage(evalCtx.getAD_Language()),
+				I_M_Product.COLUMNNAME_M_Product_ID, // columnName
+				null, // baseTable
+				"p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID);
 		final StringBuilder sql = new StringBuilder("SELECT"
 				+ "\n p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
-				+ "\n, " + trlAlias + "." + I_M_Product_Lookup_V.COLUMNNAME_Name
+				+ "\n, (" + sqlDisplayName + ") AS " + COLUMNNAME_ProductDisplayName
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_UPC
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_C_BPartner_ID
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
 				+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
-		if (!isBaseLanguage)
-		{
-			sql.append("\n INNER JOIN M_Product_Trl trl ON (trl.M_Product_ID=p.M_Product_ID AND trl.AD_Language=").append(sqlParams.placeholder(adLanguage)).append(")");
-		}
+		sql.insert(0, "SELECT * FROM (").append(") p");
 
 		//
 		// SQL: WHERE
@@ -270,7 +271,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		//
 		// SQL: ORDER BY
 		sql.append("\n ORDER BY ")
-				.append(trlAlias + "." + I_M_Product_Lookup_V.COLUMNNAME_Name)
+				.append("p." + COLUMNNAME_ProductDisplayName)
 				.append(", p." + I_M_Product_Lookup_V.COLUMNNAME_C_BPartner_ID + " DESC NULLS LAST");
 
 		// SQL: LIMIT and OFFSET
@@ -285,7 +286,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return sqlWhereClause.append("\n p.").append(I_M_Product_Lookup_V.COLUMNNAME_IsActive).append("=").append(sqlWhereClauseParams.placeholder(true));
 	}
 
-	private static void appendFilterBySearchString(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams, final LookupDataSourceContext evalCtx, final String trlAlias)
+	private static void appendFilterBySearchString(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams, final LookupDataSourceContext evalCtx)
 	{
 		final String evalCtxFilter = evalCtx.getFilter();
 		if (evalCtxFilter == LookupDataSourceContext.FILTER_Any)
@@ -301,8 +302,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		final String sqlFilter = convertFilterToSql(evalCtxFilter);
 		sqlWhereClause.append("\n AND (")
-				.append(" p." + I_M_Product_Lookup_V.COLUMNNAME_Value + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
-				.append(" OR ").append(trlAlias).append("." + I_M_Product_Lookup_V.COLUMNNAME_Name + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
+				// .append(" p." + I_M_Product_Lookup_V.COLUMNNAME_Value + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
+				.append(" ").append("p." + COLUMNNAME_ProductDisplayName + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
 				.append(" OR ").append("p." + I_M_Product_Lookup_V.COLUMNNAME_UPC + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
 				.append(" OR ").append("p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
 				.append(" OR ").append("p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
@@ -384,13 +385,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static LookupValue loadLookupValue(final ResultSet rs) throws SQLException
 	{
 		final int productId = rs.getInt(I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID);
-		final String value = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_Value);
-		final String name = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_Name);
+		final String name = rs.getString(COLUMNNAME_ProductDisplayName);
 		final String upc = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_UPC);
 		final String bpartnerProductNo = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo);
-		// final String bpartnerProductName = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName); // not displayed
 
-		final String displayName = Joiner.on("_").skipNulls().join(value, name, upc, bpartnerProductNo);
+		final String displayName = Joiner.on("_").skipNulls().join(name, upc, bpartnerProductNo);
 
 		return IntegerLookupValue.of(productId, displayName);
 	}
@@ -608,10 +607,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		String Table_Name = "M_Product_Lookup_V";
 
+		String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 		String COLUMNNAME_IsActive = "IsActive";
 		String COLUMNNAME_M_Product_ID = "M_Product_ID";
-		String COLUMNNAME_Value = "Value";
-		String COLUMNNAME_Name = "Name";
+		// String COLUMNNAME_Value = "Value";
+		// String COLUMNNAME_Name = "Name";
 		String COLUMNNAME_UPC = "UPC";
 		String COLUMNNAME_BPartnerProductNo = "BPartnerProductNo";
 		String COLUMNNAME_BPartnerProductName = "BPartnerProductName";
