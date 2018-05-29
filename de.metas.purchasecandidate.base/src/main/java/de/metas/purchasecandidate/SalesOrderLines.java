@@ -75,7 +75,7 @@ public class SalesOrderLines
 	private final SalesOrderLineRepository salesOrderLineRepository;
 
 	private final ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> //
-	salesOrderLineWithCandidates = ExtendedMemorizingSupplier.of(() -> loadOrCreatePurchaseCandidates0());
+	salesOrderLineWithCandidates = ExtendedMemorizingSupplier.of(this::loadOrCreatePurchaseCandidates0);
 
 	private final ImmutableList<OrderLineId> salesOrderLineIds;
 
@@ -301,12 +301,8 @@ public class SalesOrderLines
 
 	private AvailabilityCheck prepareAvailabilityCheck()
 	{
-		final ImmutableList<PurchaseCandidate> allPurchaseCandidates = salesOrderLineWithCandidates.get().stream()
-				.flatMap(item -> item.getPurchaseCandidates().stream())
-				.collect(ImmutableList.toImmutableList());
-
-		return AvailabilityCheck
-				.ofPurchaseCandidates(allPurchaseCandidates);
+		final List<PurchaseCandidate> allPurchaseCandidates = getAllPurchaseCandidates();
+		return AvailabilityCheck.ofPurchaseCandidates(allPurchaseCandidates);
 	}
 
 }
