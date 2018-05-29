@@ -216,6 +216,7 @@ class MasterWidget extends Component {
         data={data}
         handleFocus={() => handleFocusFn(true)}
         handleBlur={() => handleFocusFn(false)}
+        onClickOutside={this.props.onClickOutside}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
         handleProcess={this.handleProcess}
@@ -228,6 +229,7 @@ class MasterWidget extends Component {
 
 MasterWidget.propTypes = {
   isOpenDatePicker: PropTypes.bool,
+  openModal: PropTypes.func.isRequired,
 };
 
 export default connect(

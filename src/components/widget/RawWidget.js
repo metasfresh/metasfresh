@@ -501,6 +501,7 @@ class RawWidget extends Component {
             onBlur={this.handleBlur}
             onChange={this.handlePatch}
             onBlurWidget={onBlurWidget}
+            onClickOutside={this.props.onClickOutside}
           />
         );
       case 'List':

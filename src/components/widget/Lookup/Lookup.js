@@ -158,6 +158,8 @@ class Lookup extends Component {
   };
 
   handleClickOutside = () => {
+    const { onClickOutside } = this.props;
+
     if (this.state.isDropdownListOpen) {
       this.setState(
         {
@@ -165,11 +167,14 @@ class Lookup extends Component {
           property: '',
         },
         () => {
+          onClickOutside && onClickOutside();
           this.setState({
             fireClickOutside: false,
           });
         }
       );
+    } else {
+      onClickOutside && onClickOutside();
     }
   };
 
