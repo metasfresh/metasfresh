@@ -1,4 +1,4 @@
-package de.metas.material.planning.event;
+package de.metas.material.planning.pporder;
 
 import java.util.List;
 
@@ -12,8 +12,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.pporder.PPOrderDemandMatcher;
-import de.metas.material.planning.pporder.PPOrderPojoSupplier;
+import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import lombok.NonNull;
 
 /*
@@ -78,5 +77,4 @@ public class PPOrderAdvisedEventCreator
 
 		return ImmutableList.of(event);
 	}
-
 }

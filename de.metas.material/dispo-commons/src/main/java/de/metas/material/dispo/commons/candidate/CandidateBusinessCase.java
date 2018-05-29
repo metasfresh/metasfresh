@@ -1,5 +1,10 @@
 package de.metas.material.dispo.commons.candidate;
 
+import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 
 /*
@@ -36,7 +41,9 @@ public enum CandidateBusinessCase
 
 	SHIPMENT(DemandDetail.class),
 
-	FORECAST(DemandDetail.class);
+	FORECAST(DemandDetail.class),
+
+	PURCHASE(PurchaseDetail.class);
 
 	private CandidateBusinessCase(final Class<? extends BusinessCaseDetail> detailClass)
 	{

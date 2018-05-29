@@ -46,6 +46,7 @@ import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
 import de.metas.material.event.procurement.PurchaseOfferUpdatedEvent;
+import de.metas.material.event.purchase.PurchaseDemandAdvisedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
@@ -326,6 +327,18 @@ public class MaterialEventSerializerTests
 				.qtyRequired(valueOf(220))
 				.receipt(true)
 				.build();
+	}
+
+	@Test
+	public void purchaseDemandAdvisedEvent()
+	{
+		final PurchaseDemandAdvisedEvent purchaseAdvisedEvent = PurchaseDemandAdvisedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.productPlanningId(10)
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(purchaseAdvisedEvent);
 	}
 
 	@Test

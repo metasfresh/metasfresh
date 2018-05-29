@@ -90,7 +90,6 @@ public class DDOrderAdvisedEvent extends AbstractDDOrderEvent
 	{
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = getSupplyRequiredDescriptor();
 		Check.errorIf(supplyRequiredDescriptor == null, "The given ppOrderAdvisedEvent needs to have a supplyRequiredDescriptor");
-		supplyRequiredDescriptor.validate();
 
 		final int productPlanningId = ddOrder.getProductPlanningId();
 		Check.errorIf(productPlanningId <= 0,

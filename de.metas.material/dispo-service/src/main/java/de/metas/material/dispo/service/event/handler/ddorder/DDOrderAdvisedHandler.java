@@ -13,8 +13,8 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
@@ -90,12 +90,12 @@ public class DDOrderAdvisedHandler
 	@Override
 	public void handleEvent(@NonNull final DDOrderAdvisedEvent event)
 	{
-		final DemandDetail demantDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(event.getSupplyRequiredDescriptor());
+		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(event.getSupplyRequiredDescriptor());
 
 		final SupplyProposal proposal = SupplyProposal.builder()
 				.demandWarehouseId(event.getFromWarehouseId())
 				.supplyWarehouseId(event.getToWarehouseId())
-				.demandDetail(demantDetail)
+				.demandDetail(demandDetail)
 				.build();
 		if (!supplyProposalEvaluator.isProposalAccepted(proposal))
 		{

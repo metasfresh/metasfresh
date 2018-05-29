@@ -2,12 +2,11 @@ package de.metas.material.event.commons;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -56,17 +55,17 @@ public class SupplyRequiredDescriptor
 	@JsonCreator
 	@Builder
 	private SupplyRequiredDescriptor(
-			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") MaterialDescriptor materialDescriptor,
-			@JsonProperty("demandCandidateId") int demandCandidateId,
-			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
-			@JsonProperty("forecastId") int forecastId,
-			@JsonProperty("forecastLineId") int forecastLineId,
-			@JsonProperty("orderId") int orderId,
-			@JsonProperty("orderLineId") int orderLineId,
-			@JsonProperty("subscriptionProgressId") int subscriptionProgressId)
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
+			@JsonProperty("demandCandidateId") final int demandCandidateId,
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
+			@JsonProperty("forecastId") final int forecastId,
+			@JsonProperty("forecastLineId") final int forecastLineId,
+			@JsonProperty("orderId") final int orderId,
+			@JsonProperty("orderLineId") final int orderLineId,
+			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId)
 	{
-		this.demandCandidateId = demandCandidateId;
+		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 
 		this.shipmentScheduleId = shipmentScheduleId > 0 ? shipmentScheduleId : -1;
 
@@ -80,12 +79,5 @@ public class SupplyRequiredDescriptor
 
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
-	}
-
-	public void validate()
-	{
-		checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
-		Check.errorIf(eventDescriptor == null, "eventDescriptor is null; this={}", this);
-		Check.errorIf(materialDescriptor == null, "materialDescriptor is null; this={}", this);
 	}
 }

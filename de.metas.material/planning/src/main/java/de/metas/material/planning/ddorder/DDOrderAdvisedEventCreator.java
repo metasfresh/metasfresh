@@ -1,4 +1,4 @@
-package de.metas.material.planning.event;
+package de.metas.material.planning.ddorder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +16,7 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
-import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
+import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import lombok.NonNull;
 
 /*
@@ -43,13 +42,13 @@ import lombok.NonNull;
  */
 
 @Service
-public class DDOrderAdvisedOrCreatedEventCreator
+public class DDOrderAdvisedEventCreator
 {
 	private final DDOrderDemandMatcher ddOrderDemandMatcher;
 
 	private final DDOrderPojoSupplier ddOrderPojoSupplier;
 
-	public DDOrderAdvisedOrCreatedEventCreator(
+	public DDOrderAdvisedEventCreator(
 			@NonNull final DDOrderDemandMatcher ddOrderDemandMatcher,
 			@NonNull final DDOrderPojoSupplier ddOrderPojoSupplier)
 	{

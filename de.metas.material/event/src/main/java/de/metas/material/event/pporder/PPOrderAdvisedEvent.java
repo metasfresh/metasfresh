@@ -68,7 +68,6 @@ public class PPOrderAdvisedEvent extends AbstractPPOrderEvent
 	{
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = getSupplyRequiredDescriptor();
 		Check.errorIf(supplyRequiredDescriptor == null, "The given ppOrderAdvisedEvent has no supplyRequiredDescriptor");
-		supplyRequiredDescriptor.validate();
 
 		final PPOrder ppOrder = getPpOrder();
 

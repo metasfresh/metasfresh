@@ -1,4 +1,4 @@
-package de.metas.material.dispo.commons.candidate;
+package de.metas.material.dispo.commons.candidate.businesscase;
 
 import java.math.BigDecimal;
 
@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.Builder;

@@ -1,12 +1,12 @@
-package org.adempiere.warehouse;
+package de.metas.material.dispo.commons.candidate.businesscase;
 
-import org.adempiere.util.Check;
+import java.math.BigDecimal;
 
-import lombok.Value;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 
 /*
  * #%L
- * de.metas.business
+ * metasfresh-material-dispo-commons
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -26,28 +26,12 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class WarehouseId
+public interface BusinessCaseDetail
 {
-	int repoId;
+	/**
+	 * @return the enum value associated with this instance.
+	 */
+	CandidateBusinessCase getCandidateBusinessCase();
 
-	public static WarehouseId ofRepoId(final int repoId)
-	{
-		return new WarehouseId(repoId);
-	}
-
-	public static WarehouseId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new WarehouseId(repoId) : null;
-	}
-
-	public static int toRepoId(final WarehouseId warehouseId)
-	{
-		return warehouseId != null ? warehouseId.getRepoId() : -1;
-	}
-
-	private WarehouseId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
+	BigDecimal getPlannedQty();
 }

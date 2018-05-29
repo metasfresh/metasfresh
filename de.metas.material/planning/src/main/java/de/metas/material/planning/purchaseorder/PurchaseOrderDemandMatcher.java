@@ -1,11 +1,14 @@
-package de.metas.material.planning.ddorder;
+package de.metas.material.planning.purchaseorder;
 
 import org.adempiere.util.Loggables;
+import org.adempiere.util.StringUtils;
+import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.planning.IMaterialDemandMatcher;
 import de.metas.material.planning.IMaterialPlanningContext;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -28,32 +31,25 @@ import de.metas.material.planning.IMaterialPlanningContext;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * This implementation figures out if a particular demand could be matched by a DDOrder.<br/>
- * The business logic of the {@link #matches(IMaterialPlanningContext)} method is coming from
- * <code>/de.metas.adempiere.libero.libero/src/main/java/org/eevolution/mrp/spi/impl/DDOrderMRPSupplyProducer.java</code>
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
+
 @Service
-public class DDOrderDemandMatcher implements IMaterialDemandMatcher
+public class PurchaseOrderDemandMatcher implements IMaterialDemandMatcher
 {
 	@Override
-	public boolean matches(final IMaterialPlanningContext mrpContext)
+	public boolean matches(@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
-		// Check if there is a distribution network
-		if (productPlanning.getDD_NetworkDistribution_ID() <= 0)
+		if (StringUtils.toBoolean(productPlanning.getIsPurchased()))
 		{
-			Loggables.get().addLog(
-					"No distribution network configured in product data planning og given mrp context; DDOrderDemandMatcher returns false; productPlanning={}; mrpContext={}",
-					productPlanning, mrpContext);
-			return false;
+			return true;
 		}
 
-		return true;
+		final I_M_Product product = mrpContext.getM_Product();
+		Loggables.get().addLog(
+				"Product {}_{} is not set to be purchased; PurchaseOrderDemandMatcher returns false; productPlanning={}; product={}",
+				product.getValue(), product.getName(), productPlanning, product);
+		return false;
 	}
 
 }
