@@ -65,11 +65,6 @@ class TableItem extends PureComponent {
     const { activeCell } = this.state;
     const elem = document.activeElement;
 
-    // lookup field's logic causes this to be called without all
-    // the required params
-    if (!property || !item) {
-      return;
-    }
     if (activeCell !== elem && !elem.className.includes('js-input-field')) {
       this.setState({
         activeCell: elem,
@@ -90,6 +85,8 @@ class TableItem extends PureComponent {
     const { changeListenOnTrue, changeListenOnFalse } = this.props;
 
     if (item ? !item.readonly : true) {
+      if (this.state.edited === property) e.stopPropagation();
+
       this.setState(
         {
           edited: property,
@@ -200,7 +197,6 @@ class TableItem extends PureComponent {
       viewId,
       isSelected,
     } = this.props;
-    let { readonly } = this.props;
     const { edited, updatedRow, listenOnKeys, editedCells } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
 
@@ -215,7 +211,7 @@ class TableItem extends PureComponent {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
-            const isEditable =
+            let isEditable =
               (cells &&
                 cells[property] &&
                 cells[property].viewEditorRenderMode ===
@@ -238,12 +234,13 @@ class TableItem extends PureComponent {
                     mandatory: true,
                     readonly: false,
                   };
-                  readonly = false;
                 }
                 return cellWidget;
               }
               return -1;
             });
+            // HACK: Color fields should always be readonly
+            isEditable = item.widgetType === 'Color' ? false : isEditable;
 
             return (
               <TableCell
@@ -255,7 +252,6 @@ class TableItem extends PureComponent {
                   rowId,
                   tabId,
                   item,
-                  readonly,
                   widgetData,
                   tabIndex,
                   listenOnKeys,
@@ -266,14 +262,15 @@ class TableItem extends PureComponent {
                 key={`${rowId}-${property}`}
                 isRowSelected={isSelected}
                 isEdited={isEdited}
-                handleDoubleClick={e =>
-                  this.handleEditProperty(e, property, true, widgetData[0])
-                }
+                handleDoubleClick={e => {
+                  if (isEditable) {
+                    this.handleEditProperty(e, property, true, widgetData[0]);
+                  }
+                }}
                 onClickOutside={e => {
                   this.handleEditProperty(e);
                   changeListenOnTrue();
                 }}
-                disableOnClickOutside={edited !== property}
                 onCellChange={this.onCellChange}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
