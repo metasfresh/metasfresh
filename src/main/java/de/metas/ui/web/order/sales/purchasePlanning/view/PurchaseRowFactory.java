@@ -173,7 +173,8 @@ public class PurchaseRowFactory
 				.datePromised(demand.getDatePromised())
 				.orgId(demand.getOrgId())
 				.warehouseId(demand.getWarehouseId())
-				.includedRows(rows).readonly(true) // grouping lines are always readonly
+				.includedRows(rows)
+				.readonly(true) // grouping lines are always readonly
 				.build();
 		return groupRow;
 	}
