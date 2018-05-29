@@ -927,6 +927,18 @@ note: when adding new records, please roughly order them by alphabet.
 							</descriptors>
 						</configuration>
 					</execution>
+					<execution>
+						<id>package-jasper</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/jasper.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 
