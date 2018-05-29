@@ -89,6 +89,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
 	private final PurchaseViewLayoutFactory viewLayoutFactory;
 	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
+	private final SalesOrderLineRepository salesOrderLineRepository;
 
 	//
 	private final Cache<ViewId, PurchaseView> views = CacheBuilder.newBuilder()
