@@ -84,7 +84,7 @@ public final class JSONDocumentField implements Serializable
 
 		return jsonField;
 	}
-	
+
 	public static final JSONDocumentField ofProcessParameter(final IProcessInstanceParameter parameter, final String adLanguage)
 	{
 		final String name = parameter.getParameterName();
@@ -106,7 +106,6 @@ public final class JSONDocumentField implements Serializable
 		return jsonField;
 	}
 
-	
 	public static final JSONDocumentField idField(final Object jsonValue)
 	{
 		final String reason = null; // N/A
@@ -268,11 +267,11 @@ public final class JSONDocumentField implements Serializable
 		valueReason = reason;
 		return this;
 	}
-	
+
 	/* package */ void unboxPasswordField()
 	{
 		final Object value = this.value;
-		if(value instanceof Password)
+		if (value instanceof Password)
 		{
 			this.value = ((Password)value).getAsString();
 		}
@@ -293,6 +292,7 @@ public final class JSONDocumentField implements Serializable
 	{
 		this.readonly = readonly;
 		readonlyReason = reason;
+		setViewEditorRenderMode(readonly ? ViewEditorRenderMode.NEVER : ViewEditorRenderMode.ALWAYS);
 		return this;
 	}
 
