@@ -114,7 +114,7 @@ public class PurchaseRowFactory
 				? purchaseCandidate.getPurchaseCandidateId()
 				: 0;
 
-		final PurchaseDemandId requisitionLineId = PurchaseDemandId.ofTableAndRecordId(
+		final PurchaseDemandId demandId = PurchaseDemandId.ofTableAndRecordId(
 				I_C_OrderLine.Table_Name,
 				purchaseCandidate.getSalesOrderLineId().getRepoId());
 
