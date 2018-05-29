@@ -59,12 +59,12 @@ public class PurchaseRowIdTest
 			final String processedPurchaseCandidateId)
 	{
 		final PurchaseRowId rowId = PurchaseRowId.lineId(
-				PurchaseDemandId.ofTableAndRecordId("C_OrderLine", Integer.parseInt(salesOrderLineId)),
+				PurchaseDemandId.ofTableAndRecordId("orderLineTable", Integer.parseInt(salesOrderLineId)),
 				BPartnerId.ofRepoId(Integer.parseInt(vendorBPartnerId)),
 				Integer.parseInt(processedPurchaseCandidateId));
 
 		final DocumentId documentId = rowId.toDocumentId();
-		assertThat(documentId.toString()).isEqualTo("C_OrderLine"
+		assertThat(documentId.toString()).isEqualTo("orderLineTable"
 				+ PurchaseRowId.PARTS_SEPARATOR + salesOrderLineId
 				+ PurchaseRowId.PARTS_SEPARATOR + vendorBPartnerId
 				+ PurchaseRowId.PARTS_SEPARATOR + processedPurchaseCandidateId);

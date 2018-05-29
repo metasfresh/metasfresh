@@ -9,6 +9,8 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -153,9 +155,9 @@ public class PurchaseRow implements IViewRow
 	@Getter
 	private final int purchaseCandidateId;
 	@Getter
-	private final int orgId;
+	private final OrgId orgId;
 	@Getter
-	private final int warehouseId;
+	private final WarehouseId warehouseId;
 	private final boolean readonly;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
@@ -186,8 +188,8 @@ public class PurchaseRow implements IViewRow
 			@Nullable final LocalDateTime datePromised,
 			@Singular final ImmutableList<PurchaseRow> includedRows,
 			final int purchaseCandidateId,
-			final int orgId,
-			final int warehouseId,
+			final OrgId orgId,
+			final WarehouseId warehouseId,
 			final boolean readonly)
 	{
 		this.rowId = rowId;

@@ -8,8 +8,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
@@ -37,6 +39,7 @@ import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.ProductId;
@@ -225,15 +228,15 @@ public class PurchaseRowsLoaderTest
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currency);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.orgId(20)
+				.orgId(OrgId.ofRepoId(20))
 				.dateRequired(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.qtyToPurchase(orderLine.getQtyOrdered())
-				.salesOrderId(orderLine.getC_Order_ID())
+				.salesOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()))
 				.salesOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
 				.uomId(orderLine.getM_Product().getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)
-				.warehouseId(30)
+				.warehouseId(WarehouseId.ofRepoId(30))
 				.profitInfo(profitInfo)
 				.build();
 		return purchaseCandidate;

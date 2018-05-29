@@ -19,6 +19,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
@@ -26,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -297,6 +299,8 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 
 		final int salesOrderId = purchaseCandidates.stream()
 				.map(PurchaseCandidate::getSalesOrderId)
+				.filter(Predicates.notNull())
+				.map(OrderId::getRepoId)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More or less than one salesOrderId found in the given purchaseCandidates")
 						.appendParametersToMessage()

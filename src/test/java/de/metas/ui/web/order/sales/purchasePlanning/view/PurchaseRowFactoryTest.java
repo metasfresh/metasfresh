@@ -9,8 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -28,6 +30,7 @@ import de.metas.money.Currency;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
@@ -132,10 +135,10 @@ public class PurchaseRowFactoryTest
 
 		return PurchaseCandidate.builder()
 				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderId(1)
+				.salesOrderId(OrderId.ofRepoId(1))
 				.salesOrderLineId(OrderLineId.ofRepoId(2))
-				.orgId(3)
-				.warehouseId(4)
+				.orgId(OrgId.ofRepoId(3))
+				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(productId)
 				.uomId(uom.getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)

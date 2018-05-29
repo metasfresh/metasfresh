@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
@@ -19,15 +18,19 @@ import com.google.common.collect.Multimap;
 
 import de.metas.money.Currency;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.purchasecandidate.BPPurchaseScheduleService;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandId;
+import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.SalesOrder;
 import de.metas.purchasecandidate.SalesOrderLine;
-import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
+import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.availability.AvailabilityException;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoFactory;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -62,9 +65,17 @@ import lombok.ToString;
 @ToString(exclude = { "purchaseRowFactory", "viewSupplier" })
 class PurchaseRowsLoader
 {
+	// services
+	private final PurchaseRowFactory purchaseRowFactory;
+	private final PurchaseCandidateRepository purchaseCandidateRepository;
+	private final BPPurchaseScheduleService bpPurchaseScheduleService;
+	// private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	// private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
+	private final SalesOrderLineRepository salesOrderLineRepository;
+
 	// parameters
 	private final SalesOrderLines salesOrderLines;
-	private final PurchaseRowFactory purchaseRowFactory;
 	private final Supplier<IView> viewSupplier;
 
 	private ImmutableMap<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRow;
@@ -73,11 +84,21 @@ class PurchaseRowsLoader
 	private PurchaseRowsLoader(
 			@NonNull final SalesOrderLines salesOrderLines,
 			@NonNull final Supplier<IView> viewSupplier,
-			@NonNull final PurchaseRowFactory purchaseRowFactory)
+			//
+			@NonNull final PurchaseRowFactory purchaseRowFactory,
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
+			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
+			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory,
+			@NonNull final SalesOrderLineRepository salesOrderLineRepository)
 	{
 		this.salesOrderLines = salesOrderLines;
 		this.viewSupplier = viewSupplier;
+
 		this.purchaseRowFactory = purchaseRowFactory;
+		this.purchaseCandidateRepository = purchaseCandidateRepository;
+		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
+		this.purchaseProfitInfoFactory = purchaseProfitInfoFactory;
+		this.salesOrderLineRepository = salesOrderLineRepository;
 	}
 
 	public List<PurchaseRow> load()
@@ -85,22 +106,20 @@ class PurchaseRowsLoader
 		final ImmutableList.Builder<PurchaseRow> result = ImmutableList.builder();
 		final ImmutableMap.Builder<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRowBuilder = ImmutableMap.builder();
 
-		for (final SalesOrderLineWithCandidates salesOrderLineWithCandidates : salesOrderLines.getSalesOrderLinesWithCandidates())
+		for (final PurchaseDemandWithCandidates demandWithCandidates : salesOrderLines.getSalesOrderLinesWithCandidates())
 		{
-			final SalesOrderLine salesOrderLine = salesOrderLineWithCandidates.getSalesOrderLine();
+			final PurchaseDemand demand = demandWithCandidates.getPurchaseDemand();
 
-			final Currency currencyOfParentRow = salesOrderLine
-					.getPriceActual()
-					.getCurrency();
+			final Currency currencyOfParentRow = demand.getCurrency();
 
 			final ImmutableList.Builder<PurchaseRow> rows = ImmutableList.builder();
-			for (final PurchaseCandidate purchaseCandidate : salesOrderLineWithCandidates.getPurchaseCandidates())
+			for (final PurchaseCandidate purchaseCandidate : demandWithCandidates.getPurchaseCandidates())
 			{
 				final PurchaseRow candidateRow = purchaseRowFactory
 						.rowFromPurchaseCandidateBuilder()
 						.purchaseCandidate(purchaseCandidate)
 						.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
-						.datePromised(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
+						.datePromised(TimeUtil.asLocalDateTime(demand.getDatePromised()))
 						.currencyOfParentRow(currencyOfParentRow)
 						.build();
 
@@ -108,7 +127,6 @@ class PurchaseRowsLoader
 				rows.add(candidateRow);
 			}
 
-			final PurchaseDemand demand = createDemand(salesOrderLine);
 			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(demand, rows.build());
 			result.add(groupRow);
 
@@ -125,14 +143,16 @@ class PurchaseRowsLoader
 		final Quantity qtyToPurchase = salesOrderLine.getOrderedQty().subtract(salesOrderLine.getDeliveredQty());
 
 		return PurchaseDemand.builder()
-				.id(PurchaseDemandId.ofTableAndRecordId(I_C_OrderLine.Table_Name, salesOrderLine.getId().getRepoId()))
+				.id(PurchaseDemandId.ofOrderLineId(salesOrderLine.getId()))
 				//
-				.orgId(salesOrderLine.getOrgId().getRepoId())
-				.warehouseId(salesOrderLine.getWarehouseId().getRepoId())
+				.orgId(salesOrderLine.getOrgId())
+				.warehouseId(salesOrderLine.getWarehouseId())
 				//
 				.productId(salesOrderLine.getProductId())
-				.attributeSetInstanceId(salesOrderLine.getAsiId().getRepoId())
+				.attributeSetInstanceId(salesOrderLine.getAsiId())
 				.qtyToDeliver(qtyToPurchase)
+				//
+				.currency(salesOrderLine.getPriceActual().getCurrency())
 				//
 				.datePromised(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
 				.preparationDate(salesOrder.getPreparationDate())

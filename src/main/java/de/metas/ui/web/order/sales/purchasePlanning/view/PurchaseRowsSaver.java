@@ -5,14 +5,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.order.OrderLineId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
@@ -60,16 +58,13 @@ class PurchaseRowsSaver
 
 	public List<PurchaseCandidate> save()
 	{
-		final Set<OrderLineId> salesOrderLineIds = groupingRows.stream()
+		final Set<PurchaseDemandId> purchaseDemandIds = groupingRows.stream()
 				.map(PurchaseRow::getPurchaseDemandId)
 				.filter(id -> id != null)
-				.filter(id -> I_C_OrderLine.Table_Name.equals(id.getTableName()))
-				.map(PurchaseDemandId::getRecordId)
-				.map(OrderLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final Map<Integer, PurchaseCandidate> existingPurchaseCandidatesById = purchaseCandidatesRepo
-				.streamAllBySalesOrderLineIds(salesOrderLineIds)
+				.streamAllByPurchaseDemandIds(purchaseDemandIds)
 				.collect(ImmutableMap
 						.toImmutableMap(
 								PurchaseCandidate::getPurchaseCandidateId,

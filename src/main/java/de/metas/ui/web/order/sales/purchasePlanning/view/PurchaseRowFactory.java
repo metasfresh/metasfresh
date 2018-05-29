@@ -13,12 +13,12 @@ import javax.validation.constraints.NotNull;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -107,7 +107,7 @@ public class PurchaseRowFactory
 		}
 		else
 		{
-			productId = ProductId.ofRepoId(purchaseCandidate.getProductId());
+			productId = purchaseCandidate.getProductId();
 			product = createProductLookupValue(productId);
 		}
 		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
@@ -116,9 +116,7 @@ public class PurchaseRowFactory
 				? purchaseCandidate.getPurchaseCandidateId()
 				: 0;
 
-		final PurchaseDemandId demandId = PurchaseDemandId.ofTableAndRecordId(
-				I_C_OrderLine.Table_Name,
-				purchaseCandidate.getSalesOrderLineId().getRepoId());
+		final PurchaseDemandId demandId = purchaseCandidate.getSalesOrderLineIdAsDemandId();
 
 		final PurchaseProfitInfo profitInfo = purchaseCandidate.getProfitInfo();
 		final Money purchasePriceActual = moneyService.convertMoneyToCurrency(profitInfo.getPurchasePriceActual(), currencyOfParentRow);
@@ -160,7 +158,7 @@ public class PurchaseRowFactory
 				.productId(demand.getProductId().getRepoId())
 				.date(preparationDate != null ? preparationDate : null)
 				.storageAttributesKey(AttributesKeys
-						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId())
+						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId().getRepoId())
 						.orElse(AttributesKey.ALL))
 				.build());
 
@@ -258,14 +256,14 @@ public class PurchaseRowFactory
 		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
 	}
 
-	private static JSONLookupValue createASILookupValue(final int attributeSetInstanceId)
+	private static JSONLookupValue createASILookupValue(final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		if (attributeSetInstanceId <= 0)
+		if (attributeSetInstanceId == null)
 		{
 			return null;
 		}
 
-		final I_M_AttributeSetInstance asi = loadOutOfTrx(attributeSetInstanceId, I_M_AttributeSetInstance.class);
+		final I_M_AttributeSetInstance asi = loadOutOfTrx(attributeSetInstanceId.getRepoId(), I_M_AttributeSetInstance.class);
 		if (asi == null)
 		{
 			return null;
