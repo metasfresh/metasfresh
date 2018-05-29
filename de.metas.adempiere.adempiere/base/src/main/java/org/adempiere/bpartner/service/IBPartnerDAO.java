@@ -34,6 +34,7 @@ import org.compiere.model.I_M_Shipper;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import lombok.NonNull;
 
 public interface IBPartnerDAO extends ISingletonService
 {
@@ -53,7 +54,12 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
 
-	public List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId);
+	List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId);
+	
+	default List<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveBPartnerLocations(bpartnerId.getRepoId());
+	}
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(Properties ctx, int bpartnerId, String trxName);
 
