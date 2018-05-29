@@ -304,9 +304,6 @@ public abstract class Doc
 	/** Contained Doc Lines */
 	protected DocLine[] p_lines;
 
-	/** Facts */
-	private List<Fact> m_fact = null;
-
 	/** No Currency in Document Indicator (-2) */
 	protected static final int NO_CURRENCY = -2;
 
@@ -553,7 +550,7 @@ public abstract class Doc
 
 		//
 		// Create Fact per AcctSchema
-		m_fact = new ArrayList<>();
+		final List<Fact> facts = new ArrayList<>();
 		// for all Accounting Schema
 		{
 			for (final MAcctSchema acctSchema : m_ass)
@@ -581,7 +578,8 @@ public abstract class Doc
 				}
 
 				// post
-				postLogic(acctSchema);
+				final List<Fact> factsForAcctSchema = postLogic(acctSchema);
+				facts.addAll(factsForAcctSchema);
 			}
 		}
 
@@ -593,7 +591,7 @@ public abstract class Doc
 		//
 		// Save facts
 		// p_Status = postCommit (p_Status);
-		for (final Fact fact : m_fact)
+		for (final Fact fact : facts)
 		{
 			// Skip null facts
 			if (fact == null)
@@ -615,7 +613,7 @@ public abstract class Doc
 		//
 		// Dispose facts
 		// Dispose lines
-		for (Fact fact : m_fact)
+		for (Fact fact : facts)
 		{
 			if (fact != null)
 			{
@@ -640,8 +638,9 @@ public abstract class Doc
 	 * Posting logic for Accounting Schema
 	 *
 	 * @param acctSchema Accounting Schema
+	 * @return 
 	 */
-	private final void postLogic(final MAcctSchema acctSchema)
+	private final List<Fact> postLogic(final MAcctSchema acctSchema)
 	{
 		// rejectUnbalanced
 		if (!acctSchema.isSuspenseBalancing() && !isBalanced())
@@ -683,7 +682,7 @@ public abstract class Doc
 						.setPostingStatus(PostingStatus.Error)
 						.setDetailMessage("No fact");
 			}
-			m_fact.add(fact);
+			
 			//
 			// p_Status = STATUS_PostPrepared;
 
@@ -754,6 +753,7 @@ public abstract class Doc
 		}	// for all facts
 
 		// return STATUS_Posted;
+		return facts;
 	}   // postLogic
 
 	/**
