@@ -1,7 +1,6 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -126,9 +125,9 @@ public class PurchaseRowFactoryTest
 
 		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo
 				.builder()
-				.customerPriceGrossProfit(Money.of(TEN.add(ONE), currency))
-				.priceGrossProfit(Money.of(TEN.subtract(ONE), currency))
-				.purchasePriceActual(Money.of(TEN, currency))
+				.salesNetPrice(Money.of(11, currency))
+				.purchaseNetPrice(Money.of(9, currency))
+				.purchaseGrossPrice(Money.of(10, currency))
 				.build();
 
 		return PurchaseCandidate.builder()

@@ -25,12 +25,10 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
-import de.metas.lang.Percent;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.Currency;
-import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -94,8 +92,9 @@ public class PurchaseRowFactory
 			@NotNull final LocalDateTime datePromised)
 	{
 		final BPartnerId bpartnerId = purchaseCandidate.getVendorBPartnerId();
-		final ProductId productId;
 		final JSONLookupValue vendorBPartner = createBPartnerLookupValue(bpartnerId);
+
+		final ProductId productId;
 		final JSONLookupValue product;
 		if (vendorProductInfo != null)
 		{
@@ -110,30 +109,22 @@ public class PurchaseRowFactory
 			productId = purchaseCandidate.getProductId();
 			product = createProductLookupValue(productId);
 		}
-		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
+		final String uom = createUOMLookupValueForProductId(productId);
 
 		final int processedPurchaseCandidateId = purchaseCandidate.isProcessed()
 				? purchaseCandidate.getPurchaseCandidateId()
 				: 0;
 
 		final PurchaseDemandId demandId = purchaseCandidate.getSalesOrderLineIdAsDemandId();
-
-		final PurchaseProfitInfo profitInfo = purchaseCandidate.getProfitInfo();
-		final Money purchasePriceActual = moneyService.convertMoneyToCurrency(profitInfo.getPurchasePriceActual(), currencyOfParentRow);
-		final Money customerPriceGrossProfit = moneyService.convertMoneyToCurrency(profitInfo.getCustomerPriceGrossProfit(), currencyOfParentRow);
-		final Money priceGrossProfit = moneyService.convertMoneyToCurrency(profitInfo.getPriceGrossProfit(), currencyOfParentRow);
-
-		final Percent percentGrossProfit = Percent
-				.ofDelta(priceGrossProfit.getValue(), customerPriceGrossProfit.getValue())
-				.roundToHalf(RoundingMode.HALF_UP);
+		final PurchaseProfitInfo profitInfo = convertToCurrency(purchaseCandidate.getProfitInfo(), currencyOfParentRow);
 
 		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.lineId(demandId, bpartnerId, processedPurchaseCandidateId))
 				.rowType(PurchaseRowType.LINE)
 				.product(product)
-				.purchasePriceActual(purchasePriceActual.getValue())
-				.customerPriceGrossProfit(customerPriceGrossProfit.getValue())
-				.percentGrossProfit(percentGrossProfit.getValueAsBigDecimal())
+				.salesNetPrice(profitInfo.getSalesNetPrice().getValue())
+				.purchaseNetPrice(profitInfo.getPurchaseNetPrice().getValue())
+				.profitPercent(profitInfo.getProfitPercent().roundToHalf(RoundingMode.HALF_UP).getValueAsBigDecimal())
 				.uomOrAvailablility(uom)
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
@@ -143,6 +134,15 @@ public class PurchaseRowFactory
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.readonly(purchaseCandidate.isProcessedOrLocked())
+				.build();
+	}
+
+	private PurchaseProfitInfo convertToCurrency(final PurchaseProfitInfo profitInfo, final Currency currencyTo)
+	{
+		return profitInfo.toBuilder()
+				.salesNetPrice(moneyService.convertMoneyToCurrency(profitInfo.getSalesNetPrice(), currencyTo))
+				.purchaseNetPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseNetPrice(), currencyTo))
+				.purchaseGrossPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseGrossPrice(), currencyTo))
 				.build();
 	}
 
@@ -274,7 +274,7 @@ public class PurchaseRowFactory
 		{
 			description = "<" + attributeSetInstanceId.getRepoId() + ">";
 		}
-		
+
 		return JSONLookupValue.of(attributeSetInstanceId.getRepoId(), description);
 	}
 
@@ -295,20 +295,14 @@ public class PurchaseRowFactory
 		return JSONLookupValue.of(bpartner.getC_BPartner_ID(), displayName);
 	}
 
-	private static String createUOMLookupValueForProductId(final int productId)
+	private static String createUOMLookupValueForProductId(final ProductId productId)
 	{
-		if (productId <= 0)
+		if (productId == null)
 		{
 			return null;
 		}
 
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
-		if (product == null)
-		{
-			return null;
-		}
-
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(productId);
 		if (uom == null)
 		{
 			return null;

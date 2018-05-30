@@ -88,19 +88,19 @@ public class PurchaseRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 23),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 23)
 	})
-	private final BigDecimal customerPriceGrossProfit;
+	private final BigDecimal salesNetPrice;
 
 	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_PurchasePriceActual, widgetType = DocumentFieldWidgetType.Amount, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 25)
 	})
-	private final BigDecimal purchasePriceActual;
+	private final BigDecimal purchaseNetPrice;
 
 	@ViewColumn(captionKey = "PercentGrossProfit", widgetType = DocumentFieldWidgetType.Amount, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 25)
 	})
-	private final BigDecimal percentGrossProfit;
+	private final BigDecimal profitPercent;
 
 	@ViewColumn(captionKey = "Qty_AvailableToPromise", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
@@ -179,9 +179,9 @@ public class PurchaseRow implements IViewRow
 			@Nullable final JSONLookupValue attributeSetInstance,
 			@Nullable final JSONLookupValue vendorBPartner,
 			@Nullable final BigDecimal qtyAvailableToPromise,
-			@Nullable final BigDecimal customerPriceGrossProfit,
-			@Nullable final BigDecimal purchasePriceActual,
-			@Nullable final BigDecimal percentGrossProfit,
+			@Nullable final BigDecimal salesNetPrice,
+			@Nullable final BigDecimal purchaseNetPrice,
+			@Nullable final BigDecimal profitPercent,
 			@NonNull final String uomOrAvailablility,
 			@Nullable final BigDecimal qtyToDeliver,
 			@Nullable final BigDecimal qtyToPurchase,
@@ -200,9 +200,9 @@ public class PurchaseRow implements IViewRow
 		this.vendorBPartner = vendorBPartner;
 		this.qtyAvailableToPromise = qtyAvailableToPromise;
 
-		this.customerPriceGrossProfit = customerPriceGrossProfit;
-		this.purchasePriceActual = purchasePriceActual;
-		this.percentGrossProfit = percentGrossProfit;
+		this.salesNetPrice = salesNetPrice;
+		this.purchaseNetPrice = purchaseNetPrice;
+		this.profitPercent = profitPercent;
 
 		this.uomOrAvailablility = uomOrAvailablility;
 		this.qtyToDeliver = qtyToDeliver;
@@ -246,9 +246,9 @@ public class PurchaseRow implements IViewRow
 		this.qtyAvailableToPromise = from.qtyAvailableToPromise;
 		this.uomOrAvailablility = from.uomOrAvailablility;
 
-		this.customerPriceGrossProfit = from.customerPriceGrossProfit;
-		this.purchasePriceActual = from.purchasePriceActual;
-		this.percentGrossProfit = from.percentGrossProfit;
+		this.salesNetPrice = from.salesNetPrice;
+		this.purchaseNetPrice = from.purchaseNetPrice;
+		this.profitPercent = from.profitPercent;
 
 		this.qtyToDeliver = from.qtyToDeliver;
 		this.qtyToPurchase = from.qtyToPurchase;
