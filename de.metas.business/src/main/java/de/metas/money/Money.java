@@ -47,15 +47,17 @@ import lombok.Value;
 @Value
 public class Money
 {
-	public static final Money of(
-			@NonNull final BigDecimal value,
-			@NonNull final Currency currency)
+	public static final Money of(@NonNull final BigDecimal value, @NonNull final Currency currency)
 	{
 		return new Money(value, currency);
 	}
 
-	public static final Money zero(
-			@NonNull final Currency currency)
+	public static final Money of(final int value, @NonNull final Currency currency)
+	{
+		return of(BigDecimal.valueOf(value), currency);
+	}
+
+	public static final Money zero(@NonNull final Currency currency)
 	{
 		return new Money(ZERO, currency);
 	}
@@ -172,10 +174,10 @@ public class Money
 		return new Money(value.subtract(amtToSubtract), currency);
 	}
 
-	/** example: if this instance is 100CHF and {@code percent} is 80%, then the result is 80CHF*/
+	/** example: if this instance is 100CHF and {@code percent} is 80%, then the result is 80CHF */
 	public Money percentage(@NonNull final Percent percent)
 	{
-		if(percent.isOneHundred())
+		if (percent.isOneHundred())
 		{
 			return this;
 		}
