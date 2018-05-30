@@ -16,22 +16,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
-import de.metas.money.Currency;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.purchasecandidate.BPPurchaseScheduleService;
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseDemand;
-import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
-import de.metas.purchasecandidate.SalesOrder;
-import de.metas.purchasecandidate.SalesOrderLine;
-import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.availability.AvailabilityException;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
-import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoFactory;
-import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -67,12 +58,6 @@ class PurchaseRowsLoader
 {
 	// services
 	private final PurchaseRowFactory purchaseRowFactory;
-	private final PurchaseCandidateRepository purchaseCandidateRepository;
-	private final BPPurchaseScheduleService bpPurchaseScheduleService;
-	// private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	// private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
-	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
-	private final SalesOrderLineRepository salesOrderLineRepository;
 
 	// parameters
 	private final SalesOrderLines salesOrderLines;
@@ -85,20 +70,12 @@ class PurchaseRowsLoader
 			@NonNull final SalesOrderLines salesOrderLines,
 			@NonNull final Supplier<IView> viewSupplier,
 			//
-			@NonNull final PurchaseRowFactory purchaseRowFactory,
-			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
-			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
-			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory,
-			@NonNull final SalesOrderLineRepository salesOrderLineRepository)
+			@NonNull final PurchaseRowFactory purchaseRowFactory)
 	{
 		this.salesOrderLines = salesOrderLines;
 		this.viewSupplier = viewSupplier;
 
 		this.purchaseRowFactory = purchaseRowFactory;
-		this.purchaseCandidateRepository = purchaseCandidateRepository;
-		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
-		this.purchaseProfitInfoFactory = purchaseProfitInfoFactory;
-		this.salesOrderLineRepository = salesOrderLineRepository;
 	}
 
 	public List<PurchaseRow> load()
@@ -106,11 +83,9 @@ class PurchaseRowsLoader
 		final ImmutableList.Builder<PurchaseRow> result = ImmutableList.builder();
 		final ImmutableMap.Builder<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRowBuilder = ImmutableMap.builder();
 
-		for (final PurchaseDemandWithCandidates demandWithCandidates : salesOrderLines.getSalesOrderLinesWithCandidates())
+		for (final PurchaseDemandWithCandidates demandWithCandidates : salesOrderLines.getPurchaseDemandWithCandidates())
 		{
 			final PurchaseDemand demand = demandWithCandidates.getPurchaseDemand();
-
-			final Currency currencyOfParentRow = demand.getCurrency();
 
 			final ImmutableList.Builder<PurchaseRow> rows = ImmutableList.builder();
 			for (final PurchaseCandidate purchaseCandidate : demandWithCandidates.getPurchaseCandidates())
@@ -120,7 +95,7 @@ class PurchaseRowsLoader
 						.purchaseCandidate(purchaseCandidate)
 						.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
 						.datePromised(TimeUtil.asLocalDateTime(demand.getDatePromised()))
-						.currencyOfParentRow(currencyOfParentRow)
+						.currencyOfParentRow(demand.getCurrency())
 						.build();
 
 				purchaseCandidate2purchaseRowBuilder.put(purchaseCandidate, candidateRow);
@@ -134,33 +109,6 @@ class PurchaseRowsLoader
 		purchaseCandidate2purchaseRow = purchaseCandidate2purchaseRowBuilder.build();
 
 		return result.build();
-	}
-
-	private static PurchaseDemand createDemand(final SalesOrderLine salesOrderLine)
-	{
-		final SalesOrder salesOrder = salesOrderLine.getOrder();
-
-		final Quantity qtyOrdered = salesOrderLine.getOrderedQty();
-		final Quantity qtyDelivered = salesOrderLine.getDeliveredQty();
-		final Quantity qtyToPurchase = qtyOrdered.subtract(qtyDelivered);
-
-		return PurchaseDemand.builder()
-				.id(PurchaseDemandId.ofOrderLineId(salesOrderLine.getId()))
-				//
-				.orgId(salesOrderLine.getOrgId())
-				.warehouseId(salesOrderLine.getWarehouseId())
-				//
-				.productId(salesOrderLine.getProductId())
-				.attributeSetInstanceId(salesOrderLine.getAsiId())
-				//
-				.qtyToDeliverTotal(qtyOrdered)
-				.qtyToDeliver(qtyToPurchase)
-				//
-				.currency(salesOrderLine.getPriceActual().getCurrency())
-				//
-				.datePromised(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
-				.preparationDate(salesOrder.getPreparationDate())
-				.build();
 	}
 
 	public void createAndAddAvailabilityResultRows()
@@ -184,10 +132,9 @@ class PurchaseRowsLoader
 	{
 		Check.assumeNotNull(purchaseCandidate2purchaseRow, "purchaseCandidate2purchaseRow was already loaded via load(); this={}", this);
 
-		salesOrderLines.checkAvailabilityAsync((availabilityCheckResult, throwable) -> {
-
+		salesOrderLines.checkAvailabilityAsync((availabilityCheckResult, error) -> {
 			handleResultForAsyncAvailabilityCheck(availabilityCheckResult);
-			handleThrowableForAsyncAvailabilityCheck(Util.coalesce(throwable.getCause(), throwable));
+			handleThrowableForAsyncAvailabilityCheck(Util.coalesce(error != null ? error.getCause() : null, error));
 		});
 	}
 
@@ -231,7 +178,7 @@ class PurchaseRowsLoader
 		}
 		if (throwable instanceof AvailabilityException)
 		{
-			final AvailabilityException availabilityException = (AvailabilityException)throwable;
+			final AvailabilityException availabilityException = AvailabilityException.cast(throwable);
 
 			final List<DocumentId> changedRowIds = new ArrayList<>();
 

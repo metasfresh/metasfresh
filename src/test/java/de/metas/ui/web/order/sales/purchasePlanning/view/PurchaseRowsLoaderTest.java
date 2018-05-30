@@ -44,9 +44,10 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseDemand;
+import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
-import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
@@ -163,16 +164,15 @@ public class PurchaseRowsLoaderTest
 		bPartnerProduct.setProductName("bPartnerProduct.ProductName");
 		save(bPartnerProduct);
 
+		final PurchaseDemand demand = SalesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, bPartnerProduct);
-
-		final ImmutableList<SalesOrderLineWithCandidates> salesOrderLinesWithPurchaseCandidates = //
-				createSalesOrderLinesWithPurchaseCandidates(salesOrderLine, purchaseCandidate);
+		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(demand, purchaseCandidate);
 
 		// @formatter:off
 		new Expectations()
 		{{
-			salesOrderLines.getSalesOrderLinesWithCandidates();
-			result = salesOrderLinesWithPurchaseCandidates;
+			salesOrderLines.getPurchaseDemandWithCandidates();
+			result = demandWithCandidates;
 		}};	// @formatter:on
 
 		final Multimap<PurchaseCandidate, AvailabilityResult> checkAvailabilityResult = ArrayListMultimap.create();
@@ -242,18 +242,13 @@ public class PurchaseRowsLoaderTest
 		return purchaseCandidate;
 	}
 
-	private static ImmutableList<SalesOrderLineWithCandidates> createSalesOrderLinesWithPurchaseCandidates(
-			final SalesOrderLine orderLine,
+	private static ImmutableList<PurchaseDemandWithCandidates> createPurchaseDemandWithCandidates(
+			final PurchaseDemand demand,
 			final PurchaseCandidate purchaseCandidate)
 	{
-		final SalesOrderLineWithCandidates salesOrderLineWithPurchaseCandidates //
-				= SalesOrderLineWithCandidates.builder()
-						.salesOrderLine(orderLine)
-						.purchaseCandidate(purchaseCandidate)
-						.build();
-
-		final ImmutableList<SalesOrderLineWithCandidates> salesOrderLinesWithPurchaseCandidates //
-				= ImmutableList.of(salesOrderLineWithPurchaseCandidates);
-		return salesOrderLinesWithPurchaseCandidates;
+		return ImmutableList.of(PurchaseDemandWithCandidates.builder()
+				.purchaseDemand(demand)
+				.purchaseCandidate(purchaseCandidate)
+				.build());
 	}
 }

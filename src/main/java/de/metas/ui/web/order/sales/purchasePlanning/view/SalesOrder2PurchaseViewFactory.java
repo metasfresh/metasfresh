@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -17,12 +18,15 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocument;
@@ -34,10 +38,15 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.purchasecandidate.BPPurchaseScheduleService;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseDemand;
+import de.metas.purchasecandidate.PurchaseDemandId;
+import de.metas.purchasecandidate.SalesOrder;
+import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoFactory;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_Apply_Availability_Row;
 import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_PurchaseView_Launcher;
@@ -196,11 +205,10 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		final ViewId viewId = ViewId.random(WINDOW_ID);
 
 		final SalesOrderLines saleOrderLines = SalesOrderLines.builder()
-				.salesOrderLineIds(salesOrderLineIds)
+				.purchaseDemands(retrievePurchaseDemands(salesOrderLineIds))
 				.purchaseCandidateRepository(purchaseCandidatesRepo)
 				.bpPurchaseScheduleService(bpPurchaseScheduleService)
 				.purchaseProfitInfoFactory(purchaseProfitInfoFactory)
-				.salesOrderLineRepository(salesOrderLineRepository)
 				.build();
 
 		final PurchaseRowsLoader rowsLoader = PurchaseRowsLoader.builder()
@@ -231,6 +239,46 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 				.build();
 
 		return view;
+	}
+
+	private List<PurchaseDemand> retrievePurchaseDemands(final Collection<OrderLineId> salesOrderLineIds)
+	{
+		return salesOrderLineRepository.getByIds(salesOrderLineIds)
+				.stream()
+				.map(salesOrderLine -> createDemand(salesOrderLine))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@VisibleForTesting
+	static PurchaseDemand createDemand(final SalesOrderLine salesOrderLine)
+	{
+		final SalesOrder salesOrder = salesOrderLine.getOrder();
+
+		final Quantity qtyOrdered = salesOrderLine.getOrderedQty();
+		final Quantity qtyDelivered = salesOrderLine.getDeliveredQty();
+		final Quantity qtyToPurchase = qtyOrdered.subtract(qtyDelivered);
+
+		return PurchaseDemand.builder()
+				.id(PurchaseDemandId.ofOrderLineId(salesOrderLine.getId()))
+				//
+				.orgId(salesOrderLine.getOrgId())
+				.warehouseId(salesOrderLine.getWarehouseId())
+				//
+				.productId(salesOrderLine.getProductId())
+				.attributeSetInstanceId(salesOrderLine.getAsiId())
+				//
+				.qtyToDeliverTotal(qtyOrdered)
+				.qtyToDeliver(qtyToPurchase)
+				//
+				.currency(salesOrderLine.getPriceActual().getCurrency())
+				//
+				.datePromised(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
+				.preparationDate(salesOrder.getPreparationDate())
+				//
+				.salesOrderId(salesOrderLine.getOrderId())
+				.salesOrderLineId(salesOrderLine.getId())
+				//
+				.build();
 	}
 
 	private boolean makeAsynchronousAvailiabilityCheck()

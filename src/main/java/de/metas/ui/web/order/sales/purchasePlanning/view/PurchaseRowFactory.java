@@ -269,7 +269,13 @@ public class PurchaseRowFactory
 			return null;
 		}
 
-		return JSONLookupValue.of(asi.getM_AttributeSetInstance_ID(), asi.getDescription());
+		String description = asi.getDescription();
+		if (Check.isEmpty(description, true))
+		{
+			description = "<" + attributeSetInstanceId.getRepoId() + ">";
+		}
+		
+		return JSONLookupValue.of(attributeSetInstanceId.getRepoId(), description);
 	}
 
 	private static JSONLookupValue createBPartnerLookupValue(final BPartnerId bpartnerId)

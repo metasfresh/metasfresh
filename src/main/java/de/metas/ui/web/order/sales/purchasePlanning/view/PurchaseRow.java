@@ -160,8 +160,9 @@ public class PurchaseRow implements IViewRow
 	private final WarehouseId warehouseId;
 	private final boolean readonly;
 
-	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName;
+
+	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
 	private static final ImmutableMap<String, ViewEditorRenderMode> ViewEditorRenderModeByFieldName_ReadOnly = //
 			ImmutableMap.<String, ViewEditorRenderMode> builder()
@@ -255,7 +256,8 @@ public class PurchaseRow implements IViewRow
 		this.datePromised = from.datePromised;
 
 		setIncludedRows(from.includedRows.stream()
-				.map(PurchaseRow::copy).collect(ImmutableList.toImmutableList()));
+				.map(PurchaseRow::copy)
+				.collect(ImmutableList.toImmutableList()));
 
 		this.purchaseCandidateId = from.purchaseCandidateId;
 		this.orgId = from.orgId;
@@ -263,6 +265,7 @@ public class PurchaseRow implements IViewRow
 		this.readonly = from.readonly;
 
 		viewEditorRenderModeByFieldName = from.viewEditorRenderModeByFieldName;
+
 		_fieldNameAndJsonValues = from._fieldNameAndJsonValues;
 	}
 
@@ -347,7 +350,8 @@ public class PurchaseRow implements IViewRow
 		final PurchaseRow row = includedRowsByRowId.get(rowId);
 		if (row == null)
 		{
-			throw new EntityNotFoundException("Included row not found").appendParametersToMessage()
+			throw new EntityNotFoundException("Included row not found")
+					.appendParametersToMessage()
 					.setParameter("rowId", rowId)
 					.setParameter("this", this);
 		}
@@ -398,11 +402,20 @@ public class PurchaseRow implements IViewRow
 		}
 	}
 
+	private void assertRowType(@NonNull final PurchaseRowType expectedRowType)
+	{
+		if (rowType != expectedRowType)
+		{
+			throw new AdempiereException("Expected " + expectedRowType + " but it was " + rowType + ": " + this);
+		}
+
+	}
+
 	public void changeQtyToPurchase(
 			@NonNull final PurchaseRowId rowId,
 			@NonNull final BigDecimal qtyToPurchase)
 	{
-		Check.errorUnless(rowType == PurchaseRowType.GROUP, "The method changeQtyToPurchase() is only allowed for group rows; this={}", this);
+		assertRowType(PurchaseRowType.GROUP);
 
 		final PurchaseRow row = getIncludedRowById(rowId);
 		row.assertRowEditable();
@@ -415,8 +428,7 @@ public class PurchaseRow implements IViewRow
 			@NonNull final PurchaseRowId rowId,
 			@NonNull final LocalDateTime datePromised)
 	{
-		Check.errorUnless(rowType == PurchaseRowType.GROUP,
-				"The method changeDatePromisedOfIncludedRow() is only allowed for group rows; this={}", this);
+		assertRowType(PurchaseRowType.GROUP);
 
 		final PurchaseRow lineRow = getIncludedRowById(rowId);
 
@@ -434,23 +446,19 @@ public class PurchaseRow implements IViewRow
 		return vendorBPartner.getKeyAsInt();
 	}
 
-	public void setAvailabilityInfoRows(@NonNull final ImmutableList<PurchaseRow> availabilityResultRows)
+	public void setAvailabilityInfoRows(@NonNull final List<PurchaseRow> availabilityResultRows)
 	{
-		Check.assume(rowType == PurchaseRowType.LINE,
-				"The method changeQtyToPurchase() is only allowed for line rows; this={}", this);
-		availabilityResultRows
-				.forEach(availabilityResultRow -> Check.assume(
-						availabilityResultRow.getRowType() == PurchaseRowType.AVAILABILITY_DETAIL,
-						"The method changeQtyToPurchase() is only allowed for availability detail rows; this={} ", this));
+		assertRowType(PurchaseRowType.LINE);
+		availabilityResultRows.forEach(availabilityResultRow -> availabilityResultRow.assertRowType(PurchaseRowType.AVAILABILITY_DETAIL));
 
-		setIncludedRows(availabilityResultRows);
+		setIncludedRows(ImmutableList.copyOf(availabilityResultRows));
 	}
 
-	private void setIncludedRows(final ImmutableList<PurchaseRow> includedRows)
+	private void setIncludedRows(@NonNull final ImmutableList<PurchaseRow> includedRows)
 	{
 		final ImmutableList<DocumentId> distinctRowIds = includedRows.stream().map(PurchaseRow::getId).distinct().collect(ImmutableList.toImmutableList());
 		Check.errorIf(distinctRowIds.size() != includedRows.size(), "The given includedRows contain at least one duplicates rowId; includedRows={}", includedRows);
 
-		this.includedRows = ImmutableList.copyOf(includedRows);
+		this.includedRows = includedRows;
 	}
 }

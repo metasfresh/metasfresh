@@ -32,7 +32,6 @@ import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseDemandId;
@@ -130,7 +129,6 @@ public class PurchaseRowFactoryTest
 				.customerPriceGrossProfit(Money.of(TEN.add(ONE), currency))
 				.priceGrossProfit(Money.of(TEN.subtract(ONE), currency))
 				.purchasePriceActual(Money.of(TEN, currency))
-				.purchasePlvId(PriceListVersionId.ofRepoId(20))
 				.build();
 
 		return PurchaseCandidate.builder()

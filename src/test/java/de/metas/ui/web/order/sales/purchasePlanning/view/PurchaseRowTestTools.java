@@ -6,7 +6,6 @@ import static java.math.BigDecimal.TEN;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.pricing.PriceListVersionId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -47,12 +46,10 @@ public class PurchaseRowTestTools
 
 	public PurchaseProfitInfo createProfitInfo(@NonNull final Currency currency)
 	{
-		return PurchaseProfitInfo
-				.builder()
+		return PurchaseProfitInfo.builder()
 				.customerPriceGrossProfit(Money.of(TEN.add(ONE), currency))
 				.priceGrossProfit(Money.of(TEN.subtract(ONE), currency))
 				.purchasePriceActual(Money.of(TEN, currency))
-				.purchasePlvId(PriceListVersionId.ofRepoId(20))
 				.build();
 	}
 }
