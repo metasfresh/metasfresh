@@ -16,8 +16,16 @@ Here come the actual release notes:
     * New Window in WebUI for the maintenance of Tax Rate Translations.
   * [#4117](https://github.com/metasfresh/metasfresh/issues/4117) WebUI: Add missing Translations in Product Window
     * Improved the Translations for en_US in Product Window.
+  * [#4118](https://github.com/metasfresh/metasfresh/issues/4118) WebUI: Translation Window for Unit of Measures
+    * New Window in WebUI for the maintenance of Unit of measure Translations.
   * [#4119](https://github.com/metasfresh/metasfresh/issues/4119) WebUI: Translation Window for Tax Category
     * New Window in WebUI for the maintenance of Tax Category Translations.
+  * [#4135](https://github.com/metasfresh/metasfresh/issues/4135) Webui: Add Document References to all Windows with Translations
+    * Improved the navigation beween master data and translation windows, adding references to the translation window & table.
+
+## Fixes
+  * [#1814](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1814) Action button is too large
+    * Fixes the Layout of Action Button being too large. Also hiding the Action Buttons from Batch Entry again.
 
 
 # metasfresh 5.59 (2018-22)
@@ -34,19 +42,29 @@ Here come the actual release notes:
   * [#3996](https://github.com/metasfresh/metasfresh/issues/3996) WebUI: Client window: EMail fields layout
     * Improved Client Window in WebUI. Grouping eMail Fields and new Translations for de_DE Language.
   * [#4000](https://github.com/metasfresh/metasfresh/issues/4000) New Report for Yearly Bonus
+    * New Report that shows the Invoice Candidates for Yearly Bonus Contracts that can be invoiced.
   * [#4015](https://github.com/metasfresh/metasfresh/issues/4015) CleverReach Interface
+    * New Feature that adds Cleverreach eMail Marketing functionalities.
   * [#4031](https://github.com/metasfresh/metasfresh/issues/4031) Add easy way to add AD_Users to Newsletter marketing campaigns
+    * New Feature that allows to add Users to the new Newsletter marketing campaign feature.
   * [#4035](https://github.com/metasfresh/metasfresh/issues/4035) Proforma Invoice via Sales Order workflow
+    * New Documenttype for Proforma Invoices, implementted as Sales Order Documenttype and added into shipment candidates/ invoice candidates workflow.
   * [#4036](https://github.com/metasfresh/metasfresh/issues/4036) Sales Order: Show Pricing Conditions in create purchase order action
+    * Extended modal overlay of create purchase order action, now showing advanced information about vendor pricing conditions.
   * [#4042](https://github.com/metasfresh/metasfresh/issues/4042) Pharma: extend customer import 
+    * Extended the customer Import functionality.
   * [#4058](https://github.com/metasfresh/metasfresh/issues/4058) Add delivery times to Der Kurier
+    * Extended the Implementation of the "Der Kurier" Logistics provider. Now adding the delivery/ fetching times.
   * [#4083](https://github.com/metasfresh/metasfresh/issues/4083) Make refund contract doctypes
+    * New Document Types - Refund Invoice, Refund Credit Memo - for the Yearly Refund Contracts.
   * [#4085](https://github.com/metasfresh/metasfresh/issues/4085) create relation from candidate to refund-candidate
+    * New Document reference added for the relation between regular invoice candidate and refund invoice candidate.
   * [#4089](https://github.com/metasfresh/metasfresh/issues/4089) Create missing fields for Bonus in WebUI
     * New Fields added to Purchase Orderline and Invoice Candidate for Refund Contracts.
   * [#4094](https://github.com/metasfresh/metasfresh/issues/4094) Create Mandatory Logic in Contract terms
     * Improved Window for contract terms, now having a mandatory Logic for fields not needed for Refund Contract Types.
   * [#4096](https://github.com/metasfresh/metasfresh/issues/4096) User Queries : turn list fields for table and tab into search fields
+    * Improving Filtering of User Queries in WebUI.
   * [#4102](https://github.com/metasfresh/metasfresh/issues/4102) webui: Purchase schedule tab - trl and display
     * Improved Purchase Schedule Subtab in WebUI. New Translations added.
 
