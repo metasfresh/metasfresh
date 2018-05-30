@@ -7,6 +7,8 @@ import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.money.Currency;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -60,6 +62,9 @@ public class PurchaseDemand
 	@NonNull
 	LocalDateTime datePromised;
 	LocalDateTime preparationDate;
+	
+	OrderId salesOrderId;
+	OrderLineId salesOrderLineId;
 
 	public int getUOMId()
 	{

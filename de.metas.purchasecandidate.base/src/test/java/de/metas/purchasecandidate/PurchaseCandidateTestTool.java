@@ -15,7 +15,6 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 
@@ -82,7 +81,6 @@ public final class PurchaseCandidateTestTool
 	public static PurchaseProfitInfo createPurchaseProfitInfo()
 	{
 		return PurchaseProfitInfo.builder()
-				.purchasePlvId(PriceListVersionId.ofRepoId(10))
 				.customerPriceGrossProfit(Money.of(TEN, CURRENCY))
 				.purchasePriceActual(Money.of(TEN, CURRENCY))
 				.priceGrossProfit(Money.of(TEN, CURRENCY))

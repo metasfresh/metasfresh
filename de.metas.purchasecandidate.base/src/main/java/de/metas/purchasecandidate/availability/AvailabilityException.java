@@ -33,9 +33,13 @@ import lombok.NonNull;
  */
 
 @EqualsAndHashCode(callSuper = false)
+@SuppressWarnings("serial")
 public class AvailabilityException extends AdempiereException
 {
-	private static final long serialVersionUID = -3954110236473712582L;
+	public static AvailabilityException cast(final Throwable throwable)
+	{
+		return (AvailabilityException)throwable;
+	}
 
 	@Getter
 	private final Map<PurchaseCandidate, Throwable> purchaseCandidate2Throwable;

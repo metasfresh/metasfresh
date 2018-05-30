@@ -2,10 +2,8 @@ package de.metas.purchasecandidate.availability;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
@@ -83,11 +81,7 @@ public class AvailabilityCheck
 		return result;
 	}
 
-	/**
-	 * @param callback a consumer that can process the results of the availability check, as soon as they are available.
-	 */
-	public void checkAvailabilityAsync(
-			@NonNull final BiConsumer<Multimap<PurchaseCandidate, AvailabilityResult>, Throwable> callback)
+	public void checkAvailabilityAsync(@NonNull final AvailabilityCheckCallback callback)
 	{
 		final Properties localCtx = Env.copyCtx(Env.getCtx());
 
@@ -106,7 +100,7 @@ public class AvailabilityCheck
 						final boolean errorOccured = throwable != null;
 						if (resultWasFound || errorOccured)
 						{
-							callback.accept(result, throwable);
+							callback.onResult(result, throwable);
 						}
 					});
 		}
@@ -139,24 +133,23 @@ public class AvailabilityCheck
 			@NonNull final BPartnerId vendorId,
 			@NonNull final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate)
 	{
-		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
-
 		final AvailabilityRequest availabilityRequest = AvailabilityRequest.builder()
 				.vendorId(vendorId.getRepoId())
 				.availabilityRequestItems(requestItem2purchaseCandidate.keySet())
 				.build();
 
 		final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
-		final Optional<VendorGatewayService> vendorGatewayService = //
-				vendorGatewayRegistry.getSingleVendorGatewayService(vendorId.getRepoId());
-		if (!vendorGatewayService.isPresent())
+		final VendorGatewayService vendorGatewayService = vendorGatewayRegistry
+				.getSingleVendorGatewayService(vendorId.getRepoId())
+				.orElse(null);
+		if (vendorGatewayService == null)
 		{
-			return result;
+			return ImmutableListMultimap.of();
 		}
 
-		final AvailabilityResponse availabilityResponse = //
-				vendorGatewayService.get().retrieveAvailability(availabilityRequest);
+		final AvailabilityResponse availabilityResponse = vendorGatewayService.retrieveAvailability(availabilityRequest);
 
+		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
 		for (final AvailabilityResponseItem responseItem : availabilityResponse.getAvailabilityResponseItems())
 		{
 			final PurchaseCandidate purchaseCandidate = //
@@ -167,9 +160,7 @@ public class AvailabilityCheck
 					.purchaseCandidate(purchaseCandidate)
 					.build();
 
-			result.put(
-					purchaseCandidate,
-					availabilityResultBuilder);
+			result.put(purchaseCandidate, availabilityResultBuilder);
 		}
 
 		return result;

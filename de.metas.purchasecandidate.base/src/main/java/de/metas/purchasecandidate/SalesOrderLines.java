@@ -8,11 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -27,9 +24,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
 import de.metas.purchasecandidate.availability.AvailabilityCheck;
+import de.metas.purchasecandidate.availability.AvailabilityCheckCallback;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoFactory;
@@ -37,7 +33,6 @@ import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoRequest;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -61,7 +56,6 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString(exclude = { "purchaseCandidateRepository", "salesOrderLineWithCandidates" })
 public class SalesOrderLines
 {
 	// services
@@ -70,10 +64,9 @@ public class SalesOrderLines
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
-	private final SalesOrderLineRepository salesOrderLineRepository;
 
 	private final ExtendedMemorizingSupplier<ImmutableList<PurchaseDemandWithCandidates>> //
-	salesOrderLineWithCandidates = ExtendedMemorizingSupplier.of(this::loadOrCreatePurchaseCandidates0);
+	purchaseDemandWithCandidates = ExtendedMemorizingSupplier.of(this::loadOrCreatePurchaseCandidates0);
 
 	private final ImmutableList<PurchaseDemand> purchaseDemands;
 
@@ -82,14 +75,12 @@ public class SalesOrderLines
 			@NonNull final Collection<PurchaseDemand> purchaseDemands,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
 			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
-			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory,
-			@NonNull final SalesOrderLineRepository salesOrderLineRepository)
+			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory)
 	{
 		this.purchaseDemands = ImmutableList.copyOf(purchaseDemands);
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
 		this.purchaseProfitInfoFactory = purchaseProfitInfoFactory;
-		this.salesOrderLineRepository = salesOrderLineRepository;
 	}
 
 	private ImmutableList<PurchaseDemandWithCandidates> loadOrCreatePurchaseCandidates0()
@@ -146,29 +137,6 @@ public class SalesOrderLines
 	private List<PurchaseDemand> getPurchaseDemands()
 	{
 		return purchaseDemands;
-	}
-	// private Map<OrderLineId, SalesOrderLine> deriveOrderLineId2OrderLine()
-	// {
-	// final ImmutableMap<OrderLineId, SalesOrderLine> salesOrderLineId2Line = salesOrderLineIds.stream()
-	// .map(salesOrderLineRepository::getById)
-	// .collect(ImmutableMap.toImmutableMap(
-	// SalesOrderLine::getId,
-	// Function.identity()));
-	//
-	// assertAllLinesHaveSameOrderId(salesOrderLineId2Line);
-	//
-	// return salesOrderLineId2Line;
-	// }
-
-	private void assertAllLinesHaveSameOrderId(@NonNull final Map<OrderLineId, SalesOrderLine> salesOrderLineId2Line)
-	{
-		final List<OrderId> distinctOrderIds = salesOrderLineId2Line.values().stream()
-				.map(SalesOrderLine::getOrderId)
-				.distinct().collect(Collectors.toList());
-
-		Check.errorIf(distinctOrderIds.size() > 1,
-				"All given salesOrderLineIds' order lines need to belong to the same order; distinct orderIds={}",
-				distinctOrderIds);
 	}
 
 	private ImmutableList<PurchaseCandidate> createMissingPurchaseCandidates(
@@ -231,8 +199,8 @@ public class SalesOrderLines
 					.orgId(purchaseDemand.getOrgId())
 					.productId(vendorProductInfo.getProductId())
 					.qtyToPurchase(BigDecimal.ZERO)
-					.salesOrderId(salesOrderLine.getOrderId())
-					.salesOrderLineId(salesOrderLine.getId())
+					.salesOrderId(purchaseDemand.getSalesOrderId())
+					.salesOrderLineId(purchaseDemand.getSalesOrderLineId())
 					.uomId(purchaseDemand.getUOMId())
 					.vendorProductInfo(vendorProductInfo)
 					.warehouseId(getPurchaseWarehouseId(purchaseDemand))
@@ -266,14 +234,14 @@ public class SalesOrderLines
 				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(VendorProductInfo::getVendorBPartnerId));
 	}
 
-	public List<PurchaseDemandWithCandidates> getSalesOrderLinesWithCandidates()
+	public List<PurchaseDemandWithCandidates> getPurchaseDemandWithCandidates()
 	{
-		return salesOrderLineWithCandidates.get();
+		return purchaseDemandWithCandidates.get();
 	}
 
 	public List<PurchaseCandidate> getAllPurchaseCandidates()
 	{
-		return getSalesOrderLinesWithCandidates()
+		return getPurchaseDemandWithCandidates()
 				.stream()
 				.map(PurchaseDemandWithCandidates::getPurchaseCandidates)
 				.flatMap(List::stream)
@@ -285,16 +253,9 @@ public class SalesOrderLines
 		return prepareAvailabilityCheck().checkAvailability();
 	}
 
-	public void checkAvailabilityAsync(
-			@NonNull final BiConsumer<Multimap<PurchaseCandidate, AvailabilityResult>, Throwable> callback)
+	public void checkAvailabilityAsync(@NonNull final AvailabilityCheckCallback callback)
 	{
-
-		final BiConsumer<Multimap<PurchaseCandidate, AvailabilityResult>, Throwable> callbackWrapper = //
-				(availabilityCheckResult, throwable) -> callback.accept(
-						availabilityCheckResult,
-						throwable);
-
-		prepareAvailabilityCheck().checkAvailabilityAsync(callbackWrapper);
+		prepareAvailabilityCheck().checkAvailabilityAsync(callback);
 	}
 
 	private AvailabilityCheck prepareAvailabilityCheck()
