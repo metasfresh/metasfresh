@@ -47,7 +47,11 @@ import de.metas.currency.ICurrencyConversionContext;
  */
 class DocLine_Allocation extends DocLine
 {
-
+	static DocLine_Allocation cast(final DocLine docLine)
+	{
+		return (DocLine_Allocation)docLine;
+	}	
+	
 	/**
 	 * DocLine_Allocation
 	 *
