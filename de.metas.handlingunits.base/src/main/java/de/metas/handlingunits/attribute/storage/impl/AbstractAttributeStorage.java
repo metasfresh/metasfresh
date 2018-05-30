@@ -38,6 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.util.Check;
@@ -45,6 +46,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -92,6 +94,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	private final IAttributeStorageFactory storageFactory;
 	private final IHUAttributesDAO huAttributesDAO;
 	private final IHUStorageDAO huStorageDAO;
+
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 
 	// Attributes
 	private IndexedAttributeValues _indexedAttributeValues = IndexedAttributeValues.NULL;
@@ -619,9 +623,9 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	public final void setValue(final String attributeKey, final Object value)
 	{
 		assertNotDisposed();
-		
+
 		final I_M_Attribute attribute = getAttributeByValueKeyOrNull(attributeKey);
-		if(attribute == null)
+		if (attribute == null)
 		{
 			throw new AttributeNotFoundException(attributeKey, this);
 		}
@@ -1083,19 +1087,50 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		// We assume attribute is editable (readonlyUI=false)
 		return false;
 	}
-	
+
 	@Override
-	public boolean isDisplayedUI(final I_M_Attribute attribute)
+	public boolean isDisplayedUI(final I_M_Product product, final I_M_Attribute attribute)
 	{
 		assertNotDisposed();
-		
-		final IAttributeValueCallout callout = getAttributeValueCallout(attribute);
-		if(!callout.isDisplayedUI(this, attribute))
+
+		if (!isDisplayFromAttributeSet(product, attribute))
 		{
 			return false;
 		}
-		
+		if (!isDisplayFromCallout(attribute))
+		{
+			return false;
+		}
+
 		return getAttributeValue(attribute).isDisplayedUI();
+	}
+
+	private boolean isDisplayFromAttributeSet(final I_M_Product product, final I_M_Attribute attribute)
+	{
+		final IAttributeValue attributeValue = getAttributeValue(attribute);
+
+		final boolean isOnlyIfInProductAttributeSet = attributeValue.isOnlyIfInProductAttributeSet();
+
+		if (!isOnlyIfInProductAttributeSet)
+		{
+			return true;
+		}
+
+		final boolean isAttributeInSet = attributesBL.getAttributeOrNull(product, attribute.getM_Attribute_ID()) != null;
+
+		if (isAttributeInSet)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean isDisplayFromCallout(final I_M_Attribute attribute)
+	{
+		final IAttributeValueCallout callout = getAttributeValueCallout(attribute);
+
+		return callout.isDisplayedUI(this, attribute);
 	}
 
 	protected final Object getDefaultAttributeValue(final Map<I_M_Attribute, Object> defaultAttributesValue, final I_M_Attribute attribute)
@@ -1203,7 +1238,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 		int counter = 1;
 		message.append("\n Direct children: ");
-		for( final IAttributeStorage child: getChildAttributeStorages(false))
+		for (final IAttributeStorage child : getChildAttributeStorages(false))
 		{
 			message.append("\n\t " + counter + ": " + child);
 		}
@@ -1314,12 +1349,11 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		{
 			return attributeKey2attributeValueRO.get(attributeKey);
 		}
-		
+
 		public boolean hasAttribute(final String attributeKey)
 		{
 			return attributeKey2attributeRO.containsKey(attributeKey);
 		}
-
 
 		public Collection<I_M_Attribute> getAttributes()
 		{

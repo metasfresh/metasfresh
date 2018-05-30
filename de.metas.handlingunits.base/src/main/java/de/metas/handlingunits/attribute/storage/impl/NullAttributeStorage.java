@@ -32,6 +32,7 @@ import java.util.Map;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.NamePair;
 
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
@@ -314,7 +315,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 	
 	@Override
-	public boolean isDisplayedUI(final I_M_Attribute attribute)
+	public boolean isDisplayedUI(final I_M_Product product, final I_M_Attribute attribute)
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}
