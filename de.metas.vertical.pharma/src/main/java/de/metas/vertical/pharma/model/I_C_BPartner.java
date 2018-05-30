@@ -135,4 +135,34 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 	public void setWeekendOpeningTimes(String ShelfLifeMinDays);
 	public String getWeekendOpeningTimes();
 	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_VendorResponsible = "VendorResponsible";
+	public void setVendorResponsible(String VendorResponsible);
+	public String getVendorResponsible();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_MinimumOrderValue = "MinimumOrderValue";
+	public void setMinimumOrderValue(String MinimumOrderValue);
+	public String getMinimumOrderValue();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_RetourFax = "RetourFax";
+	public void setRetourFax(String RetourFax);
+	public String getRetourFax();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_Pharma_Phone = "Pharma_Phone";
+	public void setPharma_Phone(String Pharma_Phone);
+	public String getPharma_Phone();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_Contacts = "Contacts";
+	public void setContacts(String Contacts);
+	public String getContacts();
+	// @formatter:on
 }
