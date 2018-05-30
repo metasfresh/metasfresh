@@ -42,15 +42,14 @@ public class GrossProfitPriceFactory
 		this.providers = ImmutableList.copyOf(providers.orElse(ImmutableList.of()));
 	}
 
-	public GrossProfitPrice createGrossProfitPrice(@NonNull final GrossProfitComputeRequest grossProfitAware)
+	public GrossProfitPrice createGrossProfitPrice(@NonNull final GrossProfitComputeRequest request)
 	{
-		final GrossProfitPriceBuilder builder = GrossProfitPrice
-				.builder()
-				.basePrice(grossProfitAware.getBaseAmount());
+		final GrossProfitPriceBuilder builder = GrossProfitPrice.builder()
+				.basePrice(request.getBaseAmount());
 
 		for (final GrossProfitComponentProvider provider : providers)
 		{
-			builder.profitCompponent(provider.provideForRequest(grossProfitAware));
+			builder.profitCompponent(provider.provideForRequest(request));
 		}
 		return builder.build();
 	}
