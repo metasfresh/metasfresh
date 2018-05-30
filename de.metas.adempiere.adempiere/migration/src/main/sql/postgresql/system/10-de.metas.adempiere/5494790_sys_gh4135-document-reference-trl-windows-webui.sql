@@ -33,3 +33,8 @@ UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-30 12:08:13',
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-05-30 12:08:19','YYYY-MM-DD HH24:MI:SS'),Description='Maintain Product Bill of Material & Formula ' WHERE AD_Menu_ID=1000092 AND AD_Language='en_US'
 ;
 
+-- 2018-05-30T13:27:34.594
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540439,Updated=TO_TIMESTAMP('2018-05-30 13:27:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=348
+;
+
