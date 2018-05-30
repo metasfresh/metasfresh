@@ -162,7 +162,11 @@ class TableItem extends PureComponent {
     if (ret) {
       ret.then(resp => {
         if (resp[0] && resp[0].fieldsByName) {
-          editedCells = merge(editedCells, resp[0].fieldsByName);
+          const fields = resp[0].fieldsByName;
+
+          for (let [k, v] of Object.entries(fields)) {
+            editedCells[k] = v;
+          }
         }
 
         this.setState(
