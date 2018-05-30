@@ -156,5 +156,4 @@ public class PharmaImportPartnerInterceptor implements IImportInterceptor
 
 		save(contact);
 	}
-
 }
