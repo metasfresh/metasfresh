@@ -46,14 +46,19 @@ Here come the actual release notes:
   * [#4036](https://github.com/metasfresh/metasfresh/issues/4036) Sales Order: Show Pricing Conditions in create purchase order action
     * Extended modal overlay of create purchase order action, now showing advanced information about vendor pricing conditions.
   * [#4042](https://github.com/metasfresh/metasfresh/issues/4042) Pharma: extend customer import 
+    * Extended the customer Import functionality.
   * [#4058](https://github.com/metasfresh/metasfresh/issues/4058) Add delivery times to Der Kurier
+    * Extended the Implementation of the "Der Kurier" Logistics provider. Now adding the delivery/ fetching times.
   * [#4083](https://github.com/metasfresh/metasfresh/issues/4083) Make refund contract doctypes
+    * New Document Types - Refund Invoice, Refund Credit Memo - for the Yearly Refund Contracts.
   * [#4085](https://github.com/metasfresh/metasfresh/issues/4085) create relation from candidate to refund-candidate
+    * New Document reference added for the relation between regular invoice candidate and refund invoice candidate.
   * [#4089](https://github.com/metasfresh/metasfresh/issues/4089) Create missing fields for Bonus in WebUI
     * New Fields added to Purchase Orderline and Invoice Candidate for Refund Contracts.
   * [#4094](https://github.com/metasfresh/metasfresh/issues/4094) Create Mandatory Logic in Contract terms
     * Improved Window for contract terms, now having a mandatory Logic for fields not needed for Refund Contract Types.
   * [#4096](https://github.com/metasfresh/metasfresh/issues/4096) User Queries : turn list fields for table and tab into search fields
+    * Improving Filtering of User Queries in WebUI.
   * [#4102](https://github.com/metasfresh/metasfresh/issues/4102) webui: Purchase schedule tab - trl and display
     * Improved Purchase Schedule Subtab in WebUI. New Translations added.
 
