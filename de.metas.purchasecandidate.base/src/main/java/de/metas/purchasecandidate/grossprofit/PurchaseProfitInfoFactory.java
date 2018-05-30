@@ -22,9 +22,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.grossprofit.GrossProfitComputeRequest;
-import de.metas.money.grossprofit.GrossProfitPrice;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.grossprofit.OrderLineWithGrossProfitPrice;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -76,53 +74,42 @@ public class PurchaseProfitInfoFactory
 
 	public List<PurchaseProfitInfo> createInfos(@NonNull final PurchaseProfitInfoRequest request)
 	{
-		final Money customerGrossProfitPrice = retrieveCustomerGrossProfitPrice(request);
+		final Money salesNetPrice = retrieveSalesNetPrice(request);
 
-		final Map<PriceListVersionId, Money> plvId2Price = retrievePurchasePrices(request);
-		Check.errorIf(plvId2Price.isEmpty(), "Unable to find pricing information for request={}", request);
-		
+		final Map<PriceListVersionId, Money> purchasePrices = retrievePurchasePrices(request);
+		Check.errorIf(purchasePrices.isEmpty(), "Unable to find pricing information for request={}", request);
+
 		final ImmutableList.Builder<PurchaseProfitInfo> result = ImmutableList.builder();
-
-		for (final Entry<PriceListVersionId, Money> entry : plvId2Price.entrySet())
+		for (final Entry<PriceListVersionId, Money> entry : purchasePrices.entrySet())
 		{
-			final Money purchasePriceActual = entry.getValue();
-			final GrossProfitPrice purchaseGrossProfitPrice = retrieveOurOwnGrossProfitPrice(
-					request,
-					purchasePriceActual);
+			final Money purchaseGrossPrice = entry.getValue();
+			final Money purchaseNetPrice = retrieveOurOwnPurchaseNetPrice(request, purchaseGrossPrice);
 
-			final PurchaseProfitInfo info = PurchaseProfitInfo.builder()
-					// .purchasePlvId(entry.getKey())
-					.purchasePriceActual(purchasePriceActual)
-					.customerPriceGrossProfit(customerGrossProfitPrice)
-					.priceGrossProfit(purchaseGrossProfitPrice.compute())
-					.build();
-			result.add(info);
+			result.add(PurchaseProfitInfo.builder()
+					.salesNetPrice(salesNetPrice)
+					.purchaseGrossPrice(purchaseGrossPrice)
+					.purchaseNetPrice(purchaseNetPrice)
+					.build());
 		}
 		return result.build();
 	}
 
-	private Money retrieveCustomerGrossProfitPrice(final PurchaseProfitInfoRequest request)
+	private Money retrieveSalesNetPrice(final PurchaseProfitInfoRequest request)
 	{
-		final OrderLineWithGrossProfitPrice orderLineWithGrossProfitPrice = grossProfitPriceRepo.getForOrderLineId(request.getSalesOrderLineId());
-		final Money customerGrossProfitPrice = orderLineWithGrossProfitPrice.getGrossProfitPrice();
-		return customerGrossProfitPrice;
+		return grossProfitPriceRepo.getProfitBasePrice(request.getSalesOrderLineId());
 	}
 
-	private GrossProfitPrice retrieveOurOwnGrossProfitPrice(
+	private Money retrieveOurOwnPurchaseNetPrice(
 			@NonNull final PurchaseProfitInfoRequest request,
-			@NonNull final Money purchasePriceActual)
+			@NonNull final Money purchaseGrossPrice)
 	{
-		final GrossProfitComputeRequest grossProfitComputeRequest = GrossProfitComputeRequest
-				.builder()
-				.baseAmount(purchasePriceActual)
+		return grossProfitPriceFactory.calculateNetPrice(GrossProfitComputeRequest.builder()
+				.baseAmount(purchaseGrossPrice)
 				.bPartnerId(request.getVendorId())
 				.paymentTermId(request.getPaymentTermId())
 				.date(request.getDatePromised().toLocalDate())
 				.productId(request.getProductId())
-				.build();
-
-		final GrossProfitPrice grossProfitPrice = grossProfitPriceFactory.createGrossProfitPrice(grossProfitComputeRequest);
-		return grossProfitPrice;
+				.build());
 	}
 
 	private Map<PriceListVersionId, Money> retrievePurchasePrices(final PurchaseProfitInfoRequest request)

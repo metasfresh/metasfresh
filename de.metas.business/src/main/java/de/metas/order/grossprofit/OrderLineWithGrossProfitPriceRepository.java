@@ -8,9 +8,7 @@ import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
-import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
-import de.metas.order.OrderLineRepository;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
 import lombok.NonNull;
 
@@ -40,25 +38,17 @@ import lombok.NonNull;
 public class OrderLineWithGrossProfitPriceRepository
 {
 	private final CurrencyRepository currencyRepository;
-	private final OrderLineRepository orderLineRepository;
 
-	public OrderLineWithGrossProfitPriceRepository(
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final OrderLineRepository orderLineRepository)
+	public OrderLineWithGrossProfitPriceRepository(@NonNull final CurrencyRepository currencyRepository)
 	{
-		this.orderLineRepository = orderLineRepository;
 		this.currencyRepository = currencyRepository;
 	}
 
-	public OrderLineWithGrossProfitPrice getForOrderLineId(@NonNull final OrderLineId orderLineId)
+	public Money getProfitBasePrice(@NonNull final OrderLineId orderLineId)
 	{
 		final I_C_OrderLine orderLineRecord = load(orderLineId.getRepoId(), I_C_OrderLine.class);
-
-		final OrderLine orderLine = orderLineRepository.getById(orderLineId);
-
 		final Currency currency = currencyRepository.getById(CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID()));
-		final Money customerGrossProfit = Money.of(orderLineRecord.getPriceGrossProfit(), currency);
-
-		return new OrderLineWithGrossProfitPrice(orderLine, customerGrossProfit);
+		final Money profitBasePrice = Money.of(orderLineRecord.getPriceGrossProfit(), currency);
+		return profitBasePrice;
 	}
 }

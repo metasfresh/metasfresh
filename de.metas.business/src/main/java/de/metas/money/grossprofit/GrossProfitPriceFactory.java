@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.money.grossprofit.GrossProfitPrice.GrossProfitPriceBuilder;
+import de.metas.money.Money;
 import lombok.NonNull;
 
 /*
@@ -39,19 +39,21 @@ public class GrossProfitPriceFactory
 
 	public GrossProfitPriceFactory(@NonNull final Optional<List<GrossProfitComponentProvider>> providers)
 	{
-		this.providers = ImmutableList.copyOf(providers.orElse(ImmutableList.of()));
+		this.providers = ImmutableList.copyOf(providers.orElseGet(ImmutableList::of));
 	}
 
-	public GrossProfitPrice createGrossProfitPrice(@NonNull final GrossProfitComputeRequest request)
+	public Money calculateNetPrice(@NonNull final GrossProfitComputeRequest request)
 	{
-		final GrossProfitPriceBuilder builder = GrossProfitPrice.builder()
+		final NetPriceCalculator.NetPriceCalculatorBuilder builder = NetPriceCalculator.builder()
 				.basePrice(request.getBaseAmount());
 
 		for (final GrossProfitComponentProvider provider : providers)
 		{
 			builder.profitCompponent(provider.provideForRequest(request));
 		}
-		return builder.build();
-	}
 
+		final NetPriceCalculator netPriceCalculator = builder.build();
+
+		return netPriceCalculator.getNetPrice();
+	}
 }

@@ -267,19 +267,11 @@ public class PurchaseCandidateRepository
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
 
 		// set monetary values
-		final Money customerPriceGrossProfit = purchaseCandidate.getProfitInfo().getCustomerPriceGrossProfit();
-		final Money priceGrossProfit = purchaseCandidate.getProfitInfo().getPriceGrossProfit();
-		final Money purchasePriceActual = purchaseCandidate.getProfitInfo().getPurchasePriceActual();
-
-		final Currency commonCurrencyOfAll = Money.getCommonCurrencyOfAll(
-				customerPriceGrossProfit,
-				priceGrossProfit,
-				purchasePriceActual);
-
-		record.setCustomerPriceGrossProfit(customerPriceGrossProfit.getValue());
-		record.setPriceGrossProfit(priceGrossProfit.getValue());
-		record.setPurchasePriceActual(purchasePriceActual.getValue());
-		record.setC_Currency_ID(commonCurrencyOfAll.getId().getRepoId());
+		final PurchaseProfitInfo profitInfo = purchaseCandidate.getProfitInfo();
+		record.setCustomerPriceGrossProfit(profitInfo.getSalesNetPrice().getValue());
+		record.setPriceGrossProfit(profitInfo.getPurchaseNetPrice().getValue());
+		record.setPurchasePriceActual(profitInfo.getPurchaseGrossPrice().getValue());
+		record.setC_Currency_ID(profitInfo.getCommonCurrency().getId().getRepoId());
 
 		record.setProcessed(purchaseCandidate.isProcessed());
 
@@ -310,9 +302,9 @@ public class PurchaseCandidateRepository
 		final Currency currency = currencyRepository.ofRecord(purchaseCandidateRecord.getC_Currency());
 
 		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo.builder()
-				.purchasePriceActual(Money.of(purchaseCandidateRecord.getPurchasePriceActual(), currency))
-				.customerPriceGrossProfit(Money.of(purchaseCandidateRecord.getCustomerPriceGrossProfit(), currency))
-				.priceGrossProfit(Money.of(purchaseCandidateRecord.getPriceGrossProfit(), currency))
+				.salesNetPrice(Money.of(purchaseCandidateRecord.getCustomerPriceGrossProfit(), currency))
+				.purchaseNetPrice(Money.of(purchaseCandidateRecord.getPriceGrossProfit(), currency))
+				.purchaseGrossPrice(Money.of(purchaseCandidateRecord.getPurchasePriceActual(), currency))
 				.build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate

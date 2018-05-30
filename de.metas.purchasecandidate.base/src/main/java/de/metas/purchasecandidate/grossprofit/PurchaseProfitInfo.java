@@ -1,5 +1,7 @@
 package de.metas.purchasecandidate.grossprofit;
 
+import de.metas.lang.Percent;
+import de.metas.money.Currency;
 import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,28 +34,34 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class PurchaseProfitInfo
 {
 	/** sales priceActual minus cash discount minus refund/bonus (if any) */
-	Money customerPriceGrossProfit;
-	
-	Money purchasePriceActual;
+	Money salesNetPrice;
 
-	/** purchase priceActual minus cash discount minus refund/bonus (if any); should better be less than {@link #customerPriceGrossProfit}.. */
-	Money priceGrossProfit;
+	/** {@link #purchaseGrossPrice} minus cash discount minus refund/bonus (if any); should better be less than {@link #salesNetPrice}.. */
+	Money purchaseNetPrice;
 
+	Money purchaseGrossPrice;
+
+	@Builder(toBuilder = true)
 	private PurchaseProfitInfo(
-			@NonNull final Money purchasePriceActual,
-			@NonNull final Money customerPriceGrossProfit,
-			@NonNull final Money priceGrossProfit)
+			@NonNull final Money salesNetPrice,
+			@NonNull final Money purchaseNetPrice,
+			@NonNull final Money purchaseGrossPrice)
 	{
-		// Money.getCommonCurrencyOfAll(purchasePriceActual, customerPriceGrossProfit, priceGrossProfit);
-
-		this.purchasePriceActual = purchasePriceActual;
-		this.customerPriceGrossProfit = customerPriceGrossProfit;
-		this.priceGrossProfit = priceGrossProfit;
-
+		this.salesNetPrice = salesNetPrice;
+		this.purchaseNetPrice = purchaseNetPrice;
+		this.purchaseGrossPrice = purchaseGrossPrice;
 	}
 
+	public Currency getCommonCurrency()
+	{
+		return Money.getCommonCurrencyOfAll(salesNetPrice, purchaseNetPrice, purchaseGrossPrice);
+	}
+
+	public Percent getProfitPercent()
+	{
+		return Percent.ofDelta(purchaseNetPrice.getValue(), salesNetPrice.getValue());
+	}
 }

@@ -1,7 +1,5 @@
 package de.metas.purchasecandidate;
 
-import static java.math.BigDecimal.TEN;
-
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
@@ -81,9 +79,9 @@ public final class PurchaseCandidateTestTool
 	public static PurchaseProfitInfo createPurchaseProfitInfo()
 	{
 		return PurchaseProfitInfo.builder()
-				.customerPriceGrossProfit(Money.of(TEN, CURRENCY))
-				.purchasePriceActual(Money.of(TEN, CURRENCY))
-				.priceGrossProfit(Money.of(TEN, CURRENCY))
+				.salesNetPrice(Money.of(10, CURRENCY))
+				.purchaseNetPrice(Money.of(10, CURRENCY))
+				.purchaseGrossPrice(Money.of(10, CURRENCY))
 				.build();
 	}
 }
