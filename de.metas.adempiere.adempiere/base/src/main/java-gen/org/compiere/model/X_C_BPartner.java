@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1410255726L;
+	private static final long serialVersionUID = -2142111944L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -520,6 +520,25 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getCreditLimitIndicator () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreditLimitIndicator);
+	}
+
+	/** Set Kreditoren-Nr.
+		@param CreditorId Kreditoren-Nr	  */
+	@Override
+	public void setCreditorId (int CreditorId)
+	{
+		set_Value (COLUMNNAME_CreditorId, Integer.valueOf(CreditorId));
+	}
+
+	/** Get Kreditoren-Nr.
+		@return Kreditoren-Nr	  */
+	@Override
+	public int getCreditorId () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CreditorId);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Debitoren-Nr.

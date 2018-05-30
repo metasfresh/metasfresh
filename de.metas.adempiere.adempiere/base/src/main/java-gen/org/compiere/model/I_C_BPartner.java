@@ -552,6 +552,29 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
 
 	/**
+	 * Set Kreditoren-Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCreditorId (int CreditorId);
+
+	/**
+	 * Get Kreditoren-Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCreditorId();
+
+    /** Column definition for CreditorId */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CreditorId = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CreditorId", null);
+    /** Column name CreditorId */
+    public static final String COLUMNNAME_CreditorId = "CreditorId";
+
+	/**
 	 * Set Debitoren-Nr.
 	 *
 	 * <br>Type: Integer
