@@ -121,9 +121,13 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
 		bpartner.setIsActive(importRecord.isActiveStatus());
 		bpartner.setDebtorId(importRecord.getDebtorId());
+		bpartner.setCreditorId(importRecord.getCreditorId());
 		bpartner.setMemo(importRecord.getMemo());
 		bpartner.setDeliveryRule(importRecord.getDeliveryViaRule());
 		bpartner.setM_Shipper_ID(importRecord.getM_Shipper_ID());
+		bpartner.setVendorCategory(importRecord.getVendorCategory());
+		bpartner.setCustomerNoAtVendor(importRecord.getCustomerNoAtVendor());
+		bpartner.setQualification(importRecord.getQualification());
 
 		return bpartner;
 	}
@@ -210,10 +214,27 @@ import org.compiere.model.ModelValidationEngine;
 		{
 			bpartner.setPaymentRulePO(importRecord.getPaymentRulePO());
 		}
+		if (importRecord.getVendorCategory() != null)
+		{
+			bpartner.setVendorCategory(importRecord.getVendorCategory());
+		}
+		if (importRecord.getCustomerNoAtVendor() != null)
+		{
+			bpartner.setCustomerNoAtVendor(importRecord.getCustomerNoAtVendor());
+		}
+		if (importRecord.getQualification() != null)
+		{
+			bpartner.setQualification(importRecord.getQualification());
+		}
+
 		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
 		bpartner.setIsActive(importRecord.isActiveStatus());
 		bpartner.setDebtorId(importRecord.getDebtorId());
-		bpartner.setMemo(importRecord.getMemo());
+		bpartner.setCreditorId(importRecord.getCreditorId());
+		if (importRecord.getMemo() != null)
+		{
+			bpartner.setMemo(importRecord.getMemo());
+		}
 
 		if (!Check.isEmpty(importRecord.getDeliveryViaRule(), true))
 		{
