@@ -1,23 +1,17 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
-var WebpackGitHash = require('webpack-git-hash');
-var commitHash = require('child_process')
-  .execSync('git rev-parse --short HEAD')
-  .toString();
 var fs = require('fs');
 
 const plugins = [
   new webpack.DefinePlugin({
     'process.env': {
       NODE_ENV: JSON.stringify('production'),
-      COMMIT_HASH: JSON.stringify(commitHash),
     },
   }),
   new HtmlWebpackPlugin({
     template: './index.html',
   }),
-  new WebpackGitHash(),
 ];
 
 if (!fs.existsSync(path.join(__dirname, 'plugins.js'))) {
@@ -34,7 +28,7 @@ module.exports = {
   entry: ['babel-polyfill', './src/index.jsx', './favicon.png'],
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle-[hash]-git-[githash].js',
+    filename: 'bundle[hash].js',
     publicPath: '/',
   },
   plugins,
