@@ -36,10 +36,15 @@ Here come the actual release notes:
   * [#3996](https://github.com/metasfresh/metasfresh/issues/3996) WebUI: Client window: EMail fields layout
     * Improved Client Window in WebUI. Grouping eMail Fields and new Translations for de_DE Language.
   * [#4000](https://github.com/metasfresh/metasfresh/issues/4000) New Report for Yearly Bonus
+    * New Report that shows the Invoice Candidates for Yearly Bonus Contracts that can be invoiced.
   * [#4015](https://github.com/metasfresh/metasfresh/issues/4015) CleverReach Interface
+    * New Feature that adds Cleverreach eMail Marketing functionalities.
   * [#4031](https://github.com/metasfresh/metasfresh/issues/4031) Add easy way to add AD_Users to Newsletter marketing campaigns
+    * New Feature that allows to add Users to the new Newsletter marketing campaign feature.
   * [#4035](https://github.com/metasfresh/metasfresh/issues/4035) Proforma Invoice via Sales Order workflow
+    * New Documenttype for Proforma Invoices, implementted as Sales Order Documenttype and added into shipment candidates/ invoice candidates workflow.
   * [#4036](https://github.com/metasfresh/metasfresh/issues/4036) Sales Order: Show Pricing Conditions in create purchase order action
+    * Extended modal overlay of create purchase order action, now showing advanced information about vendor pricing conditions.
   * [#4042](https://github.com/metasfresh/metasfresh/issues/4042) Pharma: extend customer import 
   * [#4058](https://github.com/metasfresh/metasfresh/issues/4058) Add delivery times to Der Kurier
   * [#4083](https://github.com/metasfresh/metasfresh/issues/4083) Make refund contract doctypes
