@@ -118,6 +118,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilderOutOfTrx(org.compiere.model.I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
 				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, Env.CTXVALUE_AD_Org_ID_Any)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId);
