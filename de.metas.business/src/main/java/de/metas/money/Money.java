@@ -207,7 +207,7 @@ public class Money
 
 		final ImmutableSet<Currency> currencies = currency2moneys.keySet();
 		Check.errorIf(currencies.size() > 1,
-				"at least two money instances have different currencies: ", currency2moneys);
+				"at least two money instances have different currencies: {}", currency2moneys);
 
 		return ListUtils.singleElement(currencies.asList());
 	}
