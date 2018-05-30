@@ -21,6 +21,10 @@ Here come the actual release notes:
   * [#4119](https://github.com/metasfresh/metasfresh/issues/4119) WebUI: Translation Window for Tax Category
     * New Window in WebUI for the maintenance of Tax Category Translations.
 
+## Fixes
+  * [#1814](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1814) Action button is too large
+    * Fixes the Layout of Action Button being too large. Also hiding the Action Buttons from Batch Entry again.
+
 
 # metasfresh 5.59 (2018-22)
 
