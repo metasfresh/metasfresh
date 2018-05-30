@@ -113,6 +113,32 @@ public class PharmaImportPartnerInterceptor implements IImportInterceptor
 		{
 			bpartner.setWeekendOpeningTimes(ibpartner.getWeekendOpeningTimes());
 		}
+		//
+		if (!Check.isEmpty(ibpartner.getVendorResponsible(),true))
+		{
+			bpartner.setVendorResponsible(ibpartner.getVendorResponsible());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getMinimumOrderValue(),true))
+		{
+			bpartner.setMinimumOrderValue(ibpartner.getMinimumOrderValue());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getRetourFax(),true))
+		{
+			bpartner.setRetourFax(ibpartner.getRetourFax());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getPharma_Phone(),true))
+		{
+			bpartner.setPharma_Phone(ibpartner.getPharma_Phone());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getContacts(),true))
+		{
+			bpartner.setContacts(ibpartner.getContacts());
+		}
+
 		bpartner.setShelfLifeMinDays(ibpartner.getShelfLifeMinDays());
 
 		de.metas.invoicecandidate.model.I_C_BPartner partner = InterfaceWrapperHelper.create(bpartner, de.metas.invoicecandidate.model.I_C_BPartner.class);
