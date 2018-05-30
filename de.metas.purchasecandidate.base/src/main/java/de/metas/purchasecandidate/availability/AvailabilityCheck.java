@@ -52,27 +52,30 @@ import lombok.NonNull;
  * #L%
  */
 
-public class AvailabilityCheck
+class AvailabilityCheck
 {
-	public static AvailabilityCheck ofPurchaseCandidates(
-			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
+	public static AvailabilityCheck ofPurchaseCandidates(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
 		return new AvailabilityCheck(purchaseCandidates);
 	}
 
-	private final ImmutableListMultimap<BPartnerId, PurchaseCandidate> vendorBParterId2PurchaseCandidates;
+	// services
+	private final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
+	private final VendorGatewayService vendorGatewayService = Adempiere.getBean(VendorGatewayService.class);
 
-	private AvailabilityCheck(
-			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
+	private final ImmutableListMultimap<BPartnerId, PurchaseCandidate> purchaseCandidatesByVendorId;
+
+	private AvailabilityCheck(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		this.vendorBParterId2PurchaseCandidates = Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
+		this.purchaseCandidatesByVendorId = Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
 	}
 
 	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()
 	{
 		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
 
-		for (final BPartnerId vendorId : vendorBParterId2PurchaseCandidates.keySet())
+
+		for (final BPartnerId vendorId : purchaseCandidatesByVendorId.keySet())
 		{
 			final Multimap<PurchaseCandidate, AvailabilityResult> singleResult = checkAvailabilityAndConvertThrowable(vendorId);
 			result.putAll(singleResult);
@@ -85,7 +88,7 @@ public class AvailabilityCheck
 	{
 		final Properties localCtx = Env.copyCtx(Env.getCtx());
 
-		for (final BPartnerId vendorId : vendorBParterId2PurchaseCandidates.keySet())
+		for (final BPartnerId vendorId : purchaseCandidatesByVendorId.keySet())
 		{
 			CompletableFuture
 					.supplyAsync(() -> {
@@ -138,7 +141,6 @@ public class AvailabilityCheck
 				.availabilityRequestItems(requestItem2purchaseCandidate.keySet())
 				.build();
 
-		final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
 		final VendorGatewayService vendorGatewayService = vendorGatewayRegistry
 				.getSingleVendorGatewayService(vendorId.getRepoId())
 				.orElse(null);
@@ -192,7 +194,7 @@ public class AvailabilityCheck
 	{
 		final ImmutableMap.Builder<AvailabilityRequestItem, PurchaseCandidate> result = ImmutableMap.builder();
 
-		for (final PurchaseCandidate purchaseCandidate : vendorBParterId2PurchaseCandidates.get(vendorId))
+		for (final PurchaseCandidate purchaseCandidate : purchaseCandidatesByVendorId.get(vendorId))
 		{
 			if (!purchaseCandidate.isProcessed())
 			{
@@ -204,8 +206,6 @@ public class AvailabilityCheck
 
 	private boolean vendorProvidesAvailabilityCheck(@NonNull final BPartnerId vendorBPartnerId)
 	{
-		final VendorGatewayService vendorGatewayService = Adempiere.getBean(VendorGatewayService.class);
-
 		final boolean providedForVendor = vendorGatewayService.isProvidedForVendor(vendorBPartnerId.getRepoId());
 		return providedForVendor;
 	}

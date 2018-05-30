@@ -1,11 +1,13 @@
-package de.metas.purchasecandidate;
+package de.metas.purchasecandidate.availability;
 
-import java.util.List;
+import java.util.Collection;
 
-import lombok.Builder;
+import org.springframework.stereotype.Service;
+
+import com.google.common.collect.Multimap;
+
+import de.metas.purchasecandidate.PurchaseCandidate;
 import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
 
 /*
  * #%L
@@ -29,13 +31,17 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class SalesOrderLineWithCandidates
+@Service
+public class AvailabilityCheckService
 {
-	@NonNull
-	SalesOrderLine salesOrderLine;
+	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
+	{
+		return AvailabilityCheck.ofPurchaseCandidates(purchaseCandidates).checkAvailability();
+	}
 
-	@Singular
-	List<PurchaseCandidate> purchaseCandidates;
+	public void checkAvailabilityAsync(@NonNull final Collection<PurchaseCandidate> purchaseCandidates, @NonNull final AvailabilityCheckCallback callback)
+	{
+		AvailabilityCheck.ofPurchaseCandidates(purchaseCandidates).checkAvailabilityAsync(callback);
+	}
+
 }

@@ -12,9 +12,9 @@ import java.util.Set;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.springframework.stereotype.Service;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -22,16 +22,11 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 
-import de.metas.purchasecandidate.availability.AvailabilityCheck;
-import de.metas.purchasecandidate.availability.AvailabilityCheckCallback;
-import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoFactory;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoRequest;
 import de.metas.purchasing.api.IBPartnerProductDAO;
-import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -56,38 +51,31 @@ import lombok.NonNull;
  * #L%
  */
 
-public class SalesOrderLines
+@Service
+public class PurchaseDemandWithCandidatesService
 {
 	// services
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
+	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
-	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
 
-	private final ExtendedMemorizingSupplier<ImmutableList<PurchaseDemandWithCandidates>> //
-	purchaseDemandWithCandidates = ExtendedMemorizingSupplier.of(this::loadOrCreatePurchaseCandidates0);
-
-	private final ImmutableList<PurchaseDemand> purchaseDemands;
-
-	@Builder
-	private SalesOrderLines(
-			@NonNull final Collection<PurchaseDemand> purchaseDemands,
+	public PurchaseDemandWithCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
 			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
 			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory)
 	{
-		this.purchaseDemands = ImmutableList.copyOf(purchaseDemands);
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
 		this.purchaseProfitInfoFactory = purchaseProfitInfoFactory;
 	}
 
-	private ImmutableList<PurchaseDemandWithCandidates> loadOrCreatePurchaseCandidates0()
+	public List<PurchaseDemandWithCandidates> getOrCreatePurchaseCandidates(Collection<PurchaseDemand> purchaseDemands)
 	{
 		final ImmutableListMultimap.Builder<PurchaseDemand, PurchaseCandidate> resultBuilder = ImmutableListMultimap.builder();
 
-		final ImmutableMap<PurchaseDemandId, PurchaseDemand> purchaseDemandsById = Maps.uniqueIndex(getPurchaseDemands(), PurchaseDemand::getId);
+		final ImmutableMap<PurchaseDemandId, PurchaseDemand> purchaseDemandsById = Maps.uniqueIndex(purchaseDemands, PurchaseDemand::getId);
 
 		// add pre-existing purchase candidates to the result
 		final ImmutableListMultimap<PurchaseDemandId, PurchaseCandidate> preExistingPurchaseCandidatesByDemandId = //
@@ -132,11 +120,6 @@ public class SalesOrderLines
 						.purchaseCandidates(entry.getValue())
 						.build())
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	private List<PurchaseDemand> getPurchaseDemands()
-	{
-		return purchaseDemands;
 	}
 
 	private ImmutableList<PurchaseCandidate> createMissingPurchaseCandidates(
@@ -233,35 +216,4 @@ public class SalesOrderLines
 				.map(VendorProductInfo::fromDataRecord)
 				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(VendorProductInfo::getVendorBPartnerId));
 	}
-
-	public List<PurchaseDemandWithCandidates> getPurchaseDemandWithCandidates()
-	{
-		return purchaseDemandWithCandidates.get();
-	}
-
-	public List<PurchaseCandidate> getAllPurchaseCandidates()
-	{
-		return getPurchaseDemandWithCandidates()
-				.stream()
-				.map(PurchaseDemandWithCandidates::getPurchaseCandidates)
-				.flatMap(List::stream)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()
-	{
-		return prepareAvailabilityCheck().checkAvailability();
-	}
-
-	public void checkAvailabilityAsync(@NonNull final AvailabilityCheckCallback callback)
-	{
-		prepareAvailabilityCheck().checkAvailabilityAsync(callback);
-	}
-
-	private AvailabilityCheck prepareAvailabilityCheck()
-	{
-		final List<PurchaseCandidate> allPurchaseCandidates = getAllPurchaseCandidates();
-		return AvailabilityCheck.ofPurchaseCandidates(allPurchaseCandidates);
-	}
-
 }
