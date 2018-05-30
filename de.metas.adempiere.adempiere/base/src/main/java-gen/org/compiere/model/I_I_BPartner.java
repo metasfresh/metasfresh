@@ -862,6 +862,52 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_CreditLimit2 = "CreditLimit2";
 
 	/**
+	 * Set Kreditoren-Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCreditorId (int CreditorId);
+
+	/**
+	 * Get Kreditoren-Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCreditorId();
+
+    /** Column definition for CreditorId */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_CreditorId = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "CreditorId", null);
+    /** Column name CreditorId */
+    public static final String COLUMNNAME_CreditorId = "CreditorId";
+
+	/**
+	 * Set Eigene-Kd. Nr. .
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomerNoAtVendor (java.lang.String CustomerNoAtVendor);
+
+	/**
+	 * Get Eigene-Kd. Nr. .
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCustomerNoAtVendor();
+
+    /** Column definition for CustomerNoAtVendor */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_CustomerNoAtVendor = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "CustomerNoAtVendor", null);
+    /** Column name CustomerNoAtVendor */
+    public static final String COLUMNNAME_CustomerNoAtVendor = "CustomerNoAtVendor";
+
+	/**
 	 * Set Debitoren-Nr.
 	 *
 	 * <br>Type: Integer

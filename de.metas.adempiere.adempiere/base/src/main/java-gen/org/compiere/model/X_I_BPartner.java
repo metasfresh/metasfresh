@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -445190043L;
+	private static final long serialVersionUID = 1828405418L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -815,6 +815,41 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Kreditoren-Nr.
+		@param CreditorId Kreditoren-Nr	  */
+	@Override
+	public void setCreditorId (int CreditorId)
+	{
+		set_Value (COLUMNNAME_CreditorId, Integer.valueOf(CreditorId));
+	}
+
+	/** Get Kreditoren-Nr.
+		@return Kreditoren-Nr	  */
+	@Override
+	public int getCreditorId () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CreditorId);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Eigene-Kd. Nr. .
+		@param CustomerNoAtVendor Eigene-Kd. Nr. 	  */
+	@Override
+	public void setCustomerNoAtVendor (java.lang.String CustomerNoAtVendor)
+	{
+		set_Value (COLUMNNAME_CustomerNoAtVendor, CustomerNoAtVendor);
+	}
+
+	/** Get Eigene-Kd. Nr. .
+		@return Eigene-Kd. Nr. 	  */
+	@Override
+	public java.lang.String getCustomerNoAtVendor () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerNoAtVendor);
 	}
 
 	/** Set Debitoren-Nr.
