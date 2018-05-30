@@ -1609,6 +1609,31 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Lastname = "Lastname";
 
 	/**
+	 * Set Lead Time Offset.
+	 * Optional Lead Time offest before starting production
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLeadTimeOffset (int LeadTimeOffset);
+
+	/**
+	 * Get Lead Time Offset.
+	 * Optional Lead Time offest before starting production
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLeadTimeOffset();
+
+    /** Column definition for LeadTimeOffset */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_LeadTimeOffset = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "LeadTimeOffset", null);
+    /** Column name LeadTimeOffset */
+    public static final String COLUMNNAME_LeadTimeOffset = "LeadTimeOffset";
+
+	/**
 	 * Set Lieferweg.
 	 * Methode oder Art der Warenlieferung
 	 *
@@ -2138,6 +2163,29 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
+	 * Set Qualification .
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQualification (java.lang.String Qualification);
+
+	/**
+	 * Get Qualification .
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getQualification();
+
+    /** Column definition for Qualification */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Qualification = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Qualification", null);
+    /** Column name Qualification */
+    public static final String COLUMNNAME_Qualification = "Qualification";
+
+	/**
 	 * Set Interessengebiet.
 	 * Interest Area or Topic
 	 *
@@ -2194,7 +2242,7 @@ public interface I_I_BPartner
 	/**
 	 * Set Statistik Gruppe.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2203,7 +2251,7 @@ public interface I_I_BPartner
 	/**
 	 * Get Statistik Gruppe.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2414,4 +2462,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Produkt-Kategorie Geschäftspartner.
+	 * Produkt-Kategorie des Geschäftspartner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setVendorCategory (java.lang.String VendorCategory);
+
+	/**
+	 * Get Produkt-Kategorie Geschäftspartner.
+	 * Produkt-Kategorie des Geschäftspartner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVendorCategory();
+
+    /** Column definition for VendorCategory */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_VendorCategory = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "VendorCategory", null);
+    /** Column name VendorCategory */
+    public static final String COLUMNNAME_VendorCategory = "VendorCategory";
 }

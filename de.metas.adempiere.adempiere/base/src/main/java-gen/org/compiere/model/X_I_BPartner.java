@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -288425655L;
+	private static final long serialVersionUID = -445190043L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -1464,6 +1464,28 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Lastname);
 	}
 
+	/** Set Lead Time Offset.
+		@param LeadTimeOffset 
+		Optional Lead Time offest before starting production
+	  */
+	@Override
+	public void setLeadTimeOffset (int LeadTimeOffset)
+	{
+		set_Value (COLUMNNAME_LeadTimeOffset, Integer.valueOf(LeadTimeOffset));
+	}
+
+	/** Get Lead Time Offset.
+		@return Optional Lead Time offest before starting production
+	  */
+	@Override
+	public int getLeadTimeOffset () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LeadTimeOffset);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
 	{
@@ -1947,6 +1969,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return false;
 	}
 
+	/** Set Qualification .
+		@param Qualification Qualification 	  */
+	@Override
+	public void setQualification (java.lang.String Qualification)
+	{
+		set_Value (COLUMNNAME_Qualification, Qualification);
+	}
+
+	/** Get Qualification .
+		@return Qualification 	  */
+	@Override
+	public java.lang.String getQualification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Qualification);
+	}
+
 	@Override
 	public org.compiere.model.I_R_InterestArea getR_InterestArea() throws RuntimeException
 	{
@@ -2003,23 +2041,11 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_RegionName);
 	}
 
-	/** 
-	 * Salesgroup AD_Reference_ID=540635
-	 * Reference name: C_BPartner_Salesgroup
-	 */
-	public static final int SALESGROUP_AD_Reference_ID=540635;
-	/** Klassischer Detailhandel = 0030 */
-	public static final String SALESGROUP_KlassischerDetailhandel = "0030";
-	/** Discounter = 0010 */
-	public static final String SALESGROUP_Discounter = "0010";
-	/** Gastronomie und Grosshandel = 0020 */
-	public static final String SALESGROUP_GastronomieUndGrosshandel = "0020";
 	/** Set Statistik Gruppe.
 		@param Salesgroup Statistik Gruppe	  */
 	@Override
 	public void setSalesgroup (java.lang.String Salesgroup)
 	{
-
 		set_Value (COLUMNNAME_Salesgroup, Salesgroup);
 	}
 
@@ -2159,5 +2185,24 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
+	}
+
+	/** Set Produkt-Kategorie Geschäftspartner.
+		@param VendorCategory 
+		Produkt-Kategorie des Geschäftspartner
+	  */
+	@Override
+	public void setVendorCategory (java.lang.String VendorCategory)
+	{
+		set_Value (COLUMNNAME_VendorCategory, VendorCategory);
+	}
+
+	/** Get Produkt-Kategorie Geschäftspartner.
+		@return Produkt-Kategorie des Geschäftspartner
+	  */
+	@Override
+	public java.lang.String getVendorCategory () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VendorCategory);
 	}
 }

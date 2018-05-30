@@ -3,11 +3,15 @@ package de.metas.vertical.pharma.model;
 public interface I_I_BPartner extends org.compiere.model.I_I_BPartner
 {
 	public static final String COLUMNNAME_IsPharmaciePermission = "IsPharmaciePermission";
-	public void setIsPharmaciePermission (boolean IsPharmaciePermission);
+
+	public void setIsPharmaciePermission(boolean IsPharmaciePermission);
+
 	public boolean isPharmaciePermission();
 
-    public static final String COLUMNNAME_Pharmaproductpermlaw52 = "Pharmaproductpermlaw52";
-	public void setPharmaproductpermlaw52 (java.lang.String Pharmaproductpermlaw52);
+	public static final String COLUMNNAME_Pharmaproductpermlaw52 = "Pharmaproductpermlaw52";
+
+	public void setPharmaproductpermlaw52(java.lang.String Pharmaproductpermlaw52);
+
 	public java.lang.String getPharmaproductpermlaw52();
 
 	// @formatter:off
@@ -76,5 +80,53 @@ public interface I_I_BPartner extends org.compiere.model.I_I_BPartner
 	public static final String COLUMNNAME_IsMultiplier = "IsMultiplier";
 	public void setIsMultiplier(boolean IsMultiplier);
 	public boolean isMultiplier();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_MSV3_Vendor_Config_ID = "MSV3_Vendor_Config_ID";
+	public void setMSV3_Vendor_Config_ID(int MSV3_Vendor_Config_ID);
+	public int getMSV3_Vendor_Config_ID();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_MSV3_BaseUrl = "MSV3_BaseUrl";
+	public void setMSV3_Vendor_Config_ID(String MSV3_BaseUrl);
+	public String getMSV3_BaseUrl();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_MSV3_Vendor_Config_Name = "MSV3_Vendor_Config_Name";
+	public void setMSV3_Vendor_Config_Name(String MSV3_Vendor_Config_Name);
+	public String getMSV3_Vendor_Config_Name();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_VendorResponsible = "VendorResponsible";
+	public void setVendorResponsible(String VendorResponsible);
+	public String getVendorResponsible();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_MinimumOrderValue = "MinimumOrderValue";
+	public void setMinimumOrderValue(String MinimumOrderValue);
+	public String getMinimumOrderValue();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_RetourFax = "RetourFax";
+	public void setRetourFax(String RetourFax);
+	public String getRetourFax();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_Pharma_Phone = "Pharma_Phone";
+	public void setPharma_Phone(String Pharma_Phone);
+	public String getPharma_Phone();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_Contacts = "Contacts";
+	public void setContacts(String Contacts);
+	public String getContacts();
 	// @formatter:on
 }
