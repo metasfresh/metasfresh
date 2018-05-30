@@ -239,3 +239,7 @@ button, .btn {
 .btn:not(.btn-empty) i {
     padding-right: 4px;
 }
+
+.hidden-up {
+    display: none !important;
+}
