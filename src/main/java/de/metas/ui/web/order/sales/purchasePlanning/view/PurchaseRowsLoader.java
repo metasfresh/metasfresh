@@ -4,14 +4,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Services;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
@@ -20,7 +25,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
-import de.metas.purchasecandidate.SalesOrderLines;
+import de.metas.purchasecandidate.availability.AvailabilityCheckService;
 import de.metas.purchasecandidate.availability.AvailabilityException;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.ui.web.view.IView;
@@ -29,7 +34,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -53,37 +57,62 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString(exclude = { "purchaseRowFactory", "viewSupplier" })
 class PurchaseRowsLoader
 {
 	// services
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final PurchaseRowFactory purchaseRowFactory;
+	private final AvailabilityCheckService availabilityCheckService;
+
+	private static final String SYSCONFIG_ASYNC_AVAILIABILITY_CHECK = "de.metas.ui.web.order.sales.purchasePlanning.view.SalesOrder2PurchaseViewFactory.AsyncAvailiabilityCheck";
 
 	// parameters
-	private final SalesOrderLines salesOrderLines;
 	private final Supplier<IView> viewSupplier;
+	private final ImmutableList<PurchaseDemandWithCandidates> purchaseDemandWithCandidatesList;
 
 	private ImmutableMap<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRow;
 
 	@Builder
 	private PurchaseRowsLoader(
-			@NonNull final SalesOrderLines salesOrderLines,
+			@NonNull final List<PurchaseDemandWithCandidates> purchaseDemandWithCandidatesList,
 			@NonNull final Supplier<IView> viewSupplier,
 			//
-			@NonNull final PurchaseRowFactory purchaseRowFactory)
+			@NonNull final PurchaseRowFactory purchaseRowFactory,
+			@NonNull final AvailabilityCheckService availabilityCheckService)
 	{
-		this.salesOrderLines = salesOrderLines;
+		this.purchaseDemandWithCandidatesList = ImmutableList.copyOf(purchaseDemandWithCandidatesList);
 		this.viewSupplier = viewSupplier;
 
 		this.purchaseRowFactory = purchaseRowFactory;
+		this.availabilityCheckService = availabilityCheckService;
 	}
 
-	public List<PurchaseRow> load()
+	public PurchaseRowsSupplier createPurchaseRowsSupplier()
+	{
+		return () -> {
+
+			final List<PurchaseRow> loadResult = load();
+			if (isMakeAsynchronousAvailiabilityCheck())
+			{
+				createAndAddAvailabilityResultRowsAsync();
+			}
+			else
+			{
+				createAndAddAvailabilityResultRows();
+			}
+
+			return loadResult;
+		};
+
+	}
+
+	@VisibleForTesting
+	List<PurchaseRow> load()
 	{
 		final ImmutableList.Builder<PurchaseRow> result = ImmutableList.builder();
 		final ImmutableMap.Builder<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRowBuilder = ImmutableMap.builder();
 
-		for (final PurchaseDemandWithCandidates demandWithCandidates : salesOrderLines.getPurchaseDemandWithCandidates())
+		for (final PurchaseDemandWithCandidates demandWithCandidates : purchaseDemandWithCandidatesList)
 		{
 			final PurchaseDemand demand = demandWithCandidates.getPurchaseDemand();
 
@@ -111,34 +140,68 @@ class PurchaseRowsLoader
 		return result.build();
 	}
 
-	public void createAndAddAvailabilityResultRows()
+	private List<PurchaseCandidate> getAllPurchaseCandidates()
 	{
 		Check.assumeNotNull(purchaseCandidate2purchaseRow, "purchaseCandidate2purchaseRow was already loaded via load(); this={}", this);
 
+		return purchaseDemandWithCandidatesList.stream()
+				.map(PurchaseDemandWithCandidates::getPurchaseCandidates)
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private boolean isMakeAsynchronousAvailiabilityCheck()
+	{
+		final Properties ctx = Env.getCtx();
+
+		final boolean result = sysConfigBL.getBooleanValue(
+				SYSCONFIG_ASYNC_AVAILIABILITY_CHECK,
+				false,
+				Env.getAD_Client_ID(ctx),
+				Env.getAD_Org_ID(ctx));
+
+		return result;
+	}
+
+	@VisibleForTesting
+	void createAndAddAvailabilityResultRows()
+	{
 		try
 		{
-			final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult;
-			availabilityCheckResult = salesOrderLines.checkAvailability();
+			final List<PurchaseCandidate> purchaseCandidates = getAllPurchaseCandidates();
 
-			handleResultForAsyncAvailabilityCheck(availabilityCheckResult);
+			final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult;
+			availabilityCheckResult = availabilityCheckService.checkAvailability(purchaseCandidates);
+
+			handleResultForAsyncAvailabilityCheck_Success(availabilityCheckResult);
 		}
 		catch (final Throwable throwable)
 		{
-			handleThrowableForAsyncAvailabilityCheck(throwable);
+			handleResultForAsyncAvailabilityCheck_Error(throwable);
 		}
 	}
 
-	public void createAndAddAvailabilityResultRowsAsync()
+	private void createAndAddAvailabilityResultRowsAsync()
 	{
-		Check.assumeNotNull(purchaseCandidate2purchaseRow, "purchaseCandidate2purchaseRow was already loaded via load(); this={}", this);
-
-		salesOrderLines.checkAvailabilityAsync((availabilityCheckResult, error) -> {
-			handleResultForAsyncAvailabilityCheck(availabilityCheckResult);
-			handleThrowableForAsyncAvailabilityCheck(Util.coalesce(error != null ? error.getCause() : null, error));
-		});
+		final List<PurchaseCandidate> purchaseCandidates = getAllPurchaseCandidates();
+		availabilityCheckService.checkAvailabilityAsync(purchaseCandidates, this::handleResultForAsyncAvailabilityCheck);
 	}
 
 	private void handleResultForAsyncAvailabilityCheck(
+			@Nullable final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult,
+			@Nullable final Throwable error)
+	{
+		if (availabilityCheckResult != null)
+		{
+			handleResultForAsyncAvailabilityCheck_Success(availabilityCheckResult);
+		}
+		if (error != null)
+		{
+			handleResultForAsyncAvailabilityCheck_Error(Util.coalesce(error.getCause(), error));
+		}
+	}
+
+	private void handleResultForAsyncAvailabilityCheck_Success(
 			@Nullable final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult)
 	{
 		if (availabilityCheckResult == null)
@@ -170,7 +233,7 @@ class PurchaseRowsLoader
 		notifyViewOfChanges(changedRowIds);
 	}
 
-	private void handleThrowableForAsyncAvailabilityCheck(@Nullable final Throwable throwable)
+	private void handleResultForAsyncAvailabilityCheck_Error(@Nullable final Throwable throwable)
 	{
 		if (throwable == null)
 		{

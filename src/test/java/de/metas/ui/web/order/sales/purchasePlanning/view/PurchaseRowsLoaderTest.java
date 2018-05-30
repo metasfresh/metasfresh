@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.service.OrgId;
@@ -48,8 +49,8 @@ import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
-import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.availability.AvailabilityCheckService;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -83,7 +84,7 @@ import mockit.Mocked;
 public class PurchaseRowsLoaderTest
 {
 	@Mocked
-	private SalesOrderLines salesOrderLines;
+	private AvailabilityCheckService availabilityCheckService;
 
 	private I_M_Product product;
 	private I_C_Order salesOrderRecord;
@@ -168,13 +169,6 @@ public class PurchaseRowsLoaderTest
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, bPartnerProduct);
 		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(demand, purchaseCandidate);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			salesOrderLines.getPurchaseDemandWithCandidates();
-			result = demandWithCandidates;
-		}};	// @formatter:on
-
 		final Multimap<PurchaseCandidate, AvailabilityResult> checkAvailabilityResult = ArrayListMultimap.create();
 		checkAvailabilityResult.put(purchaseCandidate, AvailabilityResult.builder()
 				.purchaseCandidate(purchaseCandidate)
@@ -184,17 +178,17 @@ public class PurchaseRowsLoaderTest
 		// @formatter:off
 		new Expectations()
 		{{
-			salesOrderLines.checkAvailability();
+			availabilityCheckService.checkAvailability((Collection<PurchaseCandidate>)any);
 			result = checkAvailabilityResult;
 		}};	// @formatter:on
 
-		final PurchaseRowsLoader loader = PurchaseRowsLoader
-				.builder()
-				.salesOrderLines(salesOrderLines)
+		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
+				.purchaseDemandWithCandidatesList(demandWithCandidates)
+				.viewSupplier(() -> null)
 				.purchaseRowFactory(new PurchaseRowFactory(
 						new AvailableToPromiseRepository(),
 						new MoneyService()))
-				.viewSupplier(() -> null)
+				.availabilityCheckService(availabilityCheckService)
 				.build();
 
 		// invoke the method under test
