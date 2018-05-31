@@ -67,7 +67,7 @@ public class PurchaseRowFactory
 	{
 		this.moneyService = moneyService;
 		this.availableToPromiseRepository = availableToPromiseRepository;
-		this.lookups = PurchaseRowLookups.newInstance();
+		lookups = PurchaseRowLookups.newInstance();
 	}
 
 	/**
@@ -156,7 +156,7 @@ public class PurchaseRowFactory
 				.build();
 	}
 
-	private BigDecimal getQtyAvailableToPromise(PurchaseDemand demand)
+	private BigDecimal getQtyAvailableToPromise(final PurchaseDemand demand)
 	{
 		return availableToPromiseRepository.retrieveAvailableStockQtySum(AvailableToPromiseQuery.builder()
 				.productId(demand.getProductId().getRepoId())
@@ -169,7 +169,7 @@ public class PurchaseRowFactory
 
 	@Builder(builderMethodName = "rowFromAvailabilityResultBuilder", builderClassName = "RowFromAvailabilityResultBuilder")
 	private PurchaseRow buildRowFromFromAvailabilityResult(
-			@NonNull PurchaseRow parentRow,
+			@NonNull final PurchaseRow parentRow,
 			@NonNull final AvailabilityResult availabilityResult)
 	{
 		final String availabilityText = !Check.isEmpty(availabilityResult.getAvailabilityText(), true)
