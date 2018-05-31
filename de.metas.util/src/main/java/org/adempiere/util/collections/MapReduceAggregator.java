@@ -141,7 +141,10 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	public void collectClosedGroups()
 	{
 		assertConfigurable();
-		this.closedGroupsCollector = new ArrayList<>();
+		if (closedGroupsCollector == null)
+		{
+			this.closedGroupsCollector = new ArrayList<>();
+		}
 	}
 
 	public List<GroupType> getClosedGroups()
