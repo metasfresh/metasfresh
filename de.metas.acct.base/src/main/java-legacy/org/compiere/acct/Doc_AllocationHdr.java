@@ -215,15 +215,15 @@ public class Doc_AllocationHdr extends Doc
 			{
 				// in case of reversed payment allocation, nothing is to do
 				// because both line have the same account, dimension etc. in one line we add, in the other line we subtract again;
-				createFacts_PaymentAllocation(fact);
+				createFactLines_PaymentAllocation(fact);
 			}
-			return m_facts;
+			return facts;
 		}
 		else if (countPayments == 0 && countInvoices > 0)
 		{
 			if (isReversedInvoiceAllocation())
 			{
-				return m_facts; // nothing to do, analog to isReversedPaymentAllocation()
+				return facts; // nothing to do, analog to isReversedPaymentAllocation()
 			}
 			else
 			{
