@@ -1104,13 +1104,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		final I_M_Product product = load(productId.getRepoId(), I_M_Product.class);
 		
 		final boolean isAttributeInSet = attributesBL.getAttributeOrNull(product, attribute.getM_Attribute_ID()) != null;
-
-		if (isAttributeInSet)
-		{
-			return true;
-		}
-
-		return false;
+		
+		return isAttributeInSet;
 	}
 
 	private boolean isDisplayFromCallout(final I_M_Attribute attribute)
