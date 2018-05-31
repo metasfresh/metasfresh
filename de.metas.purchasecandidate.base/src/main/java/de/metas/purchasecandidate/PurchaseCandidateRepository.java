@@ -205,7 +205,7 @@ public class PurchaseCandidateRepository
 		{
 			existingRecordsById = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_C_PurchaseCandidate.class)
-					.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID, existingPurchaseCandidateIds)
+					.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID, PurchaseCandidateId.toIntSet(existingPurchaseCandidateIds))
 					.create()
 					.map(I_C_PurchaseCandidate.class, record -> PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
 		}
