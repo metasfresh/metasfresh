@@ -217,7 +217,7 @@ public class PurchaseRowsLoaderTest
 	{
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(bPartnerProduct);
 
-		final Currency currency = currencyRepository.ofRecord(orderLine.getC_Currency());
+		final Currency currency = currencyRepository.getById(orderLine.getC_Currency_ID());
 
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currency);
 
