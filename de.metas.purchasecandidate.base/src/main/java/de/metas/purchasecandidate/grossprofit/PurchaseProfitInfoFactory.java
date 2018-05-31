@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -77,7 +77,10 @@ public class PurchaseProfitInfoFactory
 		final Money salesNetPrice = retrieveSalesNetPrice(request);
 
 		final Map<PriceListVersionId, Money> purchasePrices = retrievePurchasePrices(request);
-		Check.errorIf(purchasePrices.isEmpty(), "Unable to find pricing information for request={}", request);
+		if (purchasePrices.isEmpty())
+		{
+			throw new AdempiereException("Unable to find pricing information for request: " + request);
+		}
 
 		final ImmutableList.Builder<PurchaseProfitInfo> result = ImmutableList.builder();
 		for (final Entry<PriceListVersionId, Money> entry : purchasePrices.entrySet())

@@ -106,7 +106,7 @@ public class PurchaseCandidate
 	@Builder
 	private PurchaseCandidate(
 			final int purchaseCandidateId,
-			@NonNull final OrderId salesOrderId, // for now this shall be always set; might be that in future this won't be mandatory
+			final OrderId salesOrderId,
 			@NonNull final OrderLineId salesOrderLineId, // for now this shall be always set; might be that in future this won't be mandatory
 			final int purchaseOrderLineId,
 			@NonNull final OrgId orgId,

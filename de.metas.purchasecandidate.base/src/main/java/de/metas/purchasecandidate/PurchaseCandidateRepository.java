@@ -295,11 +295,13 @@ public class PurchaseCandidateRepository
 	 */
 	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
-		final boolean locked = Services.get(ILockManager.class).isLocked(purchaseCandidateRecord);
+		final ILockManager lockManager = Services.get(ILockManager.class);
+		
+		final boolean locked = lockManager.isLocked(purchaseCandidateRecord);
 
 		final VendorProductInfo vendorProductInfo = extractVendorProductInfo(purchaseCandidateRecord);
 
-		final Currency currency = currencyRepository.ofRecord(purchaseCandidateRecord.getC_Currency());
+		final Currency currency = currencyRepository.getById(purchaseCandidateRecord.getC_Currency_ID());
 
 		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo.builder()
 				.salesNetPrice(Money.of(purchaseCandidateRecord.getCustomerPriceGrossProfit(), currency))
@@ -307,8 +309,7 @@ public class PurchaseCandidateRepository
 				.purchaseGrossPrice(Money.of(purchaseCandidateRecord.getPurchasePriceActual(), currency))
 				.build();
 
-		final PurchaseCandidate purchaseCandidate = PurchaseCandidate
-				.builder()
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.locked(locked)
 				.purchaseCandidateId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.salesOrderId(OrderId.ofRepoId(purchaseCandidateRecord.getC_OrderSO_ID()))

@@ -14,6 +14,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -72,7 +73,7 @@ import lombok.NonNull;
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final OrderFactory orderFactory;
-	
+
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
 
@@ -199,9 +200,10 @@ import lombok.NonNull;
 		final ImmutableSet<Integer> salesOrderIds = purchaseItem2OrderLine.keySet()
 				.stream()
 				.map(PurchaseOrderItem::getSalesOrderId)
+				.filter(Predicates.notNull())
 				.map(OrderId::getRepoId)
 				.collect(ImmutableSet.toImmutableSet());
-		
+
 		return ordersRepo.retriveOrderCreatedByUserIds(salesOrderIds);
 	}
 }
