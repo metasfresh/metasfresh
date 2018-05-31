@@ -22,6 +22,10 @@ Here come the actual release notes:
     * New Window in WebUI for the maintenance of Tax Category Translations.
   * [#4135](https://github.com/metasfresh/metasfresh/issues/4135) Webui: Add Document References to all Windows with Translations
     * Improved the navigation beween master data and translation windows, adding references to the translation window & table.
+  * [#4138](https://github.com/metasfresh/metasfresh/issues/4138) WebUI: Translation Window for Paymentterm
+    * New Window in WebUI for the maintenance of Payment Term Translations.
+  * [#4139](https://github.com/metasfresh/metasfresh/issues/4139) WebUI: Translation Window for Dunning Level
+    * New Window in WebUI for the maintenance of Dunning Level Translations.
 
 ## Fixes
   * [#1814](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1814) Action button is too large
@@ -71,16 +75,23 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3463](https://github.com/metasfresh/metasfresh/issues/3463) "Issue only for what was received" not working anymore
+    * Fixes a Bug in Issue Method "Issue only what was received", now allowing to isse the exactly planned quantity again.
   * [#4078](https://github.com/metasfresh/metasfresh/issues/4078) AD_User_ID/Bill_User_ID not set in Sales Order when using Quick creation of partner
+    * Fixes a Bug in Sales Order Contact. Now setting the User and Bill User also when creating a new Business Partner on the Fly.
   * [#4079](https://github.com/metasfresh/metasfresh/issues/4079) Contact is not set when order is cloned
+    * Improvement of the Close Feature of Sales Order. The Contact is now also copied.
   * [#4087](https://github.com/metasfresh/metasfresh/issues/4087) Credit limit with different bill BPartner
+    * Improvement of the Credit Limit check in Sales Order, now checking agaist the Billto Businesspartner Credit Limit.
 
 * metasfresh-webui-frontend
   * [#1717](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1717) Date Format in date range picker is not localized
     * Fixes the Localization of Dates in Date Range Picker Widget.
   * [#1794](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1794) modal view editing issues
+    * Fixes issues in modal view field editing.
   * [#1800](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1800) Material Receipt Candidate: first line is not pre-selected and no action button available when opening HU Editor
+    * Improvement of the Quickaction handling of preselected first lines when opening a window initially.
   * [#1801](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1801) Error when opening HU Editor window / selecting a HU in picking tray clearing
+    * Fixes a number format exception in handling Unit Editor window.
   * [#1805](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1805) Multi Line Text fields are displayed infinitely
     * Now restricting the length of Multiline Text fields in Data Grids.
 
