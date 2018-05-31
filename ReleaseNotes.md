@@ -75,9 +75,13 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3463](https://github.com/metasfresh/metasfresh/issues/3463) "Issue only for what was received" not working anymore
+    * Fixes a Bug in Issue Method "Issue only what was received", now allowing to isse the exactly planned quantity again.
   * [#4078](https://github.com/metasfresh/metasfresh/issues/4078) AD_User_ID/Bill_User_ID not set in Sales Order when using Quick creation of partner
+    * Fixes a Bug in Sales Order Contact. Now setting the User and Bill User also when creating a new Business Partner on the Fly.
   * [#4079](https://github.com/metasfresh/metasfresh/issues/4079) Contact is not set when order is cloned
+    * Improvement of the Close Feature of Sales Order. The Contact is now also copied.
   * [#4087](https://github.com/metasfresh/metasfresh/issues/4087) Credit limit with different bill BPartner
+    * Improvement of the Credit Limit check in Sales Order, now checking agaist the Billto Businesspartner Credit Limit.
 
 * metasfresh-webui-frontend
   * [#1717](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1717) Date Format in date range picker is not localized
