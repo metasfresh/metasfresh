@@ -35,10 +35,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.model.IQuery;
@@ -184,16 +186,16 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public int retrieveOrgWarehousePOId(final int adOrgId)
+	public WarehouseId retrieveOrgWarehousePOId(@NonNull final OrgId orgId)
 	{
-		final I_AD_OrgInfo orgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(Env.getCtx(), adOrgId, ITrx.TRXNAME_None);
+		final I_AD_OrgInfo orgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
 		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
 		if (orgInfo == null)
 		{
-			return -1;
+			return null;
 		}
 
-		return orgInfo.getM_WarehousePO_ID();
+		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_WarehousePO_ID());
 	}
 
 	@Override

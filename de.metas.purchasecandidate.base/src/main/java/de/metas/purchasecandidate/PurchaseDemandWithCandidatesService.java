@@ -5,11 +5,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -128,21 +126,21 @@ public class PurchaseDemandWithCandidatesService
 			@NonNull final PurchaseDemand purchaseDemand,
 			@NonNull final Set<VendorProductInfoId> vendorProductInfoIdsToExclude)
 	{
-		final Map<BPartnerId, VendorProductInfo> vendorId2VendorProductInfo = retriveVendorProductInfosIndexedByVendorId(purchaseDemand);
+		final Collection<VendorProductInfo> vendorProductInfos = retrieveVendorProductInfos(purchaseDemand);
 
-		final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = vendorId2VendorProductInfo.values().stream()
+		final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = vendorProductInfos.stream()
 
 				// only if vendor was not already considered (i.e. there was no purchase candidate for it)
 				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getId().get()))
 
 				// create and collect them
-				.flatMap(vendorProductInfo -> createPurchaseCandidate(purchaseDemand, vendorProductInfo).stream())
+				.flatMap(vendorProductInfo -> createPurchaseCandidates(purchaseDemand, vendorProductInfo).stream())
 				.collect(ImmutableList.toImmutableList());
 
 		return newPurchaseCandidateForOrderLine;
 	}
 
-	private List<PurchaseCandidate> createPurchaseCandidate(
+	private List<PurchaseCandidate> createPurchaseCandidates(
 			@NonNull final PurchaseDemand purchaseDemand,
 			@NonNull final VendorProductInfo vendorProductInfo)
 	{
@@ -198,16 +196,16 @@ public class PurchaseDemandWithCandidatesService
 
 	private WarehouseId getPurchaseWarehouseId(final PurchaseDemand purchaseDemand)
 	{
-		final int orgWarehousePOId = warehouseDAO.retrieveOrgWarehousePOId(purchaseDemand.getOrgId().getRepoId());
-		if (orgWarehousePOId > 0)
+		final WarehouseId orgWarehousePOId = warehouseDAO.retrieveOrgWarehousePOId(purchaseDemand.getOrgId());
+		if (orgWarehousePOId != null)
 		{
-			return WarehouseId.ofRepoId(orgWarehousePOId);
+			return orgWarehousePOId;
 		}
 
 		return purchaseDemand.getWarehouseId();
 	}
 
-	private Map<BPartnerId, VendorProductInfo> retriveVendorProductInfosIndexedByVendorId(@NonNull final PurchaseDemand purchaseDemand)
+	private Collection<VendorProductInfo> retrieveVendorProductInfos(@NonNull final PurchaseDemand purchaseDemand)
 	{
 		final ProductId productId = purchaseDemand.getProductId();
 		final OrgId adOrgId = purchaseDemand.getOrgId();
@@ -216,6 +214,7 @@ public class PurchaseDemandWithCandidatesService
 				.retrieveAllVendors(productId, adOrgId)
 				.stream()
 				.map(VendorProductInfo::fromDataRecord)
-				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(VendorProductInfo::getVendorId));
+				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(VendorProductInfo::getVendorId))
+				.values();
 	}
 }
