@@ -145,7 +145,7 @@ public class PurchaseDemandWithCandidatesService
 				.collect(ImmutableList.toImmutableList());
 
 		// TODO: don't save them here!
-		//purchaseCandidateRepository.saveAll(candidates);
+		purchaseCandidateRepository.saveAll(candidates);
 
 		return candidates;
 	}
