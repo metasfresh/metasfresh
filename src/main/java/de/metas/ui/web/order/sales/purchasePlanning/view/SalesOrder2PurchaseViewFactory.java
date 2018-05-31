@@ -305,10 +305,9 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		final List<PurchaseRow> rows = purchaseView.getRows();
 
 		return PurchaseRowsSaver.builder()
-				.grouppingRows(rows)
 				.purchaseCandidatesRepo(purchaseCandidatesRepo)
 				.build()
-				.save();
+				.save(rows);
 	}
 
 	private final I_C_Order getSingleSalesOrder(@NonNull final List<PurchaseCandidate> purchaseCandidates)

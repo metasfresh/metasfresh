@@ -70,7 +70,7 @@ class PurchaseRowsLoader
 	private final Supplier<IView> viewSupplier;
 	private final ImmutableList<PurchaseDemandWithCandidates> purchaseDemandWithCandidatesList;
 
-	private ImmutableMap<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRow;
+	private ImmutableMap<PurchaseCandidate, PurchaseRow> _purchaseCandidate2purchaseRow;
 
 	@Builder
 	private PurchaseRowsLoader(
@@ -135,19 +135,24 @@ class PurchaseRowsLoader
 			result.add(groupRow);
 
 		}
-		purchaseCandidate2purchaseRow = purchaseCandidate2purchaseRowBuilder.build();
+		_purchaseCandidate2purchaseRow = purchaseCandidate2purchaseRowBuilder.build();
 
 		return result.build();
 	}
 
 	private List<PurchaseCandidate> getAllPurchaseCandidates()
 	{
-		Check.assumeNotNull(purchaseCandidate2purchaseRow, "purchaseCandidate2purchaseRow was already loaded via load(); this={}", this);
+		Check.assumeNotNull(_purchaseCandidate2purchaseRow, "purchaseCandidate2purchaseRow was already loaded via load(); this={}", this);
 
 		return purchaseDemandWithCandidatesList.stream()
 				.map(PurchaseDemandWithCandidates::getPurchaseCandidates)
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
+	}
+	
+	private PurchaseRow getPurchaseRowByPurchaseCandidate(final PurchaseCandidate purchaseCandidate)
+	{
+		return _purchaseCandidate2purchaseRow.get(purchaseCandidate);
 	}
 
 	private boolean isMakeAsynchronousAvailiabilityCheck()
@@ -215,7 +220,7 @@ class PurchaseRowsLoader
 
 		for (final Entry<PurchaseCandidate, Collection<AvailabilityResult>> entry : entrySet)
 		{
-			final PurchaseRow purchaseRowToAugment = purchaseCandidate2purchaseRow.get(entry.getKey());
+			final PurchaseRow purchaseRowToAugment = getPurchaseRowByPurchaseCandidate(entry.getKey());
 			final ImmutableList.Builder<PurchaseRow> availabilityResultRows = ImmutableList.builder();
 
 			for (final AvailabilityResult availabilityResult : entry.getValue())
@@ -248,7 +253,7 @@ class PurchaseRowsLoader
 			final Set<Entry<PurchaseCandidate, Throwable>> entrySet = availabilityException.getPurchaseCandidate2Throwable().entrySet();
 			for (final Entry<PurchaseCandidate, Throwable> purchaseCandidate2throwable : entrySet)
 			{
-				final PurchaseRow purchaseRowToAugment = purchaseCandidate2purchaseRow.get(purchaseCandidate2throwable.getKey());
+				final PurchaseRow purchaseRowToAugment = getPurchaseRowByPurchaseCandidate(purchaseCandidate2throwable.getKey());
 
 				final PurchaseRow availabilityResultRow = purchaseRowFactory
 						.rowFromThrowableBuilder()
@@ -256,7 +261,7 @@ class PurchaseRowsLoader
 						.throwable(purchaseCandidate2throwable.getValue())
 						.build();
 
-				purchaseRowToAugment.setAvailabilityInfoRows(ImmutableList.of(availabilityResultRow));
+				purchaseRowToAugment.setAvailabilityInfoRow(availabilityResultRow);
 				changedRowIds.add(purchaseRowToAugment.getId());
 			}
 

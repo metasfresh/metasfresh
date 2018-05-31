@@ -446,6 +446,11 @@ public class PurchaseRow implements IViewRow
 		return vendorBPartner.getKeyAsInt();
 	}
 
+	public void setAvailabilityInfoRow(@NonNull PurchaseRow availabilityResultRow)
+	{
+		setAvailabilityInfoRows(ImmutableList.of(availabilityResultRow));
+	}
+
 	public void setAvailabilityInfoRows(@NonNull final List<PurchaseRow> availabilityResultRows)
 	{
 		assertRowType(PurchaseRowType.LINE);

@@ -35,6 +35,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
@@ -93,7 +94,7 @@ public class PurchaseRowFactoryTest
 		final DocumentId id = candidateRow.getId();
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(id);
 
-		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(purchaseCandidate.getVendorBPartnerId());
+		assertThat(purchaseRowId.getVendorId()).isEqualTo(purchaseCandidate.getVendorId());
 		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId(
 				I_C_OrderLine.Table_Name,
 				purchaseCandidate.getSalesOrderLineId().getRepoId()));
@@ -116,8 +117,8 @@ public class PurchaseRowFactoryTest
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bpartnerProductId(10)
-				.vendorBPartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
+				.id(VendorProductInfoId.ofRepoId(10))
+				.vendorId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
 				.productId(productId)
 				.productNo("productNo")
 				.productName("productName")

@@ -44,19 +44,14 @@ class PurchaseRowsSaver
 {
 	private final PurchaseCandidateRepository purchaseCandidatesRepo;
 
-	private final List<PurchaseRow> groupingRows;
-
 	@Builder
 	private PurchaseRowsSaver(
-			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo,
-			@NonNull final List<PurchaseRow> grouppingRows)
+			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo)
 	{
 		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
-
-		this.groupingRows = grouppingRows;
 	}
 
-	public List<PurchaseCandidate> save()
+	public List<PurchaseCandidate> save(final List<PurchaseRow> groupingRows)
 	{
 		final Set<PurchaseDemandId> purchaseDemandIds = groupingRows.stream()
 				.map(PurchaseRow::getPurchaseDemandId)
@@ -65,10 +60,7 @@ class PurchaseRowsSaver
 
 		final Map<Integer, PurchaseCandidate> existingPurchaseCandidatesById = purchaseCandidatesRepo
 				.streamAllByPurchaseDemandIds(purchaseDemandIds)
-				.collect(ImmutableMap
-						.toImmutableMap(
-								PurchaseCandidate::getPurchaseCandidateId,
-								Function.identity()));
+				.collect(ImmutableMap.toImmutableMap(PurchaseCandidate::getPurchaseCandidateId, Function.identity()));
 
 		final List<PurchaseCandidate> purchaseCandidatesToSave = groupingRows.stream()
 				.flatMap(grouppingRow -> grouppingRow.getIncludedRows().stream()) // purchase candidate lines
