@@ -4,6 +4,9 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -11,6 +14,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.ListUtils;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
@@ -205,12 +209,45 @@ public class Money
 	{
 		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
 
-		final ImmutableListMultimap<Currency, Money> currency2moneys = Multimaps.index(Stream.of(moneys).iterator(), Money::getCurrency);
+		final Iterator<Money> moneysIterator = Stream.of(moneys)
+				.filter(Predicates.notNull())
+				.iterator();
+		final ImmutableListMultimap<Currency, Money> currency2moneys = Multimaps.index(moneysIterator, Money::getCurrency);
+		if (currency2moneys.isEmpty())
+		{
+			throw new AdempiereException("The given moneys may not be empty");
+		}
 
 		final ImmutableSet<Currency> currencies = currency2moneys.keySet();
 		Check.errorIf(currencies.size() > 1,
 				"at least two money instances have different currencies: {}", currency2moneys);
 
 		return ListUtils.singleElement(currencies.asList());
+	}
+
+	public static boolean isSameCurrency(@NonNull final Money... moneys)
+	{
+		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
+		return isSameCurrency(Arrays.asList(moneys));
+	}
+
+	public static boolean isSameCurrency(@NonNull final Collection<Money> moneys)
+	{
+		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
+
+		final ImmutableSet<Currency> currencies = moneys.stream().map(Money::getCurrency).collect(ImmutableSet.toImmutableSet());
+		return currencies.size() == 1;
+	}
+
+	public Money min(@NonNull final Money other)
+	{
+		assertCurrencyMatching(other);
+		return this.value.compareTo(other.value) <= 0 ? this : other;
+	}
+
+	public Money max(@NonNull final Money other)
+	{
+		assertCurrencyMatching(other);
+		return this.value.compareTo(other.value) >= 0 ? this : other;
 	}
 }
