@@ -1044,6 +1044,26 @@ public class TimeUtil
 		}
 	}
 
+	public static final LocalDateTime min(final LocalDateTime date1, final LocalDateTime date2)
+	{
+		if (date1 == date2)
+		{
+			return date1;
+		}
+		else if (date1 == null)
+		{
+			return date2;
+		}
+		else if (date2 == null)
+		{
+			return date1;
+		}
+		else
+		{
+			return date1.compareTo(date2) <= 0 ? date1 : date2;
+		}
+	}
+
 	/** Truncate Second - S */
 	public static final String TRUNC_SECOND = "S";
 	/** Truncate Minute - M */
@@ -1230,7 +1250,7 @@ public class TimeUtil
 			final Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
 			return Timestamp.from(instant);
 		}
-		else if(obj instanceof LocalTime)
+		else if (obj instanceof LocalTime)
 		{
 			final LocalTime localTime = (LocalTime)obj;
 			final Instant instant = localTime.atDate(DATE_1970_01_01).atZone(ZoneId.systemDefault()).toInstant();
