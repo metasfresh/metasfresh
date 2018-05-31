@@ -22,6 +22,8 @@ Here come the actual release notes:
     * New Window in WebUI for the maintenance of Tax Category Translations.
   * [#4135](https://github.com/metasfresh/metasfresh/issues/4135) Webui: Add Document References to all Windows with Translations
     * Improved the navigation beween master data and translation windows, adding references to the translation window & table.
+  * [#4138](https://github.com/metasfresh/metasfresh/issues/4138) WebUI: Translation Window for Paymentterm
+    * New Window in WebUI for the maintenance of Payment Term Translations.
 
 ## Fixes
   * [#1814](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1814) Action button is too large
