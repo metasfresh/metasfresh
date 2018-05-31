@@ -101,12 +101,17 @@ public class MSV3PurchaseOrderClientTest
 	@Test
 	public void placeOrder() throws Exception
 	{
-		final PurchaseOrderRequestItem purchaseOrderRequestItem = new PurchaseOrderRequestItem(
-				1, // id
-				ProductAndQuantity.of("10055555", QTY_TO_PURCHASE));
+		final PurchaseOrderRequestItem purchaseOrderRequestItem = PurchaseOrderRequestItem.builder()
+				.purchaseCandidateId(1)
+				.productAndQuantity(ProductAndQuantity.of("10055555", QTY_TO_PURCHASE))
+				.build();
 		final List<PurchaseOrderRequestItem> purchaseOrderRequestItems = ImmutableList.of(purchaseOrderRequestItem);
 
-		final PurchaseOrderRequest request = new PurchaseOrderRequest(10, 20, purchaseOrderRequestItems);
+		final PurchaseOrderRequest request = PurchaseOrderRequest.builder()
+				.orgId(10)
+				.vendorId(20)
+				.purchaseOrderRequestItems(purchaseOrderRequestItems)
+				.build();
 
 		msv3PurchaseOrderClient.prepare(request);
 

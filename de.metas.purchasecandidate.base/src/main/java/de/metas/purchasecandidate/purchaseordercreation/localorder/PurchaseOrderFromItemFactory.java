@@ -138,8 +138,7 @@ import lombok.NonNull;
 			@NonNull final PurchaseOrderItem pruchaseOrderItem,
 			@NonNull final OrderLineBuilder orderLineBuilder)
 	{
-		pruchaseOrderItem
-				.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderLineId());
+		pruchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderAndLineId());
 	}
 
 	private ADMessageAndParams createMessageAndParamsOrNull(@NonNull final I_C_Order order)

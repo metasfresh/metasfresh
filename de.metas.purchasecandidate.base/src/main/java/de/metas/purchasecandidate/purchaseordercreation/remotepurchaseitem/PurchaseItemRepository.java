@@ -17,6 +17,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
@@ -75,7 +76,7 @@ public class PurchaseItemRepository
 				purchaseOrderItem);
 
 		final boolean hasTransactionReference = purchaseOrderItem.getTransactionReference() != null;
-		final boolean hasPurchaseOrderLine = purchaseOrderItem.getPurchaseOrderLineId() > 0;
+		final boolean hasPurchaseOrderLine = purchaseOrderItem.getPurchaseOrderAndLineId() != null;
 		Check.errorUnless(hasTransactionReference || hasPurchaseOrderLine,
 				"The given purchaseOrderItem needs to have at least a transactionReference *or* a purchaseOrderLineId; purchaseOrderItem={}",
 				purchaseOrderItem);
@@ -87,9 +88,11 @@ public class PurchaseItemRepository
 
 		record.setAD_Org_ID(purchaseOrderItem.getOrgId().getRepoId());
 
+		final OrderAndLineId purchaseOrderAndLineId = purchaseOrderItem.getPurchaseOrderAndLineId();
+		record.setC_OrderPO_ID(OrderAndLineId.getOrderRepoIdOr(purchaseOrderAndLineId, -1));
+		record.setC_OrderLinePO_ID(OrderAndLineId.getOrderLineRepoIdOr(purchaseOrderAndLineId, -1));
+
 		record.setC_PurchaseCandidate_ID(PurchaseCandidateId.getRepoIdOr(purchaseOrderItem.getPurchaseCandidateId(), -1));
-		record.setC_OrderPO_ID(purchaseOrderItem.getPurchaseOrderId());
-		record.setC_OrderLinePO_ID(purchaseOrderItem.getPurchaseOrderLineId());
 		record.setDatePromised(TimeUtil.asTimestamp(purchaseOrderItem.getDatePromised()));
 		record.setRemotePurchaseOrderId(purchaseOrderItem.getRemotePurchaseOrderId());
 
@@ -125,9 +128,9 @@ public class PurchaseItemRepository
 			@NonNull final PurchaseItem purchaseOrderItem)
 	{
 		final I_C_PurchaseCandidate_Alloc record;
-		if (purchaseOrderItem.getPurchaseItemId() > 0)
+		if (purchaseOrderItem.getPurchaseItemId() != null)
 		{
-			record = load(purchaseOrderItem.getPurchaseItemId(), I_C_PurchaseCandidate_Alloc.class);
+			record = load(purchaseOrderItem.getPurchaseItemId().getRepoId(), I_C_PurchaseCandidate_Alloc.class);
 		}
 		else
 		{
@@ -166,17 +169,17 @@ public class PurchaseItemRepository
 
 		if (record.getAD_Issue_ID() <= 0)
 		{
+			// TODO: don't use order line loader directly, here!
 			final I_C_OrderLine purchaseOrderLine = load(record.getC_OrderLinePO_ID(), I_C_OrderLine.class);
 
 			final PurchaseOrderItem purchaseOrderItem = PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
-					.purchaseItemId(record.getC_PurchaseCandidate_Alloc_ID())
+					.purchaseItemId(PurchaseItemId.ofRepoId(record.getC_PurchaseCandidate_Alloc_ID()))
 					.datePromised(TimeUtil.asLocalDateTime(record.getDatePromised()))
 					.purchasedQty(purchaseOrderLine.getQtyOrdered())
 					.remotePurchaseOrderId(record.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)
-					.purchaseOrderId(purchaseOrderLine.getC_Order_ID())
-					.purchaseOrderLineId(purchaseOrderLine.getC_OrderLine_ID())
+					.purchaseOrderAndLineId(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()))
 					.build();
 
 			purchaseCandidate.addLoadedPurchaseOrderItem(purchaseOrderItem);
@@ -184,8 +187,8 @@ public class PurchaseItemRepository
 		else
 		{
 			purchaseCandidate.createErrorItem()
-					.purchaseItemId(record.getC_PurchaseCandidate_Alloc_ID())
-					.issue(record.getAD_Issue())
+					.purchaseItemId(PurchaseItemId.ofRepoId(record.getC_PurchaseCandidate_Alloc_ID()))
+					.adIssueId(record.getAD_Issue_ID())
 					.transactionReference(transactionReference)
 					.buildAndAdd();
 		}

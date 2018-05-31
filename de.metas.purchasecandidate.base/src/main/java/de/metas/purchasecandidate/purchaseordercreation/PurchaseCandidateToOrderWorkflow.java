@@ -134,7 +134,7 @@ public class PurchaseCandidateToOrderWorkflow
 		loggable.addLog("vendorId={} - now invoking placeRemotePurchaseOrder with purchaseCandidates={}",
 				vendorId, purchaseCandidatesWithVendorId);
 
-		final VendorGatewayInvoker vendorGatewayInvoker = vendorGatewayInvokerFactory.createForVendorId(vendorId.getRepoId());
+		final VendorGatewayInvoker vendorGatewayInvoker = vendorGatewayInvokerFactory.createForVendorId(vendorId);
 
 		final List<PurchaseItem> remotePurchaseItems = vendorGatewayInvoker
 				.placeRemotePurchaseOrder(purchaseCandidatesWithVendorId);
@@ -218,7 +218,8 @@ public class PurchaseCandidateToOrderWorkflow
 		for (final PurchaseCandidate purchaseCandidate : purchaseCandidates)
 		{
 			purchaseCandidate.createErrorItem()
-					.throwable(throwable).buildAndAdd();
+					.throwable(throwable)
+					.buildAndAdd();
 		}
 
 		purchaseCandidateRepo.saveAll(purchaseCandidates);

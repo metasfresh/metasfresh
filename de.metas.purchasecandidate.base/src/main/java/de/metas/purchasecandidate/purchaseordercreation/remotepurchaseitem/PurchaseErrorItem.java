@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.I_AD_Issue;
 
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import lombok.Builder;
@@ -42,7 +41,7 @@ public class PurchaseErrorItem implements PurchaseItem
 		return (PurchaseErrorItem)purchaseItem;
 	}
 
-	int purchaseItemId;
+	PurchaseItemId purchaseItemId;
 
 	ITableRecordReference transactionReference;
 
@@ -52,23 +51,23 @@ public class PurchaseErrorItem implements PurchaseItem
 
 	Throwable throwable;
 
-	I_AD_Issue issue;
+	int adIssueId;
 
 	@Builder
 	private PurchaseErrorItem(
-			final int purchaseItemId,
+			final PurchaseItemId purchaseItemId,
 			@Nullable final Throwable throwable,
-			@Nullable final I_AD_Issue issue,
+			@Nullable final int adIssueId,
 			@NonNull final PurchaseCandidateId purchaseCandidateId,
 			@NonNull final OrgId orgId,
 			@Nullable final ITableRecordReference transactionReference)
 	{
 		this.purchaseItemId = purchaseItemId;
 
-		Check.assume(issue != null || throwable != null, "At least one of the given issue or thorwable need to be non-null");
+		Check.assume(adIssueId > 0 || throwable != null, "At least one of the given issue or thorwable need to be non-null");
 
 		this.throwable = throwable;
-		this.issue = issue;
+		this.adIssueId = adIssueId;
 
 		this.purchaseCandidateId = purchaseCandidateId;
 		this.orgId = orgId;

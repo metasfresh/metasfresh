@@ -117,7 +117,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 		// @formatter:off
 		new Expectations()
 		{{
-			vendorGatewayInvokerFactory.createForVendorId(20); result = NullVendorGatewayInvoker.INSTANCE;
+			vendorGatewayInvokerFactory.createForVendorId(BPartnerId.ofRepoId(20)); result = NullVendorGatewayInvoker.INSTANCE;
 		}};	// @formatter:on
 
 		// invoke the method under test
@@ -170,7 +170,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 		// @formatter:off
 		new Expectations()
 		{{
-			vendorGatewayInvokerFactory.createForVendorId(20); result = vendorGatewayInvoker;
+			vendorGatewayInvokerFactory.createForVendorId(BPartnerId.ofRepoId(20)); result = vendorGatewayInvoker;
 
 			vendorGatewayInvoker.placeRemotePurchaseOrder(purchaseCandidates);
 			result = new RuntimeException(SOMETHING_WENT_WRONG);

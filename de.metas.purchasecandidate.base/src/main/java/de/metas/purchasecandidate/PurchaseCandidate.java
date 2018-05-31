@@ -15,7 +15,6 @@ import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
@@ -26,6 +25,7 @@ import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
@@ -291,9 +291,10 @@ public class PurchaseCandidate
 
 	public PurchaseOrderRequestItem createPurchaseOrderRequestItem()
 	{
-		return new PurchaseOrderRequestItem(
-				PurchaseCandidateId.getRepoIdOr(id, -1),
-				createProductAndQuantity());
+		return PurchaseOrderRequestItem.builder()
+				.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(id, -1))
+				.productAndQuantity(createProductAndQuantity())
+				.build();
 	}
 
 	private ProductAndQuantity createProductAndQuantity()
@@ -317,7 +318,7 @@ public class PurchaseCandidate
 					.orgId(parent.getOrgId());
 		}
 
-		public ErrorItemBuilder purchaseItemId(final int purchaseItemId)
+		public ErrorItemBuilder purchaseItemId(final PurchaseItemId purchaseItemId)
 		{
 			innerBuilder.purchaseItemId(purchaseItemId);
 			return this;
@@ -335,9 +336,9 @@ public class PurchaseCandidate
 			return this;
 		}
 
-		public ErrorItemBuilder issue(final I_AD_Issue issue)
+		public ErrorItemBuilder adIssueId(final int adIssueId)
 		{
-			innerBuilder.issue(issue);
+			innerBuilder.adIssueId(adIssueId);
 			return this;
 		}
 
@@ -365,7 +366,7 @@ public class PurchaseCandidate
 			innerBuilder = PurchaseOrderItem.builder().purchaseCandidate(parent);
 		}
 
-		public OrderItemBuilder purchaseItemId(final int purchaseItemId)
+		public OrderItemBuilder purchaseItemId(final PurchaseItemId purchaseItemId)
 		{
 			innerBuilder.purchaseItemId(purchaseItemId);
 			return this;

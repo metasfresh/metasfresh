@@ -1,11 +1,8 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.Check;
 
-import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseCandidateId;
-import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
-import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
+import lombok.Value;
 
 /*
  * #%L
@@ -17,27 +14,41 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewa
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/**
- * Instances of this interface are returned by {@link VendorGatewayInvoker} and are processed by {@link PurchaseOrderFromItemsAggregator}.
- * They are created via {@link PurchaseCandidate#createErrorItem()} and {@link PurchaseCandidate#createOrderItem()}.
- */
-public interface PurchaseItem
+@Value
+public class PurchaseItemId
 {
-	ITableRecordReference getTransactionReference();
+	public static PurchaseItemId ofRepoId(final int repoId)
+	{
+		return new PurchaseItemId(repoId);
+	}
 
-	PurchaseCandidateId getPurchaseCandidateId();
+	public static PurchaseItemId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new PurchaseItemId(repoId) : null;
+	}
 
-	PurchaseItemId getPurchaseItemId();
+	public static int getRepoIdOr(final PurchaseItemId id, final int defaultValue)
+	{
+		return id != null ? id.getRepoId() : defaultValue;
+	}
+
+	int repoId;
+
+	private PurchaseItemId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
 }
