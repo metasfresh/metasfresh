@@ -2,31 +2,24 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.process.IADProcessDAO;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseDemand;
+import de.metas.purchasecandidate.PurchaseDemandWithCandidatesService;
+import de.metas.purchasecandidate.availability.AvailabilityCheckService;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseCandidateAggregate;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseCandidateAggregator;
 import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_PurchaseCandidates_PurchaseView_Launcher;
 import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.view.DefaultViewsRepositoryStorage;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.ViewFactory;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.ViewProfileId;
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -51,102 +44,67 @@ import de.metas.ui.web.window.datatypes.WindowId;
  */
 
 @ViewFactory(windowId = PurchaseCandidates2PurchaseViewFactory.WINDOW_ID_STRING)
-public class PurchaseCandidates2PurchaseViewFactory implements IViewFactory, IViewsIndexStorage
+public class PurchaseCandidates2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 {
 	public static final String WINDOW_ID_STRING = "purchaseCandidates2po";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	// services
-	private final PurchaseCandidateRepository purchaseCandidateRepository;
+	private final PurchaseCandidateRepository purchaseCandidatesRepo;
 
-	private final PurchaseViewLayoutFactory viewLayoutFactory;
-	private final IViewsIndexStorage viewsIndexStorage = new DefaultViewsRepositoryStorage();
-
-	public PurchaseCandidates2PurchaseViewFactory(final PurchaseCandidateRepository purchaseCandidateRepository)
+	public PurchaseCandidates2PurchaseViewFactory(
+			@NonNull final PurchaseDemandWithCandidatesService purchaseDemandWithCandidatesService,
+			@NonNull final AvailabilityCheckService availabilityCheckService,
+			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo,
+			@NonNull final PurchaseRowFactory purchaseRowFactory)
 	{
-		this.purchaseCandidateRepository = purchaseCandidateRepository;
+		super(WINDOW_ID,
+				WEBUI_PurchaseCandidates_PurchaseView_Launcher.class, // launcherProcessClass
+				purchaseDemandWithCandidatesService,
+				availabilityCheckService,
+				purchaseRowFactory);
 
-		final IADProcessDAO adProcessRepo = Services.get(IADProcessDAO.class);
-		final ITranslatableString caption = adProcessRepo
-				.retrieveProcessNameByClassIfUnique(WEBUI_PurchaseCandidates_PurchaseView_Launcher.class)
-				.orElse(null);
-		viewLayoutFactory = PurchaseViewLayoutFactory.builder()
-				.caption(caption)
-				.build();
+		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
+	protected List<PurchaseDemand> getDemands(final CreateViewRequest request)
 	{
-		return viewLayoutFactory.getViewLayout(windowId, viewDataType);
-	}
-
-	@Override
-	public IView createView(final CreateViewRequest request)
-	{
-		final Set<Integer> purchaseCandidateIds = request.getFilterOnlyIds();
+		final Set<PurchaseCandidateId> purchaseCandidateIds = PurchaseCandidateId.ofRepoIds(request.getFilterOnlyIds());
 		Check.assumeNotEmpty(purchaseCandidateIds, "purchaseCandidateIds is not empty");
 
-		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepository.getAllByIds(purchaseCandidateIds);
+		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidatesRepo.getAllByIds(purchaseCandidateIds);
+		Check.assumeNotEmpty(purchaseCandidates, "purchaseCandidates is not empty");
 
-		final PurchaseCandidateAggregator aggregator = PurchaseCandidateAggregator.newInstance();
-		aggregator.addAll(purchaseCandidates.iterator());
-		aggregator.closeAllGroups();
-
-		final List<PurchaseRow> rows = aggregator.getClosedGroups()
+		return PurchaseCandidateAggregator.aggregate(purchaseCandidates)
 				.stream()
-				.map(this::createRow)
+				.map(aggregate -> toPurchaseDemand(aggregate))
 				.collect(ImmutableList.toImmutableList());
+	}
 
-		final PurchaseView view = PurchaseView.builder()
-				.viewId(ViewId.random(WINDOW_ID))
-				.rowsSupplier(() -> rows)
+	private static PurchaseDemand toPurchaseDemand(final PurchaseCandidateAggregate aggregate)
+	{
+		return PurchaseDemand.builder()
+				.id(aggregate.getPurchaseDemandId())
+				//
+				.orgId(aggregate.getOrgId())
+				.warehouseId(aggregate.getWarehouseId())
+				//
+				.productId(aggregate.getProductId())
+				.attributeSetInstanceId(aggregate.getAttributeSetInstanceId())
+				//
+				.qtyToDeliverTotal(aggregate.getQtyToDeliverTotal())
+				.qtyToDeliver(aggregate.getQtyToDeliver())
+				//
+				.datePromised(aggregate.getDatePromised())
+				.preparationDate(aggregate.getPreparationDate())
+				//
 				.build();
-
-		return view;
-
-	}
-
-	private PurchaseRow createRow(final PurchaseCandidateAggregate aggregate)
-	{
-		// TODO: implement
-		return PurchaseRow.builder()
-				.build();
 	}
 
 	@Override
-	public WindowId getWindowId()
+	protected void onViewClosedByUser(final PurchaseView purchaseView)
 	{
-		return WINDOW_ID;
-	}
-
-	@Override
-	public void put(final IView view)
-	{
-		viewsIndexStorage.put(view);
-	}
-
-	@Override
-	public IView getByIdOrNull(final ViewId viewId)
-	{
-		return viewsIndexStorage.getByIdOrNull(viewId);
-	}
-
-	@Override
-	public void removeById(final ViewId viewId)
-	{
-		viewsIndexStorage.removeById(viewId);
-	}
-
-	@Override
-	public Stream<IView> streamAllViews()
-	{
-		return viewsIndexStorage.streamAllViews();
-	}
-
-	@Override
-	public void invalidateView(final ViewId viewId)
-	{
-		viewsIndexStorage.invalidateView(viewId);
+		// TODO Auto-generated method stub
 	}
 }
