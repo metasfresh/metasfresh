@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -122,9 +121,8 @@ class PurchaseRowsLoader
 				final PurchaseRow candidateRow = purchaseRowFactory
 						.rowFromPurchaseCandidateBuilder()
 						.purchaseCandidate(purchaseCandidate)
-						.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
-						.datePromised(TimeUtil.asLocalDateTime(demand.getDatePromised()))
-						.currencyOfParentRow(demand.getCurrency())
+						.datePromised(demand.getDatePromised())
+						.currency(demand.getCurrency())
 						.build();
 
 				purchaseCandidate2purchaseRowBuilder.put(purchaseCandidate, candidateRow);
@@ -149,7 +147,7 @@ class PurchaseRowsLoader
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	private PurchaseRow getPurchaseRowByPurchaseCandidate(final PurchaseCandidate purchaseCandidate)
 	{
 		return _purchaseCandidate2purchaseRow.get(purchaseCandidate);

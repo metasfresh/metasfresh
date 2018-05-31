@@ -86,9 +86,8 @@ public class PurchaseRowFactoryTest
 		final PurchaseRow candidateRow = purchaseRowFactory
 				.rowFromPurchaseCandidateBuilder()
 				.purchaseCandidate(purchaseCandidate)
-				.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
 				.datePromised(SystemTime.asLocalDateTime())
-				.currencyOfParentRow(currency)
+				.currency(currency)
 				.build();
 
 		final DocumentId id = candidateRow.getId();

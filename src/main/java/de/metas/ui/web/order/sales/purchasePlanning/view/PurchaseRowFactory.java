@@ -5,13 +5,12 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Check;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
@@ -76,8 +75,7 @@ public class PurchaseRowFactory
 	@Builder(builderMethodName = "rowFromPurchaseCandidateBuilder", builderClassName = "RowFromPurchaseCandidateBuilder")
 	private PurchaseRow buildRowFromPurchaseCandidate(
 			@NonNull final PurchaseCandidate purchaseCandidate,
-			@NonNull final Currency currencyOfParentRow,
-			@Nullable final VendorProductInfo vendorProductInfo,
+			@NonNull final Currency currency,
 			@NotNull final LocalDateTime datePromised)
 	{
 		final BPartnerId vendorId = purchaseCandidate.getVendorId();
@@ -85,6 +83,7 @@ public class PurchaseRowFactory
 
 		final ProductId productId;
 		final JSONLookupValue product;
+		final VendorProductInfo vendorProductInfo = purchaseCandidate.getVendorProductInfo();
 		if (vendorProductInfo != null)
 		{
 			productId = vendorProductInfo.getProductId();
@@ -102,7 +101,7 @@ public class PurchaseRowFactory
 				: 0;
 
 		final PurchaseDemandId demandId = purchaseCandidate.getSalesOrderLineIdAsDemandId();
-		final PurchaseProfitInfo profitInfo = convertToCurrency(purchaseCandidate.getProfitInfo(), currencyOfParentRow);
+		final PurchaseProfitInfo profitInfo = convertToCurrency(purchaseCandidate.getProfitInfo(), currency);
 
 		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.lineId(demandId, vendorId, processedPurchaseCandidateId))
@@ -196,11 +195,7 @@ public class PurchaseRowFactory
 				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(BigDecimal.ZERO)
 				.readonly(true)
-				.uomOrAvailablility(Util
-						.coalesce(
-								throwable.getLocalizedMessage(),
-								throwable.getMessage(),
-								throwable.getClass().getName()))
+				.uomOrAvailablility(AdempiereException.extractMessage(throwable))
 				.datePromised(null)
 				.build();
 	}
