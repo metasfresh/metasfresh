@@ -4,12 +4,15 @@ import java.time.LocalDateTime;
 
 import org.adempiere.bpartner.BPartnerId;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.order.OrderLineId;
 import de.metas.payment.api.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -38,7 +41,9 @@ import lombok.Value;
 @Builder
 public class PurchaseProfitInfoRequest
 {
-	OrderLineId salesOrderLineId;
+	@NonNull
+	@Singular
+	ImmutableSet<OrderLineId> salesOrderLineIds;
 	@NonNull
 	LocalDateTime datePromised;
 	@NonNull

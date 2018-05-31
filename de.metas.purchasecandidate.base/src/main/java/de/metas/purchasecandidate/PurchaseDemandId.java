@@ -1,9 +1,11 @@
 package de.metas.purchasecandidate;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_OrderLine;
 
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -37,10 +39,24 @@ public class PurchaseDemandId
 		return new PurchaseDemandId(tableName, recordId);
 	}
 
-	public static PurchaseDemandId ofOrderLineId(@NonNull final OrderLineId orderLineId)
+	public static PurchaseDemandId ofOrderAndLineId(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		return ofTableAndRecordId(I_C_OrderLine.Table_Name, orderLineId.getRepoId());
+		return ofOrderLineRepoId(orderAndLineId.getOrderLineRepoId());
 	}
+
+	public static PurchaseDemandId ofOrderLineRepoId(final int orderLineRepoId)
+	{
+		return ofTableAndRecordId(I_C_OrderLine.Table_Name, orderLineRepoId);
+	}
+
+	/** @return in memory ad-hoc aggregate ID */
+	public static PurchaseDemandId newAggregateId()
+	{
+		return ofTableAndRecordId(TABLENAME_AGGREGATE, nextAggregateId.getAndIncrement());
+	}
+
+	private static final String TABLENAME_AGGREGATE = "$aggregate$";
+	private static final AtomicInteger nextAggregateId = new AtomicInteger(1);
 
 	String tableName;
 	int recordId;
@@ -54,4 +70,13 @@ public class PurchaseDemandId
 		this.recordId = recordId;
 	}
 
+	public boolean isAggregate()
+	{
+		return TABLENAME_AGGREGATE.equals(tableName);
+	}
+
+	public boolean isTable()
+	{
+		return !isAggregate();
+	}
 }

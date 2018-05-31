@@ -16,9 +16,11 @@ import org.compiere.model.I_C_OrderLine;
 
 import com.google.common.base.Objects;
 
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -117,9 +119,9 @@ public class PurchaseOrderItem implements PurchaseItem
 	}
 
 	@Override
-	public int getPurchaseCandidateId()
+	public PurchaseCandidateId getPurchaseCandidateId()
 	{
-		return getPurchaseCandidate().getPurchaseCandidateId();
+		return getPurchaseCandidate().getId();
 	}
 
 	public ProductId getProductId()
@@ -154,7 +156,8 @@ public class PurchaseOrderItem implements PurchaseItem
 
 	public OrderId getSalesOrderId()
 	{
-		return getPurchaseCandidate().getSalesOrderId();
+		final OrderAndLineId salesOrderAndLineId = getPurchaseCandidate().getSalesOrderAndLineId();
+		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
 	}
 
 	private BigDecimal getQtyToPurchase()

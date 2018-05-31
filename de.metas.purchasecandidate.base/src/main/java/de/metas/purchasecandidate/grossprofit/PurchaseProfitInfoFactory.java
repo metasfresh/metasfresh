@@ -3,6 +3,7 @@ package de.metas.purchasecandidate.grossprofit;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.bpartner.BPartnerId;
@@ -74,7 +75,7 @@ public class PurchaseProfitInfoFactory
 
 	public List<PurchaseProfitInfo> createInfos(@NonNull final PurchaseProfitInfoRequest request)
 	{
-		final Money salesNetPrice = retrieveSalesNetPrice(request);
+		final Optional<Money> salesNetPrice = retrieveSalesNetPrice(request);
 
 		final Map<PriceListVersionId, Money> purchasePrices = retrievePurchasePrices(request);
 		if (purchasePrices.isEmpty())
@@ -97,9 +98,9 @@ public class PurchaseProfitInfoFactory
 		return result.build();
 	}
 
-	private Money retrieveSalesNetPrice(final PurchaseProfitInfoRequest request)
+	private Optional<Money> retrieveSalesNetPrice(final PurchaseProfitInfoRequest request)
 	{
-		return grossProfitPriceRepo.getProfitBasePrice(request.getSalesOrderLineId());
+		return grossProfitPriceRepo.getProfitMinBasePrice(request.getSalesOrderLineIds());
 	}
 
 	private Money retrieveOurOwnPurchaseNetPrice(

@@ -1,5 +1,7 @@
 package de.metas.purchasecandidate.grossprofit;
 
+import java.util.Optional;
+
 import de.metas.lang.Percent;
 import de.metas.money.Currency;
 import de.metas.money.Money;
@@ -37,7 +39,7 @@ import lombok.Value;
 public class PurchaseProfitInfo
 {
 	/** sales priceActual minus cash discount minus refund/bonus (if any) */
-	Money salesNetPrice;
+	Optional<Money> salesNetPrice;
 
 	/** {@link #purchaseGrossPrice} minus cash discount minus refund/bonus (if any); should better be less than {@link #salesNetPrice}.. */
 	Money purchaseNetPrice;
@@ -46,7 +48,7 @@ public class PurchaseProfitInfo
 
 	@Builder(toBuilder = true)
 	private PurchaseProfitInfo(
-			@NonNull final Money salesNetPrice,
+			@NonNull final Optional<Money> salesNetPrice,
 			@NonNull final Money purchaseNetPrice,
 			@NonNull final Money purchaseGrossPrice)
 	{
@@ -57,11 +59,48 @@ public class PurchaseProfitInfo
 
 	public Currency getCommonCurrency()
 	{
-		return Money.getCommonCurrencyOfAll(salesNetPrice, purchaseNetPrice, purchaseGrossPrice);
+		return Money.getCommonCurrencyOfAll(salesNetPrice.orElse(null), purchaseNetPrice, purchaseGrossPrice);
 	}
 
-	public Percent getProfitPercent()
+	public Optional<Percent> getProfitPercent()
 	{
-		return Percent.ofDelta(purchaseNetPrice.getValue(), salesNetPrice.getValue());
+		return calculateProfitPercent(getSalesNetPrice().orElse(null), getPurchaseNetPrice());
+	}
+
+	private static Optional<Percent> calculateProfitPercent(final Money salesNetPrice, final Money purchaseNetPrice)
+	{
+		if (salesNetPrice == null || purchaseNetPrice == null)
+		{
+			return Optional.empty();
+		}
+
+		// If not the same currency then we cannot calculate the profit percentage
+		if (!Money.isSameCurrency(purchaseNetPrice, salesNetPrice))
+		{
+			return Optional.empty();
+		}
+
+		final Percent profitPercent = Percent.ofDelta(purchaseNetPrice.getValue(), salesNetPrice.getValue());
+		return Optional.of(profitPercent);
+	}
+
+	//
+	//
+	//
+	//
+	//
+	public static class PurchaseProfitInfoBuilder
+	{
+		public PurchaseProfitInfoBuilder salesNetPrice(final Money salesNetPrice)
+		{
+			return salesNetPrice(Optional.ofNullable(salesNetPrice));
+		}
+
+		public PurchaseProfitInfoBuilder salesNetPrice(@NonNull final Optional<Money> salesNetPrice)
+		{
+			this.salesNetPrice = salesNetPrice;
+			return this;
+		}
+
 	}
 }

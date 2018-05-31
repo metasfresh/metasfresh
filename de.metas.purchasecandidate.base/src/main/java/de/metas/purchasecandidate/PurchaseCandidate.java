@@ -20,8 +20,7 @@ import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
@@ -70,7 +69,7 @@ import lombok.ToString;
 public class PurchaseCandidate
 {
 	@Setter(AccessLevel.NONE)
-	private int purchaseCandidateId;
+	private PurchaseCandidateId id;
 
 	@NonNull
 	private final BigDecimal salesOrderQtyToDeliver;
@@ -107,9 +106,8 @@ public class PurchaseCandidate
 
 	@Builder
 	private PurchaseCandidate(
-			final int purchaseCandidateId,
-			final OrderId salesOrderId,
-			@NonNull final OrderLineId salesOrderLineId,
+			final PurchaseCandidateId id,
+			final OrderAndLineId salesOrderAndLineId,
 			final boolean processed,
 			final boolean locked,
 			//
@@ -132,13 +130,12 @@ public class PurchaseCandidate
 	{
 		Check.assume(uomId > 0, "uomId > 0");
 
-		this.purchaseCandidateId = purchaseCandidateId;
+		this.id = id;
 
 		identifier = PurchaseCandidateImmutableFields.builder()
 				.orgId(orgId)
 				.productId(productId)
-				.salesOrderId(salesOrderId)
-				.salesOrderLineId(salesOrderLineId)
+				.salesOrderAndLineId(salesOrderAndLineId)
 				.uomId(uomId)
 				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(warehouseId)
@@ -173,7 +170,7 @@ public class PurchaseCandidate
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
 	{
-		purchaseCandidateId = from.purchaseCandidateId;
+		id = from.id;
 
 		qtyToPurchase = from.qtyToPurchase;
 		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
@@ -215,20 +212,9 @@ public class PurchaseCandidate
 		return getIdentifier().getWarehouseId();
 	}
 
-	public OrderId getSalesOrderId()
+	public OrderAndLineId getSalesOrderAndLineId()
 	{
-		return getIdentifier().getSalesOrderId();
-	}
-
-	public OrderLineId getSalesOrderLineId()
-	{
-		return getIdentifier().getSalesOrderLineId();
-	}
-
-	public PurchaseDemandId getSalesOrderLineIdAsDemandId()
-	{
-		// TODO: move it from here!
-		return PurchaseDemandId.ofOrderLineId(getSalesOrderLineId());
+		return getIdentifier().getSalesOrderAndLineId();
 	}
 
 	public BPartnerId getVendorId()
@@ -276,15 +262,15 @@ public class PurchaseCandidate
 
 	public boolean hasChanges()
 	{
-		return purchaseCandidateId <= 0 // never saved
+		return id == null // never saved
 				|| state.hasChanges()
 				|| qtyToPurchase.compareTo(qtyToPurchaseInitial) != 0
 				|| !Objects.equals(dateRequired, dateRequiredInitial);
 	}
 
-	public void markSaved(final int C_PurchaseCandidate_ID)
+	public void markSaved(@NonNull final PurchaseCandidateId newId)
 	{
-		purchaseCandidateId = C_PurchaseCandidate_ID;
+		id = newId;
 
 		state.markSaved();
 
@@ -298,15 +284,15 @@ public class PurchaseCandidate
 
 		return AvailabilityRequestItem.builder()
 				.productAndQuantity(productAndQuantity)
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderLineId(OrderLineId.getRepoIdOr(getSalesOrderLineId(), -1))
+				.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(getId(), -1))
+				.salesOrderLineId(OrderAndLineId.getOrderLineRepoIdOr(getSalesOrderAndLineId(), -1))
 				.build();
 	}
 
 	public PurchaseOrderRequestItem createPurchaseOrderRequestItem()
 	{
 		return new PurchaseOrderRequestItem(
-				getPurchaseCandidateId(),
+				PurchaseCandidateId.getRepoIdOr(id, -1),
 				createProductAndQuantity());
 	}
 
@@ -327,8 +313,8 @@ public class PurchaseCandidate
 		{
 			this.parent = parent;
 			innerBuilder = PurchaseErrorItem.builder()
-					.purchaseCandidateId(parent.getPurchaseCandidateId())
-					.orgId(parent.getOrgId().getRepoId());
+					.purchaseCandidateId(parent.getId())
+					.orgId(parent.getOrgId());
 		}
 
 		public ErrorItemBuilder purchaseItemId(final int purchaseItemId)
@@ -427,10 +413,10 @@ public class PurchaseCandidate
 	 */
 	public void addLoadedPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
-		Check.errorIf(getPurchaseCandidateId() <= 0,
-				"This instance needs to have purchaseCandidateId>0; this={}", this);
+		final PurchaseCandidateId id = getId();
+		Check.assumeNotNull(id, "purchase candidate shall be saved: {}", this);
 
-		Check.errorIf(purchaseOrderItem.getPurchaseCandidateId() != getPurchaseCandidateId(),
+		Check.assumeEquals(id, purchaseOrderItem.getPurchaseCandidateId(),
 				"The given purchaseOrderItem's purchaseCandidateId needs to be equan to this instance's id; purchaseOrderItem={}; this={}",
 				purchaseOrderItem, this);
 

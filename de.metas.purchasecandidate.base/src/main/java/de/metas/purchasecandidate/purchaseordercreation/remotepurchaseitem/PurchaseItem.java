@@ -3,6 +3,7 @@ package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
 
@@ -36,7 +37,7 @@ public interface PurchaseItem
 {
 	ITableRecordReference getTransactionReference();
 
-	int getPurchaseCandidateId();
+	PurchaseCandidateId getPurchaseCandidateId();
 
 	int getPurchaseItemId();
 }

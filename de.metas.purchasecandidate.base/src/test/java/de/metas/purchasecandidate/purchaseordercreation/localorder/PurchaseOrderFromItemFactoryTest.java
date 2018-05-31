@@ -26,8 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
@@ -62,7 +61,6 @@ import mockit.Verifications;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
@@ -187,8 +185,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.productNo("productNo")
 				.build();
 		return PurchaseCandidate.builder()
-				.salesOrderId(OrderId.ofRepoId(salesOrder.getC_Order_ID()))
-				.salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(ProductId.ofRepoId(5))

@@ -3,8 +3,7 @@ package de.metas.purchasecandidate;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Value;
@@ -35,8 +34,7 @@ import lombok.Value;
 @Builder
 class PurchaseCandidateImmutableFields
 {
-	OrderId salesOrderId;
-	OrderLineId salesOrderLineId;
+	OrderAndLineId salesOrderAndLineId;
 
 	OrgId orgId;
 	WarehouseId warehouseId;

@@ -11,6 +11,7 @@ import org.adempiere.warehouse.WarehouseId;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -54,9 +55,8 @@ public final class PurchaseCandidateTestTool
 	public static PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId)
 	{
 		return PurchaseCandidate.builder()
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderId(OrderId.ofRepoId(1))
-				.salesOrderLineId(SALES_ORDER_LINE_ID)
+				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
+				.salesOrderAndLineId(OrderAndLineId.of(OrderId.ofRepoId(1), SALES_ORDER_LINE_ID))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(ProductId.ofRepoId(5))

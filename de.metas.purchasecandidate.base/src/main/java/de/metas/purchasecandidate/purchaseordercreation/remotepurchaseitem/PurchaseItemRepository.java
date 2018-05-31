@@ -18,6 +18,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import lombok.NonNull;
 
@@ -68,9 +69,9 @@ public class PurchaseItemRepository
 
 	private static void validate(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
-		final int purchaseCandidateId = purchaseOrderItem.getPurchaseCandidateId();
-		Check.errorUnless(purchaseCandidateId > 0,
-				"The given purchaseOrderItem needs to have a purchaseCandidate with ID > 0; purchaseOrderItem={}",
+		final PurchaseCandidateId purchaseCandidateId = purchaseOrderItem.getPurchaseCandidateId();
+		Check.assumeNotNull(purchaseCandidateId,
+				"The given purchaseOrderItem needs to have a purchaseCandidateId set; purchaseOrderItem={}",
 				purchaseOrderItem);
 
 		final boolean hasTransactionReference = purchaseOrderItem.getTransactionReference() != null;
@@ -86,7 +87,7 @@ public class PurchaseItemRepository
 
 		record.setAD_Org_ID(purchaseOrderItem.getOrgId().getRepoId());
 
-		record.setC_PurchaseCandidate_ID(purchaseOrderItem.getPurchaseCandidateId());
+		record.setC_PurchaseCandidate_ID(PurchaseCandidateId.getRepoIdOr(purchaseOrderItem.getPurchaseCandidateId(), -1));
 		record.setC_OrderPO_ID(purchaseOrderItem.getPurchaseOrderId());
 		record.setC_OrderLinePO_ID(purchaseOrderItem.getPurchaseOrderLineId());
 		record.setDatePromised(TimeUtil.asTimestamp(purchaseOrderItem.getDatePromised()));
@@ -105,9 +106,9 @@ public class PurchaseItemRepository
 	{
 		final I_C_PurchaseCandidate_Alloc record = createOrLoadRecord(purchaseErrorItem);
 
-		record.setAD_Org_ID(purchaseErrorItem.getOrgId());
+		record.setAD_Org_ID(purchaseErrorItem.getOrgId().getRepoId());
 
-		record.setC_PurchaseCandidate_ID(purchaseErrorItem.getPurchaseCandidateId());
+		record.setC_PurchaseCandidate_ID(PurchaseCandidateId.getRepoIdOr(purchaseErrorItem.getPurchaseCandidateId(), -1));
 
 		if (purchaseErrorItem.getThrowable() != null)
 		{
@@ -138,10 +139,16 @@ public class PurchaseItemRepository
 	public void retrieveForPurchaseCandidate(
 			@NonNull final PurchaseCandidate purchaseCandidate)
 	{
+		final PurchaseCandidateId purchaseCandidateId = purchaseCandidate.getId();
+		if (purchaseCandidateId == null)
+		{
+			return;
+		}
+
 		final List<I_C_PurchaseCandidate_Alloc> purchaseItemRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_PurchaseCandidate_ID, purchaseCandidate.getPurchaseCandidateId())
+				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_PurchaseCandidate_ID, purchaseCandidateId.getRepoId())
 				.create()
 				.list();
 

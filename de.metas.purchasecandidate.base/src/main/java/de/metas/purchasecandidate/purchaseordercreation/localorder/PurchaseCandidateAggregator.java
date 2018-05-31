@@ -1,8 +1,12 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.adempiere.util.collections.MapReduceAggregator;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -28,21 +32,25 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 
 public final class PurchaseCandidateAggregator extends MapReduceAggregator<PurchaseCandidateAggregate, PurchaseCandidate>
 {
-	public static PurchaseCandidateAggregator newInstance()
+	public static List<PurchaseCandidateAggregate> aggregate(@NonNull final Collection<PurchaseCandidate> candidates)
 	{
-		return new PurchaseCandidateAggregator();
+		final PurchaseCandidateAggregator aggregator = new PurchaseCandidateAggregator();
+		aggregator.collectClosedGroups();
+		aggregator.addAll(candidates.iterator());
+		aggregator.closeAllGroups();
+		return aggregator.getClosedGroups();
 	}
 
 	private PurchaseCandidateAggregator()
 	{
-		setItemAggregationKeyBuilder(PurchaseOrderLineAggregationKey::fromPurchaseCandidate);
+		setItemAggregationKeyBuilder(PurchaseCandidateAggregateKey::fromPurchaseCandidate);
 		collectClosedGroups();
 	}
 
 	@Override
 	protected PurchaseCandidateAggregate createGroup(final Object itemHashKey, final PurchaseCandidate item)
 	{
-		return PurchaseCandidateAggregate.of(PurchaseOrderLineAggregationKey.cast(itemHashKey));
+		return PurchaseCandidateAggregate.of(PurchaseCandidateAggregateKey.cast(itemHashKey));
 	}
 
 	@Override

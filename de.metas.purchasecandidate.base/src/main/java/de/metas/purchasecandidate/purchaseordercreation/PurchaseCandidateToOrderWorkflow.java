@@ -16,6 +16,7 @@ import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -23,6 +24,7 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.logging.LogManager;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
@@ -100,10 +102,12 @@ public class PurchaseCandidateToOrderWorkflow
 			throw new AdempiereException("The given purchaseCandidates list needs to be non-empty");
 		}
 
-		final ImmutableSet<Integer> distinctIds = purchaseCandidates.stream()
-				.map(PurchaseCandidate::getPurchaseCandidateId).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<PurchaseCandidateId> distinctIds = purchaseCandidates.stream()
+				.map(PurchaseCandidate::getId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
 
-		if (distinctIds.size() != purchaseCandidates.size() || distinctIds.contains(0))
+		if (distinctIds.size() != purchaseCandidates.size())
 		{
 			throw new AdempiereException("The given purchaseCandidates need to have unique IDs that are all > 0")
 					.appendParametersToMessage()

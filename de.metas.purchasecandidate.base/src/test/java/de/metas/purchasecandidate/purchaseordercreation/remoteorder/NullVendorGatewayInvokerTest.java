@@ -19,8 +19,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
@@ -74,8 +73,7 @@ public class NullVendorGatewayInvokerTest
 				.vendorProductInfo(vendorProductInfo)
 				.productId(productId)
 				.qtyToPurchase(TEN)
-				.salesOrderId(OrderId.ofRepoId(40))
-				.salesOrderLineId(OrderLineId.ofRepoId(50))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(40, 50))
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.uomId(70)

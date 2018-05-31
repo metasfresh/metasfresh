@@ -26,8 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
@@ -98,8 +97,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.vendorProductInfo(vendorProductInfo)
 				.productId(productId)
 				.qtyToPurchase(TEN)
-				.salesOrderId(OrderId.ofRepoId(salesOrder.getC_Order_ID()))
-				.salesOrderLineId(OrderLineId.ofRepoId(50))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.uomId(70)
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())

@@ -1,8 +1,14 @@
 package de.metas.order.grossprofit;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
+
+import java.util.Collection;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
@@ -44,11 +50,43 @@ public class OrderLineWithGrossProfitPriceRepository
 		this.currencyRepository = currencyRepository;
 	}
 
-	public Money getProfitBasePrice(@NonNull final OrderLineId orderLineId)
+	public Optional<Money> getProfitBasePrice(@NonNull final OrderLineId orderLineId)
 	{
-		final I_C_OrderLine orderLineRecord = load(orderLineId.getRepoId(), I_C_OrderLine.class);
+		return getProfitMinBasePrice(ImmutableList.of(orderLineId));
+	}
+
+	public Optional<Money> getProfitMinBasePrice(@NonNull final Collection<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final ImmutableSet<Money> profitBasePrices = loadByIds(OrderLineId.toIntSet(orderLineIds), I_C_OrderLine.class)
+				.stream()
+				.map(this::getProfitBasePrice)
+				.collect(ImmutableSet.toImmutableSet());
+		if (profitBasePrices.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (profitBasePrices.size() == 1)
+		{
+			return Optional.of(profitBasePrices.iterator().next());
+		}
+		else if (Money.isSameCurrency(profitBasePrices))
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			return profitBasePrices.stream().reduce(Money::min);
+		}
+	}
+
+	private Money getProfitBasePrice(final I_C_OrderLine orderLineRecord)
+	{
 		final Currency currency = currencyRepository.getById(CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID()));
-		final Money profitBasePrice = Money.of(orderLineRecord.getPriceGrossProfit(), currency);
-		return profitBasePrice;
+		return Money.of(orderLineRecord.getPriceGrossProfit(), currency);
 	}
 }

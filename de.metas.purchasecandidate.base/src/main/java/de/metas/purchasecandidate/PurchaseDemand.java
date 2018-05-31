@@ -1,13 +1,18 @@
 package de.metas.purchasecandidate;
 
 import java.time.LocalDateTime;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.money.Currency;
-import de.metas.order.OrderId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -56,18 +61,23 @@ public class PurchaseDemand
 	@NonNull
 	Quantity qtyToDeliver;
 
-	@NonNull
+	@Nullable
 	Currency currency;
 
 	@NonNull
 	LocalDateTime datePromised;
 	LocalDateTime preparationDate;
-	
-	OrderId salesOrderId;
-	OrderLineId salesOrderLineId;
+
+	OrderAndLineId salesOrderAndLineId;
 
 	public int getUOMId()
 	{
 		return qtyToDeliver.getUOMId();
+	}
+
+	public Set<OrderLineId> getSalesOrderLineIds()
+	{
+		final OrderAndLineId salesOrderAndLineId = getSalesOrderAndLineId();
+		return salesOrderAndLineId != null ? ImmutableSet.of(salesOrderAndLineId.getOrderLineId()) : ImmutableSet.of();
 	}
 }
