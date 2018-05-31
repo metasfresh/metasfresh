@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.adempiere.bpartner.BPartnerId;
 import org.junit.Test;
 
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -61,7 +62,7 @@ public class PurchaseRowIdTest
 		final PurchaseRowId rowId = PurchaseRowId.lineId(
 				PurchaseDemandId.ofTableAndRecordId("orderLineTable", Integer.parseInt(salesOrderLineId)),
 				BPartnerId.ofRepoId(Integer.parseInt(vendorBPartnerId)),
-				Integer.parseInt(processedPurchaseCandidateId));
+				PurchaseCandidateId.ofRepoIdOrNull(Integer.parseInt(processedPurchaseCandidateId)));
 
 		final DocumentId documentId = rowId.toDocumentId();
 		assertThat(documentId.toString()).isEqualTo("orderLineTable"
@@ -77,7 +78,7 @@ public class PurchaseRowIdTest
 	@Test
 	public void withAvailability()
 	{
-		final PurchaseRowId rowId = PurchaseRowId.lineId(PurchaseDemandId.ofTableAndRecordId("table", 10), BPartnerId.ofRepoId(20), 30);
+		final PurchaseRowId rowId = PurchaseRowId.lineId(PurchaseDemandId.ofTableAndRecordId("table", 10), BPartnerId.ofRepoId(20), PurchaseCandidateId.ofRepoId(30));
 		final PurchaseRowId availabilityRowId = rowId.withAvailability(Type.AVAILABLE, "someString");
 
 		assertThat(rowId.toDocumentId()).isNotEqualTo(availabilityRowId.toDocumentId());
@@ -101,7 +102,7 @@ public class PurchaseRowIdTest
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(documentId);
 		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId("table", 1000007));
 		assertThat(purchaseRowId.getVendorId()).isEqualTo(BPartnerId.ofRepoId(2156423));
-		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(0);
+		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isNull();
 		assertThat(purchaseRowId.getAvailabilityType()).isEqualTo(Type.AVAILABLE);
 	}
 
@@ -112,7 +113,7 @@ public class PurchaseRowIdTest
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(documentId);
 		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId("table", 1000007));
 		assertThat(purchaseRowId.getVendorId()).isEqualTo(BPartnerId.ofRepoId(2156423));
-		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(32311);
+		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(PurchaseCandidateId.ofRepoId(32311));
 		assertThat(purchaseRowId.getAvailabilityType()).isEqualTo(Type.NOT_AVAILABLE);
 	}
 }

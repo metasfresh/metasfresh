@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +19,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.money.Money;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseDemandId;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
@@ -153,12 +157,13 @@ public class PurchaseRow implements IViewRow
 	private ImmutableList<PurchaseRow> includedRows;
 
 	@Getter
-	private final int purchaseCandidateId;
+	private final PurchaseCandidateId purchaseCandidateId;
 	@Getter
 	private final OrgId orgId;
 	@Getter
 	private final WarehouseId warehouseId;
 	private final boolean readonly;
+	private final PurchaseProfitInfo profitInfo;
 
 	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName;
 
@@ -179,16 +184,14 @@ public class PurchaseRow implements IViewRow
 			@Nullable final JSONLookupValue attributeSetInstance,
 			@Nullable final JSONLookupValue vendorBPartner,
 			@Nullable final BigDecimal qtyAvailableToPromise,
-			@Nullable final BigDecimal salesNetPrice,
-			@Nullable final BigDecimal purchaseNetPrice,
-			@Nullable final BigDecimal profitPercent,
+			@Nullable final PurchaseProfitInfo profitInfo,
 			@NonNull final String uomOrAvailablility,
 			@Nullable final BigDecimal qtyToDeliver,
 			@Nullable final BigDecimal qtyToPurchase,
 			@Nullable final BigDecimal purchasedQty,
 			@Nullable final LocalDateTime datePromised,
 			@Singular final ImmutableList<PurchaseRow> includedRows,
-			final int purchaseCandidateId,
+			final PurchaseCandidateId purchaseCandidateId,
 			final OrgId orgId,
 			final WarehouseId warehouseId,
 			final boolean readonly)
@@ -200,9 +203,23 @@ public class PurchaseRow implements IViewRow
 		this.vendorBPartner = vendorBPartner;
 		this.qtyAvailableToPromise = qtyAvailableToPromise;
 
-		this.salesNetPrice = salesNetPrice;
-		this.purchaseNetPrice = purchaseNetPrice;
-		this.profitPercent = profitPercent;
+		this.profitInfo = profitInfo;
+		if (profitInfo != null)
+		{
+			this.salesNetPrice = profitInfo.getSalesNetPrice()
+					.map(Money::getValue)
+					.orElse(null);
+			this.purchaseNetPrice = profitInfo.getPurchaseNetPrice().getValue();
+			this.profitPercent = profitInfo.getProfitPercent()
+					.map(percent -> percent.roundToHalf(RoundingMode.HALF_UP).getValueAsBigDecimal())
+					.orElse(null);
+		}
+		else
+		{
+			this.salesNetPrice = null;
+			this.purchaseNetPrice = null;
+			this.profitPercent = null;
+		}
 
 		this.uomOrAvailablility = uomOrAvailablility;
 		this.qtyToDeliver = qtyToDeliver;
@@ -219,7 +236,7 @@ public class PurchaseRow implements IViewRow
 
 		setIncludedRows(includedRows);
 
-		this.purchaseCandidateId = purchaseCandidateId > 0 ? purchaseCandidateId : -1;
+		this.purchaseCandidateId = purchaseCandidateId;
 		this.orgId = orgId;
 		this.warehouseId = warehouseId;
 		this.readonly = readonly;
@@ -246,6 +263,7 @@ public class PurchaseRow implements IViewRow
 		this.qtyAvailableToPromise = from.qtyAvailableToPromise;
 		this.uomOrAvailablility = from.uomOrAvailablility;
 
+		this.profitInfo = from.profitInfo;
 		this.salesNetPrice = from.salesNetPrice;
 		this.purchaseNetPrice = from.purchaseNetPrice;
 		this.profitPercent = from.profitPercent;

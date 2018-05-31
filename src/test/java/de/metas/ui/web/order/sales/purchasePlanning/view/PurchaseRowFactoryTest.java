@@ -29,10 +29,10 @@ import de.metas.money.Currency;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoId;
@@ -86,8 +86,9 @@ public class PurchaseRowFactoryTest
 		final PurchaseRow candidateRow = purchaseRowFactory
 				.rowFromPurchaseCandidateBuilder()
 				.purchaseCandidate(purchaseCandidate)
+				.purchaseDemandId(PurchaseDemandId.ofOrderAndLineId(purchaseCandidate.getSalesOrderAndLineId()))
 				.datePromised(SystemTime.asLocalDateTime())
-				.currency(currency)
+				.convertAmountsToCurrency(currency)
 				.build();
 
 		final DocumentId id = candidateRow.getId();
@@ -96,8 +97,8 @@ public class PurchaseRowFactoryTest
 		assertThat(purchaseRowId.getVendorId()).isEqualTo(purchaseCandidate.getVendorId());
 		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId(
 				I_C_OrderLine.Table_Name,
-				purchaseCandidate.getSalesOrderLineId().getRepoId()));
-		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(30);
+				purchaseCandidate.getSalesOrderAndLineId().getOrderLineRepoId()));
+		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(PurchaseCandidateId.ofRepoId(30));
 
 	}
 
@@ -131,9 +132,8 @@ public class PurchaseRowFactoryTest
 				.build();
 
 		return PurchaseCandidate.builder()
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderId(OrderId.ofRepoId(1))
-				.salesOrderLineId(OrderLineId.ofRepoId(2))
+				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(1, 2))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(productId)

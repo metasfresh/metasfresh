@@ -1,18 +1,20 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Check;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
@@ -20,6 +22,7 @@ import de.metas.money.Currency;
 import de.metas.money.MoneyService;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -56,6 +59,8 @@ import lombok.NonNull;
 @Service
 public class PurchaseRowFactory
 {
+	// services
+	private static final Logger logger = LogManager.getLogger(PurchaseRowFactory.class);
 	private final AvailableToPromiseRepository availableToPromiseRepository;
 	private final MoneyService moneyService;
 	private final PurchaseRowLookups lookups;
@@ -75,7 +80,8 @@ public class PurchaseRowFactory
 	@Builder(builderMethodName = "rowFromPurchaseCandidateBuilder", builderClassName = "RowFromPurchaseCandidateBuilder")
 	private PurchaseRow buildRowFromPurchaseCandidate(
 			@NonNull final PurchaseCandidate purchaseCandidate,
-			@NonNull final Currency currency,
+			@NonNull final PurchaseDemandId purchaseDemandId,
+			@Nullable final Currency convertAmountsToCurrency,
 			@NotNull final LocalDateTime datePromised)
 	{
 		final BPartnerId vendorId = purchaseCandidate.getVendorId();
@@ -96,39 +102,53 @@ public class PurchaseRowFactory
 		}
 		final String uom = lookups.createUOMLookupValueForProductId(productId);
 
-		final int processedPurchaseCandidateId = purchaseCandidate.isProcessed()
-				? purchaseCandidate.getPurchaseCandidateId()
-				: 0;
+		final PurchaseCandidateId processedPurchaseCandidateId = purchaseCandidate.isProcessed()
+				? purchaseCandidate.getId()
+				: null;
 
-		final PurchaseDemandId demandId = purchaseCandidate.getSalesOrderLineIdAsDemandId();
-		final PurchaseProfitInfo profitInfo = convertToCurrency(purchaseCandidate.getProfitInfo(), currency);
+		final PurchaseProfitInfo profitInfo = convertToCurrencyIfPossible(purchaseCandidate.getProfitInfo(), convertAmountsToCurrency);
 
 		return PurchaseRow.builder()
-				.rowId(PurchaseRowId.lineId(demandId, vendorId, processedPurchaseCandidateId))
+				.rowId(PurchaseRowId.lineId(purchaseDemandId, vendorId, processedPurchaseCandidateId))
 				.rowType(PurchaseRowType.LINE)
 				.product(product)
-				.salesNetPrice(profitInfo.getSalesNetPrice().getValue())
-				.purchaseNetPrice(profitInfo.getPurchaseNetPrice().getValue())
-				.profitPercent(profitInfo.getProfitPercent().roundToHalf(RoundingMode.HALF_UP).getValueAsBigDecimal())
+				.profitInfo(profitInfo)
 				.uomOrAvailablility(uom)
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				.datePromised(datePromised)
 				.vendorBPartner(vendor)
-				.purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
+				.purchaseCandidateId(purchaseCandidate.getId())
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.readonly(purchaseCandidate.isProcessedOrLocked())
 				.build();
 	}
 
-	private PurchaseProfitInfo convertToCurrency(final PurchaseProfitInfo profitInfo, final Currency currencyTo)
+	private PurchaseProfitInfo convertToCurrencyIfPossible(final PurchaseProfitInfo profitInfo, final Currency currencyTo)
 	{
-		return profitInfo.toBuilder()
-				.salesNetPrice(moneyService.convertMoneyToCurrency(profitInfo.getSalesNetPrice(), currencyTo))
-				.purchaseNetPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseNetPrice(), currencyTo))
-				.purchaseGrossPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseGrossPrice(), currencyTo))
-				.build();
+		if (profitInfo == null)
+		{
+			return null;
+		}
+		if (currencyTo == null)
+		{
+			return profitInfo;
+		}
+
+		try
+		{
+			return profitInfo.toBuilder()
+					.salesNetPrice(profitInfo.getSalesNetPrice().map(price -> moneyService.convertMoneyToCurrency(price, currencyTo)))
+					.purchaseNetPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseNetPrice(), currencyTo))
+					.purchaseGrossPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseGrossPrice(), currencyTo))
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed converting {} to {}. Returning profitInfo as is.", profitInfo, currencyTo, ex);
+			return profitInfo;
+		}
 	}
 
 	public PurchaseRow createGroupRow(final PurchaseDemand demand, final List<PurchaseRow> rows)

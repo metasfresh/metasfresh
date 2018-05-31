@@ -40,8 +40,7 @@ import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -226,8 +225,7 @@ public class PurchaseRowsLoaderTest
 				.dateRequired(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.qtyToPurchase(orderLine.getQtyOrdered())
-				.salesOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()))
-				.salesOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
 				.uomId(orderLine.getM_Product().getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(WarehouseId.ofRepoId(30))

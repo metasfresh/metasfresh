@@ -1,63 +1,42 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocument;
-import de.metas.i18n.ITranslatableString;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandId;
-import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidatesService;
-import de.metas.purchasecandidate.SalesOrder;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.purchasecandidate.availability.AvailabilityCheckService;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_Apply_Availability_Row;
 import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_PurchaseView_Launcher;
 import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.IViewsIndexStorage;
-import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewFactory;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.ViewProfileId;
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
@@ -84,24 +63,14 @@ import lombok.NonNull;
  */
 
 @ViewFactory(windowId = SalesOrder2PurchaseViewFactory.WINDOW_ID_STRING)
-public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndexStorage
+public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 {
 	public static final String WINDOW_ID_STRING = "SO2PO";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	// services
-	private final PurchaseDemandWithCandidatesService purchaseDemandWithCandidatesService;
-	private final AvailabilityCheckService availabilityCheckService;
-	private final PurchaseCandidateRepository purchaseCandidatesRepo;
-	private final PurchaseRowFactory purchaseRowFactory;
-	private final PurchaseViewLayoutFactory viewLayoutFactory;
 	private final SalesOrderLineRepository salesOrderLineRepository;
-
-	//
-	private final Cache<ViewId, PurchaseView> views = CacheBuilder.newBuilder()
-			.expireAfterAccess(1, TimeUnit.HOURS)
-			.removalListener(notification -> onViewRemoved(notification))
-			.build();
+	private final PurchaseCandidateRepository purchaseCandidatesRepo;
 
 	public SalesOrder2PurchaseViewFactory(
 			@NonNull final PurchaseDemandWithCandidatesService purchaseDemandWithCandidatesService,
@@ -110,139 +79,58 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 			@NonNull final PurchaseRowFactory purchaseRowFactory,
 			@NonNull final SalesOrderLineRepository salesOrderLineRepository)
 	{
-		this.purchaseDemandWithCandidatesService = purchaseDemandWithCandidatesService;
-		this.availabilityCheckService = availabilityCheckService;
-		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
-		this.purchaseRowFactory = purchaseRowFactory;
+		super(WINDOW_ID,
+				WEBUI_SalesOrder_PurchaseView_Launcher.class, // launcherProcessClass
+				purchaseDemandWithCandidatesService,
+				availabilityCheckService,
+				purchaseRowFactory);
+
 		this.salesOrderLineRepository = salesOrderLineRepository;
-
-		final IADProcessDAO adProcessRepo = Services.get(IADProcessDAO.class);
-		final ITranslatableString caption = adProcessRepo
-				.retrieveProcessNameByClassIfUnique(WEBUI_SalesOrder_PurchaseView_Launcher.class)
-				.orElse(null);
-		viewLayoutFactory = PurchaseViewLayoutFactory.builder()
-				.caption(caption)
-				.build();
+		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
 	}
 
 	@Override
-	public WindowId getWindowId()
+	protected List<RelatedProcessDescriptor> getAdditionalProcessDescriptors()
 	{
-		return WINDOW_ID;
+		return ImmutableList.of(
+				createProcessDescriptor(WEBUI_SalesOrder_Apply_Availability_Row.class));
 	}
 
 	@Override
-	public ViewLayout getViewLayout(
-			@NonNull final WindowId windowId,
-			@NonNull final JSONViewDataType viewDataType,
-			@Nullable final ViewProfileId profileId)
-	{
-		return viewLayoutFactory.getViewLayout(windowId, viewDataType);
-	}
-
-	@Override
-	public void put(final IView view)
-	{
-		views.put(view.getViewId(), PurchaseView.cast(view));
-	}
-
-	@Override
-	public PurchaseView getByIdOrNull(final ViewId viewId)
-	{
-		return views.getIfPresent(viewId);
-	}
-
-	public PurchaseView getById(final ViewId viewId)
-	{
-		final PurchaseView view = getByIdOrNull(viewId);
-		if (view == null)
-		{
-			throw new EntityNotFoundException("View " + viewId + " was not found");
-		}
-		return view;
-	}
-
-	@Override
-	public void removeById(final ViewId viewId)
-	{
-		views.invalidate(viewId);
-		views.cleanUp(); // also cleanup to prevent views cache to grow.
-	}
-
-	@Override
-	public Stream<IView> streamAllViews()
-	{
-		return Stream.empty();
-	}
-
-	@Override
-	public void invalidateView(final ViewId viewId)
-	{
-		final IView view = getByIdOrNull(viewId);
-		if (view == null)
-		{
-			return;
-		}
-
-		view.invalidateAll();
-	}
-
-	@Override
-	public PurchaseView createView(@NonNull final CreateViewRequest request)
+	protected List<PurchaseDemand> getDemands(@NonNull final CreateViewRequest request)
 	{
 		final Set<OrderLineId> salesOrderLineIds = extractSalesOrderLineIds(request);
 		Check.assumeNotEmpty(salesOrderLineIds, "salesOrderLineIds is not empty");
 
-		final ViewId viewId = ViewId.random(WINDOW_ID);
+		return getDemands(salesOrderLineIds);
+	}
 
-		final List<PurchaseDemand> purchaseDemands = retrievePurchaseDemands(salesOrderLineIds);
-		final List<PurchaseDemandWithCandidates> purchaseDemandWithCandidatesList = purchaseDemandWithCandidatesService.getOrCreatePurchaseCandidates(purchaseDemands);
-
-		final PurchaseRowsSupplier rowsSupplier = PurchaseRowsLoader.builder()
-				.purchaseDemandWithCandidatesList(purchaseDemandWithCandidatesList)
-				.viewSupplier(() -> getByIdOrNull(viewId)) // needed for async stuff
-				.purchaseRowFactory(purchaseRowFactory)
-				.availabilityCheckService(availabilityCheckService)
-				.build()
-				.createPurchaseRowsSupplier();
-
-		final PurchaseView view = PurchaseView.builder()
-				.viewId(viewId)
-				.rowsSupplier(rowsSupplier)
-				.additionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_SalesOrder_Apply_Availability_Row.class))
-				.build();
-
-		return view;
+	private List<PurchaseDemand> getDemands(final Collection<OrderLineId> salesOrderLineIds)
+	{
+		return salesOrderLineRepository.getByIds(salesOrderLineIds)
+				.stream()
+				.sorted(Comparator.comparing(SalesOrderLine::getLine))
+				.map(salesOrderLine -> createDemand(salesOrderLine))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static Set<OrderLineId> extractSalesOrderLineIds(final CreateViewRequest request)
 	{
-		return request
-				.getFilterOnlyIds()
+		return request.getFilterOnlyIds()
 				.stream()
 				.map(OrderLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private List<PurchaseDemand> retrievePurchaseDemands(final Collection<OrderLineId> salesOrderLineIds)
-	{
-		return salesOrderLineRepository.getByIds(salesOrderLineIds)
-				.stream()
-				.map(salesOrderLine -> createDemand(salesOrderLine))
-				.collect(ImmutableList.toImmutableList());
-	}
-
 	@VisibleForTesting
 	static PurchaseDemand createDemand(final SalesOrderLine salesOrderLine)
 	{
-		final SalesOrder salesOrder = salesOrderLine.getOrder();
-
 		final Quantity qtyOrdered = salesOrderLine.getOrderedQty();
 		final Quantity qtyDelivered = salesOrderLine.getDeliveredQty();
 		final Quantity qtyToPurchase = qtyOrdered.subtract(qtyDelivered);
 
 		return PurchaseDemand.builder()
-				.id(PurchaseDemandId.ofOrderLineId(salesOrderLine.getId()))
+				.id(PurchaseDemandId.ofOrderAndLineId(salesOrderLine.getId()))
 				//
 				.orgId(salesOrderLine.getOrgId())
 				.warehouseId(salesOrderLine.getWarehouseId())
@@ -255,25 +143,18 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 				//
 				.currency(salesOrderLine.getPriceActual().getCurrency())
 				//
-				.datePromised(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
-				.preparationDate(salesOrder.getPreparationDate())
+				.datePromised(salesOrderLine.getDatePromised())
+				.preparationDate(salesOrderLine.getPreparationDate())
 				//
-				.salesOrderId(salesOrderLine.getOrderId())
-				.salesOrderLineId(salesOrderLine.getId())
+				.salesOrderAndLineId(salesOrderLine.getId())
 				//
 				.build();
 	}
 
-	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
+	@Override
+	protected void onViewClosedByUser(final PurchaseView purchaseView)
 	{
-		final PurchaseView view = PurchaseView.cast(notification.getValue());
-		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
-		view.close(closeReason);
-
-		if (closeReason == ViewCloseReason.USER_REQUEST)
-		{
-			saveRowsAndEnqueueIfOrderCompleted(view);
-		}
+		saveRowsAndEnqueueIfOrderCompleted(purchaseView);
 	}
 
 	private void saveRowsAndEnqueueIfOrderCompleted(final PurchaseView purchaseView)
@@ -285,15 +166,15 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		}
 		//
 		// If the sales order was already completed, enqueue the purchase candidates
-		final I_C_Order salesOrder = getSingleSalesOrder(purchaseCandidates);
-		if (IDocument.STATUS_Completed.equals(salesOrder.getDocStatus()))
+		if (!isSalesOrderCompleted(purchaseCandidates))
 		{
-			final Set<Integer> purchaseCandidateIds = purchaseCandidates.stream()
+			final Set<PurchaseCandidateId> purchaseCandidateIds = purchaseCandidates.stream()
 					.filter(purchaseCandidate -> !purchaseCandidate.isProcessedOrLocked())
 					.filter(purchaseCandidate -> purchaseCandidate.getQtyToPurchase().signum() > 0)
-					.map(PurchaseCandidate::getPurchaseCandidateId)
+					.map(PurchaseCandidate::getId)
+					// note: no need to filter out nulls because we assume everything was saved
 					.collect(ImmutableSet.toImmutableSet());
-			if (purchaseCandidateIds.size() > 0)
+			if (!purchaseCandidateIds.isEmpty())
 			{
 				C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds);
 			}
@@ -310,33 +191,26 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 				.save(rows);
 	}
 
-	private final I_C_Order getSingleSalesOrder(@NonNull final List<PurchaseCandidate> purchaseCandidates)
+	private boolean isSalesOrderCompleted(@NonNull final List<PurchaseCandidate> purchaseCandidates)
+	{
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+
+		final OrderId salesOrderId = getSingleSalesOrderId(purchaseCandidates);
+		final I_C_Order salesOrder = ordersRepo.getById(salesOrderId);
+		return IDocument.STATUS_Completed.equals(salesOrder.getDocStatus());
+	}
+
+	private static final OrderId getSingleSalesOrderId(@NonNull final List<PurchaseCandidate> purchaseCandidates)
 	{
 		Check.assumeNotEmpty(purchaseCandidates, "purchaseCandidates not empty");
 
-		final int salesOrderId = purchaseCandidates.stream()
-				.map(PurchaseCandidate::getSalesOrderId)
+		return purchaseCandidates.stream()
+				.map(PurchaseCandidate::getSalesOrderAndLineId)
 				.filter(Predicates.notNull())
-				.map(OrderId::getRepoId)
+				.map(OrderAndLineId::getOrderId)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More or less than one salesOrderId found in the given purchaseCandidates")
 						.appendParametersToMessage()
 						.setParameter("purchaseCandidates", purchaseCandidates)));
-
-		final I_C_Order salesOrder = load(salesOrderId, I_C_Order.class);
-		return salesOrder;
-	}
-
-	private static RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
-	{
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-
-		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
-		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
-
-		return RelatedProcessDescriptor.builder()
-				.processId(processId)
-				.webuiQuickAction(true)
-				.build();
 	}
 }
