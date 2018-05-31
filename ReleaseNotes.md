@@ -87,8 +87,11 @@ Here come the actual release notes:
   * [#1717](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1717) Date Format in date range picker is not localized
     * Fixes the Localization of Dates in Date Range Picker Widget.
   * [#1794](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1794) modal view editing issues
+    * Fixes issues in modal view field editing.
   * [#1800](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1800) Material Receipt Candidate: first line is not pre-selected and no action button available when opening HU Editor
+    * Improvement of the Quickaction handling of preselected first lines when opening a window initially.
   * [#1801](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1801) Error when opening HU Editor window / selecting a HU in picking tray clearing
+    * Fixes a number format exception in handling Unit Editor window.
   * [#1805](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1805) Multi Line Text fields are displayed infinitely
     * Now restricting the length of Multiline Text fields in Data Grids.
 
