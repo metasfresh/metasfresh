@@ -39,6 +39,11 @@ public class OrderLineId
 		return repoId > 0 ? new OrderLineId(repoId) : null;
 	}
 
+	public static int getRepoIdOr(final OrderLineId orderLineId, final int defaultValue)
+	{
+		return orderLineId != null ? orderLineId.getRepoId() : defaultValue;
+	}
+
 	int repoId;
 
 	private OrderLineId(final int repoId)

@@ -251,8 +251,8 @@ public class PurchaseCandidateRepository
 			record = newInstance(I_C_PurchaseCandidate.class);
 		}
 
-		record.setC_OrderSO_ID(purchaseCandidate.getSalesOrderId().getRepoId());
-		record.setC_OrderLineSO_ID(purchaseCandidate.getSalesOrderLineId().getRepoId());
+		record.setC_OrderSO_ID(OrderId.getRepoIdOr(purchaseCandidate.getSalesOrderId(), -1));
+		record.setC_OrderLineSO_ID(OrderLineId.getRepoIdOr(purchaseCandidate.getSalesOrderLineId(), -1));
 
 		record.setAD_Org_ID(purchaseCandidate.getOrgId().getRepoId());
 		record.setM_WarehousePO_ID(purchaseCandidate.getWarehouseId().getRepoId());
@@ -314,11 +314,20 @@ public class PurchaseCandidateRepository
 		final LocalDateTime dateReminder = TimeUtil.asLocalDateTime(purchaseCandidateRecord.getReminderDate());
 		final Duration reminderTime = dateRequired != null && dateReminder != null ? Duration.between(dateRequired, dateReminder) : null;
 
+		final OrderId salesOrderId = OrderId.ofRepoIdOrNull(purchaseCandidateRecord.getC_OrderSO_ID());
+		final OrderLineId salesOrderLineId = OrderLineId.ofRepoIdOrNull(purchaseCandidateRecord.getC_OrderLineSO_ID());
+		BigDecimal salesOrderQtyToDeliver = null;
+		if (salesOrderLineId != null)
+		{
+			final I_C_OrderLine salesOrderLine = load(salesOrderId.getRepoId(), I_C_OrderLine.class);
+			salesOrderQtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
+		}
+
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.locked(locked)
 				.purchaseCandidateId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
-				.salesOrderId(OrderId.ofRepoId(purchaseCandidateRecord.getC_OrderSO_ID()))
-				.salesOrderLineId(OrderLineId.ofRepoId(purchaseCandidateRecord.getC_OrderLineSO_ID()))
+				.salesOrderId(salesOrderId)
+				.salesOrderLineId(salesOrderLineId)
 				.processed(purchaseCandidateRecord.isProcessed())
 				//
 				.dateRequired(dateRequired)
@@ -332,6 +341,7 @@ public class PurchaseCandidateRepository
 				.vendorProductInfo(vendorProductInfo)
 				//
 				.qtyToPurchase(purchaseCandidateRecord.getQtyToPurchase())
+				.salesOrderQtyToDeliver(salesOrderQtyToDeliver)
 				//
 				.profitInfo(profitInfo)
 				//

@@ -15,7 +15,6 @@ import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3TestingTools;
-import de.metas.vertical.pharma.vendor.gateway.msv3.availability.MSV3AvailiabilityClient;
 
 /*
  * #%L
@@ -53,7 +52,7 @@ public class MSV3AvailiabilityClientTests
 	{
 		MSV3TestingTools.setDBVersion(MSV3AvailiabilityClientTests.class.getSimpleName());
 
-		final ProductAndQuantity productAndQuantity = new ProductAndQuantity("10055555", BigDecimal.TEN);
+		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of("10055555", BigDecimal.TEN);
 		final AvailabilityRequestItem availabilityRequestItem = AvailabilityRequestItem.builder()
 				.productAndQuantity(productAndQuantity).build();
 

@@ -1,7 +1,6 @@
 package de.metas.purchasecandidate;
 
 import static java.util.stream.Collectors.toCollection;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -17,7 +16,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
 
@@ -74,6 +73,9 @@ public class PurchaseCandidate
 	private int purchaseCandidateId;
 
 	@NonNull
+	private final BigDecimal salesOrderQtyToDeliver;
+
+	@NonNull
 	private BigDecimal qtyToPurchase;
 
 	@Setter(AccessLevel.NONE)
@@ -107,19 +109,25 @@ public class PurchaseCandidate
 	private PurchaseCandidate(
 			final int purchaseCandidateId,
 			final OrderId salesOrderId,
-			@NonNull final OrderLineId salesOrderLineId, // for now this shall be always set; might be that in future this won't be mandatory
-			final int purchaseOrderLineId,
+			@NonNull final OrderLineId salesOrderLineId,
+			final boolean processed,
+			final boolean locked,
+			//
 			@NonNull final OrgId orgId,
 			@NonNull final WarehouseId warehouseId,
+			//
 			final ProductId productId,
 			final int uomId,
 			@NonNull final VendorProductInfo vendorProductInfo,
+			//
 			@NonNull final BigDecimal qtyToPurchase,
+			final BigDecimal salesOrderQtyToDeliver,
+			//
 			@NonNull final LocalDateTime dateRequired,
 			final Duration reminderTime,
-			final boolean processed,
-			final boolean locked,
+			//
 			@NonNull final PurchaseProfitInfo profitInfo,
+			//
 			@Singular final List<PurchaseItem> purchaseItems)
 	{
 		Check.assume(uomId > 0, "uomId > 0");
@@ -143,6 +151,7 @@ public class PurchaseCandidate
 
 		this.qtyToPurchase = qtyToPurchase;
 		this.qtyToPurchaseInitial = qtyToPurchase;
+		this.salesOrderQtyToDeliver = salesOrderQtyToDeliver;
 
 		this.dateRequired = dateRequired;
 		this.reminderTime = reminderTime;
@@ -168,6 +177,8 @@ public class PurchaseCandidate
 
 		qtyToPurchase = from.qtyToPurchase;
 		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
+		salesOrderQtyToDeliver = from.salesOrderQtyToDeliver;
+
 		dateRequired = from.dateRequired;
 		dateRequiredInitial = from.dateRequiredInitial;
 		reminderTime = from.reminderTime;
@@ -288,7 +299,7 @@ public class PurchaseCandidate
 		return AvailabilityRequestItem.builder()
 				.productAndQuantity(productAndQuantity)
 				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderLineId(getSalesOrderLineId().getRepoId())
+				.salesOrderLineId(OrderLineId.getRepoIdOr(getSalesOrderLineId(), -1))
 				.build();
 	}
 
@@ -301,16 +312,10 @@ public class PurchaseCandidate
 
 	private ProductAndQuantity createProductAndQuantity()
 	{
-		final String productValue = identifier.getVendorProductInfo().getProductNo();
+		final String productValue = getVendorProductInfo().getProductNo();
+		final BigDecimal qtyToDeliver = Util.coalesce(getSalesOrderQtyToDeliver(), getQtyToPurchase());
 
-		// FIXME: don't use load in POJOs!!!
-		final I_C_OrderLine salesOrderLine = load(identifier.getSalesOrderLineId().getRepoId(), I_C_OrderLine.class);
-		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
-
-		final ProductAndQuantity productAndQuantity = new ProductAndQuantity(
-				productValue,
-				qtyToDeliver);
-		return productAndQuantity;
+		return ProductAndQuantity.of(productValue, qtyToDeliver);
 	}
 
 	public static final class ErrorItemBuilder
