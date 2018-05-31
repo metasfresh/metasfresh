@@ -177,17 +177,23 @@ public class PurchaseDemandWithCandidatesService
 		for (final PurchaseProfitInfo purchaseProfitInfo : purchaseProfitInfos)
 		{
 			final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-					.dateRequired(purchaseDatePromised)
-					.reminderTime(reminderTime)
-					.orgId(purchaseDemand.getOrgId())
-					.productId(vendorProductInfo.getProductId())
-					.qtyToPurchase(BigDecimal.ZERO)
 					.salesOrderId(purchaseDemand.getSalesOrderId())
 					.salesOrderLineId(purchaseDemand.getSalesOrderLineId())
+					//
+					.dateRequired(purchaseDatePromised)
+					.reminderTime(reminderTime)
+					//
+					.orgId(purchaseDemand.getOrgId())
+					.warehouseId(getPurchaseWarehouseId(purchaseDemand))
+					//
+					.productId(vendorProductInfo.getProductId())
 					.uomId(purchaseDemand.getUOMId())
 					.vendorProductInfo(vendorProductInfo)
-					.warehouseId(getPurchaseWarehouseId(purchaseDemand))
+					//
+					.qtyToPurchase(BigDecimal.ZERO)
+					//
 					.profitInfo(purchaseProfitInfo)
+					//
 					.build();
 			result.add(purchaseCandidate);
 		}

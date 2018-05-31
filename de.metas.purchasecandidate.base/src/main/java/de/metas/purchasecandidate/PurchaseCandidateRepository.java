@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -296,7 +297,7 @@ public class PurchaseCandidateRepository
 	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
 		final ILockManager lockManager = Services.get(ILockManager.class);
-		
+
 		final boolean locked = lockManager.isLocked(purchaseCandidateRecord);
 
 		final VendorProductInfo vendorProductInfo = extractVendorProductInfo(purchaseCandidateRecord);
@@ -309,20 +310,31 @@ public class PurchaseCandidateRepository
 				.purchaseGrossPrice(Money.of(purchaseCandidateRecord.getPurchasePriceActual(), currency))
 				.build();
 
+		final LocalDateTime dateRequired = TimeUtil.asLocalDateTime(purchaseCandidateRecord.getDateRequired());
+		final LocalDateTime dateReminder = TimeUtil.asLocalDateTime(purchaseCandidateRecord.getReminderDate());
+		final Duration reminderTime = dateRequired != null && dateReminder != null ? Duration.between(dateRequired, dateReminder) : null;
+
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.locked(locked)
 				.purchaseCandidateId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.salesOrderId(OrderId.ofRepoId(purchaseCandidateRecord.getC_OrderSO_ID()))
 				.salesOrderLineId(OrderLineId.ofRepoId(purchaseCandidateRecord.getC_OrderLineSO_ID()))
+				.processed(purchaseCandidateRecord.isProcessed())
+				//
+				.dateRequired(dateRequired)
+				.reminderTime(reminderTime)
+				//
 				.orgId(OrgId.ofRepoId(purchaseCandidateRecord.getAD_Org_ID()))
 				.warehouseId(WarehouseId.ofRepoId(purchaseCandidateRecord.getM_WarehousePO_ID()))
+				//
 				.productId(ProductId.ofRepoId(purchaseCandidateRecord.getM_Product_ID()))
 				.uomId(purchaseCandidateRecord.getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)
+				//
 				.qtyToPurchase(purchaseCandidateRecord.getQtyToPurchase())
-				.dateRequired(TimeUtil.asLocalDateTime(purchaseCandidateRecord.getDateRequired()))
+				//
 				.profitInfo(profitInfo)
-				.processed(purchaseCandidateRecord.isProcessed())
+				//
 				.build();
 
 		purchaseItemRepository.retrieveForPurchaseCandidate(purchaseCandidate);
