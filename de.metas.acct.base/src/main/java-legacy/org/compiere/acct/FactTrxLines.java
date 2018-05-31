@@ -1,5 +1,7 @@
 package org.compiere.acct;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -56,9 +58,9 @@ public class FactTrxLines
 	@Builder
 	private FactTrxLines(@NonNull @Singular final List<FactLine> factLines)
 	{
-		final ImmutableList.Builder<FactLine> drLines = ImmutableList.builder();
-		final ImmutableList.Builder<FactLine> crLines = ImmutableList.builder();
-		final ImmutableList.Builder<FactLine> zeroLines = ImmutableList.builder();
+		final ArrayList<FactLine> drLines = new ArrayList<>();
+		final ArrayList<FactLine> crLines = new ArrayList<>();
+		final ArrayList<FactLine> zeroLines = new ArrayList<>();
 
 		for (final FactLine factLine : factLines)
 		{
@@ -83,9 +85,42 @@ public class FactTrxLines
 			}
 		}
 
-		this.drLines = drLines.build();
-		this.crLines = crLines.build();
-		this.zeroLines = zeroLines.build();
+		// https://github.com/metasfresh/metasfresh/issues/4147
+		// if
+		// * all not-zero lines are in dr and sum up to zero
+		// * and we have one zero line,
+		// then move that zero-line to cr
+		// ..likewise for cr
+		if (zeroLines.size() == 1)
+		{
+			if (drLines.isEmpty())
+			{
+				final BigDecimal crLineSum = crLines.stream()
+						.map(FactLine::getAmtAcctCr)
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				if (crLineSum.signum() == 0)
+				{
+					drLines.add(zeroLines.get(0));
+					zeroLines.clear();
+				}
+			}
+			else if (crLines.isEmpty())
+			{
+				final BigDecimal drLineSum = crLines.stream()
+						.map(FactLine::getAmtAcctDr)
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				if (drLineSum.signum() == 0)
+				{
+					crLines.add(zeroLines.get(0));
+					zeroLines.clear();
+				}
+			}
+		}
+
+		this.drLines = ImmutableList.copyOf(drLines);
+		this.crLines = ImmutableList.copyOf(crLines);
+		this.zeroLines = ImmutableList.copyOf(zeroLines);
+
 		type = extractType(this.drLines, this.crLines);
 	}
 
