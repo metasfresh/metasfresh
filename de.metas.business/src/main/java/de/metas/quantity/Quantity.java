@@ -496,6 +496,15 @@ public final class Quantity implements Comparable<Quantity>
 		return new Quantity(qtyNew_Value, qtyNew_UOM, qtyNew_SourceValue, qtyNew_SourceUOM);
 	}
 
+	public Quantity add(@NonNull final BigDecimal qtyToAdd)
+	{
+		if (qtyToAdd.signum() == 0)
+		{
+			return this;
+		}
+		return add(of(qtyToAdd, uom));
+	}
+
 	public Quantity subtract(@NonNull final Quantity qtyToRemove)
 	{
 		final Quantity qtyToAdd = qtyToRemove.negate();

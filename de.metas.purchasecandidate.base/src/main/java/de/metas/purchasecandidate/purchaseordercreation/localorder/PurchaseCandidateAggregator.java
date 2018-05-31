@@ -35,14 +35,14 @@ public final class PurchaseCandidateAggregator extends MapReduceAggregator<Purch
 
 	private PurchaseCandidateAggregator()
 	{
-		setItemAggregationKeyBuilder(PurchaseOrderAggregationKey::fromPurchaseCandidate);
+		setItemAggregationKeyBuilder(PurchaseOrderLineAggregationKey::fromPurchaseCandidate);
 		collectClosedGroups();
 	}
 
 	@Override
 	protected PurchaseCandidateAggregate createGroup(final Object itemHashKey, final PurchaseCandidate item)
 	{
-		return PurchaseCandidateAggregate.of(PurchaseOrderAggregationKey.cast(itemHashKey));
+		return PurchaseCandidateAggregate.of(PurchaseOrderLineAggregationKey.cast(itemHashKey));
 	}
 
 	@Override

@@ -61,19 +61,17 @@ class AvailabilityCheck
 
 	// services
 	private final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
-	private final VendorGatewayService vendorGatewayService = Adempiere.getBean(VendorGatewayService.class);
 
 	private final ImmutableListMultimap<BPartnerId, PurchaseCandidate> purchaseCandidatesByVendorId;
 
 	private AvailabilityCheck(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		this.purchaseCandidatesByVendorId = Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
+		this.purchaseCandidatesByVendorId = Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorId);
 	}
 
 	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()
 	{
 		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
-
 
 		for (final BPartnerId vendorId : purchaseCandidatesByVendorId.keySet())
 		{
@@ -206,7 +204,6 @@ class AvailabilityCheck
 
 	private boolean vendorProvidesAvailabilityCheck(@NonNull final BPartnerId vendorBPartnerId)
 	{
-		final boolean providedForVendor = vendorGatewayService.isProvidedForVendor(vendorBPartnerId.getRepoId());
-		return providedForVendor;
+		return vendorGatewayRegistry.getSingleVendorGatewayService(vendorBPartnerId.getRepoId()).isPresent();
 	}
 }

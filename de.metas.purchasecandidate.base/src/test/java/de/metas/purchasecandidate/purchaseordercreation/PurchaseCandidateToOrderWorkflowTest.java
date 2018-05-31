@@ -31,6 +31,7 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
@@ -217,8 +218,8 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
 				.vendorProductInfo(VendorProductInfo.builder()
-						.bpartnerProductId(10)
-						.vendorBPartnerId(BPartnerId.ofRepoId(vendorId))
+						.id(VendorProductInfoId.ofRepoId(10))
+						.vendorId(BPartnerId.ofRepoId(vendorId))
 						.productId(ProductId.ofRepoId(20))
 						.productNo("productNo")
 						.productName("productName").build())

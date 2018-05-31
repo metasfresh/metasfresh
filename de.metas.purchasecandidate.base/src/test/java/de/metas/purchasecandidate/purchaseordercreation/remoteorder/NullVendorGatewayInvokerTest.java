@@ -25,6 +25,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 
@@ -58,12 +59,12 @@ public class NullVendorGatewayInvokerTest
 	public void placeRemotePurchaseOrder()
 	{
 		final ProductId productId = ProductId.ofRepoId(20);
-		final BPartnerId vendorBPartnerId = BPartnerId.ofRepoId(30);
+		final BPartnerId vendorId = BPartnerId.ofRepoId(30);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bpartnerProductId(10)
+				.id(VendorProductInfoId.ofRepoId(10))
 				.productId(productId)
-				.vendorBPartnerId(vendorBPartnerId)
+				.vendorId(vendorId)
 				.productName("productName")
 				.productNo("productNo").build();
 

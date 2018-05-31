@@ -32,6 +32,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 
@@ -85,9 +86,9 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final ProductId productId = ProductId.ofRepoId(20);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bpartnerProductId(10)
+				.id(VendorProductInfoId.ofRepoId(10))
 				.productId(productId)
-				.vendorBPartnerId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
+				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
 				.productName("productName")
 				.productNo("productNo").build();
 

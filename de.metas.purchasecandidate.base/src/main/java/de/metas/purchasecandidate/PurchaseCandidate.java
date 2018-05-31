@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.OptionalInt;
+import java.util.Optional;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
@@ -220,14 +220,14 @@ public class PurchaseCandidate
 		return PurchaseDemandId.ofOrderLineId(getSalesOrderLineId());
 	}
 
-	public BPartnerId getVendorBPartnerId()
+	public BPartnerId getVendorId()
 	{
-		return getVendorProductInfo().getVendorBPartnerId();
+		return getVendorProductInfo().getVendorId();
 	}
 
-	public OptionalInt getBpartnerProductId()
+	public Optional<VendorProductInfoId> getVendorProductInfoId()
 	{
-		return getVendorProductInfo().getBpartnerProductId();
+		return getVendorProductInfo().getId();
 	}
 
 	public boolean isAggregatePOs()

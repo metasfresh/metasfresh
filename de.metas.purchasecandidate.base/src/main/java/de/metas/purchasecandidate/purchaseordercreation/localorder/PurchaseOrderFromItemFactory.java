@@ -81,12 +81,12 @@ import lombok.NonNull;
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
 			@NonNull OrderUserNotifications userNotifications)
 	{
-		final BPartnerId vendorBPartnerId = orderAggregationKey.getVendorBPartnerId();
+		final BPartnerId vendorId = orderAggregationKey.getVendorId();
 
 		this.orderFactory = OrderFactory.newPurchaseOrder()
 				.orgId(orderAggregationKey.getOrgId().getRepoId())
 				.warehouseId(orderAggregationKey.getWarehouseId().getRepoId())
-				.shipBPartner(vendorBPartnerId)
+				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised());
 
 		this.userNotifications = userNotifications;

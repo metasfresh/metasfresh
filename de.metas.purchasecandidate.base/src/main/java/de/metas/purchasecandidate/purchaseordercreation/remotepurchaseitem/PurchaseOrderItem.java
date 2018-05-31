@@ -142,9 +142,9 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getWarehouseId();
 	}
 
-	public BPartnerId getVendorBPartnerId()
+	public BPartnerId getVendorId()
 	{
-		return getPurchaseCandidate().getVendorBPartnerId();
+		return getPurchaseCandidate().getVendorId();
 	}
 
 	public LocalDateTime getDateRequired()

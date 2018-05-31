@@ -29,11 +29,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.adempiere.service.OrgId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 
-import org.compiere.model.I_C_BPartner_Product;
+import de.metas.product.ProductId;
 
 /**
  * @author cg
@@ -84,7 +86,7 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 */
 	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product, int orgId);
 
-	List<I_C_BPartner_Product> retrieveAllVendors(int productId, int orgId);
+	List<I_C_BPartner_Product> retrieveAllVendors(ProductId productId, OrgId orgId);
 
 	List<ProductExclude> retrieveAllProductSalesExcludes();
 

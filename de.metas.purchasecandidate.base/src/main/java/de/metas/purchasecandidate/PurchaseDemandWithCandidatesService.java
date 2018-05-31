@@ -6,10 +6,11 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
@@ -19,10 +20,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoFactory;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoRequest;
@@ -75,34 +75,36 @@ public class PurchaseDemandWithCandidatesService
 	{
 		final ImmutableListMultimap.Builder<PurchaseDemand, PurchaseCandidate> resultBuilder = ImmutableListMultimap.builder();
 
-		final ImmutableMap<PurchaseDemandId, PurchaseDemand> purchaseDemandsById = Maps.uniqueIndex(purchaseDemands, PurchaseDemand::getId);
+		final Set<PurchaseDemandId> purchaseDemandIds = purchaseDemands.stream().map(PurchaseDemand::getId).collect(ImmutableSet.toImmutableSet());
 
 		// add pre-existing purchase candidates to the result
-		final ImmutableListMultimap<PurchaseDemandId, PurchaseCandidate> preExistingPurchaseCandidatesByDemandId = //
-				purchaseCandidateRepository
-						.streamAllByPurchaseDemandIds(purchaseDemandsById.keySet())
-						.collect(GuavaCollectors.toImmutableListMultimap(PurchaseCandidate::getSalesOrderLineIdAsDemandId));
+		final ImmutableListMultimap<PurchaseDemandId, PurchaseCandidate> //
+		preExistingPurchaseCandidatesByDemandId = purchaseCandidateRepository
+				.streamAllByPurchaseDemandIds(purchaseDemandIds)
+				.collect(GuavaCollectors.toImmutableListMultimap(PurchaseCandidate::getSalesOrderLineIdAsDemandId));
 
-		for (final PurchaseDemandId demandId : preExistingPurchaseCandidatesByDemandId.keySet())
+		for (final PurchaseDemand demand : purchaseDemands)
 		{
-			resultBuilder.putAll(
-					purchaseDemandsById.get(demandId),
-					preExistingPurchaseCandidatesByDemandId.get(demandId));
+			final List<PurchaseCandidate> purchaseCandidates = preExistingPurchaseCandidatesByDemandId.get(demand.getId());
+			if (purchaseCandidates.isEmpty())
+			{
+				continue;
+			}
+
+			resultBuilder.putAll(demand, purchaseCandidates);
 		}
 
-		final Set<Integer> alreadySeenVendorProductInfoIds = preExistingPurchaseCandidatesByDemandId.values().stream()
+		final Set<VendorProductInfoId> alreadySeenVendorProductInfoIds = preExistingPurchaseCandidatesByDemandId.values().stream()
 				.filter(Predicates.not(PurchaseCandidate::isProcessed))
-				.map(PurchaseCandidate::getBpartnerProductId)
-				.filter(OptionalInt::isPresent)
-				.map(OptionalInt::getAsInt)
+				.map(PurchaseCandidate::getVendorProductInfoId)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.collect(ImmutableSet.toImmutableSet());
 
 		// create and add new purchase candidates
-		for (final PurchaseDemand purchaseDemand : purchaseDemandsById.values())
+		for (final PurchaseDemand purchaseDemand : purchaseDemands)
 		{
-			final ImmutableList<PurchaseCandidate> newPurchaseCandidatesForDemand = createMissingPurchaseCandidates(
-					purchaseDemand,
-					alreadySeenVendorProductInfoIds);
+			final List<PurchaseCandidate> newPurchaseCandidatesForDemand = createMissingPurchaseCandidates(purchaseDemand, alreadySeenVendorProductInfoIds);
 
 			purchaseCandidateRepository.saveAll(newPurchaseCandidatesForDemand);
 
@@ -124,14 +126,14 @@ public class PurchaseDemandWithCandidatesService
 
 	private ImmutableList<PurchaseCandidate> createMissingPurchaseCandidates(
 			@NonNull final PurchaseDemand purchaseDemand,
-			@NonNull final Set<Integer> vendorProductInfoIdsToExclude)
+			@NonNull final Set<VendorProductInfoId> vendorProductInfoIdsToExclude)
 	{
 		final Map<BPartnerId, VendorProductInfo> vendorId2VendorProductInfo = retriveVendorProductInfosIndexedByVendorId(purchaseDemand);
 
 		final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = vendorId2VendorProductInfo.values().stream()
 
 				// only if vendor was not already considered (i.e. there was no purchase candidate for it)
-				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getBpartnerProductId().getAsInt()))
+				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getId().get()))
 
 				// create and collect them
 				.flatMap(vendorProductInfo -> createPurchaseCandidate(purchaseDemand, vendorProductInfo).stream())
@@ -150,7 +152,7 @@ public class PurchaseDemandWithCandidatesService
 		Duration reminderTime = null;
 
 		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(
-				vendorProductInfo.getVendorBPartnerId(),
+				vendorProductInfo.getVendorId(),
 				salesDatePromised.toLocalDate())
 				.orElse(null);
 		if (bpPurchaseSchedule != null)
@@ -169,7 +171,7 @@ public class PurchaseDemandWithCandidatesService
 				.datePromised(salesDatePromised)
 				.productId(purchaseDemand.getProductId())
 				.orderedQty(purchaseDemand.getQtyToDeliverTotal())
-				.vendorId(vendorProductInfo.getVendorBPartnerId())
+				.vendorId(vendorProductInfo.getVendorId())
 				.paymentTermId(vendorProductInfo.getPaymentTermId())
 				.build());
 
@@ -207,13 +209,13 @@ public class PurchaseDemandWithCandidatesService
 
 	private Map<BPartnerId, VendorProductInfo> retriveVendorProductInfosIndexedByVendorId(@NonNull final PurchaseDemand purchaseDemand)
 	{
-		final int productId = purchaseDemand.getProductId().getRepoId();
-		final int adOrgId = purchaseDemand.getOrgId().getRepoId();
+		final ProductId productId = purchaseDemand.getProductId();
+		final OrgId adOrgId = purchaseDemand.getOrgId();
 
 		return partnerProductDAO
 				.retrieveAllVendors(productId, adOrgId)
 				.stream()
 				.map(VendorProductInfo::fromDataRecord)
-				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(VendorProductInfo::getVendorBPartnerId));
+				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(VendorProductInfo::getVendorId));
 	}
 }

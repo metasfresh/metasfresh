@@ -43,7 +43,7 @@ import lombok.Value;
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseOrderItem.getOrgId())
 				.warehouseId(purchaseOrderItem.getWarehouseId())
-				.vendorBPartnerId(purchaseOrderItem.getVendorBPartnerId())
+				.vendorId(purchaseOrderItem.getVendorId())
 				.datePromised(purchaseOrderItem.getDatePromised())
 				.build();
 	}
@@ -53,7 +53,7 @@ import lombok.Value;
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
-				.vendorBPartnerId(purchaseCandidate.getVendorBPartnerId())
+				.vendorId(purchaseCandidate.getVendorId())
 				.datePromised(purchaseCandidate.getDateRequired())
 				.build();
 	}
@@ -65,6 +65,6 @@ import lombok.Value;
 
 	private final OrgId orgId;
 	private final WarehouseId warehouseId;
-	private final BPartnerId vendorBPartnerId;
+	private final BPartnerId vendorId;
 	private final LocalDateTime datePromised;
 }

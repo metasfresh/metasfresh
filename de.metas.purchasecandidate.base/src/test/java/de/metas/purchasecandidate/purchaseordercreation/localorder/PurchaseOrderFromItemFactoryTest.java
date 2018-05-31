@@ -36,6 +36,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -179,8 +180,8 @@ public class PurchaseOrderFromItemFactoryTest
 		save(salesOrderLine);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bpartnerProductId(10)
-				.vendorBPartnerId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
+				.id(VendorProductInfoId.ofRepoId(10))
+				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
 				.productId(ProductId.ofRepoId(20))
 				.productName("productName")
 				.productNo("productNo")
