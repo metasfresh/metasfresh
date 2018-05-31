@@ -226,9 +226,17 @@ public class Doc_AllocationHdr extends Doc
 			}
 			return m_facts;
 		}
-		else if (countPayments == 0 && countInvoices > 0 && isReversedInvoiceAllocation())
+		else if (countPayments == 0 && countInvoices > 0)
 		{
-			return m_facts; // nothing to do, analog to isReversedPaymentAllocation()
+			if (isReversedInvoiceAllocation())
+			{
+				return m_facts; // nothing to do, analog to isReversedPaymentAllocation()
+			}
+			else
+			{
+				// because we have just one fact line per allocation line
+				fact.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
+			}
 		}
 
 		for (int i = 0; i < p_lines.length; i++)
@@ -401,16 +409,15 @@ public class Doc_AllocationHdr extends Doc
 		{
 			return false;
 		}
-		
+
 		// note: the p_lines are not each others' counter doc lines, i.e. DocLine_Allocation.getCounterDocLine() == null and getCounter_AllocationLine_ID == 0
 		final I_C_Payment firstPayment = DocLine_Allocation.cast(p_lines[0]).getC_Payment();
 		final I_C_Payment secondPayment = DocLine_Allocation.cast(p_lines[1]).getC_Payment();
-		
+
 		boolean firstPaymentIsReversalOfSecond = firstPayment.getReversal_ID() == secondPayment.getC_Payment_ID();
 		boolean secondPaymentIsReversalOfFirst = secondPayment.getReversal_ID() == firstPayment.getC_Payment_ID();
 		return firstPaymentIsReversalOfSecond || secondPaymentIsReversalOfFirst;
 	}
-
 
 	private boolean isReversedInvoiceAllocation()
 	{
@@ -418,16 +425,16 @@ public class Doc_AllocationHdr extends Doc
 		{
 			return false;
 		}
-		
+
 		// note: the p_lines are not each others' counter doc lines, i.e. DocLine_Allocation.getCounterDocLine() == null and getCounter_AllocationLine_ID == 0
 		final I_C_Invoice firstInvoice = DocLine_Allocation.cast(p_lines[0]).getC_Invoice();
 		final I_C_Invoice secondInvoice = DocLine_Allocation.cast(p_lines[1]).getC_Invoice();
-		
+
 		boolean firstInvoiceIsReversalOfSecond = firstInvoice.getReversal_ID() == secondInvoice.getC_Invoice_ID();
 		boolean secondInvoiceIsReversalOfFirst = secondInvoice.getReversal_ID() == firstInvoice.getC_Invoice_ID();
 		return firstInvoiceIsReversalOfSecond || secondInvoiceIsReversalOfFirst;
 	}
-	
+
 	private boolean mightBeReversedAllocation()
 	{
 		if (p_lines == null || p_lines.length != 2)
@@ -446,7 +453,7 @@ public class Doc_AllocationHdr extends Doc
 		final boolean amountsAreMatching = firstAllocationDocLine.getAllocatedAmt().negate().compareTo(secondAllocationDocLine.getAllocatedAmt()) == 0;
 		return amountsAreMatching;
 	}
-	
+
 	/**
 	 * Creates facts related to {@link DocLine_Allocation#getPaymentWriteOffAmt()}.
 	 * 

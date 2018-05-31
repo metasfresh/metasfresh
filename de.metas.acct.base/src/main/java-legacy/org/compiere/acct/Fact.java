@@ -921,14 +921,16 @@ public final class Fact
 
 		private BigDecimal qty = null;
 
+		private boolean alsoAddZeroLine = false;
+		
 		// Other dimensions
 		private Integer AD_Org_ID;
 		private Integer C_BPartner_ID;
 		private Integer C_Tax_ID;
 
+		
 		private FactLineBuilder(final Fact fact)
 		{
-			super();
 			this.fact = fact;
 		}
 
@@ -1001,7 +1003,11 @@ public final class Fact
 				if (line.getQty().signum() == 0)
 				{
 					log.debug("Both amounts & qty = 0/Null - {}", this);
-					return null;
+					// https://github.com/metasfresh/metasfresh/issues/4147 we might need the zero-line later
+					if(!alsoAddZeroLine)
+					{
+						return null;
+					}
 				}
 
 				if (log.isDebugEnabled())
@@ -1151,6 +1157,16 @@ public final class Fact
 			return this;
 		}
 
+		/** 
+		 * Usually the {@link #buildAndAdd()} method ignores fact lines that have zero/null source amount and zero/null qty.
+		 * Invoke this builder method still have the builder add them.
+		 */
+		public FactLineBuilder alsoAddZeroLine()
+		{
+			alsoAddZeroLine = true;
+			return this;
+		}
+		
 		public FactLineBuilder setC_Currency_ID(final int currencyId)
 		{
 			assertNotBuild();
