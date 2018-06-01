@@ -278,3 +278,68 @@ UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:10:27
 UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:10:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Fault Info' WHERE AD_Tab_ID=541003 AND AD_Language='en_US'
 ;
 
+-- 2018-06-01T13:49:28.624
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET WEBUI_NameBrowse='MSV3 Substitution',Updated=TO_TIMESTAMP('2018-06-01 13:49:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541031
+;
+
+-- 2018-06-01T13:49:32.367
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:49:32','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Menu_ID=541031 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:49:40.363
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Name='MSV3 Substitution',Updated=TO_TIMESTAMP('2018-06-01 13:49:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540404
+;
+
+-- 2018-06-01T13:49:48.188
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:49:48','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='MSV3 Substitution' WHERE AD_Window_ID=540404 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:49:53.999
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:49:53','YYYY-MM-DD HH24:MI:SS') WHERE AD_Tab_ID=541004 AND AD_Language='de_CH'
+;
+
+-- 2018-06-01T13:49:56.537
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:49:56','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=541004 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:50:07.729
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET WEBUI_NameBrowse='MSV3 Tour',Updated=TO_TIMESTAMP('2018-06-01 13:50:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541032
+;
+
+-- 2018-06-01T13:50:12.623
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:50:12','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',WEBUI_NameBrowse='MSV3 Tour' WHERE AD_Menu_ID=541032 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:50:22.883
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:50:22','YYYY-MM-DD HH24:MI:SS'),WEBUI_NameBrowse='MSV3 Substitution' WHERE AD_Menu_ID=541031 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:50:31.832
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Name='MSV3 Tour',Updated=TO_TIMESTAMP('2018-06-01 13:50:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540405
+;
+
+-- 2018-06-01T13:50:39.104
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:50:39','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='MSV3 Tour' WHERE AD_Window_ID=540405 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:50:47.822
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:50:47','YYYY-MM-DD HH24:MI:SS') WHERE AD_Tab_ID=541005 AND AD_Language='de_CH'
+;
+
+-- 2018-06-01T13:50:50.642
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:50:50','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=541005 AND AD_Language='en_US'
+;
+
