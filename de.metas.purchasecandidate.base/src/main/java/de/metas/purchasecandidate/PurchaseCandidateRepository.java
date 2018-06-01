@@ -1,7 +1,6 @@
 package de.metas.purchasecandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
@@ -41,6 +40,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
+import de.metas.purchasing.api.IBPartnerProductDAO;
 import lombok.NonNull;
 
 /*
@@ -311,15 +311,22 @@ public class PurchaseCandidateRepository
 
 	private VendorProductInfo extractVendorProductInfo(final I_C_PurchaseCandidate purchaseCandidatePO)
 	{
-		final I_C_BPartner_Product bpartnerProduct = purchaseCandidatePO.getC_BPartner_Product_ID() > 0
-				? loadOutOfTrx(purchaseCandidatePO.getC_BPartner_Product_ID(), I_C_BPartner_Product.class)
-				: null;
-		// TODO: handle the null case!
-		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(
+		final int bpartnerProductId = purchaseCandidatePO.getC_BPartner_Product_ID();
+		if (bpartnerProductId <= 0)
+		{
+			return null;
+		}
+		final I_C_BPartner_Product bpartnerProduct = Services.get(IBPartnerProductDAO.class).getById(bpartnerProductId);
+		if (bpartnerProduct == null)
+		{
+			// shall not happen
+			return null;
+		}
+
+		return VendorProductInfo.fromDataRecord(
 				bpartnerProduct,
 				BPartnerId.ofRepoIdOrNull(purchaseCandidatePO.getVendor_ID()),
 				purchaseCandidatePO.isAggregatePO());
-		return vendorProductInfo;
 	}
 
 	public void deleteByIds(Collection<Integer> purchaseCandidateIds)
