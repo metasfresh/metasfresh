@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.service.OrgId;
@@ -52,7 +51,9 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.availability.AvailabilityCheckService;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
+import de.metas.purchasecandidate.availability.PurchaseCandidatesAvailabilityRequest;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowsLoader.PurchaseRowsList;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -177,7 +178,7 @@ public class PurchaseRowsLoaderTest
 		// @formatter:off
 		new Expectations()
 		{{
-			availabilityCheckService.checkAvailability((Collection<PurchaseCandidate>)any);
+			availabilityCheckService.checkAvailability((PurchaseCandidatesAvailabilityRequest)any);
 			result = checkAvailabilityResult;
 		}};	// @formatter:on
 
@@ -191,10 +192,11 @@ public class PurchaseRowsLoaderTest
 				.build();
 
 		// invoke the method under test
-		final List<PurchaseRow> groupRows = loader.load();
+		final PurchaseRowsList rowsList = loader.load();
+		final List<PurchaseRow> topLevelRows = rowsList.getTopLevelRows();
 
-		assertThat(groupRows).hasSize(1);
-		final PurchaseRow groupRow = groupRows.get(0);
+		assertThat(topLevelRows).hasSize(1);
+		final PurchaseRow groupRow = topLevelRows.get(0);
 		assertThat(groupRow.getRowType()).isEqualTo(PurchaseRowType.GROUP);
 		assertThat(groupRow.getIncludedRows()).hasSize(1);
 
@@ -202,7 +204,7 @@ public class PurchaseRowsLoaderTest
 		assertThat(purchaseRow.getRowType()).isEqualTo(PurchaseRowType.LINE);
 		assertThat(purchaseRow.getIncludedRows()).isEmpty();
 
-		loader.createAndAddAvailabilityResultRows();
+		loader.createAndAddAvailabilityResultRows(rowsList);
 		assertThat(purchaseRow.getIncludedRows()).hasSize(1);
 
 		final PurchaseRow availabilityRow = purchaseRow.getIncludedRows().get(0);

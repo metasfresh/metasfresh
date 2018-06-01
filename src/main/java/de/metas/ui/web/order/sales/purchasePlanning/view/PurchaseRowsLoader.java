@@ -1,12 +1,8 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -15,26 +11,28 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Equivalence;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimaps;
 
-import de.metas.printing.esb.base.util.Check;
+import de.metas.logging.LogManager;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.availability.AvailabilityCheckService;
 import de.metas.purchasecandidate.availability.AvailabilityException;
+import de.metas.purchasecandidate.availability.AvailabilityMultiResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
+import de.metas.purchasecandidate.availability.PurchaseCandidatesAvailabilityRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.vendor.gateway.api.availability.TrackingId;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -62,6 +60,7 @@ import lombok.NonNull;
 class PurchaseRowsLoader
 {
 	// services
+	private static final Logger logger = LogManager.getLogger(PurchaseRowsLoader.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final PurchaseRowFactory purchaseRowFactory;
 	private final AvailabilityCheckService availabilityCheckService;
@@ -71,8 +70,6 @@ class PurchaseRowsLoader
 	// parameters
 	private final Supplier<IView> viewSupplier;
 	private final ImmutableList<PurchaseDemandWithCandidates> purchaseDemandWithCandidatesList;
-
-	private ImmutableMap<Equivalence.Wrapper<PurchaseCandidate>, PurchaseRow> _purchaseCandidate2purchaseRow;
 
 	@Builder
 	private PurchaseRowsLoader(
@@ -96,33 +93,32 @@ class PurchaseRowsLoader
 
 	private List<PurchaseRow> loadAndCheckAvailability()
 	{
-		final List<PurchaseRow> rows = load();
+		final PurchaseRowsList rows = load();
 		if (isMakeAsynchronousAvailiabilityCheck())
 		{
-			createAndAddAvailabilityResultRowsAsync();
+			createAndAddAvailabilityResultRowsAsync(rows);
 		}
 		else
 		{
-			createAndAddAvailabilityResultRows();
+			createAndAddAvailabilityResultRows(rows);
 		}
 
-		return rows;
+		return rows.getTopLevelRows();
 	}
 
 	@VisibleForTesting
-	List<PurchaseRow> load()
+	PurchaseRowsList load()
 	{
-		final ImmutableList.Builder<PurchaseRow> result = ImmutableList.builder();
-		final ImmutableMap.Builder<Equivalence.Wrapper<PurchaseCandidate>, PurchaseRow> purchaseCandidate2purchaseRowBuilder = ImmutableMap.builder();
+		final PurchaseRowsList.PurchaseRowsListBuilder resultBuilder = PurchaseRowsList.builder();
 
 		for (final PurchaseDemandWithCandidates demandWithCandidates : purchaseDemandWithCandidatesList)
 		{
 			final PurchaseDemand demand = demandWithCandidates.getPurchaseDemand();
 
-			final ImmutableList.Builder<PurchaseRow> rows = ImmutableList.builder();
+			final List<PurchaseRow> groupRows = new ArrayList<>();
 			for (final PurchaseCandidate purchaseCandidate : demandWithCandidates.getPurchaseCandidates())
 			{
-				final PurchaseRow candidateRow = purchaseRowFactory
+				final PurchaseRow purchaseCandidateRow = purchaseRowFactory
 						.rowFromPurchaseCandidateBuilder()
 						.purchaseCandidate(purchaseCandidate)
 						.purchaseDemandId(demand.getId())
@@ -130,37 +126,23 @@ class PurchaseRowsLoader
 						.convertAmountsToCurrency(demand.getCurrency())
 						.build();
 
-				purchaseCandidate2purchaseRowBuilder.put(id(purchaseCandidate), candidateRow);
-				rows.add(candidateRow);
+				groupRows.add(purchaseCandidateRow);
+
+				final TrackingId trackingId = TrackingId.random();
+				resultBuilder.purchaseCandidate(trackingId, purchaseCandidate);
+				resultBuilder.purchaseCandidateRow(trackingId, purchaseCandidateRow);
 			}
 
-			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(demand, rows.build());
-			result.add(groupRow);
-
+			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(demand, groupRows);
+			resultBuilder.topLevelRow(groupRow);
 		}
-		_purchaseCandidate2purchaseRow = purchaseCandidate2purchaseRowBuilder.build();
 
-		return result.build();
+		return resultBuilder.build();
 	}
 
-	private final Equivalence.Wrapper<PurchaseCandidate> id(@NonNull final PurchaseCandidate purchaseCandidate)
+	private PurchaseCandidatesAvailabilityRequest createAvailabilityRequest(@NonNull final PurchaseRowsList rows)
 	{
-		return Equivalence.identity().wrap(purchaseCandidate);
-	}
-
-	private List<PurchaseCandidate> getAllPurchaseCandidates()
-	{
-		Check.assumeNotNull(_purchaseCandidate2purchaseRow, "purchaseCandidate2purchaseRow was already loaded via load(); this={}", this);
-
-		return purchaseDemandWithCandidatesList.stream()
-				.map(PurchaseDemandWithCandidates::getPurchaseCandidates)
-				.flatMap(List::stream)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private PurchaseRow getPurchaseRowByPurchaseCandidate(final PurchaseCandidate purchaseCandidate)
-	{
-		return _purchaseCandidate2purchaseRow.get(id(purchaseCandidate));
+		return PurchaseCandidatesAvailabilityRequest.of(rows.getPurchaseCandidates());
 	}
 
 	private boolean isMakeAsynchronousAvailiabilityCheck()
@@ -177,53 +159,59 @@ class PurchaseRowsLoader
 	}
 
 	@VisibleForTesting
-	void createAndAddAvailabilityResultRows()
+	void createAndAddAvailabilityResultRows(final PurchaseRowsList rows)
 	{
 		try
 		{
-			final List<PurchaseCandidate> purchaseCandidates = getAllPurchaseCandidates();
-			final List<AvailabilityResult> availabilityCheckResult = availabilityCheckService.checkAvailability(purchaseCandidates);
-			handleResultForAsyncAvailabilityCheck_Success(availabilityCheckResult);
+			final AvailabilityMultiResult availabilityCheckResult = availabilityCheckService.checkAvailability(createAvailabilityRequest(rows));
+			handleResultForAsyncAvailabilityCheck_Success(rows, availabilityCheckResult);
 		}
 		catch (final Throwable throwable)
 		{
-			handleResultForAsyncAvailabilityCheck_Error(throwable);
+			handleResultForAsyncAvailabilityCheck_Error(rows, throwable);
 		}
 	}
 
-	private void createAndAddAvailabilityResultRowsAsync()
+	private void createAndAddAvailabilityResultRowsAsync(final PurchaseRowsList rows)
 	{
-		final List<PurchaseCandidate> purchaseCandidates = getAllPurchaseCandidates();
-		availabilityCheckService.checkAvailabilityAsync(purchaseCandidates, this::handleResultForAsyncAvailabilityCheck);
+		availabilityCheckService.checkAvailabilityAsync(
+				createAvailabilityRequest(rows),
+				(result, error) -> handleResultForAsyncAvailabilityCheck(rows, result, error));
 	}
 
 	private void handleResultForAsyncAvailabilityCheck(
-			@Nullable final List<AvailabilityResult> availabilityCheckResult,
+			@NonNull final PurchaseRowsList rows,
+			@Nullable final AvailabilityMultiResult availabilityMultiResult,
 			@Nullable final Throwable error)
 	{
-		if (availabilityCheckResult != null)
+		if (availabilityMultiResult != null)
 		{
-			handleResultForAsyncAvailabilityCheck_Success(availabilityCheckResult);
+			handleResultForAsyncAvailabilityCheck_Success(rows, availabilityMultiResult);
 		}
 		if (error != null)
 		{
-			handleResultForAsyncAvailabilityCheck_Error(Util.coalesce(error.getCause(), error));
+			handleResultForAsyncAvailabilityCheck_Error(rows, Util.coalesce(error.getCause(), error));
 		}
 	}
 
-	private void handleResultForAsyncAvailabilityCheck_Success(final List<AvailabilityResult> availabilityResults)
+	private void handleResultForAsyncAvailabilityCheck_Success(
+			final PurchaseRowsList rows,
+			final AvailabilityMultiResult availabilityResults)
 	{
-		final ImmutableListMultimap<Equivalence.Wrapper<PurchaseCandidate>, AvailabilityResult> //
-		availabilityResultsByPurchaseCandidadate = Multimaps.index(availabilityResults, result -> id(result.getPurchaseCandidate()));
-
 		final List<DocumentId> changedRowIds = new ArrayList<>();
 
-		for (final Map.Entry<Equivalence.Wrapper<PurchaseCandidate>, Collection<AvailabilityResult>> entry : availabilityResultsByPurchaseCandidadate.asMap().entrySet())
+		for (final TrackingId trackingId : availabilityResults.getTrackingIds())
 		{
-			final PurchaseRow purchaseRowToAugment = getPurchaseRowByPurchaseCandidate(entry.getKey().get());
+			final PurchaseRow purchaseRowToAugment = rows.getPurchaseRowByTrackingId(trackingId);
+			if (purchaseRowToAugment == null)
+			{
+				logger.warn("No row found for {}. Skip updating the row with availability results.", trackingId);
+				continue;
+			}
+
 			final ImmutableList.Builder<PurchaseRow> availabilityResultRows = ImmutableList.builder();
 
-			for (final AvailabilityResult availabilityResult : entry.getValue())
+			for (final AvailabilityResult availabilityResult : availabilityResults.getByTrackingId(trackingId))
 			{
 				final PurchaseRow availabilityResultRow = purchaseRowFactory.rowFromAvailabilityResultBuilder()
 						.parentRow(purchaseRowToAugment)
@@ -239,27 +227,28 @@ class PurchaseRowsLoader
 		notifyViewOfChanges(changedRowIds);
 	}
 
-	private void handleResultForAsyncAvailabilityCheck_Error(@Nullable final Throwable throwable)
+	private void handleResultForAsyncAvailabilityCheck_Error(final PurchaseRowsList rows, final Throwable throwable)
 	{
-		if (throwable == null)
-		{
-			return;
-		}
 		if (throwable instanceof AvailabilityException)
 		{
 			final AvailabilityException availabilityException = AvailabilityException.cast(throwable);
 
 			final List<DocumentId> changedRowIds = new ArrayList<>();
 
-			final Set<Entry<PurchaseCandidate, Throwable>> entrySet = availabilityException.getPurchaseCandidate2Throwable().entrySet();
-			for (final Entry<PurchaseCandidate, Throwable> purchaseCandidate2throwable : entrySet)
+			for (final AvailabilityException.ErrorItem errorItem : availabilityException.getErrorItems())
 			{
-				final PurchaseRow purchaseRowToAugment = getPurchaseRowByPurchaseCandidate(purchaseCandidate2throwable.getKey());
+				final TrackingId trackingId = errorItem.getTrackingId();
+				final PurchaseRow purchaseRowToAugment = rows.getPurchaseRowByTrackingId(trackingId);
+				if (purchaseRowToAugment == null)
+				{
+					logger.warn("No row found for {}. Skip updating the row with availability errors: {}", trackingId, errorItem);
+					continue;
+				}
 
 				final PurchaseRow availabilityResultRow = purchaseRowFactory
 						.rowFromThrowableBuilder()
 						.parentRow(purchaseRowToAugment)
-						.throwable(purchaseCandidate2throwable.getValue())
+						.throwable(errorItem.getError())
 						.build();
 
 				purchaseRowToAugment.setAvailabilityInfoRow(availabilityResultRow);
@@ -282,6 +271,32 @@ class PurchaseRowsLoader
 			ViewChangesCollector
 					.getCurrentOrAutoflush()
 					.collectRowsChanged(view, DocumentIdsSelection.of(changedRowIds));
+		}
+	}
+
+	@VisibleForTesting
+	static class PurchaseRowsList
+	{
+		@Getter
+		private final ImmutableList<PurchaseRow> topLevelRows;
+		@Getter
+		private final ImmutableMap<TrackingId, PurchaseCandidate> purchaseCandidates;
+		private final ImmutableMap<TrackingId, PurchaseRow> purchaseCandidateRows;
+
+		@lombok.Builder
+		public PurchaseRowsList(
+				@NonNull @lombok.Singular final ImmutableList<PurchaseRow> topLevelRows,
+				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseCandidate> purchaseCandidates,
+				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseRow> purchaseCandidateRows)
+		{
+			this.topLevelRows = topLevelRows;
+			this.purchaseCandidates = purchaseCandidates;
+			this.purchaseCandidateRows = purchaseCandidateRows;
+		}
+
+		public PurchaseRow getPurchaseRowByTrackingId(TrackingId trackingId)
+		{
+			return purchaseCandidateRows.get(trackingId);
 		}
 	}
 }
