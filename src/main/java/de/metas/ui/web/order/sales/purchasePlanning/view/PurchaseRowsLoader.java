@@ -3,6 +3,7 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -16,9 +17,11 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Equivalence;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -69,7 +72,7 @@ class PurchaseRowsLoader
 	private final Supplier<IView> viewSupplier;
 	private final ImmutableList<PurchaseDemandWithCandidates> purchaseDemandWithCandidatesList;
 
-	private ImmutableMap<PurchaseCandidate, PurchaseRow> _purchaseCandidate2purchaseRow;
+	private ImmutableMap<Equivalence.Wrapper<PurchaseCandidate>, PurchaseRow> _purchaseCandidate2purchaseRow;
 
 	@Builder
 	private PurchaseRowsLoader(
@@ -109,7 +112,7 @@ class PurchaseRowsLoader
 	List<PurchaseRow> load()
 	{
 		final ImmutableList.Builder<PurchaseRow> result = ImmutableList.builder();
-		final ImmutableMap.Builder<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRowBuilder = ImmutableMap.builder();
+		final ImmutableMap.Builder<Equivalence.Wrapper<PurchaseCandidate>, PurchaseRow> purchaseCandidate2purchaseRowBuilder = ImmutableMap.builder();
 
 		for (final PurchaseDemandWithCandidates demandWithCandidates : purchaseDemandWithCandidatesList)
 		{
@@ -126,7 +129,7 @@ class PurchaseRowsLoader
 						.convertAmountsToCurrency(demand.getCurrency())
 						.build();
 
-				purchaseCandidate2purchaseRowBuilder.put(purchaseCandidate, candidateRow);
+				purchaseCandidate2purchaseRowBuilder.put(id(purchaseCandidate), candidateRow);
 				rows.add(candidateRow);
 			}
 
@@ -137,6 +140,11 @@ class PurchaseRowsLoader
 		_purchaseCandidate2purchaseRow = purchaseCandidate2purchaseRowBuilder.build();
 
 		return result.build();
+	}
+
+	private final Equivalence.Wrapper<PurchaseCandidate> id(@NonNull final PurchaseCandidate purchaseCandidate)
+	{
+		return Equivalence.identity().wrap(purchaseCandidate);
 	}
 
 	private List<PurchaseCandidate> getAllPurchaseCandidates()
@@ -151,7 +159,7 @@ class PurchaseRowsLoader
 
 	private PurchaseRow getPurchaseRowByPurchaseCandidate(final PurchaseCandidate purchaseCandidate)
 	{
-		return _purchaseCandidate2purchaseRow.get(purchaseCandidate);
+		return _purchaseCandidate2purchaseRow.get(id(purchaseCandidate));
 	}
 
 	private boolean isMakeAsynchronousAvailiabilityCheck()
@@ -173,10 +181,7 @@ class PurchaseRowsLoader
 		try
 		{
 			final List<PurchaseCandidate> purchaseCandidates = getAllPurchaseCandidates();
-
-			final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult;
-			availabilityCheckResult = availabilityCheckService.checkAvailability(purchaseCandidates);
-
+			final List<AvailabilityResult> availabilityCheckResult = availabilityCheckService.checkAvailability(purchaseCandidates);
 			handleResultForAsyncAvailabilityCheck_Success(availabilityCheckResult);
 		}
 		catch (final Throwable throwable)
@@ -192,7 +197,7 @@ class PurchaseRowsLoader
 	}
 
 	private void handleResultForAsyncAvailabilityCheck(
-			@Nullable final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult,
+			@Nullable final List<AvailabilityResult> availabilityCheckResult,
 			@Nullable final Throwable error)
 	{
 		if (availabilityCheckResult != null)
@@ -205,28 +210,24 @@ class PurchaseRowsLoader
 		}
 	}
 
-	private void handleResultForAsyncAvailabilityCheck_Success(
-			@Nullable final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult)
+	private void handleResultForAsyncAvailabilityCheck_Success(final List<AvailabilityResult> availabilityResults)
 	{
-		if (availabilityCheckResult == null)
-		{
-			return;
-		}
-		final Set<Entry<PurchaseCandidate, Collection<AvailabilityResult>>> entrySet = //
-				availabilityCheckResult.asMap().entrySet();
+		final ImmutableListMultimap<Equivalence.Wrapper<PurchaseCandidate>, AvailabilityResult> //
+		availabilityResultsByPurchaseCandidadate = Multimaps.index(availabilityResults, result -> id(result.getPurchaseCandidate()));
 
 		final List<DocumentId> changedRowIds = new ArrayList<>();
 
-		for (final Entry<PurchaseCandidate, Collection<AvailabilityResult>> entry : entrySet)
+		for (final Map.Entry<Equivalence.Wrapper<PurchaseCandidate>, Collection<AvailabilityResult>> entry : availabilityResultsByPurchaseCandidadate.asMap().entrySet())
 		{
-			final PurchaseRow purchaseRowToAugment = getPurchaseRowByPurchaseCandidate(entry.getKey());
+			final PurchaseRow purchaseRowToAugment = getPurchaseRowByPurchaseCandidate(entry.getKey().get());
 			final ImmutableList.Builder<PurchaseRow> availabilityResultRows = ImmutableList.builder();
 
 			for (final AvailabilityResult availabilityResult : entry.getValue())
 			{
 				final PurchaseRow availabilityResultRow = purchaseRowFactory.rowFromAvailabilityResultBuilder()
 						.parentRow(purchaseRowToAugment)
-						.availabilityResult(availabilityResult).build();
+						.availabilityResult(availabilityResult)
+						.build();
 
 				availabilityResultRows.add(availabilityResultRow);
 			}
