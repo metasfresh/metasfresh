@@ -130,9 +130,7 @@ export function setUserDashboardWidgets(payload) {
 }
 
 export function getMessages(lang) {
-  return axios.get(
-    config.API_URL + '/i18n/messages' + (lang ? '?=' + lang : '')
-  );
+  return axios.get(`${config.API_URL}/i18n/messages${lang ? '?=' + lang : ''}`);
 }
 
 export function createUrlAttachment({ windowId, documentId, name, url }) {
@@ -188,19 +186,12 @@ export function loginSuccess(auth) {
   return dispatch => {
     localStorage.setItem('isLogged', true);
 
-    /*
-        getMessages().then(response => {
-            counterpart.registerTranslations('lang', response.data);
-            counterpart.setLocale('lang');
-        });
-*/
+    getUserSession().then(({ data }) => {
+      dispatch(userSessionInit(data));
+      languageSuccess(data.language['key']);
+      initNumeralLocales(data.language['key'], data.locale);
 
-    getUserSession().then(session => {
-      dispatch(userSessionInit(session.data));
-      languageSuccess(session.data.language['key']);
-      initNumeralLocales(session.data.language['key'], session.data.locale);
-
-      auth.initSessionClient(session.data.websocketEndpoint, msg => {
+      auth.initSessionClient(data.websocketEndpoint, msg => {
         const me = JSON.parse(msg.body);
         dispatch(userSessionUpdate(me));
         me.language && languageSuccess(me.language['key']);
@@ -214,13 +205,6 @@ export function loginSuccess(auth) {
             )
           );
         });
-
-        /*
-                getMessages().then(response => {
-                    counterpart.registerTranslations('lang', response.data);
-                    counterpart.setLocale('lang');
-                });
-*/
       });
     });
 
