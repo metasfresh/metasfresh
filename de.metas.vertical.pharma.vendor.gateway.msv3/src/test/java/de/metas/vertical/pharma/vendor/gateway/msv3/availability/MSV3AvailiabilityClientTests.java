@@ -54,11 +54,13 @@ public class MSV3AvailiabilityClientTests
 
 		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of("10055555", BigDecimal.TEN);
 		final AvailabilityRequestItem availabilityRequestItem = AvailabilityRequestItem.builder()
-				.productAndQuantity(productAndQuantity).build();
+				.productAndQuantity(productAndQuantity)
+				.build();
 
 		final AvailabilityRequest request = AvailabilityRequest.builder()
 				.vendorId(999)
-				.availabilityRequestItem(availabilityRequestItem).build();
+				.availabilityRequestItem(availabilityRequestItem)
+				.build();
 
 		final MSV3AvailiabilityClient msv3AvailiabilityClient = new MSV3AvailiabilityClient(
 				new MSV3ConnectionFactory(),

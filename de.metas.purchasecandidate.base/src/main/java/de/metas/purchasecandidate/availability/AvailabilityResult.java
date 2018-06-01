@@ -13,6 +13,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
+import de.metas.vendor.gateway.api.availability.TrackingId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -47,6 +48,7 @@ public class AvailabilityResult
 		final Type type = Type.ofAvailabilityResponseItemType(responseItem.getType());
 
 		return AvailabilityResult.builder()
+				.trackingId(responseItem.getTrackingId())
 				.type(type)
 				.availabilityText(responseItem.getAvailabilityText())
 				.datePromised(TimeUtil.asLocalDateTime(responseItem.getDatePromised()))
@@ -76,6 +78,8 @@ public class AvailabilityResult
 		}
 	}
 
+	TrackingId trackingId;
+
 	PurchaseCandidate purchaseCandidate;
 
 	Type type;
@@ -90,6 +94,7 @@ public class AvailabilityResult
 
 	@Builder
 	private AvailabilityResult(
+			@Nullable TrackingId trackingId,
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final Type type,
 			@NonNull final BigDecimal qty,
@@ -97,6 +102,7 @@ public class AvailabilityResult
 			@Nullable final String availabilityText,
 			@Nullable final VendorGatewayService vendorGatewayServicethatWasUsed)
 	{
+		this.trackingId = trackingId;
 		this.purchaseCandidate = purchaseCandidate;
 		this.type = type;
 		this.qty = qty;

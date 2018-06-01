@@ -1,7 +1,5 @@
 package de.metas.purchasecandidate.availability;
 
-import java.util.List;
-
 /*
  * #%L
  * de.metas.purchasecandidate.base
@@ -27,5 +25,5 @@ import java.util.List;
 @FunctionalInterface
 public interface AvailabilityCheckCallback
 {
-	void onResult(List<AvailabilityResult> result, Throwable error);
+	void onResult(AvailabilityMultiResult result, Throwable error);
 }

@@ -1,12 +1,7 @@
 package de.metas.purchasecandidate.availability;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
-import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.availability.AvailabilityCheckCommand.AvailabilityCheckCommandBuilder;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import lombok.NonNull;
 
@@ -42,26 +37,22 @@ public class AvailabilityCheckService
 		this.vendorGatewayRegistry = vendorGatewayRegistry;
 	}
 
-	public List<AvailabilityResult> checkAvailability(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
+	public AvailabilityMultiResult checkAvailability(@NonNull final PurchaseCandidatesAvailabilityRequest request)
 	{
-		return newAvailabilityCheckCommand()
-				.purchaseCandidates(purchaseCandidates)
-				.build()
-				.checkAvailability();
+		return newAvailabilityCheckCommand(request).checkAvailability();
 	}
 
-	public void checkAvailabilityAsync(@NonNull final Collection<PurchaseCandidate> purchaseCandidates, @NonNull final AvailabilityCheckCallback callback)
+	public void checkAvailabilityAsync(@NonNull final PurchaseCandidatesAvailabilityRequest request, @NonNull final AvailabilityCheckCallback callback)
 	{
-		newAvailabilityCheckCommand()
-				.purchaseCandidates(purchaseCandidates)
-				.build()
-				.checkAvailabilityAsync(callback);
+		newAvailabilityCheckCommand(request).checkAvailabilityAsync(callback);
 	}
 
-	private AvailabilityCheckCommandBuilder newAvailabilityCheckCommand()
+	private AvailabilityCheckCommand newAvailabilityCheckCommand(final PurchaseCandidatesAvailabilityRequest request)
 	{
 		return AvailabilityCheckCommand.builder()
-				.vendorGatewayRegistry(vendorGatewayRegistry);
+				.vendorGatewayRegistry(vendorGatewayRegistry)
+				.request(request)
+				.build();
 	}
 
 }

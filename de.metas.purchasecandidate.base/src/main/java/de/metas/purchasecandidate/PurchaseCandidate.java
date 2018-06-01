@@ -29,7 +29,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
-import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -278,17 +277,6 @@ public class PurchaseCandidate
 		dateRequiredInitial = dateRequired;
 	}
 
-	public AvailabilityRequestItem createAvailabilityRequestItem()
-	{
-		final ProductAndQuantity productAndQuantity = createProductAndQuantity();
-
-		return AvailabilityRequestItem.builder()
-				.productAndQuantity(productAndQuantity)
-				.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(getId(), -1))
-				.salesOrderLineId(OrderAndLineId.getOrderLineRepoIdOr(getSalesOrderAndLineId(), -1))
-				.build();
-	}
-
 	public PurchaseOrderRequestItem createPurchaseOrderRequestItem()
 	{
 		return PurchaseOrderRequestItem.builder()
@@ -297,7 +285,7 @@ public class PurchaseCandidate
 				.build();
 	}
 
-	private ProductAndQuantity createProductAndQuantity()
+	public ProductAndQuantity createProductAndQuantity()
 	{
 		final String productValue = getVendorProductInfo().getProductNo();
 		final BigDecimal qtyToDeliver = Util.coalesce(getSalesOrderQtyToDeliver(), getQtyToPurchase());
