@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Improvement of the Translation for en_US for the WebUI menu, windows and tabs.
 
 ## Fixes
+  * [#1813](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1813) Cannot set attribute in orderline grid view
+    * Fixes the setting of Attributes in Orderline Grid View.
   * [#1814](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1814) Action button is too large
     * Fixes the Layout of Action Button being too large. Also hiding the Action Buttons from Batch Entry again.
 
