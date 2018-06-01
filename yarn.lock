@@ -11586,6 +11586,10 @@ webpack-dev-server@~3.1.3:
     webpack-log "^1.1.2"
     yargs "11.0.0"
 
+webpack-git-hash@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/webpack-git-hash/-/webpack-git-hash-1.0.2.tgz#03f0663fdfc93bcfae55a333dae27dde7eb4b6da"
+
 webpack-hot-middleware@^2.21.0:
   version "2.21.1"
   resolved "https://registry.yarnpkg.com/webpack-hot-middleware/-/webpack-hot-middleware-2.21.1.tgz#1b03b20a1a65a2e2ea0ea987476a5d23370ff176"
