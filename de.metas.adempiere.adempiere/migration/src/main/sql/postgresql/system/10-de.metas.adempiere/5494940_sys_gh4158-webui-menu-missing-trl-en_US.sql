@@ -168,3 +168,63 @@ UPDATE AD_Tab SET Name='Verfuegbarkeitsanfrage Einzelne Antwort',Updated=TO_TIME
 UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:13:01','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Single Availability Check Response' WHERE AD_Tab_ID=541009 AND AD_Language='en_US'
 ;
 
+-- 2018-06-01T12:20:46.919
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Name='MSV3 Bestell Transaktion', WEBUI_NameBrowse='MSV3 Bestell Transaktion',Updated=TO_TIMESTAMP('2018-06-01 12:20:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541023
+;
+
+-- 2018-06-01T12:21:01.928
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:21:01','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='MSV3 Purchase Trx',WEBUI_NameBrowse='MSV3 Purchase Trx' WHERE AD_Menu_ID=541023 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T12:21:19.691
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Name='MSV3 Bestellung Transaktion',Updated=TO_TIMESTAMP('2018-06-01 12:21:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540400
+;
+
+-- 2018-06-01T12:21:19.692
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='MSV3 Bestellung Transaktion',Updated=TO_TIMESTAMP('2018-06-01 12:21:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541023
+;
+
+-- 2018-06-01T12:21:30.992
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:21:30','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='MSV3 Purchase Trx' WHERE AD_Window_ID=540400 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T12:21:39.773
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:21:39','YYYY-MM-DD HH24:MI:SS') WHERE AD_Tab_ID=540995 AND AD_Language='de_CH'
+;
+
+-- 2018-06-01T12:21:48.117
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:21:48','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Purchase Transaction' WHERE AD_Tab_ID=540995 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T12:22:39.132
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET WEBUI_NameBrowse='MSV3 Bestellung',Updated=TO_TIMESTAMP('2018-06-01 12:22:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541024
+;
+
+-- 2018-06-01T12:22:52.147
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:22:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='MSV3 Purchase Order',WEBUI_NameBrowse='MSV3 Purchase Order' WHERE AD_Menu_ID=541024 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T12:23:00.955
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Name='MSV3 Bestellung',Updated=TO_TIMESTAMP('2018-06-01 12:23:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540401
+;
+
+-- 2018-06-01T12:23:09.453
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:23:09','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='MSV3 Purchase Order' WHERE AD_Window_ID=540401 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T12:23:24.913
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:23:24','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Purchase Order' WHERE AD_Tab_ID=540996 AND AD_Language='en_US'
+;
+
