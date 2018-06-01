@@ -41,6 +41,7 @@ Here come the actual release notes:
   * [#3263](https://github.com/metasfresh/metasfresh/issues/3263) WebUI: Translation Window for Bill of Materials and Formula
     * New Translation Window in WebUI for Bill of Materials and Formula.
   * [#3307](https://github.com/metasfresh/metasfresh/issues/3307) Order/Invoice jasper: always use the Description/DescriptionBottom from document and don't check C_DocType's description
+    * Improving the Order Jasper Documents for Description bottom information.
   * [#3323](https://github.com/metasfresh/metasfresh/issues/3323) WebUI Window Design: Improve window Rechnungskandidaten - Handler
     * Improved Invoicecandidate Handler Window in WebUI.
   * [#3996](https://github.com/metasfresh/metasfresh/issues/3996) WebUI: Client window: EMail fields layout
@@ -61,7 +62,7 @@ Here come the actual release notes:
     * Extended the Implementation of the "Der Kurier" Logistics provider. Now adding the delivery/ fetching times.
   * [#4083](https://github.com/metasfresh/metasfresh/issues/4083) Make refund contract doctypes
     * New Document Types - Refund Invoice, Refund Credit Memo - for the Yearly Refund Contracts.
-  * [#4085](https://github.com/metasfresh/metasfresh/issues/4085) create relation from candidate to refund-candidate
+  * [#4085](https://github.com/metasfresh/metasfresh/issues/4085) Create relation from candidate to refund-candidate
     * New Document reference added for the relation between regular invoice candidate and refund invoice candidate.
   * [#4089](https://github.com/metasfresh/metasfresh/issues/4089) Create missing fields for Bonus in WebUI
     * New Fields added to Purchase Orderline and Invoice Candidate for Refund Contracts.
@@ -69,7 +70,7 @@ Here come the actual release notes:
     * Improved Window for contract terms, now having a mandatory Logic for fields not needed for Refund Contract Types.
   * [#4096](https://github.com/metasfresh/metasfresh/issues/4096) User Queries : turn list fields for table and tab into search fields
     * Improving Filtering of User Queries in WebUI.
-  * [#4102](https://github.com/metasfresh/metasfresh/issues/4102) webui: Purchase schedule tab - trl and display
+  * [#4102](https://github.com/metasfresh/metasfresh/issues/4102) Webui: Purchase schedule tab - trl and display
     * Improved Purchase Schedule Subtab in WebUI. New Translations added.
 
 ## Fixes
@@ -86,7 +87,7 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1717](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1717) Date Format in date range picker is not localized
     * Fixes the Localization of Dates in Date Range Picker Widget.
-  * [#1794](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1794) modal view editing issues
+  * [#1794](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1794) Modal view editing issues
     * Fixes issues in modal view field editing.
   * [#1800](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1800) Material Receipt Candidate: first line is not pre-selected and no action button available when opening HU Editor
     * Improvement of the Quickaction handling of preselected first lines when opening a window initially.
