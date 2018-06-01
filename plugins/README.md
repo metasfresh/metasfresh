@@ -9,7 +9,11 @@ All plugins are dynamically loaded on application start from separate script fil
 
 1. Provide a plugins.js file, that will be loaded by the app. If file does not exist it can be created by copying the default config:
 
-> cp /plugins.js.dist /dist/plugins.js
+> cp plugins.js.dist plugins.js
+
+or in case of production build:
+
+> cp plugins.js.dist ./dist/plugins.js
 
 2. Add plugins names to the array inside the config, ie :
 
@@ -21,8 +25,8 @@ const PLUGINS = ['plugin1', 'plugin2'];
 
 3. Copy your plugins scripts to folders named after values inserted in the config array and placed in the main plugins folder. Mind scripts are expected to have `index.js` name.
 
-> cp index.js /plugins/plugin1/
-> cp index.js /plugins/plugin2/
+> cp index.js ./plugins/plugin1/
+> cp index.js ./plugins/plugin2/
 
 4. Build the application
 
