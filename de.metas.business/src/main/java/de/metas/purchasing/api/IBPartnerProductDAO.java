@@ -31,9 +31,8 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product;
-
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_Product;
 
 /**
  * @author cg
@@ -41,6 +40,7 @@ import org.compiere.model.I_C_BPartner_Product;
  */
 public interface IBPartnerProductDAO extends ISingletonService
 {
+	I_C_BPartner_Product getById(int bpartnerProductId);
 
 	/**
 	 * Retrieves all C_BPartner_Products for selected vendor
