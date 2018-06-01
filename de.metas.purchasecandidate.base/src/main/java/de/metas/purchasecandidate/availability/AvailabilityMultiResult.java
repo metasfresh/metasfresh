@@ -3,6 +3,7 @@ package de.metas.purchasecandidate.availability;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
@@ -46,6 +47,11 @@ public class AvailabilityMultiResult
 		}
 
 		return new AvailabilityMultiResult(Multimaps.index(results, AvailabilityResult::getTrackingId));
+	}
+
+	public static AvailabilityMultiResult of(@NonNull final AvailabilityResult result)
+	{
+		return of(ImmutableList.of(result));
 	}
 
 	public static final AvailabilityMultiResult EMPTY = new AvailabilityMultiResult();

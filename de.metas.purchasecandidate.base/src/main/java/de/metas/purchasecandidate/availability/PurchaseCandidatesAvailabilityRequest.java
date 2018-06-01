@@ -2,6 +2,7 @@ package de.metas.purchasecandidate.availability;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -55,6 +56,11 @@ public class PurchaseCandidatesAvailabilityRequest
 		Check.assumeNotEmpty(purchaseCandidates, "purchaseCandidates is not empty");
 
 		this.purchaseCandidates = ImmutableMap.copyOf(purchaseCandidates);
+	}
+
+	public Set<TrackingId> getTrackingIds()
+	{
+		return purchaseCandidates.keySet();
 	}
 
 }
