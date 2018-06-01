@@ -23,3 +23,23 @@ UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:26:05
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:26:30','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Marketing Contact Person',WEBUI_NameBrowse='Marketing Contact Person' WHERE AD_Menu_ID=541090 AND AD_Language='en_US'
 ;
 
+-- 2018-06-01T11:33:58.014
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:33:58','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Attribute Search',Description='',WEBUI_NameBrowse='Attribute Search' WHERE AD_Menu_ID=540990 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T11:36:06.938
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:36:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Quality Note',WEBUI_NameBrowse='Quality Note' WHERE AD_Menu_ID=540978 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T11:36:24.860
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:36:24','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Window_ID=540316 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T11:36:36.744
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:36:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Quality Note' WHERE AD_Tab_ID=540767 AND AD_Language='en_US'
+;
+
