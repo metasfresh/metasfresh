@@ -26,6 +26,8 @@ Here come the actual release notes:
     * New Window in WebUI for the maintenance of Payment Term Translations.
   * [#4139](https://github.com/metasfresh/metasfresh/issues/4139) WebUI: Translation Window for Dunning Level
     * New Window in WebUI for the maintenance of Dunning Level Translations.
+  * [#4158](https://github.com/metasfresh/metasfresh/issues/4158) WebUI Sitemap: Missing Translations en_US
+    * Improvement of the Translation for en_US for the WebUI menu, windows and tabs.
 
 ## Fixes
   * [#1814](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1814) Action button is too large
