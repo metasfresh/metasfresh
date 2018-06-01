@@ -438,3 +438,23 @@ UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:04:59
 UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:05:20','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Configuration' WHERE AD_Tab_ID=540652 AND AD_Language='en_US'
 ;
 
+-- 2018-06-01T14:07:56.032
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:07:56','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Import Business Partner',Description='Import Business Partner',WEBUI_NameBrowse='Import Business Partner' WHERE AD_Menu_ID=540983 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:09:07.451
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:09:07','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Board Settings',WEBUI_NameBrowse='Board Settings' WHERE AD_Menu_ID=540988 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:09:34.088
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:09:34','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Window_ID=540347 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:09:42.056
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:09:42','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=540832 AND AD_Language='en_US'
+;
+
