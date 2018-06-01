@@ -7,7 +7,7 @@ Metasfresh ERP system can be further expanded with a set of plugins. This docume
 
 All plugins are dynamically loaded on application start from separate script files. In order to pickup new plugins, user must :
 
-1. Provide a plugins.js file, that will be leaded by the app. If file does not exist it can be created by copying the default config:
+1. Provide a plugins.js file, that will be loaded by the app. If file does not exist it can be created by copying the default config:
 
 > cp /plugins.js.dist /dist/plugins.js
 
