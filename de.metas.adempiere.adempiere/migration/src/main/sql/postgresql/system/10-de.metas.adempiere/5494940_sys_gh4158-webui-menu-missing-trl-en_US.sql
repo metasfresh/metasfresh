@@ -78,3 +78,38 @@ UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:52:31','
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:52:49','YYYY-MM-DD HH24:MI:SS'),Name='Picking Slot Trx',WEBUI_NameBrowse='Picking Slot Trx' WHERE AD_Menu_ID=540950 AND AD_Language='en_US'
 ;
 
+-- 2018-06-01T12:02:33.163
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:02:33','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='MSV3 Vendor Configuration' WHERE AD_Window_ID=540397 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T12:02:46.552
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:02:46','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Configuration' WHERE AD_Tab_ID=540990 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T12:02:57.246
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:02:57','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='MSV3 Vendor Configuration',WEBUI_NameBrowse='MSV3 Vendor Configuration' WHERE AD_Menu_ID=541013 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T12:04:33.818
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 12:04:33','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='MSV3 Availability Trx',WEBUI_NameBrowse='MSV3 Availability Trx' WHERE AD_Menu_ID=541026 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T12:05:08.613
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Name='MSV3 Verfügbarkeit Transaktion', WEBUI_NameBrowse='MSV3 Verfügbarkeit Transaktion',Updated=TO_TIMESTAMP('2018-06-01 12:05:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541026
+;
+
+-- 2018-06-01T12:05:32.582
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Name='MSV3 Verfuegbarkeit Transaktion',Updated=TO_TIMESTAMP('2018-06-01 12:05:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540406
+;
+
+-- 2018-06-01T12:05:32.592
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='MSV3 Verfuegbarkeit Transaktion',Updated=TO_TIMESTAMP('2018-06-01 12:05:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541026
+;
+
