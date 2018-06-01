@@ -93,5 +93,8 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js', '.json'],
+    alias: {
+      '@plugins': path.resolve('./plugins'),
+    },
   },
 };

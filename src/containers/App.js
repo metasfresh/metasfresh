@@ -135,7 +135,7 @@ export default class App extends Component {
     if (APP_PLUGINS.length) {
       const plugins = APP_PLUGINS.map(plugin => {
         const waitForChunk = () =>
-          import(`./../../plugins/${plugin}/index.js`)
+          import(`@plugins/${plugin}/index.js`)
             .then(module => module)
             .catch(() => {
               // eslint-disable-next-line no-console
