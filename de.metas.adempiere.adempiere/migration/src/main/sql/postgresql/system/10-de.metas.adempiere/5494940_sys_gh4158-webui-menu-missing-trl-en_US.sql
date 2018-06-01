@@ -43,3 +43,38 @@ UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:36:24
 UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:36:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Quality Note' WHERE AD_Tab_ID=540767 AND AD_Language='en_US'
 ;
 
+-- 2018-06-01T11:50:23.045
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:50:23','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Aggregation of Invoicecandidates',WEBUI_NameBrowse='Aggregation of Invoicecandidates' WHERE AD_Menu_ID=540998 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T11:50:32.429
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:50:32','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Aggregation of Invoicecandidates' WHERE AD_Window_ID=540117 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T11:51:00.631
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:51:00','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Aggregation Allocation' WHERE AD_Tab_ID=540345 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T11:52:12.189
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:52:12','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Picking Tray Trx',WEBUI_NameBrowse='Picking Tray Trx' WHERE AD_Menu_ID=540950 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T11:52:24.124
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:52:24','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Window_ID=540215 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T11:52:31.160
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:52:31','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=540589 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T11:52:49.491
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 11:52:49','YYYY-MM-DD HH24:MI:SS'),Name='Picking Slot Trx',WEBUI_NameBrowse='Picking Slot Trx' WHERE AD_Menu_ID=540950 AND AD_Language='en_US'
+;
+
