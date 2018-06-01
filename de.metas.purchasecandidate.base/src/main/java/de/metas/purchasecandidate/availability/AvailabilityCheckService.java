@@ -1,10 +1,9 @@
 package de.metas.purchasecandidate.availability;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
-
-import com.google.common.collect.Multimap;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.availability.AvailabilityCheckCommand.AvailabilityCheckCommandBuilder;
@@ -43,7 +42,7 @@ public class AvailabilityCheckService
 		this.vendorGatewayRegistry = vendorGatewayRegistry;
 	}
 
-	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
+	public List<AvailabilityResult> checkAvailability(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
 		return newAvailabilityCheckCommand()
 				.purchaseCandidates(purchaseCandidates)

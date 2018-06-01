@@ -42,16 +42,15 @@ import lombok.Value;
 @Value
 public class AvailabilityResult
 {
-	public static AvailabilityResultBuilder prepareBuilderFor(
-			@NonNull final AvailabilityResponseItem availabilityResponseItem)
+	public static AvailabilityResultBuilder prepareBuilderFor(@NonNull final AvailabilityResponseItem responseItem)
 	{
-		final Type type = Type.ofAvailabilityResponseItemType(availabilityResponseItem.getType());
+		final Type type = Type.ofAvailabilityResponseItemType(responseItem.getType());
 
 		return AvailabilityResult.builder()
 				.type(type)
-				.availabilityText(availabilityResponseItem.getAvailabilityText())
-				.datePromised(TimeUtil.asLocalDateTime(availabilityResponseItem.getDatePromised()))
-				.qty(availabilityResponseItem.getAvailableQuantity());
+				.availabilityText(responseItem.getAvailabilityText())
+				.datePromised(TimeUtil.asLocalDateTime(responseItem.getDatePromised()))
+				.qty(responseItem.getAvailableQuantity());
 	}
 
 	public enum Type
@@ -64,14 +63,16 @@ public class AvailabilityResult
 			return Services.get(IMsgBL.class).translate(Env.getCtx(), msgValue);
 		}
 
-		public static Type ofAvailabilityResponseItemType(
-				@NonNull final de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type type)
+		public static Type ofAvailabilityResponseItemType(@NonNull final AvailabilityResponseItem.Type type)
 		{
-			if (de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type.AVAILABLE.equals(type))
+			if (AvailabilityResponseItem.Type.AVAILABLE == type)
 			{
 				return Type.AVAILABLE;
 			}
-			return Type.NOT_AVAILABLE;
+			else
+			{
+				return Type.NOT_AVAILABLE;
+			}
 		}
 	}
 

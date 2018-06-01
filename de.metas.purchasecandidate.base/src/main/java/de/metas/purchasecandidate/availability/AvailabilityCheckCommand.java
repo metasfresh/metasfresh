@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.availability;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
@@ -12,11 +13,9 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -68,17 +67,17 @@ class AvailabilityCheckCommand
 		this.purchaseCandidatesByVendorId = Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorId);
 	}
 
-	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()
+	public List<AvailabilityResult> checkAvailability()
 	{
-		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
+		final ImmutableList.Builder<AvailabilityResult> result = ImmutableList.builder();
 
 		for (final BPartnerId vendorId : purchaseCandidatesByVendorId.keySet())
 		{
-			final Multimap<PurchaseCandidate, AvailabilityResult> singleResult = checkAvailabilityAndConvertThrowable(vendorId);
-			result.putAll(singleResult);
+			final List<AvailabilityResult> vendorResult = checkAvailabilityAndConvertThrowable(vendorId);
+			result.addAll(vendorResult);
 		}
 
-		return result;
+		return result.build();
 	}
 
 	public void checkAvailabilityAsync(@NonNull final AvailabilityCheckCallback callback)
@@ -106,17 +105,17 @@ class AvailabilityCheckCommand
 		}
 	}
 
-	private Multimap<PurchaseCandidate, AvailabilityResult> checkAvailabilityAndConvertThrowable(final BPartnerId vendorId)
+	private List<AvailabilityResult> checkAvailabilityAndConvertThrowable(final BPartnerId vendorId)
 	{
 		if (!vendorProvidesAvailabilityCheck(vendorId))
 		{
-			return ImmutableMultimap.of();
+			return ImmutableList.of();
 		}
 
 		final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate = createRequestItems(vendorId);
 		if (requestItem2purchaseCandidate.isEmpty())
 		{
-			return ImmutableMultimap.of();
+			return ImmutableList.of();
 		}
 
 		try
@@ -129,40 +128,38 @@ class AvailabilityCheckCommand
 		}
 	}
 
-	private Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability0(
+	private List<AvailabilityResult> checkAvailability0(
 			@NonNull final BPartnerId vendorId,
 			@NonNull final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate)
 	{
-		final AvailabilityRequest availabilityRequest = AvailabilityRequest.builder()
-				.vendorId(vendorId.getRepoId())
-				.availabilityRequestItems(requestItem2purchaseCandidate.keySet())
-				.build();
-
 		final VendorGatewayService vendorGatewayService = vendorGatewayRegistry
 				.getSingleVendorGatewayService(vendorId.getRepoId())
 				.orElse(null);
 		if (vendorGatewayService == null)
 		{
-			return ImmutableListMultimap.of();
+			return ImmutableList.of();
 		}
 
-		final AvailabilityResponse availabilityResponse = vendorGatewayService.retrieveAvailability(availabilityRequest);
+		final AvailabilityResponse availabilityResponse = vendorGatewayService.retrieveAvailability(AvailabilityRequest.builder()
+				.vendorId(vendorId.getRepoId())
+				.availabilityRequestItems(requestItem2purchaseCandidate.keySet())
+				.build());
 
-		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
+		final ImmutableList.Builder<AvailabilityResult> result = ImmutableList.builder();
 		for (final AvailabilityResponseItem responseItem : availabilityResponse.getAvailabilityResponseItems())
 		{
-			final PurchaseCandidate purchaseCandidate = //
-					requestItem2purchaseCandidate.get(responseItem.getCorrespondingRequestItem());
+			final AvailabilityRequestItem requestItem = responseItem.getCorrespondingRequestItem();
+			final PurchaseCandidate purchaseCandidate = requestItem2purchaseCandidate.get(requestItem);
 
-			final AvailabilityResult availabilityResultBuilder = AvailabilityResult
+			final AvailabilityResult availabilityResult = AvailabilityResult
 					.prepareBuilderFor(responseItem)
 					.purchaseCandidate(purchaseCandidate)
 					.build();
 
-			result.put(purchaseCandidate, availabilityResultBuilder);
+			result.add(availabilityResult);
 		}
 
-		return result;
+		return result.build();
 	}
 
 	private RuntimeException convertThrowable(

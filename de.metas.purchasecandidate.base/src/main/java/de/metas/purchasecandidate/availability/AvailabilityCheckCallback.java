@@ -1,8 +1,6 @@
 package de.metas.purchasecandidate.availability;
 
-import com.google.common.collect.Multimap;
-
-import de.metas.purchasecandidate.PurchaseCandidate;
+import java.util.List;
 
 /*
  * #%L
@@ -29,5 +27,5 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 @FunctionalInterface
 public interface AvailabilityCheckCallback
 {
-	void onResult(Multimap<PurchaseCandidate, AvailabilityResult> result, Throwable error);
+	void onResult(List<AvailabilityResult> result, Throwable error);
 }
