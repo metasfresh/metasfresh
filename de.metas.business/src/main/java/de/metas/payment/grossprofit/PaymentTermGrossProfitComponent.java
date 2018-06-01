@@ -35,6 +35,8 @@ import lombok.NonNull;
 
 public class PaymentTermGrossProfitComponent implements GrossProfitComponent
 {
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class); // TODO: move service/repo out
+	
 	private PaymentTermId paymentTermId;
 
 	public PaymentTermGrossProfitComponent(@Nullable final PaymentTermId paymentTermId)
@@ -50,11 +52,10 @@ public class PaymentTermGrossProfitComponent implements GrossProfitComponent
 			return input;
 		}
 
-		final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 		final Percent discount = paymentTermRepository.getPaymentTermDiscount(paymentTermId);
 
-		final Money percentage = input.percentage(discount);
-		return input.subtract(percentage);
+		final Money discountAmt = input.percentage(discount);
+		return input.subtract(discountAmt);
 	}
 
 }
