@@ -91,21 +91,22 @@ class PurchaseRowsLoader
 
 	public PurchaseRowsSupplier createPurchaseRowsSupplier()
 	{
-		return () -> {
+		return this::loadAndCheckAvailability;
+	}
 
-			final List<PurchaseRow> loadResult = load();
-			if (isMakeAsynchronousAvailiabilityCheck())
-			{
-				createAndAddAvailabilityResultRowsAsync();
-			}
-			else
-			{
-				createAndAddAvailabilityResultRows();
-			}
+	private List<PurchaseRow> loadAndCheckAvailability()
+	{
+		final List<PurchaseRow> rows = load();
+		if (isMakeAsynchronousAvailiabilityCheck())
+		{
+			createAndAddAvailabilityResultRowsAsync();
+		}
+		else
+		{
+			createAndAddAvailabilityResultRows();
+		}
 
-			return loadResult;
-		};
-
+		return rows;
 	}
 
 	@VisibleForTesting
