@@ -343,3 +343,98 @@ UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:50:47','
 UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:50:50','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=541005 AND AD_Language='en_US'
 ;
 
+-- 2018-06-01T13:55:02.547
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:55:02','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Client/ Organisation',Description='',WEBUI_NameBrowse='Client/ Organisation' WHERE AD_Menu_ID=540833 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:55:11.649
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET EntityType='D',Updated=TO_TIMESTAMP('2018-06-01 13:55:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540836
+;
+
+-- 2018-06-01T13:57:33.088
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:57:33','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Settings',WEBUI_NameBrowse='Settings' WHERE AD_Menu_ID=540836 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:58:54.801
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:58:54','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Workpackage Queue' WHERE AD_Window_ID=540163 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:59:01.255
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:59:01','YYYY-MM-DD HH24:MI:SS') WHERE AD_Tab_ID=540456 AND AD_Language='it_CH'
+;
+
+-- 2018-06-01T13:59:05.353
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:59:05','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Workpackage Queue' WHERE AD_Tab_ID=540456 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:59:17.580
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:59:17','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Workpackage Queue',WEBUI_NameBrowse='Workpackage Queue' WHERE AD_Menu_ID=540892 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T13:59:53.913
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 13:59:53','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Printing Queue',Description='Printing Queue',WEBUI_NameBrowse='Printing Queue' WHERE AD_Menu_ID=540911 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:00:08.826
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:00:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Printing Queue',Description='Printing Queue' WHERE AD_Window_ID=540165 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:00:14.466
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:00:14','YYYY-MM-DD HH24:MI:SS') WHERE AD_Tab_ID=540460 AND AD_Language='it_CH'
+;
+
+-- 2018-06-01T14:00:20.896
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:00:20','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Printing Queue' WHERE AD_Tab_ID=540460 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:00:41.321
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:00:41','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Printer',WEBUI_NameBrowse='Printer' WHERE AD_Menu_ID=540912 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:00:58.732
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:00:58','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Printer',Description='Printer' WHERE AD_Window_ID=540167 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:01:07.759
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:01:07','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Printer' WHERE AD_Tab_ID=540463 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:04:41.658
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:04:41','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Printer Allocation',Description='',WEBUI_NameBrowse='Printer Allocation' WHERE AD_Menu_ID=540913 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:04:50.536
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Name='Drucker Zuordnung',Updated=TO_TIMESTAMP('2018-06-01 14:04:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540169
+;
+
+-- 2018-06-01T14:04:50.544
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Hostbasierte Zurodnung zwischen logischen Druckern und Hardware-Druckern', IsActive='Y', Name='Drucker Zuordnung',Updated=TO_TIMESTAMP('2018-06-01 14:04:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540431
+;
+
+-- 2018-06-01T14:04:59.880
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:04:59','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Printer Allocation',Description='' WHERE AD_Window_ID=540169 AND AD_Language='en_US'
+;
+
+-- 2018-06-01T14:05:20.138
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-01 14:05:20','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Configuration' WHERE AD_Tab_ID=540652 AND AD_Language='en_US'
+;
+
