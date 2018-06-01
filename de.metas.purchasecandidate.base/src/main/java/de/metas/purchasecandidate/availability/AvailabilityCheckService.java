@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Multimap;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.availability.AvailabilityCheckCommand.AvailabilityCheckCommandBuilder;
+import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import lombok.NonNull;
 
 /*
@@ -34,14 +36,33 @@ import lombok.NonNull;
 @Service
 public class AvailabilityCheckService
 {
+	private final VendorGatewayRegistry vendorGatewayRegistry;
+
+	public AvailabilityCheckService(@NonNull final VendorGatewayRegistry vendorGatewayRegistry)
+	{
+		this.vendorGatewayRegistry = vendorGatewayRegistry;
+	}
+
 	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		return AvailabilityCheck.ofPurchaseCandidates(purchaseCandidates).checkAvailability();
+		return newAvailabilityCheckCommand()
+				.purchaseCandidates(purchaseCandidates)
+				.build()
+				.checkAvailability();
 	}
 
 	public void checkAvailabilityAsync(@NonNull final Collection<PurchaseCandidate> purchaseCandidates, @NonNull final AvailabilityCheckCallback callback)
 	{
-		AvailabilityCheck.ofPurchaseCandidates(purchaseCandidates).checkAvailabilityAsync(callback);
+		newAvailabilityCheckCommand()
+				.purchaseCandidates(purchaseCandidates)
+				.build()
+				.checkAvailabilityAsync(callback);
+	}
+
+	private AvailabilityCheckCommandBuilder newAvailabilityCheckCommand()
+	{
+		return AvailabilityCheckCommand.builder()
+				.vendorGatewayRegistry(vendorGatewayRegistry);
 	}
 
 }

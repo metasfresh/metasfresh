@@ -10,7 +10,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -28,6 +27,7 @@ import de.metas.vendor.gateway.api.availability.AvailabilityRequestException;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -52,20 +52,19 @@ import lombok.NonNull;
  * #L%
  */
 
-class AvailabilityCheck
+class AvailabilityCheckCommand
 {
-	public static AvailabilityCheck ofPurchaseCandidates(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
-	{
-		return new AvailabilityCheck(purchaseCandidates);
-	}
-
 	// services
-	private final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
+	private final VendorGatewayRegistry vendorGatewayRegistry;
 
 	private final ImmutableListMultimap<BPartnerId, PurchaseCandidate> purchaseCandidatesByVendorId;
 
-	private AvailabilityCheck(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
+	@Builder
+	private AvailabilityCheckCommand(
+			@NonNull final Collection<PurchaseCandidate> purchaseCandidates,
+			@NonNull final VendorGatewayRegistry vendorGatewayRegistry)
 	{
+		this.vendorGatewayRegistry = vendorGatewayRegistry;
 		this.purchaseCandidatesByVendorId = Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorId);
 	}
 
