@@ -140,7 +140,8 @@ class PurchaseRowsLoader
 		return resultBuilder.build();
 	}
 
-	private PurchaseCandidatesAvailabilityRequest createAvailabilityRequest(@NonNull final PurchaseRowsList rows)
+	@VisibleForTesting
+	PurchaseCandidatesAvailabilityRequest createAvailabilityRequest(@NonNull final PurchaseRowsList rows)
 	{
 		return PurchaseCandidatesAvailabilityRequest.of(rows.getPurchaseCandidates());
 	}

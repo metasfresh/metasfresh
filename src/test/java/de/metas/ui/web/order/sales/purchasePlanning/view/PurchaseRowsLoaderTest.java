@@ -28,9 +28,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
@@ -49,6 +47,7 @@ import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.availability.AvailabilityCheckService;
+import de.metas.purchasecandidate.availability.AvailabilityMultiResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.purchasecandidate.availability.PurchaseCandidatesAvailabilityRequest;
@@ -169,19 +168,6 @@ public class PurchaseRowsLoaderTest
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, bPartnerProduct);
 		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(demand, purchaseCandidate);
 
-		final Multimap<PurchaseCandidate, AvailabilityResult> checkAvailabilityResult = ArrayListMultimap.create();
-		checkAvailabilityResult.put(purchaseCandidate, AvailabilityResult.builder()
-				.purchaseCandidate(purchaseCandidate)
-				.qty(TEN)
-				.type(Type.AVAILABLE).build());
-
-		// @formatter:off
-		new Expectations()
-		{{
-			availabilityCheckService.checkAvailability((PurchaseCandidatesAvailabilityRequest)any);
-			result = checkAvailabilityResult;
-		}};	// @formatter:on
-
 		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
 				.purchaseDemandWithCandidatesList(demandWithCandidates)
 				.viewSupplier(() -> null)
@@ -191,8 +177,12 @@ public class PurchaseRowsLoaderTest
 				.availabilityCheckService(availabilityCheckService)
 				.build();
 
+		//
 		// invoke the method under test
 		final PurchaseRowsList rowsList = loader.load();
+		
+		//
+		// Check result
 		final List<PurchaseRow> topLevelRows = rowsList.getTopLevelRows();
 
 		assertThat(topLevelRows).hasSize(1);
@@ -203,6 +193,19 @@ public class PurchaseRowsLoaderTest
 		final PurchaseRow purchaseRow = groupRow.getIncludedRows().get(0);
 		assertThat(purchaseRow.getRowType()).isEqualTo(PurchaseRowType.LINE);
 		assertThat(purchaseRow.getIncludedRows()).isEmpty();
+
+		// @formatter:off
+		new Expectations()
+		{{
+			final PurchaseCandidatesAvailabilityRequest request = loader.createAvailabilityRequest(rowsList);
+			availabilityCheckService.checkAvailability(request);
+			result = AvailabilityMultiResult.of(AvailabilityResult.builder()
+					.trackingId(request.getTrackingIds().iterator().next())
+					.purchaseCandidate(purchaseCandidate)
+					.qty(TEN)
+					.type(Type.AVAILABLE)
+					.build());
+		}};	// @formatter:on
 
 		loader.createAndAddAvailabilityResultRows(rowsList);
 		assertThat(purchaseRow.getIncludedRows()).hasSize(1);
