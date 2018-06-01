@@ -85,6 +85,8 @@ class TableItem extends PureComponent {
     const { changeListenOnTrue, changeListenOnFalse } = this.props;
 
     if (item ? !item.readonly : true) {
+      if (this.state.edited === property) e.stopPropagation();
+
       this.setState(
         {
           edited: property,
@@ -160,7 +162,11 @@ class TableItem extends PureComponent {
     if (ret) {
       ret.then(resp => {
         if (resp[0] && resp[0].fieldsByName) {
-          editedCells = merge(editedCells, resp[0].fieldsByName);
+          const fields = resp[0].fieldsByName;
+
+          for (let [k, v] of Object.entries(fields)) {
+            editedCells[k] = v;
+          }
         }
 
         this.setState(
@@ -193,8 +199,8 @@ class TableItem extends PureComponent {
       caption,
       colspan,
       viewId,
+      isSelected,
     } = this.props;
-    let { readonly } = this.props;
     const { edited, updatedRow, listenOnKeys, editedCells } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
 
@@ -210,10 +216,11 @@ class TableItem extends PureComponent {
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
             let isEditable =
-              ((cells &&
+              (cells &&
                 cells[property] &&
-                cells[property].viewEditorRenderMode) ||
-                item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+                cells[property].viewEditorRenderMode ===
+                  VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
+              item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
             const isEdited = edited === property;
 
             let widgetData = item.fields.map(prop => {
@@ -231,12 +238,13 @@ class TableItem extends PureComponent {
                     mandatory: true,
                     readonly: false,
                   };
-                  readonly = false;
                 }
                 return cellWidget;
               }
               return -1;
             });
+            // HACK: Color fields should always be readonly
+            isEditable = item.widgetType === 'Color' ? false : isEditable;
 
             return (
               <TableCell
@@ -248,7 +256,6 @@ class TableItem extends PureComponent {
                   rowId,
                   tabId,
                   item,
-                  readonly,
                   widgetData,
                   tabIndex,
                   listenOnKeys,
@@ -257,16 +264,17 @@ class TableItem extends PureComponent {
                   viewId,
                 }}
                 key={`${rowId}-${property}`}
-                isRowSelected={this.props.isSelected}
+                isRowSelected={isSelected}
                 isEdited={isEdited}
-                handleDoubleClick={e =>
-                  this.handleEditProperty(e, property, true, widgetData[0])
-                }
+                handleDoubleClick={e => {
+                  if (isEditable) {
+                    this.handleEditProperty(e, property, true, widgetData[0]);
+                  }
+                }}
                 onClickOutside={e => {
                   this.handleEditProperty(e);
                   changeListenOnTrue();
                 }}
-                disableOnClickOutside={edited !== property}
                 onCellChange={this.onCellChange}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
