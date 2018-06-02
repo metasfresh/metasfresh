@@ -1,10 +1,12 @@
-package de.metas.purchasecandidate;
+package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.util.List;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.product.ProductId;
+import de.metas.purchasecandidate.PurchaseCandidate;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -17,12 +19,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,11 +33,28 @@ import lombok.Value;
 
 @Value
 @Builder
-public class SalesOrderLineWithCandidates
+public class PurchaseCandidateAggregateKey
 {
-	@NonNull
-	SalesOrderLine salesOrderLine;
+	public static PurchaseCandidateAggregateKey cast(Object obj)
+	{
+		return (PurchaseCandidateAggregateKey)obj;
+	}
 
-	@Singular
-	List<PurchaseCandidate> purchaseCandidates;
+	public static PurchaseCandidateAggregateKey fromPurchaseCandidate(PurchaseCandidate purchaseCandidate)
+	{
+		return builder()
+				.orgId(purchaseCandidate.getOrgId())
+				.warehouseId(purchaseCandidate.getWarehouseId())
+				.productId(purchaseCandidate.getProductId())
+				.uomId(purchaseCandidate.getUomId())
+				.build();
+	}
+
+	@NonNull
+	OrgId orgId;
+	@NonNull
+	WarehouseId warehouseId;
+	@NonNull
+	ProductId productId;
+	int uomId;
 }

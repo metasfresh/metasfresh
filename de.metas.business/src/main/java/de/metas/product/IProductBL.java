@@ -115,6 +115,12 @@ public interface IProductBL extends ISingletonService
 	/** @return UOM used in material storage; never return null; */
 	I_C_UOM getStockingUOM(int productId);
 
+	/** @return UOM used in material storage; never return null; */
+	default I_C_UOM getStockingUOM(@NonNull final ProductId productId)
+	{
+		return getStockingUOM(productId.getRepoId());
+	}
+
 	default int getStockingUOMId(@NonNull final ProductId productId)
 	{
 		return getStockingUOM(productId.getRepoId()).getC_UOM_ID();

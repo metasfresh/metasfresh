@@ -416,12 +416,19 @@ public class Doc_Invoice extends Doc
 				serviceAmt = getAmount(Doc.AMTTYPE_Gross);
 				grossAmt = Env.ZERO;
 			}
-			if (grossAmt.signum() != 0)
-				fact.createLine(null, MAccount.get(getCtx(), receivables_ID),
-						getC_Currency_ID(), grossAmt, null);
+		
+			// https://github.com/metasfresh/metasfresh/issues/4147
+			// we need this line later, even if it is zero
+			fact.createLine()
+					.setAccount(MAccount.get(getCtx(), receivables_ID))
+					.setAmtSource(getC_Currency_ID(),  grossAmt,null)
+					.alsoAddZeroLine()
+					.buildAndAdd();
 			if (serviceAmt.signum() != 0)
+			{
 				fact.createLine(null, MAccount.get(getCtx(), receivablesServices_ID),
 						getC_Currency_ID(), serviceAmt, null);
+			}
 		}
 		// ARC
 		else if (getDocumentType().equals(DOCTYPE_ARCredit))
@@ -496,12 +503,17 @@ public class Doc_Invoice extends Doc
 				serviceAmt = getAmount(Doc.AMTTYPE_Gross);
 				grossAmt = Env.ZERO;
 			}
-			if (grossAmt.signum() != 0)
-				fact.createLine(null, MAccount.get(getCtx(), receivables_ID),
-						getC_Currency_ID(), null, grossAmt);
+			// https://github.com/metasfresh/metasfresh/issues/4147
+			// we need this line later, even if it is zero
+			fact.createLine()
+					.setAccount(MAccount.get(getCtx(), receivables_ID))
+					.setAmtSource(getC_Currency_ID(), null, grossAmt)
+					.alsoAddZeroLine()
+					.buildAndAdd();
 			if (serviceAmt.signum() != 0)
-				fact.createLine(null, MAccount.get(getCtx(), receivablesServices_ID),
-						getC_Currency_ID(), null, serviceAmt);
+			{
+				fact.createLine(null, MAccount.get(getCtx(), receivablesServices_ID), getC_Currency_ID(), null, serviceAmt);
+			}
 		}
 
 		// ** API
@@ -624,10 +636,17 @@ public class Doc_Invoice extends Doc
 				serviceAmt = getAmount(Doc.AMTTYPE_Gross);
 				grossAmt = Env.ZERO;
 			}
-			if (grossAmt.signum() != 0)
-				fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), null, grossAmt);
+			// https://github.com/metasfresh/metasfresh/issues/4147
+			// we need this line later, even if it is zero
+			fact.createLine()
+					.setAccount(MAccount.get(getCtx(), payables_ID))
+					.setAmtSource(getC_Currency_ID(), null, grossAmt)
+					.alsoAddZeroLine()
+					.buildAndAdd();
 			if (serviceAmt.signum() != 0)
+			{
 				fact.createLine(null, MAccount.get(getCtx(), payablesServices_ID), getC_Currency_ID(), null, serviceAmt);
+			}
 			//
 			updateProductPO(as);	// Only API
 		}
@@ -745,12 +764,17 @@ public class Doc_Invoice extends Doc
 				serviceAmt = getAmount(Doc.AMTTYPE_Gross);
 				grossAmt = Env.ZERO;
 			}
-			if (grossAmt.signum() != 0)
-				fact.createLine(null, MAccount.get(getCtx(), payables_ID),
-						getC_Currency_ID(), grossAmt, null);
+			// https://github.com/metasfresh/metasfresh/issues/4147
+			// we need this line later, even if it is zero
+			fact.createLine()
+					.setAccount(MAccount.get(getCtx(), payables_ID))
+					.setAmtSource(getC_Currency_ID(), grossAmt, null)
+					.alsoAddZeroLine()
+					.buildAndAdd();
 			if (serviceAmt.signum() != 0)
-				fact.createLine(null, MAccount.get(getCtx(), payablesServices_ID),
-						getC_Currency_ID(), serviceAmt, null);
+			{
+				fact.createLine(null, MAccount.get(getCtx(), payablesServices_ID), getC_Currency_ID(), serviceAmt, null);
+			}
 		}
 		else
 		{

@@ -211,8 +211,25 @@ public class Doc_AllocationHdr extends Doc
 		//
 		if (countPayments > 0 && countInvoices == 0)
 		{
-			createFactLines_PaymentAllocation(fact);
+			if (!isReversedPaymentAllocation())
+			{
+				// in case of reversed payment allocation, nothing is to do
+				// because both line have the same account, dimension etc. in one line we add, in the other line we subtract again;
+				createFactLines_PaymentAllocation(fact);
+			}
 			return facts;
+		}
+		else if (countPayments == 0 && countInvoices > 0)
+		{
+			if (isReversedInvoiceAllocation())
+			{
+				return facts; // nothing to do, analog to isReversedPaymentAllocation()
+			}
+			else
+			{
+				// because we have just one fact line per allocation line
+				fact.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
+			}
 		}
 
 		for (DocLine p_line : p_lines)
@@ -320,6 +337,8 @@ public class Doc_AllocationHdr extends Doc
 	 */
 	private void createFactLines_PaymentAllocation(final Fact fact)
 	{
+		fact.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance); // because we have just one fact line per allocation line
+
 		final MAcctSchema as = fact.getAcctSchema();
 
 		for (DocLine p_line : p_lines)
@@ -338,7 +357,6 @@ public class Doc_AllocationHdr extends Doc
 			}
 			else
 			{
-
 				final MAccount paymentAcct = line.getPaymentAcct(as);
 
 				if (!line.hasPaymentDocument())
@@ -370,6 +388,57 @@ public class Doc_AllocationHdr extends Doc
 				fl_Payment.setC_BPartner_ID(line.getPaymentBPartner_ID());
 			}
 		}
+	}
+
+	private boolean isReversedPaymentAllocation()
+	{
+		if (!mightBeReversedAllocation())
+		{
+			return false;
+		}
+
+		// note: the p_lines are not each others' counter doc lines, i.e. DocLine_Allocation.getCounterDocLine() == null and getCounter_AllocationLine_ID == 0
+		final I_C_Payment firstPayment = DocLine_Allocation.cast(p_lines[0]).getC_Payment();
+		final I_C_Payment secondPayment = DocLine_Allocation.cast(p_lines[1]).getC_Payment();
+
+		boolean firstPaymentIsReversalOfSecond = firstPayment.getReversal_ID() == secondPayment.getC_Payment_ID();
+		boolean secondPaymentIsReversalOfFirst = secondPayment.getReversal_ID() == firstPayment.getC_Payment_ID();
+		return firstPaymentIsReversalOfSecond || secondPaymentIsReversalOfFirst;
+	}
+
+	private boolean isReversedInvoiceAllocation()
+	{
+		if (!mightBeReversedAllocation())
+		{
+			return false;
+		}
+
+		// note: the p_lines are not each others' counter doc lines, i.e. DocLine_Allocation.getCounterDocLine() == null and getCounter_AllocationLine_ID == 0
+		final I_C_Invoice firstInvoice = DocLine_Allocation.cast(p_lines[0]).getC_Invoice();
+		final I_C_Invoice secondInvoice = DocLine_Allocation.cast(p_lines[1]).getC_Invoice();
+
+		boolean firstInvoiceIsReversalOfSecond = firstInvoice.getReversal_ID() == secondInvoice.getC_Invoice_ID();
+		boolean secondInvoiceIsReversalOfFirst = secondInvoice.getReversal_ID() == firstInvoice.getC_Invoice_ID();
+		return firstInvoiceIsReversalOfSecond || secondInvoiceIsReversalOfFirst;
+	}
+
+	private boolean mightBeReversedAllocation()
+	{
+		if (p_lines == null || p_lines.length != 2)
+		{
+			return false;
+		}
+
+		// note: in the code this calls this method, we checked that 0 lines refer to an invoice and > 0 lines refer to a payment
+		Check.errorUnless(p_lines[0] instanceof DocLine_Allocation, "All lines within this instance need to be DocLine_Allocations; line={}", p_lines[0]);
+		final DocLine_Allocation firstAllocationDocLine = (DocLine_Allocation)p_lines[0];
+
+		Check.errorUnless(p_lines[1] instanceof DocLine_Allocation, "All lines within this instance need to be DocLine_Allocations; line={}", p_lines[1]);
+		final DocLine_Allocation secondAllocationDocLine = (DocLine_Allocation)p_lines[1];
+		// note: they are not each others' counter doc lines, i.e. DocLine_Allocation.getCounterDocLine() == null and getCounter_AllocationLine_ID == 0
+
+		final boolean amountsAreMatching = firstAllocationDocLine.getAllocatedAmt().negate().compareTo(secondAllocationDocLine.getAllocatedAmt()) == 0;
+		return amountsAreMatching;
 	}
 
 	/**

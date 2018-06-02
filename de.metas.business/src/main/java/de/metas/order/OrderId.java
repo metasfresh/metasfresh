@@ -17,23 +17,33 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 @Value
 public class OrderId
 {
-	int repoId;
-
 	public static OrderId ofRepoId(final int repoId)
 	{
 		return new OrderId(repoId);
 	}
+
+	public static OrderId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new OrderId(repoId) : null;
+	}
+
+	public static int getRepoIdOr(final OrderId orderId, final int defaultValue)
+	{
+		return orderId != null ? orderId.getRepoId() : defaultValue;
+	}
+
+	int repoId;
 
 	private OrderId(final int repoId)
 	{
