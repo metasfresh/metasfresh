@@ -21,6 +21,16 @@ class SideList extends Component {
     };
   }
 
+  componentWillReceiveProps(props) {
+    const { defaultTab } = props;
+
+    if (defaultTab !== this.props.defaultTab) {
+      this.setState({
+        tab: defaultTab,
+      });
+    }
+  }
+
   handleClickOutside = () => {
     const { closeSideList } = this.props;
     closeSideList();

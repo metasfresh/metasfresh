@@ -28,21 +28,21 @@ export default class GlobalContextShortcuts extends Component {
     OPEN_SIDEBAR_MENU_0: event => {
       event.preventDefault();
 
-      this.props.closeOverlays(null, () => {
+      this.props.closeOverlays('isSideListShow', () => {
         this.props.handleSidelistToggle(0);
       });
     },
     OPEN_SIDEBAR_MENU_1: event => {
       event.preventDefault();
 
-      this.props.closeOverlays(null, () => {
+      this.props.closeOverlays('isSideListShow', () => {
         this.props.handleSidelistToggle(1);
       });
     },
     OPEN_SIDEBAR_MENU_2: event => {
       event.preventDefault();
 
-      this.props.closeOverlays(null, () => {
+      this.props.closeOverlays('isSideListShow', () => {
         this.props.handleSidelistToggle(2);
       });
     },

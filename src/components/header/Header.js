@@ -288,11 +288,15 @@ class Header extends Component {
     }
   };
 
-  handleSidelistToggle = (id = null, sideListTab) => {
-    this.toggleScrollScope(id !== null);
+  handleSidelistToggle = (id = null) => {
+    const { sideListTab } = this.state;
+
+    const isSideListShow = id !== null && id !== sideListTab;
+
+    this.toggleScrollScope(isSideListShow);
 
     this.setState({
-      isSideListShow: id !== null && id !== sideListTab,
+      isSideListShow,
       sideListTab: id !== sideListTab ? id : null,
     });
   };
@@ -306,7 +310,6 @@ class Header extends Component {
       isInboxOpen: false,
       isUDOpen: false,
       isSideListShow: false,
-      sideListTab: null,
       tooltipOpen: '',
     };
 
@@ -623,9 +626,7 @@ class Header extends Component {
           />
         )}
         <GlobalContextShortcuts
-          handleSidelistToggle={id =>
-            showSidelist && this.handleSidelistToggle(id, sideListTab)
-          }
+          handleSidelistToggle={this.handleSidelistToggle}
           handleMenuOverlay={
             isMenuOverlayShow
               ? () => this.handleMenuOverlay('', '')
