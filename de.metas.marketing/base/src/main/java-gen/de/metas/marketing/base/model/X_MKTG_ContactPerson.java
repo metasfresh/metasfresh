@@ -14,7 +14,7 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -979024680L;
+	private static final long serialVersionUID = 1077519660L;
 
     /** Standard Constructor */
     public X_MKTG_ContactPerson (Properties ctx, int MKTG_ContactPerson_ID, String trxName)
@@ -25,7 +25,6 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 			setDeactivatedOnRemotePlatform (null); // Unknown
 			setMKTG_ContactPerson_ID (0);
 			setMKTG_Platform_ID (0);
-			setName (null);
         } */
     }
 
@@ -79,6 +78,25 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Adresse.
+		@param Address 
+		Anschrift
+	  */
+	@Override
+	public void setAddress (java.lang.String Address)
+	{
+		set_Value (COLUMNNAME_Address, Address);
+	}
+
+	/** Get Adresse.
+		@return Anschrift
+	  */
+	@Override
+	public java.lang.String getAddress () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Address);
 	}
 
 	@Override

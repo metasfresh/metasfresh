@@ -98,6 +98,31 @@ public interface I_MKTG_ContactPerson
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Adresse.
+	 * Anschrift
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAddress (java.lang.String Address);
+
+	/**
+	 * Get Adresse.
+	 * Anschrift
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAddress();
+
+    /** Column definition for Address */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object> COLUMN_Address = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, Object>(I_MKTG_ContactPerson.class, "Address", null);
+    /** Column name Address */
+    public static final String COLUMNNAME_Address = "Address";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
@@ -376,7 +401,7 @@ public interface I_MKTG_ContactPerson
 	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setName (java.lang.String Name);
@@ -386,7 +411,7 @@ public interface I_MKTG_ContactPerson
 	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getName();
