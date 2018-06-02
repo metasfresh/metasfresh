@@ -158,7 +158,7 @@ class Labels extends Component {
         suggestions: values,
       });
 
-      this.typeAhead = typeAhead;
+      this.lastTypeAhead = typeAhead;
     }
   };
 
