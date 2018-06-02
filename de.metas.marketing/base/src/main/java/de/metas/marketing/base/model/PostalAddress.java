@@ -62,7 +62,9 @@ public class PostalAddress implements ContactAddress
 		return boolIfPresent.orElse(null);
 	}
 
+	public static PostalAddress of(@NonNull final String postalAddress)
 	{
+		return new PostalAddress(postalAddress, null);
 	}
 
 	public static PostalAddress of(
