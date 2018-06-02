@@ -8,7 +8,7 @@ import {
   dropdownRequest,
 } from '../../../actions/GenericActions';
 import Label from './Label';
-import Suggestion from './Suggestion';
+import SelectionDropdown from '../SelectionDropdown';
 
 class Labels extends Component {
   static propTypes = {
@@ -28,11 +28,10 @@ class Labels extends Component {
   state = {
     focused: false,
     values: [],
+    suggestion: null,
     suggestions: [],
-    cursorY: -1,
   };
 
-  childClick = false;
   lastTypeAhead = '';
 
   handleClick = async () => {
@@ -73,58 +72,10 @@ class Labels extends Component {
     });
   };
 
-  handleBlur = event => {
-    if (this.childClick) {
-      this.childClick = false;
-      this.input.focus();
-
-      return;
-    }
-
-    if (this.wrapper.contains(event.relatedTarget)) {
-      return;
-    }
-
+  handleBlur = () => {
     this.setState({
       focused: false,
-      cursorY: -1,
     });
-  };
-
-  handleArrows = event => {
-    let suggestions;
-
-    if (this.state.suggestions.length) {
-      suggestions = this.state.suggestions;
-    } else {
-      suggestions = this.state.values;
-    }
-
-    suggestions = suggestions.filter(this.unusedSuggestions());
-
-    switch (event.key) {
-      case 'ArrowUp': {
-        this.setState(({ cursorY }) => ({
-          cursorY: Math.max(Math.min(cursorY, suggestions.length - 1) - 1, -1),
-        }));
-
-        // Prevent page from scrolling
-        event.preventDefault();
-
-        return;
-      }
-
-      case 'ArrowDown': {
-        this.setState(({ cursorY }) => ({
-          cursorY: Math.min(cursorY + 1, suggestions.length - 1),
-        }));
-
-        // Prevent page from scrolling
-        event.preventDefault();
-
-        return;
-      }
-    }
   };
 
   handleKeyUp = async event => {
@@ -166,40 +117,6 @@ class Labels extends Component {
     const typeAhead = event.target.innerHTML;
     const { selected } = this.props;
 
-    if (event.key === 'Enter') {
-      if (typeAhead || this.state.cursorY >= 0) {
-        let suggestions;
-
-        if (this.state.suggestions.length) {
-          suggestions = this.state.suggestions;
-        } else {
-          suggestions = this.state.values;
-        }
-
-        suggestions = suggestions.filter(this.unusedSuggestions());
-
-        this.props.onChange([
-          ...this.props.selected,
-          suggestions[
-            Math.max(0, Math.min(this.state.cursorY, suggestions.length - 1))
-          ],
-        ]);
-
-        if (typeAhead) {
-          this.setState({
-            cursorY: -1,
-          });
-        }
-
-        this.input.innerHTML = '';
-      }
-
-      // Don't break contentEditable container with newline
-      event.preventDefault();
-
-      return;
-    }
-
     if (event.key === 'Backspace') {
       if (selected.length < 1) {
         return;
@@ -225,15 +142,26 @@ class Labels extends Component {
     event.preventDefault();
   };
 
+  handleTemporarySelection = suggestion => {
+    this.setState({ suggestion });
+  };
+
   handleSuggestionAdd = suggestion => {
-    this.childClick = true;
     this.input.innerHTML = '';
+
+    if (!suggestion) {
+      return;
+    }
 
     this.props.onChange([...this.props.selected, suggestion]);
   };
 
   handleLabelRemove = label => {
     this.props.onChange(this.props.selected.filter(item => item !== label));
+  };
+
+  handleCancel = () => {
+    this.input.blur();
   };
 
   unusedSuggestions = () => {
@@ -243,7 +171,7 @@ class Labels extends Component {
   };
 
   render() {
-    const { focused } = this.state;
+    const { focused, suggestion } = this.state;
     let suggestions;
 
     if (this.state.suggestions.length) {
@@ -255,75 +183,61 @@ class Labels extends Component {
     suggestions = suggestions.filter(this.unusedSuggestions());
 
     return (
-      <div
-        ref={ref => {
-          this.wrapper = ref;
-        }}
-        className={`${this.props.className} labels`}
-        onClick={this.handleClick}
-        onFocus={this.handleFocus}
-        onBlur={this.handleBlur}
-        tabIndex={this.props.tabIndex}
-        onKeyDown={this.handleArrows}
+      <TetherComponent
+        attachment="top left"
+        targetAttachment="bottom left"
+        constraints={[
+          {
+            to: 'scrollParent',
+          },
+          {
+            to: 'window',
+            pin: ['bottom'],
+          },
+        ]}
       >
-        <span className="labels-wrap">
-          {this.props.selected.map(item => (
-            <Label
-              className="labels-label"
-              key={item.key}
-              label={item}
-              onRemove={this.handleLabelRemove}
+        <span
+          ref={ref => {
+            this.wrapper = ref;
+          }}
+          className={`${this.props.className} labels`}
+          onClick={this.handleClick}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+          tabIndex={this.props.tabIndex}
+        >
+          <span className="labels-wrap">
+            {this.props.selected.map(item => (
+              <Label
+                className="labels-label"
+                key={item.key}
+                label={item}
+                onRemove={this.handleLabelRemove}
+              />
+            ))}
+            <span
+              className="labels-input"
+              ref={ref => {
+                this.input = ref;
+              }}
+              contentEditable
+              onKeyUp={this.handleKeyUp}
+              onKeyDown={this.handleKeyDown}
             />
-          ))}
-          <span
-            className="labels-input"
-            ref={ref => {
-              this.input = ref;
-            }}
-            contentEditable
-            onKeyUp={this.handleKeyUp}
-            onKeyDown={this.handleKeyDown}
-          />
+          </span>
         </span>
         {focused && (
-          <TetherComponent
-            attachment="top left"
-            targetAttachment="bottom left"
-            constraints={[
-              {
-                to: 'scrollParent',
-              },
-              {
-                to: 'window',
-                pin: ['bottom'],
-              },
-            ]}
-          >
-            <span className="dropdown-holder" />
-            <div
-              style={{ width: `calc(${this.wrapper.offsetWidth}px - 10px)` }}
-              className="labels-dropdown"
-            >
-              {suggestions.map((suggestion, index) => {
-                const active =
-                  index === this.state.cursorY ||
-                  (index === suggestions.length - 1 &&
-                    index <= this.state.cursorY);
-
-                return (
-                  <Suggestion
-                    className="labels-suggestion ignore-react-onclickoutside"
-                    key={suggestion.key}
-                    suggestion={suggestion}
-                    onAdd={this.handleSuggestionAdd}
-                    active={active}
-                  />
-                );
-              })}
-            </div>
-          </TetherComponent>
+          <SelectionDropdown
+            options={suggestions}
+            empty="There are no labels available"
+            selected={suggestion}
+            width={this.wrapper.offsetWidth}
+            onChange={this.handleTemporarySelection}
+            onSelect={this.handleSuggestionAdd}
+            onCancel={this.handleCancel}
+          />
         )}
-      </div>
+      </TetherComponent>
     );
   }
 }
