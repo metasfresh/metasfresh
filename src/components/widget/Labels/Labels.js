@@ -26,6 +26,7 @@ class Labels extends Component {
   };
 
   state = {
+    cursor: this.props.selected.length,
     focused: false,
     suggestion: null,
     suggestions: [],
@@ -114,25 +115,57 @@ class Labels extends Component {
 
   handleKeyDown = event => {
     const typeAhead = event.target.innerHTML;
-    const { selected } = this.props;
+    const { onChange, selected } = this.props;
+    const { cursor } = this.state;
 
     this.setState({ focused: true });
 
-    if (event.key === 'Backspace') {
-      if (selected.length < 1) {
+    switch (event.key) {
+      case 'Backspace': {
+        if (selected.length < 1) {
+          return;
+        }
+
+        if (!typeAhead) {
+          if (cursor === 0) {
+            return;
+          }
+
+          const selectedNew = [...selected];
+          selectedNew.splice(cursor - 1, 1);
+
+          onChange(selectedNew);
+
+          this.setState({
+            cursor: cursor - 1,
+          });
+        }
+
         return;
-      } else if (!typeAhead) {
-        this.props.onChange(selected.slice(0, selected.length - 1));
       }
 
-      return;
+      case 'ArrowLeft': {
+        if (typeAhead) {
+          return;
+        }
+
+        this.setState({ cursor: cursor - 1 });
+
+        return;
+      }
+
+      case 'ArrowRight': {
+        if (typeAhead) {
+          return;
+        }
+
+        this.setState({ cursor: cursor + 1 });
+
+        return;
+      }
     }
 
-    if (
-      ['Tab', 'ArrowTop', 'ArrowRight', 'ArrowBottom', 'ArrowLeft'].includes(
-        event.key
-      )
-    ) {
+    if (['Tab', 'ArrowTop', 'ArrowBottom'].includes(event.key)) {
       return;
     }
 
@@ -150,13 +183,20 @@ class Labels extends Component {
   };
 
   handleSuggestionAdd = suggestion => {
+    const { onChange, selected } = this.props;
+    const { cursor } = this.state;
+
     this.input.innerHTML = '';
 
     if (!suggestion) {
       return;
     }
 
-    this.props.onChange([...this.props.selected, suggestion]);
+    onChange([...selected, suggestion]);
+
+    this.setState({
+      cursor: cursor + 1,
+    });
   };
 
   handleLabelRemove = label => {
@@ -178,9 +218,30 @@ class Labels extends Component {
   };
 
   render() {
-    const { focused, suggestion } = this.state;
+    const { focused, suggestion, cursor } = this.state;
+    const { className, selected, tabIndex } = this.props;
 
     const suggestions = this.state.suggestions.filter(this.unusedSuggestions());
+
+    const labels = selected.map(item => (
+      <Label key={item.key} label={item} onRemove={this.handleLabelRemove} />
+    ));
+
+    labels.splice(
+      cursor % (selected.length + 1),
+      0,
+      <span
+        key="input"
+        className="labels-input"
+        ref={ref => {
+          this.input = ref;
+        }}
+        contentEditable
+        onKeyUp={this.handleKeyUp}
+        onKeyDown={this.handleKeyDown}
+        tabIndex={tabIndex}
+      />
+    );
 
     return (
       <TetherComponent
@@ -200,31 +261,12 @@ class Labels extends Component {
           ref={ref => {
             this.wrapper = ref;
           }}
-          className={`${this.props.className} labels`}
+          className={`${className} labels`}
           onClick={this.handleClick}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
         >
-          <span className="labels-wrap">
-            {this.props.selected.map(item => (
-              <Label
-                className="labels-label"
-                key={item.key}
-                label={item}
-                onRemove={this.handleLabelRemove}
-              />
-            ))}
-            <span
-              className="labels-input"
-              ref={ref => {
-                this.input = ref;
-              }}
-              contentEditable
-              onKeyUp={this.handleKeyUp}
-              onKeyDown={this.handleKeyDown}
-              tabIndex={this.props.tabIndex}
-            />
-          </span>
+          <span className="labels-wrap">{labels}</span>
         </span>
         {focused && (
           <SelectionDropdown

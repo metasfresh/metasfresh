@@ -2,13 +2,17 @@ import React, { Component } from 'react';
 
 export default class Label extends Component {
   handleClick = () => {
-    this.props.onRemove(this.props.label);
+    const { onRemove, label } = this.props;
+
+    onRemove(label);
   };
 
   render() {
+    const { label } = this.props;
+
     return (
-      <div className={this.props.className}>
-        {this.props.label.caption}
+      <div className="labels-label">
+        {label.caption}
         <span className="labels-label-remove" onClick={this.handleClick}>
           {' '}
           ✕

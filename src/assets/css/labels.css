@@ -24,6 +24,7 @@
         &-input {
             display: inline-block;
             min-width: 1px;
+            margin-right: 3px;
         }
 
         &-dropdown {
