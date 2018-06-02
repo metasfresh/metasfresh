@@ -8,9 +8,7 @@ export default class GlobalContextShortcuts extends Component {
     OPEN_AVATAR_MENU: event => {
       event.preventDefault();
 
-      this.props.closeOverlays(null, () => {
-        this.props.handleUDOpen();
-      });
+      this.props.closeOverlays('isUDOpen', this.props.handleUDToggle);
     },
     OPEN_ACTIONS_MENU: event => {
       event.preventDefault();

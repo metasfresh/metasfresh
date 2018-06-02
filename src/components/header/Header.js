@@ -111,6 +111,10 @@ class Header extends Component {
     this.setState({ isUDOpen: !!state });
   };
 
+  handleUDToggle = () => {
+    this.setState({ isUDOpen: !this.state.isUDOpen });
+  };
+
   handleMenuOverlay = (e, nodeId) => {
     const { isSubheaderShow, isSideListShow } = this.state;
 
@@ -629,7 +633,7 @@ class Header extends Component {
                   this.closeOverlays('', () => this.handleMenuOverlay('', '0'))
           }
           handleInboxToggle={this.handleInboxToggle}
-          handleUDOpen={() => this.handleUDOpen(!isUDOpen)}
+          handleUDToggle={this.handleUDToggle}
           openModal={
             dataId
               ? () =>
