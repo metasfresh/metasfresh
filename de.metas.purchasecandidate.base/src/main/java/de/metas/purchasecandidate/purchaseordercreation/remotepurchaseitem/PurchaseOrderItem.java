@@ -1,20 +1,23 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.I_C_OrderLine;
+import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.base.Objects;
 
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -60,7 +63,7 @@ public class PurchaseOrderItem implements PurchaseItem
 	}
 
 	@Getter
-	private final int purchaseItemId;
+	private final PurchaseItemId purchaseItemId;
 
 	@Getter
 	private final ITableRecordReference transactionReference;
@@ -78,21 +81,17 @@ public class PurchaseOrderItem implements PurchaseItem
 	private final LocalDateTime datePromised;
 
 	@Getter
-	private int purchaseOrderId;
-
-	@Getter
-	private int purchaseOrderLineId;
+	private OrderAndLineId purchaseOrderAndLineId;
 
 	@Builder(toBuilder = true)
 	private PurchaseOrderItem(
-			final int purchaseItemId,
+			final PurchaseItemId purchaseItemId,
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final BigDecimal purchasedQty,
 			@NonNull final LocalDateTime datePromised,
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
-			final int purchaseOrderId,
-			final int purchaseOrderLineId)
+			final OrderAndLineId purchaseOrderAndLineId)
 	{
 		this.purchaseItemId = purchaseItemId;
 
@@ -102,8 +101,7 @@ public class PurchaseOrderItem implements PurchaseItem
 		this.datePromised = datePromised;
 		this.remotePurchaseOrderId = remotePurchaseOrderId;
 
-		this.purchaseOrderLineId = purchaseOrderLineId;
-		this.purchaseOrderId = purchaseOrderId;
+		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
 
 		final boolean remotePurchaseExists = !Objects.equal(remotePurchaseOrderId, NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 		Check.errorIf(remotePurchaseExists && transactionReference == null,
@@ -113,12 +111,12 @@ public class PurchaseOrderItem implements PurchaseItem
 	}
 
 	@Override
-	public int getPurchaseCandidateId()
+	public PurchaseCandidateId getPurchaseCandidateId()
 	{
-		return getPurchaseCandidate().getPurchaseCandidateId();
+		return getPurchaseCandidate().getId();
 	}
 
-	public int getProductId()
+	public ProductId getProductId()
 	{
 		return getPurchaseCandidate().getProductId();
 	}
@@ -128,19 +126,19 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getUomId();
 	}
 
-	public int getOrgId()
+	public OrgId getOrgId()
 	{
 		return getPurchaseCandidate().getOrgId();
 	}
 
-	public int getWarehouseId()
+	public WarehouseId getWarehouseId()
 	{
 		return getPurchaseCandidate().getWarehouseId();
 	}
 
-	public BPartnerId getVendorBPartnerId()
+	public BPartnerId getVendorId()
 	{
-		return getPurchaseCandidate().getVendorBPartnerId();
+		return getPurchaseCandidate().getVendorId();
 	}
 
 	public LocalDateTime getDateRequired()
@@ -148,9 +146,10 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getDateRequired();
 	}
 
-	public int getSalesOrderId()
+	public OrderId getSalesOrderId()
 	{
-		return getPurchaseCandidate().getSalesOrderId();
+		final OrderAndLineId salesOrderAndLineId = getPurchaseCandidate().getSalesOrderAndLineId();
+		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
 	}
 
 	private BigDecimal getQtyToPurchase()
@@ -168,10 +167,9 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchasedQty().compareTo(getQtyToPurchase()) >= 0;
 	}
 
-	public void setPurchaseOrderLineIdAndMarkProcessed(final int purchaseOrderLineId)
+	public void setPurchaseOrderLineIdAndMarkProcessed(@NonNull final OrderAndLineId purchaseOrderAndLineId)
 	{
-		this.purchaseOrderId = load(purchaseOrderLineId, I_C_OrderLine.class).getC_Order_ID();
-		this.purchaseOrderLineId = purchaseOrderLineId;
+		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
 
 		if (purchaseMatchesOrExceedsRequiredQty())
 		{

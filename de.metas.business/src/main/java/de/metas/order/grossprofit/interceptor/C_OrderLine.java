@@ -7,11 +7,9 @@ import org.springframework.stereotype.Component;
 
 import de.metas.money.Money;
 import de.metas.money.grossprofit.GrossProfitComputeRequest;
-import de.metas.money.grossprofit.GrossProfitPrice;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineRepository;
-import de.metas.order.grossprofit.GrossProfitComputeRequestCreator;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
 import lombok.NonNull;
 
@@ -55,16 +53,17 @@ public class C_OrderLine
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_PriceActual)
-	public void updateGrossMarginPrice(@NonNull final I_C_OrderLine orderLineRecord)
+	public void updateProfitBasePrice(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		final OrderLine orderLine = orderLineRepository.ofRecord(orderLineRecord);
-		final GrossProfitComputeRequest grossProfitComputeRequest = //
-				GrossProfitComputeRequestCreator.of(orderLine);
+		final Money profitBasePrice = grossProfitPriceFactory.calculateNetPrice(GrossProfitComputeRequest.builder()
+				.bPartnerId(orderLine.getBPartnerId())
+				.productId(orderLine.getProductId())
+				.date(orderLine.getDatePromised().toLocalDate())
+				.baseAmount(orderLine.getPriceActual())
+				.paymentTermId(orderLine.getPaymentTermId())
+				.build());
 
-		final GrossProfitPrice grossProfitPrice = //
-				grossProfitPriceFactory.createGrossProfitPrice(grossProfitComputeRequest);
-
-		final Money profitPrice = grossProfitPrice.compute();
-		orderLineRecord.setPriceGrossProfit(profitPrice.getValue());
+		orderLineRecord.setPriceGrossProfit(profitBasePrice.getValue());
 	}
 }

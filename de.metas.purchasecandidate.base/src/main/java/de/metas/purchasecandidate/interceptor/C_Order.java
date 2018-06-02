@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.interceptor;
 
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -9,6 +9,8 @@ import org.compiere.model.ModelValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import de.metas.order.OrderId;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 
@@ -48,7 +50,8 @@ public class C_Order
 			return;
 		}
 
-		final List<Integer> purchaseCandidateIds = purchaseCandidateRepo.retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(order.getC_Order_ID());
+		final OrderId salesOrderid = OrderId.ofRepoId(order.getC_Order_ID());
+		final Set<PurchaseCandidateId> purchaseCandidateIds = purchaseCandidateRepo.retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(salesOrderid);
 		if (purchaseCandidateIds.isEmpty())
 		{
 			return;

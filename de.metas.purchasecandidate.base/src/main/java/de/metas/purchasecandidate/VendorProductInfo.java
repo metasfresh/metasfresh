@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate;
 
-import java.util.OptionalInt;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -43,9 +43,9 @@ import lombok.Value;
 @Value
 public class VendorProductInfo
 {
-	OptionalInt bpartnerProductId;
+	Optional<VendorProductInfoId> id;
 
-	BPartnerId vendorBPartnerId;
+	BPartnerId vendorId;
 
 	/** can be null if the resp. vendor can no payment term and none is flagged as default. */
 	PaymentTermId paymentTermId;
@@ -78,7 +78,7 @@ public class VendorProductInfo
 				() -> bpartnerProductRecord.getProductName(),
 				() -> bpartnerProductRecord.getM_Product().getName());
 
-		final BPartnerId bpartnerVendorId = Util.coalesceSuppliers(
+		final BPartnerId vendorId = Util.coalesceSuppliers(
 				() -> bpartnerVendorIdOverride,
 				() -> BPartnerId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_ID()));
 
@@ -91,13 +91,13 @@ public class VendorProductInfo
 		}
 		else
 		{
-			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerVendorId);
+			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(vendorId);
 			aggregatePOs = bpartner.isAggregatePO();
 		}
 
 		return builder()
-				.bpartnerProductId(bpartnerProductRecord.getC_BPartner_Product_ID())
-				.vendorBPartnerId(bpartnerVendorId)
+				.id(VendorProductInfoId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_Product_ID()))
+				.vendorId(vendorId)
 				.paymentTermId(paymentTermId)
 				.productId(ProductId.ofRepoId(bpartnerProductRecord.getM_Product_ID()))
 				.productNo(productNo)
@@ -120,17 +120,17 @@ public class VendorProductInfo
 
 	@Builder
 	private VendorProductInfo(
-			final int bpartnerProductId,
-			@NonNull final BPartnerId vendorBPartnerId,
+			final VendorProductInfoId id,
+			@NonNull final BPartnerId vendorId,
 			@Nullable final PaymentTermId paymentTermId,
 			@NonNull final ProductId productId,
 			@NonNull final String productNo,
 			@NonNull final String productName,
 			final boolean aggregatePOs)
 	{
-		this.bpartnerProductId = bpartnerProductId > 0 ? OptionalInt.of(bpartnerProductId) : OptionalInt.empty();
+		this.id = Optional.ofNullable(id);
 
-		this.vendorBPartnerId = vendorBPartnerId;
+		this.vendorId = vendorId;
 		this.productId = productId;
 
 		this.productNo = productNo;

@@ -1,6 +1,7 @@
 package org.adempiere.service;
 
 import org.adempiere.util.Check;
+import org.compiere.util.Env;
 
 import lombok.Value;
 
@@ -29,16 +30,29 @@ import lombok.Value;
 @Value
 public class OrgId
 {
-	int repoId;
-
 	public static OrgId ofRepoId(final int repoId)
 	{
+		if (repoId == ANY.repoId)
+		{
+			return ANY;
+		}
 		return new OrgId(repoId);
 	}
 
 	public static OrgId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId >= 0 ? new OrgId(repoId) : null;
+		if (repoId == ANY.repoId)
+		{
+			return ANY;
+		}
+		else if (repoId < 0)
+		{
+			return null;
+		}
+		else
+		{
+			return ofRepoId(repoId);
+		}
 	}
 
 	public static int toRepoId(final OrgId orgId)
@@ -46,9 +60,22 @@ public class OrgId
 		return orgId != null ? orgId.getRepoId() : -1;
 	}
 
+	public static final OrgId ANY = new OrgId();
+
+	int repoId;
+
 	private OrgId(final int repoId)
 	{
-		// note that AD_Org_ID=0 means * (i.e. any org)
-		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	private OrgId()
+	{
+		this.repoId = Env.CTXVALUE_AD_Org_ID_Any;
+	}
+
+	public boolean isAny()
+	{
+		return repoId == Env.CTXVALUE_AD_Org_ID_Any;
 	}
 }
