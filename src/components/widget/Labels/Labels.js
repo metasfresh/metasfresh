@@ -116,6 +116,8 @@ class Labels extends Component {
     const typeAhead = event.target.innerHTML;
     const { selected } = this.props;
 
+    this.setState({ focused: true });
+
     if (event.key === 'Backspace') {
       if (selected.length < 1) {
         return;
@@ -160,7 +162,7 @@ class Labels extends Component {
   };
 
   handleCancel = () => {
-    this.input.blur();
+    this.setState({ focused: false });
   };
 
   unusedSuggestions = () => {
