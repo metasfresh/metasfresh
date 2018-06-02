@@ -25,7 +25,7 @@ export default class GlobalContextShortcuts extends Component {
     OPEN_INBOX_MENU: event => {
       event.preventDefault();
 
-      this.props.closeOverlays('', () => this.props.handleInboxOpen(true));
+      this.props.closeOverlays('isInboxOpen', this.props.handleInboxToggle);
     },
     OPEN_SIDEBAR_MENU_0: event => {
       event.preventDefault();

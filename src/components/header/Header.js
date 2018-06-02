@@ -103,6 +103,10 @@ class Header extends Component {
     this.setState({ isInboxOpen: !!state });
   };
 
+  handleInboxToggle = () => {
+    this.setState({ isInboxOpen: !this.state.isInboxOpen });
+  };
+
   handleUDOpen = state => {
     this.setState({ isUDOpen: !!state });
   };
@@ -292,20 +296,24 @@ class Header extends Component {
   closeOverlays = (clickedItem, callback) => {
     const { isSubheaderShow } = this.state;
 
-    this.setState(
-      {
-        menuOverlay: null,
-        isMenuOverlayShow: false,
-        isInboxOpen: false,
-        isUDOpen: false,
-        isSideListShow: false,
-        sideListTab: null,
-        isSubheaderShow:
-          clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false,
-        tooltipOpen: '',
-      },
-      callback
-    );
+    const state = {
+      menuOverlay: null,
+      isMenuOverlayShow: false,
+      isInboxOpen: false,
+      isUDOpen: false,
+      isSideListShow: false,
+      sideListTab: null,
+      tooltipOpen: '',
+    };
+
+    if (clickedItem) {
+      delete state[clickedItem];
+    }
+
+    state.isSubheaderShow =
+      clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false;
+
+    this.setState(state, callback);
 
     if (
       document.getElementsByClassName('js-dropdown-toggler')[0] &&
@@ -620,11 +628,7 @@ class Header extends Component {
               : () =>
                   this.closeOverlays('', () => this.handleMenuOverlay('', '0'))
           }
-          handleInboxOpen={
-            isInboxOpen
-              ? () => this.handleInboxOpen(false)
-              : () => this.handleInboxOpen(true)
-          }
+          handleInboxToggle={this.handleInboxToggle}
           handleUDOpen={() => this.handleUDOpen(!isUDOpen)}
           openModal={
             dataId
