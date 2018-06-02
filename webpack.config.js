@@ -9,9 +9,7 @@ var fs = require('fs');
 
 const plugins = [
   new webpack.DefinePlugin({
-    'process.env': {
-      COMMIT_HASH: JSON.stringify(commitHash),
-    },
+    COMMIT_HASH: JSON.stringify(commitHash),
   }),
   new webpack.HotModuleReplacementPlugin(),
   new webpack.NoEmitOnErrorsPlugin(),
