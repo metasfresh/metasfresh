@@ -29,6 +29,8 @@ Here come the actual release notes:
     * New Window in WebUI for the maintenance of Dunning Level Translations.
   * [#4158](https://github.com/metasfresh/metasfresh/issues/4158) WebUI Sitemap: Missing Translations en_US
     * Improvement of the Translation for en_US for the WebUI menu, windows and tabs.
+  * [#4165](https://github.com/metasfresh/metasfresh/issues/4165) Extend Billing Candidates Filtering for contracts
+    * New Filter criteria added to billing candidates window, allowing to filter by candidate controller.
   
 * metasfresh-frontend-webui
   * [#1311](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1311) Clear Browser Cache when new webui frontend version is installed
