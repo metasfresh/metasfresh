@@ -58,7 +58,10 @@ class Labels extends Component {
 
     const suggestions = response.data.values;
 
-    this.setState({ suggestions });
+    this.setState({
+      suggestion: this.firstVisibleSuggestion(suggestions),
+      suggestions,
+    });
   };
 
   handleFocus = () => {
@@ -105,6 +108,7 @@ class Labels extends Component {
       const suggestions = response.data.values;
 
       this.setState({
+        suggestion: this.firstVisibleSuggestion(suggestions),
         suggestions,
       });
 
@@ -169,6 +173,10 @@ class Labels extends Component {
     const selected = new Set(this.props.selected.map(item => item.key));
 
     return suggestion => !selected.has(suggestion.key);
+  };
+
+  firstVisibleSuggestion = suggestions => {
+    return suggestions.filter(this.unusedSuggestions())[0];
   };
 
   render() {
