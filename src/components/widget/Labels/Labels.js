@@ -36,6 +36,8 @@ class Labels extends Component {
   handleClick = async () => {
     this.input.focus();
 
+    this.setState({ focused: true });
+
     const {
       windowType, // windowId
       docId,
@@ -65,13 +67,7 @@ class Labels extends Component {
   };
 
   handleFocus = () => {
-    if (document.activeElement !== this.input) {
-      return;
-    }
-
-    this.setState({
-      focused: true,
-    });
+    this.input.focus();
   };
 
   handleBlur = () => {
@@ -133,7 +129,9 @@ class Labels extends Component {
     }
 
     if (
-      ['ArrowTop', 'ArrowRight', 'ArrowBottom', 'ArrowLeft'].includes(event.key)
+      ['Tab', 'ArrowTop', 'ArrowRight', 'ArrowBottom', 'ArrowLeft'].includes(
+        event.key
+      )
     ) {
       return;
     }
@@ -206,7 +204,6 @@ class Labels extends Component {
           onClick={this.handleClick}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
-          tabIndex={this.props.tabIndex}
         >
           <span className="labels-wrap">
             {this.props.selected.map(item => (
@@ -225,6 +222,7 @@ class Labels extends Component {
               contentEditable
               onKeyUp={this.handleKeyUp}
               onKeyDown={this.handleKeyDown}
+              tabIndex={this.props.tabIndex}
             />
           </span>
         </span>
