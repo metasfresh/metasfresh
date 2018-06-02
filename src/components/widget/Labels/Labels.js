@@ -27,7 +27,6 @@ class Labels extends Component {
 
   state = {
     focused: false,
-    values: [],
     suggestion: null,
     suggestions: [],
   };
@@ -57,9 +56,9 @@ class Labels extends Component {
       propertyName: name,
     });
 
-    const { values } = response.data;
+    const suggestions = response.data.values;
 
-    this.setState({ values });
+    this.setState({ suggestions });
   };
 
   handleFocus = () => {
@@ -103,10 +102,10 @@ class Labels extends Component {
         query: typeAhead,
       });
 
-      const { values } = response.data;
+      const suggestions = response.data.values;
 
       this.setState({
-        suggestions: values,
+        suggestions,
       });
 
       this.lastTypeAhead = typeAhead;
@@ -172,15 +171,8 @@ class Labels extends Component {
 
   render() {
     const { focused, suggestion } = this.state;
-    let suggestions;
 
-    if (this.state.suggestions.length) {
-      suggestions = this.state.suggestions;
-    } else {
-      suggestions = this.state.values;
-    }
-
-    suggestions = suggestions.filter(this.unusedSuggestions());
+    const suggestions = this.state.suggestions.filter(this.unusedSuggestions());
 
     return (
       <TetherComponent
