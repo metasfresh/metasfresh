@@ -1,8 +1,17 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 const noOp = () => {};
 
 export default class Label extends Component {
+  static propTypes = {
+    label: PropTypes.shape({
+      caption: PropTypes.node,
+    }).isRequired,
+    onClick: PropTypes.func,
+    onRemove: PropTypes.func,
+  };
+
   static defaultProps = {
     onClick: noOp,
     onRemove: noOp,
