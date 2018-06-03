@@ -1,9 +1,46 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import { Shortcut } from '../keyshortcuts';
 import { arePropTypesIdentical } from '../../utils';
 
+const noOp = () => {};
+
 export default class GlobalContextShortcuts extends Component {
+  static propTypes = {
+    closeOverlays: PropTypes.func,
+    handleClone: PropTypes.func,
+    handleDelete: PropTypes.func,
+    handleDocStatusToggle: PropTypes.func,
+    handleEditModeToggle: PropTypes.func,
+    handleEmail: PropTypes.func,
+    handleInboxToggle: PropTypes.func,
+    handleLetter: PropTypes.func,
+    handleMenuOverlay: PropTypes.func,
+    handlePrint: PropTypes.func,
+    handleSidelistToggle: PropTypes.func,
+    handleUDToggle: PropTypes.func,
+    openModal: PropTypes.func,
+    redirect: PropTypes.func,
+  };
+
+  static defaultProps = {
+    closeOverlays: noOp,
+    handleClone: noOp,
+    handleDelete: noOp,
+    handleDocStatusToggle: noOp,
+    handleEditModeToggle: noOp,
+    handleEmail: noOp,
+    handleInboxToggle: noOp,
+    handleLetter: noOp,
+    handleMenuOverlay: noOp,
+    handlePrint: noOp,
+    handleSidelistToggle: noOp,
+    handleUDToggle: noOp,
+    openModal: noOp,
+    redirect: noOp,
+  };
+
   handlers = {
     OPEN_AVATAR_MENU: event => {
       event.preventDefault();
@@ -49,65 +86,47 @@ export default class GlobalContextShortcuts extends Component {
     DELETE_DOCUMENT: event => {
       event.preventDefault();
 
-      if (this.props.handleDelete) {
-        this.props.handleDelete();
-      }
+      this.props.handleDelete();
     },
     CLONE_DOCUMENT: event => {
       event.preventDefault();
 
-      if (this.props.handleClone) {
-        this.props.handleClone();
-      }
+      this.props.handleClone();
     },
     OPEN_ADVANCED_EDIT: event => {
       event.preventDefault();
 
-      if (this.props.openModal) {
-        this.props.openModal();
-      }
+      this.props.openModal();
     },
     OPEN_PRINT_RAPORT: event => {
       event.preventDefault();
 
-      if (this.props.handlePrint) {
-        this.props.handlePrint();
-      }
+      this.props.handlePrint();
     },
     OPEN_EMAIL: event => {
       event.preventDefault();
 
-      if (this.props.handleEmail) {
-        this.props.handleEmail();
-      }
+      this.props.handleEmail();
     },
     OPEN_LETTER: event => {
       event.preventDefault();
 
-      if (this.props.handleLetter) {
-        this.props.handleLetter();
-      }
+      this.props.handleLetter();
     },
     NEW_DOCUMENT: event => {
       event.preventDefault();
 
-      if (this.props.redirect) {
-        this.props.redirect();
-      }
+      this.props.redirect();
     },
     DOC_STATUS: event => {
       event.preventDefault();
 
-      if (this.props.handleDocStatusToggle) {
-        this.props.closeOverlays('dropdown', this.props.handleDocStatusToggle);
-      }
+      this.props.closeOverlays('dropdown', this.props.handleDocStatusToggle);
     },
     TOGGLE_EDIT_MODE: event => {
       event.preventDefault();
 
-      if (this.props.handleEditModeToggle) {
-        this.props.handleEditModeToggle();
-      }
+      this.props.handleEditModeToggle();
     },
   };
 
