@@ -383,12 +383,13 @@ public class PurchaseCandidateRepository
 		final I_C_BPartner_Product bpartnerProduct = purchaseCandidateRecord.getC_BPartner_Product_ID() > 0
 				? loadOutOfTrx(purchaseCandidateRecord.getC_BPartner_Product_ID(), I_C_BPartner_Product.class)
 				: null;
-		// TODO: handle the null case!
-		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(
-				bpartnerProduct,
-				BPartnerId.ofRepoIdOrNull(purchaseCandidateRecord.getVendor_ID()),
-				purchaseCandidateRecord.isAggregatePO());
-		return vendorProductInfo;
+
+		return VendorProductInfo.builderFromDataRecord()
+				.bpartnerProductRecord(bpartnerProduct)
+				.bpartnerVendorIdOverride(BPartnerId.ofRepoIdOrNull(purchaseCandidateRecord.getVendor_ID()))
+				.productIdOverride(ProductId.ofRepoIdOrNull(purchaseCandidateRecord.getM_Product_ID()))
+				.aggregatePOsOverride(purchaseCandidateRecord.isAggregatePO())
+				.build();
 	}
 
 	public void deleteByIds(final Collection<PurchaseCandidateId> purchaseCandidateIds)
