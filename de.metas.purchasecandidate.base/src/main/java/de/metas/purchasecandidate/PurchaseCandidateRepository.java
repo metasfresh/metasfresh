@@ -351,7 +351,12 @@ public class PurchaseCandidateRepository
 
 	private PurchaseProfitInfo toPurchaseProfitInfo(final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
-		final Currency currency = currencyRepository.getById(purchaseCandidateRecord.getC_Currency_ID());
+		final int currencyId = purchaseCandidateRecord.getC_Currency_ID();
+		if (currencyId <= 0)
+		{
+			return null;
+		}
+		final Currency currency = currencyRepository.getById(currencyId);
 
 		return PurchaseProfitInfo.builder()
 				.salesNetPrice(Money.of(purchaseCandidateRecord.getCustomerPriceGrossProfit(), currency))

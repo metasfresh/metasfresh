@@ -123,7 +123,7 @@ public class PurchaseCandidate
 			@NonNull final LocalDateTime dateRequired,
 			final Duration reminderTime,
 			//
-			@NonNull final PurchaseProfitInfo profitInfo,
+			final PurchaseProfitInfo profitInfo,
 			//
 			@Singular final List<PurchaseItem> purchaseItems)
 	{
