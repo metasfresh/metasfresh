@@ -72,8 +72,11 @@ class Labels extends Component {
   };
 
   handleBlur = () => {
+    this.input.innerHTML = '';
+
     this.setState({
       focused: false,
+      cursor: this.props.selected.length,
     });
   };
 
