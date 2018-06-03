@@ -13,6 +13,7 @@ Here come the actual release notes:
 # metasfresh 5.60 (2018-23)
 ## Features
 * metasfresh
+  * [#4033](https://github.com/metasfresh/metasfresh/issues/4033) Pharma: MSV3 Purchase Functionality in purchase candidates
   * [#4116](https://github.com/metasfresh/metasfresh/issues/4116) WebUI: Translation Window for Tax Rates
     * New Window in WebUI for the maintenance of Tax Rate Translations.
   * [#4117](https://github.com/metasfresh/metasfresh/issues/4117) WebUI: Add missing Translations in Product Window
@@ -29,14 +30,20 @@ Here come the actual release notes:
     * New Window in WebUI for the maintenance of Dunning Level Translations.
   * [#4158](https://github.com/metasfresh/metasfresh/issues/4158) WebUI Sitemap: Missing Translations en_US
     * Improvement of the Translation for en_US for the WebUI menu, windows and tabs.
+  * [#4161](https://github.com/metasfresh/metasfresh/issues/4161) Improve error message regarding illegal HU status changes
   * [#4165](https://github.com/metasfresh/metasfresh/issues/4165) Extend Billing Candidates Filtering for contracts
     * New Filter criteria added to billing candidates window, allowing to filter by candidate controller.
   
-* metasfresh-frontend-webui
+* metasfresh-webui-frontend
   * [#1311](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1311) Clear Browser Cache when new webui frontend version is installed
     * Improved cache clearing after rollout of new frontend version.
 
 ## Fixes
+* metasfresh
+  * [#4125](https://github.com/metasfresh/metasfresh/issues/4125) Sometimes I got NPE when posting an allocation
+  * [#4147](https://github.com/metasfresh/metasfresh/issues/4147) Error when posting a zero-sum invoice
+  * [#4163](https://github.com/metasfresh/metasfresh/issues/4163) "Overlapping term" error when completing subscription order
+
 * metasfresh-frontent-webui
   * [#1813](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1813) Cannot set attribute in orderline grid view
     * Fixes the setting of Attributes in Orderline Grid View.
