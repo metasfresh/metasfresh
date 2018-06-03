@@ -14,11 +14,13 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFactory;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
@@ -71,7 +73,7 @@ import lombok.NonNull;
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final OrderFactory orderFactory;
-	
+
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
 
@@ -80,12 +82,12 @@ import lombok.NonNull;
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
 			@NonNull OrderUserNotifications userNotifications)
 	{
-		final BPartnerId vendorBPartnerId = orderAggregationKey.getVendorBPartnerId();
+		final BPartnerId vendorId = orderAggregationKey.getVendorId();
 
 		this.orderFactory = OrderFactory.newPurchaseOrder()
-				.orgId(orderAggregationKey.getOrgId())
-				.warehouseId(orderAggregationKey.getWarehouseId())
-				.shipBPartner(vendorBPartnerId)
+				.orgId(orderAggregationKey.getOrgId().getRepoId())
+				.warehouseId(orderAggregationKey.getWarehouseId().getRepoId())
+				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised());
 
 		this.userNotifications = userNotifications;
@@ -95,11 +97,11 @@ import lombok.NonNull;
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
-						pruchaseOrderItem.getProductId(),
+						pruchaseOrderItem.getProductId().getRepoId(),
 						pruchaseOrderItem.getUomId())
 				.orElseGet(() -> orderFactory
 						.newOrderLine()
-						.productId(pruchaseOrderItem.getProductId()));
+						.productId(pruchaseOrderItem.getProductId().getRepoId()));
 
 		orderLineBuilder.addQty(pruchaseOrderItem.getPurchasedQty(), pruchaseOrderItem.getUomId());
 
@@ -136,8 +138,7 @@ import lombok.NonNull;
 			@NonNull final PurchaseOrderItem pruchaseOrderItem,
 			@NonNull final OrderLineBuilder orderLineBuilder)
 	{
-		pruchaseOrderItem
-				.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderLineId());
+		pruchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderAndLineId());
 	}
 
 	private ADMessageAndParams createMessageAndParamsOrNull(@NonNull final I_C_Order order)
@@ -198,8 +199,10 @@ import lombok.NonNull;
 		final ImmutableSet<Integer> salesOrderIds = purchaseItem2OrderLine.keySet()
 				.stream()
 				.map(PurchaseOrderItem::getSalesOrderId)
+				.filter(Predicates.notNull())
+				.map(OrderId::getRepoId)
 				.collect(ImmutableSet.toImmutableSet());
-		
+
 		return ordersRepo.retriveOrderCreatedByUserIds(salesOrderIds);
 	}
 }

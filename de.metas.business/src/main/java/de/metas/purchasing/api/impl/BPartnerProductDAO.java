@@ -39,6 +39,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -51,8 +52,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.purchasing.api.ProductExclude;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -102,9 +105,9 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public List<I_C_BPartner_Product> retrieveAllVendors(final int productId, final int orgId)
+	public List<I_C_BPartner_Product> retrieveAllVendors(@NonNull final ProductId productId, @NonNull final OrgId orgId)
 	{
-		return retrieveAllVendorsQuery(productId, orgId)
+		return retrieveAllVendorsQuery(productId.getRepoId(), orgId.getRepoId())
 				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
 				.create()
 				.list(I_C_BPartner_Product.class);
@@ -126,6 +129,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilderOutOfTrx(org.compiere.model.I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
 				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, Env.CTXVALUE_AD_Org_ID_Any)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId);
