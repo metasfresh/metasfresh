@@ -4,9 +4,10 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_I_BPartner;
 import org.springframework.stereotype.Component;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_I_BPartner;
+import de.metas.vertical.pharma.vendor.gateway.msv3.interceptor.MSV3PharmaImportPartnerInterceptor;
 
 
 
@@ -31,7 +32,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_I_BPartner;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Interceptor(I_BPartner.class)
+@Interceptor(I_I_BPartner.class)
 @Component
 public class I_BPartner
 {
@@ -39,5 +40,6 @@ public class I_BPartner
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		engine.addImportInterceptor(I_I_BPartner.Table_Name, BPPurchaseScheduleImportPartnerInterceptor.instance);
+		engine.addImportInterceptor(I_I_BPartner.Table_Name, MSV3PharmaImportPartnerInterceptor.instance);
 	}
 }
