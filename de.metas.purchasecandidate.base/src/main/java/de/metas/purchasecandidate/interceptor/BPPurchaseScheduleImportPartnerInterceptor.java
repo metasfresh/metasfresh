@@ -25,7 +25,7 @@ import lombok.NonNull;
 
 /*
  * #%L
- * metasfresh-pharma
+ * de.metas.purchasecandidate.base
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%

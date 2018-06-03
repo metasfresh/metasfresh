@@ -12,7 +12,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_I_BPartner;
 
 /*
  * #%L
- * de.metas.purchasecandidate.base
+ * metasfresh-pharma.vendor.gateway.msv3
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
