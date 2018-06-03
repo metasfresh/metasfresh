@@ -263,6 +263,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		}
 	}
 
+
 	@Override
 	public Class<I_I_BPartner> getImportModelClass()
 	{
