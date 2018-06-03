@@ -1,7 +1,6 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,8 +8,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -28,11 +29,13 @@ import de.metas.money.Currency;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderLineId;
-import de.metas.pricing.PriceListVersionId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
@@ -83,19 +86,19 @@ public class PurchaseRowFactoryTest
 		final PurchaseRow candidateRow = purchaseRowFactory
 				.rowFromPurchaseCandidateBuilder()
 				.purchaseCandidate(purchaseCandidate)
-				.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
+				.purchaseDemandId(PurchaseDemandId.ofOrderAndLineId(purchaseCandidate.getSalesOrderAndLineId()))
 				.datePromised(SystemTime.asLocalDateTime())
-				.currencyOfParentRow(currency)
+				.convertAmountsToCurrency(currency)
 				.build();
 
 		final DocumentId id = candidateRow.getId();
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(id);
 
-		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(purchaseCandidate.getVendorBPartnerId());
+		assertThat(purchaseRowId.getVendorId()).isEqualTo(purchaseCandidate.getVendorId());
 		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId(
 				I_C_OrderLine.Table_Name,
-				purchaseCandidate.getSalesOrderLineId().getRepoId()));
-		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(30);
+				purchaseCandidate.getSalesOrderAndLineId().getOrderLineRepoId()));
+		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(PurchaseCandidateId.ofRepoId(30));
 
 	}
 
@@ -114,8 +117,8 @@ public class PurchaseRowFactoryTest
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bpartnerProductId(10)
-				.vendorBPartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
+				.id(VendorProductInfoId.ofRepoId(10))
+				.vendorId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
 				.productId(productId)
 				.productNo("productNo")
 				.productName("productName")
@@ -123,18 +126,16 @@ public class PurchaseRowFactoryTest
 
 		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo
 				.builder()
-				.customerPriceGrossProfit(Money.of(TEN.add(ONE), currency))
-				.priceGrossProfit(Money.of(TEN.subtract(ONE), currency))
-				.purchasePriceActual(Money.of(TEN, currency))
-				.purchasePlvId(PriceListVersionId.ofRepoId(20))
+				.salesNetPrice(Money.of(11, currency))
+				.purchaseNetPrice(Money.of(9, currency))
+				.purchaseGrossPrice(Money.of(10, currency))
 				.build();
 
 		return PurchaseCandidate.builder()
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderId(1)
-				.salesOrderLineId(OrderLineId.ofRepoId(2))
-				.orgId(3)
-				.warehouseId(4)
+				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(1, 2))
+				.orgId(OrgId.ofRepoId(3))
+				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(productId)
 				.uomId(uom.getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)

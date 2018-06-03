@@ -1,10 +1,6 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.translate;
-
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,30 +8,23 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Util;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import de.metas.lang.Percent;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.Currency;
-import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.PurchaseDemand;
+import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
@@ -70,8 +59,11 @@ import lombok.NonNull;
 @Service
 public class PurchaseRowFactory
 {
+	// services
+	private static final Logger logger = LogManager.getLogger(PurchaseRowFactory.class);
 	private final AvailableToPromiseRepository availableToPromiseRepository;
 	private final MoneyService moneyService;
+	private final PurchaseRowLookups lookups;
 
 	public PurchaseRowFactory(
 			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
@@ -79,6 +71,7 @@ public class PurchaseRowFactory
 	{
 		this.moneyService = moneyService;
 		this.availableToPromiseRepository = availableToPromiseRepository;
+		lookups = PurchaseRowLookups.newInstance();
 	}
 
 	/**
@@ -87,82 +80,86 @@ public class PurchaseRowFactory
 	@Builder(builderMethodName = "rowFromPurchaseCandidateBuilder", builderClassName = "RowFromPurchaseCandidateBuilder")
 	private PurchaseRow buildRowFromPurchaseCandidate(
 			@NonNull final PurchaseCandidate purchaseCandidate,
-			@NonNull final Currency currencyOfParentRow,
-			@Nullable final VendorProductInfo vendorProductInfo,
+			@NonNull final PurchaseDemandId purchaseDemandId,
+			@Nullable final Currency convertAmountsToCurrency,
 			@NotNull final LocalDateTime datePromised)
 	{
-		final BPartnerId bpartnerId = purchaseCandidate.getVendorBPartnerId();
+		final BPartnerId vendorId = purchaseCandidate.getVendorId();
+		final JSONLookupValue vendor = lookups.createBPartnerLookupValue(vendorId);
+
 		final ProductId productId;
-		final JSONLookupValue vendorBPartner = createBPartnerLookupValue(bpartnerId);
 		final JSONLookupValue product;
+		final VendorProductInfo vendorProductInfo = purchaseCandidate.getVendorProductInfo();
 		if (vendorProductInfo != null)
 		{
 			productId = vendorProductInfo.getProductId();
-			product = createProductLookupValue(
-					productId,
-					vendorProductInfo.getProductNo(),
-					vendorProductInfo.getProductName());
+			product = lookups.createProductLookupValue(productId, vendorProductInfo.getProductNo(), vendorProductInfo.getProductName());
 		}
 		else
 		{
-			productId = ProductId.ofRepoId(purchaseCandidate.getProductId());
-			product = createProductLookupValue(productId);
+			productId = purchaseCandidate.getProductId();
+			product = lookups.createProductLookupValue(productId);
 		}
-		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
+		final String uom = lookups.createUOMLookupValueForProductId(productId);
 
-		final int processedPurchaseCandidateId = purchaseCandidate.isProcessed()
-				? purchaseCandidate.getPurchaseCandidateId()
-				: 0;
+		final PurchaseCandidateId processedPurchaseCandidateId = purchaseCandidate.isProcessed()
+				? purchaseCandidate.getId()
+				: null;
 
-		final PurchaseDemandId requisitionLineId = PurchaseDemandId.ofTableAndRecordId(
-				I_C_OrderLine.Table_Name,
-				purchaseCandidate.getSalesOrderLineId().getRepoId());
-
-		final PurchaseProfitInfo profitInfo = purchaseCandidate.getProfitInfo();
-		final Money purchasePriceActual = moneyService.convertMoneyToCurrency(profitInfo.getPurchasePriceActual(), currencyOfParentRow);
-		final Money customerPriceGrossProfit = moneyService.convertMoneyToCurrency(profitInfo.getCustomerPriceGrossProfit(), currencyOfParentRow);
-		final Money priceGrossProfit = moneyService.convertMoneyToCurrency(profitInfo.getPriceGrossProfit(), currencyOfParentRow);
-
-		final Percent percentGrossProfit = Percent
-				.of(customerPriceGrossProfit.getValue(), priceGrossProfit.getValue())
-				.roundToHalf(RoundingMode.HALF_UP);
+		final PurchaseProfitInfo profitInfo = convertToCurrencyIfPossible(purchaseCandidate.getProfitInfo(), convertAmountsToCurrency);
 
 		return PurchaseRow.builder()
-				.rowId(PurchaseRowId.lineId(requisitionLineId, bpartnerId, processedPurchaseCandidateId))
+				.rowId(PurchaseRowId.lineId(purchaseDemandId, vendorId, processedPurchaseCandidateId))
 				.rowType(PurchaseRowType.LINE)
 				.product(product)
-				.purchasePriceActual(purchasePriceActual.getValue())
-				.customerPriceGrossProfit(customerPriceGrossProfit.getValue())
-				.percentGrossProfit(percentGrossProfit.getValueAsBigDecimal())
+				.profitInfo(profitInfo)
 				.uomOrAvailablility(uom)
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				.datePromised(datePromised)
-				.vendorBPartner(vendorBPartner)
-				.purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
+				.vendorBPartner(vendor)
+				.purchaseCandidateId(purchaseCandidate.getId())
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.readonly(purchaseCandidate.isProcessedOrLocked())
 				.build();
 	}
 
+	private PurchaseProfitInfo convertToCurrencyIfPossible(final PurchaseProfitInfo profitInfo, final Currency currencyTo)
+	{
+		if (profitInfo == null)
+		{
+			return null;
+		}
+		if (currencyTo == null)
+		{
+			return profitInfo;
+		}
+
+		try
+		{
+			return profitInfo.toBuilder()
+					.salesNetPrice(profitInfo.getSalesNetPrice().map(price -> moneyService.convertMoneyToCurrency(price, currencyTo)))
+					.purchaseNetPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseNetPrice(), currencyTo))
+					.purchaseGrossPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseGrossPrice(), currencyTo))
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed converting {} to {}. Returning profitInfo as is.", profitInfo, currencyTo, ex);
+			return profitInfo;
+		}
+	}
+
 	public PurchaseRow createGroupRow(final PurchaseDemand demand, final List<PurchaseRow> rows)
 	{
-		final JSONLookupValue product = createProductLookupValue(demand.getProductId());
-		final JSONLookupValue attributeSetInstance = createASILookupValue(demand.getAttributeSetInstanceId());
+		final JSONLookupValue product = lookups.createProductLookupValue(demand.getProductId());
+		final JSONLookupValue attributeSetInstance = lookups.createASILookupValue(demand.getAttributeSetInstanceId());
 
 		final Quantity qtyToDeliver = demand.getQtyToDeliver();
-		final LocalDateTime preparationDate = demand.getPreparationDate();
+		final BigDecimal qtyAvailableToPromise = getQtyAvailableToPromise(demand);
 
-		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository.retrieveAvailableStockQtySum(AvailableToPromiseQuery.builder()
-				.productId(demand.getProductId().getRepoId())
-				.date(preparationDate != null ? preparationDate : null)
-				.storageAttributesKey(AttributesKeys
-						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId())
-						.orElse(AttributesKey.ALL))
-				.build());
-
-		final PurchaseRow groupRow = PurchaseRow.builder()
+		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.groupId(demand.getId()))
 				.rowType(PurchaseRowType.GROUP)
 				.product(product)
@@ -173,28 +170,37 @@ public class PurchaseRowFactory
 				.datePromised(demand.getDatePromised())
 				.orgId(demand.getOrgId())
 				.warehouseId(demand.getWarehouseId())
-				.includedRows(rows).readonly(true) // grouping lines are always readonly
+				.includedRows(rows)
+				.readonly(true) // grouping lines are always readonly
 				.build();
-		return groupRow;
+	}
+
+	private BigDecimal getQtyAvailableToPromise(final PurchaseDemand demand)
+	{
+		return availableToPromiseRepository.retrieveAvailableStockQtySum(AvailableToPromiseQuery.builder()
+				.productId(demand.getProductId().getRepoId())
+				.date(demand.getPreparationDate())
+				.storageAttributesKey(AttributesKeys
+						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId().getRepoId())
+						.orElse(AttributesKey.ALL))
+				.build());
 	}
 
 	@Builder(builderMethodName = "rowFromAvailabilityResultBuilder", builderClassName = "RowFromAvailabilityResultBuilder")
 	private PurchaseRow buildRowFromFromAvailabilityResult(
-			@NonNull PurchaseRow parentRow,
+			@NonNull final PurchaseRow parentRow,
 			@NonNull final AvailabilityResult availabilityResult)
 	{
-		final String availability = !Check.isEmpty(availabilityResult.getAvailabilityText(), true)
+		final String availabilityText = !Check.isEmpty(availabilityResult.getAvailabilityText(), true)
 				? availabilityResult.getAvailabilityText()
 				: availabilityResult.getType().translate();
 
 		return parentRow.toBuilder()
-				.rowId(parentRow
-						.getRowId()
-						.withAvailability(availabilityResult.getType(), createRandomString()))
+				.rowId(parentRow.getRowId().withAvailabilityAndRandomDistinguisher(availabilityResult.getType()))
 				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(availabilityResult.getQty())
 				.readonly(true)
-				.uomOrAvailablility(availability)
+				.uomOrAvailablility(availabilityText)
 				.datePromised(availabilityResult.getDatePromised())
 				.build();
 	}
@@ -205,114 +211,12 @@ public class PurchaseRowFactory
 			@NonNull final Throwable throwable)
 	{
 		return parentRow.toBuilder()
-				.rowId(parentRow.getRowId().withAvailability(Type.NOT_AVAILABLE, createRandomString()))
+				.rowId(parentRow.getRowId().withAvailabilityAndRandomDistinguisher(Type.NOT_AVAILABLE))
 				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(BigDecimal.ZERO)
 				.readonly(true)
-				.uomOrAvailablility(Util
-						.coalesce(
-								throwable.getLocalizedMessage(),
-								throwable.getMessage(),
-								throwable.getClass().getName()))
+				.uomOrAvailablility(AdempiereException.extractMessage(throwable))
 				.datePromised(null)
 				.build();
 	}
-
-	private static String createRandomString()
-	{
-		final boolean includeLetters = true;
-		final boolean includeNumbers = true;
-
-		return RandomStringUtils.random(8, includeLetters, includeNumbers);
-	}
-
-	private static JSONLookupValue createProductLookupValue(final ProductId productId)
-	{
-		final String productValue = null;
-		final String productName = null;
-		return createProductLookupValue(productId, productValue, productName);
-	}
-
-	private static JSONLookupValue createProductLookupValue(
-			final ProductId productId,
-			final String productValue,
-			final String productName)
-	{
-		if (productId == null)
-		{
-			return null;
-		}
-
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		if (product == null)
-		{
-			return JSONLookupValue.unknown(productId.getRepoId());
-		}
-
-		final String productValueEffective = !Check.isEmpty(productValue, true) ? productValue.trim() : product.getValue();
-		final String productNameEffective = !Check.isEmpty(productName, true) ? productName.trim() : product.getName();
-		final String displayName = productValueEffective + "_" + productNameEffective;
-		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
-	}
-
-	private static JSONLookupValue createASILookupValue(final int attributeSetInstanceId)
-	{
-		if (attributeSetInstanceId <= 0)
-		{
-			return null;
-		}
-
-		final I_M_AttributeSetInstance asi = loadOutOfTrx(attributeSetInstanceId, I_M_AttributeSetInstance.class);
-		if (asi == null)
-		{
-			return null;
-		}
-
-		return JSONLookupValue.of(asi.getM_AttributeSetInstance_ID(), asi.getDescription());
-	}
-
-	private static JSONLookupValue createBPartnerLookupValue(final BPartnerId bpartnerId)
-	{
-		if (bpartnerId == null)
-		{
-			return null;
-		}
-
-		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
-		if (bpartner == null)
-		{
-			return null;
-		}
-
-		final String displayName = bpartner.getValue() + "_" + bpartner.getName();
-		return JSONLookupValue.of(bpartner.getC_BPartner_ID(), displayName);
-	}
-
-	private static String createUOMLookupValueForProductId(final int productId)
-	{
-		if (productId <= 0)
-		{
-			return null;
-		}
-
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
-		if (product == null)
-		{
-			return null;
-		}
-
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
-		if (uom == null)
-		{
-			return null;
-		}
-
-		return createUOMLookupValue(uom);
-	}
-
-	private static String createUOMLookupValue(final I_C_UOM uom)
-	{
-		return translate(uom, I_C_UOM.class).getUOMSymbol();
-	}
-
 }
