@@ -1,4 +1,4 @@
-package de.metas.purchasecandidate.interceptor;
+package de.metas.impexp.bpartner;
 
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -12,7 +12,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_I_BPartner;
 
 /*
  * #%L
- * de.metas.purchasecandidate.base
+ * metasfresh-pharma.vendor.gateway.msv3
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -38,6 +38,6 @@ public class I_BPartner
 	@Init
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		engine.addImportInterceptor(I_I_BPartner.Table_Name, BPPurchaseScheduleImportPartnerInterceptor.instance);
+		engine.addImportInterceptor(I_I_BPartner.Table_Name, MSV3PharmaImportPartnerInterceptor.instance);
 	}
 }

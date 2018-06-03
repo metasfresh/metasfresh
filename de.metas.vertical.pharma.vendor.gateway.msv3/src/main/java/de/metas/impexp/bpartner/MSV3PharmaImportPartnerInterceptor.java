@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.vertical.pharma.vendor.gateway.msv3.interceptor;
+package de.metas.impexp.bpartner;
 
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.IImportProcess;
