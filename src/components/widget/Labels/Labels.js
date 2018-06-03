@@ -223,9 +223,11 @@ class Labels extends Component {
 
     const suggestions = this.state.suggestions.filter(this.unusedSuggestions());
 
-    const labels = selected.map(item => (
-      <Label key={item.key} label={item} onRemove={this.handleLabelRemove} />
-    ));
+    const labels = selected
+      .sort((a, b) => a.caption.localeCompare(b.caption))
+      .map(item => (
+        <Label key={item.key} label={item} onRemove={this.handleLabelRemove} />
+      ));
 
     labels.splice(
       cursor % (selected.length + 1),
