@@ -115,7 +115,8 @@ class PurchaseRowsLoader
 		{
 			final PurchaseDemand demand = demandWithCandidates.getPurchaseDemand();
 
-			final List<PurchaseRow> groupRows = new ArrayList<>();
+			final List<PurchaseRow> purchaseCandidateRows = new ArrayList<>();
+			final List<TrackingId> trackingIds = new ArrayList<>();
 			for (final PurchaseCandidate purchaseCandidate : demandWithCandidates.getPurchaseCandidates())
 			{
 				final PurchaseRow purchaseCandidateRow = purchaseRowFactory
@@ -126,15 +127,19 @@ class PurchaseRowsLoader
 						.convertAmountsToCurrency(demand.getCurrency())
 						.build();
 
-				groupRows.add(purchaseCandidateRow);
+				purchaseCandidateRows.add(purchaseCandidateRow);
 
 				final TrackingId trackingId = TrackingId.random();
+				trackingIds.add(trackingId);
 				resultBuilder.purchaseCandidate(trackingId, purchaseCandidate);
 				resultBuilder.purchaseCandidateRow(trackingId, purchaseCandidateRow);
 			}
 
-			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(demand, groupRows);
+			final PurchaseRow groupRow = purchaseRowFactory.createGroupRow(demand, purchaseCandidateRows);
 			resultBuilder.topLevelRow(groupRow);
+
+			final PurchaseRowId groupRowId = groupRow.getRowId();
+			trackingIds.forEach(trackingId -> resultBuilder.trackingIdsByTopLevelRowId(trackingId, groupRowId));
 		}
 
 		return resultBuilder.build();
@@ -222,7 +227,8 @@ class PurchaseRowsLoader
 				availabilityResultRows.add(availabilityResultRow);
 			}
 			purchaseRowToAugment.setAvailabilityInfoRows(availabilityResultRows.build());
-			changedRowIds.add(purchaseRowToAugment.getId());
+
+			changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, purchaseRowToAugment.getId()));
 		}
 
 		notifyViewOfChanges(changedRowIds);
@@ -253,7 +259,8 @@ class PurchaseRowsLoader
 						.build();
 
 				purchaseRowToAugment.setAvailabilityInfoRow(availabilityResultRow);
-				changedRowIds.add(purchaseRowToAugment.getId());
+				
+				changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, purchaseRowToAugment.getId()));
 			}
 
 			notifyViewOfChanges(changedRowIds);
@@ -280,6 +287,7 @@ class PurchaseRowsLoader
 	{
 		@Getter
 		private final ImmutableList<PurchaseRow> topLevelRows;
+		private final ImmutableMap<TrackingId, PurchaseRowId> trackingIdsByTopLevelRowIds;
 		@Getter
 		private final ImmutableMap<TrackingId, PurchaseCandidate> purchaseCandidates;
 		private final ImmutableMap<TrackingId, PurchaseRow> purchaseCandidateRows;
@@ -287,10 +295,12 @@ class PurchaseRowsLoader
 		@lombok.Builder
 		public PurchaseRowsList(
 				@NonNull @lombok.Singular final ImmutableList<PurchaseRow> topLevelRows,
+				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseRowId> trackingIdsByTopLevelRowIds,
 				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseCandidate> purchaseCandidates,
 				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseRow> purchaseCandidateRows)
 		{
 			this.topLevelRows = topLevelRows;
+			this.trackingIdsByTopLevelRowIds = trackingIdsByTopLevelRowIds;
 			this.purchaseCandidates = purchaseCandidates;
 			this.purchaseCandidateRows = purchaseCandidateRows;
 		}
@@ -299,5 +309,12 @@ class PurchaseRowsLoader
 		{
 			return purchaseCandidateRows.get(trackingId);
 		}
+
+		public DocumentId getTopLevelDocumentIdByTrackingId(final TrackingId trackingId, final DocumentId defaultValue)
+		{
+			final PurchaseRowId purchaseRowId = trackingIdsByTopLevelRowIds.get(trackingId);
+			return purchaseRowId != null ? purchaseRowId.toDocumentId() : defaultValue;
+		}
+
 	}
 }
