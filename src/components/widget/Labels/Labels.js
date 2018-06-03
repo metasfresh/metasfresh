@@ -72,7 +72,7 @@ class Labels extends Component {
   };
 
   handleBlur = () => {
-    this.input.innerHTML = '';
+    this.clearInput();
 
     this.setState({
       focused: false,
@@ -189,7 +189,7 @@ class Labels extends Component {
     const { onChange, selected } = this.props;
     const { cursor } = this.state;
 
-    this.input.innerHTML = '';
+    this.clearInput();
 
     if (!suggestion) {
       return;
@@ -213,6 +213,8 @@ class Labels extends Component {
   };
 
   handleCancel = () => {
+    this.clearInput();
+
     this.setState({ focused: false });
   };
 
@@ -224,6 +226,10 @@ class Labels extends Component {
 
   firstVisibleSuggestion = suggestions => {
     return suggestions.filter(this.unusedSuggestions())[0];
+  };
+
+  clearInput = () => {
+    this.input.innerHTML = '';
   };
 
   render() {
