@@ -32,11 +32,14 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.service.IErrorManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Issue;
 
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
@@ -47,6 +50,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+import lombok.NonNull;
 
 public class C_Flatrate_Term_Extend
 		extends JavaProcess
@@ -61,7 +65,7 @@ public class C_Flatrate_Term_Extend
 	private Timestamp p_startDate;
 
 	@Override
-	@RunOutOfTrx
+	@RunOutOfTrx // each individual term (either one or many) is extended in its own transaction
 	protected String doIt() throws Exception
 	{
 		final Boolean forceComplete = StringUtils.toBooleanOrNull(p_forceComplete);
@@ -116,7 +120,8 @@ public class C_Flatrate_Term_Extend
 					.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // guaranteed = true, because the term extension changes AD_PInstance_EndOfTerm_ID
 					.iterate(I_C_Flatrate_Term.class);
 
-			int counter = 0;
+		int extendedCounter = 0;
+		int errorCounter = 0;
 			while (termsToExtend.hasNext())
 			{
 				final I_C_Flatrate_Term contractToExtend = termsToExtend.next();
@@ -127,15 +132,38 @@ public class C_Flatrate_Term_Extend
 						.forceComplete(forceComplete)
 						.nextTermStartDate(p_startDate)
 						.build();
-
-				flatrateBL.extendContract(context);
-
-				if (contractToExtend.getC_FlatrateTerm_Next_ID() > 0)
-				{
-					counter++;
-				}
+			if (tryExtendTerm(context))
+			{
+				extendedCounter++;
 			}
-			addLog("Extended " + counter + " terms");
+			else
+			{
+				errorCounter++;
+			}
+		}
+		addLog("Processed {} terms; Processing failed for {} terms, see the log for AD_PInstance_ID={} for details", extendedCounter, errorCounter, getAD_PInstance_ID());
+
+		if (errorCounter > 0)
+		{
+			throw new AdempiereException("At least one C_Flatrate_Term could not be extended; Check AD_PInstance_ID=" + getAD_PInstance_ID() + " for details");
+		}
+	}
+
+	private boolean tryExtendTerm(@NonNull final ContractExtendingRequest context)
+	{
+		try
+		{
+			flatrateBL.extendContract(context);
+			return true;
+		}
+		catch (final RuntimeException e)
+		{
+			final I_C_Flatrate_Term contract = context.getContract();
+			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
+			addLog("Error extending C_FlatrateTerm_ID={} with C_Flatrate_Data_ID={}; AD_Issue_ID={}; {} with message={}",
+					contract.getC_Flatrate_Term_ID(), contract.getC_Flatrate_Data_ID(), issue.getAD_Issue_ID(), e.getClass().getName(), e.getMessage());
+			return false;
+			}
 		}
 
 	}
