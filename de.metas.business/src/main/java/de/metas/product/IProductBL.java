@@ -156,4 +156,8 @@ public interface IProductBL extends ISingletonService
 
 	String getProductValueAndName(int productId);
 
+	String getProductValue(ProductId productId);
+
+	String getProductName(ProductId productId);
+
 }
