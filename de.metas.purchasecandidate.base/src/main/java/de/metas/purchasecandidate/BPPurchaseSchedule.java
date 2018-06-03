@@ -84,7 +84,7 @@ public class BPPurchaseSchedule
 		this.dailyPreparationTimes = dailyPreparationTimes;
 		this.reminderTime = reminderTime;
 		this.leadTimeOffset = leadTimeOffset;
-
+		this.bpPurchaseScheduleId = bpPurchaseScheduleId;
 		this.bpartnerId = bpartnerId;
 	}
 

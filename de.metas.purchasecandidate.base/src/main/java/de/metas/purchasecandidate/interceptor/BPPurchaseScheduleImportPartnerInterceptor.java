@@ -68,7 +68,7 @@ public class BPPurchaseScheduleImportPartnerInterceptor implements IImportInterc
 
 		final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(importModel, I_I_BPartner.class);
 
-		if (targetModel instanceof org.compiere.model.I_C_BPartner)
+		if (targetModel instanceof I_C_BPartner)
 		{
 			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(targetModel, I_C_BPartner.class);
 			createBPPurchaseScheduleIfNeeded(ibpartner, bpartner);
