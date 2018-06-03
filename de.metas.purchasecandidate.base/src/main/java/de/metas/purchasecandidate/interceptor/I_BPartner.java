@@ -6,6 +6,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_AD_Client;
 import org.springframework.stereotype.Component;
 
+import de.metas.vertical.pharma.vendor.gateway.msv3.interceptor.MSV3PharmaImportPartnerInterceptor;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_I_BPartner;
 
 
@@ -39,5 +40,6 @@ public class I_BPartner
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		engine.addImportInterceptor(I_I_BPartner.Table_Name, BPPurchaseScheduleImportPartnerInterceptor.instance);
+		engine.addImportInterceptor(I_I_BPartner.Table_Name, MSV3PharmaImportPartnerInterceptor.instance);
 	}
 }
