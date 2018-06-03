@@ -5,6 +5,7 @@ dist
 .idea
 /config.js
 /config.js.template.*
+/plugins.js
 /static
 .vscode
 .history

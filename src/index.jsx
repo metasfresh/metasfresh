@@ -1,4 +1,3 @@
-import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -9,5 +8,12 @@ import App from './containers/App';
 //   // whyDidYouUpdate(React);
 //   whyDidYouUpdate(React, { include: [/ListWidget/] });
 // }
+
+/* eslint-disable */
+console.info(`%c
+    metasfresh-webui-frontend build ${COMMIT_HASH}
+    https://github.com/metasfresh/metasfresh-webui-frontend/commit/${COMMIT_HASH}
+`, "color: blue;");
+/* eslint-enable */
 
 ReactDOM.render(<App />, document.getElementById('root'));

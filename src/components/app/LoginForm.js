@@ -183,7 +183,7 @@ class LoginForm extends Component {
         className="login-form panel panel-spaced-lg panel-shadowed panel-primary"
         onKeyPress={this.handleKeyPress}
       >
-        <div className="text-xs-center">
+        <div className="text-center">
           <img src={logo} className="header-logo mt-2 mb-2" />
         </div>
         {roleSelect ? (

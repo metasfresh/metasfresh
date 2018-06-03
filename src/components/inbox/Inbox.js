@@ -157,7 +157,7 @@ class Inbox extends Component {
                 {!all && (
                   <div
                     onClick={this.handleShowAll}
-                    className="inbox-link text-xs-center"
+                    className="inbox-link text-center"
                   >
                     {counterpart.translate('window.allInbox.caption')} &gt;&gt;
                   </div>
