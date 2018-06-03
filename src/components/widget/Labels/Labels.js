@@ -206,6 +206,12 @@ class Labels extends Component {
     this.props.onChange(this.props.selected.filter(item => item !== label));
   };
 
+  handleLabelClick = label => {
+    this.setState({
+      cursor: this.props.selected.indexOf(label) + 1,
+    });
+  };
+
   handleCancel = () => {
     this.setState({ focused: false });
   };
@@ -229,7 +235,12 @@ class Labels extends Component {
     const labels = selected
       .sort((a, b) => a.caption.localeCompare(b.caption))
       .map(item => (
-        <Label key={item.key} label={item} onRemove={this.handleLabelRemove} />
+        <Label
+          key={item.key}
+          label={item}
+          onClick={this.handleLabelClick}
+          onRemove={this.handleLabelRemove}
+        />
       ));
 
     labels.splice(
