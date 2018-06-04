@@ -10,6 +10,16 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.61 (2018-24)
+## Features
+* metasfresh
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1808](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1808) Shortcuts for inbox, menu and sidelist
+    * Improvement of Shortcuts fir inbox, menu and sidelist. Now hiding the menus after 2nd usage of shortcut.
+
+
 # metasfresh 5.60 (2018-23)
 ## Features
 * metasfresh
