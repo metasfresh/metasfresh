@@ -1,12 +1,12 @@
 DROP FUNCTION IF EXISTS report.customer_revenue_credit_limit 
 ( 
-	IN Date date,
-	IN C_BPartner_ID numeric
+	IN p_Date date,
+	IN p_C_BPartner_ID numeric
 );
 CREATE OR REPLACE FUNCTION report.customer_revenue_credit_limit 
 ( 
-	IN Date date,
-	IN C_BPartner_ID numeric
+	IN p_Date date,
+	IN p_C_BPartner_ID numeric
 )
 RETURNS TABLE
 (
@@ -44,21 +44,21 @@ SELECT
 	refl_sg.name AS Customer_Group,
 	
 		SUM( CASE WHEN 	
-			fa.DateAcct::date >= ((date_trunc('month', $1) - interval '3 month')::date)
-			AND fa.DateAcct::date <= ((date_trunc('month', $1) - interval '2 month' - interval '1 day')::date)
+			fa.DateAcct::date >= ((date_trunc('month', p_Date) - interval '3 month')::date)
+			AND fa.DateAcct::date <= ((date_trunc('month', p_Date) - interval '2 month' - interval '1 day')::date)
 			THEN AmtAcctCr - AmtAcctDr ELSE 0 END ) 
 		
 	AS Revenue_3_Months,
 			
 		SUM( CASE WHEN 		
-				fa.DateAcct::date >= ((date_trunc('month', $1) - interval '2 month')::date)
-				AND fa.DateAcct::date <= ((date_trunc('month', $1) - interval '1 month' - interval '1 day')::date)
+				fa.DateAcct::date >= ((date_trunc('month', p_Date) - interval '2 month')::date)
+				AND fa.DateAcct::date <= ((date_trunc('month', p_Date) - interval '1 month' - interval '1 day')::date)
 				THEN AmtAcctCr - AmtAcctDr ELSE 0 END ) 
 	AS Revenue_2_Months,
 	
 		SUM( CASE WHEN 	
-				fa.DateAcct::date >= (SELECT (date_trunc('month', $1) - interval '1 month')::date)
-				AND fa.DateAcct::date <= (SELECT (date_trunc('month', $1) - interval '1 day')::date)
+				fa.DateAcct::date >= (SELECT (date_trunc('month', p_Date) - interval '1 month')::date)
+				AND fa.DateAcct::date <= (SELECT (date_trunc('month', p_Date) - interval '1 day')::date)
 				THEN AmtAcctCr - AmtAcctDr ELSE 0 END )  		
 	AS Revenue_last_Month,
 	
@@ -89,7 +89,7 @@ LEFT JOIN LATERAL (
 				FROM C_BPartner_CreditLimit bp_cl_i
 				WHERE bp.C_BPartner_ID = bp_cl_i.C_BPartner_ID 
 					AND bp_cl_i.C_CreditLimit_Type_ID = (SELECT C_CreditLimit_Type_ID FROM C_CreditLimit_Type WHERE Name LIKE 'Insurance')
-					AND bp_cl_i.dateFrom <= $1
+					AND bp_cl_i.dateFrom <= p_Date
 					AND bp_cl_i.Processed = 'Y'
 				ORDER BY bp_cl_i.dateFrom DESC 
 				LIMIT 1
@@ -100,7 +100,7 @@ LEFT JOIN LATERAL (
 				FROM C_BPartner_CreditLimit bp_cl_m
 				WHERE bp.C_BPartner_ID = bp_cl_m.C_BPartner_ID 
 					AND bp_cl_m.C_CreditLimit_Type_ID = (SELECT C_CreditLimit_Type_ID FROM C_CreditLimit_Type WHERE Name LIKE 'Management')
-					AND bp_cl_m.dateFrom <= $1
+					AND bp_cl_m.dateFrom <= p_Date
 					AND bp_cl_m.Processed = 'Y'
 				ORDER BY bp_cl_m.dateFrom DESC 
 				LIMIT 1
@@ -109,7 +109,7 @@ LEFT JOIN LATERAL (
 WHERE
 	fa.AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'))
 	AND i.IsSOtrx = 'Y'
-	AND (CASE WHEN $2 IS NOT NULL THEN bp.C_BPartner_ID = $2 ELSE TRUE END)
+	AND (CASE WHEN p_C_BPartner_ID IS NOT NULL THEN bp.C_BPartner_ID = p_C_BPartner_ID ELSE TRUE END)
 
 GROUP BY 
 	bp.Value,
