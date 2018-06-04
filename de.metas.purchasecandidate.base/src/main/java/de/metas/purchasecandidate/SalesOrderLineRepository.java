@@ -1,12 +1,19 @@
 package de.metas.purchasecandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
@@ -50,6 +57,20 @@ public class SalesOrderLineRepository
 	{
 		final I_C_OrderLine orderLineRecord = load(orderLineId.getRepoId(), I_C_OrderLine.class);
 		return ofRecord(orderLineRecord);
+	}
+
+	public List<SalesOrderLine> getByIds(@NonNull final Collection<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final Set<Integer> ids = orderLineIds.stream().map(OrderLineId::getRepoId).collect(ImmutableSet.toImmutableSet());
+		return loadByIds(ids, I_C_OrderLine.class)
+				.stream()
+				.map(this::ofRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public SalesOrderLine ofRecord(@NonNull final I_C_OrderLine salesOrderLineRecord)

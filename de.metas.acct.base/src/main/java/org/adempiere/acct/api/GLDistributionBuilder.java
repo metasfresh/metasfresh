@@ -5,17 +5,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.acct.api.GLDistributionResultLine.Sign;
 import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -61,6 +63,7 @@ public class GLDistributionBuilder
 	private Properties _ctx;
 	private I_GL_Distribution _glDistribution;
 	private BigDecimal _amountToDistribute;
+	private Sign _amountSign = Sign.DETECT;
 	private BigDecimal _qtyToDistribute;
 	private Integer _currencyId;
 	private Integer _precision;
@@ -68,7 +71,6 @@ public class GLDistributionBuilder
 
 	private GLDistributionBuilder()
 	{
-		super();
 	}
 
 	public GLDistributionResult distribute()
@@ -173,6 +175,7 @@ public class GLDistributionBuilder
 			final BigDecimal amountToDistribute = getAmountToDistribute();
 			final BigDecimal amt = amountToDistribute.multiply(percent).divide(Env.ONEHUNDRED, precision, BigDecimal.ROUND_HALF_UP);
 			resultLine.setAmount(amt);
+			resultLine.setAmountSign(getAmountSign());
 			resultLine.setC_Currency_ID(getC_Currency_ID());
 		}
 
@@ -327,6 +330,18 @@ public class GLDistributionBuilder
 		return _amountToDistribute;
 	}
 
+	public GLDistributionBuilder setAmountSign(@NonNull final Sign amountSign)
+	{
+		_amountSign = amountSign;
+		return this;
+	}
+
+	private final Sign getAmountSign()
+	{
+		Check.assumeNotNull(_amountSign, "amountSign not null");
+		return _amountSign;
+	}
+	
 	public GLDistributionBuilder setQtyToDistribute(final BigDecimal qtyToDistribute)
 	{
 		_qtyToDistribute = qtyToDistribute;

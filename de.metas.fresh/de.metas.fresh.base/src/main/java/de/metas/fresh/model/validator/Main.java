@@ -40,6 +40,7 @@ import org.adempiere.mm.attributes.listeners.adr.InvoiceLineADRModelAttributeSet
 import org.adempiere.mm.attributes.listeners.adr.OrderADRModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.adr.OrderLineADRModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.adr.OrderLineAllocADRModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.listeners.adr.OrderLineLotNumberModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InOutInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InOutLineInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceInAusLandModelAttributeSetInstanceListener;
@@ -96,6 +97,8 @@ public class Main extends AbstractModuleInterceptor
 
 		modelAttributeSetInstanceListenerService.registerListener(new InvoiceLineADRModelAttributeSetInstanceListener());
 		modelAttributeSetInstanceListenerService.registerListener(new InvoiceADRModelAttributeSetInstanceListener());
+		
+		modelAttributeSetInstanceListenerService.registerListener(new OrderLineLotNumberModelAttributeSetInstanceListener());
 
 		PickingTerminal.setClassName(FreshSwingPickingTerminalPanel.class.getCanonicalName());
 

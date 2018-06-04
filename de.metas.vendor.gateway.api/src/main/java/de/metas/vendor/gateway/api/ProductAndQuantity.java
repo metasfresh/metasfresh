@@ -27,7 +27,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
+@Value(staticConstructor = "of")
 public class ProductAndQuantity
 {
 	@NonNull
