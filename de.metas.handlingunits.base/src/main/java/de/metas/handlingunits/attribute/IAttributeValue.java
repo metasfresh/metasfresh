@@ -199,9 +199,9 @@ public interface IAttributeValue
 	 * @return true if attribute is displayed to user
 	 */
 	boolean isDisplayedUI();
-	
+
 	/**
-	 * @return true if the attribute shall be displayed only if present in the product's attributeSet
+	 * @return true if the attribute shall be displayed only if present in the product's attributeSet.
 	 */
 	boolean isOnlyIfInProductAttributeSet();
 

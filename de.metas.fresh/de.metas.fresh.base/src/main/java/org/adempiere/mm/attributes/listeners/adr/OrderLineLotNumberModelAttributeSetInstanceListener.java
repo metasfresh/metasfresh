@@ -1,10 +1,11 @@
 package org.adempiere.mm.attributes.listeners.adr;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.LotNumberAttributeUpdater;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.order.grossprofit.model.I_C_OrderLine;
 
@@ -18,12 +19,12 @@ import de.metas.order.grossprofit.model.I_C_OrderLine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,7 +33,7 @@ import de.metas.order.grossprofit.model.I_C_OrderLine;
 
 public class OrderLineLotNumberModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
-	private static final List<String> sourceColumnNames = Arrays.asList(I_C_OrderLine.COLUMNNAME_M_Product_ID);
+	private static final ImmutableList<String> SOURCE_COLUMN_NAMES = ImmutableList.of(I_C_OrderLine.COLUMNNAME_M_Product_ID);
 
 	@Override
 	public String getSourceTableName()
@@ -43,7 +44,7 @@ public class OrderLineLotNumberModelAttributeSetInstanceListener implements IMod
 	@Override
 	public List<String> getSourceColumnNames()
 	{
-		return sourceColumnNames;
+		return SOURCE_COLUMN_NAMES;
 	}
 
 	@Override

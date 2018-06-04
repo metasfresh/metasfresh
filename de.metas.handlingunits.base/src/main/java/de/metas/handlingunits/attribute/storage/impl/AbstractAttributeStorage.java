@@ -1,6 +1,8 @@
 package de.metas.handlingunits.attribute.storage.impl;
 
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,8 +38,6 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -319,8 +319,6 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	@Override
 	public final IAttributeValue getAttributeValue(final String attributeKey)
 	{
-		// assertNotDisposed(); // checked in next called method
-
 		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeKey);
 		if (NullAttributeValue.isNull(attributeValue))
 		{
@@ -1102,9 +1100,9 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 
 		final I_M_Product product = load(productId.getRepoId(), I_M_Product.class);
-		
+
 		final boolean isAttributeInSet = attributesBL.getAttributeOrNull(product, attribute.getM_Attribute_ID()) != null;
-		
+
 		return isAttributeInSet;
 	}
 
