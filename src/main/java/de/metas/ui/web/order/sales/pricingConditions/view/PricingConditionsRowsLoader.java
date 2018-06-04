@@ -122,9 +122,11 @@ class PricingConditionsRowsLoader
 
 	public PricingConditionsRowData load()
 	{
-		final List<PricingConditionsRow> rows = getAllPricingConditionsId()
+		final Set<PricingConditionsId> pricingConditionsIds = getAllPricingConditionsId();
+
+		final List<PricingConditionsRow> rows = pricingConditionsRepo.getPricingConditionsByIds(pricingConditionsIds)
 				.stream()
-				.flatMap(this::streamMatchingSchemaBreaks)
+				.flatMap(pricingConditionsBreaksExtractor::streamPricingConditionsBreaks)
 				.filter(Predicates.notNull())
 				.flatMap(this::createPricingConditionsRows)
 				.sorted(ROWS_SORTING)
@@ -192,12 +194,6 @@ class PricingConditionsRowsLoader
 		}
 
 		return PricingConditionsId.ofDiscountSchemaId(discountSchemaId);
-	}
-
-	private Stream<PricingConditionsBreak> streamMatchingSchemaBreaks(final PricingConditionsId pricingConditionsId)
-	{
-		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsId);
-		return pricingConditionsBreaksExtractor.streamPricingConditionsBreaks(pricingConditions);
 	}
 
 	private Stream<PricingConditionsRow> createPricingConditionsRows(final PricingConditionsBreak pricingConditionsBreak)
