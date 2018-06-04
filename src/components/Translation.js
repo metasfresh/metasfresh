@@ -1,6 +1,8 @@
-import counterpart from 'counterpart';
 import { Component } from 'react';
+import PropTypes from 'prop-types';
+import counterpart from 'counterpart';
 import deepForceUpdate from 'react-deep-force-update';
+import { connect } from 'react-redux';
 
 import { getMessages } from '../actions/AppActions';
 
@@ -9,7 +11,7 @@ class Translation extends Component {
     super(props);
   }
 
-  componentWillMount = () => {
+  _getMessages = () => {
     getMessages().then(response => {
       counterpart.registerTranslations('lang', response.data);
       counterpart.setLocale('lang');
@@ -23,7 +25,30 @@ class Translation extends Component {
     });
   };
 
+  componentWillMount = () => {
+    this._getMessages();
+  };
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.language !== this.props.language) {
+      this._getMessages();
+    }
+  }
+
   render = () => this.props.children;
 }
 
-export default Translation;
+Translation.propTypes = {
+  children: PropTypes.any,
+  language: PropTypes.string,
+};
+
+const mapStateToProps = ({ appHandler: { me } }) => {
+  const language = me.language ? me.language.key : 'de_DE';
+
+  return {
+    language: language,
+  };
+};
+
+export default connect(mapStateToProps)(Translation);

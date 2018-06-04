@@ -141,7 +141,7 @@ export const getRoutes = (store, auth, plugins) => {
     },
     {
       path: 'logout',
-      component: logout,
+      onEnter: logout,
     },
     ...pluginRoutes,
   ];
