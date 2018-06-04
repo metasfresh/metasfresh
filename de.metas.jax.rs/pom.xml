@@ -24,6 +24,7 @@
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
+			<version>2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.transaction</groupId>
@@ -85,6 +86,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.jaxrs</groupId>
 			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<version>2.9.0</version>
 		</dependency>
 
 		<dependency>
@@ -170,30 +172,5 @@
 		</dependency>
 
 	</dependencies>
-
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Pull in the cxf-parents as import scope to re-use the dependenecyManagement 
-				sections of those poms. Those sections define the versions of various third 
-				party deps that CXF used to build with and test with and we would like to 
-				make sure the same versions are used for the samples 
-			-->
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-parent</artifactId>
-				<version>${metasfresh.cxf.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf</artifactId>
-				<version>${metasfresh.cxf.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 </project>
