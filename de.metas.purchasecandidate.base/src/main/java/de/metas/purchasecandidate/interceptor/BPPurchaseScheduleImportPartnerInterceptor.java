@@ -4,6 +4,7 @@
 package de.metas.purchasecandidate.interceptor;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.util.Optional;
 
 import org.adempiere.bpartner.BPartnerId;
@@ -100,6 +101,8 @@ public class BPPurchaseScheduleImportPartnerInterceptor implements IImportInterc
 						.bpartnerId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
 						.frequency(frequency)
 						.leadTimeOffset(importRecord.getLeadTimeOffset())
+						.reminderTime(Duration.ofHours(1))
+						.validFrom(SystemTime.asLocalDate())
 						.build();
 				bpPurchaseScheduleRepo.createOrUpdateAndSaveBPPurchaseScheduleRecord(schedule);
 			}
