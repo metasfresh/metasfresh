@@ -45,8 +45,9 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 
 	private static final String MSV3_Constant = "MSV3";
 
+	// default values for user and password MSV3_Vendor_ConfigIfNeeded
+	// the values are pe user and there will be changed by the user
 	private static final String Password = "MSV3";
-
 	private static final String UserID = "MSV3";
 
 	private MSV3PharmaImportPartnerInterceptor()
@@ -71,8 +72,6 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 		}
 
 	}
-
-
 
 	private final void createMSV3_Vendor_ConfigIfNeeded(@NonNull final I_I_BPartner importRecord, @NonNull final I_C_BPartner bpartner)
 	{
