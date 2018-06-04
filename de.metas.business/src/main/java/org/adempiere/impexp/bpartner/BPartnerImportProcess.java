@@ -233,53 +233,54 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 	private final void createBPPrintFormatIfNeeded(@NonNull final I_I_BPartner importRecord)
 	{
-		if (importRecord.isShowDeliveryNote() || importRecord.getAD_PrintFormat_ID() > 0)
+		if (!(importRecord.isShowDeliveryNote() || importRecord.getAD_PrintFormat_ID() > 0))
 		{
-			int bpPrintFormatId = importRecord.getC_BP_PrintFormat_ID();
-			if (bpPrintFormatId > 0)
-			{
-				return;
-			}
-
-			final int docTypeId;
-			final int AD_PrintFormat_ID;
-			final int adTableId;
-			if (importRecord.getAD_PrintFormat_ID() > 0)
-			{
-				AD_PrintFormat_ID = importRecord.getAD_PrintFormat_ID();
-				docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
-						.adClientId(importRecord.getAD_Client_ID())
-						.adOrgId(importRecord.getAD_Org_ID())
-						.build());
-				adTableId = X_C_Order.Table_ID;
-			}
-			else
-			{
-				docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-						.adClientId(importRecord.getAD_Client_ID())
-						.adOrgId(importRecord.getAD_Org_ID())
-						.build());
-
-				AD_PrintFormat_ID =  Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormatId, -1);
-				if (AD_PrintFormat_ID <= 0 )
-				{
-					throw AdempiereException.ofADMessage(BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg);
-				}
-				adTableId = X_M_InOut.Table_ID;
-
-			}
-
-			final I_C_BP_PrintFormat bpPrintFormat = InterfaceWrapperHelper.newInstance(I_C_BP_PrintFormat.class);
-			bpPrintFormat.setAD_PrintFormat_ID(AD_PrintFormat_ID);
-			bpPrintFormat.setC_BPartner(importRecord.getC_BPartner());
-			bpPrintFormat.setC_DocType_ID(docTypeId);
-			bpPrintFormat.setAD_Table_ID(adTableId);
-			InterfaceWrapperHelper.save(bpPrintFormat);
-
-			importRecord.setC_BP_PrintFormat(bpPrintFormat);
+			return;
 		}
+		int bpPrintFormatId = importRecord.getC_BP_PrintFormat_ID();
+		if (bpPrintFormatId > 0)
+		{
+			return;
+		}
+
+		final int docTypeId;
+		final int AD_PrintFormat_ID;
+		final int adTableId;
+		if (importRecord.getAD_PrintFormat_ID() > 0)
+		{
+			AD_PrintFormat_ID = importRecord.getAD_PrintFormat_ID();
+			docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
+					.adClientId(importRecord.getAD_Client_ID())
+					.adOrgId(importRecord.getAD_Org_ID())
+					.build());
+			adTableId = X_C_Order.Table_ID;
+		}
+		else
+		{
+			docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+					.adClientId(importRecord.getAD_Client_ID())
+					.adOrgId(importRecord.getAD_Org_ID())
+					.build());
+
+			AD_PrintFormat_ID = Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormatId, -1);
+			if (AD_PrintFormat_ID <= 0)
+			{
+				throw AdempiereException.ofADMessage(BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg);
+			}
+			adTableId = X_M_InOut.Table_ID;
+
+		}
+
+		final I_C_BP_PrintFormat bpPrintFormat = InterfaceWrapperHelper.newInstance(I_C_BP_PrintFormat.class);
+		bpPrintFormat.setAD_PrintFormat_ID(AD_PrintFormat_ID);
+		bpPrintFormat.setC_BPartner(importRecord.getC_BPartner());
+		bpPrintFormat.setC_DocType_ID(docTypeId);
+		bpPrintFormat.setAD_Table_ID(adTableId);
+		InterfaceWrapperHelper.save(bpPrintFormat);
+
+		importRecord.setC_BP_PrintFormat(bpPrintFormat);
 	}
 
 
