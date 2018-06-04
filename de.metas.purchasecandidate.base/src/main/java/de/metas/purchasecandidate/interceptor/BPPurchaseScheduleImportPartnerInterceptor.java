@@ -104,7 +104,7 @@ public class BPPurchaseScheduleImportPartnerInterceptor implements IImportInterc
 						.reminderTime(Duration.ofHours(1))
 						.validFrom(SystemTime.asLocalDate())
 						.build();
-				bpPurchaseScheduleRepo.createOrUpdateAndSaveBPPurchaseScheduleRecord(schedule);
+				bpPurchaseScheduleRepo.saveBPPurchaseSchedule(schedule);
 			}
 		}
 	}

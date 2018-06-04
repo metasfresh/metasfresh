@@ -276,12 +276,22 @@ public class BPPurchaseScheduleRepository
 				.leadTimeOffset(leadTimeOffset)
 				.build();
 
-		createOrUpdateAndSaveBPPurchaseScheduleRecord(bpPurchaseSchedule);
+		saveBPPurchaseSchedule(bpPurchaseSchedule);
 
 		return bpPurchaseSchedule;
 	}
 
-	public BPPurchaseSchedule createOrUpdateAndSaveBPPurchaseScheduleRecord(@NonNull final BPPurchaseSchedule schedule)
+	public BPPurchaseSchedule saveBPPurchaseSchedule(@NonNull final BPPurchaseSchedule schedule)
+	{
+		final I_C_BP_PurchaseSchedule scheduleRecord = createOrUpdateBPPurchaseScheduleRecord(schedule);
+		saveRecord(schedule);
+
+		return schedule.toBuilder()
+				.bpPurchaseScheduleId(BPPurchaseScheduleId.ofRepoId(scheduleRecord.getC_BP_PurchaseSchedule_ID()))
+				.build();
+	}
+
+	private I_C_BP_PurchaseSchedule createOrUpdateBPPurchaseScheduleRecord(@NonNull final BPPurchaseSchedule schedule)
 	{
 		final I_C_BP_PurchaseSchedule scheduleRecord;
 		if (schedule.getBpPurchaseScheduleId() != null)
@@ -316,14 +326,9 @@ public class BPPurchaseScheduleRepository
 		final ImmutableSet<DayOfWeek> daysOfWeek = frequency.getOnlyDaysOfWeek();
 		setDaysOfWeek(scheduleRecord, daysOfWeek);
 
-		saveRecord(scheduleRecord);
-
-		schedule.toBuilder()
-				.bpPurchaseScheduleId(BPPurchaseScheduleId.ofRepoId(scheduleRecord.getC_BP_PurchaseSchedule_ID()))
-				.build();
-
-		return schedule;
+		return scheduleRecord;
 	}
+
 
 	private static void setDaysOfWeek(@NonNull final I_C_BP_PurchaseSchedule scheduleRecord, @NonNull final ImmutableSet<DayOfWeek> daysOfWeek)
 	{
