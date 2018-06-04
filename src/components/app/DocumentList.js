@@ -227,6 +227,7 @@ class DocumentList extends Component {
 
   connectWebSocket = viewId => {
     const { windowType } = this.props;
+
     connectWS.call(this, `/view/${viewId}`, msg => {
       const { fullyChanged, changedIds } = msg;
       if (changedIds) {
@@ -376,14 +377,16 @@ class DocumentList extends Component {
               layout: response.data,
             },
             () => {
-              if (viewId && !isNewFilter) {
-                this.browseView();
-              } else {
-                if (viewId) {
-                  this.filterView();
+              if (viewId) {
+                this.connectWebSocket(viewId);
+
+                if (!isNewFilter) {
+                  this.browseView();
                 } else {
-                  this.createView();
+                  this.filterView();
                 }
+              } else {
+                this.createView();
               }
               setModalTitle && setModalTitle(response.data.caption);
             }
@@ -447,6 +450,7 @@ class DocumentList extends Component {
             viewId: response.data.viewId,
           },
           () => {
+            this.connectWebSocket(response.data.viewId);
             this.getData(response.data.viewId, page, sort);
           }
         );
@@ -552,7 +556,6 @@ class DocumentList extends Component {
                 })
               );
             }
-            this.connectWebSocket(response.data.viewId);
           }
         );
       }
