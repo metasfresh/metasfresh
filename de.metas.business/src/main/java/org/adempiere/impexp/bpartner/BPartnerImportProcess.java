@@ -237,6 +237,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		{
 			return;
 		}
+
 		int bpPrintFormatId = importRecord.getC_BP_PrintFormat_ID();
 		if (bpPrintFormatId > 0)
 		{
@@ -246,6 +247,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		final int docTypeId;
 		final int AD_PrintFormat_ID;
 		final int adTableId;
+		// for vendors we have different print formats per partner, for purchase order
 		if (importRecord.getAD_PrintFormat_ID() > 0)
 		{
 			AD_PrintFormat_ID = importRecord.getAD_PrintFormat_ID();
@@ -256,6 +258,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 					.build());
 			adTableId = X_C_Order.Table_ID;
 		}
+		// for customer we have different one single print format, for inout and only for certain partner that they show the delivery note
 		else
 		{
 			docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
