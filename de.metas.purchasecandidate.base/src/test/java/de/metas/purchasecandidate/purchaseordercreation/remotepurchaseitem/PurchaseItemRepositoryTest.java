@@ -22,6 +22,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
@@ -65,7 +66,7 @@ public class PurchaseItemRepositoryTest
 		final PurchaseOrderItem orderItem = createAndAddPurchaseOrderItem(purchaseCandidate);
 
 		final I_C_OrderLine purchaseOrderLine = createPurchaseOrderLine();
-		orderItem.setPurchaseOrderLineIdAndMarkProcessed(purchaseOrderLine.getC_OrderLine_ID());
+		orderItem.setPurchaseOrderLineIdAndMarkProcessed(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()));
 
 		// invoke the method under test
 		new PurchaseItemRepository().storeRecords(purchaseCandidate.getPurchaseOrderItems());
@@ -89,7 +90,7 @@ public class PurchaseItemRepositoryTest
 		final PurchaseOrderItem originalPurchaseOrderItem = createAndAddPurchaseOrderItem(purchaseCandidate);
 
 		final I_C_OrderLine purchaseOrderLine = createPurchaseOrderLine();
-		originalPurchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(purchaseOrderLine.getC_OrderLine_ID());
+		originalPurchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()));
 
 		// invoke the method under test
 		final PurchaseItemRepository purchaseItemRepository = new PurchaseItemRepository();
@@ -102,11 +103,11 @@ public class PurchaseItemRepositoryTest
 
 		assertThat(newPurchaseCandidate.getPurchaseOrderItems()).hasSize(1);
 		final PurchaseOrderItem retrievedPurchaseOrderItem = newPurchaseCandidate.getPurchaseOrderItems().get(0);
-		assertThat(retrievedPurchaseOrderItem.getPurchaseItemId()).isGreaterThan(0);
+		assertThat(retrievedPurchaseOrderItem.getPurchaseItemId()).isNotNull();
 		assertThat(retrievedPurchaseOrderItem.getDatePromised()).isEqualTo(originalPurchaseOrderItem.getDatePromised());
 		assertThat(retrievedPurchaseOrderItem.getPurchasedQty()).isEqualByComparingTo(TEN); // that's the quantity from the purchase order line
-		assertThat(retrievedPurchaseOrderItem.getPurchaseOrderId()).isEqualTo(purchaseOrderLine.getC_Order_ID());
-		assertThat(retrievedPurchaseOrderItem.getPurchaseOrderLineId()).isEqualTo(purchaseOrderLine.getC_OrderLine_ID());
+		assertThat(retrievedPurchaseOrderItem.getPurchaseOrderAndLineId().getOrderRepoId()).isEqualTo(purchaseOrderLine.getC_Order_ID());
+		assertThat(retrievedPurchaseOrderItem.getPurchaseOrderAndLineId().getOrderLineRepoId()).isEqualTo(purchaseOrderLine.getC_OrderLine_ID());
 	}
 
 	private I_C_OrderLine createPurchaseOrderLine()
