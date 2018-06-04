@@ -638,7 +638,7 @@ public abstract class Doc
 	 * Posting logic for Accounting Schema
 	 *
 	 * @param acctSchema Accounting Schema
-	 * @return 
+	 * @return
 	 */
 	private final List<Fact> postLogic(final MAcctSchema acctSchema)
 	{
@@ -682,7 +682,7 @@ public abstract class Doc
 						.setPostingStatus(PostingStatus.Error)
 						.setDetailMessage("No fact");
 			}
-			
+
 			//
 			// p_Status = STATUS_PostPrepared;
 
@@ -1005,7 +1005,7 @@ public abstract class Doc
 			log.debug("(none) - {}", this);
 			return;
 		}
-		
+
 		// Get All Currencies
 		final Set<Integer> currencyIds = new HashSet<>();
 		currencyIds.add(getC_Currency_ID());
@@ -1027,12 +1027,12 @@ public abstract class Doc
 			{
 				continue;
 			}
-			
+
 			if (currencyId == acctCurrencyId)
 			{
 				continue;
 			}
-			
+
 			final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
 			try
 			{

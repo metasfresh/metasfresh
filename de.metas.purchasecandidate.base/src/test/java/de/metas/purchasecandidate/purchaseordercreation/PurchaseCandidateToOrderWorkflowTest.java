@@ -8,8 +8,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,12 +24,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
@@ -113,7 +117,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 		// @formatter:off
 		new Expectations()
 		{{
-			vendorGatewayInvokerFactory.createForVendorId(20); result = NullVendorGatewayInvoker.INSTANCE;
+			vendorGatewayInvokerFactory.createForVendorId(BPartnerId.ofRepoId(20)); result = NullVendorGatewayInvoker.INSTANCE;
 		}};	// @formatter:on
 
 		// invoke the method under test
@@ -166,7 +170,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 		// @formatter:off
 		new Expectations()
 		{{
-			vendorGatewayInvokerFactory.createForVendorId(20); result = vendorGatewayInvoker;
+			vendorGatewayInvokerFactory.createForVendorId(BPartnerId.ofRepoId(20)); result = vendorGatewayInvoker;
 
 			vendorGatewayInvoker.placeRemotePurchaseOrder(purchaseCandidates);
 			result = new RuntimeException(SOMETHING_WENT_WRONG);
@@ -206,16 +210,15 @@ public class PurchaseCandidateToOrderWorkflowTest
 			final int vendorId)
 	{
 		return PurchaseCandidate.builder()
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderId(1)
-				.salesOrderLineId(OrderLineId.ofRepoId(2))
-				.orgId(3)
-				.warehouseId(4)
+				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(1, 2))
+				.orgId(OrgId.ofRepoId(3))
+				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
 				.vendorProductInfo(VendorProductInfo.builder()
-						.bpartnerProductId(10)
-						.vendorBPartnerId(BPartnerId.ofRepoId(vendorId))
+						.id(VendorProductInfoId.ofRepoId(10))
+						.vendorId(BPartnerId.ofRepoId(vendorId))
 						.productId(ProductId.ofRepoId(20))
 						.productNo("productNo")
 						.productName("productName").build())

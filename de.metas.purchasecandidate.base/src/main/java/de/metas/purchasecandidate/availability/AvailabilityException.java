@@ -1,11 +1,13 @@
 package de.metas.purchasecandidate.availability;
 
-import java.util.Map;
+import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.vendor.gateway.api.availability.TrackingId;
 import groovy.transform.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -33,16 +35,30 @@ import lombok.NonNull;
  */
 
 @EqualsAndHashCode(callSuper = false)
+@SuppressWarnings("serial")
 public class AvailabilityException extends AdempiereException
 {
-	private static final long serialVersionUID = -3954110236473712582L;
+	public static AvailabilityException cast(final Throwable throwable)
+	{
+		return (AvailabilityException)throwable;
+	}
 
 	@Getter
-	private final Map<PurchaseCandidate, Throwable> purchaseCandidate2Throwable;
+	private final List<ErrorItem> errorItems;
 
-	public AvailabilityException(@NonNull final Map<PurchaseCandidate, Throwable> purchaseCandidate2Throwable)
+	public AvailabilityException(@NonNull final List<ErrorItem> errorItems)
 	{
 		super(ImmutableTranslatableString.empty());
-		this.purchaseCandidate2Throwable = purchaseCandidate2Throwable;
+		this.errorItems = ImmutableList.copyOf(errorItems);
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	public static class ErrorItem
+	{
+		@NonNull
+		TrackingId trackingId;
+		@NonNull
+		Throwable error;
 	}
 }

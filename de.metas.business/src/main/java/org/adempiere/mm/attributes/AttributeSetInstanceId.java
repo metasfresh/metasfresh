@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes;
 
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Check;
 
 import lombok.Value;
@@ -33,14 +34,26 @@ public class AttributeSetInstanceId
 
 	public static AttributeSetInstanceId ofRepoId(final int repoId)
 	{
-		return new AttributeSetInstanceId(repoId);
+		if (repoId == NONE.repoId)
+		{
+			return NONE;
+		}
+		else
+		{
+			return new AttributeSetInstanceId(repoId);
+		}
 	}
 
 	public static AttributeSetInstanceId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId >= 0
-				? new AttributeSetInstanceId(repoId)
-				: null;
+		if (repoId < 0)
+		{
+			return null;
+		}
+		else
+		{
+			return ofRepoId(repoId);
+		}
 	}
 
 	public static int toRepoId(final AttributeSetInstanceId attributeSetInstanceId)
@@ -48,9 +61,16 @@ public class AttributeSetInstanceId
 		return attributeSetInstanceId != null ? attributeSetInstanceId.getRepoId() : -1;
 	}
 
+	public static final AttributeSetInstanceId NONE = new AttributeSetInstanceId();
+
 	private AttributeSetInstanceId(final int repoId)
 	{
 		// note that there is a special ASI which in fact does have ID=0
 		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "repoId");
+	}
+
+	private AttributeSetInstanceId()
+	{
+		this.repoId = AttributeConstants.M_AttributeSetInstance_ID_None;
 	}
 }

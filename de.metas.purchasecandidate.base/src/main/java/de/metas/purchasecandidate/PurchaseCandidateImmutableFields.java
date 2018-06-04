@@ -1,6 +1,10 @@
 package de.metas.purchasecandidate;
 
-import de.metas.order.OrderLineId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
+
+import de.metas.order.OrderAndLineId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -30,12 +34,11 @@ import lombok.Value;
 @Builder
 class PurchaseCandidateImmutableFields
 {
-	int salesOrderId;
-	OrderLineId salesOrderLineId;
+	OrderAndLineId salesOrderAndLineId;
 
-	int orgId;
-	int warehouseId;
-	int productId;
+	OrgId orgId;
+	WarehouseId warehouseId;
+	ProductId productId;
 	int uomId;
 	VendorProductInfo vendorProductInfo;
 }

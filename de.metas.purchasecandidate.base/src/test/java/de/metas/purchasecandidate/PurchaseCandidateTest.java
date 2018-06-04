@@ -52,7 +52,7 @@ public class PurchaseCandidateTest
 	public void markProcessedAndCheckChanges()
 	{
 		final PurchaseCandidate candidate = PurchaseCandidateTestTool.createPurchaseCandidate(1);
-		assertThat(candidate.getSalesOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID); // guard
+		assertThat(candidate.getSalesOrderAndLineId().getOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID); // guard
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 		assertThat(candidate.isProcessed()).isFalse();
@@ -63,9 +63,9 @@ public class PurchaseCandidateTest
 		assertThat(candidate.copy().hasChanges()).isTrue();
 		assertThat(candidate.isProcessed()).isTrue();
 		assertThat(candidate.copy().isProcessed()).isTrue();
-		assertThat(candidate.copy().getSalesOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID);
+		assertThat(candidate.copy().getSalesOrderAndLineId().getOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID);
 
-		candidate.markSaved(1);
+		candidate.markSaved(PurchaseCandidateId.ofRepoId(1));
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 	}
@@ -85,7 +85,7 @@ public class PurchaseCandidateTest
 		assertThat(candidate.getQtyToPurchase()).isEqualByComparingTo(newQtyRequired);
 		assertThat(candidate.copy().getQtyToPurchase()).isEqualByComparingTo(newQtyRequired);
 
-		candidate.markSaved(1);
+		candidate.markSaved(PurchaseCandidateId.ofRepoId(1));
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 	}
@@ -105,7 +105,7 @@ public class PurchaseCandidateTest
 		assertThat(candidate.getDateRequired()).isEqualTo(newDatePromised);
 		assertThat(candidate.copy().getDateRequired()).isEqualTo(newDatePromised);
 
-		candidate.markSaved(1);
+		candidate.markSaved(PurchaseCandidateId.ofRepoId(1));
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 	}
@@ -127,7 +127,7 @@ public class PurchaseCandidateTest
 
 		final PurchaseErrorItem purchaseErrorItem = purchaseErrorItems.get(0);
 		assertThat(purchaseErrorItem.getOrgId()).isEqualTo(candidate1.getOrgId());
-		assertThat(purchaseErrorItem.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
+		assertThat(purchaseErrorItem.getPurchaseCandidateId()).isEqualTo(candidate1.getId());
 		assertThat(purchaseErrorItem.getThrowable()).isSameAs(throwable);
 	}
 
@@ -159,13 +159,13 @@ public class PurchaseCandidateTest
 		final PurchaseOrderItem purchaseOrderItem1 = purchaseOrderItems.get(0);
 		assertThat(purchaseOrderItem1.getOrgId()).isEqualTo(candidate1.getOrgId());
 		assertThat(purchaseOrderItem1.getRemotePurchaseOrderId()).isEqualTo("remotePurchaseOrderId");
-		assertThat(purchaseOrderItem1.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
+		assertThat(purchaseOrderItem1.getPurchaseCandidateId()).isEqualTo(candidate1.getId());
 		assertThat(purchaseOrderItem1.getProductId()).isEqualTo(candidate1.getProductId());
 
 		final PurchaseOrderItem purchaseOrderItem2 = purchaseOrderItems.get(1);
 		assertThat(purchaseOrderItem2.getOrgId()).isEqualTo(candidate1.getOrgId());
 		assertThat(purchaseOrderItem2.getRemotePurchaseOrderId()).isEqualTo("remotePurchaseOrderId-2");
-		assertThat(purchaseOrderItem2.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
+		assertThat(purchaseOrderItem2.getPurchaseCandidateId()).isEqualTo(candidate1.getId());
 		assertThat(purchaseOrderItem2.getProductId()).isEqualTo(candidate1.getProductId());
 	}
 
@@ -176,6 +176,6 @@ public class PurchaseCandidateTest
 				.createPurchaseCandidate(20);
 		final String toString = purchaseCandidate.toString();
 		assertThat(toString).isNotNull();
-		assertThat(toString).startsWith("PurchaseCandidate(purchaseCandidateId=20");
+		assertThat(toString).startsWith("PurchaseCandidate(id=PurchaseCandidateId(repoId=20)");
 	}
 }
