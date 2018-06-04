@@ -245,12 +245,12 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		}
 
 		final int docTypeId;
-		final int AD_PrintFormat_ID;
+		final int printFormatId;
 		final int adTableId;
 		// for vendors we have different print formats per partner, for purchase order
 		if (importRecord.getAD_PrintFormat_ID() > 0)
 		{
-			AD_PrintFormat_ID = importRecord.getAD_PrintFormat_ID();
+			printFormatId = importRecord.getAD_PrintFormat_ID();
 			docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
 					.adClientId(importRecord.getAD_Client_ID())
@@ -267,8 +267,8 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
 
-			AD_PrintFormat_ID = Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormatId, -1);
-			if (AD_PrintFormat_ID <= 0)
+			printFormatId = Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormatId, -1);
+			if (printFormatId <= 0)
 			{
 				throw AdempiereException.ofADMessage(BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg);
 			}
@@ -277,7 +277,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		}
 
 		final I_C_BP_PrintFormat bpPrintFormat = InterfaceWrapperHelper.newInstance(I_C_BP_PrintFormat.class);
-		bpPrintFormat.setAD_PrintFormat_ID(AD_PrintFormat_ID);
+		bpPrintFormat.setAD_PrintFormat_ID(printFormatId);
 		bpPrintFormat.setC_BPartner(importRecord.getC_BPartner());
 		bpPrintFormat.setC_DocType_ID(docTypeId);
 		bpPrintFormat.setAD_Table_ID(adTableId);
