@@ -30,7 +30,7 @@ import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -85,10 +85,10 @@ public class PurchaseRowFactory
 			@NotNull final LocalDateTime datePromised)
 	{
 		final BPartnerId vendorId = purchaseCandidate.getVendorId();
-		final JSONLookupValue vendor = lookups.createBPartnerLookupValue(vendorId);
+		final LookupValue vendor = lookups.createBPartnerLookupValue(vendorId);
 
 		final ProductId productId;
-		final JSONLookupValue product;
+		final LookupValue product;
 		final VendorProductInfo vendorProductInfo = purchaseCandidate.getVendorProductInfo();
 		if (vendorProductInfo != null)
 		{
@@ -153,8 +153,8 @@ public class PurchaseRowFactory
 
 	public PurchaseRow createGroupRow(final PurchaseDemand demand, final List<PurchaseRow> rows)
 	{
-		final JSONLookupValue product = lookups.createProductLookupValue(demand.getProductId());
-		final JSONLookupValue attributeSetInstance = lookups.createASILookupValue(demand.getAttributeSetInstanceId());
+		final LookupValue product = lookups.createProductLookupValue(demand.getProductId());
+		final LookupValue attributeSetInstance = lookups.createASILookupValue(demand.getAttributeSetInstanceId());
 
 		final Quantity qtyToDeliver = demand.getQtyToDeliver();
 		final BigDecimal qtyAvailableToPromise = getQtyAvailableToPromise(demand);
