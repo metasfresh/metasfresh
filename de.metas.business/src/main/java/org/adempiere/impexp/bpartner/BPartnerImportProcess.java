@@ -232,7 +232,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 	private final void createBPPrintFormatIfNeeded(@NonNull final I_I_BPartner importRecord)
 	{
-		if (importRecord.isShowDeliveryNote())
+		if (importRecord.isShowDeliveryNote() || importRecord.getAD_PrintFormat_ID() > 0)
 		{
 			int bpPrintFormatId = importRecord.getC_BP_PrintFormat_ID();
 			if (bpPrintFormatId > 0)
@@ -240,16 +240,31 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				return;
 			}
 
-			final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-					.adClientId(importRecord.getAD_Client_ID())
-					.adOrgId(importRecord.getAD_Org_ID())
-					.build());
-
-			final int AD_PrintFormat_ID =  Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormatId, -1);
-			if (AD_PrintFormat_ID <= 0 )
+			final int docTypeId;
+			final int AD_PrintFormat_ID;
+			if (importRecord.getAD_PrintFormat_ID() > 0)
 			{
-				throw AdempiereException.ofADMessage(BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg);
+				AD_PrintFormat_ID = importRecord.getAD_PrintFormat_ID();
+				docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
+						.adClientId(importRecord.getAD_Client_ID())
+						.adOrgId(importRecord.getAD_Org_ID())
+						.build());
+			}
+			else
+			{
+				docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+						.adClientId(importRecord.getAD_Client_ID())
+						.adOrgId(importRecord.getAD_Org_ID())
+						.build());
+
+				AD_PrintFormat_ID =  Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormatId, -1);
+				if (AD_PrintFormat_ID <= 0 )
+				{
+					throw AdempiereException.ofADMessage(BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg);
+				}
+
 			}
 
 			final I_C_BP_PrintFormat bpPrintFormat = InterfaceWrapperHelper.newInstance(I_C_BP_PrintFormat.class);

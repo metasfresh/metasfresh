@@ -94,6 +94,35 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Druck - Format.
+	 * Data Print Format
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_PrintFormat_ID (int AD_PrintFormat_ID);
+
+	/**
+	 * Get Druck - Format.
+	 * Data Print Format
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_PrintFormat_ID();
+
+	public org.compiere.model.I_AD_PrintFormat getAD_PrintFormat();
+
+	public void setAD_PrintFormat(org.compiere.model.I_AD_PrintFormat AD_PrintFormat);
+
+    /** Column definition for AD_PrintFormat_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_PrintFormat> COLUMN_AD_PrintFormat_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_PrintFormat>(I_I_BPartner.class, "AD_PrintFormat_ID", org.compiere.model.I_AD_PrintFormat.class);
+    /** Column name AD_PrintFormat_ID */
+    public static final String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
+
+	/**
 	 * Set Ansprechpartner.
 	 * User within the system - Internal or Business Partner Contact
 	 *

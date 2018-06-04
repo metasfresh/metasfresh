@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1129660865L;
+	private static final long serialVersionUID = -516463389L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -70,6 +70,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getAD_Language () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_PrintFormat getAD_PrintFormat() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);
+	}
+
+	@Override
+	public void setAD_PrintFormat(org.compiere.model.I_AD_PrintFormat AD_PrintFormat)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class, AD_PrintFormat);
+	}
+
+	/** Set Druck - Format.
+		@param AD_PrintFormat_ID 
+		Data Print Format
+	  */
+	@Override
+	public void setAD_PrintFormat_ID (int AD_PrintFormat_ID)
+	{
+		if (AD_PrintFormat_ID < 1) 
+			set_Value (COLUMNNAME_AD_PrintFormat_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PrintFormat_ID, Integer.valueOf(AD_PrintFormat_ID));
+	}
+
+	/** Get Druck - Format.
+		@return Data Print Format
+	  */
+	@Override
+	public int getAD_PrintFormat_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintFormat_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override

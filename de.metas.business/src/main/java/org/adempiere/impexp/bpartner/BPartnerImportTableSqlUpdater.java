@@ -80,6 +80,8 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateM_Shippers(whereClause);
 
+		dbUpdateAD_PrintFormats(whereClause);
+
 		dbUpdateErrorMessages(whereClause);
 	}
 
@@ -379,6 +381,27 @@ public class BPartnerImportTableSqlUpdater
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid Invalid Shipper or DeliveryViaRule={}", no);
 	}
+
+	private void dbUpdateAD_PrintFormats(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET AD_PrintFormat_ID=(SELECT AD_PrintFormat_ID FROM AD_PrintFormat pf"
+				+ " WHERE i.PrintFormat_Name=pf.Name AND pf.AD_Client_ID IN (pf, i.AD_Client_ID) AND pf.AD_Org_ID IN (pf, i.AD_Org_ID ) "
+				+ "WHERE AD_PrintFormat_ID IS NULL AND PrintFormat_Name IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set AD_PrintFormat_ID={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PrintFormat_Name, ' "
+				+ "WHERE AD_PrintFormat_ID IS NULL AND PrintFormat_Name IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid AD_PrintFormat_ID={}", no);
+	}
+
 
 	private void dbUpdateErrorMessages(final String whereClause)
 	{
