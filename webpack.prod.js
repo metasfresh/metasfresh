@@ -1,11 +1,12 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
+var fs = require('fs');
 var WebpackGitHash = require('webpack-git-hash');
 var commitHash = require('child_process')
   .execSync('git rev-parse --short HEAD')
   .toString();
-var fs = require('fs');
 
 const plugins = [
   new webpack.DefinePlugin({
@@ -18,9 +19,10 @@ const plugins = [
     template: './index.html',
   }),
   new WebpackGitHash(),
+  new CopyWebpackPlugin([{ from: './plugins/**', to: './', ignore: ['*.md'] }]),
 ];
 
-if (!fs.existsSync(path.join(__dirname, 'plugins.js'))) {
+if (!fs.existsSync(path.join(__dirname, 'dist/plugins.js'))) {
   plugins.push(
     new webpack.DefinePlugin({
       PLUGINS: JSON.stringify([]),
