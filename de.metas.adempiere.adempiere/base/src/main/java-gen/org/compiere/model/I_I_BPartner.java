@@ -1590,29 +1590,6 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
 
 	/**
-	 * Set Show Delivery Note.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsShowDeliveryNote (boolean IsShowDeliveryNote);
-
-	/**
-	 * Get Show Delivery Note.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isShowDeliveryNote();
-
-    /** Column definition for IsShowDeliveryNote */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsShowDeliveryNote = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsShowDeliveryNote", null);
-    /** Column name IsShowDeliveryNote */
-    public static final String COLUMNNAME_IsShowDeliveryNote = "IsShowDeliveryNote";
-
-	/**
 	 * Set Vendor.
 	 * Indicates if this Business Partner is a Vendor
 	 *

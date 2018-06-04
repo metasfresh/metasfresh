@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -516463389L;
+	private static final long serialVersionUID = 1362706971L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -34,7 +34,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 			setIsShipTo (false); // N
 			setIsShipToContact_Default (false); // N
 			setIsShipToDefault (false); // N
-			setIsShowDeliveryNote (false); // N
         } */
     }
 
@@ -1446,29 +1445,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public boolean isShipToDefault () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsShipToDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Show Delivery Note.
-		@param IsShowDeliveryNote Show Delivery Note	  */
-	@Override
-	public void setIsShowDeliveryNote (boolean IsShowDeliveryNote)
-	{
-		set_Value (COLUMNNAME_IsShowDeliveryNote, Boolean.valueOf(IsShowDeliveryNote));
-	}
-
-	/** Get Show Delivery Note.
-		@return Show Delivery Note	  */
-	@Override
-	public boolean isShowDeliveryNote () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsShowDeliveryNote);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

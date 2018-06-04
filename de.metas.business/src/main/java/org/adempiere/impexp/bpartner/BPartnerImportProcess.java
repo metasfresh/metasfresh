@@ -33,7 +33,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_BP_PrintFormat;
@@ -57,9 +56,6 @@ import lombok.NonNull;
  */
 public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 {
-	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormatId = "BPartnerImportProcess_BPPrintFormatId";
-	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg = "BPartnerImportProcess_BPPrintFormatId_ErrorMsg";
-
 	private final BPartnerImportHelper bpartnerImporter;
 	private final BPartnerLocationImportHelper bpartnerLocationImporter;
 	private final BPartnerContactImportHelper bpartnerContactImporter;
@@ -233,24 +229,18 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 	private final void createBPPrintFormatIfNeeded(@NonNull final I_I_BPartner importRecord)
 	{
-		if (!(importRecord.isShowDeliveryNote() || importRecord.getAD_PrintFormat_ID() > 0))
+		if (importRecord.getAD_PrintFormat_ID() <= 0
+				|| importRecord.getC_BP_PrintFormat_ID() > 0)
 		{
 			return;
 		}
 
-		int bpPrintFormatId = importRecord.getC_BP_PrintFormat_ID();
-		if (bpPrintFormatId > 0)
-		{
-			return;
-		}
-
-		final int docTypeId;
-		final int printFormatId;
+		final int printFormatId = importRecord.getAD_PrintFormat_ID();
 		final int adTableId;
-		// for vendors we have different print formats per partner, for purchase order
-		if (importRecord.getAD_PrintFormat_ID() > 0)
+		final int docTypeId;
+		// for vendors we have print format for purchase order
+		if (importRecord.isVendor())
 		{
-			printFormatId = importRecord.getAD_PrintFormat_ID();
 			docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
 					.adClientId(importRecord.getAD_Client_ID())
@@ -258,7 +248,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 					.build());
 			adTableId = X_C_Order.Table_ID;
 		}
-		// for customer we have one single print format for inout and only for certain partners that they show the delivery note
+		// for customer we have print format for delivery
 		else
 		{
 			docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
@@ -267,11 +257,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
 
-			printFormatId = Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormatId, -1);
-			if (printFormatId <= 0)
-			{
-				throw AdempiereException.ofADMessage(BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg);
-			}
 			adTableId = X_M_InOut.Table_ID;
 
 		}
