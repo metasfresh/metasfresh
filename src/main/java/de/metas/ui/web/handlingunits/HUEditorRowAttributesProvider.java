@@ -8,13 +8,18 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -100,7 +105,16 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 		final boolean rowAttributesReadonly = isReadonly() // readonly if the provider shall provide readonly attributes
 				|| !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()); // or, readonly if not Planning, see https://github.com/metasfresh/metasfresh-webui-api/issues/314
 
-		return new HUEditorRowAttributes(documentPath, attributesStorage, rowAttributesReadonly);
+		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+		final IHUStorage storage = storageFactory.getStorage(hu);
+
+		final ImmutableSet<ProductId> productIDs = storage.getProductStorages()
+				.stream()
+				.map(IHUProductStorage::getM_Product_ID)
+				.map(ProductId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return new HUEditorRowAttributes(documentPath, attributesStorage, productIDs, rowAttributesReadonly);
 	}
 
 	private IAttributeStorageFactory getAttributeStorageFactory()

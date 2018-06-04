@@ -201,7 +201,6 @@ public class PurchaseRowsLoaderTest
 			availabilityCheckService.checkAvailability(request);
 			result = AvailabilityMultiResult.of(AvailabilityResult.builder()
 					.trackingId(request.getTrackingIds().iterator().next())
-					.purchaseCandidate(purchaseCandidate)
 					.qty(TEN)
 					.type(Type.AVAILABLE)
 					.build());
