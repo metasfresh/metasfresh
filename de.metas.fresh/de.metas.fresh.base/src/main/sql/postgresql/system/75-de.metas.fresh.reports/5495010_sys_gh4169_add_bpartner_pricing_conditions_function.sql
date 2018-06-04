@@ -71,7 +71,7 @@ FROM
 			AND pl.M_PricingSystem_ID = ps.M_PricingSystem_ID AND (pl.C_Country_ID = l.C_Country_ID OR pl.C_Country_ID IS NULL) 
 			AND pp.M_Product_ID = p.M_Product_ID
 			
-		ORDER BY pl.IsSOPricelist DESC
+		ORDER BY pl.IsSOPricelist, plv.validFrom DESC
 		LIMIT 1	
 	)pprice ON TRUE
 
