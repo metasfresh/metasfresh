@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
@@ -318,7 +317,7 @@ public class Doc_AllocationHdr extends Doc
 			// https://github.com/metasfresh/metasfresh/issues/3988 - if tax correction is needed, it has to be a dedicated fact;
 			// otherwise, FactTrxLinesType.extractType will fail
 			final List<Fact> taxCorrectionFacts = createTaxCorrection(fact.getAcctSchema(), line);
-			m_facts.addAll(taxCorrectionFacts);
+			facts.addAll(taxCorrectionFacts);
 		}            	// for all lines
 
 		// reset line info
@@ -1221,7 +1220,7 @@ public class Doc_AllocationHdr extends Doc
 	 * Create Accounting Entries
 	 */
 	public List<Fact> createEntries(
-			final MAcctSchema as, 
+			final MAcctSchema as,
 			final DocLine_Allocation line)
 	{
 		// If there are no tax facts, there is no need to do tax correction
@@ -1265,7 +1264,7 @@ public class Doc_AllocationHdr extends Doc
 						.setDocLine(line)
 						.setDetailMessage("Tax Account not found/created");
 			}
-			
+
 			//
 			// Discount Amount
 			if (m_DiscountAmt.signum() != 0)
@@ -1385,7 +1384,7 @@ public class Doc_AllocationHdr extends Doc
 	{
 		return new Fact(doc, as, Fact.POST_Actual);
 	}
-	
+
 	/**
 	 * Calculate the tax amount part.
 	 *
