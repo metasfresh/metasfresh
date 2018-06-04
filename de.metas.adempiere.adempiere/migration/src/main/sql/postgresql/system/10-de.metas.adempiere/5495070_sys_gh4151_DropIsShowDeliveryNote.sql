@@ -1,8 +1,3 @@
--- 2018-06-04T16:05:04.859
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_ImpFormat_Row SET AD_Column_ID=560226,Updated=TO_TIMESTAMP('2018-06-04 16:05:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540560
-;
-
 -- 2018-06-04T16:11:50.115
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM  AD_Message_Trl WHERE AD_Message_ID=544730
