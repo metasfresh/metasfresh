@@ -281,7 +281,7 @@ public class BPPurchaseScheduleRepository
 		return bpPurchaseSchedule;
 	}
 
-	public I_C_BP_PurchaseSchedule createOrUpdateAndSaveBPPurchaseScheduleRecord(@NonNull final BPPurchaseSchedule schedule)
+	public BPPurchaseSchedule createOrUpdateAndSaveBPPurchaseScheduleRecord(@NonNull final BPPurchaseSchedule schedule)
 	{
 		final I_C_BP_PurchaseSchedule scheduleRecord;
 		if (schedule.getBpPurchaseScheduleId() != null)
@@ -294,7 +294,7 @@ public class BPPurchaseScheduleRepository
 			scheduleRecord = newInstance(I_C_BP_PurchaseSchedule.class);
 		}
 
-		scheduleRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(schedule.getBpartnerId(),0));
+		scheduleRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(schedule.getBpartnerId(), 0));
 		scheduleRecord.setValidFrom(TimeUtil.asTimestamp(schedule.getValidFrom()));
 		scheduleRecord.setLeadTimeOffset((int)schedule.getLeadTimeOffset().toDays());
 		scheduleRecord.setReminderTimeInMin((int)schedule.getReminderTime().toMinutes());
@@ -318,7 +318,11 @@ public class BPPurchaseScheduleRepository
 
 		saveRecord(scheduleRecord);
 
-		return scheduleRecord;
+		schedule.toBuilder()
+				.bpPurchaseScheduleId(BPPurchaseScheduleId.ofRepoId(scheduleRecord.getC_BP_PurchaseSchedule_ID()))
+				.build();
+
+		return schedule;
 	}
 
 	private static void setDaysOfWeek(@NonNull final I_C_BP_PurchaseSchedule scheduleRecord, @NonNull final ImmutableSet<DayOfWeek> daysOfWeek)
