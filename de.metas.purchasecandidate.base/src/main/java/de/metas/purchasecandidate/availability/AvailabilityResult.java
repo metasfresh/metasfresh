@@ -10,7 +10,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
 import de.metas.vendor.gateway.api.availability.TrackingId;
@@ -45,11 +44,9 @@ public class AvailabilityResult
 {
 	public static AvailabilityResultBuilder prepareBuilderFor(@NonNull final AvailabilityResponseItem responseItem)
 	{
-		final Type type = Type.ofAvailabilityResponseItemType(responseItem.getType());
-
 		return AvailabilityResult.builder()
 				.trackingId(responseItem.getTrackingId())
-				.type(type)
+				.type(Type.ofAvailabilityResponseItemType(responseItem.getType()))
 				.availabilityText(responseItem.getAvailabilityText())
 				.datePromised(TimeUtil.asLocalDateTime(responseItem.getDatePromised()))
 				.qty(responseItem.getAvailableQuantity());
@@ -80,8 +77,6 @@ public class AvailabilityResult
 
 	TrackingId trackingId;
 
-	PurchaseCandidate purchaseCandidate;
-
 	Type type;
 
 	BigDecimal qty;
@@ -95,7 +90,6 @@ public class AvailabilityResult
 	@Builder
 	private AvailabilityResult(
 			@Nullable TrackingId trackingId,
-			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final Type type,
 			@NonNull final BigDecimal qty,
 			@Nullable final LocalDateTime datePromised,
@@ -103,7 +97,6 @@ public class AvailabilityResult
 			@Nullable final VendorGatewayService vendorGatewayServicethatWasUsed)
 	{
 		this.trackingId = trackingId;
-		this.purchaseCandidate = purchaseCandidate;
 		this.type = type;
 		this.qty = qty;
 		this.datePromised = datePromised;
