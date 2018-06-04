@@ -66,10 +66,11 @@
 .quick-actions-tag {
     max-width: 180px;
     min-width: 160px;
-    max-height: 2rem;
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
+    white-space: nowrap;
+    text-align: center;
 }
 
 @media (max-width: $breakpoint){
