@@ -43,7 +43,7 @@ public class BPartnerPrintFormatRepository
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_PrintFormat.class)
-				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpPrintFormat.getBpartnerId())
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpPrintFormat.getBpartnerId().getRepoId())
 				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, bpPrintFormat.getAdTableId())
 				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, bpPrintFormat.getDocTypeId())
 				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_PrintFormat_ID, bpPrintFormat.getPrintFormatId())
