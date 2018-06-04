@@ -258,7 +258,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 					.build());
 			adTableId = X_C_Order.Table_ID;
 		}
-		// for customer we have different one single print format, for inout and only for certain partner that they show the delivery note
+		// for customer we have one single print format for inout and only for certain partners that they show the delivery note
 		else
 		{
 			docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
