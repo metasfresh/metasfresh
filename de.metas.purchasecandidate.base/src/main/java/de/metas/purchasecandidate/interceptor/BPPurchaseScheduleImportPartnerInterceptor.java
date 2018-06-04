@@ -93,7 +93,7 @@ public class BPPurchaseScheduleImportPartnerInterceptor implements IImportInterc
 
 			if (bpPurchaseSchedule.isPresent())
 			{
-				bpPurchaseScheduleRepo.changeLeadTimeOffset(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()), importRecord.getLeadTimeOffset());
+				bpPurchaseScheduleRepo.changeLeadTimeOffset(bpPurchaseSchedule.get(), Duration.ofDays(importRecord.getLeadTimeOffset()));
 			}
 			else
 			{

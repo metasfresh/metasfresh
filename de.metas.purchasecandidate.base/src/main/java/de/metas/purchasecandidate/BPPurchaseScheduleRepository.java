@@ -18,7 +18,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.util.time.generator.Frequency;
 import org.adempiere.util.time.generator.FrequencyType;
 import org.compiere.util.CCache;
@@ -271,16 +270,15 @@ public class BPPurchaseScheduleRepository
 		}
 	}
 
-	public void changeLeadTimeOffset(final BPartnerId bpartnerId, int leadTimeOffset)
+	public BPPurchaseSchedule changeLeadTimeOffset(final BPPurchaseSchedule bpPurchaseSchedule, Duration leadTimeOffset)
 	{
-		final BPPurchaseSchedule bpPurchaseSchedule = getByBPartnerIdAndValidFrom(bpartnerId, SystemTime.asLocalDate())
-				.orElseThrow(() -> new AdempiereException("BPPurchaseSchedule doess not exists for partner {}"
-						+ BPPurchaseSchedule.class + ": " + bpartnerId.toString()));
 		bpPurchaseSchedule.toBuilder()
-				.leadTimeOffset(Duration.ofDays(leadTimeOffset))
+				.leadTimeOffset(leadTimeOffset)
 				.build();
 
 		createOrUpdateAndSaveBPPurchaseScheduleRecord(bpPurchaseSchedule);
+
+		return bpPurchaseSchedule;
 	}
 
 	public I_C_BP_PurchaseSchedule createOrUpdateAndSaveBPPurchaseScheduleRecord(@NonNull final BPPurchaseSchedule schedule)
