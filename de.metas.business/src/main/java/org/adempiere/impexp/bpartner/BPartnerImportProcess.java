@@ -41,6 +41,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.MContactInterest;
 import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_Order;
 import org.compiere.model.X_I_BPartner;
 import org.compiere.model.X_M_InOut;
 
@@ -242,6 +243,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 			final int docTypeId;
 			final int AD_PrintFormat_ID;
+			final int adTableId;
 			if (importRecord.getAD_PrintFormat_ID() > 0)
 			{
 				AD_PrintFormat_ID = importRecord.getAD_PrintFormat_ID();
@@ -250,6 +252,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 						.adClientId(importRecord.getAD_Client_ID())
 						.adOrgId(importRecord.getAD_Org_ID())
 						.build());
+				adTableId = X_C_Order.Table_ID;
 			}
 			else
 			{
@@ -264,6 +267,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				{
 					throw AdempiereException.ofADMessage(BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg);
 				}
+				adTableId = X_M_InOut.Table_ID;
 
 			}
 
@@ -271,7 +275,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			bpPrintFormat.setAD_PrintFormat_ID(AD_PrintFormat_ID);
 			bpPrintFormat.setC_BPartner(importRecord.getC_BPartner());
 			bpPrintFormat.setC_DocType_ID(docTypeId);
-			bpPrintFormat.setAD_Table_ID(X_M_InOut.Table_ID);
+			bpPrintFormat.setAD_Table_ID(adTableId);
 			InterfaceWrapperHelper.save(bpPrintFormat);
 
 			importRecord.setC_BP_PrintFormat(bpPrintFormat);
