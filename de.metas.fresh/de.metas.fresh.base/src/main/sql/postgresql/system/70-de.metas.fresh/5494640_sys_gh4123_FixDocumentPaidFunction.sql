@@ -61,10 +61,8 @@ BEGIN
 		a.C_Currency_ID, a.DateTrx
 		FROM	C_AllocationLine al
 		INNER JOIN C_AllocationHdr a ON (al.C_AllocationHdr_ID=a.C_AllocationHdr_ID)
-		LEFT OUTER JOIN C_Invoice i ON (al.C_Invoice_ID = i.C_Invoice_ID)
 		WHERE	
 			(al.C_Invoice_ID = p_Record_ID AND p_AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice'))
-			OR (i.C_Order_ID = p_Record_ID AND p_AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Order'))
 		AND   a.IsActive='Y'
 	LOOP
 		v_PaymentAmt := v_PaymentAmt
@@ -78,5 +76,3 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION public.documentpaid(numeric, numeric, numeric, numeric)
-  OWNER TO metasfresh;
