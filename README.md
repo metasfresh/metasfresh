@@ -28,12 +28,24 @@
 - Then you should run node server by:
 > npm start
 
-### Build
-In case of static version building execute (you are going need Webpack installed globally):
+### Production environment
+When running in production mode you will need to build the static version of the app and serve it from an http-compatible server. Here's a quick guide how you can run production mode locally.
+
+#### Building
+In case of static version building execute (you are going need [Webpack](https://www.npmjs.com/package/webpack) installed [globally](https://webpack.js.org/guides/installation/#global-installation)):
 > webpack --config webpack.prod.js
 
 And after that we need `config.js` in `dist` folder
 > cp /config.js.dist /dist/
+
+#### Running
+The easiest way to test production build is by serving it via a simple [htt(https://www.npmjs.com/package/http-server) server. You can install it globally with npm :
+> npm install http-server -g
+
+and then run it pointing to your dist folder:
+> http-server ./dist
+
+Now open your browser and go to `localhost:8080` to see the application running.
 
 ### Contribution
 
