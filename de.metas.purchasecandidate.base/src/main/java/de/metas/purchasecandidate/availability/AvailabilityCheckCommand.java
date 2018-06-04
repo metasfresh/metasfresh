@@ -13,7 +13,7 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -114,25 +114,25 @@ class AvailabilityCheckCommand
 			return AvailabilityMultiResult.EMPTY;
 		}
 
-		final Map<AvailabilityRequestItem, PurchaseCandidateAndTrackingId> requestItem2purchaseCandidate = createRequestItems(vendorId);
-		if (requestItem2purchaseCandidate.isEmpty())
+		final Set<AvailabilityRequestItem> requestItems = createRequestItems(vendorId);
+		if (requestItems.isEmpty())
 		{
 			return AvailabilityMultiResult.EMPTY;
 		}
 
 		try
 		{
-			return checkAvailability0(vendorId, requestItem2purchaseCandidate);
+			return checkAvailability0(vendorId, requestItems);
 		}
 		catch (final Throwable t)
 		{
-			throw convertThrowable(t, requestItem2purchaseCandidate);
+			throw convertThrowable(t);
 		}
 	}
 
 	private AvailabilityMultiResult checkAvailability0(
 			@NonNull final BPartnerId vendorId,
-			@NonNull final Map<AvailabilityRequestItem, PurchaseCandidateAndTrackingId> requestItem2purchaseCandidate)
+			@NonNull final Set<AvailabilityRequestItem> requestItems)
 	{
 		final VendorGatewayService vendorGatewayService = vendorGatewayRegistry
 				.getSingleVendorGatewayService(vendorId.getRepoId())
@@ -144,18 +144,14 @@ class AvailabilityCheckCommand
 
 		final AvailabilityResponse availabilityResponse = vendorGatewayService.retrieveAvailability(AvailabilityRequest.builder()
 				.vendorId(vendorId.getRepoId())
-				.availabilityRequestItems(requestItem2purchaseCandidate.keySet())
+				.availabilityRequestItems(requestItems)
 				.build());
 
 		final ImmutableList.Builder<AvailabilityResult> result = ImmutableList.builder();
 		for (final AvailabilityResponseItem responseItem : availabilityResponse.getAvailabilityResponseItems())
 		{
-			final AvailabilityRequestItem requestItem = responseItem.getCorrespondingRequestItem();
-			final PurchaseCandidateAndTrackingId purchaseCandidate = requestItem2purchaseCandidate.get(requestItem);
-
 			final AvailabilityResult availabilityResult = AvailabilityResult
 					.prepareBuilderFor(responseItem)
-					.purchaseCandidate(purchaseCandidate.getPurchaseCandidate())
 					.build();
 
 			result.add(availabilityResult);
@@ -164,9 +160,7 @@ class AvailabilityCheckCommand
 		return AvailabilityMultiResult.of(result.build());
 	}
 
-	private RuntimeException convertThrowable(
-			@NonNull final Throwable throwable,
-			@NonNull final Map<AvailabilityRequestItem, PurchaseCandidateAndTrackingId> requestItem2purchaseCandidate)
+	private AdempiereException convertThrowable(@NonNull final Throwable throwable)
 	{
 		final boolean isAvailabilityRequestException = throwable instanceof AvailabilityRequestException;
 		if (!isAvailabilityRequestException)
@@ -189,18 +183,13 @@ class AvailabilityCheckCommand
 		return new AvailabilityException(errorItems);
 	}
 
-	private Map<AvailabilityRequestItem, PurchaseCandidateAndTrackingId> createRequestItems(final BPartnerId vendorId)
+	private Set<AvailabilityRequestItem> createRequestItems(final BPartnerId vendorId)
 	{
-		final ImmutableMap.Builder<AvailabilityRequestItem, PurchaseCandidateAndTrackingId> result = ImmutableMap.builder();
-
-		for (final PurchaseCandidateAndTrackingId purchaseCandidate : purchaseCandidatesByVendorId.get(vendorId))
-		{
-			if (!purchaseCandidate.isProcessed())
-			{
-				result.put(purchaseCandidate.createAvailabilityRequestItem(), purchaseCandidate);
-			}
-		}
-		return result.build();
+		return purchaseCandidatesByVendorId.get(vendorId)
+				.stream()
+				.filter(PurchaseCandidateAndTrackingId::isNotProcessed)
+				.map(PurchaseCandidateAndTrackingId::createAvailabilityRequestItem)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private boolean vendorProvidesAvailabilityCheck(@NonNull final BPartnerId vendorBPartnerId)
@@ -230,6 +219,11 @@ class AvailabilityCheckCommand
 		public boolean isProcessed()
 		{
 			return purchaseCandidate.isProcessed();
+		}
+
+		public boolean isNotProcessed()
+		{
+			return !isProcessed();
 		}
 
 		public AvailabilityRequestItem createAvailabilityRequestItem()
