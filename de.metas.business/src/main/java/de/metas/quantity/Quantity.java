@@ -172,7 +172,7 @@ public final class Quantity implements Comparable<Quantity>
 			return false;
 		}
 
-		if (this.getC_UOM_ID() != quantity.getC_UOM_ID())
+		if (this.getUOMId() != quantity.getUOMId())
 		{
 			return false;
 		}
@@ -222,9 +222,14 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return quantity's C_UOM_ID
 	 */
-	private int getC_UOM_ID()
+	public int getUOMId()
 	{
 		return uom.getC_UOM_ID();
+	}
+
+	public String getUOMSymbol()
+	{
+		return uom.getUOMSymbol();
 	}
 
 	/**
@@ -435,8 +440,8 @@ public final class Quantity implements Comparable<Quantity>
 
 		// Get QtyToAdd value (mandatory)
 		final BigDecimal qtyToAdd_Value;
-		final int uomId = this.getC_UOM_ID();
-		final int qtyToAdd_uomId = qtyToAdd.getC_UOM_ID();
+		final int uomId = this.getUOMId();
+		final int qtyToAdd_uomId = qtyToAdd.getUOMId();
 		final int qtyToAdd_sourceUomId = qtyToAdd.getSource_UOM_ID();
 		if (uomId == qtyToAdd_uomId)
 		{
@@ -491,6 +496,15 @@ public final class Quantity implements Comparable<Quantity>
 		return new Quantity(qtyNew_Value, qtyNew_UOM, qtyNew_SourceValue, qtyNew_SourceUOM);
 	}
 
+	public Quantity add(@NonNull final BigDecimal qtyToAdd)
+	{
+		if (qtyToAdd.signum() == 0)
+		{
+			return this;
+		}
+		return add(of(qtyToAdd, uom));
+	}
+
 	public Quantity subtract(@NonNull final Quantity qtyToRemove)
 	{
 		final Quantity qtyToAdd = qtyToRemove.negate();
@@ -529,11 +543,11 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity multiply(final BigDecimal multiplicand)
 	{
-		if(multiplicand.compareTo(BigDecimal.ONE) == 0)
+		if (multiplicand.compareTo(BigDecimal.ONE) == 0)
 		{
 			return this;
 		}
-		
+
 		return new Quantity(qty.multiply(multiplicand), uom, sourceQty.multiply(multiplicand), sourceUom);
 	}
 }

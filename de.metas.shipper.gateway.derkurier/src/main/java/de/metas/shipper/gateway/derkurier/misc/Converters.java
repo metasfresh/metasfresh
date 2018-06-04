@@ -62,7 +62,7 @@ import lombok.NonNull;
 @Service
 public class Converters
 {
-	private static final DateTimeFormatter CSV_DATE_FORMATTER = DateTimeFormatter.ofPattern(DerKurierConstants.CSV_DATE_FORMAT);
+	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DerKurierConstants.DATE_FORMAT);
 	private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(DerKurierConstants.TIME_FORMAT);
 
 	public RoutingRequest createRoutingRequestFrom(@NonNull final DeliveryOrder deliveryOrder)
@@ -153,17 +153,17 @@ public class Converters
 							deliveryAddress.getZipCode(),
 							deliveryAddress.getCity(),
 							joinStreet1AndStreet2(deliveryAddress),
-							deliveryAddress.getHouseNo(),
+							deliveryAddress.getHouseNo(), // 10
 							derKurierDeliveryData.getStation(),
 							dateToCsvString(deliveryDate.getDate()),
-							timeToString(deliveryDate.getTimeFrom()),
-							timeToString(deliveryDate.getTimeTo()),
+							timeToString(derKurierDeliveryData.getDesiredTimeFrom()),
+							timeToString(derKurierDeliveryData.getDesiredTimeTo()),
 							intToString(posCounter),
 							intToString(deliveryPosition.getGrossWeightKg()),
 							intToString(packageDimensions.map(PackageDimensions::getLengthInCM)),
 							intToString(packageDimensions.map(PackageDimensions::getWidthInCM)),
 							intToString(packageDimensions.map(PackageDimensions::getHeightInCM)),
-							truncateCheckDigitFromParcelNo(derKurierDeliveryData.getParcelNumber()),
+							truncateCheckDigitFromParcelNo(derKurierDeliveryData.getParcelNumber()), // 20
 							deliveryOrder.getCustomerReference(),
 							orderId.getOrderIdAsString(),
 							null, // cReferenz
@@ -173,7 +173,9 @@ public class Converters
 							null, // EC
 							null, // NN
 							intToString(deliveryPosition.getNumberOfPackages()),
-							stringToString(deliveryContact.map(ContactPerson::getEmailAddress)));
+							stringToString(deliveryContact.map(ContactPerson::getEmailAddress)), // 30
+							"" // afaiu DerKurier needs also the last field (email) to end with a semicolon
+			);
 			csv.add(csvLine);
 			posCounter++;
 		}
@@ -208,7 +210,7 @@ public class Converters
 		{
 			return "";
 		}
-		return date.format(CSV_DATE_FORMATTER);
+		return date.format(DATE_FORMATTER);
 	}
 
 	private static String timeToString(@Nullable final LocalTime time)

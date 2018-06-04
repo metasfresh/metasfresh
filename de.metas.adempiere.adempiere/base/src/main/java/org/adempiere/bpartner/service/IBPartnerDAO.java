@@ -25,15 +25,20 @@ package org.adempiere.bpartner.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Shipper;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import lombok.NonNull;
 
 public interface IBPartnerDAO extends ISingletonService
 {
@@ -53,11 +58,25 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
 
-	public List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId);
+	List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId);
+
+	default List<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveBPartnerLocations(bpartnerId.getRepoId());
+	}
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(Properties ctx, int bpartnerId, String trxName);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(I_C_BPartner bpartner);
+
+	default Set<Integer> retrieveBPartnerLocationCountryIds(@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveBPartnerLocations(bpartnerId)
+				.stream()
+				.map(I_C_BPartner_Location::getC_Location)
+				.map(I_C_Location::getC_Country_ID)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
 	/**
 	 * Contacts of the partner, ordered by ad_user_ID, ascending
@@ -94,7 +113,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return M_PricingSystem_ID or 0
 	 */
 	int retrievePricingSystemId(Properties ctx, int bPartnerId, boolean soTrx, String trxName);
-	
+
 	int retrievePricingSystemId(BPartnerId bPartnerId, boolean soTrx);
 
 	I_M_Shipper retrieveShipper(int bPartnerId, String trxName);

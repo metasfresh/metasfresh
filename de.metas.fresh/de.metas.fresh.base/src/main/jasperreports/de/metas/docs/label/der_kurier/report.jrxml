@@ -99,6 +99,9 @@
 	<field name="consignee_street" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="consignee_street"/>
 	</field>
+	<field name="consignee_housenumber" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="consignee_housenumber"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -240,7 +243,9 @@
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{consignee_street}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{consignee_street}  != null ? $F{consignee_street} : "")
+ + " " + 
+($F{consignee_housenumber}  != null ? $F{consignee_housenumber} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="330" width="250" height="14" uuid="b3a5674f-b91d-4233-a535-e0c43359a203"/>

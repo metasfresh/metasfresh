@@ -25,7 +25,9 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
-import de.metas.invoice.InvoiceScheduleId;
+import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.lang.Percent;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -54,6 +56,13 @@ import lombok.NonNull;
 @Repository
 public class RefundConfigRepository
 {
+	private final InvoiceScheduleRepository invoiceScheduleRepository;
+
+	public RefundConfigRepository(@NonNull final InvoiceScheduleRepository invoiceScheduleRepository)
+	{
+		this.invoiceScheduleRepository = invoiceScheduleRepository;
+	}
+
 	public boolean hasRefundConfig(@NonNull final ConditionsId conditionsId)
 	{
 		return createRefundConfigQuery(conditionsId)
@@ -65,7 +74,7 @@ public class RefundConfigRepository
 	{
 		return createRefundConfigQuery(conditionsId)
 				.stream()
-				.map(RefundConfigRepository::ofNullableRecord)
+				.map(this::ofNullableRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -133,7 +142,7 @@ public class RefundConfigRepository
 				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMN_C_Flatrate_Conditions_ID, conditionsId.getRepoId());
 	}
 
-	private static RefundConfig ofNullableRecord(
+	private RefundConfig ofNullableRecord(
 			@Nullable final I_C_Flatrate_RefundConfig record)
 	{
 		if (record == null)
@@ -158,11 +167,14 @@ public class RefundConfigRepository
 			return null;
 		}
 
+		final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(record.getC_InvoiceSchedule());
+
 		final RefundConfigBuilder builder = RefundConfig.builder()
 				.conditionsId(ConditionsId.ofRepoId(record.getC_Flatrate_Conditions_ID()))
 				.refundInvoiceType(refundInvoiceType)
-				.invoiceScheduleId(InvoiceScheduleId.ofRepoId(record.getC_InvoiceSchedule_ID()))
-				.percent(record.getPercent());
+				.invoiceSchedule(invoiceSchedule)
+				.percent(Percent.of(record.getPercent()));
+
 		if (record.getM_Product_ID() > 0)
 		{
 			builder.productId(ProductId.ofRepoId(record.getM_Product_ID()));

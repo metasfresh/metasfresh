@@ -1,15 +1,21 @@
 package de.metas.purchasecandidate;
 
-import java.util.OptionalInt;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
 
+import de.metas.payment.api.IPaymentTermRepository;
+import de.metas.payment.api.PaymentTermId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,40 +45,61 @@ import lombok.Value;
 @Value
 public class VendorProductInfo
 {
-	OptionalInt bpartnerProductId;
+	Optional<VendorProductInfoId> id;
 
-	BPartnerId vendorBPartnerId;
+	BPartnerId vendorId;
 
-	int productId;
+	/** can be null if the resp. vendor can no payment term and none is flagged as default. */
+	PaymentTermId paymentTermId;
+
+	ProductId productId;
+
 	String productNo;
 	String productName;
 
 	boolean aggregatePOs;
 
-	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProduct)
+	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProductRecord)
 	{
-		final BPartnerId bpartnerVendorIdOverride = null;
-		final Boolean aggregatePOsOverride = null; // N/A
-		return fromDataRecord(bpartnerProduct, bpartnerVendorIdOverride, aggregatePOsOverride);
+		return builderFromDataRecord()
+				.bpartnerProductRecord(bpartnerProductRecord)
+				.build();
 	}
 
-	public static VendorProductInfo fromDataRecord(
-			@NonNull final I_C_BPartner_Product bpartnerProduct,
+	@Builder(builderMethodName = "builderFromDataRecord", builderClassName = "FromDataRecordBuilder")
+	public static VendorProductInfo buildFromDataRecord(
+			final I_C_BPartner_Product bpartnerProductRecord,
+			final ProductId productIdOverride,
 			final BPartnerId bpartnerVendorIdOverride,
 			final Boolean aggregatePOsOverride)
 	{
+		final ProductId productId = Util.coalesceSuppliers(
+				() -> productIdOverride,
+				() -> bpartnerProductRecord != null ? ProductId.ofRepoId(bpartnerProductRecord.getM_Product_ID()) : null);
+		if (productId == null)
+		{
+			throw new AdempiereException("Cannot extract ProductId from bpartnerProductRecord=" + bpartnerProductRecord + ", productIdOverride=" + productIdOverride);
+		}
+
 		final String productNo = Util.coalesceSuppliers(
-				() -> bpartnerProduct.getVendorProductNo(),
-				() -> bpartnerProduct.getProductNo(),
-				() -> bpartnerProduct.getM_Product().getValue());
+				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getVendorProductNo() : null,
+				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductNo() : null,
+				() -> Services.get(IProductBL.class).getProductValue(productId));
 
 		final String productName = Util.coalesceSuppliers(
-				() -> bpartnerProduct.getProductName(),
-				() -> bpartnerProduct.getM_Product().getName());
+				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductName() : null,
+				() -> Services.get(IProductBL.class).getProductName(productId));
 
-		final BPartnerId bpartnerVendorId = Util.coalesceSuppliers(
+		final BPartnerId vendorId = Util.coalesceSuppliers(
 				() -> bpartnerVendorIdOverride,
-				() -> BPartnerId.ofRepoIdOrNull(bpartnerProduct.getC_BPartner_ID()));
+				() -> bpartnerProductRecord != null ? BPartnerId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_ID()) : null);
+		if (vendorId == null)
+		{
+			throw new AdempiereException("Cannot extract ProductId from bpartnerProductRecord=" + bpartnerProductRecord + ", bpartnerVendorIdOverride=" + bpartnerVendorIdOverride);
+		}
+
+		final I_C_BPartner vendorBPartnerRecord = Services.get(IBPartnerDAO.class).getById(vendorId);
+		final PaymentTermId paymentTermId = retrievePaymentTermIdOrNull(vendorBPartnerRecord);
 
 		final boolean aggregatePOs;
 		if (aggregatePOsOverride != null)
@@ -81,37 +108,52 @@ public class VendorProductInfo
 		}
 		else
 		{
-			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerVendorId);
+			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(vendorId);
 			aggregatePOs = bpartner.isAggregatePO();
 		}
 
 		return builder()
-				.bpartnerProductId(bpartnerProduct.getC_BPartner_Product_ID())
-				.vendorBPartnerId(bpartnerVendorId)
-				.productId(bpartnerProduct.getM_Product_ID())
+				.id(bpartnerProductRecord != null ? VendorProductInfoId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_Product_ID()) : null)
+				.vendorId(vendorId)
+				.paymentTermId(paymentTermId)
+				.productId(productId)
 				.productNo(productNo)
 				.productName(productName)
 				.aggregatePOs(aggregatePOs)
 				.build();
 	}
 
+	private static PaymentTermId retrievePaymentTermIdOrNull(@NonNull final I_C_BPartner bpartnerRecord)
+	{
+		if (bpartnerRecord.getPO_PaymentTerm_ID() > 0)
+		{
+			return PaymentTermId.ofRepoId(bpartnerRecord.getPO_PaymentTerm_ID());
+		}
+
+		return Services
+				.get(IPaymentTermRepository.class)
+				.getDefaultPaymentTermIdOrNull();
+	}
+
 	@Builder
 	private VendorProductInfo(
-			final int bpartnerProductId,
-			@NonNull final BPartnerId vendorBPartnerId,
-			final int productId,
+			final VendorProductInfoId id,
+			@NonNull final BPartnerId vendorId,
+			@Nullable final PaymentTermId paymentTermId,
+			@NonNull final ProductId productId,
 			@NonNull final String productNo,
 			@NonNull final String productName,
 			final boolean aggregatePOs)
 	{
-		Check.assume(productId > 0, "productId > 0");
+		this.id = Optional.ofNullable(id);
 
-		this.bpartnerProductId = bpartnerProductId > 0 ? OptionalInt.of(bpartnerProductId) : OptionalInt.empty();
-		this.vendorBPartnerId = vendorBPartnerId;
+		this.vendorId = vendorId;
 		this.productId = productId;
+
 		this.productNo = productNo;
 		this.productName = productName;
 		this.aggregatePOs = aggregatePOs;
+		this.paymentTermId = paymentTermId;
 	}
 
 }

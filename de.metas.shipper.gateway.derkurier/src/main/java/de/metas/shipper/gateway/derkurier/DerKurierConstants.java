@@ -34,9 +34,7 @@ public class DerKurierConstants
 
 	public static final String SYSCONFIG_DERKURIER_LABEL_PROCESS_ID = "de.metas.shipper.gateway.derkurier.PackageLabel.AD_Process_ID";
 
-	public static final String API_DATE_FORMAT = "yyyy-MM-dd";
-
-	public static final String CSV_DATE_FORMAT = "dd.MM.yyyy";
+	public static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	public static final String TIME_FORMAT = "HH:mm";
 

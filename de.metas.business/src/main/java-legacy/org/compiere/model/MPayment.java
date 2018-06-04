@@ -55,7 +55,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
-import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.process.IProcess;
 import de.metas.process.ProcessInfo;
 
@@ -2211,7 +2210,6 @@ public final class MPayment extends X_C_Payment
 	public boolean allocateIt()
 	{
 		final boolean result = allocateIt0();
-		Services.get(IPrepayOrderAllocationBL.class).paymentAfterAllocateIt(this, result);
 		return result;
 	}
 

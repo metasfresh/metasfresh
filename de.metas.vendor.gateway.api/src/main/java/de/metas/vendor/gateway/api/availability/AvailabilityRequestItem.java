@@ -2,6 +2,7 @@ package de.metas.vendor.gateway.api.availability;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -17,22 +18,34 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
-@Builder
 public class AvailabilityRequestItem
 {
+	TrackingId trackingId;
 	ProductAndQuantity productAndQuantity;
-
 	int salesOrderLineId;
-
 	int purchaseCandidateId;
+
+	@Builder
+	private AvailabilityRequestItem(
+			final TrackingId trackingId,
+			@NonNull final ProductAndQuantity productAndQuantity,
+			final int salesOrderLineId,
+			final int purchaseCandidateId)
+	{
+		this.trackingId = trackingId != null ? trackingId : TrackingId.random();
+		this.productAndQuantity = productAndQuantity;
+		this.salesOrderLineId = salesOrderLineId > 0 ? salesOrderLineId : -1;
+		this.purchaseCandidateId = purchaseCandidateId > 0 ? purchaseCandidateId : -1;
+	}
+
 }

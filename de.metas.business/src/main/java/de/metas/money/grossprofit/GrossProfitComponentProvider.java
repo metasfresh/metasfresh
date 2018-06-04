@@ -22,7 +22,8 @@ package de.metas.money.grossprofit;
  * #L%
  */
 
+@FunctionalInterface
 public interface GrossProfitComponentProvider
 {
-	GrossProfitComponent provideForOrderLine(GrossProfitComputeRequest grossProfitAware);
+	GrossProfitComponent provideForRequest(GrossProfitComputeRequest request);
 }

@@ -221,4 +221,10 @@ final class HUAttributeValue extends AbstractHUAttributeValue
 	{
 		return huAttribute.getValueDateInitial();
 	}
+
+	@Override
+	public boolean isOnlyIfInProductAttributeSet()
+	{
+		return huAttribute.getM_HU_PI_Attribute().isOnlyIfInProductAttributeSet();
+	}
 }

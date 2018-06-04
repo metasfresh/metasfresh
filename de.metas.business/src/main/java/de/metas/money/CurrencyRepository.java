@@ -38,9 +38,23 @@ public class CurrencyRepository
 		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 		final I_C_Currency currencyRecord = currencyDAO.retrieveCurrency(Env.getCtx(), currencyId.getRepoId());
 
+		return ofRecord(currencyRecord);
+	}
+	
+	public Currency getById(final int currencyId)
+	{
+		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+		final I_C_Currency currencyRecord = currencyDAO.retrieveCurrency(Env.getCtx(), currencyId);
+
+		return ofRecord(currencyRecord);
+	}
+
+	private static Currency ofRecord(@NonNull final I_C_Currency currencyRecord)
+	{
 		return Currency.builder()
 				.id(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()))
 				.precision(currencyRecord.getStdPrecision())
+				.threeLetterCode(currencyRecord.getISO_Code())
 				.build();
 	}
 }
