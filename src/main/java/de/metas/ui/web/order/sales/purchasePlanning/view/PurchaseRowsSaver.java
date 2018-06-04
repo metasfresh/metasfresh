@@ -5,17 +5,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.order.OrderLineId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseDemandId;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -45,34 +46,25 @@ class PurchaseRowsSaver
 {
 	private final PurchaseCandidateRepository purchaseCandidatesRepo;
 
-	private final List<PurchaseRow> groupingRows;
-
 	@Builder
 	private PurchaseRowsSaver(
-			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo,
-			@NonNull final List<PurchaseRow> grouppingRows)
+			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo)
 	{
 		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
-
-		this.groupingRows = grouppingRows;
 	}
 
-	public List<PurchaseCandidate> save()
+	public List<PurchaseCandidate> save(final List<PurchaseRow> groupingRows)
 	{
-		final Set<OrderLineId> salesOrderLineIds = groupingRows.stream()
+		final Set<PurchaseDemandId> purchaseDemandIds = groupingRows.stream()
 				.map(PurchaseRow::getPurchaseDemandId)
 				.filter(id -> id != null)
-				.filter(id -> I_C_OrderLine.Table_Name.equals(id.getTableName()))
-				.map(PurchaseDemandId::getRecordId)
-				.map(OrderLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<Integer, PurchaseCandidate> existingPurchaseCandidatesById = purchaseCandidatesRepo
-				.streamAllBySalesOrderLineIds(salesOrderLineIds)
-				.collect(ImmutableMap
-						.toImmutableMap(
-								PurchaseCandidate::getPurchaseCandidateId,
-								Function.identity()));
+		final Map<PurchaseCandidateId, PurchaseCandidate> existingPurchaseCandidatesById = purchaseCandidatesRepo
+				.getAllByDemandIds(purchaseDemandIds)
+				.values()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(PurchaseCandidate::getId, Function.identity()));
 
 		final List<PurchaseCandidate> purchaseCandidatesToSave = groupingRows.stream()
 				.flatMap(grouppingRow -> grouppingRow.getIncludedRows().stream()) // purchase candidate lines
@@ -83,10 +75,11 @@ class PurchaseRowsSaver
 
 		//
 		// Delete remaining candidates:
-		final Set<Integer> purchaseCandidateIdsSaved = purchaseCandidatesToSave.stream()
-				.map(PurchaseCandidate::getPurchaseCandidateId)
+		final Set<PurchaseCandidateId> purchaseCandidateIdsSaved = purchaseCandidatesToSave.stream()
+				.map(PurchaseCandidate::getId)
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
-		final Set<Integer> purchaseCandidateIdsToDelete = existingPurchaseCandidatesById.keySet().stream()
+		final Set<PurchaseCandidateId> purchaseCandidateIdsToDelete = existingPurchaseCandidatesById.keySet().stream()
 				.filter(id -> !purchaseCandidateIdsSaved.contains(id))
 				.collect(ImmutableSet.toImmutableSet());
 		purchaseCandidatesRepo.deleteByIds(purchaseCandidateIdsToDelete);
@@ -96,7 +89,7 @@ class PurchaseRowsSaver
 
 	private PurchaseCandidate updatePurchaseCandidate(
 			@NonNull final PurchaseRow purchaseRow,
-			@NonNull final Map<Integer, PurchaseCandidate> existingPurchaseCandidatesById)
+			@NonNull final Map<PurchaseCandidateId, PurchaseCandidate> existingPurchaseCandidatesById)
 	{
 		Check.errorUnless(PurchaseRowType.LINE.equals(purchaseRow.getType()),
 				"The given row's type needs to be {}, but is {}; purchaseRow={}", PurchaseRowType.LINE, purchaseRow.getType(), purchaseRow);
