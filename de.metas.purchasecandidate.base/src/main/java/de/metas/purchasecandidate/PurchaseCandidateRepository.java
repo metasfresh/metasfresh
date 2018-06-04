@@ -351,7 +351,12 @@ public class PurchaseCandidateRepository
 
 	private PurchaseProfitInfo toPurchaseProfitInfo(final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
-		final Currency currency = currencyRepository.getById(purchaseCandidateRecord.getC_Currency_ID());
+		final int currencyId = purchaseCandidateRecord.getC_Currency_ID();
+		if (currencyId <= 0)
+		{
+			return null;
+		}
+		final Currency currency = currencyRepository.getById(currencyId);
 
 		return PurchaseProfitInfo.builder()
 				.salesNetPrice(Money.of(purchaseCandidateRecord.getCustomerPriceGrossProfit(), currency))
@@ -383,12 +388,13 @@ public class PurchaseCandidateRepository
 		final I_C_BPartner_Product bpartnerProduct = purchaseCandidateRecord.getC_BPartner_Product_ID() > 0
 				? loadOutOfTrx(purchaseCandidateRecord.getC_BPartner_Product_ID(), I_C_BPartner_Product.class)
 				: null;
-		// TODO: handle the null case!
-		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(
-				bpartnerProduct,
-				BPartnerId.ofRepoIdOrNull(purchaseCandidateRecord.getVendor_ID()),
-				purchaseCandidateRecord.isAggregatePO());
-		return vendorProductInfo;
+
+		return VendorProductInfo.builderFromDataRecord()
+				.bpartnerProductRecord(bpartnerProduct)
+				.bpartnerVendorIdOverride(BPartnerId.ofRepoIdOrNull(purchaseCandidateRecord.getVendor_ID()))
+				.productIdOverride(ProductId.ofRepoIdOrNull(purchaseCandidateRecord.getM_Product_ID()))
+				.aggregatePOsOverride(purchaseCandidateRecord.isAggregatePO())
+				.build();
 	}
 
 	public void deleteByIds(final Collection<PurchaseCandidateId> purchaseCandidateIds)

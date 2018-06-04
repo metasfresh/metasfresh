@@ -43,6 +43,7 @@ import de.metas.product.ProductId;
  */
 public interface IBPartnerProductDAO extends ISingletonService
 {
+	I_C_BPartner_Product getById(int bpartnerProductId);
 
 	/**
 	 * Retrieves all C_BPartner_Products for selected vendor
