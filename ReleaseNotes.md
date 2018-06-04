@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1266](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1266) Labels widget: tab and shift-tab support
+    * Improved the usage of Tab and shift-tab for Label widgets.
   * [#1808](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1808) Shortcuts for inbox, menu and sidelist
     * Improvement of Shortcuts fir inbox, menu and sidelist. Now hiding the menus after 2nd usage of shortcut.
 
