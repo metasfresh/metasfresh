@@ -153,7 +153,7 @@ class TableItem extends PureComponent {
 
   onCellChange = (rowId, property, value, ret) => {
     const { onItemChange } = this.props;
-    let editedCells = { ...this.state.editedCells };
+    const editedCells = { ...this.state.editedCells };
 
     // this is something we're not doing usually as all field
     // layouts come from the server. But in cases of modals
