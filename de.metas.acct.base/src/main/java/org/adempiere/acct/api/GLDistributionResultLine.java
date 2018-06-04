@@ -6,6 +6,9 @@ import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -36,9 +39,23 @@ import org.adempiere.util.lang.ObjectUtils;
  */
 public class GLDistributionResultLine
 {
+	public enum Sign
+	{
+		DEBIT, CREDIT, 
+				
+		/** choose whatever side to make the mount positive */
+		DETECT
+	};
+	
 	private IAccountDimension accountDimension = AccountDimension.NULL;
 	private BigDecimal percent = BigDecimal.ZERO;
+
 	private BigDecimal amount = BigDecimal.ZERO;
+
+	@Getter
+	@Setter
+	private Sign amountSign = Sign.DETECT;
+
 	private int currencyId = -1;
 	private BigDecimal qty = BigDecimal.ZERO;
 	private String description = null;

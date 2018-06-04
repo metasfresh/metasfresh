@@ -1,11 +1,22 @@
 package de.metas.purchasecandidate;
 
+import java.time.LocalDateTime;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
+
+import de.metas.money.Money;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLine;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.experimental.Delegate;
 
 /*
  * #%L
@@ -30,15 +41,74 @@ import lombok.experimental.Delegate;
  */
 
 @Value
-@Builder
 public class SalesOrderLine
 {
-	@NonNull
+	OrderAndLineId id;
+
+	@Getter(AccessLevel.NONE)
 	SalesOrder order;
 
-	@Delegate
+	@Getter(AccessLevel.NONE)
 	OrderLine orderLine;
 
-	@NonNull
 	Quantity deliveredQty;
+
+	@Builder
+	private SalesOrderLine(
+			@NonNull final SalesOrder order,
+			@NonNull final OrderLine orderLine,
+			@NonNull final Quantity deliveredQty)
+	{
+		this.order = order;
+		this.orderLine = orderLine;
+		this.deliveredQty = deliveredQty;
+
+		final OrderLineId orderLineId = orderLine.getId();
+		this.id = orderLineId != null ? OrderAndLineId.of(orderLine.getOrderId(), orderLineId) : null;
+	}
+
+	public LocalDateTime getPreparationDate()
+	{
+		return order.getPreparationDate();
+	}
+
+	public OrgId getOrgId()
+	{
+		return orderLine.getOrgId();
+	}
+
+	public WarehouseId getWarehouseId()
+	{
+		return orderLine.getWarehouseId();
+	}
+
+	public int getLine()
+	{
+		return orderLine.getLine();
+	}
+
+	public LocalDateTime getDatePromised()
+	{
+		return orderLine.getDatePromised();
+	}
+
+	public ProductId getProductId()
+	{
+		return orderLine.getProductId();
+	}
+
+	public AttributeSetInstanceId getAsiId()
+	{
+		return orderLine.getAsiId();
+	}
+
+	public Quantity getOrderedQty()
+	{
+		return orderLine.getOrderedQty();
+	}
+
+	public Money getPriceActual()
+	{
+		return orderLine.getPriceActual();
+	}
 }

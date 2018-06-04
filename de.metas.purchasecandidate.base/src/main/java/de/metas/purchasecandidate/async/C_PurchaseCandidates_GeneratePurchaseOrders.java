@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.async;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,6 +13,7 @@ import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
 import com.google.common.base.Functions;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -27,6 +28,7 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.PurchaseCandidateToOrderWorkflow;
@@ -67,16 +69,15 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 {
 	private final PurchaseCandidateRepository purchaseCandidateRepo = Adempiere.getBean(PurchaseCandidateRepository.class);
 
-	public static void enqueue(final Collection<Integer> purchaseCandidateIds)
+	public static void enqueue(final Collection<PurchaseCandidateId> purchaseCandidateIds)
 	{
 		final Multimap<Integer, I_C_PurchaseCandidate> vendorId2purchaseCandidate = //
-				purchaseCandidateIds.stream()
-						.map(purchaseCandidateId -> load(purchaseCandidateId, I_C_PurchaseCandidate.class))
+				loadByIds(PurchaseCandidateId.toIntSet(purchaseCandidateIds), I_C_PurchaseCandidate.class)
+						.stream()
 						.collect(Multimaps.toMultimap(
 								I_C_PurchaseCandidate::getVendor_ID, // key function
 								Functions.identity(), // value function
-								MultimapBuilder.treeKeys().arrayListValues()::build // multimap builder
-				));
+								MultimapBuilder.treeKeys().arrayListValues()::build)); // multimap builder
 
 		if (vendorId2purchaseCandidate.isEmpty())
 		{
@@ -131,10 +132,11 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 		final boolean skipAlreadyScheduledItems = true;
 		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(skipAlreadyScheduledItems);
 
-		final Set<Integer> purchaseCandidateIds = queueElements
+		final Set<PurchaseCandidateId> purchaseCandidateIds = queueElements
 				.stream()
 				.map(I_C_Queue_Element::getRecord_ID)
-				.filter(id -> id > 0)
+				.map(PurchaseCandidateId::ofRepoIdOrNull)
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 		if (purchaseCandidateIds.isEmpty())
 		{

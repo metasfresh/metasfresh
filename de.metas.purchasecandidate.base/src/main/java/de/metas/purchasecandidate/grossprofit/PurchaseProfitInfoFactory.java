@@ -3,36 +3,34 @@ package de.metas.purchasecandidate.grossprofit;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_Location;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.logging.LogManager;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.grossprofit.GrossProfitComputeRequest;
-import de.metas.money.grossprofit.GrossProfitPrice;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderLine;
-import de.metas.order.grossprofit.OrderLineWithGrossProfitPrice;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -59,7 +57,8 @@ import lombok.Value;
 @Service
 public class PurchaseProfitInfoFactory
 {
-
+	// services
+	private static final Logger logger = LogManager.getLogger(PurchaseProfitInfoFactory.class);
 	private final CurrencyRepository currencyRepository;
 	private final OrderLineWithGrossProfitPriceRepository grossProfitPriceRepo;
 	private final GrossProfitPriceFactory grossProfitPriceFactory;
@@ -74,112 +73,86 @@ public class PurchaseProfitInfoFactory
 		this.grossProfitPriceFactory = grossProfitPriceFactory;
 	}
 
-	@Value
-	public static class PurchaseProfitInfoRequest
-	{
-		@NonNull
-		OrderLine salesOrderLine;
-
-		@NonNull
-		VendorProductInfo vendorProductInfo;
-	}
-
 	public List<PurchaseProfitInfo> createInfos(@NonNull final PurchaseProfitInfoRequest request)
 	{
-		final Money customerGrossProfitPrice = retrieveCustomerGrossProfitPrice(request);
+		final Optional<Money> salesNetPrice = retrieveSalesNetPrice(request);
 
-		final Map<PriceListVersionId, Money> plvId2Price = retrievePurchasePrices(request);
-
-		Check.errorIf(plvId2Price.isEmpty(), "Unable to find pricing information for request={}", request);
-		final ImmutableList.Builder<PurchaseProfitInfo> result = ImmutableList.builder();
-
-		for (final Entry<PriceListVersionId, Money> entry : plvId2Price.entrySet())
+		final Map<PriceListVersionId, Money> purchasePrices = retrievePurchasePrices(request);
+		if (purchasePrices.isEmpty())
 		{
-			final Money purchasePriceActual = entry.getValue();
-			final GrossProfitPrice grossProfitPrice = retrieveOurOwnGrossProfitPrice(
-					request,
-					purchasePriceActual);
+			throw new AdempiereException("Unable to find pricing information for request: " + request);
+		}
 
-			final PurchaseProfitInfo info = PurchaseProfitInfo.builder()
-					.purchasePlvId(entry.getKey())
-					.purchasePriceActual(purchasePriceActual)
-					.customerPriceGrossProfit(customerGrossProfitPrice)
-					.priceGrossProfit(grossProfitPrice.compute())
-					.build();
-			result.add(info);
+		final ImmutableList.Builder<PurchaseProfitInfo> result = ImmutableList.builder();
+		for (final Entry<PriceListVersionId, Money> entry : purchasePrices.entrySet())
+		{
+			final Money purchaseGrossPrice = entry.getValue();
+			final Money purchaseNetPrice = retrieveOurOwnPurchaseNetPrice(request, purchaseGrossPrice);
+
+			result.add(PurchaseProfitInfo.builder()
+					.salesNetPrice(salesNetPrice)
+					.purchaseGrossPrice(purchaseGrossPrice)
+					.purchaseNetPrice(purchaseNetPrice)
+					.build());
 		}
 		return result.build();
 	}
 
-	private Money retrieveCustomerGrossProfitPrice(final PurchaseProfitInfoRequest request)
+	private Optional<Money> retrieveSalesNetPrice(final PurchaseProfitInfoRequest request)
 	{
-		final OrderLineWithGrossProfitPrice orderLineWithGrossProfitPrice = grossProfitPriceRepo.getForOrderLineId(request.getSalesOrderLine().getId());
-		final Money customerGrossProfitPrice = orderLineWithGrossProfitPrice.getGrossProfitPrice();
-		return customerGrossProfitPrice;
+		return grossProfitPriceRepo.getProfitMinBasePrice(request.getSalesOrderLineIds());
 	}
 
-	private GrossProfitPrice retrieveOurOwnGrossProfitPrice(
+	private Money retrieveOurOwnPurchaseNetPrice(
 			@NonNull final PurchaseProfitInfoRequest request,
-			@NonNull final Money purchasePriceActual)
+			@NonNull final Money purchaseGrossPrice)
 	{
-		final VendorProductInfo vendorProductInfo = request.getVendorProductInfo();
-		final OrderLine salesOrderLine = request.getSalesOrderLine();
-
-		final GrossProfitComputeRequest grossProfitComputeRequest = GrossProfitComputeRequest
-				.builder()
-				.baseAmount(purchasePriceActual)
-				.bPartnerId(vendorProductInfo.getVendorBPartnerId())
-				.paymentTermId(vendorProductInfo.getPaymentTermId())
-				.date(salesOrderLine.getDatePromised().toLocalDate())
-				.productId(salesOrderLine.getProductId())
-				.build();
-
-		final GrossProfitPrice grossProfitPrice = grossProfitPriceFactory.createGrossProfitPrice(grossProfitComputeRequest);
-		return grossProfitPrice;
+		return grossProfitPriceFactory.calculateNetPrice(GrossProfitComputeRequest.builder()
+				.baseAmount(purchaseGrossPrice)
+				.bPartnerId(request.getVendorId())
+				.paymentTermId(request.getPaymentTermId())
+				.date(request.getDatePromised().toLocalDate())
+				.productId(request.getProductId())
+				.build());
 	}
 
 	private Map<PriceListVersionId, Money> retrievePurchasePrices(final PurchaseProfitInfoRequest request)
 	{
-		final OrderLine salesOrderLine = request.getSalesOrderLine();
-		final VendorProductInfo vendorProductInfo = request.getVendorProductInfo();
-
-		final int bPartnerId = vendorProductInfo.getVendorBPartnerId().getRepoId();
-
-		final ImmutableList<Integer> countryIds = Services.get(IBPartnerDAO.class)
-				.retrieveBPartnerLocations(bPartnerId)
-				.stream()
-				.map(I_C_BPartner_Location::getC_Location)
-				.map(I_C_Location::getC_Country_ID)
-				.distinct()
-				.collect(ImmutableList.toImmutableList());
-
-		final boolean soTrx = false;
-
-		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(vendorProductInfo.getVendorBPartnerId(), soTrx);
-
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
-		final Quantity orderedQty = salesOrderLine.getOrderedQty();
+		final BPartnerId vendorId = request.getVendorId();
+		final Set<Integer> countryIds = bpartnersRepo.retrieveBPartnerLocationCountryIds(vendorId);
+		if (countryIds.isEmpty())
+		{
+			logger.warn("No countries found for {}. Returning empty for {}.", vendorId, request);
+			return ImmutableMap.of();
+		}
+
+		final boolean soTrx = false;
+		final int pricingSystemId = bpartnersRepo.retrievePricingSystemId(vendorId, soTrx);
+		final Quantity orderedQty = request.getOrderedQty();
 
 		final ImmutableMap.Builder<PriceListVersionId, Money> result = ImmutableMap.builder();
-
 		for (final int countryId : countryIds)
 		{
 			final IEditablePricingContext pricingCtx = pricingBL
 					.createInitialContext(
-							salesOrderLine.getProductId().getRepoId(),
-							bPartnerId,
-							orderedQty.getUOM().getC_UOM_ID(),
+							request.getProductId().getRepoId(),
+							vendorId.getRepoId(),
+							orderedQty.getUOMId(),
 							orderedQty.getQty(),
 							soTrx)
-					.setPriceDate(TimeUtil.asTimestamp(salesOrderLine.getDatePromised()))
+					.setPriceDate(TimeUtil.asTimestamp(request.getDatePromised()))
 					.setC_Country_ID(countryId)
 					.setM_PricingSystem_ID(pricingSystemId);
 
 			final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
-			Check.errorUnless(pricingResult.isCalculated(),
-					"Unable to compute a price for the given pricingContext; pricingCtx={}; pricingResult={}",
-					pricingCtx, pricingResult);
+			if (!pricingResult.isCalculated())
+			{
+				logger.info("Failed calculating price for vendor's country ({}). Skipped.", pricingCtx);
+				continue;
+			}
 
 			final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(pricingResult.getM_PriceList_Version_ID());
 			final Currency currency = currencyRepository.getById(CurrencyId.ofRepoId(pricingResult.getC_Currency_ID()));

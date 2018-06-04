@@ -37,6 +37,8 @@ public interface IClientDAO extends ISingletonService
 	 * System AD_Client_ID (i.e. AD_Client_ID=0)
 	 */
 	int SYSTEM_CLIENT_ID = 0;
+	
+	I_AD_Client getById(int adClientId);
 
 	/**
 	 * Retrieves {@link I_AD_Client} for ID.

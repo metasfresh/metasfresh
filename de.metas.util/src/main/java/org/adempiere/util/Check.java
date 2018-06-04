@@ -435,6 +435,26 @@ public final class Check
 		return valueBD;
 	}
 
+	public static <T> void assumeEquals(final T value1, final T value2)
+	{
+		if (Objects.equals(value1, value2))
+		{
+			return;
+		}
+
+		fail("values not equal: '{}', '{}'", value1, value2);
+	}
+
+	public static <T> void assumeEquals(final T value1, final T value2, final String assumptionMessage, final Object... params)
+	{
+		if (Objects.equals(value1, value2))
+		{
+			return;
+		}
+
+		fail(assumptionMessage, params);
+	}
+
 	/**
 	 * This method similar to {@link #assume(boolean, String, Object...)}, but the message should be formulated in terms of an error message instead of an assumption.
 	 * <p>
