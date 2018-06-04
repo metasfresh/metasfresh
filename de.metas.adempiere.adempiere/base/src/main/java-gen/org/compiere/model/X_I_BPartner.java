@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1828405418L;
+	private static final long serialVersionUID = -1129660865L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -1953,6 +1953,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPostal_Add () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Postal_Add);
+	}
+
+	/** Set PrintFormat_Name.
+		@param PrintFormat_Name PrintFormat_Name	  */
+	@Override
+	public void setPrintFormat_Name (java.lang.String PrintFormat_Name)
+	{
+		set_Value (COLUMNNAME_PrintFormat_Name, PrintFormat_Name);
+	}
+
+	/** Get PrintFormat_Name.
+		@return PrintFormat_Name	  */
+	@Override
+	public java.lang.String getPrintFormat_Name () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PrintFormat_Name);
 	}
 
 	/** Set Verarbeitet.

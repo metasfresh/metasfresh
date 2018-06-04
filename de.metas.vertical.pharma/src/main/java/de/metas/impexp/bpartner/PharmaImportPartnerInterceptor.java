@@ -138,6 +138,16 @@ public class PharmaImportPartnerInterceptor implements IImportInterceptor
 		{
 			bpartner.setContacts(ibpartner.getContacts());
 		}
+		//
+		if (!Check.isEmpty(ibpartner.getPharma_Fax(),true))
+		{
+			bpartner.setPharma_Fax(ibpartner.getPharma_Fax());
+		}
+		//
+		if (!Check.isEmpty(ibpartner.getStatusInfo(),true))
+		{
+			bpartner.setStatusInfo(ibpartner.getStatusInfo());
+		}
 
 		bpartner.setShelfLifeMinDays(ibpartner.getShelfLifeMinDays());
 

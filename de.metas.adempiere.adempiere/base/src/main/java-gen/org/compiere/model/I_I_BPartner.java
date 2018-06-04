@@ -2161,6 +2161,29 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Postal_Add = "Postal_Add";
 
 	/**
+	 * Set PrintFormat_Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPrintFormat_Name (java.lang.String PrintFormat_Name);
+
+	/**
+	 * Get PrintFormat_Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPrintFormat_Name();
+
+    /** Column definition for PrintFormat_Name */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_PrintFormat_Name = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "PrintFormat_Name", null);
+    /** Column name PrintFormat_Name */
+    public static final String COLUMNNAME_PrintFormat_Name = "PrintFormat_Name";
+
+	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *

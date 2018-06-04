@@ -165,4 +165,16 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 	public void setContacts(String Contacts);
 	public String getContacts();
 	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_Pharma_Fax = "Pharma_Fax";
+	public void setPharma_Fax(String Pharma_Fax);
+	public String getPharma_Fax();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_StatusInfo = "StatusInfo";
+	public void setStatusInfo(String StatusInfo);
+	public String getStatusInfo();
+	// @formatter:on
 }
