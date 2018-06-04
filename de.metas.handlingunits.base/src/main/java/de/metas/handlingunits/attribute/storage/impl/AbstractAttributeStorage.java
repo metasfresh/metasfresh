@@ -1,26 +1,7 @@
 package de.metas.handlingunits.attribute.storage.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -38,6 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.util.Check;
@@ -45,6 +27,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -54,6 +37,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -78,6 +62,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public abstract class AbstractAttributeStorage implements IAttributeStorage
@@ -92,6 +77,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	private final IAttributeStorageFactory storageFactory;
 	private final IHUAttributesDAO huAttributesDAO;
 	private final IHUStorageDAO huStorageDAO;
+
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 
 	// Attributes
 	private IndexedAttributeValues _indexedAttributeValues = IndexedAttributeValues.NULL;
@@ -332,8 +319,6 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	@Override
 	public final IAttributeValue getAttributeValue(final String attributeKey)
 	{
-		// assertNotDisposed(); // checked in next called method
-
 		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeKey);
 		if (NullAttributeValue.isNull(attributeValue))
 		{
@@ -619,9 +604,9 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	public final void setValue(final String attributeKey, final Object value)
 	{
 		assertNotDisposed();
-		
+
 		final I_M_Attribute attribute = getAttributeByValueKeyOrNull(attributeKey);
-		if(attribute == null)
+		if (attribute == null)
 		{
 			throw new AttributeNotFoundException(attributeKey, this);
 		}
@@ -1083,19 +1068,49 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		// We assume attribute is editable (readonlyUI=false)
 		return false;
 	}
-	
+
 	@Override
-	public boolean isDisplayedUI(final I_M_Attribute attribute)
+	public boolean isDisplayedUI(final ImmutableSet<ProductId> productIDs, final I_M_Attribute attribute)
 	{
 		assertNotDisposed();
-		
-		final IAttributeValueCallout callout = getAttributeValueCallout(attribute);
-		if(!callout.isDisplayedUI(this, attribute))
+
+		final boolean isDisplayFromAttributeSet = productIDs.stream().anyMatch(productId -> isDisplayFromAttributeSet(productId, attribute));
+
+		if (!isDisplayFromAttributeSet)
 		{
 			return false;
 		}
-		
+		if (!isDisplayFromCallout(attribute))
+		{
+			return false;
+		}
+
 		return getAttributeValue(attribute).isDisplayedUI();
+	}
+
+	private boolean isDisplayFromAttributeSet(final ProductId productId, final I_M_Attribute attribute)
+	{
+		final IAttributeValue attributeValue = getAttributeValue(attribute);
+
+		final boolean isOnlyIfInProductAttributeSet = attributeValue.isOnlyIfInProductAttributeSet();
+
+		if (!isOnlyIfInProductAttributeSet)
+		{
+			return true;
+		}
+
+		final I_M_Product product = load(productId.getRepoId(), I_M_Product.class);
+
+		final boolean isAttributeInSet = attributesBL.getAttributeOrNull(product, attribute.getM_Attribute_ID()) != null;
+
+		return isAttributeInSet;
+	}
+
+	private boolean isDisplayFromCallout(final I_M_Attribute attribute)
+	{
+		final IAttributeValueCallout callout = getAttributeValueCallout(attribute);
+
+		return callout.isDisplayedUI(this, attribute);
 	}
 
 	protected final Object getDefaultAttributeValue(final Map<I_M_Attribute, Object> defaultAttributesValue, final I_M_Attribute attribute)
@@ -1203,7 +1218,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 		int counter = 1;
 		message.append("\n Direct children: ");
-		for( final IAttributeStorage child: getChildAttributeStorages(false))
+		for (final IAttributeStorage child : getChildAttributeStorages(false))
 		{
 			message.append("\n\t " + counter + ": " + child);
 		}
@@ -1314,12 +1329,11 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		{
 			return attributeKey2attributeValueRO.get(attributeKey);
 		}
-		
+
 		public boolean hasAttribute(final String attributeKey)
 		{
 			return attributeKey2attributeRO.containsKey(attributeKey);
 		}
-
 
 		public Collection<I_M_Attribute> getAttributes()
 		{
