@@ -276,14 +276,14 @@ public class BPPurchaseScheduleRepository
 				.leadTimeOffset(leadTimeOffset)
 				.build();
 
-		saveBPPurchaseSchedule(bpPurchaseSchedule);
+		save(bpPurchaseSchedule);
 
 		return bpPurchaseSchedule;
 	}
 
-	public BPPurchaseSchedule saveBPPurchaseSchedule(@NonNull final BPPurchaseSchedule schedule)
+	public BPPurchaseSchedule save(@NonNull final BPPurchaseSchedule schedule)
 	{
-		final I_C_BP_PurchaseSchedule scheduleRecord = createOrUpdateBPPurchaseScheduleRecord(schedule);
+		final I_C_BP_PurchaseSchedule scheduleRecord = createOrUpdateRecord(schedule);
 		saveRecord(schedule);
 
 		return schedule.toBuilder()
@@ -291,7 +291,7 @@ public class BPPurchaseScheduleRepository
 				.build();
 	}
 
-	private I_C_BP_PurchaseSchedule createOrUpdateBPPurchaseScheduleRecord(@NonNull final BPPurchaseSchedule schedule)
+	private I_C_BP_PurchaseSchedule createOrUpdateRecord(@NonNull final BPPurchaseSchedule schedule)
 	{
 		final I_C_BP_PurchaseSchedule scheduleRecord;
 		if (schedule.getBpPurchaseScheduleId() != null)
