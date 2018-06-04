@@ -22,6 +22,7 @@ Here come the actual release notes:
     * New Window in WebUI for the maintenance of Unit of measure Translations.
   * [#4119](https://github.com/metasfresh/metasfresh/issues/4119) WebUI: Translation Window for Tax Category
     * New Window in WebUI for the maintenance of Tax Category Translations.
+  * [#4127](https://github.com/metasfresh/metasfresh/issues/4127) Batch entry product ID
   * [#4135](https://github.com/metasfresh/metasfresh/issues/4135) Webui: Add Document References to all Windows with Translations
     * Improved the navigation beween master data and translation windows, adding references to the translation window & table.
   * [#4138](https://github.com/metasfresh/metasfresh/issues/4138) WebUI: Translation Window for Paymentterm
@@ -37,6 +38,9 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1311](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1311) Clear Browser Cache when new webui frontend version is installed
     * Improved cache clearing after rollout of new frontend version.
+
+* metasfresh-dist
+  * [#45](https://github.com/metasfresh/metasfresh-dist/issues/45) publish standalone jasper/reporting files
 
 ## Fixes
 * metasfresh
