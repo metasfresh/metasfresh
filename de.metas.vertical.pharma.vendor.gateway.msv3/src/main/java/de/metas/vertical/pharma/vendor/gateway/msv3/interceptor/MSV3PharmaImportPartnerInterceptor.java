@@ -3,14 +3,21 @@
  */
 package de.metas.vertical.pharma.vendor.gateway.msv3.interceptor;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.Adempiere;
 
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfigRepository;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_I_BPartner;
-import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 import lombok.NonNull;
 
 /*
@@ -58,7 +65,7 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 	@Override
 	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing)
 	{
-		if (timing != IImportInterceptor.TIMING_AFTER_IMPORT )
+		if (timing != IImportInterceptor.TIMING_AFTER_IMPORT)
 		{
 			return;
 		}
@@ -83,14 +90,37 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 				return;
 			}
 
-			final I_MSV3_Vendor_Config MSV3VendorConfig = InterfaceWrapperHelper.newInstance(I_MSV3_Vendor_Config.class);
-			MSV3VendorConfig.setC_BPartner(bpartner);
-			MSV3VendorConfig.setMSV3_BaseUrl(importRecord.getMSV3_BaseUrl());
-			MSV3VendorConfig.setPassword(Password);
-			MSV3VendorConfig.setUserID(UserID);
-			InterfaceWrapperHelper.save(MSV3VendorConfig);
+			final MSV3ClientConfigRepository configRepo = Adempiere.getBean(MSV3ClientConfigRepository.class);
+			MSV3ClientConfig config = configRepo.getretrieveByVendorIdOrNull(bpartner.getC_BPartner_ID());
 
-			importRecord.setMSV3_Vendor_Config_ID(MSV3VendorConfig.getMSV3_Vendor_Config_ID());
+			if (config == null)
+			{
+				config = MSV3ClientConfig.builder()
+						.bpartnerId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
+						.authPassword(Password)
+						.authUsername(UserID)
+						.baseUrl(toURL(importRecord))
+						.build();
+			}
+
+			configRepo.save(config);
+
+			importRecord.setMSV3_Vendor_Config_ID(config.getConfigId().getRepoId());
+		}
+	}
+
+	private URL toURL(@NonNull final I_I_BPartner importRecord)
+	{
+		try
+		{
+			return new URL(importRecord.getMSV3_BaseUrl());
+		}
+		catch (MalformedURLException e)
+		{
+			throw new AdempiereException("The MSV3_BaseUrl value of the given I_BPartner can't be parsed as URL", e)
+					.appendParametersToMessage()
+					.setParameter("MSV3_BaseUrl", importRecord.getMSV3_BaseUrl())
+					.setParameter("I_I_BPartner", importRecord);
 		}
 	}
 
