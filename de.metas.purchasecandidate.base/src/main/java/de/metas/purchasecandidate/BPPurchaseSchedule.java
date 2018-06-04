@@ -58,7 +58,7 @@ public class BPPurchaseSchedule
 	private final Duration reminderTime;
 
 	@Getter
-	private final int leadTimeOffset;
+	private final Duration leadTimeOffset;
 
 	@Getter
 	private final BPartnerId bpartnerId;
@@ -74,7 +74,7 @@ public class BPPurchaseSchedule
 			@NonNull final Frequency frequency,
 			@Singular @NonNull final ImmutableMap<DayOfWeek, LocalTime> dailyPreparationTimes,
 			@NonNull final Duration reminderTime,
-			final int leadTimeOffset,
+			final Duration leadTimeOffset,
 			@NonNull final BPartnerId bpartnerId)
 	{
 		Check.assume(!reminderTime.isNegative(), "reminderTime shall be >= 0 but it was {}", reminderTime);

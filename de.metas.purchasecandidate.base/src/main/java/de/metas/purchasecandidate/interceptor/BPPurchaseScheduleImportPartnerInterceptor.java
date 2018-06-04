@@ -100,7 +100,7 @@ public class BPPurchaseScheduleImportPartnerInterceptor implements IImportInterc
 				final BPPurchaseSchedule schedule = BPPurchaseSchedule.builder()
 						.bpartnerId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
 						.frequency(frequency)
-						.leadTimeOffset(importRecord.getLeadTimeOffset())
+						.leadTimeOffset(Duration.ofDays(importRecord.getLeadTimeOffset()))
 						.reminderTime(Duration.ofHours(1))
 						.validFrom(SystemTime.asLocalDate())
 						.build();

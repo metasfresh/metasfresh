@@ -120,7 +120,7 @@ public class BPPurchaseScheduleRepository
 				.frequency(frequency)
 				.dailyPreparationTimes(extractPreparationTimes(daysOfWeek, scheduleRecord))
 				.reminderTime(Duration.ofMinutes(scheduleRecord.getReminderTimeInMin()))
-				.leadTimeOffset(scheduleRecord.getLeadTimeOffset())
+				.leadTimeOffset(Duration.ofDays(scheduleRecord.getLeadTimeOffset()))
 				.bpartnerId(BPartnerId.ofRepoId(scheduleRecord.getC_BPartner_ID()))
 				.build();
 	}
@@ -277,7 +277,7 @@ public class BPPurchaseScheduleRepository
 				.orElseThrow(() -> new AdempiereException("BPPurchaseSchedule doess not exists for partner {}"
 						+ BPPurchaseSchedule.class + ": " + bpartnerId.toString()));
 		bpPurchaseSchedule.toBuilder()
-				.leadTimeOffset(leadTimeOffset)
+				.leadTimeOffset(Duration.ofDays(leadTimeOffset))
 				.build();
 
 		createOrUpdateAndSaveBPPurchaseScheduleRecord(bpPurchaseSchedule);
@@ -298,7 +298,7 @@ public class BPPurchaseScheduleRepository
 
 		scheduleRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(schedule.getBpartnerId(),0));
 		scheduleRecord.setValidFrom(TimeUtil.asTimestamp(schedule.getValidFrom()));
-		scheduleRecord.setLeadTimeOffset(schedule.getLeadTimeOffset());
+		scheduleRecord.setLeadTimeOffset((int)schedule.getLeadTimeOffset().toDays());
 		scheduleRecord.setReminderTimeInMin((int)schedule.getReminderTime().toMinutes());
 		final Frequency frequency = schedule.getFrequency();
 		scheduleRecord.setFrequencyType(toFrequencyTypeString(frequency.getType()));
