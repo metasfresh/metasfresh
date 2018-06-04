@@ -8,8 +8,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
@@ -26,9 +28,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
@@ -37,18 +37,22 @@ import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseDemand;
+import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
-import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
-import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.availability.AvailabilityCheckService;
+import de.metas.purchasecandidate.availability.AvailabilityMultiResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
+import de.metas.purchasecandidate.availability.PurchaseCandidatesAvailabilityRequest;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowsLoader.PurchaseRowsList;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -79,7 +83,7 @@ import mockit.Mocked;
 public class PurchaseRowsLoaderTest
 {
 	@Mocked
-	private SalesOrderLines salesOrderLines;
+	private AvailabilityCheckService availabilityCheckService;
 
 	private I_M_Product product;
 	private I_C_Order salesOrderRecord;
@@ -160,45 +164,29 @@ public class PurchaseRowsLoaderTest
 		bPartnerProduct.setProductName("bPartnerProduct.ProductName");
 		save(bPartnerProduct);
 
+		final PurchaseDemand demand = SalesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, bPartnerProduct);
+		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(demand, purchaseCandidate);
 
-		final ImmutableList<SalesOrderLineWithCandidates> salesOrderLinesWithPurchaseCandidates = //
-				createSalesOrderLinesWithPurchaseCandidates(salesOrderLine, purchaseCandidate);
-
-		// @formatter:off
-		new Expectations()
-		{{
-			salesOrderLines.getSalesOrderLinesWithCandidates();
-			result = salesOrderLinesWithPurchaseCandidates;
-		}};	// @formatter:on
-
-		final Multimap<PurchaseCandidate, AvailabilityResult> checkAvailabilityResult = ArrayListMultimap.create();
-		checkAvailabilityResult.put(purchaseCandidate, AvailabilityResult.builder()
-				.purchaseCandidate(purchaseCandidate)
-				.qty(TEN)
-				.type(Type.AVAILABLE).build());
-
-		// @formatter:off
-		new Expectations()
-		{{
-			salesOrderLines.checkAvailability();
-			result = checkAvailabilityResult;
-		}};	// @formatter:on
-
-		final PurchaseRowsLoader loader = PurchaseRowsLoader
-				.builder()
-				.salesOrderLines(salesOrderLines)
+		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
+				.purchaseDemandWithCandidatesList(demandWithCandidates)
+				.viewSupplier(() -> null)
 				.purchaseRowFactory(new PurchaseRowFactory(
 						new AvailableToPromiseRepository(),
 						new MoneyService()))
-				.viewSupplier(() -> null)
+				.availabilityCheckService(availabilityCheckService)
 				.build();
 
+		//
 		// invoke the method under test
-		final List<PurchaseRow> groupRows = loader.load();
+		final PurchaseRowsList rowsList = loader.load();
+		
+		//
+		// Check result
+		final List<PurchaseRow> topLevelRows = rowsList.getTopLevelRows();
 
-		assertThat(groupRows).hasSize(1);
-		final PurchaseRow groupRow = groupRows.get(0);
+		assertThat(topLevelRows).hasSize(1);
+		final PurchaseRow groupRow = topLevelRows.get(0);
 		assertThat(groupRow.getRowType()).isEqualTo(PurchaseRowType.GROUP);
 		assertThat(groupRow.getIncludedRows()).hasSize(1);
 
@@ -206,7 +194,19 @@ public class PurchaseRowsLoaderTest
 		assertThat(purchaseRow.getRowType()).isEqualTo(PurchaseRowType.LINE);
 		assertThat(purchaseRow.getIncludedRows()).isEmpty();
 
-		loader.createAndAddAvailabilityResultRows();
+		// @formatter:off
+		new Expectations()
+		{{
+			final PurchaseCandidatesAvailabilityRequest request = loader.createAvailabilityRequest(rowsList);
+			availabilityCheckService.checkAvailability(request);
+			result = AvailabilityMultiResult.of(AvailabilityResult.builder()
+					.trackingId(request.getTrackingIds().iterator().next())
+					.qty(TEN)
+					.type(Type.AVAILABLE)
+					.build());
+		}};	// @formatter:on
+
+		loader.createAndAddAvailabilityResultRows(rowsList);
 		assertThat(purchaseRow.getIncludedRows()).hasSize(1);
 
 		final PurchaseRow availabilityRow = purchaseRow.getIncludedRows().get(0);
@@ -220,37 +220,31 @@ public class PurchaseRowsLoaderTest
 	{
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(bPartnerProduct);
 
-		final Currency currency = currencyRepository.ofRecord(orderLine.getC_Currency());
+		final Currency currency = currencyRepository.getById(orderLine.getC_Currency_ID());
 
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currency);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.orgId(20)
+				.orgId(OrgId.ofRepoId(20))
 				.dateRequired(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.qtyToPurchase(orderLine.getQtyOrdered())
-				.salesOrderId(orderLine.getC_Order_ID())
-				.salesOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
 				.uomId(orderLine.getM_Product().getC_UOM_ID())
 				.vendorProductInfo(vendorProductInfo)
-				.warehouseId(30)
+				.warehouseId(WarehouseId.ofRepoId(30))
 				.profitInfo(profitInfo)
 				.build();
 		return purchaseCandidate;
 	}
 
-	private static ImmutableList<SalesOrderLineWithCandidates> createSalesOrderLinesWithPurchaseCandidates(
-			final SalesOrderLine orderLine,
+	private static ImmutableList<PurchaseDemandWithCandidates> createPurchaseDemandWithCandidates(
+			final PurchaseDemand demand,
 			final PurchaseCandidate purchaseCandidate)
 	{
-		final SalesOrderLineWithCandidates salesOrderLineWithPurchaseCandidates //
-				= SalesOrderLineWithCandidates.builder()
-						.salesOrderLine(orderLine)
-						.purchaseCandidate(purchaseCandidate)
-						.build();
-
-		final ImmutableList<SalesOrderLineWithCandidates> salesOrderLinesWithPurchaseCandidates //
-				= ImmutableList.of(salesOrderLineWithPurchaseCandidates);
-		return salesOrderLinesWithPurchaseCandidates;
+		return ImmutableList.of(PurchaseDemandWithCandidates.builder()
+				.purchaseDemand(demand)
+				.purchaseCandidate(purchaseCandidate)
+				.build());
 	}
 }
