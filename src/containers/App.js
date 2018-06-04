@@ -135,7 +135,7 @@ export default class App extends Component {
     if (APP_PLUGINS.length) {
       const plugins = APP_PLUGINS.map(plugin => {
         const waitForChunk = () =>
-          import(`./../../plugins/${plugin}/index.js`)
+          import(`@plugins/${plugin}/index.js`)
             .then(module => module)
             .catch(() => {
               // eslint-disable-next-line no-console
@@ -151,14 +151,19 @@ export default class App extends Component {
 
       Promise.all(plugins).then(res => {
         const plugins = res.reduce((prev, current) => prev.concat(current), []);
-        store.dispatch(addPlugins(plugins));
+
+        if (plugins.length) {
+          store.dispatch(addPlugins(plugins));
+        }
 
         plugins.forEach(plugin => {
-          store.attachReducers({
-            plugins: {
-              [`${plugin.reducers.name}`]: plugin.reducers.reducer,
-            },
-          });
+          if (plugin.reducers && plugin.reducers.name) {
+            store.attachReducers({
+              plugins: {
+                [`${plugin.reducers.name}`]: plugin.reducers.reducer,
+              },
+            });
+          }
         });
 
         this.setState({
