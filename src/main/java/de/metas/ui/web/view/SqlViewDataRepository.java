@@ -90,9 +90,11 @@ class SqlViewDataRepository implements IViewDataRepository
 	private final ViewRowCustomizer rowCustomizer;
 
 	private final SqlDocumentFilterConverter filterConverters;
+	
+	private final IViewsRepository viewsRepo;
 
-
-	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
+	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings,
+			@NonNull final IViewsRepository viewsRepo)
 	{
 		tableName = sqlBindings.getTableName();
 		tableAlias = sqlBindings.getTableAlias();
@@ -100,7 +102,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		widgetTypesByFieldName = sqlBindings.getWidgetTypesByFieldName();
 		sqlViewSelect = sqlBindings.getSqlViewSelect();
 		viewFilterDescriptors = sqlBindings.getViewFilterDescriptors();
-		viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
+		viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings, viewsRepo);
 		defaultOrderBys = sqlBindings.getDefaultOrderBys();
 
 		this.hasIncludedRows = sqlBindings.hasGroupingFields();
@@ -110,6 +112,8 @@ class SqlViewDataRepository implements IViewDataRepository
 		this.rowCustomizer = sqlBindings.getRowCustomizer();
 
 		this.filterConverters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlBindings);
+		
+		this.viewsRepo = viewsRepo;
 	}
 
 	@Override
@@ -138,7 +142,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		// Convert filters to SQL
 		{
-			final String sqlFilters = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters, sqlOpts);
+			final String sqlFilters = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters, sqlOpts, viewsRepo.getView(viewId));
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				if (sqlWhereClause.length() > 0)

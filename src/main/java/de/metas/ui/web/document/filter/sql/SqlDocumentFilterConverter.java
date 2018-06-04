@@ -8,6 +8,7 @@ import org.compiere.util.DB;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
@@ -52,12 +53,13 @@ public interface SqlDocumentFilterConverter
 	 * @param filter
 	 * @return SQL
 	 */
-	String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, final SqlOptions sqlOpts);
+	String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, final SqlOptions sqlOpts, final IView view);
 
 	default String getSql(
 			@NonNull final SqlParamsCollector sqlParamsOut,
 			@NonNull final List<DocumentFilter> filters,
-			@NonNull final SqlOptions sqlOpts)
+			@NonNull final SqlOptions sqlOpts,
+			@NonNull final IView view)
 	{
 		if (filters.isEmpty())
 		{
@@ -68,7 +70,7 @@ public interface SqlDocumentFilterConverter
 
 		for (final DocumentFilter filter : filters)
 		{
-			final String sqlFilter = getSql(sqlParamsOut, filter, sqlOpts);
+			final String sqlFilter = getSql(sqlParamsOut, filter, sqlOpts, view);
 			if (Check.isEmpty(sqlFilter, true))
 			{
 				continue;
@@ -84,10 +86,10 @@ public interface SqlDocumentFilterConverter
 		return sqlWhereClauseBuilder.toString();
 	}
 	
-	default <T> IQueryFilter<T> createQueryFilter(@NonNull final List<DocumentFilter> filters, @NonNull final SqlOptions sqlOpts)
+	default <T> IQueryFilter<T> createQueryFilter(@NonNull final List<DocumentFilter> filters, @NonNull final SqlOptions sqlOpts, @NonNull final IView view)
 	{
 		final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
-		final String sqlFilter = getSql(sqlFilterParams, filters, sqlOpts);
+		final String sqlFilter = getSql(sqlFilterParams, filters, sqlOpts, view);
 		return TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList());
 	}
 }

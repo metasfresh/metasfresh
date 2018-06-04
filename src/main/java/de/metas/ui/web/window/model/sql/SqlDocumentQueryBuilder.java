@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -437,8 +438,10 @@ public class SqlDocumentQueryBuilder
 		//
 		// Document filters
 		{
+			final IView view = null; // FIXME
+		
 			final String sqlFilters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(entityBinding)
-					.getSql(sqlParams, getDocumentFilters(), SqlOptions.usingTableAlias(entityBinding.getTableAlias()));
+					.getSql(sqlParams, getDocumentFilters(), SqlOptions.usingTableAlias(entityBinding.getTableAlias()), view);
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -44,7 +45,7 @@ public class SqlDocumentFilterConvertersTest
 		 * This method won't be called throughout our test
 		 */
 		@Override
-		public String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, SqlOptions sqlOpts)
+		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter, final SqlOptions sqlOpts, final IView view)
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -72,7 +73,7 @@ public class SqlDocumentFilterConvertersTest
 		 * @return {@link SqlDocumentFilterConvertersTest#converter} so we have something very particular to check for in our test.
 		 */
 		@Override
-		public SqlDocumentFilterConverter decorate(SqlDocumentFilterConverter converter)
+		public SqlDocumentFilterConverter decorate(final SqlDocumentFilterConverter converter)
 		{
 			return customConverter;
 		}

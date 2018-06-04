@@ -21,6 +21,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -75,7 +76,8 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			@NonNull final HUEditorViewRepository huEditorRepo,
 			final List<DocumentFilter> stickyFilters,
 			final List<DocumentFilter> filters,
-			final List<DocumentQueryOrderBy> orderBys)
+			final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final IView view)
 	{
 		this.viewId = viewId;
 		this.huEditorRepo = huEditorRepo;
@@ -97,7 +99,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFiltersWithoutHUIdsFilter, filters));
 
-		huIdsSupplier = ExtendedMemorizingSupplier.of(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll)));
+		huIdsSupplier = ExtendedMemorizingSupplier.of(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll, view)));
 
 		this.defaultOrderBys = orderBys != null ? ImmutableList.copyOf(orderBys) : ImmutableList.of();
 	}

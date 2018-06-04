@@ -16,6 +16,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilters;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
@@ -82,7 +83,7 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public List<Integer> retrieveHUIdsEffective(final HUIdsFilterData huIdsFilter, final List<DocumentFilter> filters)
+	public List<Integer> retrieveHUIdsEffective(final HUIdsFilterData huIdsFilter, final List<DocumentFilter> filters, final IView view)
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}

@@ -1,7 +1,5 @@
 package de.metas.ui.web.handlingunits;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,6 +30,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -50,6 +50,8 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.SqlViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
@@ -114,7 +116,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
 			final boolean showBestBeforeDate,
-			final boolean showLocator)
+			final boolean showLocator,
+			@NonNull final IViewsRepository viewsRepo)
 	{
 		this.windowId = windowId;
 
@@ -124,8 +127,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		this.showLocator = showLocator;
 
 		this.sqlViewBinding = sqlViewBinding;
-		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlViewBinding);
+		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlViewBinding, viewsRepo);
 		sqlViewSelect = sqlViewBinding.getSqlViewSelect();
+
 	}
 
 	@Override
@@ -445,7 +449,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	@Override
 	public List<Integer> retrieveHUIdsEffective(
 			@NonNull final HUIdsFilterData huIdsFilter,
-			@NonNull final List<DocumentFilter> filters)
+			@NonNull final List<DocumentFilter> filters,
+			@NonNull final IView view)
 	{
 		final ImmutableList<Integer> onlyHUIds = extractHUIds(huIdsFilter);
 
@@ -477,7 +482,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		if (!filters.isEmpty())
 		{
 			final SqlDocumentFilterConverter sqlFilterConverter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding);
-			huQuery.addFilter(sqlFilterConverter.createQueryFilter(filters, SqlOptions.usingTableAlias(sqlViewBinding.getTableAlias())));
+			huQuery.addFilter(sqlFilterConverter.createQueryFilter(filters, SqlOptions.usingTableAlias(sqlViewBinding.getTableAlias()), view));
 		}
 
 		return huQuery.createQuery().listIds();

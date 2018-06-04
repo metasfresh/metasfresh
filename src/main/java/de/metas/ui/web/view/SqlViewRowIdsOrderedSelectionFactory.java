@@ -56,23 +56,26 @@ import lombok.NonNull;
 
 public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSelectionFactory
 {
-	public static final SqlViewRowIdsOrderedSelectionFactory of(final SqlViewBinding viewBinding)
+	public static final SqlViewRowIdsOrderedSelectionFactory of(final SqlViewBinding viewBinding,final IViewsRepository viewsRepo)
 	{
-		return new SqlViewRowIdsOrderedSelectionFactory(viewBinding);
+		return new SqlViewRowIdsOrderedSelectionFactory(viewBinding, viewsRepo);
 	}
 
 	private static final Logger logger = LogManager.getLogger(SqlViewRowIdsOrderedSelectionFactory.class);
 
 	private final SqlViewBinding viewBinding;
+	private final IViewsRepository viewsRepo;
 
-	private SqlViewRowIdsOrderedSelectionFactory(@NonNull final SqlViewBinding viewBinding)
+	private SqlViewRowIdsOrderedSelectionFactory(@NonNull final SqlViewBinding viewBinding,
+			@NonNull final IViewsRepository viewsRepo)
 	{
 		this.viewBinding = viewBinding;
+		this.viewsRepo = viewsRepo;
 	}
 
 	private SqlViewSelectionQueryBuilder newSqlViewSelectionQueryBuilder()
 	{
-		return SqlViewSelectionQueryBuilder.newInstance(viewBinding);
+		return SqlViewSelectionQueryBuilder.newInstance(viewBinding, viewsRepo);
 	}
 
 	@Override
@@ -146,7 +149,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 
 			if (linesCount > 0)
 			{
-				final SqlAndParams sqlCreateSelection = viewQueryBuilder.buildSqlCreateSelectionFromSelectionLines(viewEvalCtx, newViewId, orderBys);
+				final SqlAndParams sqlCreateSelection = viewQueryBuilder.buildSqlCreateSelectionFromSelectionLines(viewEvalCtx, newViewId, orderBys, viewsRepo.getView(newViewId));
 				rowsCount = DB.executeUpdateEx(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			}
 			else
