@@ -44,6 +44,8 @@ import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MTax;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
 
@@ -315,8 +317,8 @@ public class Doc_AllocationHdr extends Doc
 			// VAT Tax Correction
 			// https://github.com/metasfresh/metasfresh/issues/3988 - if tax correction is needed, it has to be a dedicated fact;
 			// otherwise, FactTrxLinesType.extractType will fail
-			final Optional<Fact> taxCorrectionFact = createTaxCorrection(fact.getAcctSchema(), line);
-			taxCorrectionFact.ifPresent(facts::add);
+			final List<Fact> taxCorrectionFacts = createTaxCorrection(fact.getAcctSchema(), line);
+			m_facts.addAll(taxCorrectionFacts);
 		}            	// for all lines
 
 		// reset line info
@@ -1003,7 +1005,7 @@ public class Doc_AllocationHdr extends Doc
 	}
 
 	/**************************************************************************
-	 * Create Tax Correction if required by accounting schema
+	 * Create Tax Correction facts if required by accounting schema
 	 *
 	 * Requirement: Adjust the tax amount, if you did not receive the full amount of the invoice (payment discount, write-off).
 	 *
@@ -1019,12 +1021,12 @@ public class Doc_AllocationHdr extends Doc
 	 * </pre>
 	 *
 	 */
-	private Optional<Fact> createTaxCorrection(final MAcctSchema as, final DocLine_Allocation line)
+	private List<Fact> createTaxCorrection(final MAcctSchema as, final DocLine_Allocation line)
 	{
 		// Make sure accounting schema requires tax correction bookings
 		if (!as.isTaxCorrection())
 		{
-			return Optional.empty();
+			return ImmutableList.of();
 		}
 
 		//
@@ -1034,7 +1036,7 @@ public class Doc_AllocationHdr extends Doc
 		if (discountAmt.signum() == 0 && writeOffAmt.signum() == 0)
 		{
 			// no amounts => nothing to do
-			return Optional.empty();
+			return ImmutableList.of();
 		}
 
 		//
@@ -1058,20 +1060,18 @@ public class Doc_AllocationHdr extends Doc
 		final MAccount writeOffAccount = getAccount(Doc.ACCTTYPE_WriteOff, as);
 		final Doc_AllocationTax taxCorrection = new Doc_AllocationTax(this, discountAccount, discountAmt, writeOffAccount, writeOffAmt, isDiscountExpense);
 
-		final Fact fact = createEmptyFact(as);
-
 		// FIXME: metas-tsa: fix how we retrieve the tax bookings of the invoice, i.e.
 		// * here we retrieve all Fact_Acct records which are not on line level.
 		// * the code is assuming that it will get the Tax bookings and the invoice gross amount booking
 		// * later on org.compiere.acct.Doc_AllocationTax.createEntries(MAcctSchema, Fact, DocLine_Allocation), we skip the gross amount Fact_Acct line
 		// Get Source Amounts with account
 		final List<I_Fact_Acct> invoiceFactLines = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_Fact_Acct.class, getCtx(), fact.get_TrxName())
+				.createQueryBuilder(I_Fact_Acct.class, getCtx(), this.getTrxName())
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, 318) // C_Invoice
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, line.getC_Invoice_ID())
 				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, as.getC_AcctSchema_ID())
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, null) // header lines like tax or total
-				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, fact.getPostingType()) // i.e. POST_Actual
+				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, Fact.POST_Actual)
 				.orderBy()
 				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID)
 				.endOrderBy()
@@ -1082,15 +1082,12 @@ public class Doc_AllocationHdr extends Doc
 		{
 			throw newPostingException()
 					.setC_AcctSchema(as)
-					.setFact(fact)
 					.setDocLine(line)
 					.setDetailMessage("Invoice not posted yet - " + line);
 		}
 		taxCorrection.addInvoiceFacts(invoiceFactLines);
 
-		taxCorrection.createEntries(fact, line);
-
-		return Optional.of(fact);
+		return taxCorrection.createEntries(as, line);
 	}	// createTaxCorrection
 }   // Doc_Allocation
 
@@ -1222,25 +1219,22 @@ public class Doc_AllocationHdr extends Doc
 
 	/**
 	 * Create Accounting Entries
-	 *
-	 * @param as account schema
-	 * @param fact fact to add lines
-	 * @param line line
-	 * @return true if created
 	 */
-	public void createEntries(final Fact fact, final DocLine_Allocation line)
+	public List<Fact> createEntries(
+			final MAcctSchema as, 
+			final DocLine_Allocation line)
 	{
 		// If there are no tax facts, there is no need to do tax correction
 		if (!hasInvoiceTaxFacts())
 		{
-			return;
+			return ImmutableList.of();
 		}
-
-		final MAcctSchema as = fact.getAcctSchema();
 
 		//
 		// Get total index (the Receivables/Liabilities line)
 		final BigDecimal invoiceGrandTotalAmt = getInvoiceGrandTotalAmt();
+
+		final ImmutableList.Builder<Fact> result = ImmutableList.builder();
 
 		//
 		// Iterate the invoice tax facts
@@ -1255,7 +1249,6 @@ public class Doc_AllocationHdr extends Doc
 				// shall not happen
 				newPostingException()
 						.setC_AcctSchema(as)
-						.setFact(fact)
 						.setFactLine(taxFactAcct)
 						.setDocLine(line)
 						.setDetailMessage("No tax found");
@@ -1268,12 +1261,11 @@ public class Doc_AllocationHdr extends Doc
 			{
 				throw newPostingException()
 						.setC_AcctSchema(as)
-						.setFact(fact)
 						.setFactLine(taxFactAcct)
 						.setDocLine(line)
 						.setDetailMessage("Tax Account not found/created");
 			}
-
+			
 			//
 			// Discount Amount
 			if (m_DiscountAmt.signum() != 0)
@@ -1288,6 +1280,9 @@ public class Doc_AllocationHdr extends Doc
 					if (amount.signum() != 0)
 					{
 						final String description = "Invoice TaxAmt/GrandTotal=" + invoiceTaxAmt + "/" + invoiceGrandTotalAmt + ", Alloc Discount=" + m_DiscountAmt;
+
+						final Fact fact = createEmptyFact(as);
+						result.add(fact);
 
 						// Discount expense
 						if (isDiscountExpense)
@@ -1316,6 +1311,9 @@ public class Doc_AllocationHdr extends Doc
 					if (amount.signum() != 0)
 					{
 						final String description = "Invoice TaxAmt/GrandTotal=" + invoiceTaxAmt + "/" + invoiceGrandTotalAmt + ", Alloc Discount=" + m_DiscountAmt;
+
+						final Fact fact = createEmptyFact(as);
+						result.add(fact);
 
 						// Discount expense
 						if (isDiscountExpense)
@@ -1350,6 +1348,9 @@ public class Doc_AllocationHdr extends Doc
 					{
 						final String description = "Invoice TaxAmt/GrandTotal=" + invoiceTaxAmt + "/" + invoiceGrandTotalAmt + ", Alloc WriteOff=" + m_WriteOffAmt;
 
+						final Fact fact = createEmptyFact(as);
+						result.add(fact);
+
 						final FactLine flDR = fact.createLine(line, m_WriteOffAccount, as.getC_Currency_ID(), amount, null);
 						updateFactLine(flDR, taxId, description);
 						final FactLine flCR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), null, amount);
@@ -1365,6 +1366,9 @@ public class Doc_AllocationHdr extends Doc
 					{
 						final String description = "Invoice TaxAmt/GrandTotal=" + invoiceTaxAmt + "/" + invoiceGrandTotalAmt + ", Alloc WriteOff=" + m_WriteOffAmt;
 
+						final Fact fact = createEmptyFact(as);
+						result.add(fact);
+
 						final FactLine flDR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), amount, null);
 						updateFactLine(flDR, taxId, description);
 						final FactLine flCR = fact.createLine(line, m_WriteOffAccount, as.getC_Currency_ID(), null, amount);
@@ -1373,8 +1377,15 @@ public class Doc_AllocationHdr extends Doc
 				}
 			}            	// WriteOff
 		}            	// for all lines
+
+		return result.build();
 	}	// createEntries
 
+	private Fact createEmptyFact(final MAcctSchema as)
+	{
+		return new Fact(doc, as, Fact.POST_Actual);
+	}
+	
 	/**
 	 * Calculate the tax amount part.
 	 *
