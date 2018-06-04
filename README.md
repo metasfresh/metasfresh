@@ -39,7 +39,7 @@ And after that we need `config.js` in `dist` folder
 > cp /config.js.dist /dist/
 
 #### Running
-The easiest way to test production build is by serving it via a simple [htt(https://www.npmjs.com/package/http-server) server. You can install it globally with npm :
+The easiest way to test production build is by serving it via a simple [http-server](https://www.npmjs.com/package/http-server). You can install it globally with npm :
 > npm install http-server -g
 
 and then run it pointing to your dist folder:
