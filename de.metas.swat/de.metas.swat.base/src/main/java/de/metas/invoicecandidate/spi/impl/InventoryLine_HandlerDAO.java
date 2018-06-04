@@ -65,7 +65,7 @@ public class InventoryLine_HandlerDAO implements IInventoryLine_HandlerDAO
 				final IQuery<I_C_DocType> validDocTypesQuery = queryBL.createQueryBuilder(I_C_DocType.class, ctx, trxName)
 
 						.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-						.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_MaterialDisposal)
+						.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_InternalUseInventory)
 						//
 						.create();
 

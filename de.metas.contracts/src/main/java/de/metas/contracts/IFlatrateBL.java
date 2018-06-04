@@ -27,8 +27,8 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -98,7 +98,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * forceComplete - will complete a new term (if one has been created), even if it has <code>IsAutoComplete='N'</code>
 	 * ol - if a new term is created, this order line (if !=null) will be referenced from the new term.
 	 */
-	@Builder
+	@Builder(toBuilder = true)
 	@Getter
 	public static class ContractExtendingRequest
 	{
@@ -198,11 +198,16 @@ public interface IFlatrateBL extends ISingletonService
 	void voidIt(I_C_Flatrate_Term term);
 
 	/**
+	 * See {@link #hasOverlappingTerms(I_C_Flatrate_Term)}
+	 */
+	 boolean canOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term);
+
+	/**
 	 * Check if there are terms for the same that have a time period overlapping with the given term and match with the same product or product category.
-	 *
-	 *
-	 * @param term
-	 * @return
+	 * <p>
+	 * Note that overlapping terms need to be prevented for those types of terms
+	 * (like refund contracts or refundable contracts) to which newly created invoice candidates need to be mapped.
+	 * Overlapping is no problem for subscription contracts.
 	 */
 	boolean hasOverlappingTerms(final I_C_Flatrate_Term term);
 
@@ -216,6 +221,7 @@ public interface IFlatrateBL extends ISingletonService
 
 	/**
 	 * return the initial contract, looping back through contracts
+	 *
 	 * @param term
 	 * @return
 	 */

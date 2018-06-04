@@ -3,13 +3,14 @@ package de.metas.adempiere.callout;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
-import org.compiere.model.CalloutOrder;
 import org.compiere.model.MOrgInfo;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderLineBL;
 
 public class OrderLine extends CalloutEngine
 {
@@ -31,7 +32,7 @@ public class OrderLine extends CalloutEngine
 
 	public String warehouse(final ICalloutField calloutField)
 	{
-		final I_C_OrderLine orderLine =  calloutField.getModel(I_C_OrderLine.class);
+		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 
 		if (orderLine.getM_Warehouse_ID() == order.getM_Warehouse_ID())
@@ -59,7 +60,7 @@ public class OrderLine extends CalloutEngine
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		if (!orderLine.isManualPrice())
 		{
-			CalloutOrder.updatePrices(orderLine);
+			Services.get(IOrderLineBL.class).updatePrices(orderLine);
 		}
 
 		return NO_ERROR;

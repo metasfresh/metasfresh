@@ -74,10 +74,7 @@ public class SubscriptionService
 	{
 		@NonNull
 		I_C_Flatrate_Term term;
-
-		@NonNull
 		Timestamp dateFrom;
-		@NonNull
 		Timestamp dateTo;
 
 		int DropShip_BPartner_ID;
@@ -89,8 +86,8 @@ public class SubscriptionService
 		@Builder
 		private ChangeRecipientsRequest(
 				@NonNull final I_C_Flatrate_Term term,
-				@NonNull final Timestamp dateFrom,
-				@NonNull final Timestamp dateTo,
+				final Timestamp dateFrom,
+				final Timestamp dateTo,
 				final int DropShip_BPartner_ID,
 				final int DropShip_Location_ID,
 				final int DropShip_User_ID,
@@ -98,7 +95,14 @@ public class SubscriptionService
 		{
 			this.term = term;
 
-			Preconditions.checkArgument(!dateTo.before(dateFrom), "The given dateTo may not be before the given dateFrom; dateFrom=%s; dateTo=%s", dateFrom, dateTo);
+			this.IsPermanentRecipient = IsPermanentRecipient;
+
+			if (!IsPermanentRecipient)
+			{
+				Preconditions.checkNotNull(dateFrom, "The dateForm shall not be null");
+				Preconditions.checkNotNull(dateTo, "The dateTo shall not be null");
+				Preconditions.checkArgument(!dateTo.before(dateFrom), "The given dateTo may not be before the given dateFrom; dateFrom=%s; dateTo=%s", dateFrom, dateTo);
+			}
 			this.dateFrom = dateFrom;
 			this.dateTo = dateTo;
 
@@ -109,7 +113,6 @@ public class SubscriptionService
 			this.DropShip_Location_ID = DropShip_Location_ID;
 			this.DropShip_User_ID = DropShip_User_ID;
 
-			this.IsPermanentRecipient = IsPermanentRecipient;
 		}
 	}
 

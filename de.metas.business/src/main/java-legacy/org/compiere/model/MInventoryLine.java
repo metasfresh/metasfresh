@@ -22,7 +22,13 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.util.DB;
+
+import de.metas.inventory.IInventoryBL;
+import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 /**
  * Physical Inventory Line Model
@@ -36,41 +42,12 @@ import org.compiere.util.DB;
  */
 public class MInventoryLine extends X_M_InventoryLine
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 1336000922103246463L;
 
-	/**
-	 * Get Inventory Line with parameters
-	 *
-	 * @param inventory inventory
-	 * @param M_Locator_ID locator
-	 * @param M_Product_ID product
-	 * @param M_AttributeSetInstance_ID asi
-	 * @return line or null
-	 */
-	public static MInventoryLine get(MInventory inventory,
-			int M_Locator_ID, int M_Product_ID, int M_AttributeSetInstance_ID)
-	{
-		final String whereClause = "M_Inventory_ID=? AND M_Locator_ID=?"
-				+ " AND M_Product_ID=? AND M_AttributeSetInstance_ID=?";
-		return new Query(inventory.getCtx(), MInventoryLine.Table_Name, whereClause, inventory.get_TrxName())
-				.setParameters(new Object[] { inventory.get_ID(), M_Locator_ID, M_Product_ID, M_AttributeSetInstance_ID })
-				.firstOnly();
-	}	// get
-
-	/**************************************************************************
-	 * Default Constructor
-	 *
-	 * @param ctx context
-	 * @param M_InventoryLine_ID line
-	 * @param trxName transaction
-	 */
 	public MInventoryLine(Properties ctx, int M_InventoryLine_ID, String trxName)
 	{
 		super(ctx, M_InventoryLine_ID, trxName);
-		if (M_InventoryLine_ID == 0)
+		if (is_new())
 		{
 			// setM_Inventory_ID (0); // Parent
 			// setM_InventoryLine_ID (0); // PK
@@ -83,40 +60,33 @@ public class MInventoryLine extends X_M_InventoryLine
 			setQtyCount(BigDecimal.ZERO);
 			setProcessed(false);
 		}
-	}	// MInventoryLine
+	}
 
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MInventoryLine(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MInventoryLine
+	}
 
 	/**
 	 * Detail Constructor.
 	 * Locator/Product/AttributeSetInstance must be unique
-	 *
-	 * @param inventory parent
-	 * @param M_Locator_ID locator
-	 * @param M_Product_ID product
-	 * @param M_AttributeSetInstance_ID instance
-	 * @param QtyBook book value
-	 * @param QtyCount count value
 	 */
-	public MInventoryLine(MInventory inventory,
-			int M_Locator_ID, int M_Product_ID, int M_AttributeSetInstance_ID,
-			BigDecimal QtyBook, BigDecimal QtyCount)
+	public MInventoryLine(
+			@NonNull final I_M_Inventory inventory,
+			final int M_Locator_ID,
+			final int M_Product_ID,
+			final int M_AttributeSetInstance_ID,
+			final BigDecimal QtyBook,
+			final BigDecimal QtyCount)
 	{
-		this(inventory.getCtx(), 0, inventory.get_TrxName());
-		if (inventory.get_ID() == 0)
+		this(InterfaceWrapperHelper.getCtx(inventory),
+				0,
+				InterfaceWrapperHelper.getTrxName(inventory));
+		if (inventory.getM_Inventory_ID() <= 0)
+		{
 			throw new IllegalArgumentException("Header not saved");
-		m_parent = inventory;
-		setM_Inventory_ID(inventory.getM_Inventory_ID());		// Parent
+		}
+		setM_Inventory(inventory);
 		setClientOrg(inventory.getAD_Client_ID(), inventory.getAD_Org_ID());
 		setM_Locator_ID(M_Locator_ID);		// FK
 		setM_Product_ID(M_Product_ID);		// FK
@@ -126,32 +96,24 @@ public class MInventoryLine extends X_M_InventoryLine
 			setQtyBook(QtyBook);
 		if (QtyCount != null && QtyCount.signum() != 0)
 			setQtyCount(QtyCount);
-		m_isManualEntry = false;
-	}	// MInventoryLine
+	}
 
-	/** Manually created */
-	private boolean m_isManualEntry = true;
-	/** Parent */
-	private MInventory m_parent = null;
-	/** Product */
-	private MProduct m_product = null;
-
-	/**
-	 * Get Product
-	 *
-	 * @return product or null if not defined
-	 */
-	public MProduct getProduct()
+	private final BigDecimal adjustQtyToUOMPrecision(final BigDecimal qty)
 	{
-		int M_Product_ID = getM_Product_ID();
-		if (M_Product_ID == 0)
+		if (qty == null)
+		{
 			return null;
-		if (m_product != null && m_product.getM_Product_ID() != M_Product_ID)
-			m_product = null;	// reset
-		if (m_product == null)
-			m_product = MProduct.get(getCtx(), M_Product_ID);
-		return m_product;
-	}	// getProduct
+		}
+
+		final int productId = getM_Product_ID();
+		if (productId <= 0)
+		{
+			return qty;
+		}
+
+		final int precision = Services.get(IProductBL.class).getUOMPrecision(productId);
+		return qty.setScale(precision, BigDecimal.ROUND_HALF_UP);
+	}
 
 	/**
 	 * Set Count Qty - enforce UOM
@@ -159,18 +121,9 @@ public class MInventoryLine extends X_M_InventoryLine
 	 * @param QtyCount qty
 	 */
 	@Override
-	public void setQtyCount(BigDecimal QtyCount)
+	public void setQtyCount(final BigDecimal QtyCount)
 	{
-		if (QtyCount != null)
-		{
-			MProduct product = getProduct();
-			if (product != null)
-			{
-				int precision = product.getUOMPrecision();
-				QtyCount = QtyCount.setScale(precision, BigDecimal.ROUND_HALF_UP);
-			}
-		}
-		super.setQtyCount(QtyCount);
+		super.setQtyCount(adjustQtyToUOMPrecision(QtyCount));
 	}	// setQtyCount
 
 	/**
@@ -179,55 +132,10 @@ public class MInventoryLine extends X_M_InventoryLine
 	 * @param QtyInternalUse qty
 	 */
 	@Override
-	public void setQtyInternalUse(BigDecimal QtyInternalUse)
+	public void setQtyInternalUse(final BigDecimal QtyInternalUse)
 	{
-		if (QtyInternalUse != null)
-		{
-			MProduct product = getProduct();
-			if (product != null)
-			{
-				int precision = product.getUOMPrecision();
-				QtyInternalUse = QtyInternalUse.setScale(precision, BigDecimal.ROUND_HALF_UP);
-			}
-		}
-		super.setQtyInternalUse(QtyInternalUse);
+		super.setQtyInternalUse(adjustQtyToUOMPrecision(QtyInternalUse));
 	}	// setQtyInternalUse
-
-	/**
-	 * Add to Description
-	 *
-	 * @param description text
-	 */
-	public void addDescription(String description)
-	{
-		String desc = getDescription();
-		if (desc == null)
-			setDescription(description);
-		else
-			setDescription(desc + " | " + description);
-	}	// addDescription
-
-	/**
-	 * Get Parent
-	 *
-	 * @param parent parent
-	 */
-	protected void setParent(MInventory parent)
-	{
-		m_parent = parent;
-	}	// setParent
-
-	/**
-	 * Get Parent
-	 *
-	 * @return parent
-	 */
-	public MInventory getParent()
-	{
-		if (m_parent == null)
-			m_parent = new MInventory(getCtx(), getM_Inventory_ID(), get_TrxName());
-		return m_parent;
-	}	// getParent
 
 	/**
 	 * String Representation
@@ -237,7 +145,7 @@ public class MInventoryLine extends X_M_InventoryLine
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MInventoryLine[");
+		final StringBuilder sb = new StringBuilder("MInventoryLine[");
 		sb.append(get_ID())
 				.append("-M_Product_ID=").append(getM_Product_ID())
 				.append(",QtyCount=").append(getQtyCount())
@@ -248,23 +156,18 @@ public class MInventoryLine extends X_M_InventoryLine
 		return sb.toString();
 	}	// toString
 
-	/**
-	 * Before Save
-	 *
-	 * @param newRecord new
-	 * @return true if can be saved
-	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
-		if (newRecord && getParent().isComplete())
+		if (newRecord && Services.get(IInventoryBL.class).isComplete(getM_Inventory()))
 		{
 			throw new AdempiereException("@ParentComplete@ @M_Inventory_ID@");
 		}
-		if (newRecord && m_isManualEntry)
+
+		if (newRecord && is_ManualUserAction())
 		{
 			// Product requires ASI
-			if (getM_AttributeSetInstance_ID() == 0)
+			if (getM_AttributeSetInstance_ID() <= 0)
 			{
 				final MProduct product = MProduct.get(getCtx(), getM_Product_ID());
 				if (product != null && product.isASIMandatory(isSOTrx()))
@@ -275,11 +178,11 @@ public class MInventoryLine extends X_M_InventoryLine
 		}	// new or manual
 
 		// Set Line No
-		if (getLine() == 0)
+		if (getLine() <= 0)
 		{
-			String sql = "SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM M_InventoryLine WHERE M_Inventory_ID=?";
-			int ii = DB.getSQLValueEx(get_TrxName(), sql, getM_Inventory_ID());
-			setLine(ii);
+			final String sql = "SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM M_InventoryLine WHERE M_Inventory_ID=?";
+			final int lineNo = DB.getSQLValueEx(get_TrxName(), sql, getM_Inventory_ID());
+			setLine(lineNo);
 		}
 
 		// Enforce QtyCount >= 0 - teo_sarca BF [ 1722982 ]
@@ -298,7 +201,7 @@ public class MInventoryLine extends X_M_InventoryLine
 		}
 
 		// InternalUse Inventory
-		if (getQtyInternalUse().signum() != 0)
+		if (isInternalUseInventory())
 		{
 			if (!INVENTORYTYPE_ChargeAccount.equals(getInventoryType()))
 			{
@@ -317,82 +220,32 @@ public class MInventoryLine extends X_M_InventoryLine
 				throw new FillMandatoryException(COLUMNNAME_C_Charge_ID);
 			}
 		}
-		else if (getC_Charge_ID() != 0)
+		else if (getC_Charge_ID() > 0)
 		{
 			setC_Charge_ID(0);
 		}
 
 		// Set AD_Org to parent if not charge
-		if (getC_Charge_ID() == 0)
+		if (getC_Charge_ID() <= 0)
 		{
-			setAD_Org_ID(getParent().getAD_Org_ID());
+			setAD_Org_ID(getM_Inventory().getAD_Org_ID());
 		}
 
 		return true;
-	}	// beforeSave
-
-	/**
-	 * After Save
-	 *
-	 * @param newRecord new
-	 * @param success success
-	 * @return true
-	 */
-	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
-	{
-		if (!success)
-		{
-			return false;
-		}
-
-		// Create MA
-		// if (newRecord && success
-		// && m_isManualEntry && getM_AttributeSetInstance_ID() == 0)
-		// createMA();
-		return true;
-	}	// afterSave
-
-	/**
-	 * Is Internal Use Inventory
-	 *
-	 * @return true if is internal use inventory
-	 */
-	public boolean isInternalUseInventory()
-	{
-		/*
-		 * TODO: need to add M_Inventory.IsInternalUseInventory flag
-		 * see FR [ 1879029 ] Added IsInternalUseInventory flag to M_Inventory table
-		 * MInventory parent = getParent();
-		 * return parent != null && parent.isInternalUseInventory();
-		 */
-		return getQtyInternalUse().signum() != 0;
 	}
 
-	/**
-	 * Get Movement Qty (absolute value)
-	 * <li>negative value means outgoing trx
-	 * <li>positive value means incoming trx
-	 *
-	 * @return movement qty
-	 */
-	public BigDecimal getMovementQty()
+	@Deprecated
+	private boolean isInternalUseInventory()
 	{
-		if (isInternalUseInventory())
-		{
-			return getQtyInternalUse().negate();
-		}
-		else
-		{
-			return getQtyCount().subtract(getQtyBook());
-		}
+		return Services.get(IInventoryBL.class).isInternalUseInventory(this);
 	}
 
 	/**
 	 * @return true if is an outgoing transaction
 	 */
-	public boolean isSOTrx()
+	@Deprecated
+	private boolean isSOTrx()
 	{
-		return getMovementQty().signum() < 0;
+		return Services.get(IInventoryBL.class).isSOTrx(this);
 	}
-}	// MInventoryLine
+}

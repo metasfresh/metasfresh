@@ -233,11 +233,11 @@ public final class MAccountLookup extends Lookup implements Serializable
 	@Override
 	public ArrayList<Object> getData(boolean mandatory, boolean onlyValidated, boolean onlyActive, boolean temporary)
 	{
-		ArrayList<Object> list = new ArrayList<Object>();
+		ArrayList<Object> list = new ArrayList<>();
 		if (!mandatory)
 			list.add(KeyNamePair.EMPTY);
 		//
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		String whereClause = "AD_Client_ID=?";
 		params.add(Env.getAD_Client_ID(m_ctx));
 
@@ -245,7 +245,7 @@ public final class MAccountLookup extends Lookup implements Serializable
 				.setParameters(params)
 				.setOrderBy(MAccount.COLUMNNAME_Combination)
 				.setOnlyActiveRecords(onlyActive)
-				.list();
+				.list(MAccount.class);
 
 		for (final I_C_ValidCombination account : accounts)
 		{

@@ -292,4 +292,10 @@ public final class NullAttributeValue implements IAttributeValue
 	{
 		return true;
 	}
+
+	@Override
+	public boolean isOnlyIfInProductAttributeSet()
+	{
+		return false;
+	}
 }

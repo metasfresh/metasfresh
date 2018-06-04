@@ -25,7 +25,6 @@ package org.adempiere.ad.dao.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -35,6 +34,7 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.apache.ecs.xhtml.code;
+import org.compiere.util.DB;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -72,6 +72,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private final String columnName;
 	private final List<Object> values;
 	private boolean defaultReturnWhenEmpty = true;
+	private boolean embedSqlParams = false;
 
 	/**
 	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
@@ -144,6 +145,20 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		this.defaultReturnWhenEmpty = defaultReturnWhenEmpty;
 		return this;
 	}
+	
+	public InArrayQueryFilter<T> setEmbedSqlParams(final boolean embedSqlParams)
+	{
+		if(this.embedSqlParams == embedSqlParams)
+		{
+			return this;
+		}
+		
+		this.embedSqlParams = embedSqlParams;
+		this.sqlBuilt = false;
+		this.sqlWhereClause = null;
+		this.sqlParams = null;
+		return this;
+	}
 
 	@Override
 	public boolean accept(final T model)
@@ -211,7 +226,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		if (values == null || values.isEmpty())
 		{
 			sqlWhereClause = defaultReturnWhenEmpty ? SQL_TRUE : SQL_FALSE;
-			sqlParams = Collections.emptyList();
+			sqlParams = ImmutableList.of();
 		}
 		else if (values.size() == 1)
 		{
@@ -219,7 +234,12 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 			if (value == null)
 			{
 				sqlWhereClause = columnName + " IS NULL";
-				sqlParams = Collections.emptyList();
+				sqlParams = ImmutableList.of();
+			}
+			else if(embedSqlParams)
+			{
+				sqlWhereClause = columnName + "=" + DB.TO_SQL(value);
+				sqlParams = ImmutableList.of();
 			}
 			else
 			{
@@ -254,8 +274,16 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 					// First time we are adding a non-NULL value => we are adding "ColumnName IN (" first
 					sqlWhereClauseBuilt.append(columnName).append(" IN (");
 				}
-				sqlWhereClauseBuilt.append("?");
-				sqlParamsBuilt.add(value);
+				
+				if(embedSqlParams)
+				{
+					sqlWhereClauseBuilt.append(DB.TO_SQL(value));
+				}
+				else
+				{
+					sqlWhereClauseBuilt.append("?");
+					sqlParamsBuilt.add(value);
+				}
 				hasNonNullValues = true;
 			}
 			// Closing the bracket from "ColumnName IN (".

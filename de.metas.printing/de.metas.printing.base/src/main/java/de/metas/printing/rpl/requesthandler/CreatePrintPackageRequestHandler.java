@@ -1,5 +1,7 @@
 package de.metas.printing.rpl.requesthandler;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.printing.base
@@ -10,20 +12,20 @@ package de.metas.printing.rpl.requesthandler;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerCtx;
@@ -40,14 +42,15 @@ import de.metas.printing.api.IPrintPackageCtx;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Package;
+import lombok.NonNull;
 
 /**
  * For a given input print package (request) it is fetching the next print job and populates the print package header, infos and data.
- * 
+ *
  * If there is no next print job, null PO respose will be returned
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class CreatePrintPackageRequestHandler extends LoadPORequestHandler
 {
@@ -77,9 +80,9 @@ public class CreatePrintPackageRequestHandler extends LoadPORequestHandler
 
 	/**
 	 * Updates given printPackage request by setting printing informations and generating printing data.
-	 * 
+	 *
 	 * If there is no data to be encapsulated in print package, null is returned.
-	 * 
+	 *
 	 * @param printPackage
 	 * @return {@link I_C_Print_Package} response or null
 	 */
@@ -120,10 +123,8 @@ public class CreatePrintPackageRequestHandler extends LoadPORequestHandler
 		return responsePrintPackage;
 	}
 
-	private boolean updatePrintPackage(final I_C_Print_Package printPackage)
+	private boolean updatePrintPackage(@NonNull final I_C_Print_Package printPackage)
 	{
-		Check.assume(printPackage != null, "printPackage is null");
-
 		if (Check.isEmpty(printPackage.getTransactionID()))
 		{
 			logger.debug("Skip package {} because transactionId is not set");
@@ -170,7 +171,12 @@ public class CreatePrintPackageRequestHandler extends LoadPORequestHandler
 				logger.debug("Considering {}", printJobInstructions);
 
 				// Try creating the print package. Make sure the printjob instructions are unlocked at the end
-				packageCreated = printPackageBL.createPrintPackage(printPackage, printJobInstructions, printPackageCtx);
+				if (printPackage.getC_Print_Package_ID() <= 0)
+				{
+					save(printPackage); // if the package did not enter the system per replication, then it's probably not yet saved
+				}
+				packageCreated = printPackageBL.addPrintingDataToPrintPackage(printPackage, printJobInstructions, printPackageCtx);
+
 				logger.debug("PackageCreated:{} - {}", new Object[] { packageCreated, printPackage });
 			}
 			finally

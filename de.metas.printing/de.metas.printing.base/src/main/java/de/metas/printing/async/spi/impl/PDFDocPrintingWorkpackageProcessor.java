@@ -248,7 +248,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		printCtx.setHostKey(printjobInstructions.getHostKey());
 		printCtx.setTransactionId(printPackage.getTransactionID());
 
-		printPackageBL.createPrintPackage(printPackage, printjobInstructions, printCtx);
+		printPackageBL.addPrintingDataToPrintPackage(printPackage, printjobInstructions, printCtx);
 
 	}
 }

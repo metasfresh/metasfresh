@@ -49,8 +49,8 @@ import de.metas.handlingunits.client.terminal.mmovement.model.ILTCUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 /**
  * Handler for calculating CU-TU-LU quantities automatically for {@link HUSplitModel}.
@@ -101,8 +101,7 @@ import de.metas.logging.LogManager;
 	 */
 	private boolean calculateDefaultQtysForExistingConfiguration(final ILTCUModel model, final I_M_HU hu)
 	{
-		final I_M_HU_PI_Version huPIV = hu.getM_HU_PI_Version();
-		final I_M_HU_PI huPI = huPIV.getM_HU_PI();
+		final I_M_HU_PI huPI = handlingUnitsBL.getPI(hu);
 
 		final IKeyLayout tuKeyLayout = model.getTUKeyLayout();
 		final ILUTUCUKey selectedTUKey = tuKeyLayout.getKeyLayoutSelectionModel().getSelectedKeyOrNull(ILUTUCUKey.class);
@@ -198,7 +197,7 @@ import de.metas.logging.LogManager;
 		Check.assume(keyLayout.getKeysCount() > 0, "keyLayout {} shall be loaded with keys", keyLayout);
 
 		final boolean virtual = handlingUnitsBL.isVirtual(hu);
-		final I_M_HU_PI huPI = hu.getM_HU_PI_Version().getM_HU_PI();
+		final I_M_HU_PI huPI = handlingUnitsBL.getPI(hu);
 
 		final List<ILUTUCUKey> lutuKeys = keyLayout.getKeys(ILUTUCUKey.class);
 		for (final ILUTUCUKey lutuKey : lutuKeys)
@@ -282,7 +281,7 @@ import de.metas.logging.LogManager;
 		final I_M_HU_PI luPI;
 		if (luHU != null)
 		{
-			luPI = luHU.getM_HU_PI_Version().getM_HU_PI();
+			luPI = handlingUnitsBL.getPI(luHU);
 		}
 		else
 		{
@@ -313,10 +312,10 @@ import de.metas.logging.LogManager;
 		}
 		else
 		{
-			final BigDecimal qtyCUPerTU = getKeyFactory().getStorageFactory()
+			final Quantity qtyCUPerTU = getKeyFactory().getStorageFactory()
 					.getStorage(tuHU)
 					.getQtyForProductStorages();
-			model.setQtyCU(qtyCUPerTU);
+			model.setQtyCU(qtyCUPerTU.getQty());
 			model.setQtyTU(1);
 			model.setQtyLU(1); // we are currently splitting the full TU off
 		}
@@ -335,19 +334,19 @@ import de.metas.logging.LogManager;
 		final List<I_M_HU> includedTUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
 		for (final I_M_HU includedTU : includedTUs)
 		{
-			final I_M_HU_PI includedTUPI = includedTU.getM_HU_PI_Version().getM_HU_PI();
+			final I_M_HU_PI includedTUPI = handlingUnitsBL.getPI(includedTU);
 			if (includedTUPI.getM_HU_PI_ID() != selectedTUPI.getM_HU_PI_ID())
 			{
 				return;
 			}
 
-			final BigDecimal qtyCUPerTU = getKeyFactory().getStorageFactory()
+			final Quantity qtyCUPerTU = getKeyFactory().getStorageFactory()
 					.getStorage(includedTU)
 					.getQtyForProductStorages();
 
-			if (maxQtyCUPerTU.compareTo(qtyCUPerTU) < 0)
+			if (maxQtyCUPerTU.compareTo(qtyCUPerTU.getQty()) < 0)
 			{
-				maxQtyCUPerTU = qtyCUPerTU;
+				maxQtyCUPerTU = qtyCUPerTU.getQty();
 			}
 		}
 
@@ -368,7 +367,7 @@ import de.metas.logging.LogManager;
 		final I_M_HU huToSplit = huToSplitKey.getM_HU();
 		final BigDecimal fullCUQty = getKeyFactory().getStorageFactory()
 				.getStorage(huToSplit)
-				.getQtyForProductStorages();
+				.getQtyForProductStorages().getQty();
 
 		//
 		// Calculate TU Qty (note that we should always have a TU key selected at this point)

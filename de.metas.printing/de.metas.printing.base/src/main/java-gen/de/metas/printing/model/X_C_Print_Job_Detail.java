@@ -14,7 +14,7 @@ public class X_C_Print_Job_Detail extends org.compiere.model.PO implements I_C_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1308387389L;
+	private static final long serialVersionUID = -459329085L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Detail (Properties ctx, int C_Print_Job_Detail_ID, String trxName)
@@ -41,18 +41,6 @@ public class X_C_Print_Job_Detail extends org.compiere.model.PO implements I_C_P
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public I_AD_PrinterRouting getAD_PrinterRouting() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_PrinterRouting_ID, I_AD_PrinterRouting.class);
-	}
-
-	@Override
-	public void setAD_PrinterRouting(I_AD_PrinterRouting AD_PrinterRouting)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_PrinterRouting_ID, I_AD_PrinterRouting.class, AD_PrinterRouting);
-	}
 
 	/** Set Drucker-Zuordnung.
 		@param AD_PrinterRouting_ID Drucker-Zuordnung	  */

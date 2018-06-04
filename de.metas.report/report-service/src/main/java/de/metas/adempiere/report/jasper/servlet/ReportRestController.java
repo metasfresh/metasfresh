@@ -18,7 +18,7 @@ import de.metas.adempiere.report.jasper.server.LocalJasperServer;
 
 @RestController
 @RequestMapping(value = ReportRestController.ENDPOINT)
-@Profile(Profiles.PROFILE_JasperServer)
+@Profile(Profiles.PROFILE_JasperService)
 public class ReportRestController
 {
 	public static final String ENDPOINT = JasperServerConstants.SERVLET_ROOT + "/ReportServlet";

@@ -10,12 +10,12 @@ package org.adempiere.process.rpl.requesthandler.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,6 +34,7 @@ import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandler;
 import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandlerType;
 import org.adempiere.process.rpl.requesthandler.spi.IReplRequestHandler;
 import org.adempiere.server.rpl.interfaces.I_EXP_Format;
+import org.adempiere.util.Check;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_ReplicationTable;
@@ -73,8 +74,8 @@ public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 		}
 
 		final I_EXP_Format formatToUse = result.getFormatToUse();
-		Util.assume(formatToUse != null, "formatToUse shall be set");
-		
+		Check.errorIf(formatToUse == null, "formatToUse shall be set");
+
 		final MEXPFormat formatToUsePO = (MEXPFormat)InterfaceWrapperHelper.getStrictPO(formatToUse);
 
 		final ExportHelper exportHelper = new ExportHelper(poToExport.getCtx(), formatToUse.getAD_Client_ID());

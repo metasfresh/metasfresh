@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 
 import de.metas.i18n.IADMessageDAO;
@@ -181,6 +182,7 @@ public class MNote extends X_AD_Note
 	 *	@param AD_Client_ID client
 	 *	@param AD_Org_ID org
 	 */
+	@Override
 	public void setClientOrg(int AD_Client_ID, int AD_Org_ID) 
 	{
 		super.setClientOrg(AD_Client_ID, AD_Org_ID);
@@ -197,11 +199,24 @@ public class MNote extends X_AD_Note
 		setRecord_ID(Record_ID);
 	}	//	setRecord
 
+	public void setRecord (final TableRecordReference record)
+	{
+		if(record != null)
+		{
+			setRecord(record.getAD_Table_ID(), record.getRecord_ID());
+		}
+		else
+		{
+			setRecord(-1, -1);
+		}
+	}
+
 
 	/**
 	 * 	String Representation
 	 *	@return	info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer ("MNote[")

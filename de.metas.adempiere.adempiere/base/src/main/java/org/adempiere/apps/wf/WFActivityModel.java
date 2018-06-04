@@ -40,11 +40,12 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Activity;
 import org.compiere.model.X_AD_WF_Activity;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.MWFActivity;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class WFActivityModel
 {
@@ -76,7 +77,7 @@ public class WFActivityModel
 		//
 		// Users where clause
 		final String wcUsers;
-		final List<Object> paramsUsers = new ArrayList<Object>();
+		final List<Object> paramsUsers = new ArrayList<>();
 		{
 			final List<Integer> userIds = getUserAndSubstitutedsIds();
 			wcUsers = DB.buildSqlList(userIds, paramsUsers);
@@ -85,7 +86,7 @@ public class WFActivityModel
 		//
 		// WF Responsible filter
 		final StringBuilder wcResponsible = new StringBuilder();
-		final List<Object> paramsResponsible = new ArrayList<Object>();
+		final List<Object> paramsResponsible = new ArrayList<>();
 		{
 			// Owner of Activity
 			wcResponsible.append(I_AD_WF_Activity.COLUMNNAME_AD_User_ID).append(" IN ").append(wcUsers);
@@ -124,7 +125,7 @@ public class WFActivityModel
 		//
 		// Main Filter
 		final StringBuilder wc = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 		{
 			// Not Processed
 			wc.append(I_AD_WF_Activity.COLUMNNAME_Processed).append("=?");
@@ -147,7 +148,7 @@ public class WFActivityModel
 				.addColumn(I_AD_WF_Activity.COLUMNNAME_Created, true)
 				.createQueryOrderBy();
 
-		final IQuery<I_AD_WF_Activity> query = new TypedSqlQuery<I_AD_WF_Activity>(ctx, I_AD_WF_Activity.class, wc.toString(), ITrx.TRXNAME_None)
+		final IQuery<I_AD_WF_Activity> query = new TypedSqlQuery<>(ctx, I_AD_WF_Activity.class, wc.toString(), ITrx.TRXNAME_None)
 				.setParameters(params)
 				.setOnlyActiveRecords(true)
 				// .setApplyAccessFilterRW(false) // NOTE: commented out because generated SQL is not correct
@@ -165,7 +166,7 @@ public class WFActivityModel
 
 	private List<Integer> getUserAndSubstitutedsIds(final int userId, final Timestamp date)
 	{
-		final List<Integer> userIds = new ArrayList<Integer>();
+		final List<Integer> userIds = new ArrayList<>();
 		userIds.add(userId);
 
 		for (final I_AD_User u : Services.get(IUserDAO.class).retrieveUsersSubstitudedBy(ctx, userId, date, ITrx.TRXNAME_None))
@@ -202,7 +203,7 @@ public class WFActivityModel
 		final List<MWFActivity> activities = getActivitiesQuery()
 				.copy()
 				.setLimit(maxActivities)
-				.list();
+				.list(MWFActivity.class);
 
 		logger.debug("#" + activities.size() + "(" + (System.currentTimeMillis() - start) + "ms)");
 

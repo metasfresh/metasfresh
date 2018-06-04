@@ -123,6 +123,31 @@ public interface I_C_Print_Package
     public static final String COLUMNNAME_BinaryFormat = "BinaryFormat";
 
 	/**
+	 * Set Kopien.
+	 * Anzahl der zu erstellenden/zu druckenden Exemplare
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCopies (int Copies);
+
+	/**
+	 * Get Kopien.
+	 * Anzahl der zu erstellenden/zu druckenden Exemplare
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCopies();
+
+    /** Column definition for Copies */
+    public static final org.adempiere.model.ModelColumn<I_C_Print_Package, Object> COLUMN_Copies = new org.adempiere.model.ModelColumn<I_C_Print_Package, Object>(I_C_Print_Package.class, "Copies", null);
+    /** Column name Copies */
+    public static final String COLUMNNAME_Copies = "Copies";
+
+	/**
 	 * Set Druck-Job Anweisung.
 	 *
 	 * <br>Type: Search
@@ -171,31 +196,6 @@ public interface I_C_Print_Package
     public static final org.adempiere.model.ModelColumn<I_C_Print_Package, Object> COLUMN_C_Print_Package_ID = new org.adempiere.model.ModelColumn<I_C_Print_Package, Object>(I_C_Print_Package.class, "C_Print_Package_ID", null);
     /** Column name C_Print_Package_ID */
     public static final String COLUMNNAME_C_Print_Package_ID = "C_Print_Package_ID";
-
-	/**
-	 * Set Kopien.
-	 * Anzahl der zu erstellenden/zu druckenden Exemplare
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setCopies (int Copies);
-
-	/**
-	 * Get Kopien.
-	 * Anzahl der zu erstellenden/zu druckenden Exemplare
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCopies();
-
-    /** Column definition for Copies */
-    public static final org.adempiere.model.ModelColumn<I_C_Print_Package, Object> COLUMN_Copies = new org.adempiere.model.ModelColumn<I_C_Print_Package, Object>(I_C_Print_Package.class, "Copies", null);
-    /** Column name Copies */
-    public static final String COLUMNNAME_Copies = "Copies";
 
 	/**
 	 * Get Erstellt.

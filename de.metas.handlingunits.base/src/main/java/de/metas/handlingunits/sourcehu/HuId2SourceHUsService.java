@@ -5,15 +5,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
@@ -58,30 +55,6 @@ public class HuId2SourceHUsService
 	public HuId2SourceHUsService(@NonNull final HUTraceRepository huTraceRepository)
 	{
 		this.huTraceRepository = huTraceRepository;
-	}
-
-	public List<I_M_HU> retrieveActualSourceHUsFollowedByMatchingSourceHUs(final int huId)
-	{
-		final LinkedHashMap<Integer, I_M_HU> map = new LinkedHashMap<>();
-
-		addToMapIfMissing(map, retrieveActualSourceHUs(ImmutableList.of(huId)));
-		addToMapIfMissing(map, retrieveMatchingSourceHUs(huId));
-
-		return ImmutableList.copyOf(map.values());
-	}
-
-	private void addToMapIfMissing(
-			@NonNull final LinkedHashMap<Integer, I_M_HU> map,
-			@NonNull final Collection<I_M_HU> sourceHUs)
-	{
-		for (final I_M_HU sourceHU : sourceHUs)
-		{
-			if (map.containsKey(sourceHU.getM_HU_ID()))
-			{
-				continue;
-			}
-			map.put(sourceHU.getM_HU_ID(), sourceHU);
-		}
 	}
 
 	/**
@@ -144,13 +117,11 @@ public class HuId2SourceHUsService
 		return topLevelSourceHus;
 	}
 
-	public Collection<I_M_HU> retrieveMatchingSourceHUs(final int huId)
+	public Collection<Integer> retrieveMatchingSourceHUIds(final int huId)
 	{
 		final MatchingSourceHusQuery query = MatchingSourceHusQuery.fromHuId(huId);
 
 		final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
-		final List<I_M_HU> sourceHUs = sourceHuDAO.retrieveActiveSourceHus(query);
-
-		return sourceHUs;
+		return sourceHuDAO.retrieveActiveSourceHUIds(query);
 	}
 }

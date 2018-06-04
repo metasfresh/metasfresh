@@ -39,7 +39,6 @@ public class Fresh_AvailableSingletonServices_Test
 	public void test()
 	{
 		AvailableSingletonServicesTester.newInstance()
-				.skipServiceInterface(de.metas.request.service.IRequestCreator.class) // is registered programmatically
 				// .skipServiceInterface(de.metas.dpd.service.IDPDRoutingservice.class) // is registered programmatically
 				.skipServiceInterface(org.adempiere.inout.replenish.service.IReplenishForFutureQty.class) // is registered programmatically
 				.skipServiceInterface(de.metas.adempiere.service.IAppDictionaryBL.class) // is registered programmatically

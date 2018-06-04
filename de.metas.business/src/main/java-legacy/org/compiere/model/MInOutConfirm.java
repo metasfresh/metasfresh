@@ -158,7 +158,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		final String whereClause = MInOutLineConfirm.COLUMNNAME_M_InOutConfirm_ID+"=?";
 		List<MInOutLineConfirm> list = new Query(getCtx(), MInOutLineConfirm.Table_Name, whereClause, get_TrxName())
 		.setParameters(new Object[]{getM_InOutConfirm_ID()})
-		.list();
+		.list(MInOutLineConfirm.class);
 		m_lines = new MInOutLineConfirm[list.size ()];
 		list.toArray (m_lines);
 		return m_lines;

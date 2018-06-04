@@ -60,6 +60,8 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateGreetings(whereClause);
 
+		dbUpdateJobs(whereClause);
+
 		dbUpdateAdUserIdsFromExisting(whereClause);
 
 		dbUpdateCbPartnerIds(whereClause);
@@ -73,6 +75,10 @@ public class BPartnerImportTableSqlUpdater
 		dbUpdateInvoiceSchedules(whereClause);
 
 		dbUpdatePO_PaymentTerms(whereClause);
+
+		dbUpdateC_Aggregtions(whereClause);
+
+		dbUpdateM_Shippers(whereClause);
 
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -196,6 +202,27 @@ public class BPartnerImportTableSqlUpdater
 		logger.info("Invalid Greeting={}", no);
 	}
 
+	private void dbUpdateJobs(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET C_Job_ID=(SELECT C_Job_ID FROM C_Job j"
+				+ " WHERE i.JobName=j.Name AND j.AD_Client_ID IN (0, i.AD_Client_ID) AND j.AD_Org_ID IN (0, i.AD_Org_ID) ) "
+				+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set Job={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Job, ' "
+				+ "WHERE C_Job_ID IS NULL AND JobName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid Job={}", no);
+	}
+
+
 	private void dbUpdateAdUserIdsFromExisting(final String whereClause)
 	{
 		StringBuilder sql;
@@ -303,6 +330,54 @@ public class BPartnerImportTableSqlUpdater
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid PO_PaymentTerm={}", no);
+	}
+
+	private void dbUpdateC_Aggregtions(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET C_Aggregation_ID=(SELECT C_Aggregation_ID FROM C_Aggregation a"
+				+ " WHERE i.AggregationName=a.Name AND a.AD_Client_ID IN (0, i.AD_Client_ID) AND a.AD_Org_ID IN (0, i.AD_Org_ID ) "
+				+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set C_Aggregation_ID={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid AggregationName, ' "
+				+ "WHERE C_Aggregation_ID IS NULL AND AggregationName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid C_Aggregation_ID={}", no);
+	}
+
+	private void dbUpdateM_Shippers(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET M_Shipper_ID=(SELECT M_Shipper_ID FROM M_Shipper s"
+				+ " WHERE i.ShipperName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID)), "
+				+ " DeliveryViaRule = 'S' "
+				+ "WHERE M_Shipper_ID IS NULL AND ShipperName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set M_Shipper_ID={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET DeliveryViaRule = 'P' "
+				+ "WHERE M_Shipper_ID IS NULL AND ShipperName = 'P' "
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set DeliveryViaRule={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Shipper or DeliveryViaRule, ' "
+				+ "WHERE M_Shipper_ID IS NULL AND DeliveryViaRule IS NULL AND ShipperName IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid Invalid Shipper or DeliveryViaRule={}", no);
 	}
 
 	private void dbUpdateErrorMessages(final String whereClause)

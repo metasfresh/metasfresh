@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,6 +32,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
@@ -69,7 +71,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");
-		
+
 		this.invoiceCandBL = Services.get(IInvoiceCandBL.class);
 		this.invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -81,6 +83,9 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		//
 		// Register model interceptors
 		registerModelInterceptors();
+
+		final AsyncBPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new AsyncBPartnerStatisticsUpdater();
+		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 
 		LogManager.setLevel(Level.DEBUG);
 	}
@@ -499,7 +504,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");
 
 		final I_C_Order order1 = order("1");
-		
+
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 160, 1, false, true); // BP, Price, Qty, IsManual
 		ic1.setC_InvoiceSchedule(schedule("1", X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily));
 		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
@@ -519,7 +524,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		manualIc1.setBill_BPartner(bpartner("1"));
 		manualIc1.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc1);
-		
+
 		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
 		POJOWrapper.setInstanceName(manualIc2, "manualIc2");
 		manualIc2.setBill_BPartner(bpartner("1"));
@@ -572,7 +577,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 
 		final I_C_Tax tax = tax(new BigDecimal("4"));
 		docType(X_C_DocType.DOCBASETYPE_ARInvoice, null);
-		
+
 		final I_AD_User user = user("1");
 		user.setC_BPartner_ID(bpartner("1").getC_BPartner_ID());
 

@@ -14,7 +14,7 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1634844680L;
+	private static final long serialVersionUID = -434827618L;
 
     /** Standard Constructor */
     public X_C_Print_PackageInfo (Properties ctx, int C_Print_PackageInfo_ID, String trxName)
@@ -113,6 +113,44 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
+	/** Set Kalibrierung-X.
+		@param CalX Kalibrierung-X	  */
+	@Override
+	public void setCalX (int CalX)
+	{
+		set_Value (COLUMNNAME_CalX, Integer.valueOf(CalX));
+	}
+
+	/** Get Kalibrierung-X.
+		@return Kalibrierung-X	  */
+	@Override
+	public int getCalX () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CalX);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Kalibrierung-Y.
+		@param CalY Kalibrierung-Y	  */
+	@Override
+	public void setCalY (int CalY)
+	{
+		set_Value (COLUMNNAME_CalY, Integer.valueOf(CalY));
+	}
+
+	/** Get Kalibrierung-Y.
+		@return Kalibrierung-Y	  */
+	@Override
+	public int getCalY () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CalY);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public de.metas.printing.model.I_C_Print_Package getC_Print_Package() throws RuntimeException
 	{
@@ -167,44 +205,6 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 	public int getC_Print_PackageInfo_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_PackageInfo_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Kalibrierung-X.
-		@param CalX Kalibrierung-X	  */
-	@Override
-	public void setCalX (int CalX)
-	{
-		set_Value (COLUMNNAME_CalX, Integer.valueOf(CalX));
-	}
-
-	/** Get Kalibrierung-X.
-		@return Kalibrierung-X	  */
-	@Override
-	public int getCalX () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_CalX);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Kalibrierung-Y.
-		@param CalY Kalibrierung-Y	  */
-	@Override
-	public void setCalY (int CalY)
-	{
-		set_Value (COLUMNNAME_CalY, Integer.valueOf(CalY));
-	}
-
-	/** Get Kalibrierung-Y.
-		@return Kalibrierung-Y	  */
-	@Override
-	public int getCalY () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_CalY);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

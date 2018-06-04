@@ -12,6 +12,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.util.Env;
@@ -137,7 +138,7 @@ public class RecordCrawlerServiceStoreITerateResultTests
 		fieldDLMAware.setDLM_Partition_ID(p2.getDLM_Partition_ID());
 
 		InterfaceWrapperHelper.save(field);
-		final ITableRecordReference tableRecordReference = ITableRecordReference.FromModelConverter.convert(field);
+		final ITableRecordReference tableRecordReference = TableRecordReference.ofOrNull(field);
 
 		result.addReferencingRecord(tableRecordReference, null, p2.getDLM_Partition_ID());
 

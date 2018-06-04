@@ -1,5 +1,6 @@
 package de.metas.printing.model.validator;
 
+import java.util.List;
 import java.util.Properties;
 
 /*
@@ -15,11 +16,11 @@ import java.util.Properties;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,9 +39,13 @@ import org.compiere.report.IJasperServiceRegistry;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.async.api.IAsyncBatchListeners;
-import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -62,7 +67,7 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.spi.impl.DefaultPrintingNotificationCtxProvider;
+import de.metas.printing.spi.impl.DefaultPrintingRecordTextProvider;
 import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
 
 /**
@@ -73,14 +78,20 @@ import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
  */
 public class Main extends AbstractModuleInterceptor
 {
+
+	private static final Logger logger = LogManager.getLogger(Main.class);
+
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		// Do not initialize if the printing module is disabled
 		if (!Printing_Constants.isEnabled())
 		{
+			logger.info("Printing is disabled; not registering any printing MIs, callouts etc");
 			return;
 		}
+		
+		super.onInit(engine, client);
 
 		//
 		// Configure tables which are skipped when we record migration scripts
@@ -148,13 +159,9 @@ public class Main extends AbstractModuleInterceptor
 
 		// task 09833
 		// Register the Default Printing Info ctx provider
-		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingNotificationCtxProvider.instance);
-		
+		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingRecordTextProvider.instance);
+
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new PDFPrintingAsyncBatchListener(), Printing_Constants.C_Async_Batch_InternalName_PDFPrinting);
-		
-		//
-		// Setup event bus topics on which swing client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(Printing_Constants.TOPIC_Printing);
 	}
 
 	@Override
@@ -167,6 +174,12 @@ public class Main extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Matching.Table_Name);
 	}
 	
+	@Override
+	protected List<Topic> getAvailableUserNotificationsTopics()
+	{
+		return ImmutableList.of(Printing_Constants.USER_NOTIFICATIONS_TOPIC);
+	}
+
 	@Override
 	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{

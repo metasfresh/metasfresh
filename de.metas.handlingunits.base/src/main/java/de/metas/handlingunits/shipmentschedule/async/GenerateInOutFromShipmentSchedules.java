@@ -33,12 +33,12 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
@@ -47,7 +47,6 @@ import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -78,7 +77,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -101,7 +99,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	//
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	//
@@ -171,7 +168,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	/**
 	 * Creates the {@link IShipmentScheduleWithHU}s for which we will create the shipment(s).
 	 *
-	 * Note that required and missing handling units are creates on the fly.
+	 * Note that required and missing handling units are created on the fly.
 	 *
 	 * @param workpackage
 	 * @param trxName
@@ -195,10 +192,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			// the system will eventually have updated them for us.
 			// Note that this way, the sched might differ from what
 			// the user selected, but on the other hand, if a user enqueued invalid records, they shouldn't be too surprised.
-			if (shipmentSchedulePA.isInvalid(shipmentSchedule))
-			{
-				throw WorkpackageSkipRequestException.createWithTimeout("Shipment schedule needs to be updated first: " + shipmentSchedule, 10000);
-			}
+
+			// task https://github.com/metasfresh/metasfresh/issues/4027 "To Be Updated" in shipment schedule and "In Verarbeitung" in workpackage getting stuck
+			// Ignore it if a shipments schedule was invalidated after is was locked and enqueued for this async-procesor; go with the locked shipments schedule's values
+			// anyways, this here never worked; we would need to either validate it right here, or temporarily unlock the shipment schedule. 
+			// if (shipmentSchedulePA.isInvalid(shipmentSchedule))
+			// {
+			// throw WorkpackageSkipRequestException.createWithTimeout("Shipment schedule needs to be updated first: " + shipmentSchedule, 10000);
+			// }
 
 			final List<ShipmentScheduleWithHU> scheduleCandidates = createCandidates(huContext, shipmentSchedule);
 			candidates.addAll(scheduleCandidates);
@@ -542,10 +543,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		return source;
 	}
 
-	private ILUTUProducerAllocationDestination createLUTUProducerDestination(final I_M_ShipmentSchedule schedule)
+	private ILUTUProducerAllocationDestination createLUTUProducerDestination(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		Check.assumeNotNull(schedule, "schedule not null");
-
 		final I_M_HU_LUTU_Configuration lutuConfiguration = huShipmentScheduleBL.deriveM_HU_LUTU_Configuration(schedule);
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		lutuConfigurationFactory.save(lutuConfiguration);

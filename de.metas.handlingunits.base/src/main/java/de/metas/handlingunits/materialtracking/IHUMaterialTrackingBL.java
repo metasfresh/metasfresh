@@ -1,7 +1,7 @@
 package de.metas.handlingunits.materialtracking;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 
 import com.google.common.base.Optional;
 

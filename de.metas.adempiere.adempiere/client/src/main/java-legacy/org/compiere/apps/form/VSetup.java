@@ -28,10 +28,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Currency;
 import java.util.Locale;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -45,15 +41,16 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.MSetup;
-import org.compiere.plaf.CompiereColor;
 import org.compiere.print.PrintUtil;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 
 /**
  *	Setup System
@@ -140,7 +137,7 @@ public class VSetup extends CPanel
 	 */
 	private void jbInit() throws Exception
 	{
-		CompiereColor.setBackground(this);
+		AdempierePLAF.setDefaultBackground(this);
 		centerPanel.setLayout(centerLayout);
 		String optional = Msg.translate(Env.getCtx(), "Optional");
 		//

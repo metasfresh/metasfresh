@@ -10,12 +10,12 @@ package org.adempiere.warehouse.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,10 +35,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.model.IQuery;
@@ -47,6 +49,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
+import org.compiere.util.Env;
 import org.eevolution.model.I_M_Warehouse_Routing;
 
 import com.google.common.collect.ImmutableList;
@@ -183,6 +186,19 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
+	public WarehouseId retrieveOrgWarehousePOId(@NonNull final OrgId orgId)
+	{
+		final I_AD_OrgInfo orgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
+		if (orgInfo == null)
+		{
+			return null;
+		}
+
+		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_WarehousePO_ID());
+	}
+
+	@Override
 	@Cached(cacheName = I_M_Warehouse.Table_Name + "#InTransitForOrg")
 	public List<I_M_Warehouse> retrieveWarehousesInTransitForOrg(@CacheCtx final Properties ctx, final int adOrgId)
 	{
@@ -277,6 +293,15 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
+	public WarehousePickingGroup getWarehousePickingGroupById(final int warehousePickingGroupId)
+	{
+		return retrieveWarehouseGroups()
+				.stream()
+				.filter(warehousePickingGroup -> warehousePickingGroup.getId() == warehousePickingGroupId)
+				.findFirst().orElse(null);
+	}
+
+	@Override
 	public WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(final int warehouseId)
 	{
 		return retrieveWarehouseGroups()
@@ -303,5 +328,16 @@ public class WarehouseDAO implements IWarehouseDAO
 		{
 			throw new AdempiereException("Invalid locator barcode: " + barcode, ex);
 		}
+	}
+
+	@Override
+	@Cached(cacheName = I_M_Locator.Table_Name + "#By#" + I_M_Locator.COLUMNNAME_M_Warehouse_ID+"#"+I_M_Locator.COLUMNNAME_Value)
+	public int retrieveLocatorIdByValueAndWarehouseId(@NonNull final String locatorvalue, final int warehouseId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class)
+				.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId)
+				.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, locatorvalue)
+				.create()
+				.firstIdOnly();
 	}
 }

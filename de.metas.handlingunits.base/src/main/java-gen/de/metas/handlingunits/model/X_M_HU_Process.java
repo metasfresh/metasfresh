@@ -14,7 +14,7 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1772676787L;
+	private static final long serialVersionUID = -1879959943L;
 
     /** Standard Constructor */
     public X_M_HU_Process (Properties ctx, int M_HU_Process_ID, String trxName)
@@ -23,9 +23,11 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
       /** if (M_HU_Process_ID == 0)
         {
 			setAD_Process_ID (0);
-			setIsApplyLU (false); // N
-			setIsApplyTU (false); // N
-			setIsApplyVirtualPI (false); // N
+			setIsApplyToCUs (false); // N
+			setIsApplyToLUs (false); // N
+			setIsApplyToTopLevelHUsOnly (false); // N
+			setIsApplyToTUs (false); // N
+			setIsProvideAsUserAction (true); // Y
 			setM_HU_Process_ID (0);
         } */
     }
@@ -82,20 +84,20 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
 		return ii.intValue();
 	}
 
-	/** Set IsApplyLU.
-		@param IsApplyLU IsApplyLU	  */
+	/** Set Auf CUs anwenden.
+		@param IsApplyToCUs Auf CUs anwenden	  */
 	@Override
-	public void setIsApplyLU (boolean IsApplyLU)
+	public void setIsApplyToCUs (boolean IsApplyToCUs)
 	{
-		set_Value (COLUMNNAME_IsApplyLU, Boolean.valueOf(IsApplyLU));
+		set_Value (COLUMNNAME_IsApplyToCUs, Boolean.valueOf(IsApplyToCUs));
 	}
 
-	/** Get IsApplyLU.
-		@return IsApplyLU	  */
+	/** Get Auf CUs anwenden.
+		@return Auf CUs anwenden	  */
 	@Override
-	public boolean isApplyLU () 
+	public boolean isApplyToCUs () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsApplyLU);
+		Object oo = get_Value(COLUMNNAME_IsApplyToCUs);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -105,20 +107,20 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
 		return false;
 	}
 
-	/** Set IsApplyTU.
-		@param IsApplyTU IsApplyTU	  */
+	/** Set Auf LUs anwenden.
+		@param IsApplyToLUs Auf LUs anwenden	  */
 	@Override
-	public void setIsApplyTU (boolean IsApplyTU)
+	public void setIsApplyToLUs (boolean IsApplyToLUs)
 	{
-		set_Value (COLUMNNAME_IsApplyTU, Boolean.valueOf(IsApplyTU));
+		set_Value (COLUMNNAME_IsApplyToLUs, Boolean.valueOf(IsApplyToLUs));
 	}
 
-	/** Get IsApplyTU.
-		@return IsApplyTU	  */
+	/** Get Auf LUs anwenden.
+		@return Auf LUs anwenden	  */
 	@Override
-	public boolean isApplyTU () 
+	public boolean isApplyToLUs () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsApplyTU);
+		Object oo = get_Value(COLUMNNAME_IsApplyToLUs);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -128,20 +130,69 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
 		return false;
 	}
 
-	/** Set IsApplyVirtualPI.
-		@param IsApplyVirtualPI IsApplyVirtualPI	  */
+	/** Set Nur auf Top-Level HU anwenden.
+		@param IsApplyToTopLevelHUsOnly Nur auf Top-Level HU anwenden	  */
 	@Override
-	public void setIsApplyVirtualPI (boolean IsApplyVirtualPI)
+	public void setIsApplyToTopLevelHUsOnly (boolean IsApplyToTopLevelHUsOnly)
 	{
-		set_Value (COLUMNNAME_IsApplyVirtualPI, Boolean.valueOf(IsApplyVirtualPI));
+		set_Value (COLUMNNAME_IsApplyToTopLevelHUsOnly, Boolean.valueOf(IsApplyToTopLevelHUsOnly));
 	}
 
-	/** Get IsApplyVirtualPI.
-		@return IsApplyVirtualPI	  */
+	/** Get Nur auf Top-Level HU anwenden.
+		@return Nur auf Top-Level HU anwenden	  */
 	@Override
-	public boolean isApplyVirtualPI () 
+	public boolean isApplyToTopLevelHUsOnly () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsApplyVirtualPI);
+		Object oo = get_Value(COLUMNNAME_IsApplyToTopLevelHUsOnly);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Auf TUs anwenden.
+		@param IsApplyToTUs Auf TUs anwenden	  */
+	@Override
+	public void setIsApplyToTUs (boolean IsApplyToTUs)
+	{
+		set_Value (COLUMNNAME_IsApplyToTUs, Boolean.valueOf(IsApplyToTUs));
+	}
+
+	/** Get Auf TUs anwenden.
+		@return Auf TUs anwenden	  */
+	@Override
+	public boolean isApplyToTUs () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsApplyToTUs);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Als Benutzeraktion verfügbar machen.
+		@param IsProvideAsUserAction 
+		Entscheidet, ob der Prozess als Aktion im Handling-Unit-Editor (WebUI und SwingUI) auswählbar sein soll.
+	  */
+	@Override
+	public void setIsProvideAsUserAction (boolean IsProvideAsUserAction)
+	{
+		set_Value (COLUMNNAME_IsProvideAsUserAction, Boolean.valueOf(IsProvideAsUserAction));
+	}
+
+	/** Get Als Benutzeraktion verfügbar machen.
+		@return Entscheidet, ob der Prozess als Aktion im Handling-Unit-Editor (WebUI und SwingUI) auswählbar sein soll.
+	  */
+	@Override
+	public boolean isProvideAsUserAction () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsProvideAsUserAction);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

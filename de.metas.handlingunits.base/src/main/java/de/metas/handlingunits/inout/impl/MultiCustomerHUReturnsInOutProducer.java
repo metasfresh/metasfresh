@@ -14,10 +14,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
@@ -37,7 +37,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inout.event.ReturnInOutProcessedEventBus;
+import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 
 /*
  * #%L
@@ -205,8 +205,7 @@ public class MultiCustomerHUReturnsInOutProducer
 		{
 			if (_manualCustomerReturn == null)
 			{
-				ReturnInOutProcessedEventBus.newInstance()
-						.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
+				ReturnInOutUserNotificationsProducer.newInstance()
 						.notify(returnInOuts);
 			}
 

@@ -14,7 +14,7 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1476068600L;
+	private static final long serialVersionUID = -1688159078L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Line (Properties ctx, int C_Print_Job_Line_ID, String trxName)
@@ -22,9 +22,9 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
       super (ctx, C_Print_Job_Line_ID, trxName);
       /** if (C_Print_Job_Line_ID == 0)
         {
+			setC_Printing_Queue_ID (0);
 			setC_Print_Job_ID (0);
 			setC_Print_Job_Line_ID (0);
-			setC_Printing_Queue_ID (0);
 			setSeqNo (0);
         } */
     }
@@ -43,6 +43,40 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class);
+	}
+
+	@Override
+	public void setC_Printing_Queue(de.metas.printing.model.I_C_Printing_Queue C_Printing_Queue)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class, C_Printing_Queue);
+	}
+
+	/** Set Druck-Warteschlangendatensatz.
+		@param C_Printing_Queue_ID Druck-Warteschlangendatensatz	  */
+	@Override
+	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID)
+	{
+		if (C_Printing_Queue_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, Integer.valueOf(C_Printing_Queue_ID));
+	}
+
+	/** Get Druck-Warteschlangendatensatz.
+		@return Druck-Warteschlangendatensatz	  */
+	@Override
+	public int getC_Printing_Queue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public de.metas.printing.model.I_C_Print_Job getC_Print_Job() throws RuntimeException
@@ -129,40 +163,6 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 	public int getC_Print_Package_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_Package_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class);
-	}
-
-	@Override
-	public void setC_Printing_Queue(de.metas.printing.model.I_C_Printing_Queue C_Printing_Queue)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class, C_Printing_Queue);
-	}
-
-	/** Set Druck-Warteschlangendatensatz.
-		@param C_Printing_Queue_ID Druck-Warteschlangendatensatz	  */
-	@Override
-	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID)
-	{
-		if (C_Printing_Queue_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, Integer.valueOf(C_Printing_Queue_ID));
-	}
-
-	/** Get Druck-Warteschlangendatensatz.
-		@return Druck-Warteschlangendatensatz	  */
-	@Override
-	public int getC_Printing_Queue_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

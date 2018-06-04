@@ -102,8 +102,8 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 			updateInvalid(localCtx, candidatesOfPackage, localTrxName);
 
 			// Generate invoices from them
-			final EventRecorderInvoiceGenerateResult createInvoiceResults = new EventRecorderInvoiceGenerateResult(getInvoiceGenerateResult())
-					.setEventRecipientUserId(workPackage.getCreatedBy()); // Events shall be sent to workpackage creator
+			final UserNotificationsInvoiceGenerateResult createInvoiceResults = new UserNotificationsInvoiceGenerateResult(getInvoiceGenerateResult())
+					.setNotificationRecipientUserId(workPackage.getCreatedBy()); // Events shall be sent to workpackage creator
 			invoiceCandBL.generateInvoices()
 					.setContext(localCtx, localTrxName)
 					.setLoggable(Loggables.get())

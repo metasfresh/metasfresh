@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -32,7 +16,7 @@ public interface I_AD_Tab
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 4 - System 
+    /** AccessLevel = 4 - System
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
 
@@ -1149,6 +1133,33 @@ public interface I_AD_Tab
     public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_TabLevel = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "TabLevel", null);
     /** Column name TabLevel */
     public static final String COLUMNNAME_TabLevel = "TabLevel";
+
+	/**
+	 * Set Template Tab.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTemplate_Tab_ID (int Template_Tab_ID);
+
+	/**
+	 * Get Template Tab.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getTemplate_Tab_ID();
+
+	public org.compiere.model.I_AD_Tab getTemplate_Tab();
+
+	public void setTemplate_Tab(org.compiere.model.I_AD_Tab Template_Tab);
+
+    /** Column definition for Template_Tab_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Tab> COLUMN_Template_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Tab>(I_AD_Tab.class, "Template_Tab_ID", org.compiere.model.I_AD_Tab.class);
+    /** Column name Template_Tab_ID */
+    public static final String COLUMNNAME_Template_Tab_ID = "Template_Tab_ID";
 
 	/**
 	 * Get Aktualisiert.

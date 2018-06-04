@@ -12,12 +12,12 @@ import static de.metas.business.BusinessTestHelper.createBPartner;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,6 +41,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
 public class HandlingUnitsDAOTest extends AbstractHUTest
 {
@@ -77,7 +78,7 @@ public class HandlingUnitsDAOTest extends AbstractHUTest
 		final I_C_BPartner bpartner2 = createBPartner("BP2");
 		final I_C_BPartner bpartner3 = createBPartner("BP3");
 		final I_M_HU_PI piIncluded = null; // not relevant
-		final I_M_HU_PI pi = helper.createHUDefinition("PI");
+		final I_M_HU_PI pi = helper.createHUDefinition("PI", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 
 		final I_M_HU_PI_Item item1 = helper.createHU_PI_Item_IncludedHU(pi, piIncluded, BigDecimal.ONE, bpartner_NULL);
 		final I_M_HU_PI_Item item2 = helper.createHU_PI_Item_IncludedHU(pi, piIncluded, BigDecimal.ONE, bpartner1);

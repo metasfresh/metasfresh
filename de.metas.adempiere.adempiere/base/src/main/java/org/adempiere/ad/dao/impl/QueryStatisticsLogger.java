@@ -52,7 +52,8 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 		final String sql = vo == null ? null : vo.getSql();
 		final Map<Integer, Object> sqlParams = vo == null ? null : vo.getDebugSqlParams();
-		collect(sql, sqlParams, duration);
+		final String trxName = vo == null ? "?" : vo.getTrxName();
+		collect(sql, sqlParams, trxName, duration);
 	}
 
 	@Override
@@ -64,10 +65,11 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		}
 
 		final Map<Integer, Object> sqlParams = null;
-		collect(sql, sqlParams, duration);
+		final String trxName = "?";
+		collect(sql, sqlParams, trxName, duration);
 	}
 
-	private void collect(final String sql, final Map<Integer, Object> sqlParams, final Stopwatch durationStopwatch)
+	private void collect(final String sql, final Map<Integer, Object> sqlParams, final String trxName, final Stopwatch durationStopwatch)
 	{
 		if (!enabled)
 		{
@@ -89,7 +91,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 		if (traceSqlQueries)
 		{
-			traceSqlQuery(sql, sqlParams, duration);
+			traceSqlQuery(sql, sqlParams, trxName, duration);
 		}
 	}
 
@@ -199,7 +201,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		return validFrom;
 	}
 
-	private final void traceSqlQuery(final String sql, final Map<Integer, Object> sqlParams, final CountAndDuration duration)
+	private final void traceSqlQuery(final String sql, final Map<Integer, Object> sqlParams, final String trxName, final CountAndDuration duration)
 	{
 		final Thread thread = Thread.currentThread();
 		final String threadName = thread.getName();
@@ -221,6 +223,10 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		// Dump the stacktrace as short as possible
 		final String stackTraceStr = Trace.toOneLineStackTraceString(stacktrace);
 		message.append(nl + "-- Stacktrace: ").append(stackTraceStr);
+		
+		//
+		// TrxName
+		message.append(nl + "-- TrxName: ").append(trxName);
 
 		//
 		// SQL query

@@ -127,7 +127,7 @@ public class RoleDAO implements IRoleDAO
 				.addColumn(I_AD_Role.COLUMN_AD_Role_ID) // just to have a predictible order
 				.endOrderBy()
 				//
-				.create().list();
+				.create().list(I_AD_Role.class);
 	}
 
 	@Override

@@ -27,13 +27,14 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
+
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
 
 /**
  * Generic API regarding {@link I_M_InOut} and it's lines, transactions, allocations etc.

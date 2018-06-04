@@ -34,13 +34,14 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -82,7 +83,21 @@ public final class TableRecordReference implements ITableRecordReference
 		{
 			return (TableRecordReference)model;
 		}
-		return new TableRecordReference(model);
+		else if (model instanceof ITableRecordReference)
+		{
+			final ITableRecordReference recordRef = (ITableRecordReference)model;
+			return new TableRecordReference(recordRef.getTableName(), recordRef.getRecord_ID());
+		}
+		else
+		{
+			return new TableRecordReference(model);
+		}
+	}
+
+	@Deprecated
+	public static final TableRecordReference of(TableRecordReference recordRef)
+	{
+		return recordRef;
 	}
 
 	/**
@@ -378,7 +393,7 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Override
-	public Object getModel(final IContextAware context)
+	public Object getModel(@NonNull final IContextAware context)
 	{
 		checkModelStaled(context);
 
@@ -400,7 +415,7 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Override
-	public <T> T getModel(final IContextAware context, final Class<T> modelClass)
+	public <T> T getModel(@NonNull final IContextAware context, @NonNull final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(getModel(context), modelClass);
 	}
@@ -432,5 +447,17 @@ public final class TableRecordReference implements ITableRecordReference
 		}
 
 		// TODO: why the ctx is not validated, like org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal.getValue(Class<RT>) does?
+	}
+
+	@Override
+	public Object getModel()
+	{
+		return getModel(PlainContextAware.newWithThreadInheritedTrx());
+	}
+
+	@Override
+	public <T> T getModel(final Class<T> modelClass)
+	{
+		return getModel(PlainContextAware.newWithThreadInheritedTrx(), modelClass);
 	}
 }

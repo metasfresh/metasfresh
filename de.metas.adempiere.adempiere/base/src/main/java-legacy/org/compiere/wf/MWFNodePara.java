@@ -49,7 +49,7 @@ public class MWFNodePara extends X_AD_WF_Node_Para
 		
 		List<MWFNodePara> list = new Query(ctx, Table_Name, "AD_WF_Node_ID=?", null)
 			.setParameters(new Object[]{AD_WF_Node_ID})
-			.list();
+			.list(MWFNodePara.class);
 		MWFNodePara[] retValue = new MWFNodePara[list.size ()];
 		list.toArray (retValue);
 		return retValue;

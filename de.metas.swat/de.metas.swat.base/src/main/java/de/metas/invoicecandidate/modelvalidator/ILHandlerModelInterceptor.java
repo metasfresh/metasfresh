@@ -23,12 +23,12 @@ import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWo
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,7 +37,7 @@ import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWo
 
 /**
  * Interceptor used to intercept invoice candidates relevant documents and manage their life cycle.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -55,8 +55,6 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 
 	private ILHandlerModelInterceptor(final Builder builder)
 	{
-		super();
-
 		this.tableName = builder.getTableName();
 		this.isCreateInvoiceCandidates = builder.isCreateInvoiceCandidates();
 		this.createInvoiceCandidatesTiming = builder.getCreateInvoiceCandidatesTiming();
@@ -129,7 +127,7 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 		{
 			return;
 		}
-		
+
 		CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(model);
 	}
 

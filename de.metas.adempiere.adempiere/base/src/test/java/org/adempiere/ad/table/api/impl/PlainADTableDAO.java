@@ -23,9 +23,9 @@ package org.adempiere.ad.table.api.impl;
  */
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.Env;
 

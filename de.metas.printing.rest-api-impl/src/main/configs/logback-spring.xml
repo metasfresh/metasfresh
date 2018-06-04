@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<configuration scan="true" scanPeriod="30 seconds" debug="true">
+	<!-- Spring boot defaults -->
+	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
+
+	<!-- Override defaults -->
+	<property name="CONSOLE_LOG_PATTERN"
+		value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}" />
+
+	<!-- Sync log levels from SLF4J/logback to JUL -->
+	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+		<resetJUL>false</resetJUL>
+	</contextListener>
+
+	<!-- Console logging configuration -->
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+	<!-- Configure root logger -->
+	<root level="ALL">
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+	<!-- see http://codecentric.github.io/spring-boot-admin/1.3.0/#loglevel-management -->
+	<!-- include resource="org/springframework/boot/logging/logback/base.xml"/ -->
+	<jmxConfigurator />
+
+</configuration>

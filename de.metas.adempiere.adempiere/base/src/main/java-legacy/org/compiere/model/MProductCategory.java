@@ -28,7 +28,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -64,69 +63,8 @@ public class MProductCategory extends X_M_Product_Category
 		return LegacyAdapters.convertToPO(pc);
 	}	//	get
 	
-	/**
-	 * 	Is Product in Category
-	 *	@param M_Product_Category_ID category
-	 *	@param M_Product_ID product
-	 *	@return true if product has category
-	 */
-	public static boolean isCategory (int M_Product_Category_ID, int M_Product_ID)
-	{
-		if (M_Product_ID == 0 || M_Product_Category_ID == 0)
-			return false;
-		//	Look up
-		Integer product = new Integer (M_Product_ID);
-		Integer category = (Integer)s_products.get(product);
-		if (category != null)
-			return category.intValue() == M_Product_Category_ID;
-		
-		String sql = "SELECT M_Product_Category_ID FROM M_Product WHERE M_Product_ID=?";
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement (sql, null);
-			pstmt.setInt (1, M_Product_ID);
-			ResultSet rs = pstmt.executeQuery ();
-			if (rs.next ())
-				category = new Integer(rs.getInt(1));
-			rs.close ();
-			pstmt.close ();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			s_log.error(sql, e); 
-		}
-		try
-		{
-			if (pstmt != null)
-				pstmt.close ();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			pstmt = null;
-		}
-		if (category != null)
-		{
-			//	TODO: LRU logic  
-			s_products.put(product, category);
-			//
-			s_log.debug("M_Product_ID=" + M_Product_ID + "(" + category
-				+ ") in M_Product_Category_ID=" + M_Product_Category_ID
-				+ " - " + (category.intValue() == M_Product_Category_ID));
-			return category.intValue() == M_Product_Category_ID;
-		}
-		s_log.error("Not found M_Product_ID=" + M_Product_ID);
-		return false;
-	}	//	isCategory
-	
-//	/**	Categopry Cache				*/
-//	private static CCache<Integer,MProductCategory>	s_cache = new CCache<Integer,MProductCategory>("M_Product_Category", 20);
-	/**	Product Cache				*/
-	private static CCache<Integer,Integer> s_products = new CCache<Integer,Integer>("M_Product", 100);
 	/**	Static Logger	*/
-	private static Logger	s_log	= LogManager.getLogger(MProductCategory.class);
+	private static final Logger log = LogManager.getLogger(MProductCategory.class);
 
 	
 	/**************************************************************************
@@ -231,7 +169,7 @@ public class MProductCategory extends X_M_Product_Category
 		ResultSet rs = null;
 		PreparedStatement pstmt = null;
 		String sql = " SELECT M_Product_Category_ID, M_Product_Category_Parent_ID FROM M_Product_Category";
-		final Vector<SimpleTreeNode> categories = new Vector<SimpleTreeNode>(100);
+		final Vector<SimpleTreeNode> categories = new Vector<>(100);
 		try {
 			pstmt = DB.prepareStatement(sql, null);
 			rs = pstmt.executeQuery();
@@ -243,7 +181,7 @@ public class MProductCategory extends X_M_Product_Category
  			if (hasLoop(newParentCategoryId, categories, productCategoryId))
 				return true;
 		} catch (SQLException e) {
-			s_log.error(sql, e);
+			log.error(sql, e);
 			return true;
 		}
 		finally
@@ -267,7 +205,7 @@ public class MProductCategory extends X_M_Product_Category
 		final Iterator<SimpleTreeNode> iter = categories.iterator();
 		boolean ret = false;
 		while (iter.hasNext()) {
-			SimpleTreeNode node = (SimpleTreeNode) iter.next();
+			SimpleTreeNode node = iter.next();
 			if(node.getNodeId()==parentCategoryId){
 				if (node.getParentId()==0) {
 					//root node, all fine

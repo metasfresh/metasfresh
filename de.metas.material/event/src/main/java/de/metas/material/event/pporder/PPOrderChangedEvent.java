@@ -44,16 +44,33 @@ public class PPOrderChangedEvent implements MaterialEvent
 	private final EventDescriptor eventDescriptor;
 
 	@NonNull
-	Date datePromised;
+	Date newDatePromised;
+
+	@NonNull
+	Date oldDatePromised;
 
 	@NonNull
 	ProductDescriptor productDescriptor;
 
 	int ppOrderId;
 
-	BigDecimal oldQuantity;
+	@NonNull
+	BigDecimal oldQtyRequired;
 
-	BigDecimal newQuantity;
+	@NonNull
+	BigDecimal newQtyRequired;
+
+	@NonNull
+	BigDecimal oldQtyDelivered;
+
+	@NonNull
+	BigDecimal newQtyDelivered;
+
+	@NonNull
+	String oldDocStatus;
+
+	@NonNull
+	String newDocStatus;
 
 	@Singular
 	List<ChangedPPOrderLineDescriptor> ppOrderLineChanges;
@@ -79,14 +96,23 @@ public class PPOrderChangedEvent implements MaterialEvent
 		Date issueOrReceiveDate;
 
 		@NonNull
-		BigDecimal oldQuantity;
+		BigDecimal oldQtyRequired;
 
 		@NonNull
-		BigDecimal newQuantity;
+		BigDecimal newQtyRequired;
 
-		public BigDecimal getQtyDelta()
+		@NonNull
+		BigDecimal oldQtyDelivered;
+
+		@NonNull
+		BigDecimal newQtyDelivered;
+
+		public BigDecimal computeOpenQtyDelta()
 		{
-			return newQuantity.subtract(oldQuantity);
+			final BigDecimal oldOpenQty = oldQtyRequired.subtract(oldQtyDelivered);
+			final BigDecimal newOpenQty = newQtyRequired.subtract(newQtyDelivered);
+
+			return newOpenQty.subtract(oldOpenQty);
 		}
 	}
 
@@ -101,7 +127,8 @@ public class PPOrderChangedEvent implements MaterialEvent
 					.issueOrReceiveDate(ppOrderLine.getIssueOrReceiveDate())
 					.ppOrderLineId(ppOrderLine.getPpOrderLineId())
 					.productDescriptor(ppOrderLine.getProductDescriptor())
-					.quantity(ppOrderLine.getQtyRequired())
+					.qtyRequired(ppOrderLine.getQtyRequired())
+					.qtyDelivered(ppOrderLine.getQtyDelivered())
 					.build();
 		}
 
@@ -114,6 +141,9 @@ public class PPOrderChangedEvent implements MaterialEvent
 		Date issueOrReceiveDate;
 
 		@NonNull
-		BigDecimal quantity;
+		BigDecimal qtyRequired;
+
+		@NonNull
+		BigDecimal qtyDelivered;
 	}
 }

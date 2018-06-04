@@ -32,6 +32,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -126,6 +128,8 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices();
 		this.orderLineBL = Services.get(IOrderLineBL.class);
 
+		final AsyncBPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new AsyncBPartnerStatisticsUpdater();
+		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 		//
 		// Register C_Invoice_Candidate model interceptor
 		registerModelInterceptors();
@@ -273,7 +277,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic1.getDescription(), discount1After, comparesEqualTo(discount1));
 		assertThat(discount_override1, comparesEqualTo(BigDecimal.ZERO));
 		assertThat(discount_override1After, comparesEqualTo(BigDecimal.ZERO));
-		
+
 		//
 		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic2.getDescription(), discount2After, comparesEqualTo(discount2));
 		assertThat(discount_override2, comparesEqualTo(BigDecimal.ZERO));
@@ -368,7 +372,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic1.getDescription(), discount1After, comparesEqualTo(discount1));
 		assertThat(discount_override1, not(comparesEqualTo(BigDecimal.ZERO)));
 		assertThat(discount_override1After, not(comparesEqualTo(BigDecimal.ZERO)));
-		
+
 		//
 		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic2.getDescription(), discount2After, comparesEqualTo(discount2));
 		assertThat(discount_override2, comparesEqualTo(BigDecimal.ZERO));

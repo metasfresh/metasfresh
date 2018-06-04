@@ -31,7 +31,6 @@ import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.i18n.IMsgBL;
@@ -80,10 +79,7 @@ public class OnlyOneOpenInvoiceCandProcessor implements IShipmentSchedulesAfterF
 			final String trxName,
 			int removeCount)
 	{
-
-		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(inOutLine.getShipmentSchedule().getBill_BPartner(), I_C_BPartner.class);
-
-		final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(billPartner);
+		final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(inOutLine.getBillBPartnerId());
 
 		final String creditStatus = I_C_BPartner.SO_CREDITSTATUS_ONE_OPEN_INVOICE;
 
@@ -95,7 +91,7 @@ public class OnlyOneOpenInvoiceCandProcessor implements IShipmentSchedulesAfterF
 			{
 				candidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(ctx, MSG_OPEN_INVOICE_1P, new Object[] { soCreditUsed }));
 
-				inOutLine.setDiscarded(true);
+				inOutLine.setDiscarded();
 				removeCount = 1;
 			}
 		}

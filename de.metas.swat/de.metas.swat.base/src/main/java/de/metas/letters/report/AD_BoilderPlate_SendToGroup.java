@@ -221,6 +221,6 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 		;
 		return new Query(getCtx(), MRGroupProspect.Table_Name, whereClause, get_TrxName())
 		.setParameters(new Object[]{R_Group_ID})
-		.list();
+		.list(MRGroupProspect.class);
 	}
 }

@@ -30,6 +30,9 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+
 /**
  * General exception thrown on any locking/unlocking error.
  * 
@@ -62,15 +65,15 @@ public abstract class LockException extends AdempiereException
 	}
 
 	@Override
-	protected final String buildMessage()
+	protected final ITranslatableString buildMessage()
 	{
-		final StringBuilder message = new StringBuilder();
+		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
 
 		message.append(super.buildMessage());
 
 		if (record != null)
 		{
-			message.append("\n Record: ").append(record);
+			message.append("\n Record: ").append(record.toString());
 		}
 
 		if (sql != null)
@@ -79,12 +82,12 @@ public abstract class LockException extends AdempiereException
 		}
 		if (sqlParams != null)
 		{
-			message.append("\n SQL Params: ").append(Arrays.asList(sqlParams));
+			message.append("\n SQL Params: ").append(Arrays.toString(sqlParams));
 		}
 
 		appendParameters(message);
 
-		return message.toString();
+		return message.build();
 	}
 
 	@OverridingMethodsMustInvokeSuper

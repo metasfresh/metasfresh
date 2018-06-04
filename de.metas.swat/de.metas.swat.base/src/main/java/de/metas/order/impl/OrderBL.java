@@ -40,8 +40,6 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.exceptions.PriceListNotFoundException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
@@ -49,6 +47,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
@@ -70,6 +69,8 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderPA;
+import de.metas.pricing.exceptions.PriceListNotFoundException;
+import de.metas.pricing.service.IPriceListDAO;
 
 public class OrderBL implements IOrderBL
 {
@@ -181,7 +182,7 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final I_M_PriceList priceList = retrievePriceListOrNull(order, bpartnerAndLocation);
+		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocation, order.isSOTrx());
 		if (priceList == null)
 		{
 			// Fail if no price list found
@@ -196,8 +197,8 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void checkForPriceList(final I_C_Order order)
 	{
-		final int pricingSysId = order.getM_PricingSystem_ID();
-		if (pricingSysId <= 0)
+		final int pricingSystemId = order.getM_PricingSystem_ID();
+		if (pricingSystemId <= 0)
 		{
 			return;
 		}
@@ -208,7 +209,7 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final I_M_PriceList pl = retrievePriceListOrNull(order, bpartnerAndLocation);
+		final I_M_PriceList pl = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocation, order.isSOTrx());
 		if (pl == null)
 		{
 			final I_M_PricingSystem pricingSystem = order.getM_PricingSystem();
@@ -218,14 +219,33 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public int retrievePriceListId(final I_C_Order order)
+	public int retrievePriceListId(final I_C_Order order, final int pricingSystemIdOverride)
 	{
+		final int orderPriceListId = order.getM_PriceList_ID();
+		if (orderPriceListId > 0)
+		{
+			if (pricingSystemIdOverride > 0)
+			{
+				final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+				final I_M_PriceList priceList = priceListDAO.getById(orderPriceListId);
+				if (priceList.getM_PricingSystem_ID() == pricingSystemIdOverride)
+				{
+					return orderPriceListId;
+				}
+			}
+			else
+			{
+				return orderPriceListId;
+			}
+		}
+
+		final int pricingSystemId = pricingSystemIdOverride > 0 ? pricingSystemIdOverride : order.getM_PricingSystem_ID();
 		final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
-		final I_M_PriceList priceList = retrievePriceListOrNull(order, bpartnerAndLocation);
-		return priceList == null ? 0 : priceList.getM_PriceList_ID();
+		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocation, order.isSOTrx());
+		return priceList != null ? priceList.getM_PriceList_ID() : -1;
 	}
 
-	private I_M_PriceList retrievePriceListOrNull(final I_C_Order order, final BillBPartnerAndShipToLocation bpartnerAndLocation)
+	private I_M_PriceList retrievePriceListOrNull(final int pricingSystemId, final BillBPartnerAndShipToLocation bpartnerAndLocation, final boolean isSOTrx)
 	{
 		final int shipBPLocationId = bpartnerAndLocation.getShip_BPartner_Location_ID();
 		if (shipBPLocationId <= 0)
@@ -234,11 +254,9 @@ public class OrderBL implements IOrderBL
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final int M_PricingSystem_ID = order.getM_PricingSystem_ID();
 		final I_C_BPartner_Location shipBPLocation = loadOutOfTrx(shipBPLocationId, I_C_BPartner_Location.class);
-		final boolean isSOTrx = order.isSOTrx();
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(M_PricingSystem_ID, shipBPLocation, isSOTrx);
-		return pl;
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, shipBPLocation, isSOTrx);
+		return priceList;
 	}
 
 	private BillBPartnerAndShipToLocation extractPriceListBPartnerAndLocation(final I_C_Order order)
@@ -943,5 +961,35 @@ public class OrderBL implements IOrderBL
 			fOrder.setQtyOrdered(DYNATTR_QtyOrderedSum.getValue(queriedOrder));
 		}
 		InterfaceWrapperHelper.save(fOrder);
+	}
+
+	@Override
+	public boolean isQuotation(final I_C_Order order)
+	{
+		final boolean isSOTrx = order.isSOTrx();
+
+		if (!isSOTrx)
+		{
+			// purchase orders are not quotations
+			return false;
+		}
+
+		final I_C_DocType docType = order.getC_DocType();
+
+		if (!(X_C_DocType.DOCBASETYPE_SalesOrder.equals(docType.getDocBaseType())))
+		{
+			// Quotation must be of BaseType Sales Order
+			return false;
+		}
+
+		final String docSubType = docType.getDocSubType();
+
+		if (docSubType == null)
+		{
+			// Quotation must have a docSubType
+			return false;
+		}
+
+		return (docSubType.equals(X_C_DocType.DOCSUBTYPE_Proposal) || docSubType.equals(X_C_DocType.DOCSUBTYPE_Quotation));
 	}
 }

@@ -72,7 +72,7 @@ public class HUJoinBL implements IHUJoinBL
 				return; // we are done
 			}
 
-			if (luItem.getM_HU_PI_Item().getIncluded_HU_PI_ID() != tradingUnit.getM_HU_PI_Version().getM_HU_PI_ID())
+			if (handlingUnitsBL.getPIItem(luItem).getIncluded_HU_PI_ID() != handlingUnitsBL.getPIVersion(tradingUnit).getM_HU_PI_ID())
 			{
 				continue; // Item not supported by this handling unit
 			}
@@ -84,7 +84,7 @@ public class HUJoinBL implements IHUJoinBL
 
 		// we did not find a compatible item for 'tradingUnit' to attach.
 		// try if we can create one on the fly
-		final I_M_HU_PI_Item luPI = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(loadingUnit, tradingUnit.getM_HU_PI_Version().getM_HU_PI(), huContext);
+		final I_M_HU_PI_Item luPI = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(loadingUnit, handlingUnitsBL.getPI(tradingUnit), huContext);
 		if (luPI != null)
 		{
 			final I_M_HU_Item newLUItem = handlingUnitsDAO.createHUItem(loadingUnit, luPI);

@@ -12,12 +12,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -107,8 +107,8 @@ import de.metas.quantity.CapacityInterface;
 	}
 
 	/**
-	 * Convenience method that invokes {@link #addCapacityConstraint(IHUCapacityDefinition)} for each item of the given collection.
-	 * 
+	 * Convenience method that invokes {@link #addCapacityConstraint(Capacity)} for each item of the given collection.
+	 *
 	 * @param capacities may be {@code null}. In that case, nothing is done.
 	 */
 	public void addCapacityConstraints(final Collection<? extends Capacity> capacities)
@@ -134,7 +134,7 @@ import de.metas.quantity.CapacityInterface;
 	/**
 	 * Can be set in order to enable this instance to allocate a remaining qty not to an aggregate VHU but to a real one.
 	 * Also see {@link #getParent_HU_Item()} and {@link #loadHU(I_M_HU, IAllocationRequest)}.
-	 * 
+	 *
 	 * @param parentItem
 	 */
 	public void setParentItem(final I_M_HU_Item parentItem)
@@ -144,7 +144,7 @@ import de.metas.quantity.CapacityInterface;
 
 	/**
 	 * See {@link #getParent_HU_Item()}.
-	 * 
+	 *
 	 * @param parentPIItem
 	 */
 	public void setParentPIItem(final I_M_HU_PI_Item parentPIItem)
@@ -207,8 +207,8 @@ import de.metas.quantity.CapacityInterface;
 			if (HandlingUnitsDAO.VIRTUAL_HU_PI_ID == parentPIItem.getIncluded_HU_PI_ID()
 					|| exceedingCapacityOfTU.getCapacityQty().signum() > 0)
 			{
-				// Either this loading is about putting CUs directly on an LU which can be done, but then an aggregate HU is not supported and doesn't make sense (issue gh #1194). 
-				// or the request's capacity is less than a full TU. 
+				// Either this loading is about putting CUs directly on an LU which can be done, but then an aggregate HU is not supported and doesn't make sense (issue gh #1194).
+				// or the request's capacity is less than a full TU.
 				// In both cases it means means that we can't allocate against the aggregate tuHU.
 
 				// Instead we need to create a "real" (virtual or partially filled) TU now and then allocate our stuff against that one.
@@ -250,20 +250,18 @@ import de.metas.quantity.CapacityInterface;
 
 	/**
 	 * Get the capacity of the given {@code tu}. Hint: also check the comments in this method.
-	 * 
+	 *
 	 * @param request the request which contains e.g. the product in question.
 	 * @param hu the HU of we want to find the capacity.
 	 * @return
 	 */
 	private Capacity getCapacity(final IAllocationRequest request, final I_M_HU hu)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		final int productId = request.getProduct().getM_Product_ID();
 		final Capacity capacityToUse;
 		final Capacity capacityOverride = productId2capacity.get(productId);
 
-		if (capacityOverride == null && handlingUnitsBL.isAggregateHU(hu))
+		if (capacityOverride == null)
 		{
 			// So there was no override capacity provided for this product.
 			// The allocationStrategy we are creating just now might execute against the aggregate VHU which does not have any M_HU_PI_Item_Products and therefore does not know the TUs actual capacity.

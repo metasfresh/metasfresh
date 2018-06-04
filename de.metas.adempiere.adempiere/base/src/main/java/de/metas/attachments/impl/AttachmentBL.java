@@ -45,6 +45,7 @@ import org.compiere.model.X_AD_AttachmentEntry;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
+import org.springframework.core.io.Resource;
 
 import com.google.common.collect.ImmutableList;
 
@@ -247,6 +248,27 @@ public class AttachmentBL implements IAttachmentBL
 
 		return entries;
 	}
+	
+	@Override
+	public List<AttachmentEntry> addEntriesFromResources(@NonNull final Object model, final Collection<Resource> resources)
+	{
+		if (resources == null || resources.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final I_AD_Attachment attachment = getAttachment(model);
+
+		final List<AttachmentEntry> entries = resources.stream()
+				.map(AttachmentEntryCreateRequest::fromResource)
+				.map(request -> addEntry(attachment, request))
+				.collect(ImmutableList.toImmutableList());
+
+		InterfaceWrapperHelper.save(attachment);
+
+		return entries;
+	}
+
 
 	@Override
 	public byte[] getEntryByFilenameAsBytes(final Object model, final String filename)
@@ -391,6 +413,29 @@ public class AttachmentBL implements IAttachmentBL
 					.data(data)
 					.build();
 		}
+		
+		public static AttachmentEntryCreateRequest fromResource(final Resource resource)
+		{
+			final String filename = resource.getFilename();
+			final String contentType = MimeType.getMimeType(filename);
+			final byte[] data;
+			try
+			{
+				data = Util.readBytes(resource.getInputStream());
+			}
+			catch (final IOException e)
+			{
+				throw new AdempiereException("Failed reading data from " + resource);
+			}
+
+			return builder()
+					.type(AttachmentEntryType.Data)
+					.filename(filename)
+					.contentType(contentType)
+					.data(data)
+					.build();
+		}
+
 
 		public static AttachmentEntryCreateRequest fromFile(final File file)
 		{

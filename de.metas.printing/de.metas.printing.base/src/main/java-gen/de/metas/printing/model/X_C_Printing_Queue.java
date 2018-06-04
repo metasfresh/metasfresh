@@ -14,7 +14,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1629929298L;
+	private static final long serialVersionUID = -44111796L;
 
     /** Standard Constructor */
     public X_C_Printing_Queue (Properties ctx, int C_Printing_Queue_ID, String trxName)
@@ -23,8 +23,8 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
       /** if (C_Printing_Queue_ID == 0)
         {
 			setAD_Archive_ID (0);
-			setC_Printing_Queue_ID (0);
 			setCopies (0); // 1
+			setC_Printing_Queue_ID (0);
 			setIsPrintoutForOtherUser (false); // N
 			setProcessed (false); // N
         } */
@@ -292,18 +292,6 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class);
-	}
-
-	@Override
-	public void setC_Async_Batch(de.metas.async.model.I_C_Async_Batch C_Async_Batch)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class, C_Async_Batch);
-	}
-
 	/** Set Async Batch.
 		@param C_Async_Batch_ID Async Batch	  */
 	@Override
@@ -437,28 +425,6 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		return ii.intValue();
 	}
 
-	/** Set Druck-Warteschlangendatensatz.
-		@param C_Printing_Queue_ID Druck-Warteschlangendatensatz	  */
-	@Override
-	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID)
-	{
-		if (C_Printing_Queue_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, Integer.valueOf(C_Printing_Queue_ID));
-	}
-
-	/** Get Druck-Warteschlangendatensatz.
-		@return Druck-Warteschlangendatensatz	  */
-	@Override
-	public int getC_Printing_Queue_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Kopien.
 		@param Copies 
 		Anzahl der zu erstellenden/zu druckenden Exemplare
@@ -476,6 +442,28 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	public int getCopies () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Druck-Warteschlangendatensatz.
+		@param C_Printing_Queue_ID Druck-Warteschlangendatensatz	  */
+	@Override
+	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID)
+	{
+		if (C_Printing_Queue_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, Integer.valueOf(C_Printing_Queue_ID));
+	}
+
+	/** Get Druck-Warteschlangendatensatz.
+		@return Druck-Warteschlangendatensatz	  */
+	@Override
+	public int getC_Printing_Queue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -510,6 +498,28 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	public boolean isDifferentInvoicingPartner () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDifferentInvoicingPartner);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Foreign Customer.
+		@param IsForeignCustomer Foreign Customer	  */
+	@Override
+	public void setIsForeignCustomer (boolean IsForeignCustomer)
+	{
+		throw new IllegalArgumentException ("IsForeignCustomer is virtual column");	}
+
+	/** Get Foreign Customer.
+		@return Foreign Customer	  */
+	@Override
+	public boolean isForeignCustomer () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsForeignCustomer);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

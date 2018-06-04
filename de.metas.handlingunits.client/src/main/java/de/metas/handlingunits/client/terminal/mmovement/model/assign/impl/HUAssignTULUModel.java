@@ -179,7 +179,7 @@ public class HUAssignTULUModel extends AbstractLTCUModel
 		final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
 		final Collection<I_M_HU_PI_Item> luPIItems = getLUPIItems(tuKeys, huUnitType);
 
-		final List<ITerminalKey> keys = new ArrayList<ITerminalKey>(luPIItems.size());
+		final List<ITerminalKey> keys = new ArrayList<>(luPIItems.size());
 		for (final I_M_HU_PI_Item luPIItem : luPIItems)
 		{
 			final I_M_HU_PI luPI = luPIItem.getM_HU_PI_Version().getM_HU_PI();
@@ -215,7 +215,7 @@ public class HUAssignTULUModel extends AbstractLTCUModel
 				continue;
 			}
 
-			final I_M_HU_PI tuPI = hu.getM_HU_PI_Version().getM_HU_PI();
+			final I_M_HU_PI tuPI = handlingUnitsBL.getPI(hu);
 			final List<I_M_HU_PI_Item> subLUPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, huUnitType, bpartner);
 
 			//

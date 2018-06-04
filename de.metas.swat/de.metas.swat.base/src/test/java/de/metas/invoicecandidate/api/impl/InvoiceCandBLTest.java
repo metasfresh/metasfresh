@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -75,6 +77,9 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		registerModelInterceptors();
 
 		POJOWrapper.setDefaultStrictValues(false);
+
+		final AsyncBPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new AsyncBPartnerStatisticsUpdater();
+		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 	}
 
 	/**

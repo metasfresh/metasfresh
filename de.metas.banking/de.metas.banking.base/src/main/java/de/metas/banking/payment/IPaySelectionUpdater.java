@@ -25,7 +25,7 @@ package de.metas.banking.payment;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;

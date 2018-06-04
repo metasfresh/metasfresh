@@ -23,23 +23,20 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 
 
 /**
  *	Allocation Line Model
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MAllocationLine.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
 public class MAllocationLine extends X_C_AllocationLine
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5532305715886380749L;
 
@@ -59,7 +56,7 @@ public class MAllocationLine extends X_C_AllocationLine
 			setDiscountAmt (Env.ZERO);
 			setWriteOffAmt (Env.ZERO);
 			setOverUnderAmt(Env.ZERO);
-		}	
+		}
 	}	//	MAllocationLine
 
 	/**
@@ -94,7 +91,7 @@ public class MAllocationLine extends X_C_AllocationLine
 	 *	@param WriteOffAmt optional write off
 	 *	@param OverUnderAmt over/underpayment
 	 */
-	public MAllocationLine (MAllocationHdr parent, BigDecimal Amount, 
+	public MAllocationLine (MAllocationHdr parent, BigDecimal Amount,
 		BigDecimal DiscountAmt, BigDecimal WriteOffAmt, BigDecimal OverUnderAmt)
 	{
 		this (parent);
@@ -103,12 +100,12 @@ public class MAllocationLine extends X_C_AllocationLine
 		setWriteOffAmt (WriteOffAmt == null ? Env.ZERO : WriteOffAmt);
 		setOverUnderAmt (OverUnderAmt == null ? Env.ZERO : OverUnderAmt);
 	}	//	MAllocationLine
-	
+
 	/**	Invoice info			*/
-	private MInvoice		m_invoice = null; 
+	private MInvoice		m_invoice = null;
 	/** Allocation Header		*/
 	private MAllocationHdr	m_parent = null;
-	
+
 	/**
 	 * 	Get Parent
 	 *	@return parent
@@ -116,10 +113,12 @@ public class MAllocationLine extends X_C_AllocationLine
 	public MAllocationHdr getParent()
 	{
 		if (m_parent == null)
+		{
 			m_parent = new MAllocationHdr (getCtx(), getC_AllocationHdr_ID(), get_TrxName());
+		}
 		return m_parent;
 	}	//	getParent
-	
+
 	/**
 	 * 	Set Parent
 	 *	@param parent parent
@@ -128,7 +127,7 @@ public class MAllocationLine extends X_C_AllocationLine
 	{
 		m_parent = parent;
 	}	//	setParent
-	
+
 	/**
 	 * 	Get Parent Trx Date
 	 *	@return date trx
@@ -138,7 +137,7 @@ public class MAllocationLine extends X_C_AllocationLine
 	{
 		return getParent().getDateTrx ();
 	}	//	getDateTrx
-	
+
 	/**
 	 * 	Set Document Info
 	 *	@param C_BPartner_ID partner
@@ -148,10 +147,9 @@ public class MAllocationLine extends X_C_AllocationLine
 	public void setDocInfo (int C_BPartner_ID, int C_Order_ID, int C_Invoice_ID)
 	{
 		setC_BPartner_ID(C_BPartner_ID);
-		setC_Order_ID(C_Order_ID);
 		setC_Invoice_ID(C_Invoice_ID);
 	}	//	setDocInfo
-	
+
 	/**
 	 * 	Set Payment Info
 	 *	@param C_Payment_ID payment
@@ -160,9 +158,13 @@ public class MAllocationLine extends X_C_AllocationLine
 	public void setPaymentInfo (int C_Payment_ID, int C_CashLine_ID)
 	{
 		if (C_Payment_ID != 0)
+		{
 			setC_Payment_ID(C_Payment_ID);
+		}
 		if (C_CashLine_ID != 0)
+		{
 			setC_CashLine_ID(C_CashLine_ID);
+		}
 	}	//	setPaymentInfo
 
 	/**
@@ -172,11 +174,13 @@ public class MAllocationLine extends X_C_AllocationLine
 	public MInvoice getInvoice()
 	{
 		if (m_invoice == null && getC_Invoice_ID() != 0)
+		{
 			m_invoice = new MInvoice (getCtx(), getC_Invoice_ID(), get_TrxName());
+		}
 		return m_invoice;
 	}	//	getInvoice
 
-	
+
 	/**************************************************************************
 	 * 	Before Save
 	 *	@param newRecord
@@ -189,22 +193,22 @@ public class MAllocationLine extends X_C_AllocationLine
 		{
 			throw new AdempiereException("@ParentComplete@ @C_AllocationLine_ID@");
 		}
-		if (!newRecord  
+		if (!newRecord
 			&& (is_ValueChanged("C_BPartner_ID") || is_ValueChanged("C_Invoice_ID")))
 		{
 			throw new AdempiereException("Cannot Change Business Partner or Invoice");
 		}
-		
+
 		//	Set BPartner/Order from Invoice
 		if (getC_BPartner_ID() == 0 && getInvoice() != null)
-			setC_BPartner_ID(getInvoice().getC_BPartner_ID()); 
-		if (getC_Order_ID() == 0 && getInvoice() != null)
-			setC_Order_ID(getInvoice().getC_Order_ID());
+		{
+			setC_BPartner_ID(getInvoice().getC_BPartner_ID());
+		}
 		//
 		return true;
 	}	//	beforeSave
 
-	
+
 	/**
 	 * 	Before Delete
 	 *	@return true if reversed
@@ -216,7 +220,7 @@ public class MAllocationLine extends X_C_AllocationLine
 		processIt(true);
 		return true;
 	}	//	beforeDelete
-	
+
 	/**
 	 * 	String Representation
 	 *	@return info
@@ -227,13 +231,21 @@ public class MAllocationLine extends X_C_AllocationLine
 		StringBuffer sb = new StringBuffer ("MAllocationLine[");
 		sb.append(get_ID());
 		if (getC_Payment_ID() != 0)
+		{
 			sb.append(",C_Payment_ID=").append(getC_Payment_ID());
+		}
 		if (getC_CashLine_ID() != 0)
+		{
 			sb.append(",C_CashLine_ID=").append(getC_CashLine_ID());
+		}
 		if (getC_Invoice_ID() != 0)
+		{
 			sb.append(",C_Invoice_ID=").append(getC_Invoice_ID());
+		}
 		if (getC_BPartner_ID() != 0)
+		{
 			sb.append(",C_BPartner_ID=").append(getC_BPartner_ID());
+		}
 		sb.append(", Amount=").append(getAmount())
 			.append(",Discount=").append(getDiscountAmt())
 			.append(",WriteOff=").append(getWriteOffAmt())
@@ -241,7 +253,7 @@ public class MAllocationLine extends X_C_AllocationLine
 		sb.append ("]");
 		return sb.toString ();
 	}	//	toString
-	
+
 	/**************************************************************************
 	 * 	Process Allocation (does not update line).
 	 * 	- Update and Link Invoice/Payment/Cash
@@ -253,13 +265,15 @@ public class MAllocationLine extends X_C_AllocationLine
 		log.debug("Reverse=" + reverse + " - " + toString());
 		int C_Invoice_ID = getC_Invoice_ID();
 		MInvoice invoice = getInvoice();
-		if (invoice != null 
+		if (invoice != null
 			&& getC_BPartner_ID() != invoice.getC_BPartner_ID())
+		{
 			setC_BPartner_ID(invoice.getC_BPartner_ID());
+		}
 		//
 		int C_Payment_ID = getC_Payment_ID();
 		int C_CashLine_ID = getC_CashLine_ID();
-		
+
 		//	Update Payment
 		if (C_Payment_ID != 0)
 		{
@@ -280,10 +294,12 @@ public class MAllocationLine extends X_C_AllocationLine
 			else
 			{
 				if (payment.testAllocation())
+				{
 					payment.save();
+				}
 			}
 		}
-		
+
 		//	Payment - Invoice
 		if (C_Payment_ID != 0 && invoice != null)
 		{
@@ -300,19 +316,21 @@ public class MAllocationLine extends X_C_AllocationLine
 				log.debug("C_Payment_ID=" + C_Payment_ID
 					+ " Linked to C_Invoice_ID=" + C_Invoice_ID);
 			}
-			
+
 			//	Link to Order
 			String update = "UPDATE C_Order o "
-				+ "SET C_Payment_ID=" 
+				+ "SET C_Payment_ID="
 					+ (reverse ? "NULL " : "(SELECT C_Payment_ID FROM C_Invoice WHERE C_Invoice_ID=" + C_Invoice_ID + ") ")
 				+ "WHERE EXISTS (SELECT * FROM C_Invoice i "
 					+ "WHERE o.C_Order_ID=i.C_Order_ID AND i.C_Invoice_ID=" + C_Invoice_ID + ")";
 			if (DB.executeUpdate(update, get_TrxName()) > 0)
-				log.debug("C_Payment_ID=" + C_Payment_ID 
+			{
+				log.debug("C_Payment_ID=" + C_Payment_ID
 					+ (reverse ? " UnLinked from" : " Linked to")
 					+ " order of C_Invoice_ID=" + C_Invoice_ID);
+			}
 		}
-		
+
 		//	Cash - Invoice
 		if (C_CashLine_ID != 0 && invoice != null)
 		{
@@ -320,16 +338,16 @@ public class MAllocationLine extends X_C_AllocationLine
 			if (reverse)
 			{
 				invoice.setC_CashLine_ID(0);
-				log.debug("C_CashLine_ID=" + C_CashLine_ID 
+				log.debug("C_CashLine_ID=" + C_CashLine_ID
 					+ " Unlinked from C_Invoice_ID=" + C_Invoice_ID);
 			}
 			else
 			{
 				invoice.setC_CashLine_ID(C_CashLine_ID);
-				log.debug("C_CashLine_ID=" + C_CashLine_ID 
+				log.debug("C_CashLine_ID=" + C_CashLine_ID
 					+ " Linked to C_Invoice_ID=" + C_Invoice_ID);
 			}
-			
+
 			//	Link to Order
 			String update = "UPDATE C_Order o "
 				+ "SET C_CashLine_ID="
@@ -337,20 +355,21 @@ public class MAllocationLine extends X_C_AllocationLine
 				+ "WHERE EXISTS (SELECT * FROM C_Invoice i "
 					+ "WHERE o.C_Order_ID=i.C_Order_ID AND i.C_Invoice_ID=" + C_Invoice_ID + ")";
 			if (DB.executeUpdate(update, get_TrxName()) > 0)
-				log.debug("C_CashLine_ID=" + C_CashLine_ID 
+			{
+				log.debug("C_CashLine_ID=" + C_CashLine_ID
 					+ (reverse ? " UnLinked from" : " Linked to")
 					+ " order of C_Invoice_ID=" + C_Invoice_ID);
-		}		
-		
+			}
+		}
+
 		//	Update Balance / Credit used - Counterpart of MInvoice.completeIt
 		if (invoice != null && invoice.testAllocation())
 		{
 			InterfaceWrapperHelper.save(invoice);
 		}
-		
+
 		final int result = getC_BPartner_ID();
-		Services.get(IPrepayOrderAllocationBL.class).allocationLineAfterProcessIt(this, reverse);
 		return result;
 	}	//	processIt
-	
+
 }	//	MAllocationLine

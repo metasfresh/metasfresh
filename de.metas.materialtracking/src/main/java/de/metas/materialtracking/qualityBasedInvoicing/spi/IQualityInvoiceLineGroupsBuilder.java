@@ -25,10 +25,9 @@ package de.metas.materialtracking.qualityBasedInvoicing.spi;
 
 import java.util.List;
 
-import org.adempiere.pricing.api.IPricingContext;
-
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
+import de.metas.pricing.IPricingContext;
 
 public interface IQualityInvoiceLineGroupsBuilder
 {

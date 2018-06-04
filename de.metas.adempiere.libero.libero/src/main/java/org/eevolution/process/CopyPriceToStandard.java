@@ -16,6 +16,8 @@
 
 package org.eevolution.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -40,20 +42,24 @@ package org.eevolution.process;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MCostElement;
-import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
-import org.compiere.model.MProductPrice;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * CopyPriceToStandard
@@ -122,11 +128,12 @@ public class CopyPriceToStandard extends JavaProcess
 
 		int count_updated = 0;
 
-		MPriceListVersion plv = new MPriceListVersion(getCtx(), p_M_PriceList_Version_ID, get_TrxName());
-		for (final MProductPrice pprice : plv.getProductPrice(" AND " + MProductPrice.COLUMNNAME_PriceStd + "<>0"))
+		final I_M_PriceList_Version plv = load(p_M_PriceList_Version_ID, I_M_PriceList_Version.class);
+		for (final I_M_ProductPrice pprice : getProductPrice(p_M_PriceList_Version_ID))
 		{
 			BigDecimal price = pprice.getPriceStd();
-			int C_Currency_ID = plv.getPriceList().getC_Currency_ID();
+			final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(plv.getM_PriceList_ID());
+			int C_Currency_ID = pl.getC_Currency_ID();
 			if (C_Currency_ID != as.getC_Currency_ID())
 			{
 				price = currencyConversionBL.convert(getCtx(), pprice.getPriceStd(),
@@ -148,5 +155,15 @@ public class CopyPriceToStandard extends JavaProcess
 			}
 		}
 		return "@Updated@ #" + count_updated;
+	}
+	
+	private static List<I_M_ProductPrice> getProductPrice(int priceListVersionId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ProductPrice.class)
+				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, priceListVersionId)
+				.addNotEqualsFilter(I_M_ProductPrice.COLUMN_PriceStd, BigDecimal.ZERO)
+				.create()
+				.list();
 	}
 }

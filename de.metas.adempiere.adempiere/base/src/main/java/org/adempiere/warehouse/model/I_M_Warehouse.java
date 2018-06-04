@@ -45,4 +45,10 @@ public interface I_M_Warehouse extends org.compiere.model.I_M_Warehouse
 	public I_AD_User getAD_User();
 	public int getAD_User_ID();
 	//@formatter:on
+
+	//@formatter:off
+	public static final String COLUMNNAME_IsQuarantineWarehouse = "IsQuarantineWarehouse";
+	public boolean isQuarantineWarehouse();
+	public void setIsQuarantineWarehouse(boolean IsQuarantineWarehouse);
+	//@formatter:on
 }

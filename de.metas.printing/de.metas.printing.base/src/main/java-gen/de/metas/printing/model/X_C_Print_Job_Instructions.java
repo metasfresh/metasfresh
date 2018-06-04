@@ -14,7 +14,7 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -425877608L;
+	private static final long serialVersionUID = 854993614L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Instructions (Properties ctx, int C_Print_Job_Instructions_ID, String trxName)
@@ -23,11 +23,11 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
       /** if (C_Print_Job_Instructions_ID == 0)
         {
 			setAD_User_ToPrint_ID (0);
+			setCopies (0); // 1
 			setC_Print_Job_ID (0);
 			setC_Print_Job_Instructions_ID (0);
 			setC_PrintJob_Line_From_ID (0);
 			setC_PrintJob_Line_To_ID (0);
-			setCopies (0); // 1
 			setStatus (null); // P
         } */
     }
@@ -110,6 +110,28 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	public int getAD_User_ToPrint_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ToPrint_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Kopien.
+		@param Copies 
+		Anzahl der zu erstellenden/zu druckenden Exemplare
+	  */
+	@Override
+	public void setCopies (int Copies)
+	{
+		set_Value (COLUMNNAME_Copies, Integer.valueOf(Copies));
+	}
+
+	/** Get Kopien.
+		@return Anzahl der zu erstellenden/zu druckenden Exemplare
+	  */
+	@Override
+	public int getCopies () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -234,28 +256,6 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	public int getC_PrintJob_Line_To_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PrintJob_Line_To_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Kopien.
-		@param Copies 
-		Anzahl der zu erstellenden/zu druckenden Exemplare
-	  */
-	@Override
-	public void setCopies (int Copies)
-	{
-		set_Value (COLUMNNAME_Copies, Integer.valueOf(Copies));
-	}
-
-	/** Get Kopien.
-		@return Anzahl der zu erstellenden/zu druckenden Exemplare
-	  */
-	@Override
-	public int getCopies () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

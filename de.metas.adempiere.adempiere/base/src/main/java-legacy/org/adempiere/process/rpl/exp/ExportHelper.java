@@ -36,8 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -78,12 +76,14 @@ import org.compiere.model.X_EXP_FormatLine;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
 import de.metas.adempiere.service.IAppDictionaryBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 
 /**
  * @author Trifon N. Trifonov
@@ -249,7 +249,7 @@ public class ExportHelper
 
 		final Document outDocument = createNewDocument();
 
-		final HashMap<String, Integer> variableMap = new HashMap<String, Integer>();
+		final HashMap<String, Integer> variableMap = new HashMap<>();
 		final Element rootElement = generateRootElement(exportFormat, outDocument, ReplicationMode, ReplicationType, ReplicationEvent, client);
 
 		final IReplicationAccessContext racCtx = getDefaultIReplicationAccessContext();
@@ -294,7 +294,7 @@ public class ExportHelper
 				.setOnlyActiveRecords(true)
 				.setApplyAccessFilter(racCtx.isApplyAccessFilter())
 				.setLimit(racCtx.getLimit())
-				.list();
+				.list(PO.class);
 
 		for (final PO po : records)
 		{
@@ -313,7 +313,7 @@ public class ExportHelper
 
 			outDocument = createNewDocument();
 
-			final HashMap<String, Integer> variableMap = new HashMap<String, Integer>();
+			final HashMap<String, Integer> variableMap = new HashMap<>();
 			final Element rootElement = generateRootElement(exportFormat, outDocument, ReplicationMode, ReplicationType, ReplicationEvent, client);
 
 			generateExportFormat(outDocument, rootElement, exportFormat, po, variableMap, racCtx);
@@ -391,7 +391,7 @@ public class ExportHelper
 			// process single XML Attribute
 			final MColumn column = retrieveColumn(formatLine);
 			final Object value = masterPO.get_Value(column.getColumnName());
-			final Map<String, String> valueAttributes = new HashMap<String, String>();
+			final Map<String, String> valueAttributes = new HashMap<>();
 
 			final String valueString;
 			try
@@ -490,7 +490,7 @@ public class ExportHelper
 					.setApplyAccessFilter(racCtx.isApplyAccessFilter())
 					.setParameters(linkId)
 					.setLimit(racCtx.getLimit())
-					.list();
+					.list(PO.class);
 
 			for (final PO instance : instances)
 			{
@@ -600,7 +600,7 @@ public class ExportHelper
 			final List<PO> instances = query
 					.setApplyAccessFilter(racCtx.isApplyAccessFilter())
 					.setParameters(value)
-					.list();
+					.list(PO.class);
 
 			for (final PO instance : instances)
 			{

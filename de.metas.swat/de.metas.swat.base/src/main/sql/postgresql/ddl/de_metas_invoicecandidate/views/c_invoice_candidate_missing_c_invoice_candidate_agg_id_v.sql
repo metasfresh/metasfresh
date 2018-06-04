@@ -4,9 +4,10 @@ CREATE OR REPLACE VIEW de_metas_invoicecandidate.C_Invoice_Candidate_Missing_C_I
 SELECT ic.c_invoice_candidate_id, ic.created, ic.updated
 FROM c_invoice_candidate ic
 WHERE true 
+	AND ic.IsActive='Y'
 	AND ic.C_Invoice_Candidate_Agg_ID IS NULL 
-	AND ic.processed = 'N'::bpchar 
-	AND ic.istoclear = 'N'::bpchar 
+	AND ic.processed = 'N'
+	AND ic.istoclear = 'N'
 	AND (ic.updated + '00:10:00'::interval) < now()
 ORDER BY ic.updated DESC;
 

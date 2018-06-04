@@ -55,7 +55,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
@@ -726,7 +725,6 @@ public class FlatrateDAO implements IFlatrateDAO
 		if (processedCands.length() > 0)
 		{
 			throw new AdempiereException(
-					Env.getAD_Language(ctx),
 					MSP_DATA_ENTRY_ERROR_INVOICE_CAND_PROCESSED_3P,
 					new Object[] { dataEntry.getC_UOM().getName(), dataEntry.getC_Period().getName(), processedCands.toString() });
 		}
@@ -840,7 +838,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	public I_C_Flatrate_Term retrieveAncestorFlatrateTerm(@NonNull final I_C_Flatrate_Term contract)
 	{
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class, contract)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID, contract.getC_Flatrate_Term_ID())

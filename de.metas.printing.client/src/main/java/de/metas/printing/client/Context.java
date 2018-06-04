@@ -13,11 +13,11 @@ package de.metas.printing.client;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,8 +44,21 @@ public class Context implements IContext
 
 	public static final String CTX_SessionId = "sessionId";
 
+	/**
+	 * @deprecated To connect with the metasfresh EP (as opposed to servicemix), an API token needs to be specified instead of user/password.<br>
+	 * 			See https://github.com/metasfresh/metasfresh/issues/3688
+	 */
+	@Deprecated
 	public static final String CTX_Login_Username = CTX_ROOT + ".login.username";
+
+	/**
+	 * See {@link #CTX_Login_Username}
+	 */
+	@Deprecated
 	public static final String CTX_Login_Password = CTX_ROOT + ".login.password";
+
+	public static final String CTX_Login_ApiToken = CTX_ROOT + ".login.apiToken";
+
 	public static final String CTX_Login_HostKey = CTX_ROOT + ".login.hostkey";
 
 	// task 09618 begin
@@ -74,7 +87,7 @@ public class Context implements IContext
 
 	private final static Context instance = new Context();
 
-	private final List<IContext> sources = new ArrayList<IContext>();
+	private final List<IContext> sources = new ArrayList<>();
 	private final Properties defaults = new Properties();
 	private final Properties props = new Properties();
 

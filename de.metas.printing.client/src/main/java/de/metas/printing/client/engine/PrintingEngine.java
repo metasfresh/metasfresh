@@ -13,11 +13,11 @@ package de.metas.printing.client.engine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -285,14 +285,14 @@ public class PrintingEngine
 		request.setPrintService(requiredService);
 	}
 
-	private void resolveMediaTray(final PrintPackageRequest request) throws PrinterException
+	private String resolveMediaTray(final PrintPackageRequest request) throws PrinterException
 	{
 		final int requiredTrayNo = request.getPrintPackageInfo().getTrayNumber();
 		// 04124 : Tray number 0 is used too. Use -1 for "No tray required".
 		if (requiredTrayNo < 0)
 		{
 			// no tray required
-			return;
+			return null;
 		}
 
 		final PrintService printService = request.getPrintService();
@@ -310,12 +310,12 @@ public class PrintingEngine
 				if (mediaTray.getValue() == requiredTrayNo)
 				{
 					request.getAttributes().add(mediaTray);
-					return;
+					return null;
 				}
 			}
 		}
-
-		throw new PrinterException("No media tray '" + requiredTrayNo + "' found for " + printService + ". Available medias are: " + Arrays.toString(medias));
+		final String warningMessage = "No media tray '" + requiredTrayNo + "' found for " + printService + ". Therefore we won't specify a tray for this print job. Available medias (incl. trays) are: " + Arrays.toString(medias);
+		return warningMessage;
 	}
 
 	private PrintService[] _printServices = null;
@@ -327,14 +327,14 @@ public class PrintingEngine
 			_printServices = PrintServiceLookup.lookupPrintServices(
 					null, // DocFlavor flavor,
 					null // AttributeSet attributes
-					);
+			);
 			if (_printServices != null)
 			{
 				// 04005: if there is a default printer, then we add id to the list as first item
 				final PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();
 				if (defaultPrintService != null)
 				{
-					final List<PrintService> printServiceList = new ArrayList<PrintService>(Arrays.asList(_printServices));
+					final List<PrintService> printServiceList = new ArrayList<>(Arrays.asList(_printServices));
 					if (printServiceList.contains(defaultPrintService))
 					{
 						printServiceList.remove(defaultPrintService);
@@ -375,16 +375,16 @@ public class PrintingEngine
 
 	public PrinterHWList createPrinterHW()
 	{
-		final List<PrinterHW> printerHWs = new ArrayList<PrinterHW>();
+		final List<PrinterHW> printerHWs = new ArrayList<>();
 		for (final PrintService printService : getPrintServices())
 		{
 			final PrinterHW printerHW = new PrinterHW();
 			printerHW.setName(printService.getName());
 
-			final List<PrinterHWMediaSize> printerHWMediaSizes = new ArrayList<PrinterHW.PrinterHWMediaSize>();
+			final List<PrinterHWMediaSize> printerHWMediaSizes = new ArrayList<>();
 			printerHW.setPrinterHWMediaSizes(printerHWMediaSizes);
 
-			final List<PrinterHWMediaTray> printerHWMediaTrays = new ArrayList<PrinterHW.PrinterHWMediaTray>();
+			final List<PrinterHWMediaTray> printerHWMediaTrays = new ArrayList<>();
 			printerHW.setPrinterHWMediaTrays(printerHWMediaTrays);
 
 			// 04005: detect the default media tray

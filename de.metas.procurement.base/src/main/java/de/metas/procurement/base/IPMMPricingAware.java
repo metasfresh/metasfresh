@@ -52,6 +52,8 @@ public interface IPMMPricingAware
 	boolean isContractedProduct();
 
 	I_M_Product getM_Product();
+	
+	int getProductId();
 
 	I_C_UOM getC_UOM();
 

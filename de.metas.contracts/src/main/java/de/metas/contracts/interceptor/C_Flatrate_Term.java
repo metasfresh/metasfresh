@@ -26,6 +26,7 @@ import java.sql.Timestamp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -70,6 +71,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 import lombok.NonNull;
 
@@ -119,14 +121,14 @@ public class C_Flatrate_Term
 			Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, org.getAD_Client_ID());
 			Env.setContext(localCtx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
 
-			final org.compiere.model.I_C_DocType existingDocType = docTypeDAO
-					.getDocTypeOrNull(DocTypeQuery.builder()
+			final Optional<org.compiere.model.I_C_DocType> existingDocType = docTypeDAO
+					.retrieveDocType(DocTypeQuery.builder()
 							.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
 							.docSubType(docSubType)
 							.adClientId(org.getAD_Client_ID())
 							.adOrgId(org.getAD_Org_ID())
 							.build());
-			if (existingDocType != null)
+			if (existingDocType.isPresent())
 			{
 				continue;
 			}
@@ -302,6 +304,15 @@ public class C_Flatrate_Term
 			InterfaceWrapperHelper.save(olCand);
 			InterfaceWrapperHelper.delete(cta);
 		}
+	}
+
+	/**
+	 * If a C_Flatrate_Term is deleted, then this method deletes the candidates which directly reference that line via <code>AD_Table_ID</code> and <code>Record_ID</code>.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteC_Invoice_Candidates(final I_C_Flatrate_Term term)
+	{
+		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(term);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
@@ -493,10 +504,16 @@ public class C_Flatrate_Term
 		// services
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
+		final boolean overlappingIsOK = flatrateBL.canOverlapWithOtherTerms(term);
+		if(overlappingIsOK)
+		{
+			return; // nothing to do
+		}
+
 		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(term);
 		if (hasOverlappingTerms)
 		{
-			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() });
+			throw AdempiereException.ofADMessage(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue());
 		}
 	}
 
@@ -518,10 +535,10 @@ public class C_Flatrate_Term
 
 		term.setMasterEndDate(masterEndDate);
 	}
-	
+
 	private Timestamp computeMasterEndDateIfC_FlatrateTerm_Next_IDChanged(@NonNull final I_C_Flatrate_Term term, Timestamp masterEndDate)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) && !term.isAutoRenew())
+		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID))
 		{
 			if (term.getC_FlatrateTerm_Next_ID() > 0)
 			{
@@ -532,7 +549,24 @@ public class C_Flatrate_Term
 				masterEndDate = term.getEndDate();
 			}
 		}
-		
+
 		return masterEndDate;
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
+	public void setMasterDocumentNo(final I_C_Flatrate_Term term)
+	{
+		if (!Check.isEmpty(term.getDocumentNo(), true) && Check.isEmpty(term.getMasterDocumentNo(), true))
+		{
+			final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
+			if (ancestor == null)
+			{
+				term.setMasterDocumentNo(term.getDocumentNo());
+			}
+			else
+			{
+				term.setMasterDocumentNo(ancestor.getMasterDocumentNo());
+			}
+		}
 	}
 }

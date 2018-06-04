@@ -14,7 +14,7 @@ public class X_M_Product_LotNumber_Lock extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1355667040L;
+	private static final long serialVersionUID = 2096417141L;
 
     /** Standard Constructor */
     public X_M_Product_LotNumber_Lock (Properties ctx, int M_Product_LotNumber_Lock_ID, String trxName)
@@ -42,6 +42,22 @@ public class X_M_Product_LotNumber_Lock extends org.compiere.model.PO implements
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
 
 	/** Set Los-Nr..
 		@param Lot 

@@ -41,14 +41,14 @@ public class EventUtil
 	};
 
 	/** Take the "actualQty" instead of max(actual, planned) */
-	private static final Function<Candidate, BigDecimal> MATERIAL_QTY_FUNCTION_FOR_CLOSED_DD_ORDER = candidate -> candidate.computeActualQty();
+	private static final Function<Candidate, BigDecimal> MATERIAL_QTY_FUNCTION_FOR_CLOSED = candidate -> candidate.computeActualQty();
 
-	public static Function<Candidate, BigDecimal> deriveDistributionDetail2QtyProvider(
+	public static Function<Candidate, BigDecimal> deriveCandiadte2QtyProvider(
 			@NonNull final CandidateStatus candidateStatus)
 	{
 		if (CandidateStatus.doc_closed.equals(candidateStatus))
 		{
-			return MATERIAL_QTY_FUNCTION_FOR_CLOSED_DD_ORDER;
+			return MATERIAL_QTY_FUNCTION_FOR_CLOSED;
 		}
 		return MATERIAL_QTY_FUNCTION_DEFAULT;
 

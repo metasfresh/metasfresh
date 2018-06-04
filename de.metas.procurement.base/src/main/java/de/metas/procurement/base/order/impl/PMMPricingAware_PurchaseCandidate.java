@@ -101,6 +101,12 @@ class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware
 	{
 		return candidate.getM_Product();
 	}
+	
+	@Override
+	public int getProductId()
+	{
+		return candidate.getM_Product_ID();
+	}
 
 	@Override
 	public I_C_UOM getC_UOM()

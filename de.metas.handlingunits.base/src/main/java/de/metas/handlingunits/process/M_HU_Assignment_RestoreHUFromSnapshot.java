@@ -5,8 +5,6 @@ import java.sql.Timestamp;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Snapshot;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
@@ -64,7 +62,7 @@ public class M_HU_Assignment_RestoreHUFromSnapshot extends JavaProcess
 				.setSnapshotId(p_snapshotUUID)
 				.setDateTrx(dateTrx)
 				.setReferencedModel(referencedModel)
-				.addModels(ImmutableList.of(huToRestore.getM_HU()))
+				.addModelId(huToRestore.getM_HU_ID())
 				.restoreFromSnapshot();
 
 		return MSG_OK;

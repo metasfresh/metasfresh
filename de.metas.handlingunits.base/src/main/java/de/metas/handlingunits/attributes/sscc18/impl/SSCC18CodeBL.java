@@ -10,12 +10,12 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -84,24 +84,24 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		int sumOdd = 0;
 		int sumEven = 0;
 
-		for (int i = 0; i < stringSSCC18ToVerify.length(); i++)
+		for (int i = 1; i <= stringSSCC18ToVerify.length(); i++)
 		{
 			// odd
 			if (i % 2 != 0)
 			{
-				sumOdd += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i)));
+				sumOdd += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i-1)));
 			}
 
 			else
 			{
-				sumEven += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i)));
+				sumEven += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i-1)));
 			}
 		}
 
 		int result = 3 * sumOdd + sumEven;
 
-		result /= 10;
-		return result % 10;
+		result = (10 - result % 10) % 10;
+		return result;
 	}
 
 	@Override

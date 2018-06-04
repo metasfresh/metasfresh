@@ -23,10 +23,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -40,10 +36,11 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+
+import de.metas.i18n.Msg;
 
 /**
  *  Create Charge from Accounts
@@ -116,7 +113,7 @@ public class VCharge extends Charge
 	 */
 	private void jbInit() throws Exception
 	{
-		CompiereColor.setBackground(panel);
+		AdempierePLAF.setDefaultBackground(panel);
 		newBorder = new TitledBorder("");
 		accountBorder = new TitledBorder("");
 		mainPanel.setLayout(mainLayout);

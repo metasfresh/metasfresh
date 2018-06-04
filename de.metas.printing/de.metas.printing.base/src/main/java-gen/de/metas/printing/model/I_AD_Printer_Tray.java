@@ -86,12 +86,8 @@ public interface I_AD_Printer_Tray
 	 */
 	public int getAD_Printer_ID();
 
-	public I_AD_Printer getAD_Printer();
-
-	public void setAD_Printer(I_AD_Printer AD_Printer);
-
     /** Column definition for AD_Printer_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Printer_Tray, I_AD_Printer> COLUMN_AD_Printer_ID = new org.adempiere.model.ModelColumn<I_AD_Printer_Tray, I_AD_Printer>(I_AD_Printer_Tray.class, "AD_Printer_ID", I_AD_Printer.class);
+    public static final org.adempiere.model.ModelColumn<I_AD_Printer_Tray, Object> COLUMN_AD_Printer_ID = new org.adempiere.model.ModelColumn<I_AD_Printer_Tray, Object>(I_AD_Printer_Tray.class, "AD_Printer_ID", null);
     /** Column name AD_Printer_ID */
     public static final String COLUMNNAME_AD_Printer_ID = "AD_Printer_ID";
 

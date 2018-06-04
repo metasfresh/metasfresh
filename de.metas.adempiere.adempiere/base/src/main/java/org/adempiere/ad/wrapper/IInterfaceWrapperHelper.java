@@ -137,4 +137,9 @@ public interface IInterfaceWrapperHelper
 
 	Evaluatee getEvaluatee(Object model);
 
+	default boolean isCopy(final Object model)
+	{
+		return false;
+	}
+
 }

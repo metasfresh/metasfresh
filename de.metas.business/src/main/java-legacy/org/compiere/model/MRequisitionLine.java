@@ -21,8 +21,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
@@ -54,14 +52,14 @@ public class MRequisitionLine extends X_M_RequisitionLine
 	 * @param trxName
 	 * @return Requisition Line
 	 */
-	public static MRequisitionLine[] forC_Order_ID(Properties ctx, int C_Order_ID, String trxName)
+	private static MRequisitionLine[] forC_Order_ID(Properties ctx, int C_Order_ID, String trxName)
 	{
 		final String whereClause = "EXISTS (SELECT 1 FROM C_OrderLine ol"
 										+" WHERE ol.C_OrderLine_ID=M_RequisitionLine.C_OrderLine_ID"
 										+" AND ol.C_Order_ID=?)";
 		List<MRequisitionLine> list = new Query(ctx, MRequisitionLine.Table_Name, whereClause, trxName)
 			.setParameters(new Object[]{C_Order_ID})
-			.list();
+			.list(MRequisitionLine.class);
 		return list.toArray(new MRequisitionLine[list.size()]);
 	}
 	
@@ -88,12 +86,12 @@ public class MRequisitionLine extends X_M_RequisitionLine
 	 * @param trxName
 	 * @return array of Requisition Line(s)
 	 */
-	public static MRequisitionLine[] forC_OrderLine_ID(Properties ctx, int C_OrderLine_ID, String trxName)
+	private static MRequisitionLine[] forC_OrderLine_ID(Properties ctx, int C_OrderLine_ID, String trxName)
 	{
 		final String whereClause = COLUMNNAME_C_OrderLine_ID+"=?";
 		List<MRequisitionLine> list = new Query(ctx, MRequisitionLine.Table_Name, whereClause, trxName)
 			.setParameters(new Object[]{C_OrderLine_ID})
-			.list();
+			.list(MRequisitionLine.class);
 		return list.toArray(new MRequisitionLine[list.size()]);
 	}
 

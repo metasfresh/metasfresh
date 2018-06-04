@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,34 +48,30 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	/**
 	 * Set the PI for the TU that shall be build.
-	 * 
+	 *
 	 * @param tuPI
 	 */
 	void setTUPI(final I_M_HU_PI tuPI);
 
 	/**
 	 * Register another capacity spec with this producer.
-	 * 
-	 * @param tuCapacity
 	 */
-	void addTUCapacity(Capacity tuCapacity);
+	void addCUPerTU(Capacity tuCapacity);
 
 	/**
 	 *
-	 * @param cuProduct
 	 * @param qtyCUPerTU quantity, {@link IHUCapacityDefinition#DEFAULT}, {@link IHUCapacityDefinition#INFINITY}
-	 * @param cuUOM
 	 */
-	void addTUCapacity(I_M_Product cuProduct, BigDecimal qtyCUPerTU, I_C_UOM cuUOM);
+	void addCUPerTU(I_M_Product cuProduct, BigDecimal qtyCUPerTU, I_C_UOM cuUOM);
 
 	/**
 	 * Gets single TU capacity.
 	 *
-	 * If there is no TU capacity defined or there are more then one TU capacities, this method will throw an exception.
+	 * If there is no TU capacity defined or there are more than one TU capacities, this method will throw an exception.
 	 *
 	 * @return TU capacity
 	 */
-	Capacity getTUCapacity();
+	Capacity getSingleCUPerTU();
 
 	/**
 	 * Gets TU defined capacity for given product
@@ -83,20 +79,20 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * @param cuProduct
 	 * @return TU capacity or <code>null</code>
 	 */
-	CapacityInterface getTUCapacity(I_M_Product cuProduct);
+	CapacityInterface getCUPerTU(I_M_Product cuProduct);
 
 	I_M_HU_PI getLUPI();
 
 	/**
 	 * Specifies the PI for the loading unit. May be {@code null} for the case that a TU without LU is needed.
-	 * 
+	 *
 	 * @param luPI
 	 */
 	void setLUPI(final I_M_HU_PI luPI);
 
 	/**
 	 * See {@link #setLUItemPI(I_M_HU_PI_Item)}.
-	 * 
+	 *
 	 * @return
 	 */
 	I_M_HU_PI_Item getLUItemPI();
@@ -266,7 +262,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * Calculates total CU quantity for single TU capacity that was defined.
 	 *
 	 * @see #calculateTotalQtyCU(I_M_Product)
-	 * @see #getTUCapacity()
+	 * @see #getSingleCUPerTU()
 	 */
 	Quantity calculateTotalQtyCU();
 

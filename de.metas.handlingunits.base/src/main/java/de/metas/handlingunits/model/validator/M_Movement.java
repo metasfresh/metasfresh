@@ -51,7 +51,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_M_Movement;
-import de.metas.movement.event.MovementProcessedEventBus;
+import de.metas.movement.event.MovementUserNotificationsProducer;
 
 @Validator(I_M_Movement.class)
 public class M_Movement
@@ -62,7 +62,7 @@ public class M_Movement
 	public void onInit()
 	{
 		// Setup event bus topics on which swing client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(MovementProcessedEventBus.EVENTBUS_TOPIC);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(MovementUserNotificationsProducer.USER_NOTIFICATIONS_TOPIC);
 	}
 
 	private M_Movement()

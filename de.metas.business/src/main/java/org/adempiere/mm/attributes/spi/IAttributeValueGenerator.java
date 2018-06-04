@@ -50,7 +50,7 @@ public interface IAttributeValueGenerator
 	 * 
 	 * See X_M_Attribute.ATTRIBUTEVALUETYPE_*.
 	 * 
-	 * @return value type
+	 * @return value type or null if information is not not available
 	 */
 	String getAttributeValueType();
 

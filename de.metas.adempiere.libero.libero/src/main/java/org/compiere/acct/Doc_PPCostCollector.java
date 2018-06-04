@@ -140,7 +140,7 @@ public class Doc_PPCostCollector extends Doc
 	public ArrayList<Fact> createFacts (MAcctSchema as)
 	{
 		setC_Currency_ID (as.getC_Currency_ID());
-		final ArrayList<Fact> facts = new ArrayList<Fact>();
+		final ArrayList<Fact> facts = new ArrayList<>();
 
 		if(MPPCostCollector.COSTCOLLECTORTYPE_MaterialReceipt.equals(m_cc.getCostCollectorType()))
 		{
@@ -326,7 +326,7 @@ public class Doc_PPCostCollector extends Doc
 	 */
 	protected List<Fact> createActivityControl(MAcctSchema as)
 	{
-		final ArrayList<Fact> facts = new ArrayList<Fact>();
+		final ArrayList<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		facts.add(fact);
 
@@ -392,7 +392,7 @@ public class Doc_PPCostCollector extends Doc
 			m_costDetails = new Query(getCtx(), MCostDetail.Table_Name, whereClause, getTrxName())
 			.setParameters(new Object[]{m_cc.getPP_Cost_Collector_ID()})
 			.setOrderBy(MCostDetail.COLUMNNAME_M_CostDetail_ID)
-			.list();
+			.list(MCostDetail.class);
 		}
 		return m_costDetails;
 	}

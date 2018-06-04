@@ -100,6 +100,14 @@ public interface IQueueDAO extends ISingletonService
 	<T> List<T> retrieveItemsSkipMissing(I_C_Queue_WorkPackage workPackage, Class<T> clazz, String trxName);
 
 	/**
+	 * return all active POs, even the ones that are caught in other packages
+	 * @param workPackage
+	 * @param clazz
+	 * @return
+	 */
+	<T> List<T> retrieveAllItems(I_C_Queue_WorkPackage workPackage, Class<T> clazz);
+
+	/**
 	 * Creates a query builder which is used to retrieve all records of given <code>clazz</code>.
 	 *
 	 * @param workPackage
@@ -136,4 +144,5 @@ public interface IQueueDAO extends ISingletonService
 	 * @return
 	 */
 	boolean isWorkpackageProcessorEnabled(Class<? extends IWorkpackageProcessor> packageProcessorClass);
+
 }

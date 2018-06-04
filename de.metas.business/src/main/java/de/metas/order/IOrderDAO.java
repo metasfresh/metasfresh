@@ -1,5 +1,7 @@
 package de.metas.order;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -26,6 +28,7 @@ package de.metas.order;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_Location;
@@ -37,6 +40,12 @@ import de.metas.interfaces.I_C_OrderLine;
 
 public interface IOrderDAO extends ISingletonService
 {
+	I_C_Order getById(final OrderId orderId);
+	
+	I_C_OrderLine getOrderLineById(final int orderLineId);
+	
+	I_C_OrderLine getOrderLineById(final OrderLineId orderLineId);
+	
 	/**
 	 * @param ctx
 	 * @param bpartnerId
@@ -102,4 +111,6 @@ public interface IOrderDAO extends ISingletonService
 	 * @return purchase orders matching the given parameters
 	 */
 	List<I_C_Order> retrievePurchaseOrdersForPickup(I_C_BPartner_Location bpLoc, Date deliveryDateTime, Date deliveryDateTimeMax);
+
+	Set<Integer> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
 }

@@ -1,17 +1,18 @@
 package de.metas.purchasecandidate.availability;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
+import de.metas.vendor.gateway.api.availability.TrackingId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,19 +40,16 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class AvailabilityResult
 {
-	public static AvailabilityResultBuilder prepareBuilderFor(
-			@NonNull final AvailabilityResponseItem availabilityResponseItem)
+	public static AvailabilityResultBuilder prepareBuilderFor(@NonNull final AvailabilityResponseItem responseItem)
 	{
-		final Type type = Type.ofAvailabilityResponseItemType(availabilityResponseItem.getType());
-
 		return AvailabilityResult.builder()
-				.type(type)
-				.availabilityText(availabilityResponseItem.getAvailabilityText())
-				.datePromised(availabilityResponseItem.getDatePromised())
-				.qty(availabilityResponseItem.getAvailableQuantity());
+				.trackingId(responseItem.getTrackingId())
+				.type(Type.ofAvailabilityResponseItemType(responseItem.getType()))
+				.availabilityText(responseItem.getAvailabilityText())
+				.datePromised(TimeUtil.asLocalDateTime(responseItem.getDatePromised()))
+				.qty(responseItem.getAvailableQuantity());
 	}
 
 	public enum Type
@@ -64,38 +62,41 @@ public class AvailabilityResult
 			return Services.get(IMsgBL.class).translate(Env.getCtx(), msgValue);
 		}
 
-		public static Type ofAvailabilityResponseItemType(
-				@NonNull final de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type type)
+		public static Type ofAvailabilityResponseItemType(@NonNull final AvailabilityResponseItem.Type type)
 		{
-			if (de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type.AVAILABLE.equals(type))
+			if (AvailabilityResponseItem.Type.AVAILABLE == type)
 			{
 				return Type.AVAILABLE;
 			}
-			return Type.NOT_AVAILABLE;
+			else
+			{
+				return Type.NOT_AVAILABLE;
+			}
 		}
 	}
 
-	PurchaseCandidate purchaseCandidate;
+	TrackingId trackingId;
 
 	Type type;
 
 	BigDecimal qty;
 
-	Date datePromised;
+	LocalDateTime datePromised;
 
 	String availabilityText;
 
 	VendorGatewayService vendorGatewayServicethatWasUsed;
 
+	@Builder
 	private AvailabilityResult(
-			@NonNull final PurchaseCandidate purchaseCandidate,
+			@Nullable TrackingId trackingId,
 			@NonNull final Type type,
 			@NonNull final BigDecimal qty,
-			@Nullable final Date datePromised,
+			@Nullable final LocalDateTime datePromised,
 			@Nullable final String availabilityText,
 			@Nullable final VendorGatewayService vendorGatewayServicethatWasUsed)
 	{
-		this.purchaseCandidate = purchaseCandidate;
+		this.trackingId = trackingId;
 		this.type = type;
 		this.qty = qty;
 		this.datePromised = datePromised;

@@ -27,7 +27,7 @@ public class C_OrderLine
 		Adempiere.autowire(this);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW }, skipIfCopying = true)
 	public void setSameFlatrateConditionsForWholeCompensationGroupWhenGroupIsCreated(final I_C_OrderLine orderLine)
 	{
 		if (!orderLine.isGroupCompensationLine())
@@ -50,7 +50,7 @@ public class C_OrderLine
 	 * 
 	 * @task https://github.com/metasfresh/metasfresh/issues/3150
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, skipIfCopying = true)
 	public void setSameFlatrateConditionsForWholeCompensationGroupWhenOneGroupLineChanged(final I_C_OrderLine orderLine)
 	{
 		if (DYNATTR_SkipUpdatingGroupFlatrateConditions.getValue(orderLine, Boolean.FALSE))

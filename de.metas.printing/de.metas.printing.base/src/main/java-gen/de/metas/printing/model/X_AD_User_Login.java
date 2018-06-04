@@ -14,7 +14,7 @@ public class X_AD_User_Login extends org.compiere.model.PO implements I_AD_User_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 44847718L;
+	private static final long serialVersionUID = 1415769564L;
 
     /** Standard Constructor */
     public X_AD_User_Login (Properties ctx, int AD_User_Login_ID, String trxName)
@@ -194,9 +194,7 @@ public class X_AD_User_Login extends org.compiere.model.PO implements I_AD_User_
 	}
 
 	/** Set Kennwort.
-		@param Password 
-		Passwort beliebiger Länge (unterscheided Groß- und Kleinschreibung)
-	  */
+		@param Password Kennwort	  */
 	@Override
 	public void setPassword (java.lang.String Password)
 	{
@@ -204,8 +202,7 @@ public class X_AD_User_Login extends org.compiere.model.PO implements I_AD_User_
 	}
 
 	/** Get Kennwort.
-		@return Passwort beliebiger Länge (unterscheided Groß- und Kleinschreibung)
-	  */
+		@return Kennwort	  */
 	@Override
 	public java.lang.String getPassword () 
 	{

@@ -10,12 +10,12 @@ package de.metas.data.export.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,17 +33,14 @@ import java.text.DateFormat;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 
 import de.metas.data.export.api.IExportDataDestination;
+import lombok.NonNull;
 
-/**
- * CSV Writer
- * 
- * @author tsa
- * 
- */
 public class CSVWriter implements IExportDataDestination
 {
 	public static CSVWriter cast(final IExportDataDestination dataDestination)
@@ -68,8 +65,6 @@ public class CSVWriter implements IExportDataDestination
 
 	private CSVWriter(final Properties config)
 	{
-		super();
-
 		applyConfig(config);
 
 		// we need to clone it because of concurrency issues
@@ -77,19 +72,17 @@ public class CSVWriter implements IExportDataDestination
 		this.dateFormat = (DateFormat)DisplayType.getDateFormat(DisplayType.Date).clone();
 	}
 
-	public CSVWriter(final OutputStream out, final Properties config) throws UnsupportedEncodingException
+	public CSVWriter(
+			@NonNull final OutputStream out,
+			@Nullable final Properties config) throws UnsupportedEncodingException
 	{
 		this(config);
-
-		Check.assumeNotNull(out, "out not null");
-
 		this.writer = new OutputStreamWriter(out, encoding);
 	}
 
 	public CSVWriter(final File file, final Properties config) throws IOException
 	{
 		this(config);
-
 		writer = new OutputStreamWriter(new FileOutputStream(file, false), encoding);
 	}
 

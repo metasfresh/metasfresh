@@ -37,12 +37,12 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,7 +50,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
  */
 /**
  * These aren't really "unit" tests, but they all start by invoking stuff from {@link HUTrxBL}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -77,7 +77,7 @@ public class HUTrxBLTests
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, helper.pmIFCO);
 		}
 
-		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		{
 			huDefPalet_IFCO = helper.createHU_PI_Item_IncludedHU(huDefPalet, huDefIFCO, IFCOS_PER_PALET);
 			helper.createHU_PI_Item_PackingMaterial(huDefPalet, helper.pmPalet);
@@ -127,7 +127,7 @@ public class HUTrxBLTests
 						.newHUItemExpectation()
 							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 						.endExpectation() // end of the IFCO HU's packing material item
-					.endExpectation() // end of the "IFCO" HU 
+					.endExpectation() // end of the "IFCO" HU
 				.endExpectation() // end of the "real" item that shall hold the real IFCO with the remaining 6
 
 				.newHUItemExpectation() // the virtual item that shall hold the "bag" VHU
