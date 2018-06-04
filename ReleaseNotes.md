@@ -10,6 +10,22 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.61 (2018-24)
+## Features
+* metasfresh
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1266](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1266) Labels widget: tab and shift-tab support
+    * Improves the usage of Tab and shift-tab for Label widgets.
+  * [#1617](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1617) Label component doesn't hide after clicking tab
+    * Improvement of Tab behavior in label widget when dropdown list is openend. Now closing the Dropdown.
+  * [#1808](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1808) Shortcuts for inbox, menu and sidelist
+    * Improvement of Shortcuts for inbox, menu and sidelist. Now hiding the menus after 2nd usage of shortcut.
+  * [#1828](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1828) Truncate action names with ellipsis
+    * Fixes the Layout for Quickaction Buttons with large content.
+
+
 # metasfresh 5.60 (2018-23)
 ## Features
 * metasfresh
