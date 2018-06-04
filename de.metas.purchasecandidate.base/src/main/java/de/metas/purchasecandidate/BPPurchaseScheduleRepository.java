@@ -313,17 +313,16 @@ public class BPPurchaseScheduleRepository
 					.orElseThrow(() -> new AdempiereException("No month of the day " + Frequency.class + ": " + frequency)));
 		}
 
-		setDaysOfWeek(scheduleRecord, frequency);
+		final ImmutableSet<DayOfWeek> daysOfWeek = frequency.getOnlyDaysOfWeek();
+		setDaysOfWeek(scheduleRecord, daysOfWeek);
 
 		saveRecord(scheduleRecord);
 
 		return scheduleRecord;
 	}
 
-	private void setDaysOfWeek(@NonNull final I_C_BP_PurchaseSchedule scheduleRecord, final Frequency frequency)
+	private static void setDaysOfWeek(@NonNull final I_C_BP_PurchaseSchedule scheduleRecord, @NonNull final ImmutableSet<DayOfWeek> daysOfWeek)
 	{
-		final ImmutableSet<DayOfWeek> daysOfWeek = frequency.getOnlyDaysOfWeek();
-
 		if (daysOfWeek.contains(DayOfWeek.MONDAY))
 		{
 			scheduleRecord.setOnMonday(true);
