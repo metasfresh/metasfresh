@@ -274,21 +274,14 @@ public class BPPurchaseScheduleRepository
 	public void changeLeadTimeOffset(final BPartnerId bpartnerId, int leadTimeOffset)
 	{
 		final BPPurchaseSchedule bpPurchaseSchedule = getByBPartnerIdAndValidFrom(bpartnerId, SystemTime.asLocalDate())
-														.orElse(null);
-		if (bpPurchaseSchedule == null)
-		{
-			throw new AdempiereException("BPPurchaseSchedule doess not exists for partner {}" + BPPurchaseSchedule.class + ": " + bpartnerId.toString());
-		}
-		else
-		{
-			bpPurchaseSchedule.toBuilder()
-			.leadTimeOffset(leadTimeOffset)
-			.build();
+				.orElseThrow(() -> new AdempiereException("BPPurchaseSchedule doess not exists for partner {}"
+						+ BPPurchaseSchedule.class + ": " + bpartnerId.toString()));
+		bpPurchaseSchedule.toBuilder()
+				.leadTimeOffset(leadTimeOffset)
+				.build();
 
-			createOrUpdateAndSaveBPPurchaseScheduleRecord(bpPurchaseSchedule);
-		}
+		createOrUpdateAndSaveBPPurchaseScheduleRecord(bpPurchaseSchedule);
 	}
-
 
 	public I_C_BP_PurchaseSchedule createOrUpdateAndSaveBPPurchaseScheduleRecord(@NonNull final BPPurchaseSchedule schedule)
 	{
