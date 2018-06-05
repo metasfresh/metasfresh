@@ -49,6 +49,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.i18n.Language;
+import de.metas.lang.SOTrx;
 import lombok.NonNull;
 
 public class BPartnerBL implements IBPartnerBL
@@ -374,18 +375,18 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public int getDiscountSchemaId(@NonNull final BPartnerId bpartnerId, final boolean soTrx)
+	public int getDiscountSchemaId(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
 		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
 		return getDiscountSchemaId(bpartner, soTrx);
 	}
 
 	@Override
-	public int getDiscountSchemaId(@NonNull final I_C_BPartner bpartner, final boolean soTrx)
+	public int getDiscountSchemaId(@NonNull final I_C_BPartner bpartner, final SOTrx soTrx)
 	{
 		{
 			final int discountSchemaId;
-			if (soTrx)
+			if (soTrx.isSales())
 			{
 				discountSchemaId = bpartner.getM_DiscountSchema_ID();
 			}
@@ -404,7 +405,7 @@ public class BPartnerBL implements IBPartnerBL
 		if (bpGroup != null && bpGroup.getC_BP_Group_ID() > 0)
 		{
 			final int groupDiscountSchemaId;
-			if (soTrx)
+			if (soTrx.isSales())
 			{
 				groupDiscountSchemaId = bpGroup.getM_DiscountSchema_ID();
 			}

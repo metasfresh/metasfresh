@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -101,9 +102,8 @@ public class OLCandBL implements IOLCandBL
 			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 			final int bpartnerId = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
-			final boolean soTrx = true;
 
-			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(Env.getCtx(), bpartnerId, soTrx, ITrx.TRXNAME_None);
+			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(Env.getCtx(), bpartnerId, SOTrx.SALES, ITrx.TRXNAME_None);
 			return pricingSystemId;
 		}
 	}
