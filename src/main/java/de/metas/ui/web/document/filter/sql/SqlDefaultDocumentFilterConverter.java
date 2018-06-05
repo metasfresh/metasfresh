@@ -17,7 +17,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -85,8 +84,7 @@ import lombok.NonNull;
 	public String getSql(
 			@NonNull final SqlParamsCollector sqlParams,
 			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts,
-			@NonNull final IView view)
+			@NonNull final SqlOptions sqlOpts)
 	{
 		final String filterId = filter.getFilterId();
 

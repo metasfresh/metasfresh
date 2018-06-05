@@ -15,7 +15,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
-import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -66,8 +65,6 @@ public final class HUEditorViewBuilder
 
 	private LinkedHashMap<String, Object> parameters;
 	private HUEditorViewRepository huEditorViewRepository;
-	
-	private IViewsRepository viewsRepo;
 
 	HUEditorViewBuilder()
 	{
@@ -302,7 +299,7 @@ public final class HUEditorViewBuilder
 		}
 		else
 		{
-			return new HUEditorViewBuffer_FullyCached(viewId, huEditorViewRepository, stickyFilters, filters, getOrderBys(), viewsRepo.getView(viewId));
+			return new HUEditorViewBuffer_FullyCached(viewId, huEditorViewRepository, stickyFilters, filters, getOrderBys());
 		}
 	}
 }

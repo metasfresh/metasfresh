@@ -31,8 +31,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -81,17 +79,15 @@ public final class SqlViewSelectionQueryBuilder
 	private final SqlViewBinding _viewBinding;
 	private boolean applySecurityRestrictions = true;
 	private SqlDocumentFilterConverter _sqlDocumentFieldConverter; // lazy
-	private final IViewsRepository viewsRepo;
 
-	public static final SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding, final IViewsRepository viewsRepo)
+	public static final SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding)
 	{
-		return new SqlViewSelectionQueryBuilder(viewBinding, viewsRepo);
+		return new SqlViewSelectionQueryBuilder(viewBinding);
 	}
 
-	private SqlViewSelectionQueryBuilder(@NonNull final SqlViewBinding viewBinding, final IViewsRepository viewsRepo)
+	private SqlViewSelectionQueryBuilder(@NonNull final SqlViewBinding viewBinding)
 	{
 		_viewBinding = viewBinding;
-		this.viewsRepo = viewsRepo;
 	}
 
 	public SqlViewSelectionQueryBuilder applySecurityRestrictions(final boolean applySecurityRestrictions)
@@ -212,7 +208,7 @@ public final class SqlViewSelectionQueryBuilder
 		else
 		{
 			final SqlAndParams sqlCreateSelectionLines = buildSqlCreateSelectionLines_WithGrouping(viewEvalCtx, newViewId, filters, queryLimit);
-			final SqlAndParams sqlCreateSelection = buildSqlCreateSelectionFromSelectionLines(viewEvalCtx, newViewId, orderBys, viewsRepo.getView(newViewId));
+			final SqlAndParams sqlCreateSelection = buildSqlCreateSelectionFromSelectionLines(viewEvalCtx, newViewId, orderBys);
 			return SqlCreateSelection.builder().sqlCreateSelection(sqlCreateSelection).sqlCreateSelectionLines(sqlCreateSelectionLines).build();
 		}
 	}
@@ -270,7 +266,7 @@ public final class SqlViewSelectionQueryBuilder
 		// WHERE clause (from query)
 		{
 			final SqlParamsCollector sqlWhereClauseParams = SqlParamsCollector.newInstance();
-			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters, SqlOptions.usingTableAlias(sqlTableAlias), viewsRepo.getView(newViewId));
+			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters, SqlOptions.usingTableAlias(sqlTableAlias));
 
 			if (sqlWhereClause != null && !sqlWhereClause.isNullExpression())
 			{
@@ -345,7 +341,7 @@ public final class SqlViewSelectionQueryBuilder
 		// WHERE clause (from query)
 		{
 			final SqlParamsCollector sqlWhereClauseParams = SqlParamsCollector.newInstance();
-			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters, SqlOptions.usingTableAlias(sqlTableAlias), viewsRepo.getView(newViewId));
+			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters, SqlOptions.usingTableAlias(sqlTableAlias));
 
 			if (sqlWhereClause != null && !sqlWhereClause.isNullExpression())
 			{
@@ -380,7 +376,7 @@ public final class SqlViewSelectionQueryBuilder
 		return SqlAndParams.of(sql, sqlParams);
 	}
 
-	public SqlAndParams buildSqlCreateSelectionFromSelectionLines(final ViewEvaluationCtx viewEvalCtx, final ViewId newViewId, final List<DocumentQueryOrderBy> orderBys, IView view)
+	public SqlAndParams buildSqlCreateSelectionFromSelectionLines(final ViewEvaluationCtx viewEvalCtx, final ViewId newViewId, final List<DocumentQueryOrderBy> orderBys)
 	{
 		final String lineTableName = getTableName();
 		final String lineTableAlias = getTableAlias();
@@ -451,7 +447,7 @@ public final class SqlViewSelectionQueryBuilder
 		return SqlAndParams.of(sqlCreateSelectionFromLines, sqlCreateSelectionFromLinesParams);
 	}
 
-	private final IStringExpression buildSqlWhereClause(final SqlParamsCollector sqlParams, @Nullable final List<DocumentFilter> filters, final SqlOptions sqlOpts, IView view)
+	private final IStringExpression buildSqlWhereClause(final SqlParamsCollector sqlParams, @Nullable final List<DocumentFilter> filters, final SqlOptions sqlOpts)
 	{
 		final CompositeStringExpression.Builder sqlWhereClauseBuilder = IStringExpression.composer();
 
@@ -470,7 +466,7 @@ public final class SqlViewSelectionQueryBuilder
 		// Document filters
 		if (filters != null && !filters.isEmpty())
 		{
-			final String sqlFilters = getSqlDocumentFilterConverter().getSql(sqlParams, filters, sqlOpts, view);
+			final String sqlFilters = getSqlDocumentFilterConverter().getSql(sqlParams, filters, sqlOpts);
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");

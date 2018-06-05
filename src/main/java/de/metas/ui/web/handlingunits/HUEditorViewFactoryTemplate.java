@@ -43,7 +43,6 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.view.ViewId;
@@ -405,8 +404,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		public String getSql(
 				@NonNull final SqlParamsCollector sqlParamsOut,
 				@NonNull final DocumentFilter filter,
-				final SqlOptions sqlOpts_NOTUSED,
-				@NonNull final IView view)
+				final SqlOptions sqlOpts_NOTUSED)
 		{
 			final Object barcodeObj = filter.getParameter(PARAM_Barcode).getValue();
 			if (barcodeObj == null)
@@ -439,7 +437,6 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			sqlParamsOut.collectAll(sqlQueryFilter);
 			return sql;
 		}
-
 	}
 
 }

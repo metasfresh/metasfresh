@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsSqlDocumentFilterConverter;
-import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 
 /*
@@ -43,9 +42,8 @@ public class HUIdsFilterHelperTest
 	@Test
 	public void testEmptyHUIdsCollection()
 	{
-		final IView view = null; //FIXME
 		final DocumentFilter noHusFilter = HUIdsFilterHelper.createFilter(ImmutableList.of());
-		final String sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(SqlParamsCollector.newInstance(), noHusFilter, SqlOptions.usingTableAlias("dummyTableAlias"), view);
+		final String sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(SqlParamsCollector.newInstance(), noHusFilter, SqlOptions.usingTableAlias("dummyTableAlias"));
 
 		assertThat(sql).doesNotContain(HUIdsSqlDocumentFilterConverter.SQL_TRUE);
 	}

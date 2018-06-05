@@ -94,8 +94,6 @@ public class SqlViewFactory implements IViewFactory
 	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecorator> windowId2SqlDocumentFilterConverterDecorator;
 	private final ImmutableMap<WindowId, IViewInvalidationAdvisor> viewInvalidationAdvisorsByWindowId;
 
-	private final IViewsRepository viewsRepo;
-
 	@Value
 	private static final class SqlViewBindingKey
 	{
@@ -120,8 +118,7 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final List<SqlViewCustomizer> viewCustomizers,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
 			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators,
-			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors,
-			@NonNull final IViewsRepository viewsRepo)
+			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.documentReferencesService = documentReferencesService;
@@ -140,9 +137,6 @@ public class SqlViewFactory implements IViewFactory
 
 		this.viewInvalidationAdvisorsByWindowId = makeViewInvalidationAdvisorsMap(viewInvalidationAdvisors);
 		logger.info("view invalidation advisors: {}", this.viewInvalidationAdvisorsByWindowId);
-		
-		this.viewsRepo = viewsRepo;
-		logger.info("view repository: {}", this.viewsRepo);
 	}
 
 	private static ImmutableListMultimap<WindowId, ViewProfile> makeViewProfilesMap(Collection<SqlViewCustomizer> viewCustomizers)
@@ -287,7 +281,7 @@ public class SqlViewFactory implements IViewFactory
 		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(windowId, viewType.getRequiredFieldCharacteristic(), profileId);
 
 		final SqlViewBinding sqlViewBinding = getViewBinding(sqlViewBindingKey);
-		final IViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding, viewsRepo);
+		final IViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
 
 		final DefaultView.Builder viewBuilder = DefaultView.builder(viewDataRepository)
 				.setViewId(request.getViewId())
