@@ -48,3 +48,33 @@ INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,E
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Message_ID=544743 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
 
+-- 2018-06-05T07:40:17.405
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='VK Netto',Updated=TO_TIMESTAMP('2018-06-05 07:40:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=544093
+;
+
+-- 2018-06-05T07:40:17.409
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='CustomerPriceGrossProfit', Name='VK Netto', Description='Effektiver Verkaufspreis minus Skonto und Rückerstattung', Help='' WHERE AD_Element_ID=544093
+;
+
+-- 2018-06-05T07:40:17.411
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CustomerPriceGrossProfit', Name='VK Netto', Description='Effektiver Verkaufspreis minus Skonto und Rückerstattung', Help='', AD_Element_ID=544093 WHERE UPPER(ColumnName)='CUSTOMERPRICEGROSSPROFIT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-06-05T07:40:17.412
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CustomerPriceGrossProfit', Name='VK Netto', Description='Effektiver Verkaufspreis minus Skonto und Rückerstattung', Help='' WHERE AD_Element_ID=544093 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-06-05T07:40:17.414
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='VK Netto', Description='Effektiver Verkaufspreis minus Skonto und Rückerstattung', Help='' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=544093) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 544093)
+;
+
+-- 2018-06-05T07:40:17.428
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='VK Netto', Name='VK Netto' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=544093)
+;
+
