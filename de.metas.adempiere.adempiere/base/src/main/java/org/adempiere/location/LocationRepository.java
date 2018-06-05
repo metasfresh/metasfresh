@@ -2,6 +2,7 @@ package org.adempiere.location;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.user.User;
 import org.adempiere.util.Services;
@@ -58,5 +59,18 @@ public class LocationRepository
 				.map(I_C_BPartner_Location::getC_Location)
 				.map(this::ofRecord)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public Location getByLocationId(@NonNull final LocationId locationId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Location.COLUMN_C_Location_ID, locationId.getRepoId())
+				.create()
+				.stream()
+				.map(this::ofRecord)
+				.findFirst()
+				.orElse(null);
 	}
 }

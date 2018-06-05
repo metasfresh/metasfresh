@@ -6,14 +6,21 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.location.Location;
+import org.adempiere.location.LocationRepository;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.letter.model.Letter;
+import de.metas.letter.model.LetterRepository;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 
 /*
@@ -99,12 +106,29 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 	{
 		// Services
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+		final ContactPersonRepository contactRepo = Adempiere.getBean(ContactPersonRepository.class);
+		final LetterRepository letterRepo = Adempiere.getBean(LetterRepository.class);
+		final LocationRepository locationRepo = Adempiere.getBean(LocationRepository.class);
 
-		final List<I_MKTG_Campaign_ContactPerson> lines = queueDAO.retrieveItems(workPackage, I_MKTG_Campaign_ContactPerson.class, localTrxName);
 
-		for (final I_MKTG_Campaign_ContactPerson line : lines)
+		final List<I_MKTG_Campaign_ContactPerson> campaignContactPersons = queueDAO.retrieveItems(workPackage, I_MKTG_Campaign_ContactPerson.class, localTrxName);
+
+		for (final I_MKTG_Campaign_ContactPerson campaignContactPerson : campaignContactPersons)
 		{
-			// create letter and archive it
+			final ContactPerson contactPerson = contactRepo.asContactPerson(campaignContactPerson.getMKTG_ContactPerson());
+			final Location location = locationRepo.getByLocationId(contactPerson.getLocationId());
+
+			// create letter
+			Letter letter = Letter.builder()
+					.boilerPlateId(-1)
+					.bpartnerId(contactPerson.getBPartnerId())
+					.userId(contactPerson.getUserId())
+					.subject(campaignContactPerson.getMKTG_Campaign().getName() + contactPerson.getName())
+					.address(location.getAddress())
+					.build();
+
+			// save letter
+			letter = letterRepo.save(letter);
 		}
 
 		return Result.SUCCESS;

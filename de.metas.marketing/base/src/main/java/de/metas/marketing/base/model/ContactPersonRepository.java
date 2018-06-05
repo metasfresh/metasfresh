@@ -185,11 +185,11 @@ public class ContactPersonRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(ContactPersonRepository::asContactPerson)
+				.map(this::asContactPerson)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
+	public ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
 	{
 		final String emailDeactivated = contactPersonRecord.getDeactivatedOnRemotePlatform();
 
@@ -210,6 +210,7 @@ public class ContactPersonRepository
 				.platformId(PlatformId.ofRepoId(contactPersonRecord.getMKTG_Platform_ID()))
 				.remoteId(contactPersonRecord.getRemoteRecordId())
 				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
+				.locationId(LocationId.ofRepoId(contactPersonRecord.getC_Location_ID()))
 				.build();
 	}
 
