@@ -78,3 +78,28 @@ UPDATE AD_Field SET Name='VK Netto', Description='Effektiver Verkaufspreis minus
 UPDATE AD_PrintFormatItem pi SET PrintName='VK Netto', Name='VK Netto' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=544093)
 ;
 
+-- 2018-06-05T07:43:07.272
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-05 07:43:07','YYYY-MM-DD HH24:MI:SS'),Name='Sales net',PrintName='Sales net' WHERE AD_Element_ID=544093 AND AD_Language='en_US'
+;
+
+-- 2018-06-05T07:43:07.323
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(544093,'en_US') 
+;
+
+-- 2018-06-05T07:43:30.276
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-05 07:43:30','YYYY-MM-DD HH24:MI:SS'),Name='Purchase net',PrintName='Purchase net' WHERE AD_Element_ID=544092 AND AD_Language='en_US'
+;
+
+-- 2018-06-05T07:43:30.287
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(544092,'en_US') 
+;
+
+-- 2018-06-05T07:43:44.439
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-05 07:43:44','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',MsgText='Margin %' WHERE AD_Message_ID=544743 AND AD_Language='en_US'
+;
+
