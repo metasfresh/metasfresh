@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1266](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1266) Labels widget: tab and shift-tab support
     * Improves the usage of Tab and shift-tab for Label widgets.
+  * [#1616](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1616) Reload /i18n/messages in case the language changed
+    * Improving the language loading of static messages for users with different language than default.
   * [#1617](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1617) Label component doesn't hide after clicking tab
     * Improvement of Tab behavior in label widget when dropdown list is openend. Now closing the Dropdown.
   * [#1808](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1808) Shortcuts for inbox, menu and sidelist
