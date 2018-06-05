@@ -56,13 +56,19 @@ class Notification extends Component {
   handleCloseButton = () => {
     const { dispatch, item } = this.props;
 
+    console.log('Notification handleCloseButton item: ', item)
+    if (item.onCancel) {
+      item.onCancel.cancel('Operation canceled by the user.');
+    }
+
     this.closing && clearInterval(this.closing);
 
     dispatch(deleteNotification(item.title));
   };
 
   handleClosing = shouldClose => {
-    if (this.props.item && this.props.item.time !== 0) {
+    const { item } = this.props;
+    if (item && item.time !== 0) {
       shouldClose ? this.setClosing() : clearInterval(this.closing);
 
       this.setState({
@@ -81,6 +87,8 @@ class Notification extends Component {
     const { item } = this.props;
     const { isClosing, isDisplayedMore } = this.state;
     let progress = item.progress;
+
+    // console.log('notification render: ', item)
 
     return (
       <div

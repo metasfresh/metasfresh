@@ -51,6 +51,7 @@ export default function appHandler(state = initialState, action) {
 
     // NOTIFICATION ACTIONS
     case types.ADD_NOTIFICATION:
+      console.log('appHandler reducer action:', action)
       return {
         ...state,
         notifications: {
@@ -64,6 +65,7 @@ export default function appHandler(state = initialState, action) {
             count: state.notifications[action.title]
               ? state.notifications[action.title].count + 1
               : 1,
+            onCancel: action.onCancel || null,
           },
         },
       };
