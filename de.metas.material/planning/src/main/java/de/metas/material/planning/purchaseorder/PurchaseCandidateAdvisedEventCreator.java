@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.purchase.PurchaseDemandAdvisedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
 import lombok.NonNull;
 
@@ -35,17 +35,17 @@ import lombok.NonNull;
  */
 
 @Service
-public class PurchaseOrderAdvisedEventCreator
+public class PurchaseCandidateAdvisedEventCreator
 {
 	private final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher;
 
-	public PurchaseOrderAdvisedEventCreator(
+	public PurchaseCandidateAdvisedEventCreator(
 			@NonNull final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher)
 	{
 		this.purchaseOrderDemandMatcher = purchaseOrderDemandMatcher;
 	}
 
-	public List<PurchaseDemandAdvisedEvent> createPurchaseAdvisedEvent(
+	public List<PurchaseCandidateAdvisedEvent> createPurchaseAdvisedEvent(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMutableMRPContext mrpContext)
 	{
@@ -56,11 +56,11 @@ public class PurchaseOrderAdvisedEventCreator
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
-		final PurchaseDemandAdvisedEvent event = PurchaseDemandAdvisedEvent
+		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent
 				.builder()
 				.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
-				.directlyCreatePurchaseDemand(productPlanning.isCreatePlan())
+				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
 				.build();
 		return ImmutableList.of(event);

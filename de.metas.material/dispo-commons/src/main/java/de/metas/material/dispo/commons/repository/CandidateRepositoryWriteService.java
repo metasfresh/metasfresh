@@ -350,14 +350,18 @@ public class CandidateRepositoryWriteService
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
 			detailRecordToUpdate.setMD_Candidate(synchedRecord);
+			detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().toBoolean());
 		}
 		else
 		{
 			detailRecordToUpdate = existingDetail;
+			if(distributionDetail.getPickDirectlyIfFeasible().updateExistingRecord())
+			{
+				detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().toBoolean());
+			}
 		}
 
 		detailRecordToUpdate.setIsAdvised(distributionDetail.isAdvised());
-		detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.isPickDirectlyIfFeasible());
 		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getNetworkDistributionLineId());
 		detailRecordToUpdate.setPP_Plant_ID(distributionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_Planning_ID(distributionDetail.getProductPlanningId());

@@ -46,11 +46,14 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 
 	private final OrderLineDescriptor orderLineDescriptor;
 
+	private final int purchaseCandidateRepoId;
+
 	@Builder
 	@JsonCreator
 	public ReceiptScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("orderLineDescriptor") final OrderLineDescriptor orderLineDescriptor,
+			@JsonProperty("purchaseCandidateRepoId") final int purchaseCandidateRepoId,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("receiptScheduleId") int receiptScheduleId)
@@ -60,6 +63,7 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 				reservedQuantity,
 				receiptScheduleId);
 
+		this.purchaseCandidateRepoId = purchaseCandidateRepoId;
 		this.orderLineDescriptor = orderLineDescriptor;
 	}
 

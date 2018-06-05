@@ -19,7 +19,7 @@ public class DistributionDetail implements BusinessCaseDetail
 	{
 		final DistributionDetail distributionDetail = DistributionDetail.builder()
 				.advised(distributionDetailRecord.isAdvised())
-				.pickDirectlyIfFeasible(distributionDetailRecord.isPickDirectlyIfFeasible())
+				.pickDirectlyIfFeasible(Flag.of(distributionDetailRecord.isPickDirectlyIfFeasible()))
 				.networkDistributionLineId(distributionDetailRecord.getDD_NetworkDistributionLine_ID())
 				.productPlanningId(distributionDetailRecord.getPP_Product_Planning_ID())
 				.plantId(distributionDetailRecord.getPP_Plant_ID())
@@ -49,7 +49,7 @@ public class DistributionDetail implements BusinessCaseDetail
 
 	boolean advised;
 
-	boolean pickDirectlyIfFeasible;
+	Flag pickDirectlyIfFeasible;
 
 	@NonNull
 	BigDecimal plannedQty;

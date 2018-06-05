@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -16,6 +17,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_MovementLine;
+import org.compiere.model.X_M_Transaction;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -28,6 +30,8 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -152,10 +156,15 @@ public class M_Transaction_TransactionEventCreator
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
-		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = retrieveShipmentScheduleId2Qty(transaction);
 
-		final List<MaterialEvent> events = createEventForShipmentScheduleToQtyMapping(transaction, shipmentScheduleIds2Qtys, deleted);
-		return events;
+		final boolean shipment = X_M_Transaction.MOVEMENTTYPE_CustomerReturns.equals(transaction.getMovementType())
+				|| X_M_Transaction.MOVEMENTTYPE_CustomerShipment.equals(transaction.getMovementType());
+
+		if (shipment)
+		{
+			return createEventsForShipment(transaction, deleted);
+		}
+		return createEventsForReceipt(transaction, deleted);
 	}
 
 	@VisibleForTesting
@@ -189,7 +198,6 @@ public class M_Transaction_TransactionEventCreator
 
 			qtyLeftToDistribute = qtyLeftToDistribute.subtract(quantityForMaterialDescriptor);
 		}
-
 		return shipmentScheduleId2quantity;
 	}
 
@@ -218,11 +226,12 @@ public class M_Transaction_TransactionEventCreator
 						.setParameter("transaction", transaction);
 	}
 
-	private static List<MaterialEvent> createEventForShipmentScheduleToQtyMapping(
+	private static List<MaterialEvent> createEventsForShipment(
 			@NonNull final TransactionDescriptor transaction,
-			@NonNull final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
 			final boolean deleted)
 	{
+		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = retrieveShipmentScheduleId2Qty(transaction);
+
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
 		final I_M_InOutLine inOutLine = load(transaction.getInoutLineId(), I_M_InOutLine.class);
@@ -247,6 +256,8 @@ public class M_Transaction_TransactionEventCreator
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
+						.inOutId(inOutLine.getM_InOut_ID())
+						.inOutLineId(inOutLine.getM_InOutLine_ID())
 						.directMovementWarehouse(directMovementWarehouse)
 						.build();
 			}
@@ -258,6 +269,69 @@ public class M_Transaction_TransactionEventCreator
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
+						.inOutId(inOutLine.getM_InOut_ID())
+						.inOutLineId(inOutLine.getM_InOutLine_ID())
+						.directMovementWarehouse(directMovementWarehouse)
+						.build();
+			}
+			events.add(event);
+		}
+		return events.build();
+	}
+
+	private List<MaterialEvent> createEventsForReceipt(
+			@NonNull final TransactionDescriptor transaction,
+			final boolean deleted)
+	{
+		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
+		final I_M_InOutLine inOutLine = load(transaction.getInoutLineId(), I_M_InOutLine.class);
+
+		final Map<Integer, BigDecimal> receiptScheduleIds2Qtys = Services
+				.get(IReceiptScheduleDAO.class)
+				.retrieveRsaForInOutLine(inOutLine)
+				.stream()
+				.collect(Collectors.groupingBy(
+						I_M_ReceiptSchedule_Alloc::getM_ReceiptSchedule_ID,
+						Collectors.reducing(
+								BigDecimal.ZERO,
+								I_M_ReceiptSchedule_Alloc::getQtyAllocated,
+								BigDecimal::add)));
+
+		final List<HUDescriptor> huDescriptors = //
+				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInOutLine(inOutLine, deleted);
+
+		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
+				transaction,
+				0, // bpartnerId
+				huDescriptors);
+
+		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
+		for (final Entry<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptor : materialDescriptors.entrySet())
+		{
+			final AbstractTransactionEvent event;
+			if (deleted)
+			{
+				event = TransactionDeletedEvent.builder()
+						.eventDescriptor(transaction.getEventDescriptor())
+						.transactionId(transaction.getTransactionId())
+						.materialDescriptor(materialDescriptor.getKey())
+						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
+						.receiptScheduleIdsQtys(receiptScheduleIds2Qtys)
+						.inOutId(inOutLine.getM_InOut_ID())
+						.inOutLineId(inOutLine.getM_InOutLine_ID())
+						.directMovementWarehouse(directMovementWarehouse)
+						.build();
+			}
+			else
+			{
+				event = TransactionCreatedEvent.builder()
+						.eventDescriptor(transaction.getEventDescriptor())
+						.transactionId(transaction.getTransactionId())
+						.materialDescriptor(materialDescriptor.getKey())
+						.receiptScheduleIdsQtys(receiptScheduleIds2Qtys)
+						.inOutId(inOutLine.getM_InOut_ID())
+						.inOutLineId(inOutLine.getM_InOutLine_ID())
+						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.directMovementWarehouse(directMovementWarehouse)
 						.build();
 			}

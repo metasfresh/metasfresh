@@ -38,7 +38,7 @@ import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
 import de.metas.material.planning.pporder.PPOrderAdvisedEventCreator;
-import de.metas.material.planning.purchaseorder.PurchaseOrderAdvisedEventCreator;
+import de.metas.material.planning.purchaseorder.PurchaseCandidateAdvisedEventCreator;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -70,14 +70,14 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 {
 	private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
 	private final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator;
-	private final PurchaseOrderAdvisedEventCreator purchaseOrderAdvisedEventCreator;
+	private final PurchaseCandidateAdvisedEventCreator purchaseOrderAdvisedEventCreator;
 
 	private final PostMaterialEventService postMaterialEventService;
 
 	public SupplyRequiredHandler(
 			@NonNull final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator,
 			@NonNull final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator,
-			@NonNull final PurchaseOrderAdvisedEventCreator purchaseOrderAdvisedEventCreator,
+			@NonNull final PurchaseCandidateAdvisedEventCreator purchaseOrderAdvisedEventCreator,
 			@NonNull final PostMaterialEventService fireMaterialEventService)
 	{
 		this.dDOrderAdvisedEventCreator = dDOrderAdvisedEventCreator;

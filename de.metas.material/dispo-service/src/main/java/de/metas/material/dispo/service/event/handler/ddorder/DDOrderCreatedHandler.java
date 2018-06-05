@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;

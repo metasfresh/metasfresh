@@ -147,14 +147,16 @@ public final class CandidatesQuery
 	boolean matchExactStorageAttributesKey;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#PRODUCTION}.
+	 * Used for additional infos if this candidate has the business case {@link CandidateBusinessCase#PRODUCTION}.
 	 */
 	ProductionDetailsQuery productionDetailsQuery;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#DISTRIBUTION}.
+	 * Used for additional infos if this candidate has the business case {@link CandidateBusinessCase#DISTRIBUTION}.
 	 */
 	DistributionDetailsQuery distributionDetailsQuery;
+
+	PurchaseDetailsQuery purchaseDetailsQuery;
 
 	/**
 	 * Used for additional infos if this candidate relates to particular demand
@@ -181,6 +183,7 @@ public final class CandidatesQuery
 			final boolean matchExactStorageAttributesKey,
 			final ProductionDetailsQuery productionDetailsQuery,
 			final DistributionDetailsQuery distributionDetailsQuery,
+			final PurchaseDetailsQuery purchaseDetailsQuery,
 			final DemandDetail demandDetail,
 			@Singular final List<TransactionDetail> transactionDetails)
 	{
@@ -199,6 +202,8 @@ public final class CandidatesQuery
 		this.materialDescriptorQuery = materialDescriptorQuery;
 		this.productionDetailsQuery = productionDetailsQuery;
 		this.distributionDetailsQuery = distributionDetailsQuery;
+		this.purchaseDetailsQuery = purchaseDetailsQuery;
+
 		this.demandDetail = demandDetail;
 		this.transactionDetails = transactionDetails;
 	}

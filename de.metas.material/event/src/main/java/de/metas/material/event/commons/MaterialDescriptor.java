@@ -154,4 +154,16 @@ public class MaterialDescriptor extends ProductDescriptor
 				.build();
 		return result.asssertMaterialDescriptorComplete();
 	}
+
+	public MaterialDescriptor withBPartnerId(final int bPartnerId)
+	{
+		final MaterialDescriptor result = MaterialDescriptor.builder()
+				.warehouseId(this.warehouseId)
+				.date(this.date)
+				.productDescriptor(this)
+				.bPartnerId(bPartnerId)
+				.quantity(this.quantity)
+				.build();
+		return result.asssertMaterialDescriptorComplete();
+	}
 }

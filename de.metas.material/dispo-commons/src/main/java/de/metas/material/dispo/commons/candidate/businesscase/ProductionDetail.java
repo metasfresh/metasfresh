@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import org.adempiere.util.Check;
 
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,39 +34,8 @@ import lombok.Value;
  * #L%
  */
 @Value
-public class ProductionDetail
-		implements BusinessCaseDetail
+public class ProductionDetail implements BusinessCaseDetail
 {
-	public enum Flag
-	{
-		TRUE,
-
-		FALSE,
-
-		/**
-		 * Don't update existing records, but initialize new ones to {@code false}.
-		 * <p>
-		 * Only used when storing an instance with the {@link CandidateRepositoryWriteService}.<br>
-		 * If you load an instance from DB, it shall never have flags with this value.
-		 */
-		FALSE_DONT_UPDATE;
-
-		public static Flag of(final boolean value)
-		{
-			return value ? TRUE : FALSE;
-		}
-
-		public boolean toBoolean()
-		{
-			return this.equals(TRUE);
-		}
-
-		public boolean updateExistingRecord()
-		{
-			return !this.equals(FALSE_DONT_UPDATE);
-		}
-	}
-
 	public static ProductionDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)
 	{
 		final boolean canBeCast = businessCaseDetail != null && businessCaseDetail instanceof ProductionDetail;

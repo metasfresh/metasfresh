@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event.handler.purchasedemand;
+package de.metas.material.dispo.service.event.handler.purchasecandidate;
 
 import java.util.Collection;
 
@@ -13,12 +13,15 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.purchase.PurchaseDemandAdvisedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -45,54 +48,72 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
-public final class PurchaseDemandAdvisedHandler
-		implements MaterialEventHandler<PurchaseDemandAdvisedEvent>
+public final class PurchaseCandidateAdvisedHandler
+		implements MaterialEventHandler<PurchaseCandidateAdvisedEvent>
 {
 
 	private final CandidateChangeService candidateChangeHandler;
+	private final PostMaterialEventService materialEventService;
 
 	/**
 	 *
 	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
-	public PurchaseDemandAdvisedHandler(
+	public PurchaseCandidateAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
+			@NonNull final PostMaterialEventService materialEventService)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
+		this.materialEventService = materialEventService;
 	}
 
 	@Override
-	public Collection<Class<? extends PurchaseDemandAdvisedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PurchaseCandidateAdvisedEvent>> getHandeledEventType()
 	{
-		return ImmutableList.of(PurchaseDemandAdvisedEvent.class);
+		return ImmutableList.of(PurchaseCandidateAdvisedEvent.class);
 	}
 
 	@Override
-	public void validateEvent(@NonNull final PurchaseDemandAdvisedEvent event)
+	public void validateEvent(@NonNull final PurchaseCandidateAdvisedEvent event)
 	{
-		// nothing to do; the instance was already validated on construction time
+		// nothing to do; the event was already validated on construction time
 	}
 
+	/**
+	 * Create a supply candidate
+	 */
 	@Override
-	public void handleEvent(@NonNull final PurchaseDemandAdvisedEvent event)
+	public void handleEvent(@NonNull final PurchaseCandidateAdvisedEvent event)
 	{
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
 
-		final PurchaseDetail purchaseDetail = new PurchaseDetail(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity());
+		final MaterialDescriptor purchaseMaterialDescriptor = event.getPurchaseMaterialDescriptor();
+		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
+				.plannedQty(purchaseMaterialDescriptor.getQuantity())
+				.vendorRepoId(purchaseMaterialDescriptor.getBPartnerId())
+				.purchaseCandidateRepoId(-1)
+				.advised(Flag.TRUE)
+				.build();
 
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.status(CandidateStatus.doc_planned)
-				.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor())
+				.materialDescriptor(purchaseMaterialDescriptor)
 				.businessCaseDetail(purchaseDetail)
 				.additionalDemandDetail(demandDetail)
 				.build();
 
-		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
+		final Candidate createdCandidate = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
+		if (event.isDirectlyCreatePurchaseCandidate())
+		{
+			final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
+					.purchaseMaterialDescriptor(purchaseMaterialDescriptor)
+					.supplyCandidateRepoId(createdCandidate.getId())
+					.build();
+			materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+		}
 	}
-
 }

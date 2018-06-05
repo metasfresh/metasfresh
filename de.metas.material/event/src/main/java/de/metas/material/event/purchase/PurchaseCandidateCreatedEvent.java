@@ -1,16 +1,16 @@
 package de.metas.material.event.purchase;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
 
 /*
  * #%L
@@ -34,30 +34,32 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class PurchaseDemandAdvisedEvent implements MaterialEvent
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@ToString
+public class PurchaseCandidateCreatedEvent extends PurchaseCandidateEvent
 {
-	public static final String TYPE = "PurchaseDemandAdvisedEvent";
+	public static final String TYPE = "PurchaseCandidateCreatedEvent";
 
-	private boolean directlyCreatePurchaseDemand;
+	/**
+	 * If the purchase candidate is created according a {@link PurchaseCandidateRequestedEvent}, then this is the ID of the supply candidate the new purchase candidate belongs to;
+	 * Otherwise its value is <= 1.
+	 */
+	private final int supplyCandidateRepoId;
 
-	private final EventDescriptor eventDescriptor;
-
-	private final SupplyRequiredDescriptor supplyRequiredDescriptor;
-
-	int productPlanningId;
-
-	@Builder
 	@JsonCreator
-	private PurchaseDemandAdvisedEvent(
+	@Builder
+	public PurchaseCandidateCreatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("purchaseCandidateRepoId") final int purchaseCandidateRepoId,
+			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
 			@JsonProperty("supplyRequiredDescriptor") @NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@JsonProperty("productPlanningId") final int productPlanningId,
-			@JsonProperty("directlyCreatePurchaseDemand") final boolean directlyCreatePurchaseDemand)
+			@JsonProperty("supplyCandidateRepoId") final int supplyCandidateRepoId)
 	{
-		this.eventDescriptor = eventDescriptor;
-		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
-		this.productPlanningId = Check.assumeGreaterThanZero(productPlanningId, "productPlanningId");
-		this.directlyCreatePurchaseDemand = directlyCreatePurchaseDemand;
+		super(purchaseMaterialDescriptor,
+				supplyRequiredDescriptor,
+				eventDescriptor,
+				purchaseCandidateRepoId);
+		this.supplyCandidateRepoId = supplyCandidateRepoId;
 	}
 }

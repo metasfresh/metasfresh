@@ -46,7 +46,10 @@ import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
 import de.metas.material.event.procurement.PurchaseOfferUpdatedEvent;
-import de.metas.material.event.purchase.PurchaseDemandAdvisedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
@@ -330,15 +333,53 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
-	public void purchaseDemandAdvisedEvent()
+	public void purchaseCandidateAdvisedEvent()
 	{
-		final PurchaseDemandAdvisedEvent purchaseAdvisedEvent = PurchaseDemandAdvisedEvent.builder()
+		final PurchaseCandidateAdvisedEvent purchaseAdvisedEvent = PurchaseCandidateAdvisedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.productPlanningId(10)
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
+				.purchaseMaterialDescriptor(createMaterialDescriptor())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(purchaseAdvisedEvent);
+	}
+
+	@Test
+	public void purchaseCandidateCreatedEvent()
+	{
+		final PurchaseCandidateCreatedEvent event = PurchaseCandidateCreatedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.purchaseCandidateRepoId(20)
+				.purchaseMaterialDescriptor(createMaterialDescriptor())
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void purchaseCandidateUpdatedEvent()
+	{
+		final PurchaseCandidateUpdatedEvent event = PurchaseCandidateUpdatedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.purchaseCandidateRepoId(20)
+				.purchaseMaterialDescriptor(createMaterialDescriptor())
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void purchaseCandidateRequestedEvent()
+	{
+		final PurchaseCandidateRequestedEvent event = PurchaseCandidateRequestedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.purchaseMaterialDescriptor(createMaterialDescriptor())
+				.supplyCandidateRepoId(10)
+				.build();
+		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
 	@Test

@@ -38,6 +38,7 @@ public class SupplyRequiredDescriptor
 
 	MaterialDescriptor materialDescriptor;
 
+	/** the MD_Candidate_ID of the record  which the required supply is about.*/
 	int demandCandidateId;
 
 	int shipmentScheduleId;
