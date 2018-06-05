@@ -3,6 +3,10 @@
  */
 package org.adempiere.bpartner.service;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_PrintFormat;
@@ -39,16 +43,53 @@ import lombok.NonNull;
 @Repository
 public class BPartnerPrintFormatRepository
 {
-	public int retrieveBPartnerPrintFormatId(@NonNull final BPPrintFormat bpPrintFormat)
+	public BPPrintFormat getByQuery(@NonNull final BPPrintFormatQuery bpPrintFormatQuery)
 	{
-		return Services.get(IQueryBL.class)
+		final I_C_BP_PrintFormat bpPrintFormatRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_PrintFormat.class)
-				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpPrintFormat.getBpartnerId().getRepoId())
-				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, bpPrintFormat.getAdTableId())
-				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, bpPrintFormat.getDocTypeId())
-				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_PrintFormat_ID, bpPrintFormat.getPrintFormatId())
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpPrintFormatQuery.getBpartnerId().getRepoId())
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, bpPrintFormatQuery.getAdTableId())
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, bpPrintFormatQuery.getDocTypeId())
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_PrintFormat_ID, bpPrintFormatQuery.getPrintFormatId())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstIdOnly();
+				.firstOnlyOrNull(I_C_BP_PrintFormat.class);
+
+		if (bpPrintFormatRecord == null)
+		{
+			return null;
+		}
+
+		return BPPrintFormat.ofdataRecord(bpPrintFormatRecord);
+	}
+
+	public BPPrintFormat save(@NonNull final BPPrintFormat bpPrintFormat)
+	{
+		final I_C_BP_PrintFormat bpPrintFormatRecord = createOrUpdateRecord(bpPrintFormat);
+		saveRecord(bpPrintFormatRecord);
+
+		return bpPrintFormat.toBuilder()
+				.bpPrintFormatId(bpPrintFormatRecord.getC_BP_PrintFormat_ID())
+				.build();
+	}
+
+	private I_C_BP_PrintFormat createOrUpdateRecord(@NonNull final BPPrintFormat bpPrintFormat)
+	{
+		final I_C_BP_PrintFormat bpPrintFormatRcord;
+		if (bpPrintFormat.getBpPrintFormatId() > 0)
+		{
+			bpPrintFormatRcord = load(bpPrintFormat.getBpPrintFormatId(), I_C_BP_PrintFormat.class);
+		}
+		else
+		{
+			bpPrintFormatRcord = newInstance(I_C_BP_PrintFormat.class);
+		}
+
+		bpPrintFormatRcord.setC_BPartner_ID(bpPrintFormat.getBpartnerId().getRepoId());
+		bpPrintFormatRcord.setC_DocType_ID(bpPrintFormat.getDocTypeId());
+		bpPrintFormatRcord.setAD_Table_ID(bpPrintFormat.getAdTableId());
+		bpPrintFormatRcord.setAD_PrintFormat_ID(bpPrintFormat.getPrintFormatId());
+
+		return bpPrintFormatRcord;
 	}
 }

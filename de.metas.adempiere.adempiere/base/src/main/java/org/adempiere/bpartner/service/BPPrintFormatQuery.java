@@ -5,7 +5,6 @@ package org.adempiere.bpartner.service;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
-import org.compiere.model.I_C_BP_PrintFormat;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -25,11 +24,11 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,7 +40,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class BPPrintFormat
+public class BPPrintFormatQuery
 {
 	@Getter
 	private final BPartnerId bpartnerId;
@@ -55,15 +54,12 @@ public class BPPrintFormat
 	@Getter
 	private final int printFormatId;
 
-	@Getter
-	private final int bpPrintFormatId;
 
 	@Builder(toBuilder = true)
-	private BPPrintFormat(@NonNull final BPartnerId bpartnerId,
+	private BPPrintFormatQuery(@NonNull final BPartnerId bpartnerId,
 			final int docTypeId,
 			final int adTableId,
-			final int printFormatId,
-			final int bpPrintFormatId)
+			final int printFormatId)
 	{
 		Check.assume(docTypeId > 0, "docTypeId shall be > 0");
 		Check.assume(adTableId > 0, "adTableId shall be > 0");
@@ -73,17 +69,5 @@ public class BPPrintFormat
 		this.docTypeId = docTypeId;
 		this.adTableId = adTableId;
 		this.printFormatId = printFormatId;
-		this.bpPrintFormatId = bpPrintFormatId;
-	}
-
-	public static BPPrintFormat ofdataRecord(@NonNull final I_C_BP_PrintFormat bpPrinfFormatDataRecord)
-	{
-		return BPPrintFormat.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bpPrinfFormatDataRecord.getC_BPartner_ID()))
-				.adTableId(bpPrinfFormatDataRecord.getAD_Table_ID())
-				.docTypeId(bpPrinfFormatDataRecord.getC_DocType_ID())
-				.printFormatId(bpPrinfFormatDataRecord.getAD_PrintFormat_ID())
-				.bpPrintFormatId(bpPrinfFormatDataRecord.getC_BP_PrintFormat_ID())
-				.build();
 	}
 }

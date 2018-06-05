@@ -32,14 +32,13 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.BPPrintFormat;
+import org.adempiere.bpartner.service.BPPrintFormatQuery;
 import org.adempiere.bpartner.service.BPartnerPrintFormatRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.MContactInterest;
@@ -266,27 +265,29 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		}
 
 		final BPartnerPrintFormatRepository repo = Adempiere.getBean(BPartnerPrintFormatRepository.class);
-		final BPPrintFormat bpPrintFormat = BPPrintFormat.builder()
+		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
 				.printFormatId(printFormatId)
 				.docTypeId(docTypeId)
 				.adTableId(adTableId)
 				.bpartnerId(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()))
 				.build();
 
-		final int bpPrintFormatId = repo.retrieveBPartnerPrintFormatId(bpPrintFormat);
-		if (bpPrintFormatId > 0)
+		BPPrintFormat bpPrintFormat = repo.getByQuery(bpPrintFormatQuery);
+		if (bpPrintFormat != null )
 		{
 			return;
 		}
 
-		final I_C_BP_PrintFormat bpPrintFormatRecord = InterfaceWrapperHelper.newInstance(I_C_BP_PrintFormat.class);
-		bpPrintFormatRecord.setAD_PrintFormat_ID(printFormatId);
-		bpPrintFormatRecord.setC_BPartner_ID(importRecord.getC_BPartner_ID());
-		bpPrintFormatRecord.setC_DocType_ID(docTypeId);
-		bpPrintFormatRecord.setAD_Table_ID(adTableId);
-		InterfaceWrapperHelper.save(bpPrintFormatRecord);
+		bpPrintFormat = BPPrintFormat.builder()
+				.adTableId(adTableId)
+				.docTypeId(docTypeId)
+				.printFormatId(printFormatId)
+				.bpartnerId(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()))
+				.build();
 
-		importRecord.setC_BP_PrintFormat(bpPrintFormatRecord);
+		repo.save(bpPrintFormat);
+
+		importRecord.setC_BP_PrintFormat_ID(bpPrintFormat.getBpPrintFormatId());
 	}
 
 
