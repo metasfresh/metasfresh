@@ -1,12 +1,10 @@
-package de.metas.order.grossprofit;
+package org.adempiere.bpartner;
 
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
-import de.metas.order.OrderLine;
-import lombok.NonNull;
+import de.metas.lang.SOTrx;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -14,28 +12,47 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class GrossProfitComputeRequestCreator
+public enum BPartnerType
 {
-	public static GrossProfitComputeRequest of(@NonNull final OrderLine orderLine)
+	CUSTOMER, VENDOR, EMPLOYER;
+
+	public static BPartnerType ofSOTrx(final boolean isSOTrx)
 	{
-		return GrossProfitComputeRequest.builder()
-				.bPartnerId(orderLine.getBPartnerId())
-				.productId(orderLine.getProductId())
-				.date(orderLine.getDatePromised().toLocalDate())
-				.baseAmount(orderLine.getPriceActual())
-				.paymentTermId(orderLine.getPaymentTermId())
-				.build();
+		return isSOTrx ? CUSTOMER : VENDOR;
+	}
+
+	public static BPartnerType ofSOTrx(final SOTrx soTrx)
+	{
+		return soTrx.toBoolean() ? CUSTOMER : VENDOR;
+	}
+
+	public SOTrx getSOTrx()
+	{
+		return SOTrx.ofBoolean(isSOTrx());
+	}
+
+	public boolean isSOTrx()
+	{
+		switch (this)
+		{
+			case CUSTOMER:
+				return true;
+			case VENDOR:
+				return false;
+			default:
+				throw new IllegalStateException("Unknown IsSOTrx for " + this);
+		}
 	}
 }

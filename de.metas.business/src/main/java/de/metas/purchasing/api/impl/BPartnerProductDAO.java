@@ -1,7 +1,9 @@
 /**
- * 
+ *
  */
 package de.metas.purchasing.api.impl;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -13,12 +15,12 @@ package de.metas.purchasing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,6 +39,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -49,15 +52,23 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.purchasing.api.ProductExclude;
+import lombok.NonNull;
 
 /**
  * @author cg
- * 
+ *
  */
 public class BPartnerProductDAO implements IBPartnerProductDAO
 {
+	@Override
+	public I_C_BPartner_Product getById(final int bpartnerProductId)
+	{
+		return loadOutOfTrx(bpartnerProductId, I_C_BPartner_Product.class);
+	}
+
 	@Override
 	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(final Properties ctx, final int Vendor_ID, final int productId, final int orgId)
 	{
@@ -94,9 +105,9 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public List<I_C_BPartner_Product> retrieveAllVendors(final int productId, final int orgId)
+	public List<I_C_BPartner_Product> retrieveAllVendors(@NonNull final ProductId productId, @NonNull final OrgId orgId)
 	{
-		return retrieveAllVendorsQuery(productId, orgId)
+		return retrieveAllVendorsQuery(productId.getRepoId(), orgId.getRepoId())
 				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
 				.create()
 				.list(I_C_BPartner_Product.class);
@@ -118,6 +129,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilderOutOfTrx(org.compiere.model.I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
 				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, Env.CTXVALUE_AD_Org_ID_Any)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId);

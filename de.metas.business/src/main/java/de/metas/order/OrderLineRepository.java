@@ -90,7 +90,7 @@ public class OrderLineRepository
 	private Money moneyOfRecordsPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// note that C_OrderLine.C_Currency_ID is mandatory, so there won't be an NPE
-		final Currency currency = currencyRepository.ofRecord(orderLineRecord.getC_Currency());
+		final Currency currency = currencyRepository.getById(orderLineRecord.getC_Currency_ID());
 
 		return Money.of(
 				orderLineRecord.getPriceActual(),

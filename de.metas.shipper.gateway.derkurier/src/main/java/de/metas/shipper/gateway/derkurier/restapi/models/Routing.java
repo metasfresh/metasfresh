@@ -1,6 +1,6 @@
 package de.metas.shipper.gateway.derkurier.restapi.models;
 
-import static de.metas.shipper.gateway.derkurier.DerKurierConstants.API_DATE_FORMAT;
+import static de.metas.shipper.gateway.derkurier.DerKurierConstants.DATE_FORMAT;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -51,8 +51,8 @@ public class Routing
 	@Builder
 	@JsonCreator
 	public Routing(
-			@JsonProperty("sendDate") @JsonFormat(shape = Shape.STRING, pattern = API_DATE_FORMAT) final LocalDate sendDate,
-			@JsonProperty("deliveryDate") @JsonFormat(shape = Shape.STRING, pattern = API_DATE_FORMAT) final LocalDate deliveryDate,
+			@JsonProperty("sendDate") @JsonFormat(shape = Shape.STRING, pattern = DATE_FORMAT) final LocalDate sendDate,
+			@JsonProperty("deliveryDate") @JsonFormat(shape = Shape.STRING, pattern = DATE_FORMAT) final LocalDate deliveryDate,
 			@JsonProperty("sender") final Participant sender,
 			@JsonProperty("consignee") final Participant consignee,
 			@JsonProperty("viaHubs") final List<String> viaHubs,

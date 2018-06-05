@@ -1,13 +1,15 @@
-package de.metas.order.grossprofit;
+package de.metas.purchasecandidate;
 
-import de.metas.money.Money;
-import de.metas.order.OrderLine;
+import java.util.List;
+
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.purchasecandidate.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -15,12 +17,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,11 +30,12 @@ import lombok.Value;
  */
 
 @Value
-public class OrderLineWithGrossProfitPrice
+@Builder
+public class PurchaseDemandWithCandidates
 {
 	@NonNull
-	OrderLine orderLine;
+	PurchaseDemand purchaseDemand;
 
-	@NonNull
-	Money grossProfitPrice;
+	@Singular
+	List<PurchaseCandidate> purchaseCandidates;
 }

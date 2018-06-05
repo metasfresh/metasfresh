@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
@@ -294,7 +295,7 @@ public class TimeUtilTest
 	}
 
 	@Test
-	public void test_min()
+	public void testDateMin()
 	{
 		final Timestamp date1 = TimeUtil.getDay(2014, 1, 1);
 		final Timestamp date1_copy = TimeUtil.getDay(2014, 1, 1);
@@ -302,25 +303,58 @@ public class TimeUtilTest
 		final Timestamp date3 = TimeUtil.getDay(2014, 1, 3);
 
 		// NULLs check
-		assertMin(null, null, null);
-		assertMin(date1, date1, null);
-		assertMin(date1, null, date1);
+		assertDateMin(null, null, null);
+		assertDateMin(date1, date1, null);
+		assertDateMin(date1, null, date1);
 
 		// Same (reference) value check
-		assertMin(date1, date1, date1);
+		assertDateMin(date1, date1, date1);
 
 		// Same (value) check
-		assertMin(date1, date1, date1_copy);
+		assertDateMin(date1, date1, date1_copy);
 
-		assertMin(date1, date1, date2);
-		assertMin(date1, date2, date1);
-		assertMin(date2, date2, date3);
-		assertMin(date2, date3, date2);
+		assertDateMin(date1, date1, date2);
+		assertDateMin(date1, date2, date1);
+		assertDateMin(date2, date2, date3);
+		assertDateMin(date2, date3, date2);
 	}
 
-	private void assertMin(final Date dateExpected, final Date date1, final Date date2)
+	private void assertDateMin(final Date dateExpected, final Date date1, final Date date2)
 	{
 		final Date dateMin = TimeUtil.min(date1, date2);
+
+		Assert.assertSame("Invalid minimum date: date1=" + date1 + ", date2=" + date2,
+				dateExpected, dateMin);
+	}
+
+	@Test
+	public void testLocalDateTimeMin()
+	{
+		final LocalDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay();
+		final LocalDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay();
+		final LocalDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay();
+		final LocalDateTime date3 = LocalDate.of(2014, 1, 3).atStartOfDay();
+
+		// NULLs check
+		assertLocalDateTimeMin(null, null, null);
+		assertLocalDateTimeMin(date1, date1, null);
+		assertLocalDateTimeMin(date1, null, date1);
+
+		// Same (reference) value check
+		assertLocalDateTimeMin(date1, date1, date1);
+
+		// Same (value) check
+		assertLocalDateTimeMin(date1, date1, date1_copy);
+
+		assertLocalDateTimeMin(date1, date1, date2);
+		assertLocalDateTimeMin(date1, date2, date1);
+		assertLocalDateTimeMin(date2, date2, date3);
+		assertLocalDateTimeMin(date2, date3, date2);
+	}
+
+	private void assertLocalDateTimeMin(final LocalDateTime dateExpected, final LocalDateTime date1, final LocalDateTime date2)
+	{
+		final LocalDateTime dateMin = TimeUtil.min(date1, date2);
 
 		Assert.assertSame("Invalid minimum date: date1=" + date1 + ", date2=" + date2,
 				dateExpected, dateMin);
