@@ -38,6 +38,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartner.BPartnerType;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -56,11 +57,14 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -255,7 +259,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public int retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final boolean soTrx)
+	public int retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final SOTrx soTrx)
 	{
 		return retrievePricingSystemId(Env.getCtx(), bPartnerId.getRepoId(), soTrx, ITrx.TRXNAME_None);
 	}
@@ -264,7 +268,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	public int retrievePricingSystemId(
 			final Properties ctx,
 			final int bPartnerId,
-			final boolean soTrx,
+			final SOTrx soTrx,
 			final String trxName)
 	{
 		final de.metas.interfaces.I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bPartnerId, de.metas.interfaces.I_C_BPartner.class, trxName);
@@ -273,7 +277,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		// metas: The method always retrieved SO-PricingSys. This caused errors in PO-Documents.
 		final Integer bpPricingSysId;
 
-		if (soTrx)
+		if (soTrx.isSales())
 		{
 			bpPricingSysId = bPartner.getM_PricingSystem_ID();
 		}
@@ -296,7 +300,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 			// metas: Same problem as above: The method always retrieved SO-PricingSys. This caused errors in
 			// PO-Documents.
-			if (soTrx)
+			if (soTrx.isSales())
 			{
 				bpGroupPricingSysId = bpGroup.getM_PricingSystem_ID();
 			}
@@ -313,7 +317,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		final int adOrgId = bPartner.getAD_Org_ID();
-		if (adOrgId > 0 && soTrx)
+		if (adOrgId > 0 && soTrx.isSales())
 		{
 			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(MOrgInfo.get(ctx, adOrgId, null), I_AD_OrgInfo.class);
 			if (orgInfo.getM_PricingSystem_ID() > 0)
@@ -581,14 +585,18 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final int adClientId, final boolean isSOTrx)
+	public Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final BPartnerType bpartnerType)
 	{
-		final String discountSchemaIdColumnName = isSOTrx ? I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID : I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
+		final String discountSchemaIdColumnName = getBPartnerDiscountSchemaColumnNameOrNull(bpartnerType);
+		if(discountSchemaIdColumnName == null)
+		{
+			return ImmutableMap.of();
+		}
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner.COLUMN_AD_Client_ID, adClientId)
+				// .addEqualsFilter(I_C_BPartner.COLUMN_AD_Client_ID, adClientId)
 				.addNotNull(discountSchemaIdColumnName)
 				.create()
 				.listDistinct(I_C_BPartner.COLUMNNAME_C_BPartner_ID, discountSchemaIdColumnName)
@@ -597,5 +605,18 @@ public class BPartnerDAO implements IBPartnerDAO
 						BPartnerId.ofRepoId(NumberUtils.asInt(row.get(I_C_BPartner.COLUMNNAME_C_BPartner_ID), -1)),
 						NumberUtils.asInt(row.get(discountSchemaIdColumnName), -1)))
 				.collect(GuavaCollectors.toImmutableMap());
+	}
+
+	private static final String getBPartnerDiscountSchemaColumnNameOrNull(final BPartnerType bpartnerType)
+	{
+		switch (bpartnerType)
+		{
+			case CUSTOMER:
+				return I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID;
+			case VENDOR:
+				return I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
+			default:
+				return null;
+		}
 	}
 }

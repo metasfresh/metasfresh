@@ -13,17 +13,23 @@ Here come the actual release notes:
 # metasfresh 5.61 (2018-24)
 ## Features
 * metasfresh
+  * [#4173](https://github.com/metasfresh/metasfresh/issues/4173) Translations for Purchase Dispo modal Overlay Fields
+    * Field Translations added for Purchase Dispo modal overlay in Sales Order and Purchase Candidates.
 
 ## Fixes
 * metasfresh-webui-frontend
   * [#1266](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1266) Labels widget: tab and shift-tab support
     * Improves the usage of Tab and shift-tab for Label widgets.
+  * [#1616](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1616) Reload /i18n/messages in case the language changed
+    * Improving the language loading of static messages for users with different language than default.
   * [#1617](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1617) Label component doesn't hide after clicking tab
     * Improvement of Tab behavior in label widget when dropdown list is openend. Now closing the Dropdown.
   * [#1808](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1808) Shortcuts for inbox, menu and sidelist
     * Improvement of Shortcuts for inbox, menu and sidelist. Now hiding the menus after 2nd usage of shortcut.
   * [#1828](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1828) Truncate action names with ellipsis
     * Fixes the Layout for Quickaction Buttons with large content.
+  * [#1830](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1830) Empty login page after logout
+    * Fixes the empty page after logout. Now showing the login screen again.
 
 
 # metasfresh 5.60 (2018-23)

@@ -45,6 +45,7 @@ import org.compiere.model.I_M_InOutLine;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
+import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -227,14 +228,14 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public LocalDate getLastInOutDate(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId, final boolean isSOTrx)
+	public LocalDate getLastInOutDate(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId, @NonNull final SOTrx soTrx)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InOutLine.class)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_M_Product_ID, productId.getRepoId())
 				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
 				.addEqualsFilter(I_M_InOut.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
-				.addEqualsFilter(I_M_InOut.COLUMN_IsSOTrx, isSOTrx)
+				.addEqualsFilter(I_M_InOut.COLUMN_IsSOTrx, soTrx.toBoolean())
 				.create()
 				.aggregate(I_M_InOut.COLUMN_MovementDate, Aggregate.MAX, LocalDate.class);
 	}
