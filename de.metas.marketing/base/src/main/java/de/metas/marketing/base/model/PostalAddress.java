@@ -4,9 +4,8 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
+import org.adempiere.location.Location;
 
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -45,47 +44,17 @@ public class PostalAddress implements ContactAddress
 
 	public static String getPostalAddessStringOrNull(@Nullable final ContactAddress contactAddress)
 	{
-		final Optional<String> stringIfPresent = PostalAddress
-				.cast(contactAddress)
-				.map(PostalAddress::getValue)
-				.filter(s -> !Check.isEmpty(s, true));
+//		final Optional<String> stringIfPresent = PostalAddress
+//				.cast(contactAddress)
+////				.map(PostalAddress::getValue)
+//				.filter(s -> !Check.isEmpty(s, true));
 
-		return stringIfPresent.orElse(null);
+//		return stringIfPresent.orElse(null);
+		return null;
 	}
 
-	public static Boolean getActiveOnRemotePlatformOrNull(@Nullable final ContactAddress contactAddress)
-	{
-		final Optional<Boolean> boolIfPresent = PostalAddress
-				.cast(contactAddress)
-				.map(PostalAddress::getDeactivatedOnRemotePlatform);
+	Location location;
 
-		return boolIfPresent.orElse(null);
-	}
-
-	public static PostalAddress of(@NonNull final String postalAddress)
-	{
-		return new PostalAddress(postalAddress, null);
-	}
-
-	public static PostalAddress of(
-			@NonNull final String emailAddress,
-			final boolean deactivatedOnRemotePlatform)
-	{
-		return new PostalAddress(emailAddress, deactivatedOnRemotePlatform);
-	}
-
-	String value;
-
-	/** null means "unknown" */
-	Boolean deactivatedOnRemotePlatform;
-
-	public PostalAddress(
-			@NonNull final String value,
-			@Nullable final Boolean deactivatedOnRemotePlatform)
-	{
-		this.value = Check.assumeNotEmpty(value, "The given value may not be empty");
-		this.deactivatedOnRemotePlatform = deactivatedOnRemotePlatform;
-	}
 
 	@Override
 	public TYPE getType()

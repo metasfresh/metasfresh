@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.location.LocationId;
 import org.adempiere.user.UserId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -65,6 +66,7 @@ public class ContactPersonRepository
 
 		contactPersonRecord.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
 		contactPersonRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
+		contactPersonRecord.setC_Location_ID(contactPerson.getLocationId().getRepoId());
 
 		contactPersonRecord.setName(contactPerson.getName());
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());
@@ -117,6 +119,12 @@ public class ContactPersonRepository
 					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_RemoteRecordId, contactPerson.getRemoteId())
 					.create()
 					.firstOnly(I_MKTG_ContactPerson.class); // might be null, that's ok
+		}
+
+		final LocationId locationId = contactPerson.getLocationId();
+		if (locationId != null)
+		{
+			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, locationId.getRepoId());
 		}
 
 		final String emailAddress = contactPerson.getEmailAddessStringOrNull();

@@ -5,6 +5,8 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.location.Location;
+import org.adempiere.location.LocationId;
 import org.adempiere.user.User;
 import org.adempiere.user.UserId;
 
@@ -40,12 +42,14 @@ public class ContactPerson implements DataRecord
 {
 	public static ContactPerson newForUserAndPlatform(
 			@NonNull final User user,
-			@NonNull final PlatformId platformId)
+			@NonNull final PlatformId platformId,
+			@NonNull final Location location)
 	{
 		return ContactPerson.builder()
 				.platformId(platformId)
 				.name(user.getName())
 				.userId(user.getId())
+				.locationId(location.getLocationId())
 				.address(EmailAddress.of(user.getEmailAddress()))
 				.build();
 	}
@@ -80,6 +84,9 @@ public class ContactPerson implements DataRecord
 	@NonNull
 	PlatformId platformId;
 
+	@NonNull
+	LocationId locationId;
+
 	public String getEmailAddessStringOrNull()
 	{
 		return EmailAddress.getEmailAddessStringOrNull(getAddress());
@@ -89,5 +96,6 @@ public class ContactPerson implements DataRecord
 	{
 		return EmailAddress.getActiveOnRemotePlatformOrNull(getAddress());
 	}
+
 
 }
