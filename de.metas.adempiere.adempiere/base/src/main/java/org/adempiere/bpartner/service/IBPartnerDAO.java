@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartner.BPartnerType;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -38,6 +39,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.lang.SOTrx;
 import lombok.NonNull;
 
 public interface IBPartnerDAO extends ISingletonService
@@ -112,9 +114,9 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @param trxName
 	 * @return M_PricingSystem_ID or 0
 	 */
-	int retrievePricingSystemId(Properties ctx, int bPartnerId, boolean soTrx, String trxName);
+	int retrievePricingSystemId(Properties ctx, int bPartnerId, SOTrx soTrx, String trxName);
 
-	int retrievePricingSystemId(BPartnerId bPartnerId, boolean soTrx);
+	int retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
 
 	I_M_Shipper retrieveShipper(int bPartnerId, String trxName);
 
@@ -227,5 +229,5 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
 
-	Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(int adClientId, boolean isSOTrx);
+	Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType bpartnerType);
 }

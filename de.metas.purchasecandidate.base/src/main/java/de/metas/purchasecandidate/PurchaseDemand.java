@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -49,6 +50,8 @@ public class PurchaseDemand
 	@NonNull
 	PurchaseDemandId id;
 
+	@NonNull
+	ClientId clientId;
 	@NonNull
 	OrgId orgId;
 	WarehouseId warehouseId;

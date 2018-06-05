@@ -41,6 +41,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.lang.SOTrx;
 import de.metas.pricing.service.IPriceListBL;
 
 @Callout(I_C_Invoice.class)
@@ -63,14 +64,14 @@ public class C_Invoice
 		//
 		// TODO: Maybe replace this with Check.assume()?
 		//
-		final boolean isSOTrx = invoice.isSOTrx();
-		if (isSOTrx && !partner.isCustomer())
+		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
+		if (soTrx.isSales() && !partner.isCustomer())
 		{
 			//
 			// SO => Partner must be a customer
 			return;
 		}
-		else if (!isSOTrx && !partner.isVendor())
+		else if (soTrx.isPurchase() && !partner.isVendor())
 		{
 			//
 			// PO => Partner must be a vendor
@@ -86,7 +87,7 @@ public class C_Invoice
 			return;
 		}
 
-		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partner.getC_BPartner_ID(), isSOTrx, trxName);
+		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partner.getC_BPartner_ID(), soTrx, trxName);
 		if (pricingSystemId <= 0)
 		{
 			return;
@@ -105,7 +106,7 @@ public class C_Invoice
 				pricingSystemId,
 				location.getC_Location().getC_Country_ID(),
 				dateInvoiced,
-				isSOTrx);
+				soTrx);
 		if (priceListNew == null)
 		{
 			return;
