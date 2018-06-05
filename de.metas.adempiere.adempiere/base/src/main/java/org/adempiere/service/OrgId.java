@@ -3,6 +3,7 @@ package org.adempiere.service;
 import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -28,7 +29,7 @@ import lombok.Value;
  */
 
 @Value
-public class OrgId
+public class OrgId implements RepoIdAware
 {
 	public static OrgId ofRepoId(final int repoId)
 	{
