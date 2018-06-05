@@ -1,7 +1,10 @@
 package de.metas.marketing.base;
 
+import java.util.List;
 import java.util.stream.Stream;
 
+import org.adempiere.location.Location;
+import org.adempiere.location.LocationRepository;
 import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
@@ -41,12 +44,15 @@ public class CampaignService
 {
 	private final ContactPersonRepository contactPersonRepository;
 	private final CampaignRepository campaignRepository;
+	private final LocationRepository locationRepository;
 
 	public CampaignService(@NonNull final ContactPersonRepository contactPersonRepository,
-			@NonNull final CampaignRepository campaignRepository)
+			@NonNull final CampaignRepository campaignRepository,
+			@NonNull final LocationRepository locationRepository)
 	{
 		this.contactPersonRepository = contactPersonRepository;
 		this.campaignRepository = campaignRepository;
+		this.locationRepository = locationRepository;
 	}
 
 	public void addAsContactPersonsToCampaign(
@@ -75,7 +81,15 @@ public class CampaignService
 			return;
 		}
 
-		final ContactPerson contactPerson = ContactPerson.newForUserAndPlatform(user, campaign.getPlatformId());
+		final List<Location> locations = locationRepository.retrieveByUser(user);
+		if (locations.isEmpty())
+		{
+			Loggables.get().addLog("Skip user because it has no location; user={}", user);
+			return;
+		}
+		final Location location = locations.get(0);
+
+		final ContactPerson contactPerson = ContactPerson.newForUserAndPlatform(user, campaign.getPlatformId(), location);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
 		campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaign.getCampaignId());
@@ -88,7 +102,10 @@ public class CampaignService
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
 
-		final ContactPerson contactPerson = ContactPerson.newForUserAndPlatform(user, campaign.getPlatformId());
+		final List<Location> locations = locationRepository.retrieveByUser(user);
+		final Location location = locations.get(0);
+
+		final ContactPerson contactPerson = ContactPerson.newForUserAndPlatform(user, campaign.getPlatformId(), location);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
 		contactPersonRepository.revokeConsent(savedContactPerson);
