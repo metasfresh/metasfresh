@@ -34,6 +34,8 @@ import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.NamePair;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
@@ -44,6 +46,7 @@ import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /**
@@ -133,7 +136,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}
-	
+
 	@Override
 	public boolean hasAttribute(final String attributeKey)
 	{
@@ -312,11 +315,11 @@ public final class NullAttributeStorage implements IAttributeStorage
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}
-	
+
 	@Override
-	public boolean isDisplayedUI(final I_M_Attribute attribute)
+	public boolean isDisplayedUI(final ImmutableSet<ProductId> productIDs, final I_M_Attribute attribute)
 	{
-		throw new AttributeNotFoundException(attribute, this);
+		return false;
 	}
 
 	@Override

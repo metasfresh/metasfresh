@@ -11,6 +11,7 @@ import org.compiere.model.X_C_OrderLine;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
@@ -92,7 +93,7 @@ class OrderLinePriceCalculator
 					.setParameter("pricingResult", pricingResult);
 		}
 
-		PriceAndDiscount priceAndDiscount = extractPriceAndDiscount(pricingResult, pricingCtx.isSOTrx());
+		PriceAndDiscount priceAndDiscount = extractPriceAndDiscount(pricingResult, pricingCtx.getSoTrx());
 
 		//
 		// Apply price limit restrictions
@@ -351,13 +352,13 @@ class OrderLinePriceCalculator
 				&& pricingResult.isEnforcePriceLimit();
 	}
 
-	private PriceAndDiscount extractPriceAndDiscount(final IPricingResult pricingResult, final boolean isSOTrx)
+	private PriceAndDiscount extractPriceAndDiscount(final IPricingResult pricingResult, final SOTrx soTrx)
 	{
 		return PriceAndDiscount.builder()
 				.precision(pricingResult.getPrecision())
 				.priceEntered(extractPriceEntered(pricingResult))
 				.priceLimit(pricingResult.getPriceLimit())
-				.discount(extractDiscount(pricingResult, isSOTrx))
+				.discount(extractDiscount(pricingResult, soTrx))
 				.build()
 				.updatePriceActual();
 	}
@@ -390,9 +391,9 @@ class OrderLinePriceCalculator
 		return true;
 	}
 
-	private Percent extractDiscount(final IPricingResult pricingResult, final boolean isSOTrx)
+	private Percent extractDiscount(final IPricingResult pricingResult, final SOTrx soTrx)
 	{
-		if (isAllowChangingDiscount(isSOTrx))
+		if (isAllowChangingDiscount(soTrx))
 		{
 			return pricingResult.getDiscount();
 		}
@@ -403,9 +404,9 @@ class OrderLinePriceCalculator
 		}
 	}
 
-	private boolean isAllowChangingDiscount(final boolean isSOTrx)
+	private boolean isAllowChangingDiscount(final SOTrx soTrx)
 	{
-		if (!isSOTrx)
+		if (soTrx.isPurchase())
 		{
 			return true;
 		}

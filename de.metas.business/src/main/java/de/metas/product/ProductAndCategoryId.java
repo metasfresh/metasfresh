@@ -1,5 +1,6 @@
 package de.metas.product;
 
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -29,15 +30,20 @@ public class ProductAndCategoryId
 {
 	public static ProductAndCategoryId of(final int productId, final int productCategoryId)
 	{
+		return new ProductAndCategoryId(ProductId.ofRepoId(productId), ProductCategoryId.ofRepoId(productCategoryId));
+	}
+
+	public static ProductAndCategoryId of(final ProductId productId, final ProductCategoryId productCategoryId)
+	{
 		return new ProductAndCategoryId(productId, productCategoryId);
 	}
 
 	ProductId productId;
 	ProductCategoryId productCategoryId;
 
-	private ProductAndCategoryId(final int productId, final int productCategoryId)
+	private ProductAndCategoryId(@NonNull final ProductId productId, @NonNull final ProductCategoryId productCategoryId)
 	{
-		this.productId = ProductId.ofRepoId(productId);
-		this.productCategoryId = ProductCategoryId.ofRepoId(productCategoryId);
+		this.productId = productId;
+		this.productCategoryId = productCategoryId;
 	}
 }

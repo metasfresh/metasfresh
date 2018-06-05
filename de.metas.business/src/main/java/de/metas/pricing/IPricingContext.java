@@ -31,6 +31,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
+import de.metas.lang.SOTrx;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 
 public interface IPricingContext extends IContextAware
@@ -66,6 +67,11 @@ public interface IPricingContext extends IContextAware
 	BigDecimal getQty();
 
 	boolean isSOTrx();
+	
+	default SOTrx getSoTrx()
+	{
+		return SOTrx.ofBoolean(isSOTrx());
+	}
 
 	int getAD_Table_ID();
 

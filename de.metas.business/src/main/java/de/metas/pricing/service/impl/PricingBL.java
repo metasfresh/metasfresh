@@ -216,7 +216,7 @@ public class PricingBL implements IPricingBL
 					pricingCtx.getM_PricingSystem_ID(),
 					pricingCtx.getC_Country_ID(),
 					pricingCtx.getPriceDate(),
-					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.isSOTrx(),
+					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.getSoTrx(),
 					null);
 
 			if (computedPLV != null)

@@ -75,6 +75,8 @@ public interface IProductDAO extends ISingletonService
 	/** @return product category or null */
 	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
 
+	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
+
 	/** @return product category IDs indexed by product IDs */
 	Set<ProductAndCategoryId> retrieveProductCategoriesByProductIds(Set<Integer> productIds);
 
