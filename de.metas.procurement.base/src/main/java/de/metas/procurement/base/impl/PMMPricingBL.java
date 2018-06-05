@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -91,7 +92,7 @@ public class PMMPricingBL implements IPMMPricingBL
 
 	private void updatePriceFromPricingMasterdata(final IPMMPricingAware pricingAware)
 	{
-		final boolean soTrx = false;
+		final SOTrx soTrx = SOTrx.PURCHASE;
 		final Properties ctx = pricingAware.getCtx();
 
 		final I_C_BPartner bpartner = pricingAware.getC_BPartner();
@@ -125,7 +126,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		// Fetch price from pricing engine
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final BigDecimal qty = pricingAware.getQty();
-		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId, uom.getC_UOM_ID(), qty, soTrx);
+		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId, uom.getC_UOM_ID(), qty, soTrx.toBoolean());
 		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
 		pricingCtx.setPriceDate(date);
 		pricingCtx.setC_Country_ID(countryId);

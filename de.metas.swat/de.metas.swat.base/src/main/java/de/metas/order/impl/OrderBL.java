@@ -65,6 +65,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -139,7 +140,7 @@ public class OrderBL implements IOrderBL
 			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 			final String trxName = InterfaceWrapperHelper.getTrxName(order);
 			final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-			final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, bPartnerId, order.isSOTrx(), trxName);
+			final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, bPartnerId, SOTrx.ofBoolean(order.isSOTrx()), trxName);
 
 			final boolean throwExIfNotFound = !overridePricingSystemAndDontThrowExIfNotFound;
 			if (pricingSysId <= 0 && throwExIfNotFound)

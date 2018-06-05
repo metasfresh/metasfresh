@@ -28,6 +28,8 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.lang.SOTrx;
+
 /**
  * @author RC
  *
@@ -40,7 +42,7 @@ public interface IPriceListBL extends ISingletonService
 	 * @param pricingSystem
 	 * @param countryId
 	 * @param date
-	 * @param isSOTrx: true is SO, false if PO
+	 * @param soTrx
 	 *
 	 * @return the current price list for vendor if any (for the giver pricing system), null otherwise
 	 */
@@ -48,7 +50,7 @@ public interface IPriceListBL extends ISingletonService
 			int pricingSystemId,
 			int countryId,
 			Timestamp date,
-			boolean isSOTrx);
+			SOTrx soTrx);
 
 	/**
 	 * Find the current version from a pricing system based on the given parameters.
@@ -56,7 +58,7 @@ public interface IPriceListBL extends ISingletonService
 	 * @param pricingSystem
 	 * @param country
 	 * @param date
-	 * @param isSoTrx
+	 * @param soTrx SO/PO or null
 	 * @param processedPLVFiltering if not <code>null</code>, then only PLVs which have the give value in their <code>Processed</code> column are considered.
 	 *            task 09533: the user doesn't know about PLV's processed flag, so in most cases we can't filter by it
 	 * @return
@@ -65,6 +67,6 @@ public interface IPriceListBL extends ISingletonService
 			int pricingSystemId,
 			int countryId,
 			Timestamp date,
-			Boolean isSOTrx,
+			SOTrx soTrx,
 			Boolean processedPLVFiltering);
 }

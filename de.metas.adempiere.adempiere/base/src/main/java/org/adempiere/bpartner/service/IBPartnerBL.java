@@ -32,6 +32,7 @@ import org.compiere.model.I_C_BPartner_QuickInput;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.i18n.Language;
+import de.metas.lang.SOTrx;
 
 public interface IBPartnerBL extends ISingletonService
 {
@@ -161,10 +162,10 @@ public interface IBPartnerBL extends ISingletonService
 	 * @param soTrx if <code>true</code>, the sales discount schema is returned, otherwise the purchase discount schema is returned.
 	 * @return partner's discount schema or -1
 	 */
-	int getDiscountSchemaId(I_C_BPartner bpartner, boolean soTrx);
+	int getDiscountSchemaId(I_C_BPartner bpartner, SOTrx soTrx);
 
 	/**
 	 * @return partner's discount schema or -1
 	 */
-	int getDiscountSchemaId(BPartnerId bpartnerId, boolean soTrx);
+	int getDiscountSchemaId(BPartnerId bpartnerId, SOTrx soTrx);
 }

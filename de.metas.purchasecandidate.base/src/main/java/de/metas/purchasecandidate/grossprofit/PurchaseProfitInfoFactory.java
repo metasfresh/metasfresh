@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
@@ -129,8 +130,7 @@ public class PurchaseProfitInfoFactory
 			return ImmutableMap.of();
 		}
 
-		final boolean soTrx = false;
-		final int pricingSystemId = bpartnersRepo.retrievePricingSystemId(vendorId, soTrx);
+		final int pricingSystemId = bpartnersRepo.retrievePricingSystemId(vendorId, SOTrx.PURCHASE);
 		final Quantity orderedQty = request.getOrderedQty();
 
 		final ImmutableMap.Builder<PriceListVersionId, Money> result = ImmutableMap.builder();
@@ -142,7 +142,7 @@ public class PurchaseProfitInfoFactory
 							vendorId.getRepoId(),
 							orderedQty.getUOMId(),
 							orderedQty.getQty(),
-							soTrx)
+							SOTrx.PURCHASE.toBoolean())
 					.setPriceDate(TimeUtil.asTimestamp(request.getDatePromised()))
 					.setC_Country_ID(countryId)
 					.setM_PricingSystem_ID(pricingSystemId);
