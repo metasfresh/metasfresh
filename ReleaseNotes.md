@@ -13,6 +13,8 @@ Here come the actual release notes:
 # metasfresh 5.61 (2018-24)
 ## Features
 * metasfresh
+  * [#4173](https://github.com/metasfresh/metasfresh/issues/4173) Translations for Purchase Dispo modal Overlay Fields
+    * Field Translations added for Purchase Dispo modal overlay in Sales Order and Purchase Candidates.
 
 ## Fixes
 * metasfresh-webui-frontend
