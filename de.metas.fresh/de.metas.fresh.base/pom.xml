@@ -143,6 +143,12 @@
 			<artifactId>marketing-cleverreach</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+				</dependency>
+				<dependency>
+			<groupId>de.metas.marketing</groupId>
+			<artifactId>marketing-serialletter</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.monitoring</groupId>
