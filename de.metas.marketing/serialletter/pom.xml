@@ -44,6 +44,12 @@
 			<artifactId>de.metas.swat.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
