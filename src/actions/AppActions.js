@@ -275,9 +275,6 @@ export function addNotification(
   shortMsg,
   onCancel
 ) {
-
-  console.log('AppActions addNotification onCancel: ', onCancel)
-
   return {
     type: types.ADD_NOTIFICATION,
     title: title,

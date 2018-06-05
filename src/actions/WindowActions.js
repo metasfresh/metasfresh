@@ -791,7 +791,6 @@ function handleUploadProgress(dispatch, notificationTitle, progressEvent) {
 }
 
 export function attachFileAction(windowType, docId, data) {
-  // return async dispatch => {
   return dispatch => {
     const titlePending = counterpart.translate(
       'window.attachment.title.pending'
@@ -800,8 +799,6 @@ export function attachFileAction(windowType, docId, data) {
     const titleError = counterpart.translate('window.attachment.title.error');
     const CancelToken = axios.CancelToken;
     const source = CancelToken.source();
-
-    console.log('attachFileAction: ', titlePending)
 
     dispatch(
       addNotification(
@@ -816,6 +813,7 @@ export function attachFileAction(windowType, docId, data) {
 
     const requestConfig = {
       onUploadProgress: handleUploadProgress.bind(this, dispatch, titlePending),
+      cancelToken: source.token,
     };
 
     axios
@@ -834,49 +832,26 @@ export function attachFileAction(windowType, docId, data) {
       )
       .finally(() => dispatch(deleteNotification(titlePending)))
       .catch(thrown => {
-          if (axios.isCancel(thrown)) {
-            console.log('Request canceled', thrown.message);
-          }
-
-         dispatch(
-          addNotification(
-            titleError,
-            counterpart.translate('window.attachment.upload.error'),
-            5000,
-            'error'
-          )
-        );
+        if (axios.isCancel(thrown)) {
+          dispatch(
+            addNotification(
+              titleError,
+              'Upload terminated by user',
+              5000,
+              'warning'
+            )
+          );
+        } else {
+          dispatch(
+            addNotification(
+              titleError,
+              counterpart.translate('window.attachment.upload.error'),
+              5000,
+              'error'
+            )
+          );
+        }
       });
-
-    // try {
-    //   try {
-    //     await axios.post(
-    //       `${config.API_URL}/window/${windowType}/${docId}/attachments`,
-    //       data,
-    //       requestConfig
-    //     );
-    //   } finally {
-    //     dispatch(deleteNotification(titlePending));
-    //   }
-
-    //   dispatch(
-    //     addNotification(
-    //       titleDone,
-    //       counterpart.translate('window.attachment.upload.success'),
-    //       5000,
-    //       'primary'
-    //     )
-    //   );
-    // } catch (error) {
-    //   dispatch(
-    //     addNotification(
-    //       titleError,
-    //       counterpart.translate('window.attachment.upload.error'),
-    //       5000,
-    //       'error'
-    //     )
-    //   );
-    // }
   };
 }
 

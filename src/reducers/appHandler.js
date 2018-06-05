@@ -51,7 +51,6 @@ export default function appHandler(state = initialState, action) {
 
     // NOTIFICATION ACTIONS
     case types.ADD_NOTIFICATION:
-      console.log('appHandler reducer action:', action)
       return {
         ...state,
         notifications: {
