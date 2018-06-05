@@ -120,7 +120,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 
 			// create letter
 			Letter letter = Letter.builder()
-					.boilerPlateId(-1)
+					.boilerPlateId(campaignContactPerson.getMKTG_Campaign().getAD_BoilerPlate_ID())
 					.bpartnerId(contactPerson.getBPartnerId())
 					.userId(contactPerson.getUserId())
 					.subject(campaignContactPerson.getMKTG_Campaign().getName() + contactPerson.getName())
