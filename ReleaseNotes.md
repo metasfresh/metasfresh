@@ -24,6 +24,8 @@ Here come the actual release notes:
     * Improvement of Shortcuts for inbox, menu and sidelist. Now hiding the menus after 2nd usage of shortcut.
   * [#1828](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1828) Truncate action names with ellipsis
     * Fixes the Layout for Quickaction Buttons with large content.
+  * [#1830](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1830) Empty login page after logout
+    * Fixes the empty page after logout. Now showing the login screen again.
 
 
 # metasfresh 5.60 (2018-23)
