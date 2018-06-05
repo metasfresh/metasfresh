@@ -156,8 +156,8 @@ class PricingConditionsRowsLoader
 	{
 		if (pricingConditionsInfoById == null)
 		{
-			final Stream<PricingConditionsInfo> vendorPricingConditions = streamPricingConditionsInfos(/* isSOTrx */false);
-			final Stream<PricingConditionsInfo> customerPricingConditions = streamPricingConditionsInfos(/* isSOTrx */true);
+			final Stream<PricingConditionsInfo> vendorPricingConditions = streamPricingConditionsInfos(BPartnerType.VENDOR);
+			final Stream<PricingConditionsInfo> customerPricingConditions = streamPricingConditionsInfos(BPartnerType.CUSTOMER);
 
 			pricingConditionsInfoById = Stream.concat(vendorPricingConditions, customerPricingConditions)
 					.collect(ImmutableSetMultimap.toImmutableSetMultimap(PricingConditionsInfo::getPricingConditionsId, Function.identity()));
@@ -165,9 +165,8 @@ class PricingConditionsRowsLoader
 		return pricingConditionsInfoById;
 	}
 
-	private Stream<PricingConditionsInfo> streamPricingConditionsInfos(final boolean isSOTrx)
+	private Stream<PricingConditionsInfo> streamPricingConditionsInfos(final BPartnerType bpartnerType)
 	{
-		final BPartnerType bpartnerType = BPartnerType.ofSOTrx(isSOTrx);
 		final Map<BPartnerId, Integer> discountSchemaIdsByBPartnerId = bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(bpartnerType);
 
 		return discountSchemaIdsByBPartnerId.keySet()
