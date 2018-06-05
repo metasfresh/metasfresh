@@ -15,6 +15,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeInstance;
 
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
@@ -82,14 +83,13 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		Check.assumeGreaterThanZero(orderLineId, "salesOrderLineId");
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId);
 		final I_C_Order order = orderLine.getC_Order();
-		final boolean isSOTrx = order.isSOTrx();
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
 		final PricingConditionsRowData rowsData = preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(createPricingConditionsBreaksExtractor(orderLine))
 				.basePricingSystemPriceCalculator(new OrderLineBasePricingSystemPriceCalculator(orderLine))
 				.filters(extractFilters(request))
-				.adClientId(orderLine.getAD_Client_ID())
-				.sourceDocumentLine(createSourceDocumentLine(orderLine, isSOTrx))
+				.sourceDocumentLine(createSourceDocumentLine(orderLine, soTrx))
 				.load();
 		return rowsData;
 	}
@@ -122,7 +122,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 				.build();
 	}
 
-	private final SourceDocumentLine createSourceDocumentLine(final I_C_OrderLine orderLine, final boolean isSOTrx)
+	private final SourceDocumentLine createSourceDocumentLine(final I_C_OrderLine orderLine, final SOTrx soTrx)
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
@@ -130,7 +130,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 
 		return SourceDocumentLine.builder()
 				.orderLineId(OrderLineId.ofRepoIdOrNull(orderLine.getC_OrderLine_ID()))
-				.isSOTrx(isSOTrx)
+				.soTrx(soTrx)
 				.bpartnerId(BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()))
 				.productId(productId)
 				.productCategoryId(productCategoryId)

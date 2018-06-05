@@ -16,7 +16,8 @@ import org.compiere.model.I_M_Product;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 
 /*
  * #%L
@@ -55,14 +56,14 @@ class PurchaseRowLookups
 	{
 	}
 
-	public JSONLookupValue createProductLookupValue(final ProductId productId)
+	public LookupValue createProductLookupValue(final ProductId productId)
 	{
 		final String productValue = null;
 		final String productName = null;
 		return createProductLookupValue(productId, productValue, productName);
 	}
 
-	public JSONLookupValue createProductLookupValue(
+	public LookupValue createProductLookupValue(
 			final ProductId productId,
 			final String productValue,
 			final String productName)
@@ -75,16 +76,16 @@ class PurchaseRowLookups
 		final I_M_Product product = productsRepo.getById(productId);
 		if (product == null)
 		{
-			return JSONLookupValue.unknown(productId.getRepoId());
+			return IntegerLookupValue.unknown(productId.getRepoId());
 		}
 
 		final String productValueEffective = !Check.isEmpty(productValue, true) ? productValue.trim() : product.getValue();
 		final String productNameEffective = !Check.isEmpty(productName, true) ? productName.trim() : product.getName();
 		final String displayName = productValueEffective + "_" + productNameEffective;
-		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
+		return IntegerLookupValue.of(product.getM_Product_ID(), displayName);
 	}
 
-	public JSONLookupValue createASILookupValue(final AttributeSetInstanceId attributeSetInstanceId)
+	public LookupValue createASILookupValue(final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		if (attributeSetInstanceId == null)
 		{
@@ -103,10 +104,10 @@ class PurchaseRowLookups
 			description = "<" + attributeSetInstanceId.getRepoId() + ">";
 		}
 
-		return JSONLookupValue.of(attributeSetInstanceId.getRepoId(), description);
+		return IntegerLookupValue.of(attributeSetInstanceId.getRepoId(), description);
 	}
 
-	public JSONLookupValue createBPartnerLookupValue(final BPartnerId bpartnerId)
+	public LookupValue createBPartnerLookupValue(final BPartnerId bpartnerId)
 	{
 		if (bpartnerId == null)
 		{
@@ -120,7 +121,7 @@ class PurchaseRowLookups
 		}
 
 		final String displayName = bpartner.getValue() + "_" + bpartner.getName();
-		return JSONLookupValue.of(bpartner.getC_BPartner_ID(), displayName);
+		return IntegerLookupValue.of(bpartner.getC_BPartner_ID(), displayName);
 	}
 
 	public String createUOMLookupValueForProductId(final ProductId productId)

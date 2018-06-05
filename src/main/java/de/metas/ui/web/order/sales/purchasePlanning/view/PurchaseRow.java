@@ -34,7 +34,7 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
@@ -75,18 +75,18 @@ public class PurchaseRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
 	})
-	private final JSONLookupValue product;
+	private final LookupValue product;
 	@ViewColumn(captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 15)
 	})
-	private final JSONLookupValue attributeSetInstance;
+	private final LookupValue attributeSetInstance;
 
 	@ViewColumn(captionKey = "Vendor_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
 	})
-	private final JSONLookupValue vendorBPartner;
+	private final LookupValue vendorBPartner;
 
 	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_CustomerPriceGrossProfit, widgetType = DocumentFieldWidgetType.Amount, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 23),
@@ -180,9 +180,9 @@ public class PurchaseRow implements IViewRow
 	private PurchaseRow(
 			@NonNull final PurchaseRowId rowId,
 			@NonNull final IViewRowType rowType,
-			@NonNull final JSONLookupValue product,
-			@Nullable final JSONLookupValue attributeSetInstance,
-			@Nullable final JSONLookupValue vendorBPartner,
+			@NonNull final LookupValue product,
+			@Nullable final LookupValue attributeSetInstance,
+			@Nullable final LookupValue vendorBPartner,
 			@Nullable final BigDecimal qtyAvailableToPromise,
 			@Nullable final PurchaseProfitInfo profitInfo,
 			@NonNull final String uomOrAvailablility,
@@ -430,12 +430,12 @@ public class PurchaseRow implements IViewRow
 	}
 
 	public void changeQtyToPurchase(
-			@NonNull final PurchaseRowId rowId,
+			@NonNull final PurchaseRowId includedRowId,
 			@NonNull final BigDecimal qtyToPurchase)
 	{
 		assertRowType(PurchaseRowType.GROUP);
 
-		final PurchaseRow row = getIncludedRowById(rowId);
+		final PurchaseRow row = getIncludedRowById(includedRowId);
 		row.assertRowEditable();
 		row.setQtyToPurchase(qtyToPurchase);
 
@@ -443,12 +443,12 @@ public class PurchaseRow implements IViewRow
 	}
 
 	public void changeDatePromised(
-			@NonNull final PurchaseRowId rowId,
+			@NonNull final PurchaseRowId includedRowId,
 			@NonNull final LocalDateTime datePromised)
 	{
 		assertRowType(PurchaseRowType.GROUP);
 
-		final PurchaseRow lineRow = getIncludedRowById(rowId);
+		final PurchaseRow lineRow = getIncludedRowById(includedRowId);
 
 		lineRow.assertRowEditable();
 		lineRow.setDatePromised(datePromised);
@@ -456,12 +456,12 @@ public class PurchaseRow implements IViewRow
 
 	public int getProductId()
 	{
-		return product.getKeyAsInt();
+		return product.getIdAsInt();
 	}
 
 	public int getVendorBPartnerId()
 	{
-		return vendorBPartner.getKeyAsInt();
+		return vendorBPartner.getIdAsInt();
 	}
 
 	public void setAvailabilityInfoRow(@NonNull PurchaseRow availabilityResultRow)

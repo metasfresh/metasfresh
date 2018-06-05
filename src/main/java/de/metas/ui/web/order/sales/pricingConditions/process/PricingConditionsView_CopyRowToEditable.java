@@ -8,6 +8,7 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -87,8 +88,8 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 		{
 			// In case row does not have a price then use BPartner's pricing system
 			final BPartnerId bpartnerId = templateRow.getBpartnerId();
-			final boolean isSOTrx = templateRow.isCustomer();
-			price = createBasePricingSystemPrice(bpartnerId, isSOTrx);
+			final SOTrx soTrx = SOTrx.ofBoolean(templateRow.isCustomer());
+			price = createBasePricingSystemPrice(bpartnerId, soTrx);
 		}
 
 		return PricingConditionsRowChangeRequest.builder()
@@ -99,9 +100,9 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 				.build();
 	}
 
-	private PriceOverride createBasePricingSystemPrice(final BPartnerId bpartnerId, final boolean isSOTrx)
+	private PriceOverride createBasePricingSystemPrice(final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
-		final int pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, isSOTrx);
+		final int pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
 		if (pricingSystemId <= 0)
 		{
 			return PriceOverride.none();

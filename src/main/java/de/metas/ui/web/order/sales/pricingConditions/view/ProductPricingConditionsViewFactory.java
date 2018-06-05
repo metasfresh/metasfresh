@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -63,12 +62,9 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		final Set<ProductAndCategoryId> productAndCategoryIds = productsRepo.retrieveProductCategoriesByProductIds(productIds);
 
-		final int adClientId = Env.getAD_Client_ID();
-
 		return preparePricingConditionsRowData()
 				.pricingConditionsBreaksExtractor(pricingConditions -> pricingConditions.streamBreaksMatchingAnyOfProducts(productAndCategoryIds))
 				.basePricingSystemPriceCalculator(this::calculateBasePricingSystemPrice)
-				.adClientId(adClientId)
 				.load();
 	}
 

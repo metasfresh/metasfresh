@@ -15,9 +15,9 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartner.BPartnerType;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.pricing.conditions.PriceOverride;
@@ -85,7 +86,6 @@ class PricingConditionsRowsLoader
 	private final PricingConditionsBreaksExtractor pricingConditionsBreaksExtractor;
 	private final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator;
 	private final DocumentFiltersList filters;
-	private final int adClientId;
 	private final SourceDocumentLine sourceDocumentLine;
 
 	private ImmutableSetMultimap<PricingConditionsId, PricingConditionsInfo> pricingConditionsInfoById; // lazy
@@ -95,7 +95,7 @@ class PricingConditionsRowsLoader
 				@Override
 				public Optional<LocalDate> load(final LastInOutDateRequest key)
 				{
-					final LocalDate lastInOutDate = inoutsRepo.getLastInOutDate(key.getBpartnerId(), key.getProductId(), key.isSOTrx());
+					final LocalDate lastInOutDate = inoutsRepo.getLastInOutDate(key.getBpartnerId(), key.getProductId(), key.getSoTrx());
 					return Optional.ofNullable(lastInOutDate);
 				}
 
@@ -107,16 +107,12 @@ class PricingConditionsRowsLoader
 			@NonNull final PricingConditionsBreaksExtractor pricingConditionsBreaksExtractor,
 			@NonNull final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator,
 			final DocumentFiltersList filters,
-			final int adClientId,
 			@Nullable final SourceDocumentLine sourceDocumentLine)
 	{
-		Check.assumeGreaterThanZero(adClientId, "adClientId");
-
 		this.lookups = lookups;
 		this.pricingConditionsBreaksExtractor = pricingConditionsBreaksExtractor;
 		this.basePricingSystemPriceCalculator = basePricingSystemPriceCalculator;
 		this.filters = filters != null ? filters : DocumentFiltersList.EMPTY;
-		this.adClientId = adClientId;
 		this.sourceDocumentLine = sourceDocumentLine;
 	}
 
@@ -171,7 +167,8 @@ class PricingConditionsRowsLoader
 
 	private Stream<PricingConditionsInfo> streamPricingConditionsInfos(final boolean isSOTrx)
 	{
-		final Map<BPartnerId, Integer> discountSchemaIdsByBPartnerId = bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(adClientId, isSOTrx);
+		final BPartnerType bpartnerType = BPartnerType.ofSOTrx(isSOTrx);
+		final Map<BPartnerId, Integer> discountSchemaIdsByBPartnerId = bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(bpartnerType);
 
 		return discountSchemaIdsByBPartnerId.keySet()
 				.stream()
@@ -180,7 +177,7 @@ class PricingConditionsRowsLoader
 				.map(bpartner -> PricingConditionsInfo.builder()
 						.bpartner(bpartner)
 						.pricingConditionsId(getPricingConditionsIdByBPartner(bpartner, discountSchemaIdsByBPartnerId))
-						.isSOTrx(isSOTrx)
+						.bpartnerType(bpartnerType)
 						.build());
 	}
 
@@ -205,16 +202,17 @@ class PricingConditionsRowsLoader
 
 	private PricingConditionsRow createPricingConditionsRow(final PricingConditionsBreak pricingConditionsBreak, final PricingConditionsInfo pricingConditionsInfo)
 	{
+		final SOTrx soTrx = pricingConditionsInfo.getBpartnerType().getSOTrx();
 		return PricingConditionsRow.builder()
 				.lookups(lookups)
 				.editable(false)
 				//
 				.bpartner(pricingConditionsInfo.getBpartner())
-				.customer(pricingConditionsInfo.isSOTrx())
+				.customer(soTrx.isSales())
 				//
 				.pricingConditionsId(pricingConditionsInfo.getPricingConditionsId())
 				.pricingConditionsBreak(pricingConditionsBreak)
-				.dateLastInOut(getLastInOutDate(pricingConditionsInfo.getBPartnerId(), pricingConditionsInfo.isSOTrx(), pricingConditionsBreak))
+				.dateLastInOut(getLastInOutDate(pricingConditionsInfo.getBPartnerId(), soTrx, pricingConditionsBreak))
 				.basePricingSystemPriceCalculator(basePricingSystemPriceCalculator)
 				//
 				.build();
@@ -233,7 +231,7 @@ class PricingConditionsRowsLoader
 		else
 		{
 			return Objects.equals(row.getBpartnerId(), sourceDocumentLine.getBpartnerId())
-					&& (sourceDocumentLine.isSOTrx() ? row.isCustomer() : row.isVendor());
+					&& (sourceDocumentLine.getSoTrx().isSales() ? row.isCustomer() : row.isVendor());
 		}
 	}
 
@@ -244,7 +242,7 @@ class PricingConditionsRowsLoader
 			return null;
 		}
 
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(sourceDocumentLine.getBpartnerId(), sourceDocumentLine.isSOTrx());
+		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(sourceDocumentLine.getBpartnerId(), sourceDocumentLine.getSoTrx());
 		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaIdOrNull(discountSchemaId);
 
 		final PricingConditionsBreak pricingConditionsBreak = PricingConditionsBreak.builder()
@@ -265,18 +263,18 @@ class PricingConditionsRowsLoader
 				.editable(true)
 				//
 				.bpartner(lookups.lookupBPartner(sourceDocumentLine.getBpartnerId()))
-				.customer(sourceDocumentLine.isSOTrx())
+				.customer(sourceDocumentLine.getSoTrx().isSales())
 				//
 				.pricingConditionsId(pricingConditionsId)
 				.pricingConditionsBreak(pricingConditionsBreak)
 				.basePricingSystemPriceCalculator(basePricingSystemPriceCalculator)
 				//
-				.dateLastInOut(getLastInOutDate(sourceDocumentLine.getBpartnerId(), sourceDocumentLine.isSOTrx(), pricingConditionsBreak))
+				.dateLastInOut(getLastInOutDate(sourceDocumentLine.getBpartnerId(), sourceDocumentLine.getSoTrx(), pricingConditionsBreak))
 				//
 				.build();
 	}
 
-	private LocalDate getLastInOutDate(final BPartnerId bpartnerId, final boolean isSOTrx, final PricingConditionsBreak pricingConditionsBreak)
+	private LocalDate getLastInOutDate(final BPartnerId bpartnerId, final SOTrx soTrx, final PricingConditionsBreak pricingConditionsBreak)
 	{
 		final ProductId productId = pricingConditionsBreak.getMatchCriteria().getProductId();
 		if (productId == null)
@@ -287,7 +285,7 @@ class PricingConditionsRowsLoader
 		final LastInOutDateRequest request = LastInOutDateRequest.builder()
 				.bpartnerId(bpartnerId)
 				.productId(productId)
-				.isSOTrx(isSOTrx)
+				.soTrx(soTrx)
 				.build();
 
 		try
@@ -309,7 +307,8 @@ class PricingConditionsRowsLoader
 		PricingConditionsId pricingConditionsId;
 		@lombok.NonNull
 		LookupValue bpartner;
-		boolean isSOTrx;
+		@lombok.NonNull
+		BPartnerType bpartnerType;
 
 		public BPartnerId getBPartnerId()
 		{
@@ -328,7 +327,7 @@ class PricingConditionsRowsLoader
 	public static final class SourceDocumentLine
 	{
 		OrderLineId orderLineId;
-		boolean isSOTrx;
+		SOTrx soTrx;
 
 		BPartnerId bpartnerId;
 
@@ -353,7 +352,8 @@ class PricingConditionsRowsLoader
 		BPartnerId bpartnerId;
 		@NonNull
 		ProductId productId;
-		boolean isSOTrx;
+		@NonNull
+		SOTrx soTrx;
 	}
 
 	//
