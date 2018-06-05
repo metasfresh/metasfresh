@@ -103,7 +103,7 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 						.build();
 			}
 
-			configRepo.save(config);
+			config = configRepo.save(config);
 
 			importRecord.setMSV3_Vendor_Config_ID(config.getConfigId().getRepoId());
 		}

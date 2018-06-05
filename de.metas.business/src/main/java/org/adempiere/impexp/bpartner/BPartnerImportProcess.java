@@ -273,19 +273,18 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				.build();
 
 		BPPrintFormat bpPrintFormat = repo.getByQuery(bpPrintFormatQuery);
-		if (bpPrintFormat != null )
+		if (bpPrintFormat == null )
 		{
-			return;
+			bpPrintFormat = BPPrintFormat.builder()
+					.adTableId(adTableId)
+					.docTypeId(docTypeId)
+					.printFormatId(printFormatId)
+					.bpartnerId(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()))
+					.build();
+
 		}
 
-		bpPrintFormat = BPPrintFormat.builder()
-				.adTableId(adTableId)
-				.docTypeId(docTypeId)
-				.printFormatId(printFormatId)
-				.bpartnerId(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()))
-				.build();
-
-		repo.save(bpPrintFormat);
+		bpPrintFormat = repo.save(bpPrintFormat);
 
 		importRecord.setC_BP_PrintFormat_ID(bpPrintFormat.getBpPrintFormatId());
 	}
