@@ -68,6 +68,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#4122](https://github.com/metasfresh/metasfresh/issues/4122) Transform action throws error
+  * [#4123](https://github.com/metasfresh/metasfresh/issues/4123) Dunning Jasper does not work
   * [#4125](https://github.com/metasfresh/metasfresh/issues/4125) Sometimes I got NPE when posting an allocation
   * [#4147](https://github.com/metasfresh/metasfresh/issues/4147) Error when posting a zero-sum invoice
   * [#4163](https://github.com/metasfresh/metasfresh/issues/4163) "Overlapping term" error when completing subscription order
