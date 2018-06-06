@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -112,12 +113,11 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 				return message;
 			});
 
-			logger.debug("AMQP: send event: {}", event);
-			System.out.println("AMQP: send event to topicName=" + topicName + ": " + event);
+			logger.debug("AMQP: send event; topicName={}; event={}",topicName, event);
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Failed to send {} to {}. Ignored.", event, topicName, e);
+			logger.warn(StringUtils.formatMessage("Failed to send event to topic name. Ignored; topicName={}; event={}", topicName, event), e);
 		}
 	}
 
