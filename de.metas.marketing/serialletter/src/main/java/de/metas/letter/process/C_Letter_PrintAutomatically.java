@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -138,6 +139,10 @@ public class C_Letter_PrintAutomatically extends JavaProcess
 		printingQuery.setOnlyAD_PInstance_ID(getAD_PInstance_ID());
 
 		final Properties ctx = getProcessInfo().getCtx();
+
+		// we need to make sure exists AD_Session_ID in context; if not, a new session will be created
+		Services.get(ISessionBL.class).getCurrentOrCreateNewSession(ctx);
+
 		return printingQueueBL.createPrintingQueueSources(ctx, printingQuery);
 	}
 }
