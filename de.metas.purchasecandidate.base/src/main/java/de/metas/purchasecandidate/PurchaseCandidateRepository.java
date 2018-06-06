@@ -48,6 +48,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -81,12 +82,16 @@ public class PurchaseCandidateRepository
 
 	private final CurrencyRepository currencyRepository;
 
+	private final SalesOrderLineRepository salesOrderLineRepository;
+
 	public PurchaseCandidateRepository(
 			@NonNull final PurchaseItemRepository purchaseItemRepository,
-			@NonNull final CurrencyRepository currencyRepository)
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final SalesOrderLineRepository salesOrderLineRepository)
 	{
 		this.purchaseItemRepository = purchaseItemRepository;
 		this.currencyRepository = currencyRepository;
+		this.salesOrderLineRepository = salesOrderLineRepository;
 	}
 
 	public ImmutableListMultimap<PurchaseDemandId, PurchaseCandidate> getAllByDemandIds(@NonNull final Collection<PurchaseDemandId> purchaseDemandIds)
@@ -314,11 +319,14 @@ public class PurchaseCandidateRepository
 		final Duration reminderTime = dateRequired != null && dateReminder != null ? Duration.between(dateRequired, dateReminder) : null;
 
 		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIdsOrNull(purchaseCandidateRecord.getC_OrderSO_ID(), purchaseCandidateRecord.getC_OrderLineSO_ID());
-		BigDecimal salesOrderQtyToDeliver = null;
+		Quantity salesOrderQtyToDeliver = null;
 		if (salesOrderAndLineId != null)
 		{
-			final I_C_OrderLine salesOrderLine = load(salesOrderAndLineId.getOrderLineRepoId(), I_C_OrderLine.class);
-			salesOrderQtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
+			final SalesOrderLine orderLine = salesOrderLineRepository.getById(salesOrderAndLineId.getOrderLineId());
+			final Quantity orderedQty = orderLine.getOrderedQty();
+			salesOrderQtyToDeliver = orderedQty
+					.subtract(orderLine.getDeliveredQty())
+					.max(orderedQty.toZero()); // negative qty don't make sense for the purchase candidate
 		}
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
@@ -447,5 +455,21 @@ public class PurchaseCandidateRepository
 				.vendorBPartnerId(vendorBPartnerId)
 				.notificationTime(reminderDate)
 				.build();
+	}
+
+	public PurchaseCandidateId save(@NonNull final PurchaseCandidate purchaseCandidate)
+	{
+		I_C_PurchaseCandidate purchaseCandidateRecord;
+		if (purchaseCandidate.getId() != null)
+		{
+			purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
+		}
+		else
+		{
+			purchaseCandidateRecord = load(purchaseCandidate.getId().getRepoId(), I_C_PurchaseCandidate.class);
+		}
+
+		createOrUpdateRecord(purchaseCandidate, purchaseCandidateRecord);
+		return PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID());
 	}
 }

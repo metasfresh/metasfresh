@@ -1,18 +1,16 @@
-package de.metas.purchasecandidate;
+package de.metas.product;
 
-import javax.annotation.Nullable;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import org.adempiere.service.OrgId;
-import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.uom.UomId;
+import org.compiere.model.I_M_Product;
+import org.springframework.stereotype.Repository;
 
-import de.metas.order.OrderAndLineId;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.Value;
+import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.purchasecandidate.base
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -32,16 +30,20 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-class PurchaseCandidateImmutableFields
+@Repository
+public class ProductRepository
 {
-	@Nullable
-	OrderAndLineId salesOrderAndLineId;
+	public Product getById(@NonNull final ProductId id)
+	{
+		final I_M_Product productRecord = loadOutOfTrx(id.getRepoId(), I_M_Product.class);
+		return ofRecord(productRecord);
+	}
 
-	OrgId orgId;
-	WarehouseId warehouseId;
-	ProductId productId;
-	int uomId;
-	VendorProductInfo vendorProductInfo;
+	public Product ofRecord(@NonNull final I_M_Product productRecord)
+	{
+		return Product.builder()
+				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.uomId(UomId.ofRepoId(productRecord.getC_UOM_ID()))
+				.build();
+	}
 }

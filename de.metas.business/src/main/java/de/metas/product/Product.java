@@ -1,18 +1,14 @@
-package de.metas.purchasecandidate;
+package de.metas.product;
 
-import javax.annotation.Nullable;
+import org.adempiere.uom.UomId;
 
-import org.adempiere.service.OrgId;
-import org.adempiere.warehouse.WarehouseId;
-
-import de.metas.order.OrderAndLineId;
-import de.metas.product.ProductId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.purchasecandidate.base
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -34,14 +30,11 @@ import lombok.Value;
 
 @Value
 @Builder
-class PurchaseCandidateImmutableFields
+public class Product
 {
-	@Nullable
-	OrderAndLineId salesOrderAndLineId;
+	@NonNull
+	ProductId id;
 
-	OrgId orgId;
-	WarehouseId warehouseId;
-	ProductId productId;
-	int uomId;
-	VendorProductInfo vendorProductInfo;
+	@NonNull
+	UomId uomId;
 }

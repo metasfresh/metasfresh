@@ -1,5 +1,7 @@
 package de.metas.purchasecandidate.material.interceptor;
 
+import org.adempiere.ad.modelvalidator.InterceptorUtil;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -9,9 +11,12 @@ import org.springframework.stereotype.Component;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
+import de.metas.purchasecandidate.material.event.PurchaseCandidateRequestedHandler;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -53,9 +58,54 @@ public class C_PurchaseCandidate
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void postEvent(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
+	public void postPurchaseCandidateCreatedEvent(
+			@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord,
+			@NonNull final ModelChangeType type)
 	{
-		ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(purchaseCandidateRecord);
+		if (!PurchaseCandidateRequestedHandler.INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD.get())
+		{
+			return;
+		}
+
+		final boolean isNewPurchaseCandidateRecord = type.isNew() || InterceptorUtil.isJustActivated(purchaseCandidateRecord);
+		if (!isNewPurchaseCandidateRecord)
+		{
+			return;
+		}
+
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
+
+		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
+				.purchaseMaterialDescriptor(materialDescriptor)
+				// .
+				.build();
+
+		postMaterialEventService.postEventAfterNextCommit(purchaseCandidateCreatedEvent);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void postPurchaseCandidateUpdatedEvent(
+			@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord,
+			@NonNull final ModelChangeType type)
+	{
+
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
+
+		final PurchaseCandidateUpdatedEvent purchaseCandidateUpdatedEvent = PurchaseCandidateUpdatedEvent.builder()
+				.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
+				.purchaseMaterialDescriptor(materialDescriptor)
+				.build();
+
+		postMaterialEventService.postEventAfterNextCommit(purchaseCandidateUpdatedEvent);
+	}
+
+	private MaterialDescriptor createMaterialDescriptor(
+			@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
+	{
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(purchaseCandidateRecord);
 
 		final Quantity purchaseQty = Services.get(IUOMConversionBL.class)
 				.convertToProductUOM(Quantity.of(purchaseCandidateRecord.getQtyToPurchase(), purchaseCandidateRecord.getC_UOM()),
@@ -67,13 +117,6 @@ public class C_PurchaseCandidate
 				.productDescriptor(productDescriptor)
 				.quantity(purchaseQty.getQty())
 				.build();
-
-		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
-				.purchaseMaterialDescriptor(materialDescriptor)
-				//.
-				.build();
-
-		postMaterialEventService.postEventAfterNextCommit(purchaseCandidateCreatedEvent);
+		return materialDescriptor;
 	}
 }

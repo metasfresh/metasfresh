@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate;
 
 import static java.util.stream.Collectors.toCollection;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -9,12 +10,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
+import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
@@ -28,6 +35,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
+import de.metas.quantity.Quantity;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
 import lombok.AccessLevel;
@@ -70,9 +78,10 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private PurchaseCandidateId id;
 
-	@NonNull
-	private final BigDecimal salesOrderQtyToDeliver;
+	/** If a sales order line is referenced, then this is the line's qtyOrdered minus qtyDelivered */
+	private final Quantity salesOrderQtyToDeliver;
 
+	/** ..in {@link PurchaseCandidateImmutableFields#getUomId()} */
 	@NonNull
 	private BigDecimal qtyToPurchase;
 
@@ -106,7 +115,7 @@ public class PurchaseCandidate
 	@Builder
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
-			final OrderAndLineId salesOrderAndLineId,
+			@Nullable final OrderAndLineId salesOrderAndLineId,
 			final boolean processed,
 			final boolean locked,
 			//
@@ -118,7 +127,7 @@ public class PurchaseCandidate
 			@NonNull final VendorProductInfo vendorProductInfo,
 			//
 			@NonNull final BigDecimal qtyToPurchase,
-			final BigDecimal salesOrderQtyToDeliver,
+			@Nullable final Quantity salesOrderQtyToDeliver,
 			//
 			@NonNull final LocalDateTime dateRequired,
 			final Duration reminderTime,
@@ -285,10 +294,30 @@ public class PurchaseCandidate
 				.build();
 	}
 
+	// TODO: move this thing out
 	public ProductAndQuantity createProductAndQuantity()
 	{
 		final String productValue = getVendorProductInfo().getProductNo();
-		final BigDecimal qtyToDeliver = Util.coalesce(getSalesOrderQtyToDeliver(), getQtyToPurchase());
+
+		final Supplier<BigDecimal> orderLineQty = () -> {
+			if (getSalesOrderQtyToDeliver() == null)
+			{
+				return null;
+			}
+			return Services.get(IUOMConversionBL.class)
+					.convertToProductUOM(getSalesOrderQtyToDeliver(), getProductId().getRepoId())
+					.getQty();
+		};
+
+		final Supplier<BigDecimal> purchaseQty = () -> {
+			final I_C_UOM uomRecord = loadOutOfTrx(getUomId(), I_C_UOM.class);
+			final Quantity quantity = Quantity.of(getQtyToPurchase(), uomRecord);
+
+			return Services.get(IUOMConversionBL.class)
+					.convertToProductUOM(quantity, getProductId().getRepoId())
+					.getQty();
+		};
+		final BigDecimal qtyToDeliver = Util.coalesceSuppliers(orderLineQty, purchaseQty);
 
 		return ProductAndQuantity.of(productValue, qtyToDeliver);
 	}

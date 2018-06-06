@@ -76,10 +76,10 @@ public class RequestMaterialOrderService
 		switch (group.get(0).getBusinessCase())
 		{
 			case PRODUCTION:
-				createAndFireProductionRequestedEvent(group);
+				createAndFirePPOrderRequestedEvent(group);
 				break;
 			case DISTRIBUTION:
-				requestDistributionOrder(group);
+				createAndFireDDOrderRequestedEvent(group);
 				break;
 			default:
 				break;
@@ -94,7 +94,7 @@ public class RequestMaterialOrderService
 	 * @return
 	 */
 
-	private void createAndFireProductionRequestedEvent(@NonNull final List<Candidate> group)
+	private void createAndFirePPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
 		materialEventService.postEventNow(ppOrderRequestEvent);
@@ -165,7 +165,7 @@ public class RequestMaterialOrderService
 				.build();
 	}
 
-	private void requestDistributionOrder(@NonNull final List<Candidate> group)
+	private void createAndFireDDOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
 		materialEventService.postEventNow(ddOrderRequestEvent);

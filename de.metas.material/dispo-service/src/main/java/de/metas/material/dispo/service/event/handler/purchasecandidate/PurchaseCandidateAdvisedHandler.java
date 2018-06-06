@@ -110,8 +110,11 @@ public final class PurchaseCandidateAdvisedHandler
 		if (event.isDirectlyCreatePurchaseCandidate())
 		{
 			final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
+					.eventDescriptor(event.getEventDescriptor().copy())
 					.purchaseMaterialDescriptor(purchaseMaterialDescriptor)
 					.supplyCandidateRepoId(createdCandidate.getId())
+					.salesOrderLineRepoId(demandDetail.getOrderLineId())
+					.salesOrderRepoId(demandDetail.getOrderId())
 					.build();
 			materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
 		}

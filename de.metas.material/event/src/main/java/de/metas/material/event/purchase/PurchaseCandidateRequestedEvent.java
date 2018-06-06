@@ -1,5 +1,7 @@
 package de.metas.material.event.purchase;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -46,15 +48,25 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 
 	MaterialDescriptor purchaseMaterialDescriptor;
 
+	/** can specify the sales order line (if there is any) that triggered the material-dispo to request this purchase candidate. */
+	int salesOrderLineRepoId;
+
+	/** analog to {@link #salesOrderLineRepoId}. */
+	int salesOrderRepoId;
+
 	@Builder
 	@JsonCreator
 	public PurchaseCandidateRequestedEvent(
 			@JsonProperty("supplyCandidateRepoId") final int supplyCandidateRepoId,
 			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
+			@JsonProperty("salesOrderLineRepoId") @Nullable final int salesOrderLineRepoId,
+			@JsonProperty("salesOrderRepoId") @Nullable final int salesOrderRepoId,
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor)
 	{
 		this.supplyCandidateRepoId = Check.assumeGreaterThanZero(supplyCandidateRepoId, "supplyCandidateRepoId");
 		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
+		this.salesOrderLineRepoId = salesOrderLineRepoId;
+		this.salesOrderRepoId = salesOrderRepoId;
 		this.eventDescriptor = eventDescriptor;
 	}
 }
