@@ -34,6 +34,6 @@ public class LetterConstants
 	/**
 	 * Internal name async batch for creating letters async
 	 */
-	public static final String C_Async_Batch_InternalName_CreatinglettersAsync = "CreatinglettersAsync";
+	public static final String C_Async_Batch_InternalName_CreateLettersAsync = "CreateLettersAsync";
 
 }
