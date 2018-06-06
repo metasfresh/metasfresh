@@ -65,6 +65,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 					.bpartnerId(contactPerson.getBPartnerId())
 					.userId(contactPerson.getUserId())
 					.subject(campaignContactPerson.getMKTG_Campaign().getName() + contactPerson.getName())
+					.body(campaignContactPerson.getMKTG_Campaign().getName())
 					.address(location.getAddress())
 					.build();
 
