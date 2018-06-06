@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1410255726L;
+	private static final long serialVersionUID = 1042155202L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -520,6 +520,41 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getCreditLimitIndicator () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreditLimitIndicator);
+	}
+
+	/** Set Kreditoren-Nr.
+		@param CreditorId Kreditoren-Nr	  */
+	@Override
+	public void setCreditorId (int CreditorId)
+	{
+		set_Value (COLUMNNAME_CreditorId, Integer.valueOf(CreditorId));
+	}
+
+	/** Get Kreditoren-Nr.
+		@return Kreditoren-Nr	  */
+	@Override
+	public int getCreditorId () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CreditorId);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Eigene-Kd. Nr. .
+		@param CustomerNoAtVendor Eigene-Kd. Nr. 	  */
+	@Override
+	public void setCustomerNoAtVendor (java.lang.String CustomerNoAtVendor)
+	{
+		set_Value (COLUMNNAME_CustomerNoAtVendor, CustomerNoAtVendor);
+	}
+
+	/** Get Eigene-Kd. Nr. .
+		@return Eigene-Kd. Nr. 	  */
+	@Override
+	public java.lang.String getCustomerNoAtVendor () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerNoAtVendor);
 	}
 
 	/** Set Debitoren-Nr.
@@ -2022,6 +2057,22 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return bd;
 	}
 
+	/** Set Qualification .
+		@param Qualification Qualification 	  */
+	@Override
+	public void setQualification (java.lang.String Qualification)
+	{
+		set_Value (COLUMNNAME_Qualification, Qualification);
+	}
+
+	/** Get Qualification .
+		@return Qualification 	  */
+	@Override
+	public java.lang.String getQualification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Qualification);
+	}
+
 	/** Set Rating.
 		@param Rating 
 		Classification or Importance
@@ -2442,5 +2493,24 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getVATaxID () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_VATaxID);
+	}
+
+	/** Set Produkt-Kategorie Geschäftspartner.
+		@param VendorCategory 
+		Produkt-Kategorie des Geschäftspartner
+	  */
+	@Override
+	public void setVendorCategory (java.lang.String VendorCategory)
+	{
+		set_Value (COLUMNNAME_VendorCategory, VendorCategory);
+	}
+
+	/** Get Produkt-Kategorie Geschäftspartner.
+		@return Produkt-Kategorie des Geschäftspartner
+	  */
+	@Override
+	public java.lang.String getVendorCategory () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VendorCategory);
 	}
 }

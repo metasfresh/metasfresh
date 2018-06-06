@@ -1,18 +1,19 @@
 package de.metas.purchasecandidate;
 
-import static java.math.BigDecimal.TEN;
-
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 
@@ -54,17 +55,16 @@ public final class PurchaseCandidateTestTool
 	public static PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId)
 	{
 		return PurchaseCandidate.builder()
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderId(1)
-				.salesOrderLineId(SALES_ORDER_LINE_ID)
-				.orgId(3)
-				.warehouseId(4)
+				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
+				.salesOrderAndLineId(OrderAndLineId.of(OrderId.ofRepoId(1), SALES_ORDER_LINE_ID))
+				.orgId(OrgId.ofRepoId(3))
+				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
 				.profitInfo(createPurchaseProfitInfo())
 				.vendorProductInfo(VendorProductInfo.builder()
-						.bpartnerProductId(10)
-						.vendorBPartnerId(BPartnerId.ofRepoId(7))
+						.id(VendorProductInfoId.ofRepoId(10))
+						.vendorId(BPartnerId.ofRepoId(7))
 						.productId(ProductId.ofRepoId(20))
 						.productNo("productNo")
 						.productName("productName")
@@ -79,10 +79,9 @@ public final class PurchaseCandidateTestTool
 	public static PurchaseProfitInfo createPurchaseProfitInfo()
 	{
 		return PurchaseProfitInfo.builder()
-				.purchasePlvId(PriceListVersionId.ofRepoId(10))
-				.customerPriceGrossProfit(Money.of(TEN, CURRENCY))
-				.purchasePriceActual(Money.of(TEN, CURRENCY))
-				.priceGrossProfit(Money.of(TEN, CURRENCY))
+				.salesNetPrice(Money.of(10, CURRENCY))
+				.purchaseNetPrice(Money.of(10, CURRENCY))
+				.purchaseGrossPrice(Money.of(10, CURRENCY))
 				.build();
 	}
 }

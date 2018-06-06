@@ -279,7 +279,7 @@ class InvoiceCandidateFactory
 			final I_C_Invoice_Candidate assignableInvoiceCandidateRecord,
 			final RefundConfig refundConfig)
 	{
-		final boolean soTrx = !assignableInvoiceCandidateRecord.isSOTrx();
+		final boolean soTrx = assignableInvoiceCandidateRecord.isSOTrx();
 
 		final DocTypeQueryBuilder docTypeQueryBuilder = DocTypeQuery
 				.builder()

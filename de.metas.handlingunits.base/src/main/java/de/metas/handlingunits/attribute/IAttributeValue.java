@@ -201,6 +201,11 @@ public interface IAttributeValue
 	boolean isDisplayedUI();
 
 	/**
+	 * @return true if the attribute shall be displayed only if present in the product's attributeSet.
+	 */
+	boolean isOnlyIfInProductAttributeSet();
+
+	/**
 	 * @return ordering sequence no
 	 */
 	int getDisplaySeqNo();

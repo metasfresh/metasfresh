@@ -1646,17 +1646,19 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public void completeIfValid(final I_C_Flatrate_Term term)
 	{
-		final boolean hasOverlappingTerms = hasOverlappingTerms(term);
-		if (hasOverlappingTerms)
+		final boolean overlappingIsOK = canOverlapWithOtherTerms(term);
+		if (!overlappingIsOK)
 		{
-
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(
-					Env.getCtx(),
-					MSG_HasOverlapping_Term,
-					new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));
-			return;
+			final boolean hasOverlappingTerms = hasOverlappingTerms(term);
+			if (hasOverlappingTerms)
+			{
+				Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(
+						Env.getCtx(),
+						MSG_HasOverlapping_Term,
+						new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));
+				return;
+			}
 		}
-
 		complete(term);
 	}
 
@@ -1666,6 +1668,13 @@ public class FlatrateBL implements IFlatrateBL
 		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
 		Services.get(IDocumentBL.class).processEx(term, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 
+	}
+
+	@Override
+	public boolean canOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term)
+	{
+		final boolean overlappingIsOK = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions());
+		return overlappingIsOK;
 	}
 
 	@Override
@@ -1687,7 +1696,6 @@ public class FlatrateBL implements IFlatrateBL
 
 		for (final I_C_Flatrate_Term term : terms)
 		{
-
 			// Only consider completed terms
 			if (!X_C_Flatrate_Term.DOCSTATUS_Completed.equals(term.getDocStatus()))
 			{

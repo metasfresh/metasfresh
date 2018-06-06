@@ -52,7 +52,7 @@ import lombok.NonNull;
 
 	private final static AnnotatedModelInterceptorDisabler INSTANCE = new AnnotatedModelInterceptorDisabler();
 
-	final static String SYS_CONFIG_NAME_PREFIX = "IntercetorEnabled_";
+	final static String SYS_CONFIG_NAME_PREFIX = "InterceptorEnabled_";
 
 	private final ExtendedMemorizingSupplier<Set<String>> disabledPointcutIdsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveDisabledPointcutIds());
 
@@ -65,7 +65,7 @@ import lombok.NonNull;
 
 	/**
 	 * Invalidates disabled pointcuts cache.
-	 * 
+	 *
 	 * @return 1
 	 */
 	@VisibleForTesting

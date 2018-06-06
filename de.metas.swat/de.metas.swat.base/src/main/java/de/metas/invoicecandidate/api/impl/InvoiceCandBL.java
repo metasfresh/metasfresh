@@ -116,6 +116,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.pricing.conditions.PricingConditions;
@@ -890,7 +891,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		// take the precision from the bpartner price list
 		final Timestamp date = ic.getDateOrdered();
-		final boolean isSOTrx = ic.isSOTrx();
+		final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
 		final I_C_BPartner_Location partnerLocation = ic.getBill_Location();
 		if (partnerLocation != null)
 		{
@@ -899,7 +900,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							ic.getM_PricingSystem_ID(),
 							partnerLocation.getC_Location().getC_Country_ID(),
 							date,
-							isSOTrx);
+							soTrx);
 
 			if (pricelist != null)
 			{
@@ -1945,7 +1946,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), ic.isSOTrx());
+		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()));
 		if (discountSchemaId <= 0)
 		{
 			// do nothing

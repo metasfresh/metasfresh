@@ -1,6 +1,8 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.config;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.function.Supplier;
 
@@ -14,6 +16,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -96,5 +99,37 @@ public class MSV3ClientConfigRepository
 		}
 		return result;
 	}
+
+	public MSV3ClientConfig save(@NonNull final MSV3ClientConfig config)
+	{
+		final I_MSV3_Vendor_Config configRecord = createOrUpdateRecord(config);
+		saveRecord(config);
+
+		return config.toBuilder()
+				.configId(MSV3ClientConfigId.ofRepoId(configRecord.getMSV3_Vendor_Config_ID()))
+				.build();
+	}
+
+	private I_MSV3_Vendor_Config createOrUpdateRecord(@NonNull final MSV3ClientConfig config)
+	{
+		final I_MSV3_Vendor_Config configRecord;
+		if (config.getConfigId() != null)
+		{
+			final int repoId = config.getConfigId().getRepoId();
+			configRecord = load(repoId, I_MSV3_Vendor_Config.class);
+		}
+		else
+		{
+			configRecord = newInstance(I_MSV3_Vendor_Config.class);
+		}
+
+		configRecord.setC_BPartner_ID(config.getBpartnerId().getRepoId());
+		configRecord.setMSV3_BaseUrl(config.getBaseUrl().toExternalForm());
+		configRecord.setPassword(config.getAuthPassword());
+		configRecord.setUserID(config.getAuthUsername());
+
+		return configRecord;
+	}
+
 
 }
