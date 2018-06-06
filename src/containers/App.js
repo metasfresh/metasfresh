@@ -7,11 +7,11 @@ import { push, syncHistoryWithStore } from 'react-router-redux';
 
 import {
   addNotification,
-  getAvailableLang,
   languageSuccess,
   logoutSuccess,
   setProcessSaved,
 } from '../actions/AppActions';
+import { getAvailableLang } from '../api';
 import { noConnection } from '../actions/WindowActions';
 import { addPlugins } from '../actions/PluginActions';
 import '../assets/css/styles.css';

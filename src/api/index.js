@@ -9,6 +9,17 @@ import {
   deleteStaticFilter,
   quickActionsRequest,
 } from './view';
+import {
+  loginRequest,
+  localLoginRequest,
+  loginCompletionRequest,
+  logoutRequest,
+  getAvatar,
+  getUserSession,
+  getUserLang,
+  setUserLang,
+  getAvailableLang,
+} from './login';
 
 export {
   initLayout,
@@ -21,4 +32,13 @@ export {
   filterViewRequest,
   deleteStaticFilter,
   quickActionsRequest,
+  loginRequest,
+  localLoginRequest,
+  loginCompletionRequest,
+  logoutRequest,
+  getAvatar,
+  getUserSession,
+  getUserLang,
+  setUserLang,
+  getAvailableLang,
 };

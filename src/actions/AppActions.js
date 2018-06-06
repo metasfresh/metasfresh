@@ -5,47 +5,9 @@ import { replace } from 'react-router-redux';
 
 import * as types from '../constants/ActionTypes';
 import { LOCAL_LANG } from '../constants/Constants';
+import { getUserSession } from '../api';
 
 // TODO: All requests should be moved to API
-
-export function getAvatar(id) {
-  return config.API_URL + '/image/' + id + '?maxWidth=200&maxHeight=200';
-}
-
-export function getUserSession() {
-  return axios.get(config.API_URL + '/userSession');
-}
-
-export function getUserLang() {
-  return axios.get(config.API_URL + '/userSession/language');
-}
-
-export function setUserLang(payload) {
-  return axios.put(config.API_URL + '/userSession/language', payload);
-}
-
-export function getAvailableLang() {
-  return axios.get(config.API_URL + '/login/availableLanguages');
-}
-
-export function loginRequest(username, password) {
-  return axios.post(config.API_URL + '/login/authenticate', {
-    username,
-    password,
-  });
-}
-
-export function localLoginRequest() {
-  return axios.get(config.API_URL + '/login/isLoggedIn');
-}
-
-export function loginCompletionRequest(role) {
-  return axios.post(config.API_URL + '/login/loginComplete', role);
-}
-
-export function logoutRequest() {
-  return axios.get(config.API_URL + '/login/logout');
-}
 
 export function getNotifications() {
   return axios.get(config.API_URL + '/notifications/all?limit=20');
@@ -135,12 +97,7 @@ export function getMessages(lang) {
 
 export function createUrlAttachment({ windowId, documentId, name, url }) {
   return axios.post(
-    config.API_URL +
-      '/window/' +
-      windowId +
-      '/' +
-      documentId +
-      '/attachments/addUrl',
+    `${config.API_URL}/window/${windowId}/${documentId}/attachments/addUrl`,
     { name, url }
   );
 }
