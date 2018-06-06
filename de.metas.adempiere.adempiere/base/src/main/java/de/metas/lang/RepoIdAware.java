@@ -1,13 +1,8 @@
-package de.metas.product;
-
-import org.adempiere.util.Check;
-
-import de.metas.lang.RepoIdAware;
-import lombok.Value;
+package de.metas.lang;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,29 +22,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class ProductCategoryId implements RepoIdAware
+public interface RepoIdAware
 {
-	int repoId;
-
-	public static ProductCategoryId ofRepoId(final int repoId)
-	{
-		return new ProductCategoryId(repoId);
-	}
-
-	public static ProductCategoryId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new ProductCategoryId(repoId) : null;
-	}
-
-	public static int toRepoId(ProductCategoryId productCategoryId)
-	{
-		return productCategoryId != null ? productCategoryId.getRepoId() : -1;
-	}
-
-	private ProductCategoryId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
-
+	int getRepoId();
 }
