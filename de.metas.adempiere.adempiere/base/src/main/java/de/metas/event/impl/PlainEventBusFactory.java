@@ -1,5 +1,7 @@
 package de.metas.event.impl;
 
+import java.util.HashMap;
+
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
@@ -32,10 +34,12 @@ import de.metas.event.Topic;
  */
 public class PlainEventBusFactory implements IEventBusFactory
 {
+	private final HashMap<Topic, EventBus> topic2Eventbus = new HashMap<>();
+
 	@Override
 	public IEventBus getEventBus(Topic topic)
 	{
-		return new EventBus(topic.getFullName(), null);
+		return topic2Eventbus.computeIfAbsent(topic, t->new EventBus(t.getFullName(), null));
 	}
 
 	@Override
