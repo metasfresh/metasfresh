@@ -199,6 +199,7 @@ class Labels extends Component {
 
     this.setState({
       cursor: cursor + 1,
+      suggestion: null,
     });
   };
 
