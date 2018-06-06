@@ -15,6 +15,8 @@ Here come the actual release notes:
 * metasfresh
   * [#4173](https://github.com/metasfresh/metasfresh/issues/4173) Translations for Purchase Dispo modal Overlay Fields
     * Field Translations added for Purchase Dispo modal overlay in Sales Order and Purchase Candidates.
+  * [#4178](https://github.com/metasfresh/metasfresh/issues/4178) Pricing Conditions Cockpit Translations in Material Cockpit
+    * Improving Translations for en_US and de_DE for Pricing Conditions Actions.
 
 ## Fixes
 * metasfresh-webui-frontend
