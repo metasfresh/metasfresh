@@ -42,7 +42,7 @@ private final RefundContractRepository refundContractRepository;
 	}
 
 	@Override
-	public GrossProfitComponent provideForOrderLine(@NonNull final GrossProfitComputeRequest request)
+	public GrossProfitComponent provideForRequest(@NonNull final GrossProfitComputeRequest request)
 	{
 		return new RefundGrossProfitComponent(request, refundContractRepository);
 	}

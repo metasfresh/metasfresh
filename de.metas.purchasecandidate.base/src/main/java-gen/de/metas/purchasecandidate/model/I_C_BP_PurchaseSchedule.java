@@ -249,6 +249,31 @@ public interface I_C_BP_PurchaseSchedule
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Lead Time Offset.
+	 * Optional Lead Time offest before starting production
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLeadTimeOffset (int LeadTimeOffset);
+
+	/**
+	 * Get Lead Time Offset.
+	 * Optional Lead Time offest before starting production
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLeadTimeOffset();
+
+    /** Column definition for LeadTimeOffset */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_LeadTimeOffset = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "LeadTimeOffset", null);
+    /** Column name LeadTimeOffset */
+    public static final String COLUMNNAME_LeadTimeOffset = "LeadTimeOffset";
+
+	/**
 	 * Set Day of the Month.
 	 * Day of the month 1 to 28/29/30/31
 	 *

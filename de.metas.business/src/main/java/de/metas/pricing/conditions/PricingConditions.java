@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
 
@@ -131,5 +132,16 @@ public class PricingConditions
 		return getBreaks()
 				.stream()
 				.filter(schemaBreak -> schemaBreak.getMatchCriteria().productMatchesAnyOf(productAndCategoryIds));
+	}
+
+	public PricingConditionsBreak getBreakById(@NonNull final PricingConditionsBreakId breakId)
+	{
+		PricingConditionsBreakId.assertMatching(getId(), breakId);
+
+		return getBreaks()
+				.stream()
+				.filter(schemaBreak -> breakId.equals(schemaBreak.getId()))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No break found for " + breakId + " in " + this));
 	}
 }

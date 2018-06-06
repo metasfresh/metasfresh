@@ -1,6 +1,5 @@
 package de.metas.contracts.refund;
 
-import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -10,6 +9,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyRepository;
@@ -47,26 +47,30 @@ public class InvoiceCandidateAssignmentServiceTest
 
 	private InvoiceCandidateAssignmentService invoiceCandidateAssignmentService;
 
+	private RefundTestTools refundTestTools;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository();
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 
 		invoiceCandidateRepository = new InvoiceCandidateRepository(
-				refundConfigRepository,
+				new RefundContractRepository(refundConfigRepository),
 				new MoneyFactory(new CurrencyRepository()));
 
 		invoiceCandidateAssignmentService = new InvoiceCandidateAssignmentService(
 				new RefundContractRepository(refundConfigRepository),
 				invoiceCandidateRepository);
+
+		refundTestTools = new RefundTestTools();
 	}
 
 	@Test
 	public void unassignCandidate_AssignableInvoiceCandidate_without_assignment()
 	{
-		final AssignableInvoiceCandidate assignableInvoiceCandidate = RefundTestTools.createAssignableCandidate(null);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
 
 		// invoke the method under test
 		final Throwable thrown = catchThrowable(() -> invoiceCandidateAssignmentService.unassignCandidate(assignableInvoiceCandidate));
@@ -76,33 +80,32 @@ public class InvoiceCandidateAssignmentServiceTest
 	@Test
 	public void unassignCandidate()
 	{
-		final RefundInvoiceCandidate refundInvoiceCandidate = RefundTestTools.createRefundCandidate();
-		final AssignableInvoiceCandidate assignableInvoiceCandidate = RefundTestTools.createAssignableCandidate(refundInvoiceCandidate);
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateWithAssignment();
+
+		final RefundInvoiceCandidate refundInvoiceCandidate = assignableInvoiceCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate();
+		assertThat(refundInvoiceCandidate.getMoney().getValue()).isEqualByComparingTo(HUNDRED.add(TWO)); // guard
 
 		// invoke the method under test
 		final UnassignedPairOfCandidates unAssignedPairOfCandidates = invoiceCandidateAssignmentService.unassignCandidate(assignableInvoiceCandidate);
 
 		final AssignableInvoiceCandidate unassignedAssignableInvoiceCandidate = unAssignedPairOfCandidates.getAssignableInvoiceCandidate();
-		assertThat(unassignedAssignableInvoiceCandidate.getRefundInvoiceCandidate()).isNull();
-
-		final I_C_Invoice_Candidate unassigneAssignableInvoiceCandidateRecord = RefundTestTools.retrieveRecord(unassignedAssignableInvoiceCandidate.getId());
-		assertThat(unassigneAssignableInvoiceCandidateRecord.getPriceActual()).isEqualByComparingTo(TEN); // still unchanged
+		assertThat(unassignedAssignableInvoiceCandidate.isAssigned()).isFalse();
 
 		final RefundInvoiceCandidate unAssignedRefundInvoiceCandidate = unAssignedPairOfCandidates.getRefundInvoiceCandidate();
 
 		final InvoiceCandidateId invoiceCandidateId = unAssignedRefundInvoiceCandidate.getId();
 		assertThat(invoiceCandidateId).isEqualTo(refundInvoiceCandidate.getId());
-		assertThat(unAssignedRefundInvoiceCandidate.getMoney().getValue()).isEqualByComparingTo(HUNDRED.subtract(TWO)); // we subtract 20% of 10; 20% is set in the refund config
+		assertThat(unAssignedRefundInvoiceCandidate.getMoney().getValue()).isEqualByComparingTo(HUNDRED); // we subtract 20% of 10 from 102; 20% is set in the refund config
 
 		final I_C_Invoice_Candidate unAssignedRefundInvoiceCandidateRecord = RefundTestTools.retrieveRecord(invoiceCandidateId);
-		assertThat(unAssignedRefundInvoiceCandidateRecord.getPriceActual()).isEqualByComparingTo(HUNDRED.subtract(TWO));
+		assertThat(unAssignedRefundInvoiceCandidateRecord.getPriceActual()).isEqualByComparingTo(HUNDRED);
 	}
 
 	@Test
 	public void assignCandidate()
 	{
-		final RefundInvoiceCandidate refundInvoiceCandidate = RefundTestTools.createRefundCandidate();
-		final AssignableInvoiceCandidate assignableInvoiceCandidate = RefundTestTools.createAssignableCandidate(null);
+		final RefundInvoiceCandidate refundInvoiceCandidate = refundTestTools.createRefundCandidate();
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
 
 		final UnassignedPairOfCandidates unAssignedPairOfCandidates = UnassignedPairOfCandidates.builder()
 				.assignableInvoiceCandidate(assignableInvoiceCandidate)
@@ -110,10 +113,12 @@ public class InvoiceCandidateAssignmentServiceTest
 				.build();
 
 		// invoke the method under test
-		final AssignableInvoiceCandidate assignableCandidateWithRefundCandidate = invoiceCandidateAssignmentService.assignCandidates(unAssignedPairOfCandidates);
-		assertThat(assignableCandidateWithRefundCandidate.getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId());
+		final AssignableInvoiceCandidate assignableCandidateWithRefundCandidate = //
+				invoiceCandidateAssignmentService.assignCandidates(unAssignedPairOfCandidates);
 
-		final RefundInvoiceCandidate assignedRefundInvoiceCandidate = assignableCandidateWithRefundCandidate.getRefundInvoiceCandidate();
+		assertThat(assignableCandidateWithRefundCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId());
+
+		final RefundInvoiceCandidate assignedRefundInvoiceCandidate = assignableCandidateWithRefundCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate();
 
 		final InvoiceCandidateId invoiceCandidateId = assignedRefundInvoiceCandidate.getId();
 		assertThat(invoiceCandidateId).isEqualTo(refundInvoiceCandidate.getId());
@@ -121,5 +126,77 @@ public class InvoiceCandidateAssignmentServiceTest
 
 		final I_C_Invoice_Candidate assignedRefundInvoiceCandidateRecord = RefundTestTools.retrieveRecord(invoiceCandidateId);
 		assertThat(assignedRefundInvoiceCandidateRecord.getPriceActual()).isEqualByComparingTo(HUNDRED.add(TWO));
+	}
+
+	@Test
+	public void updateAssignment_not_yet_assigned()
+	{
+		final RefundInvoiceCandidate refundInvoiceCandidate = refundTestTools.createRefundCandidate();
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
+
+		// invoke the method under test
+		final AssignableInvoiceCandidate assignedCandidate = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getMoneyAssignedToRefundCandidate()).isNotNull();
+		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo("2");
+
+		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate()).isNotNull();
+		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId()); // guard
+		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo("102"); // according to the assignable candidate's money and the config's percentage
+	}
+
+	@Test
+	public void updateAssignment_already_assinged_according_to_parameter()
+	{
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateWithAssignment();
+		final RefundInvoiceCandidate refundInvoiceCandidate = assignableInvoiceCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate();
+
+		// invoke the method under test
+		final AssignableInvoiceCandidate assignedCandidate = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
+
+		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate()).isNotNull();
+		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate()).isEqualTo(refundInvoiceCandidate); // unchanged bc nothing as really altered
+	}
+
+	@Test
+	public void updateAssignment_already_assinged_only_according_to_backend()
+	{
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateWithAssignment();
+		final RefundInvoiceCandidate refundInvoiceCandidate = assignableInvoiceCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate();
+
+		assertThat(assignableInvoiceCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate()).isEqualTo(refundInvoiceCandidate); // guard
+
+		final AssignableInvoiceCandidate candidateWithRemovedRefundCandidate = assignableInvoiceCandidate.withoutRefundInvoiceCandidate();
+
+		// invoke the method under test
+		final AssignableInvoiceCandidate assignedCandidate = invoiceCandidateAssignmentService.updateAssignment(candidateWithRemovedRefundCandidate);
+
+		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate()).isNotNull();
+		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId()); // guard
+		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getMoney()).isEqualTo(refundInvoiceCandidate.getMoney()); // unchanged bc nothing as really altered
+	}
+
+	@Test
+	public void updateAssignment_change_money()
+	{
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateWithAssignment();
+		final RefundInvoiceCandidate refundInvoiceCandidate = assignableInvoiceCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate();
+
+		assertThat(assignableInvoiceCandidate.getAssignmentToRefundCandidate().getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo("2"); // guard
+
+		final AssignableInvoiceCandidate assignableInvoiceCandidateWithDifferentMoney = assignableInvoiceCandidate
+				.toBuilder()
+				.money(assignableInvoiceCandidate.getMoney().multiply(TWO))
+				.build();
+
+		// invoke the method under test
+		final AssignableInvoiceCandidate result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidateWithDifferentMoney);
+
+		assertThat(result.getAssignmentToRefundCandidate().getMoneyAssignedToRefundCandidate()).isNotNull();
+		assertThat(result.getAssignmentToRefundCandidate().getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo("4"); // guard
+
+		assertThat(result.getAssignmentToRefundCandidate().getRefundInvoiceCandidate()).isNotNull();
+		assertThat(result.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId()); // guard
+		assertThat(result.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo("104"); // according to the assignable candidate's money and the config's percentage
 	}
 }

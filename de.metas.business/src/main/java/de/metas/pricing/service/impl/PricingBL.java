@@ -67,6 +67,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.IPricingDAO;
 import de.metas.pricing.service.ProductPrices;
+import lombok.NonNull;
 
 public class PricingBL implements IPricingBL
 {
@@ -81,7 +82,12 @@ public class PricingBL implements IPricingBL
 	}
 
 	@Override
-	public IEditablePricingContext createInitialContext(int M_Product_ID, int C_BPartner_ID, int C_UOM_ID, BigDecimal Qty, boolean isSOTrx)
+	public IEditablePricingContext createInitialContext(
+			final int M_Product_ID,
+			final int C_BPartner_ID,
+			final int C_UOM_ID,
+			@NonNull final BigDecimal Qty,
+			final boolean isSOTrx)
 	{
 		final IEditablePricingContext pricingCtx = createPricingContext();
 		pricingCtx.setM_Product_ID(M_Product_ID);
@@ -185,51 +191,57 @@ public class PricingBL implements IPricingBL
 	 */
 	private IPricingContext setupPricingContext(final IPricingContext pricingCtx)
 	{
+		final IEditablePricingContext pricingCtxToUse = pricingCtx.copy();
+		setupPriceListAndDate(pricingCtxToUse);
+
+		return pricingCtxToUse;
+	}
+
+	private void setupPriceListAndDate(final IEditablePricingContext pricingCtx)
+	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-		final IEditablePricingContext pricingCtxToUse = pricingCtx.copy();
-
-		final Timestamp priceDate = pricingCtxToUse.getPriceDate();
+		final Timestamp priceDate = pricingCtx.getPriceDate();
 
 		//
 		// Set M_PriceList_ID and M_PriceList_Version_ID from pricingSystem, date and country, if necessary;
 		// if set and there is one in the pricingCtx, also check if it is consistent.
-		if (pricingCtxToUse.getM_PricingSystem_ID() > 0
+		if (pricingCtx.getM_PricingSystem_ID() > 0
 				&& priceDate != null
-				&& pricingCtxToUse.getM_Product_ID() > 0
-				&& pricingCtxToUse.getC_Country_ID() > 0)
+				&& pricingCtx.getM_Product_ID() > 0
+				&& pricingCtx.getC_Country_ID() > 0)
 		{
 			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
 					pricingCtx.getM_PricingSystem_ID(),
 					pricingCtx.getC_Country_ID(),
-					pricingCtxToUse.getPriceDate(),
-					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.isSOTrx(),
+					pricingCtx.getPriceDate(),
+					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.getSoTrx(),
 					null);
 
 			if (computedPLV != null)
 			{
 				final int priceListId = computedPLV.getM_PriceList_ID();
-				pricingCtxToUse.setM_PriceList_ID(priceListId);
+				pricingCtx.setM_PriceList_ID(priceListId);
 
 				// while we are at it, do a little sanity check and also set the PLV-ID
-				Check.assume(pricingCtxToUse.getM_PriceList_Version_ID() <= 0 || pricingCtxToUse.getM_PriceList_Version_ID() == computedPLV.getM_PriceList_Version_ID(),
+				Check.assume(pricingCtx.getM_PriceList_Version_ID() <= 0 || pricingCtx.getM_PriceList_Version_ID() == computedPLV.getM_PriceList_Version_ID(),
 						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and IsSOTrx={}, we computed a different M_PriceList_Version={}",
-						pricingCtxToUse,  // 0
-						pricingCtxToUse.getM_PriceList_Version(),  // 1
-						pricingCtxToUse.getM_PricingSystem_ID(),  // 2
-						pricingCtx.getM_Product(),  // 3
+						pricingCtx,  // 0
+						pricingCtx.getM_PriceList_Version(),  // 1
+						pricingCtx.getM_PricingSystem_ID(),  // 2
+						pricingCtx.getM_Product_ID(),  // 3
 						pricingCtx.getC_Country_ID(),  // 4
 						pricingCtx.isSOTrx(),  // 5
 						computedPLV);
-				pricingCtxToUse.setM_PriceList_Version_ID(computedPLV.getM_PriceList_Version_ID());
+				pricingCtx.setM_PriceList_Version_ID(computedPLV.getM_PriceList_Version_ID());
 			}
 		}
 
 		//
 		// Set M_PriceList_Version_ID from PL and date, if necessary.
-		if (pricingCtxToUse.getM_PriceList_Version_ID() <= 0
-				&& pricingCtxToUse.getM_PriceList_ID() > 0
+		if (pricingCtx.getM_PriceList_Version_ID() <= 0
+				&& pricingCtx.getM_PriceList_ID() > 0
 				&& priceDate != null)
 		{
 			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getM_PriceList_ID());
@@ -241,7 +253,7 @@ public class PricingBL implements IPricingBL
 				{
 					final int priceListVersionId = plv.getM_PriceList_Version_ID();
 					logger.debug("Setting to context: M_PriceList_Version_ID={} from M_PriceList={} and PriceDate={}", priceListVersionId, priceList, priceDate);
-					pricingCtxToUse.setM_PriceList_Version_ID(priceListVersionId);
+					pricingCtx.setM_PriceList_Version_ID(priceListVersionId);
 				}
 			}
 			catch (PriceListVersionNotFoundException e)
@@ -254,27 +266,25 @@ public class PricingBL implements IPricingBL
 
 		//
 		// set PL from PLV
-		if (pricingCtxToUse.getM_PriceList_ID() <= 0
-				&& pricingCtxToUse.getM_PriceList_Version_ID() > 0)
+		if (pricingCtx.getM_PriceList_ID() <= 0
+				&& pricingCtx.getM_PriceList_Version_ID() > 0)
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
 			logger.info("Setting to context: M_PriceList_ID={} from M_PriceList_Version={}", priceListVersion.getM_PriceList_ID(), priceListVersion);
-			pricingCtxToUse.setM_PriceList_ID(priceListVersion.getM_PriceList_ID());
+			pricingCtx.setM_PriceList_ID(priceListVersion.getM_PriceList_ID());
 		}
 
 		//
 		// set priceDate from PLV
-		if (pricingCtxToUse.getPriceDate() == null
-				&& pricingCtxToUse.getM_PriceList_Version_ID() > 0)
+		if (pricingCtx.getPriceDate() == null
+				&& pricingCtx.getM_PriceList_Version_ID() > 0)
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
 			logger.info("Setting to context: PriceDate={} from M_PriceList_Version={}", priceListVersion.getValidFrom(), priceListVersion);
-			pricingCtxToUse.setPriceDate(priceListVersion.getValidFrom());
+			pricingCtx.setPriceDate(priceListVersion.getValidFrom());
 		}
-
-		return pricingCtxToUse;
 	}
 
 	private void setPrecision(IPricingContext pricingCtx, IPricingResult result)

@@ -8,11 +8,13 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
@@ -263,10 +265,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 	private int findWareousePOId(final I_C_Order salesOrder)
 	{
-		final int warehousePOId = warehouseDAO.retrieveOrgWarehousePOId(salesOrder.getAD_Org_ID());
-		if (warehousePOId > 0)
+		final WarehouseId warehousePOId = warehouseDAO.retrieveOrgWarehousePOId(OrgId.ofRepoId(salesOrder.getAD_Org_ID()));
+		if (warehousePOId != null)
 		{
-			return warehousePOId;
+			return warehousePOId.getRepoId();
 		}
 
 		return salesOrder.getM_Warehouse_ID();

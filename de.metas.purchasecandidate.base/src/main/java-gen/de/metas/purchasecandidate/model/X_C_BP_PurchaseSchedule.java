@@ -14,7 +14,7 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 960715355L;
+	private static final long serialVersionUID = -1411091812L;
 
     /** Standard Constructor */
     public X_C_BP_PurchaseSchedule (Properties ctx, int C_BP_PurchaseSchedule_ID, String trxName)
@@ -170,6 +170,28 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	public java.lang.String getFrequencyType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_FrequencyType);
+	}
+
+	/** Set Lead Time Offset.
+		@param LeadTimeOffset 
+		Optional Lead Time offest before starting production
+	  */
+	@Override
+	public void setLeadTimeOffset (int LeadTimeOffset)
+	{
+		set_Value (COLUMNNAME_LeadTimeOffset, Integer.valueOf(LeadTimeOffset));
+	}
+
+	/** Get Lead Time Offset.
+		@return Optional Lead Time offest before starting production
+	  */
+	@Override
+	public int getLeadTimeOffset () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LeadTimeOffset);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Day of the Month.

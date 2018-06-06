@@ -35,7 +35,7 @@ import lombok.NonNull;
 public class RefundGrossProfitComponent implements GrossProfitComponent
 {
 	private final GrossProfitComputeRequest request;
-	private final RefundContractRepository refundContractRepository;
+	private final RefundContractRepository refundContractRepository; // TODO: take our the repo/service from here !
 
 	public RefundGrossProfitComponent(
 			@NonNull final GrossProfitComputeRequest request,
@@ -43,12 +43,6 @@ public class RefundGrossProfitComponent implements GrossProfitComponent
 	{
 		this.request = request;
 		this.refundContractRepository = refundContractRepository;
-	}
-
-	@Override
-	public String getName()
-	{
-		return "RefundGrossProfitComponent";
 	}
 
 	@Override

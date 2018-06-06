@@ -76,7 +76,8 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		}
 	}
 
-	private int getTemporaryPriceConditionsColorId()
+	@Override
+	public int getTemporaryPriceConditionsColorId()
 	{
 		return getColorIdBySysConfig(SYSCONFIG_TemporaryPriceConditionsColorName);
 	}

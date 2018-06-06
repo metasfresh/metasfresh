@@ -8,12 +8,14 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import lombok.NonNull;
@@ -65,25 +67,24 @@ public class C_PurchaseCandiate_Mark_Processed
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ImmutableList<Integer> purchaseCandidateIds = //
-				Services.get(IQueryBL.class)
-						.createQueryBuilder(I_C_PurchaseCandidate.class)
-						.filter(getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false)))
-						.create()
-						.stream()
-						.filter(not(I_C_PurchaseCandidate::isProcessing))
-						.filter(not(I_C_PurchaseCandidate::isProcessed))
-						.map(I_C_PurchaseCandidate::getC_PurchaseCandidate_ID)
-						.collect(ImmutableList.toImmutableList());
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final PurchaseCandidateRepository purchaseCandidateRepository = Adempiere.getBean(PurchaseCandidateRepository.class);
 
-		final PurchaseCandidateRepository purchaseCandidateRepository = //
-				Adempiere.getBean(PurchaseCandidateRepository.class);
+		final ImmutableSet<PurchaseCandidateId> purchaseCandidateIds = queryBL
+				.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.filter(getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false)))
+				.create()
+				.stream()
+				.filter(not(I_C_PurchaseCandidate::isProcessing))
+				.filter(not(I_C_PurchaseCandidate::isProcessed))
+				.map(I_C_PurchaseCandidate::getC_PurchaseCandidate_ID)
+				.map(PurchaseCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableList<PurchaseCandidate> purchaseCandidates = //
-				purchaseCandidateRepository
-						.streamAllByIds(purchaseCandidateIds)
-						.peek(PurchaseCandidate::markProcessed)
-						.collect(ImmutableList.toImmutableList());
+		final ImmutableList<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepository
+				.streamAllByIds(purchaseCandidateIds)
+				.peek(PurchaseCandidate::markProcessed)
+				.collect(ImmutableList.toImmutableList());
 
 		purchaseCandidateRepository.saveAll(purchaseCandidates);
 

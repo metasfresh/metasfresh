@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2086583543L;
+	private static final long serialVersionUID = 54088198L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -82,6 +82,43 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public int getC_BPartner_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -220,6 +257,28 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
+	/** Set Kd-Rohertragspreis.
+		@param CustomerPriceGrossProfit 
+		Effektiver Verkaufspreis minus Skonto und Rückerstattung
+	  */
+	@Override
+	public void setCustomerPriceGrossProfit (java.math.BigDecimal CustomerPriceGrossProfit)
+	{
+		set_Value (COLUMNNAME_CustomerPriceGrossProfit, CustomerPriceGrossProfit);
+	}
+
+	/** Get Kd-Rohertragspreis.
+		@return Effektiver Verkaufspreis minus Skonto und Rückerstattung
+	  */
+	@Override
+	public java.math.BigDecimal getCustomerPriceGrossProfit () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CustomerPriceGrossProfit);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Zieldatum.
 		@param DateRequired Zieldatum	  */
 	@Override
@@ -257,6 +316,40 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeInstance);
+	}
+
+	/** Set M_AttributeInstance.
+		@param M_AttributeInstance_ID M_AttributeInstance	  */
+	@Override
+	public void setM_AttributeInstance_ID (int M_AttributeInstance_ID)
+	{
+		if (M_AttributeInstance_ID < 1) 
+			set_Value (COLUMNNAME_M_AttributeInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeInstance_ID, Integer.valueOf(M_AttributeInstance_ID));
+	}
+
+	/** Get M_AttributeInstance.
+		@return M_AttributeInstance	  */
+	@Override
+	public int getM_AttributeInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -333,6 +426,28 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
+	/** Set Rohertragspreis.
+		@param PriceGrossProfit 
+		Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	  */
+	@Override
+	public void setPriceGrossProfit (java.math.BigDecimal PriceGrossProfit)
+	{
+		set_Value (COLUMNNAME_PriceGrossProfit, PriceGrossProfit);
+	}
+
+	/** Get Rohertragspreis.
+		@return Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	  */
+	@Override
+	public java.math.BigDecimal getPriceGrossProfit () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceGrossProfit);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
@@ -396,6 +511,28 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public java.math.BigDecimal getPurchasedQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PurchasedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set VK Preis netto.
+		@param PurchasePriceActual 
+		Effektiver Verkaufspreis
+	  */
+	@Override
+	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual)
+	{
+		set_Value (COLUMNNAME_PurchasePriceActual, PurchasePriceActual);
+	}
+
+	/** Get VK Preis netto.
+		@return Effektiver Verkaufspreis
+	  */
+	@Override
+	public java.math.BigDecimal getPurchasePriceActual () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PurchasePriceActual);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

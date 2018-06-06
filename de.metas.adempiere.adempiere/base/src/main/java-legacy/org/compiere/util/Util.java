@@ -93,9 +93,9 @@ public class Util
 				|| oldPart == null || oldPart.length() == 0)
 			return value;
 		//
-		int oldPartLength = oldPart.length();
+		final int oldPartLength = oldPart.length();
 		String oldValue = value;
-		StringBuffer retValue = new StringBuffer();
+		final StringBuffer retValue = new StringBuffer();
 		int pos = oldValue.indexOf(oldPart);
 		while (pos != -1)
 		{
@@ -118,11 +118,10 @@ public class Util
 	 */
 	public static String removeCRLF(String in)
 	{
-		char[] inArray = in.toCharArray();
-		StringBuffer out = new StringBuffer(inArray.length);
-		for (int i = 0; i < inArray.length; i++)
+		final char[] inArray = in.toCharArray();
+		final StringBuffer out = new StringBuffer(inArray.length);
+		for (final char c : inArray)
 		{
-			char c = inArray[i];
 			if (c == '\n' || c == '\r')
 				;
 			else
@@ -143,7 +142,7 @@ public class Util
 		{
 			return null;
 		}
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < text.length(); i++)
 		{
 			if (Character.isDigit(text.charAt(i)))
@@ -166,11 +165,11 @@ public class Util
 		{
 			return null;
 		}
-		char[] inArray = text.toCharArray();
-		StringBuilder out = new StringBuilder(inArray.length);
-		for (int i = 0; i < inArray.length; i++)
+		final char[] inArray = text.toCharArray();
+		final StringBuilder out = new StringBuilder(inArray.length);
+		for (final char element : inArray)
 		{
-			char c = inArray[i];
+			final char c = element;
 			if (Character.isLetter(c) || !Character.isDigit(c))
 				out.append(c);
 		}
@@ -185,12 +184,11 @@ public class Util
 	 */
 	public static String cleanWhitespace(String in)
 	{
-		char[] inArray = in.toCharArray();
-		StringBuffer out = new StringBuffer(inArray.length);
+		final char[] inArray = in.toCharArray();
+		final StringBuffer out = new StringBuffer(inArray.length);
 		boolean lastWasSpace = false;
-		for (int i = 0; i < inArray.length; i++)
+		for (final char c : inArray)
 		{
-			char c = inArray[i];
 			if (Character.isWhitespace(c))
 			{
 				if (!lastWasSpace)
@@ -214,10 +212,10 @@ public class Util
 	 */
 	public static String cleanBeginWhitespace(String in)
 	{
-		int len = in.length();
+		final int len = in.length();
 		int st = 0;
-		int off = 0;
-		char[] val = in.toCharArray();
+		final int off = 0;
+		final char[] val = in.toCharArray();
 
 		while ((st < len) && (val[off + st] <= ' '))
 		{
@@ -304,9 +302,8 @@ public class Util
 		//
 		final StringBuilder out = new StringBuilder();
 		final char[] chars = content.toCharArray();
-		for (int i = 0; i < chars.length; i++)
+		for (final char c : chars)
 		{
-			char c = chars[i];
 			switch (c)
 			{
 				case '<':
@@ -329,7 +326,7 @@ public class Util
 						out.append("<br>");
 					//
 				default:
-					int ii = c;
+					final int ii = c;
 					if (ii > 255)		// Write Unicode
 						out.append("&#").append(ii).append(";");
 					else
@@ -352,10 +349,10 @@ public class Util
 		if (string == null || string.length() == 0)
 			return 0;
 		int counter = 0;
-		char[] array = string.toCharArray();
-		for (int i = 0; i < array.length; i++)
+		final char[] array = string.toCharArray();
+		for (final char element : array)
 		{
-			if (array[i] == countChar)
+			if (element == countChar)
 				counter++;
 		}
 		return counter;
@@ -435,10 +432,10 @@ public class Util
 		int endIndex = -1;
 		int parCount = 0;
 		boolean ignoringText = false;
-		int size = str.length();
+		final int size = str.length();
 		while (++endIndex < size)
 		{
-			char c = str.charAt(endIndex);
+			final char c = str.charAt(endIndex);
 			if (c == '\'')
 				ignoringText = !ignoringText;
 			else if (!ignoringText)
@@ -469,10 +466,10 @@ public class Util
 		int endIndex = -1;
 		int parCount = 0;
 		boolean ignoringText = false;
-		int size = str.length();
+		final int size = str.length();
 		while (++endIndex < size)
 		{
-			char c = str.charAt(endIndex);
+			final char c = str.charAt(endIndex);
 			if (c == '\'')
 				ignoringText = !ignoringText;
 			else if (!ignoringText)
@@ -499,11 +496,11 @@ public class Util
 	 */
 	static public String toHex(byte b)
 	{
-		char hexDigit[] = {
+		final char hexDigit[] = {
 				'0', '1', '2', '3', '4', '5', '6', '7',
 				'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
 		};
-		char[] array = { hexDigit[(b >> 4) & 0x0f], hexDigit[b & 0x0f] };
+		final char[] array = { hexDigit[(b >> 4) & 0x0f], hexDigit[b & 0x0f] };
 		return new String(array);
 	}
 
@@ -515,8 +512,8 @@ public class Util
 	 */
 	static public String toHex(char c)
 	{
-		byte hi = (byte)(c >>> 8);
-		byte lo = (byte)(c & 0xff);
+		final byte hi = (byte)(c >>> 8);
+		final byte lo = (byte)(c & 0xff);
 		return toHex(hi) + toHex(lo);
 	}   // toHex
 
@@ -532,7 +529,7 @@ public class Util
 			return in;
 		//
 		boolean capitalize = true;
-		char[] data = in.toCharArray();
+		final char[] data = in.toCharArray();
 		for (int i = 0; i < data.length; i++)
 		{
 			if (data[i] == ' ' || Character.isWhitespace(data[i]))
@@ -558,38 +555,38 @@ public class Util
 	static public AttributedCharacterIterator getIterator(AttributedString aString,
 			AttributedCharacterIterator.Attribute[] relevantAttributes)
 	{
-		AttributedCharacterIterator iter = aString.getIterator();
-		Set<Attribute> set = iter.getAllAttributeKeys();
+		final AttributedCharacterIterator iter = aString.getIterator();
+		final Set<Attribute> set = iter.getAllAttributeKeys();
 		// System.out.println("AllAttributeKeys=" + set);
 		if (set.size() == 0)
 			return iter;
 		// Check, if there are unwanted attributes
-		Set<AttributedCharacterIterator.Attribute> unwanted = new HashSet<>(iter.getAllAttributeKeys());
-		for (int i = 0; i < relevantAttributes.length; i++)
-			unwanted.remove(relevantAttributes[i]);
+		final Set<AttributedCharacterIterator.Attribute> unwanted = new HashSet<>(iter.getAllAttributeKeys());
+		for (final Attribute relevantAttribute : relevantAttributes)
+			unwanted.remove(relevantAttribute);
 		if (unwanted.size() == 0)
 			return iter;
 
 		// Create new String
-		StringBuffer sb = new StringBuffer();
+		final StringBuffer sb = new StringBuffer();
 		for (char c = iter.first(); c != AttributedCharacterIterator.DONE; c = iter.next())
 			sb.append(c);
 		aString = new AttributedString(sb.toString());
 
 		// copy relevant attributes
-		Iterator<Attribute> it = iter.getAllAttributeKeys().iterator();
+		final Iterator<Attribute> it = iter.getAllAttributeKeys().iterator();
 		while (it.hasNext())
 		{
-			AttributedCharacterIterator.Attribute att = it.next();
+			final AttributedCharacterIterator.Attribute att = it.next();
 			if (!unwanted.contains(att))
 			{
 				for (char c = iter.first(); c != AttributedCharacterIterator.DONE; c = iter.next())
 				{
-					Object value = iter.getAttribute(att);
+					final Object value = iter.getAttribute(att);
 					if (value != null)
 					{
-						int start = iter.getRunStart(att);
-						int limit = iter.getRunLimit(att);
+						final int start = iter.getRunStart(att);
+						final int limit = iter.getRunLimit(att);
 						// System.out.println("Attribute=" + att + " Value=" + value + " Start=" + start + " Limit=" + limit);
 						aString.addAttribute(att, value, start, limit);
 						iter.setIndex(limit);
@@ -611,11 +608,11 @@ public class Util
 	static public void dump(Map map)
 	{
 		System.out.println("Dump Map - size=" + map.size());
-		Iterator it = map.keySet().iterator();
+		final Iterator it = map.keySet().iterator();
 		while (it.hasNext())
 		{
-			Object key = it.next();
-			Object value = map.get(key);
+			final Object key = it.next();
+			final Object value = map.get(key);
 			System.out.println(key + "=" + value);
 		}
 	}	// dump (Map)
@@ -628,17 +625,17 @@ public class Util
 	public static void printActionInputMap(JComponent comp)
 	{
 		// Action Map
-		ActionMap am = comp.getActionMap();
-		Object[] amKeys = am.allKeys(); // including Parents
+		final ActionMap am = comp.getActionMap();
+		final Object[] amKeys = am.allKeys(); // including Parents
 		if (amKeys != null)
 		{
 			System.out.println("-------------------------");
 			System.out.println("ActionMap for Component " + comp.toString());
-			for (int i = 0; i < amKeys.length; i++)
+			for (final Object amKey : amKeys)
 			{
-				Action a = am.get(amKeys[i]);
+				final Action a = am.get(amKey);
 
-				StringBuffer sb = new StringBuffer("- ");
+				final StringBuffer sb = new StringBuffer("- ");
 				sb.append(a.getValue(Action.NAME));
 				if (a.getValue(Action.ACTION_COMMAND_KEY) != null)
 					sb.append(", Cmd=").append(a.getValue(Action.ACTION_COMMAND_KEY));
@@ -657,10 +654,10 @@ public class Util
 		{
 			System.out.println("-------------------------");
 			System.out.println("InputMap for Component When Focused - " + comp.toString());
-			for (int i = 0; i < kStrokes.length; i++)
+			for (final KeyStroke kStroke : kStrokes)
 			{
-				System.out.println("- " + kStrokes[i].toString() + " - "
-						+ im.get(kStrokes[i]).toString());
+				System.out.println("- " + kStroke.toString() + " - "
+						+ im.get(kStroke).toString());
 			}
 		}
 		/** Focused in Window */
@@ -670,10 +667,10 @@ public class Util
 		{
 			System.out.println("-------------------------");
 			System.out.println("InputMap for Component When Focused in Window - " + comp.toString());
-			for (int i = 0; i < kStrokes.length; i++)
+			for (final KeyStroke kStroke : kStrokes)
 			{
-				System.out.println("- " + kStrokes[i].toString() + " - "
-						+ im.get(kStrokes[i]).toString());
+				System.out.println("- " + kStroke.toString() + " - "
+						+ im.get(kStroke).toString());
 			}
 		}
 		/** Focused when Ancester */
@@ -683,10 +680,10 @@ public class Util
 		{
 			System.out.println("-------------------------");
 			System.out.println("InputMap for Component When Ancestor - " + comp.toString());
-			for (int i = 0; i < kStrokes.length; i++)
+			for (final KeyStroke kStroke : kStrokes)
 			{
-				System.out.println("- " + kStrokes[i].toString() + " - "
-						+ im.get(kStrokes[i]).toString());
+				System.out.println("- " + kStroke.toString() + " - "
+						+ im.get(kStroke).toString());
 			}
 		}
 		System.out.println("-------------------------");
@@ -702,10 +699,10 @@ public class Util
 	{
 		if (str == null || str.length() == 0)
 			return true;
-		char[] cc = str.toCharArray();
-		for (int i = 0; i < cc.length; i++)
+		final char[] cc = str.toCharArray();
+		for (final char element : cc)
 		{
-			if (cc[i] > 255)
+			if (element > 255)
 			{
 				// System.out.println("Not 8 Bit - " + str);
 				return false;
@@ -724,7 +721,7 @@ public class Util
 	{
 		if (in == null || in.length() == 0)
 			return in;
-		int pos = in.indexOf('&');
+		final int pos = in.indexOf('&');
 		if (pos == -1)
 			return in;
 		//
@@ -761,13 +758,13 @@ public class Util
 	{
 		if (str == null)
 			return 0;
-		int length = str.length();
+		final int length = str.length();
 		int size = length;
 		try
 		{
 			size = str.getBytes("UTF-8").length;
 		}
-		catch (UnsupportedEncodingException e)
+		catch (final UnsupportedEncodingException e)
 		{
 			log.error(str, e);
 		}
@@ -788,20 +785,20 @@ public class Util
 		if (size <= 0)
 			throw new IllegalArgumentException("Trim size invalid: " + size);
 		// Assume two byte code
-		int length = str.length();
+		final int length = str.length();
 		if (length < size / 2)
 			return str;
 		try
 		{
-			byte[] bytes = str.getBytes("UTF-8");
+			final byte[] bytes = str.getBytes("UTF-8");
 			if (bytes.length <= size)
 				return str;
 			// create new - may cut last character in half
-			byte[] result = new byte[size];
+			final byte[] result = new byte[size];
 			System.arraycopy(bytes, 0, result, 0, size);
 			return new String(result, "UTF-8");
 		}
-		catch (UnsupportedEncodingException e)
+		catch (final UnsupportedEncodingException e)
 		{
 			log.error(str, e);
 		}
@@ -815,14 +812,14 @@ public class Util
 	 */
 	public static void main(String[] args)
 	{
-		String str = "a�b�c?d?e?f?g?";
+		final String str = "a�b�c?d?e?f?g?";
 		System.out.println(str + " = " + str.length() + " - " + size(str));
-		String str1 = trimLength(str, 10);
+		final String str1 = trimLength(str, 10);
 		System.out.println(str1 + " = " + str1.length() + " - " + size(str1));
-		String str2 = trimSize(str, 10);
+		final String str2 = trimSize(str, 10);
 		System.out.println(str2 + " = " + str2.length() + " - " + size(str2));
 		//
-		AttributedString aString = new AttributedString("test test");
+		final AttributedString aString = new AttributedString("test test");
 		aString.addAttribute(TextAttribute.FOREGROUND, Color.blue);
 		aString.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, 2, 4);
 		getIterator(aString, new AttributedCharacterIterator.Attribute[] { TextAttribute.UNDERLINE });
@@ -863,7 +860,7 @@ public class Util
 			final Class<? extends T> instanceClassCasted = (Class<? extends T>)instanceClazz;
 			return instanceClassCasted;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException("Unable to instantiate '" + classname + "' implementing " + interfaceClazz, e);
 		}
@@ -884,7 +881,7 @@ public class Util
 		{
 			return classInstanceProvider.provideInstance(interfaceClazz, instanceClazz);
 		}
-		catch (ReflectiveOperationException e)
+		catch (final ReflectiveOperationException e)
 		{
 			throw new AdempiereException("Unable to instantiate '" + instanceClazz + "' implementing " + interfaceClazz, e);
 		}
@@ -922,7 +919,7 @@ public class Util
 				return instance;
 			}
 		}
-		catch (ReflectiveOperationException e)
+		catch (final ReflectiveOperationException e)
 		{
 			throw new AdempiereException("Unable to instantiate '" + className + "' implementing " + interfaceClazz, e);
 		}
@@ -947,11 +944,11 @@ public class Util
 			final Class<?> clazz = classInstanceProvider.provideClass(className);
 			return classInstanceProvider.provideInstance(interfaceClazz, clazz);
 		}
-		catch (ClassNotFoundException e)
+		catch (final ClassNotFoundException e)
 		{
 			return null;
 		}
-		catch (ReflectiveOperationException e)
+		catch (final ReflectiveOperationException e)
 		{
 			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
 		}
@@ -1083,7 +1080,7 @@ public class Util
 
 		public Object[] getArray()
 		{
-			Object[] newArray = new Object[array.length];
+			final Object[] newArray = new Object[array.length];
 			System.arraycopy(array, 0, newArray, 0, array.length);
 			return newArray;
 		}
@@ -1117,7 +1114,7 @@ public class Util
 			}
 
 			final StringBuilder sb = new StringBuilder();
-			for (Object k : array)
+			for (final Object k : array)
 			{
 				if (sb.length() > 0)
 				{
@@ -1212,12 +1209,12 @@ public class Util
 		try
 		{
 			in = new FileInputStream(file);
-			byte[] data = readBytes(in);
+			final byte[] data = readBytes(in);
 			in = null; // stream was closed by readBytes(InputStream)
 
 			return data;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException("Error reading file: " + file, e);
 		}
@@ -1229,7 +1226,7 @@ public class Util
 				{
 					in.close();
 				}
-				catch (IOException e)
+				catch (final IOException e)
 				{
 					e.printStackTrace();
 				}
@@ -1258,7 +1255,7 @@ public class Util
 				out.write(buf, 0, len);
 			}
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new AdempiereException("Error reading stream", e);
 		}
@@ -1268,7 +1265,7 @@ public class Util
 			{
 				in.close();
 			}
-			catch (IOException e)
+			catch (final IOException e)
 			{
 				e.printStackTrace();
 			}
@@ -1287,9 +1284,9 @@ public class Util
 	{
 		final ArrayList<Integer> results = new ArrayList<>(selection.length);
 
-		for (int i = 0; i < selection.length; i++)
+		for (final int element : selection)
 		{
-			results.add(selection[i]);
+			results.add(element);
 		}
 
 		if (results.size() == 0)
@@ -1319,7 +1316,7 @@ public class Util
 			b64os.close();
 			return baos.toByteArray();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException(e);
 		}
@@ -1337,15 +1334,15 @@ public class Util
 	{
 		try
 		{
-			ByteArrayInputStream bais = new ByteArrayInputStream(b);
-			InputStream b64is = MimeUtility.decode(bais, "base64");
-			byte[] tmp = new byte[b.length];
-			int n = b64is.read(tmp);
-			byte[] res = new byte[n];
+			final ByteArrayInputStream bais = new ByteArrayInputStream(b);
+			final InputStream b64is = MimeUtility.decode(bais, "base64");
+			final byte[] tmp = new byte[b.length];
+			final int n = b64is.read(tmp);
+			final byte[] res = new byte[n];
 			System.arraycopy(tmp, 0, res, 0, n);
 			return res;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException(e);
 		}
@@ -1360,7 +1357,7 @@ public class Util
 			out = new FileOutputStream(file, false);
 			out.write(data);
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new AdempiereException("Cannot write file " + file + "."
 					+ "\n " + e.getLocalizedMessage() // also append the original error message because it could be helpful for user.
@@ -1382,7 +1379,7 @@ public class Util
 		{
 			c.close();
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			// e.printStackTrace();
 		}
@@ -1509,7 +1506,7 @@ public class Util
 		{
 			return 0;
 		}
-		for (int value : values)
+		for (final int value : values)
 		{
 			if (value > 0)
 			{
@@ -1519,23 +1516,20 @@ public class Util
 		return 0;
 	}
 
-	/**
-	 * @see #firstGreaterThanZero(int...)
-	 */
-	public static final int firstGreaterThanZero(final int value)
+	@SafeVarargs
+	public static final int firstGreaterThanZeroSupplier(@NonNull final Supplier<Integer>... suppliers)
 	{
-		return value > 0 ? value : 0;
-	}
-
-	public static final int firstGreaterThanZero(final int value1, final int value2)
-	{
-		if (value1 > 0)
+		if (suppliers == null || suppliers.length == 0)
 		{
-			return value1;
+			return 0;
 		}
-		if (value2 > 0)
+		for (final Supplier<Integer> supplier : suppliers)
 		{
-			return value2;
+			final Integer value = supplier.get();
+			if (value > 0)
+			{
+				return value;
+			}
 		}
 		return 0;
 	}
@@ -1544,7 +1538,7 @@ public class Util
 	{
 		for (int i = 0; i < values.length; i++)
 		{
-			if(!Check.isEmpty(values[i], true))
+			if (!Check.isEmpty(values[i], true))
 			{
 				return values[i].trim();
 			}
@@ -1556,7 +1550,7 @@ public class Util
 	{
 		final int size = stringToModify.length();
 
-		StringBuilder stringWithZeros = new StringBuilder();
+		final StringBuilder stringWithZeros = new StringBuilder();
 
 		for (int i = 0; i < size; i++)
 		{
@@ -1578,12 +1572,12 @@ public class Util
 	// thx to http://www.java2s.com/Code/Java/XML/DOMUtilgetElementText.htm
 	public static String getElementText(Node element)
 	{
-		StringBuffer buf = new StringBuffer();
-		NodeList list = element.getChildNodes();
+		final StringBuffer buf = new StringBuffer();
+		final NodeList list = element.getChildNodes();
 		boolean found = false;
 		for (int i = 0; i < list.getLength(); i++)
 		{
-			Node node = list.item(i);
+			final Node node = list.item(i);
 			if (node.getNodeType() == Node.TEXT_NODE)
 			{
 				buf.append(node.getNodeValue());

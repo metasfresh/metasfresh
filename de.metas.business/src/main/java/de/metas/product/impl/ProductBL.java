@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public final class ProductBL implements IProductBL
@@ -364,4 +365,25 @@ public final class ProductBL implements IProductBL
 		return product.getValue() + "_" + product.getName();
 	}
 
+	@Override
+	public String getProductValue(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		if (product == null)
+		{
+			return "<" + productId + ">";
+		}
+		return product.getValue();
+	}
+
+	@Override
+	public String getProductName(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		if (product == null)
+		{
+			return "<" + productId + ">";
+		}
+		return product.getName();
+	}
 }

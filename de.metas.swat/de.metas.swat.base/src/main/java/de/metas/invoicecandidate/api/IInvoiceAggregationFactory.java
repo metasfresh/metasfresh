@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +36,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * It's an extension of {@link IAggregationFactory} but addressing invoicing concerns.
- * 
+ *
  * @author tsa
  *
  */
@@ -44,9 +44,9 @@ public interface IInvoiceAggregationFactory extends ISingletonService
 {
 	/**
 	 * Gets the header or line aggregation key builder for aggregating invoice candidates.
-	 * 
+	 *
 	 * NOTE: if the BPartner has no aggregation configured this method will use the default aggregation in the system.
-	 * 
+	 *
 	 * @param ctx
 	 * @param bpartner
 	 * @param isSOTrx
@@ -57,9 +57,9 @@ public interface IInvoiceAggregationFactory extends ISingletonService
 
 	/**
 	 * Gets the header/line aggregation to be used for aggregation invoice candidates.
-	 * 
+	 *
 	 * NOTE: if the BPartner has no aggregation configured this method will use the default aggregation in the system.
-	 * 
+	 *
 	 * @param ctx
 	 * @param bpartner
 	 * @param isSOTrx
@@ -67,4 +67,12 @@ public interface IInvoiceAggregationFactory extends ISingletonService
 	 * @return header/line aggregation; never returns <code>null</code>.
 	 */
 	IAggregation getAggregation(Properties ctx, I_C_BPartner bpartner, boolean isSOTrx, final String aggregationUsageLevel);
+
+	/**
+	 * Gets the header aggregation to be used when aggregating invoice candidates which have as source a prepay order
+	 *
+	 * @param ctx
+	 * @return
+	 */
+	IAggregationKeyBuilder<I_C_Invoice_Candidate> getPrepayOrderAggregationKeyBuilder(Properties ctx);
 }

@@ -9,9 +9,11 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_Order;
@@ -24,8 +26,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderAndLineId;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 
@@ -70,31 +76,31 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final I_C_Order salesOrder = newInstance(I_C_Order.class);
 		save(salesOrder);
 
-		// neede to construct the user notification message
+		// needed to construct the user notification message
 		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
 		vendor.setValue("Vendor");
 		vendor.setName("Vendor");
 		save(vendor);
 
-		final int productId = 20;
+		final ProductId productId = ProductId.ofRepoId(20);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bpartnerProductId(10)
+				.id(VendorProductInfoId.ofRepoId(10))
 				.productId(productId)
-				.vendorBPartnerId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
+				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
 				.productName("productName")
 				.productNo("productNo").build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.orgId(10)
+				.orgId(OrgId.ofRepoId(10))
 				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
 				.productId(productId)
 				.qtyToPurchase(TEN)
-				.salesOrderId(salesOrder.getC_Order_ID())
-				.salesOrderLineId(50)
-				.warehouseId(60)
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
+				.warehouseId(WarehouseId.ofRepoId(60))
 				.uomId(70)
+				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();
 
 		final PurchaseOrderFromItemsAggregator aggregator = PurchaseOrderFromItemsAggregator.newInstance();

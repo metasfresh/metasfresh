@@ -12,9 +12,12 @@ public interface IPricingConditionsRepository extends ISingletonService
 {
 	PricingConditions getPricingConditionsById(PricingConditionsId pricingConditionsId);
 
-	PricingConditions getPricingConditionsById(int discountSchemaId);
+	default PricingConditions getPricingConditionsById(final int discountSchemaId)
+	{
+		return getPricingConditionsById(PricingConditionsId.ofDiscountSchemaId(discountSchemaId));
+	}
 
-	Collection<PricingConditions> getPricingConditionsByIds(Collection<Integer> discountSchemaIds);
+	Collection<PricingConditions> getPricingConditionsByIds(Collection<PricingConditionsId> pricingConditionIds);
 
 	PricingConditionsBreak changePricingConditionsBreak(PricingConditionsBreakChangeRequest request);
 

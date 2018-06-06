@@ -12,6 +12,8 @@ import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.product.ProductId;
+
 /*
  * #%L
  * de.metas.purchasecandidate.base
@@ -66,7 +68,7 @@ public class VendorProductInfoTest
 		save(bPartnerProduct);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(bPartnerProduct);
-		assertThat(vendorProductInfo.getProductId()).isEqualTo(product.getM_Product_ID());
+		assertThat(vendorProductInfo.getProductId()).isEqualTo(ProductId.ofRepoId(product.getM_Product_ID()));
 		assertThat(vendorProductInfo.getProductNo()).isEqualTo("testProductValue");
 		assertThat(vendorProductInfo.getProductName()).isEqualTo("testProductName");
 	}
@@ -85,7 +87,7 @@ public class VendorProductInfoTest
 		save(bPartnerProduct);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(bPartnerProduct);
-		assertThat(vendorProductInfo.getProductId()).isEqualTo(product.getM_Product_ID());
+		assertThat(vendorProductInfo.getProductId()).isEqualTo(ProductId.ofRepoId(product.getM_Product_ID()));
 		assertThat(vendorProductInfo.getProductNo()).isEqualTo("bPartnerProduct.VendorProductNo");
 		assertThat(vendorProductInfo.getProductName()).isEqualTo("bPartnerProduct.roductName");
 	}

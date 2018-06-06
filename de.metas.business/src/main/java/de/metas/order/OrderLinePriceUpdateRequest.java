@@ -38,10 +38,14 @@ public class OrderLinePriceUpdateRequest
 {
 	public static OrderLinePriceUpdateRequest ofOrderLine(final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		return prepare(orderLine).build();
+	}
+
+	public static OrderLinePriceUpdateRequestBuilder prepare(final org.compiere.model.I_C_OrderLine orderLine)
+	{
 		return builder()
 				.orderLine(InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class))
-				.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
-				.build();
+				.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW);
 	}
 
 	public static enum ResultUOM

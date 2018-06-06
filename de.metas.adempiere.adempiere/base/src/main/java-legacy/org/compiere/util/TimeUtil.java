@@ -1044,6 +1044,26 @@ public class TimeUtil
 		}
 	}
 
+	public static final LocalDateTime min(final LocalDateTime date1, final LocalDateTime date2)
+	{
+		if (date1 == date2)
+		{
+			return date1;
+		}
+		else if (date1 == null)
+		{
+			return date2;
+		}
+		else if (date2 == null)
+		{
+			return date1;
+		}
+		else
+		{
+			return date1.compareTo(date2) <= 0 ? date1 : date2;
+		}
+	}
+
 	/** Truncate Second - S */
 	public static final String TRUNC_SECOND = "S";
 	/** Truncate Minute - M */
@@ -1205,38 +1225,38 @@ public class TimeUtil
 		}
 		return new Timestamp(gc.getTimeInMillis());
 	}
-	
+
 	public static Timestamp asTimestamp(final Object obj)
 	{
-		if(obj == null)
+		if (obj == null)
 		{
 			return null;
 		}
-		else if(obj instanceof Timestamp)
+		else if (obj instanceof Timestamp)
 		{
 			return (Timestamp)obj;
 		}
-		else if(obj instanceof Date)
+		else if (obj instanceof Date)
 		{
 			return new Timestamp(((Date)obj).getTime());
 		}
-		else if(obj instanceof LocalDateTime)
+		else if (obj instanceof LocalDateTime)
 		{
 			return Timestamp.valueOf((LocalDateTime)obj);
 		}
-		else if(obj instanceof LocalDate)
+		else if (obj instanceof LocalDate)
 		{
 			final LocalDate localDate = (LocalDate)obj;
 			final Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
 			return Timestamp.from(instant);
 		}
-		else if(obj instanceof LocalTime)
+		else if (obj instanceof LocalTime)
 		{
 			final LocalTime localTime = (LocalTime)obj;
 			final Instant instant = localTime.atDate(DATE_1970_01_01).atZone(ZoneId.systemDefault()).toInstant();
 			return Timestamp.from(instant);
 		}
-		else if(obj instanceof Instant)
+		else if (obj instanceof Instant)
 		{
 			return new Timestamp(Date.from((Instant)obj).getTime());
 		}
@@ -1565,6 +1585,15 @@ public class TimeUtil
 		{
 			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + LocalDateTime.class);
 		}
+	}
+
+	public static Date asDate(@NonNull final LocalDateTime localDateTime)
+	{
+		final Instant instant = localDateTime
+				.atZone(ZoneId.systemDefault())
+				.toInstant();
+
+		return Date.from(instant);
 	}
 
 }	// TimeUtil

@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2085651992L;
+	private static final long serialVersionUID = 1042155202L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -520,6 +520,60 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getCreditLimitIndicator () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreditLimitIndicator);
+	}
+
+	/** Set Kreditoren-Nr.
+		@param CreditorId Kreditoren-Nr	  */
+	@Override
+	public void setCreditorId (int CreditorId)
+	{
+		set_Value (COLUMNNAME_CreditorId, Integer.valueOf(CreditorId));
+	}
+
+	/** Get Kreditoren-Nr.
+		@return Kreditoren-Nr	  */
+	@Override
+	public int getCreditorId () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CreditorId);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Eigene-Kd. Nr. .
+		@param CustomerNoAtVendor Eigene-Kd. Nr. 	  */
+	@Override
+	public void setCustomerNoAtVendor (java.lang.String CustomerNoAtVendor)
+	{
+		set_Value (COLUMNNAME_CustomerNoAtVendor, CustomerNoAtVendor);
+	}
+
+	/** Get Eigene-Kd. Nr. .
+		@return Eigene-Kd. Nr. 	  */
+	@Override
+	public java.lang.String getCustomerNoAtVendor () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerNoAtVendor);
+	}
+
+	/** Set Debitoren-Nr.
+		@param DebtorId Debitoren-Nr	  */
+	@Override
+	public void setDebtorId (int DebtorId)
+	{
+		set_Value (COLUMNNAME_DebtorId, Integer.valueOf(DebtorId));
+	}
+
+	/** Get Debitoren-Nr.
+		@return Debitoren-Nr	  */
+	@Override
+	public int getDebtorId () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DebtorId);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** 
@@ -1455,6 +1509,43 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
+	}
+
+	/** Set Lieferweg.
+		@param M_Shipper_ID 
+		Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public void setM_Shipper_ID (int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+	}
+
+	/** Get Lieferweg.
+		@return Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public int getM_Shipper_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
@@ -1489,6 +1580,25 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Memo.
+		@param Memo 
+		Memo Text
+	  */
+	@Override
+	public void setMemo (java.lang.String Memo)
+	{
+		set_Value (COLUMNNAME_Memo, Memo);
+	}
+
+	/** Get Memo.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo);
 	}
 
 	/** 
@@ -1691,24 +1801,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getPaymentRulePO () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PaymentRulePO);
-	}
-
-	/** Set Telefon.
-		@param Phone 
-		Beschreibt eine Telefon Nummer
-	  */
-	@Override
-	public void setPhone (java.lang.String Phone)
-	{
-		throw new IllegalArgumentException ("Phone is virtual column");	}
-
-	/** Get Telefon.
-		@return Beschreibt eine Telefon Nummer
-	  */
-	@Override
-	public java.lang.String getPhone () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Phone);
 	}
 
 	/** 
@@ -1965,6 +2057,22 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return bd;
 	}
 
+	/** Set Qualification .
+		@param Qualification Qualification 	  */
+	@Override
+	public void setQualification (java.lang.String Qualification)
+	{
+		set_Value (COLUMNNAME_Qualification, Qualification);
+	}
+
+	/** Get Qualification .
+		@return Qualification 	  */
+	@Override
+	public java.lang.String getQualification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Qualification);
+	}
+
 	/** Set Rating.
 		@param Rating 
 		Classification or Importance
@@ -2033,6 +2141,34 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.sql.Timestamp getReminderDateIntern () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_ReminderDateIntern);
+	}
+
+	/** 
+	 * Salesgroup AD_Reference_ID=540635
+	 * Reference name: C_BPartner_Salesgroup
+	 */
+	public static final int SALESGROUP_AD_Reference_ID=540635;
+	/** Klassischer Detailhandel = 0030 */
+	public static final String SALESGROUP_KlassischerDetailhandel = "0030";
+	/** Discounter = 0010 */
+	public static final String SALESGROUP_Discounter = "0010";
+	/** Gastronomie und Grosshandel = 0020 */
+	public static final String SALESGROUP_GastronomieUndGrosshandel = "0020";
+	/** Set Statistik Gruppe.
+		@param Salesgroup Statistik Gruppe	  */
+	@Override
+	public void setSalesgroup (java.lang.String Salesgroup)
+	{
+
+		set_Value (COLUMNNAME_Salesgroup, Salesgroup);
+	}
+
+	/** Get Statistik Gruppe.
+		@return Statistik Gruppe	  */
+	@Override
+	public java.lang.String getSalesgroup () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Salesgroup);
 	}
 
 	@Override
@@ -2357,5 +2493,24 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getVATaxID () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_VATaxID);
+	}
+
+	/** Set Produkt-Kategorie Geschäftspartner.
+		@param VendorCategory 
+		Produkt-Kategorie des Geschäftspartner
+	  */
+	@Override
+	public void setVendorCategory (java.lang.String VendorCategory)
+	{
+		set_Value (COLUMNNAME_VendorCategory, VendorCategory);
+	}
+
+	/** Get Produkt-Kategorie Geschäftspartner.
+		@return Produkt-Kategorie des Geschäftspartner
+	  */
+	@Override
+	public java.lang.String getVendorCategory () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VendorCategory);
 	}
 }

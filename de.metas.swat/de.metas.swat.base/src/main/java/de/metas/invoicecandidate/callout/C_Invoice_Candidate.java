@@ -44,6 +44,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.Group;
 
 @Callout(I_C_Invoice_Candidate.class)
@@ -135,7 +136,7 @@ public class C_Invoice_Candidate
 	private void setPricingSystem(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-		final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, ic.getBill_BPartner_ID(), ic.isSOTrx(), ITrx.TRXNAME_None);
+		final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, ic.getBill_BPartner_ID(), SOTrx.ofBoolean(ic.isSOTrx()), ITrx.TRXNAME_None);
 		ic.setM_PricingSystem_ID(pricingSysId);
 	}
 

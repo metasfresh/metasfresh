@@ -50,8 +50,10 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 
 	public static final String COLUMNNAME_Memo = "Memo";
 
+	@Override
 	public String getMemo();
 
+	@Override
 	public void setMemo(String memo);
 
 	public static final String COLUMNNAME_Default_User_ID = "Default_User_ID";
@@ -96,14 +98,6 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 
 	@Override
 	public I_M_PricingSystem getPO_PricingSystem();
-
-	public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
-
-	public int getM_Shipper_ID();
-
-	public void setM_Shipper_ID(int M_Shipper_ID);
-
-	public I_M_Shipper getM_Shipper();
 
 	public static final String COLUMNNAME_VATaxID = "VATaxID";
 

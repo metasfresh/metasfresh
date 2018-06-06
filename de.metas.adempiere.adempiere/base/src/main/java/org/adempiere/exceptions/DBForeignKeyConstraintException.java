@@ -42,8 +42,9 @@ public class DBForeignKeyConstraintException extends DBException
 
 		return TranslatableStringBuilder.newInstance()
 				.appendADMessage(AD_Message)
-				.append("\n\n")
-				.append(super.buildMessage())
+				.append("\n")
+				.append("\n").appendADElement("Cause").append(": ").append(extractMessage(getCause()))
+				.append("\n").append(super.buildMessage())
 				.build();
 	}
 

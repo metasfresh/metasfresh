@@ -187,6 +187,13 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	public ProductAndCategoryId retrieveProductAndCategoryIdByProductId(@NonNull final ProductId productId)
+	{
+		final ProductCategoryId productCategoryId = retrieveProductCategoryByProductId(productId);
+		return productCategoryId != null ? ProductAndCategoryId.of(productId, productCategoryId) : null;
+	}
+
+	@Override
 	public String retrieveProductValueByProductId(final int productId)
 	{
 		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
