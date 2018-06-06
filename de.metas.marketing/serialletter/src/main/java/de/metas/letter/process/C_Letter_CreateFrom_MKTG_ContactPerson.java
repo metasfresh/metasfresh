@@ -1,5 +1,7 @@
 package de.metas.letter.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -8,9 +10,15 @@ import org.compiere.model.IQuery;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.letter.LetterConstants;
 import de.metas.letter.service.async.spi.impl.C_Letter_CreateFromMKTG_ContactPerson_Async;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.process.JavaProcess;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -36,6 +44,9 @@ import de.metas.process.JavaProcess;
 
 public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 {
+	// Services
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+
 	private int campaignId;
 
 	@Override
@@ -47,7 +58,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final List<Integer>	 campaignContactPersonIds = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+		final List<Integer> campaignContactPersonIds = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
 				.create()
@@ -57,8 +68,42 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 				.map(I_MKTG_Campaign_ContactPerson::getMKTG_Campaign_ContactPerson_ID)
 				.collect(ImmutableList.toImmutableList());
 
-		C_Letter_CreateFromMKTG_ContactPerson_Async.createWorkpackage(campaignContactPersonIds);
+		final I_C_Async_Batch asyncbatch = createAsycnBatch();
+		for (final Integer campaignContactPersonId : campaignContactPersonIds)
+		{
+			enqueue(asyncbatch, campaignContactPersonId);
+		}
 
 		return MSG_OK;
+	}
+
+	private I_C_Async_Batch createAsycnBatch()
+	{
+		// Create Async Batch for tracking
+		return asyncBatchBL.newAsyncBatch()
+				.setContext(getCtx())
+				.setC_Async_Batch_Type(LetterConstants.C_Async_Batch_InternalName_CreatinglettersAsync)
+				.setAD_PInstance_Creator_ID(getAD_PInstance_ID())
+				.setName("Create Letters for Cmapaign " + campaignId)
+				.build();
+	}
+
+	private void enqueue(@NonNull final I_C_Async_Batch asyncbatch, final Integer campaignContactPersonId)
+	{
+		if (campaignContactPersonId == null || campaignContactPersonId <= 0)
+		{
+			// should not happen
+			return;
+		}
+
+		final I_MKTG_Campaign_ContactPerson campaignContactPerson = load(campaignContactPersonId, I_MKTG_Campaign_ContactPerson.class);
+
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(getCtx(), C_Letter_CreateFromMKTG_ContactPerson_Async.class);
+		queue.newBlock()
+				.setContext(getCtx())
+				.newWorkpackage()
+				.setC_Async_Batch(asyncbatch) // set the async batch in workpackage in order to track it
+				.addElement(campaignContactPerson)
+				.build();
 	}
 }
