@@ -6,12 +6,14 @@ import org.adempiere.location.Location;
 import org.adempiere.location.LocationRepository;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.util.Env;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.letter.model.Letter;
-import de.metas.letter.model.LetterRepository;
+import de.metas.letters.api.ITextTemplateBL;
+import de.metas.letters.model.Letter;
+import de.metas.letters.model.LetterRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
@@ -71,6 +73,9 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 
 			// save letter
 			letter = letterRepo.save(letter);
+
+			// create T_Letter_Spool record
+			Services.get(ITextTemplateBL.class).createLetterSpoolRecord(workPackage.getAD_PInstance_Creator_ID(), letter, Env.getAD_Client_ID());
 		}
 
 		return Result.SUCCESS;
