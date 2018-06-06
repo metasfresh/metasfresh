@@ -1,9 +1,12 @@
-package de.metas.letter.model;
+package de.metas.letters.model;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
+import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.user.UserId;
 
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -29,29 +32,31 @@ import lombok.Value;
  */
 
 @Value
-public class LetterId
+@Builder(toBuilder = true)
+public class Letter
 {
-	int repoId;
+	/** can be null for not-yet-saved letters */
+	@Nullable
+	final LetterId id;
 
-	public static LetterId ofRepoId(final int repoId)
-	{
-		return new LetterId(repoId);
-	}
+	@Nullable
+	final BPartnerId bpartnerId;
 
-	public static LetterId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new LetterId(repoId) : null;
-	}
+	@Nullable
+	final UserId userId;
 
-	public static int toRepoIdOr(
-			@Nullable final LetterId letterId,
-			final int defaultValue)
-	{
-		return letterId != null ? letterId.getRepoId() : defaultValue;
-	}
+	final String subject;
 
-	private LetterId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "repoId");
-	}
+	final String body;
+
+	final int boilerPlateId;
+
+	final String address;
+
+	@NonNull
+	final String adLanguage;
+
+	final int adOrgId;
+
+	private final int bpartnerLocationId;
 }

@@ -1,4 +1,4 @@
-package de.metas.letter.model;
+package de.metas.letters.model;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -35,7 +35,7 @@ import lombok.NonNull;
 @Repository
 public class LetterRepository
 {
-	public Letter ofRecord(@NonNull final I_C_Letter letterRecord)
+	public Letter toCLetter(@NonNull final I_C_Letter letterRecord)
 	{
 		return Letter.builder()
 				.bpartnerId(BPartnerId.ofRepoId(letterRecord.getC_BPartner_ID()))

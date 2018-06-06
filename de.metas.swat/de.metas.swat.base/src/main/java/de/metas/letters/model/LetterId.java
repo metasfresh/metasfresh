@@ -1,25 +1,27 @@
-package de.metas.letters.api;
+package de.metas.letters.model;
 
-import lombok.Builder;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+
+import org.adempiere.util.Check;
+
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,20 +29,29 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public final class LetterPDFCreateRequest
+public class LetterId
 {
-	private final int textTemplateId;
-	@NonNull
-	private final String adLanguage;
-	
-	private final int adOrgId;
-	
-	private final String letterSubject;
-	private final String letterBodyParsed;
+	int repoId;
 
-	private final int bpartnerId;
-	private final int bpartnerLocationId;
-	private final String bpartnerAddress;
-	private final int bpartnerContactId;
+	public static LetterId ofRepoId(final int repoId)
+	{
+		return new LetterId(repoId);
+	}
+
+	public static LetterId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new LetterId(repoId) : null;
+	}
+
+	public static int toRepoIdOr(
+			@Nullable final LetterId letterId,
+			final int defaultValue)
+	{
+		return letterId != null ? letterId.getRepoId() : defaultValue;
+	}
+
+	private LetterId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "repoId");
+	}
 }
