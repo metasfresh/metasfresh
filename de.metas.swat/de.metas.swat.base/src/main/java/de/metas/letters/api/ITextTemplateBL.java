@@ -10,12 +10,12 @@ package de.metas.letters.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,7 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.I_C_Letter;
+import de.metas.letters.model.Letter;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.ILetterProducer;
 
@@ -38,7 +39,7 @@ public interface ITextTemplateBL extends ISingletonService
 {
 	/**
 	 * Return available templates for logged in user. Read-only templates are also returned
-	 * 
+	 *
 	 * @return list of available {@link I_AD_BoilerPlate}s
 	 */
 	List<I_AD_BoilerPlate> getAvailableLetterTemplates();
@@ -49,10 +50,10 @@ public interface ITextTemplateBL extends ISingletonService
 
 	void setLocationContactAndOrg(I_C_Letter letter);
 
-	byte[] createPDF(LetterPDFCreateRequest request);
+	byte[] createPDF(Letter request);
 
 	/**
-	 * 
+	 *
 	 * @param letter
 	 * @return true if letter is empty or subject and body are missing
 	 */
@@ -60,7 +61,7 @@ public interface ITextTemplateBL extends ISingletonService
 
 	/**
 	 * Sets AD_BoilerPlate field, but also LetterSubject and LetterBody fields.
-	 * 
+	 *
 	 * @param letter
 	 * @param textTemplate
 	 */
@@ -70,12 +71,14 @@ public interface ITextTemplateBL extends ISingletonService
 
 	/**
 	 * Mass produce letters from given source using given producer.
-	 * 
+	 *
 	 * @param source
 	 * @param producer
 	 */
 	<T> void createLetters(Iterator<T> source, ILetterProducer<T> producer);
 
 	<T> I_C_Letter createLetter(T item, ILetterProducer<T> producer);
+
+	void createLetterSpoolRecord(int adPInstanceId, Letter request, int adClientId);
 
 }

@@ -10,12 +10,12 @@ package de.metas.letters.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -36,7 +37,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -47,10 +47,10 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.letters.api.ITextTemplateBL;
-import de.metas.letters.api.LetterPDFCreateRequest;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.I_C_Letter;
 import de.metas.letters.model.I_T_Letter_Spool;
+import de.metas.letters.model.Letter;
 import de.metas.letters.model.LetterDocumentLocationAdapter;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -87,15 +87,14 @@ public final class TextTemplateBL implements ITextTemplateBL
 	@Cached(cacheName = I_AD_BoilerPlate.Table_Name)
 	/* package */ List<I_AD_BoilerPlate> getAvailableLetterTemplates(@CacheCtx Properties ctx)
 	{
-		final String whereClause = null;
-
-		final List<I_AD_BoilerPlate> list = new Query(ctx, I_AD_BoilerPlate.Table_Name, whereClause, ITrx.TRXNAME_None)
-				.setClient_ID()
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_BoilerPlate.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.orderBy(I_AD_BoilerPlate.COLUMNNAME_Name)
+				.create()
 				.setApplyAccessFilterRW(false)
-				.setOrderBy(I_AD_BoilerPlate.COLUMNNAME_Name)
 				.list(I_AD_BoilerPlate.class);
-
-		return list;
 	}
 
 	@Override
@@ -167,7 +166,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 	}
 
 	@Override
-	public byte[] createPDF(final LetterPDFCreateRequest request)
+	public byte[] createPDF(final Letter request)
 	{
 		final Properties ctx = Env.getCtx();
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
@@ -187,14 +186,14 @@ public final class TextTemplateBL implements ITextTemplateBL
 		return pdf;
 	}
 
-	private static int getJasperProcess_ID(final LetterPDFCreateRequest request)
+	private static int getJasperProcess_ID(final Letter request)
 	{
-		if(request.getTextTemplateId() <= 0)
+		if (request.getBoilerPlateId() <= 0)
 		{
 			return AD_Process_ID_T_Letter_Spool_Print;
 		}
-		
-		final I_AD_BoilerPlate textTemplate = InterfaceWrapperHelper.loadOutOfTrx(request.getTextTemplateId(), I_AD_BoilerPlate.class);
+
+		final I_AD_BoilerPlate textTemplate = InterfaceWrapperHelper.loadOutOfTrx(request.getBoilerPlateId(), I_AD_BoilerPlate.class);
 		if (textTemplate == null)
 		{
 			return AD_Process_ID_T_Letter_Spool_Print;
@@ -209,7 +208,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 		return jasperProcessId;
 	}
 
-	private static void createLetterSpoolRecord(final int adPInstanceId, final LetterPDFCreateRequest request, final int adClientId)
+	@Override
+	public void createLetterSpoolRecord(final int adPInstanceId, final Letter request, final int adClientId)
 	{
 		final String sql = "INSERT INTO " + I_T_Letter_Spool.Table_Name + "("
 				+ " " + I_T_Letter_Spool.COLUMNNAME_AD_Client_ID
@@ -233,18 +233,17 @@ public final class TextTemplateBL implements ITextTemplateBL
 				+ ",getdate(),0,getdate(),0,'Y'"
 				+ ")";
 		DB.executeUpdateEx(sql,
-				new Object[]
-				{
+				new Object[] {
 						adClientId,
 						request.getAdOrgId(), // NOTE: using the same Org as in C_Letter is very important for reports to know from where to take the Org Header
 						adPInstanceId,
 						10, // seqNo
-						request.getLetterSubject(),
-						request.getLetterBodyParsed(),
-						request.getBpartnerId(),
+						request.getSubject(),
+						request.getBody(),
+						request.getBpartnerId().getRepoId(),
 						request.getBpartnerLocationId(),
-						request.getBpartnerAddress(),
-						request.getBpartnerContactId(),
+						request.getAddress(),
+						request.getUserId().getRepoId(),
 				},
 				ITrx.TRXNAME_None);
 	}
