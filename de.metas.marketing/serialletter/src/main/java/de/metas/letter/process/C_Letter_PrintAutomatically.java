@@ -86,7 +86,7 @@ public class C_Letter_PrintAutomatically extends JavaProcess
 	private void print(final IPrintingQueueSource source)
 	{
 
-		Services.get(ITrxManager.class).run(get_TrxName(), (TrxRunnable)localTrxName -> {
+		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, (TrxRunnable)localTrxName -> {
 			try
 			{
 
