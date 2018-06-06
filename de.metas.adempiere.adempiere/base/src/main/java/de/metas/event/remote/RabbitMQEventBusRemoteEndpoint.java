@@ -55,7 +55,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 
 	private final IEventListener eventBus2amqpListener = EventBus2RemoteEndpointHandler.newInstance(this);
 
-	public RabbitMQEventBusRemoteEndpoint(final AmqpTemplate amqpTemplate)
+	public RabbitMQEventBusRemoteEndpoint(@NonNull final AmqpTemplate amqpTemplate)
 	{
 		senderId = EventBusConstants.getSenderId();
 		this.amqpTemplate = amqpTemplate;
