@@ -8,6 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.springframework.stereotype.Repository;
@@ -60,7 +61,18 @@ public class BPartnerPrintFormatRepository
 			return null;
 		}
 
-		return BPPrintFormat.ofdataRecord(bpPrintFormatRecord);
+		return toBPPrintFormat(bpPrintFormatRecord);
+	}
+
+	public BPPrintFormat toBPPrintFormat(@NonNull final I_C_BP_PrintFormat bpPrinfFormatDataRecord)
+	{
+		return BPPrintFormat.builder()
+				.bpartnerId(BPartnerId.ofRepoId(bpPrinfFormatDataRecord.getC_BPartner_ID()))
+				.adTableId(bpPrinfFormatDataRecord.getAD_Table_ID())
+				.docTypeId(bpPrinfFormatDataRecord.getC_DocType_ID())
+				.printFormatId(bpPrinfFormatDataRecord.getAD_PrintFormat_ID())
+				.bpPrintFormatId(bpPrinfFormatDataRecord.getC_BP_PrintFormat_ID())
+				.build();
 	}
 
 	public BPPrintFormat save(@NonNull final BPPrintFormat bpPrintFormat)

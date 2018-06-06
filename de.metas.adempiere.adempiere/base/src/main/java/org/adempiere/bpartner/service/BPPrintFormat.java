@@ -5,7 +5,6 @@ package org.adempiere.bpartner.service;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
-import org.compiere.model.I_C_BP_PrintFormat;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -74,16 +73,5 @@ public class BPPrintFormat
 		this.adTableId = adTableId;
 		this.printFormatId = printFormatId;
 		this.bpPrintFormatId = bpPrintFormatId;
-	}
-
-	public static BPPrintFormat ofdataRecord(@NonNull final I_C_BP_PrintFormat bpPrinfFormatDataRecord)
-	{
-		return BPPrintFormat.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bpPrinfFormatDataRecord.getC_BPartner_ID()))
-				.adTableId(bpPrinfFormatDataRecord.getAD_Table_ID())
-				.docTypeId(bpPrinfFormatDataRecord.getC_DocType_ID())
-				.printFormatId(bpPrinfFormatDataRecord.getAD_PrintFormat_ID())
-				.bpPrintFormatId(bpPrinfFormatDataRecord.getC_BP_PrintFormat_ID())
-				.build();
 	}
 }
