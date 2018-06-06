@@ -60,7 +60,7 @@ public class C_Async_Batch
 		{
 			//
 			// trigger printing if was an creating letter batch
-			if (LetterConstants.C_Async_Batch_InternalName_CreatinglettersAsync.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
+			if (LetterConstants.C_Async_Batch_InternalName_CreateLettersAsync.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
 			{
 				runPrintingProcess(asyncBatch);
 			}
