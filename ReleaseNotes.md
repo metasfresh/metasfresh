@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Fixes the Layout for Quickaction Buttons with large content.
   * [#1830](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1830) Empty login page after logout
     * Fixes the empty page after logout. Now showing the login screen again.
+  * [#1832](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1832) Labels widget: pressing enter
+    * Improvement of the Pre-Selection of Label Widget Dropdown after Label selection.
 
 
 # metasfresh 5.60 (2018-23)
