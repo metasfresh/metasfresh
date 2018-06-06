@@ -3,6 +3,7 @@ package org.adempiere.service;
 import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -34,7 +35,7 @@ import lombok.Value;
  *
  */
 @Value
-public class ClientId
+public class ClientId implements RepoIdAware
 {
 	public static ClientId ofRepoId(final int repoId)
 	{
