@@ -334,7 +334,7 @@ $F{shiplocation}]]></textFieldExpression>
 )]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-19" x="347" y="0" width="40" height="12" forecolor="#000000" uuid="f260d37b-5355-444b-9ea5-28a2a2314086">
+					<reportElement key="textField-19" x="341" y="0" width="46" height="12" forecolor="#000000" uuid="f260d37b-5355-444b-9ea5-28a2a2314086">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
