@@ -49,6 +49,7 @@ public class ContactPerson implements DataRecord
 				.platformId(platformId)
 				.name(user.getName())
 				.userId(user.getId())
+				.bPartnerId(user.getBpartnerId())
 				.locationId(location.getLocationId())
 				.address(EmailAddress.of(user.getEmailAddress()))
 				.build();
