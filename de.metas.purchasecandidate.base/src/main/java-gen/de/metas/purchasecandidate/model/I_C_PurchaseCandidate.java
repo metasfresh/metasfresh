@@ -446,6 +446,31 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
 
 	/**
+	 * Set Rohertragspreis.
+	 * Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPriceGrossProfit (java.math.BigDecimal PriceGrossProfit);
+
+	/**
+	 * Get Rohertragspreis.
+	 * Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPriceGrossProfit();
+
+    /** Column definition for PriceGrossProfit */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceGrossProfit = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PriceGrossProfit", null);
+    /** Column name PriceGrossProfit */
+    public static final String COLUMNNAME_PriceGrossProfit = "PriceGrossProfit";
+
+	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *

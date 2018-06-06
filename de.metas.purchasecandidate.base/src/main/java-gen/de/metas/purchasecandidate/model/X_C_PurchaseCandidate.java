@@ -424,6 +424,28 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
+	/** Set Rohertragspreis.
+		@param PriceGrossProfit 
+		Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	  */
+	@Override
+	public void setPriceGrossProfit (java.math.BigDecimal PriceGrossProfit)
+	{
+		set_Value (COLUMNNAME_PriceGrossProfit, PriceGrossProfit);
+	}
+
+	/** Get Rohertragspreis.
+		@return Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	  */
+	@Override
+	public java.math.BigDecimal getPriceGrossProfit () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceGrossProfit);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
