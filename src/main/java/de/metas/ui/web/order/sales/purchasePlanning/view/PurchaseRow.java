@@ -530,8 +530,9 @@ public final class PurchaseRow implements IViewRow
 		assertRowType(PurchaseRowType.GROUP);
 
 		final PurchaseRow lineRow = getIncludedRowById(includedRowId);
-
 		lineRow.assertRowEditable();
+		lineRow.assertRowType(PurchaseRowType.LINE);
+
 		lineRow.setDatePromised(datePromised);
 	}
 
