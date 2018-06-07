@@ -69,7 +69,7 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 	@Override
 	public Iterator<I_C_Printing_Queue> createItemsIterator()
 	{
-		return createPrintingQueueIterator(ctx, printingQueueQuery, ITrx.TRXNAME_ThreadInherited);
+		return createPrintingQueueIterator(ctx, printingQueueQuery, ITrx.TRXNAME_None);
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 		queryRelated.setIgnoreC_Printing_Queue_ID(item.getC_Printing_Queue_ID());
 		queryRelated.setCopies(item.getCopies()); // 08958
 
-		return createPrintingQueueIterator(ctx, queryRelated, ITrx.TRXNAME_ThreadInherited);
+		return createPrintingQueueIterator(ctx, queryRelated, ITrx.TRXNAME_None);
 	}
 
 	private Iterator<I_C_Printing_Queue> createPrintingQueueIterator(final Properties ctx,
