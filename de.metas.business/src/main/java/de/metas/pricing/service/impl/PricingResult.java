@@ -31,6 +31,7 @@ import java.util.List;
 import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -57,7 +58,9 @@ class PricingResult implements IPricingResult
 
 	private int M_PricingSystem_ID = -1;
 	private int M_PriceList_ID = -1;
-	private int C_Currency_ID = -1;
+	@Setter
+	@Getter
+	private CurrencyId currencyId;
 	private int C_UOM_ID = -1;
 	private int M_Product_ID = -1;
 	private int M_Product_Category_ID = -1;
@@ -106,24 +109,6 @@ class PricingResult implements IPricingResult
 	public int getM_PriceList_ID()
 	{
 		return M_PriceList_ID;
-	}
-
-	/**
-	 * @return the c_Currency_ID
-	 */
-	@Override
-	public int getC_Currency_ID()
-	{
-		return C_Currency_ID;
-	}
-
-	/**
-	 * @param c_Currency_ID the c_Currency_ID to set
-	 */
-	@Override
-	public void setC_Currency_ID(final int c_Currency_ID)
-	{
-		C_Currency_ID = c_Currency_ID;
 	}
 
 	/**

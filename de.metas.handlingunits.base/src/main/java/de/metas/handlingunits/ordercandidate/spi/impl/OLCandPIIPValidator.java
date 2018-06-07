@@ -37,6 +37,7 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
@@ -118,7 +119,7 @@ public class OLCandPIIPValidator implements IOLCandValidator
 		pricingCtx.setM_PriceList_ID(pl.getM_PriceList_ID());
 		pricingCtx.setM_Product_ID(packingMaterialProductId);
 		pricingCtx.setPriceDate(datePromisedEffective);
-		pricingCtx.setC_Currency_ID(olCand.getC_Currency_ID());
+		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(olCand.getC_Currency_ID()));
 
 		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
 		if (pricingResult == null || !pricingResult.isCalculated())

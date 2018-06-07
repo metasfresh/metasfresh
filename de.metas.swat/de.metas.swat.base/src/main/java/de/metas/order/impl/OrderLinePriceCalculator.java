@@ -12,6 +12,7 @@ import org.compiere.model.X_C_OrderLine;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
@@ -118,7 +119,7 @@ class OrderLinePriceCalculator
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
-		orderLine.setC_Currency_ID(pricingResult.getC_Currency_ID());
+		orderLine.setC_Currency_ID(CurrencyId.toRepoId(pricingResult.getCurrencyId()));
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
 
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());

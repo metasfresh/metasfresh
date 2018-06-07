@@ -35,6 +35,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MProduct;
 
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.AbstractPriceListBasedRule;
@@ -126,7 +127,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		BigDecimal m_PriceList = null;
 		BigDecimal m_PriceLimit = null;
 		int m_C_UOM_ID = -1;
-		int m_C_Currency_ID = -1;
+		CurrencyId currencyId = null;
 		boolean m_enforcePriceLimit = false;
 		boolean m_isTaxIncluded = false;
 		//
@@ -154,14 +155,14 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		// TODO handle bom-prices for products that don't have a price themselves.
 
 		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(m_M_PriceList_ID);
-		m_C_Currency_ID = priceList.getC_Currency_ID();
+		currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
 		m_enforcePriceLimit = priceList.isEnforcePriceLimit();
 		m_isTaxIncluded = priceList.isTaxIncluded();
 
 		result.setPriceStd(m_PriceStd);
 		result.setPriceList(m_PriceList);
 		result.setPriceLimit(m_PriceLimit);
-		result.setC_Currency_ID(m_C_Currency_ID);
+		result.setCurrencyId(currencyId);
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(m_enforcePriceLimit);

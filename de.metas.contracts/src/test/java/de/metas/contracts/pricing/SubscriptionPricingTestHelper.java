@@ -12,6 +12,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.rules.Discount;
 import de.metas.pricing.rules.PriceListVersion;
@@ -85,7 +86,7 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 		pricingCtx.setM_Product_ID(getDefaultProduct().getM_Product_ID());
 		pricingCtx.setReferencedObject(defautlFlatrateTermConditions);
 		pricingCtx.setC_Country_ID(country.getC_Country_ID());
-		pricingCtx.setC_Currency_ID(country.getC_Currency_ID());
+		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(country.getC_Currency_ID()));
 
 		return pricingCtx;
 	}

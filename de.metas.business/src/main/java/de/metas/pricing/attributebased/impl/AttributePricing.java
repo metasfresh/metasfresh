@@ -18,14 +18,15 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.pricing.rules.IPricingRule;
-import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
+import de.metas.pricing.service.ProductPrices;
 
 public class AttributePricing implements IPricingRule
 {
@@ -115,11 +116,11 @@ public class AttributePricing implements IPricingRule
 		final I_M_Product product = InterfaceWrapperHelper.create(productPrice.getM_Product(), I_M_Product.class);
 		final I_M_PriceList_Version pricelistVersion = productPrice.getM_PriceList_Version();
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(pricelistVersion.getM_PriceList(), I_M_PriceList.class);
-
+		
 		result.setPriceStd(productPrice.getPriceStd());
 		result.setPriceList(productPrice.getPriceList());
 		result.setPriceLimit(productPrice.getPriceLimit());
-		result.setC_Currency_ID(priceList.getC_Currency_ID());
+		result.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		result.setM_Product_Category_ID(product.getM_Product_Category_ID());
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());

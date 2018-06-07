@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 
 import org.adempiere.bpartner.BPartnerId;
 
+import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 
 /**
@@ -53,7 +54,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setBPartnerId(final BPartnerId bpartnerId);
 
-	IEditablePricingContext setC_Currency_ID(final int c_Currency_ID);
+	IEditablePricingContext setCurrencyId(CurrencyId currencyId);
 
 	IEditablePricingContext setC_UOM_ID(final int c_UOM_ID);
 

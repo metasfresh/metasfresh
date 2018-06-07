@@ -35,6 +35,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 
 /**
  * Implementors of this class have the job to create and invalidate {@link I_C_Invoice_Candidate} records.
@@ -256,7 +257,7 @@ public interface IInvoiceCandidateHandler
 
 		int pricingSystemId;
 		int priceListVersionId;
-		int currencyId;
+		CurrencyId currencyId;
 
 		BigDecimal priceEntered;
 		BigDecimal priceActual;

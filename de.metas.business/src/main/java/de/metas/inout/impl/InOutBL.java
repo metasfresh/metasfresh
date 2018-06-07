@@ -52,6 +52,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -118,7 +119,7 @@ public class InOutBL implements IInOutBL
 		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
 		pricingCtx.setM_PriceList_ID(priceList.getM_PriceList_ID());
 		pricingCtx.setPriceDate(inOut.getDateOrdered());
-		pricingCtx.setC_Currency_ID(priceList.getC_Currency_ID());
+		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		// note: the qty was already passed to the pricingCtx upon creation, further up.
 
 		return pricingCtx;

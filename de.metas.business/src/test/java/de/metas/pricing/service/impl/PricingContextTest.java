@@ -38,6 +38,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 
 public class PricingContextTest
@@ -65,7 +66,7 @@ public class PricingContextTest
 
 		pricingCtx.setAD_Table_ID(nextId++);
 		pricingCtx.setBPartnerId(BPartnerId.ofRepoId(nextId++));
-		pricingCtx.setC_Currency_ID(nextId++);
+		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(nextId++));
 		pricingCtx.setC_UOM_ID(nextId++);
 		pricingCtx.setConvertPriceToContextUOM(true);
 		pricingCtx.setDisallowDiscount(true);

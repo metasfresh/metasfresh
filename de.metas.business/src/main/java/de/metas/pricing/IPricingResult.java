@@ -40,13 +40,13 @@ public interface IPricingResult
 {
 	int NO_PRECISION = -1;
 
-	int getC_Currency_ID();
+	CurrencyId getCurrencyId();
 
-	void setC_Currency_ID(int currencyId);
+	void setCurrencyId(CurrencyId currencyId);
 
-	default CurrencyId getCurrencyId()
+	default int getCurrencyRepoId()
 	{
-		return CurrencyId.ofRepoId(getC_Currency_ID());
+		return CurrencyId.toRepoId(getCurrencyId());
 	}
 
 	int getPrice_UOM_ID();

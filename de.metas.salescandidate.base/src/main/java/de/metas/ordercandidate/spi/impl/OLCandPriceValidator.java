@@ -137,7 +137,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 		olCand.setPrice_UOM_Internal_ID(priceUOMInternalId);
 
 		olCand.setPriceActual(priceInternal);
-		olCand.setC_Currency_ID(pricingResult.getC_Currency_ID());
+		olCand.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
 		olCand.setM_PricingSystem_ID(pricingResult.getM_PricingSystem_ID());
 

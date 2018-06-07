@@ -253,17 +253,6 @@ public class MProductPricing
 	}
 
 	/**
-	 * Get Price List Currency
-	 * 
-	 * @return currency
-	 */
-	public int getC_Currency_ID()
-	{
-		calculatePrice(false);
-		return result.getC_Currency_ID();
-	}
-
-	/**
 	 * Is Price List enforded?
 	 * 
 	 * @return enforce limit

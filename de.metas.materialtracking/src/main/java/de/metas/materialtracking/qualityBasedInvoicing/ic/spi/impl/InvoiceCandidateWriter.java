@@ -427,7 +427,7 @@ public class InvoiceCandidateWriter
 		ic.setPriceActual(pricingResult.getPriceStd());
 		ic.setIsTaxIncluded(pricingResult.isTaxIncluded()); // 08457: Configure new IC from pricing result
 		ic.setDiscount(pricingResult.getDiscount().getValueAsBigDecimal());
-		ic.setC_Currency_ID(pricingResult.getC_Currency_ID());
+		ic.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
 		// InvoiceRule
 		ic.setInvoiceRule(vendorInvoicingInfo.getInvoiceRule());

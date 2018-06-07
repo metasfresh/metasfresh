@@ -112,9 +112,9 @@ public interface IInvoiceCandInvalidUpdater
 		{
 			ic.setM_PriceList_Version_ID(priceAndTax.getPriceListVersionId());
 		}
-		if (priceAndTax.getCurrencyId() > 0)
+		if (priceAndTax.getCurrencyId() != null)
 		{
-			ic.setC_Currency_ID(priceAndTax.getCurrencyId());
+			ic.setC_Currency_ID(priceAndTax.getCurrencyId().getRepoId());
 		}
 
 		//

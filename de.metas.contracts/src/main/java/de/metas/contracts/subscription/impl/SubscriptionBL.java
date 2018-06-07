@@ -410,8 +410,8 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		// task 03805:
 		// Make sure the currency ID for term is the same as the one from olCand
-		Check.errorIf(pricingResult.getC_Currency_ID() != olCand.getC_Currency_ID(), "Currency of olCand differs from the currency computed by the pricing engine; olCand={}; pricingResult={}", olCand, pricingResult);
-		newTerm.setC_Currency_ID(pricingResult.getC_Currency_ID());
+		Check.errorIf(pricingResult.getCurrencyRepoId() != olCand.getC_Currency_ID(), "Currency of olCand differs from the currency computed by the pricing engine; olCand={}; pricingResult={}", olCand, pricingResult);
+		newTerm.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
 		InterfaceWrapperHelper.save(newTerm);
 

@@ -22,6 +22,7 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
@@ -142,7 +143,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		logger.trace("Updating {} from {}", pricingAware, pricingResult);
 		pricingAware.setM_PricingSystem_ID(pricingResult.getM_PricingSystem_ID());
 		pricingAware.setM_PriceList_ID(pricingResult.getM_PriceList_ID());
-		pricingAware.setC_Currency_ID(pricingResult.getC_Currency_ID());
+		pricingAware.setCurrencyId(pricingResult.getCurrencyId());
 		pricingAware.setPrice(pricingResult.getPriceStd());
 	}
 
@@ -185,7 +186,7 @@ public class PMMPricingBL implements IPMMPricingBL
 				uom,  													// this is the qtyReportEvent's UOM
 				flatrateTerm.getC_Currency().getStdPrecision());
 
-		pricingAware.setC_Currency_ID(flatrateTerm.getC_Currency_ID());
+		pricingAware.setCurrencyId(CurrencyId.ofRepoIdOrNull(flatrateTerm.getC_Currency_ID()));
 		pricingAware.setPrice(price);
 		return true;
 	}

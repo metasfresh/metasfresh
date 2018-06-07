@@ -32,6 +32,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 
 public interface IPricingContext extends IContextAware
@@ -60,7 +61,7 @@ public interface IPricingContext extends IContextAware
 
 	int getC_UOM_ID();
 
-	int getC_Currency_ID();
+	CurrencyId getCurrencyId();
 
 	BPartnerId getBPartnerId();
 

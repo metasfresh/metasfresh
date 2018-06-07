@@ -360,7 +360,7 @@ public class PricingBL implements IPricingBL
 		result.setM_PriceList_ID(pricingCtx.getM_PriceList_ID());
 		result.setM_PriceList_Version_ID(pricingCtx.getM_PriceList_Version_ID());
 		result.setM_Product_ID(pricingCtx.getM_Product_ID());
-		result.setC_Currency_ID(pricingCtx.getC_Currency_ID());
+		result.setCurrencyId(pricingCtx.getCurrencyId());
 		result.setDisallowDiscount(pricingCtx.isDisallowDiscount());
 		result.setPriceDate(pricingCtx.getPriceDate());
 
