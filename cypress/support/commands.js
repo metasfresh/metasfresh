@@ -27,7 +27,6 @@ import { List } from 'immutable';
 import { goBack, push } from 'react-router-redux';
 
 import { loginSuccess } from '../../src/actions/AppActions';
-import { localLoginRequest } from '../../src/api';
 import Auth from '../../src/services/Auth';
 
 context('Reusable "login" custom command', function() {
@@ -38,22 +37,18 @@ context('Reusable "login" custom command', function() {
     });
 
     const handleSuccess = function(){
-      console.log('CYPRESS handleSuccess')
-
-      // getUserLang().then(response => {
-        //GET language shall always return a result
-        // Moment.locale(response.data['key']);
-
-        Cypress.reduxStore.dispatch(push('/'));
-      // });
+      Cypress.reduxStore.dispatch(push('/'));
     };
 
     const checkIfAlreadyLogged = function() {
-      console.log('chickifUserLogggedIn');
-      const error = new Error('bla')
-      // // return Promise.reject(error)
-      // return;
-      return localLoginRequest().then(response => {
+      const error = new Error('Error when checking if user logged in')
+
+      return cy.request({
+        method: 'GET',
+        url: 'http://w101.metasfresh.com:8081/rest/api/login/isLoggedIn',
+        failOnStatusCode: false,
+        followRedirect: false,
+      }).then(response => {
         if (!response.body.error) {
           return Cypress.reduxStore.dispatch(push('/'));
         }
@@ -73,14 +68,13 @@ context('Reusable "login" custom command', function() {
     return cy.request({
       method: 'POST',
       url: 'http://w101.metasfresh.com:8081/rest/api/login/authenticate',
-      // form: true,
       failOnStatusCode: false,
+      followRedirect: false,
       body: {
         username,
         password,
       },
     }).then(response => {
-      console.log('response: ', response)
       if (!response.isOkStatusCode) {
         return checkIfAlreadyLogged();
       }
@@ -93,12 +87,13 @@ context('Reusable "login" custom command', function() {
       return cy.request({
         method: 'POST',
         url: 'http://w101.metasfresh.com:8081/rest/api/login/loginComplete',
-        body: { ...roles[0] },
+        body: { ...roles.get(0) },
+        failOnStatusCode: false,
       }).then(() => {
         Cypress.reduxStore.dispatch(loginSuccess(auth));
         
         handleSuccess();
-      })
+      });
     })
   });
 
