@@ -55,7 +55,7 @@ public class LocationRepository
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		return bpartnersRepo.retrieveBPartnerLocations(user.getBpartnerId())
 				.stream()
-				.filter(I_C_BPartner_Location::isBillToDefault)
+				.filter(I_C_BPartner_Location::isBillTo)
 				.map(I_C_BPartner_Location::getC_Location)
 				.map(this::ofRecord)
 				.collect(ImmutableList.toImmutableList());
