@@ -23,8 +23,6 @@ import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
-import de.metas.purchasecandidate.VendorProductInfo;
-import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 
@@ -57,26 +55,16 @@ public class NullVendorGatewayInvokerTest
 	@Test
 	public void placeRemotePurchaseOrder()
 	{
-		final ProductId productId = ProductId.ofRepoId(20);
-		final BPartnerId vendorId = BPartnerId.ofRepoId(30);
-
-		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.id(VendorProductInfoId.ofRepoId(10))
-				.productId(productId)
-				.vendorId(vendorId)
-				.productName("productName")
-				.productNo("productNo").build();
-
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(OrgId.ofRepoId(10))
+				.warehouseId(WarehouseId.ofRepoId(60))
 				.dateRequired(SystemTime.asLocalDateTime())
-				.vendorProductInfo(vendorProductInfo)
-				.productId(productId)
+				.vendorId(BPartnerId.ofRepoId(30))
+				.productId(ProductId.ofRepoId(20))
+				.uomId(70)
 				.qtyToPurchase(TEN)
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(40, 50))
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
-				.warehouseId(WarehouseId.ofRepoId(60))
-				.uomId(70)
 				.build();
 
 		final List<PurchaseItem> purchaseItems = NullVendorGatewayInvoker.INSTANCE.placeRemotePurchaseOrder(ImmutableList.of(purchaseCandidate));

@@ -1,34 +1,24 @@
 package de.metas.purchasecandidate.availability;
 
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.order.OrderAndLineId;
-import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseCandidateId;
-import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestException;
-import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
-import de.metas.vendor.gateway.api.availability.TrackingId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -57,26 +47,20 @@ class AvailabilityCheckCommand
 	// services
 	private final VendorGatewayRegistry vendorGatewayRegistry;
 
-	private final ImmutableListMultimap<BPartnerId, PurchaseCandidateAndTrackingId> purchaseCandidatesByVendorId;
+	private final ImmutableSet<AvailabilityRequest> requests;
 
 	@Builder
 	private AvailabilityCheckCommand(
-			@NonNull final PurchaseCandidatesAvailabilityRequest request,
+			@NonNull @Singular final ImmutableSet<AvailabilityRequest> requests,
 			@NonNull final VendorGatewayRegistry vendorGatewayRegistry)
 	{
 		this.vendorGatewayRegistry = vendorGatewayRegistry;
-		this.purchaseCandidatesByVendorId = request.getPurchaseCandidates()
-				.entrySet()
-				.stream()
-				.map(PurchaseCandidateAndTrackingId::ofMapEntry)
-				.collect(GuavaCollectors.toImmutableListMultimap(PurchaseCandidateAndTrackingId::getVendorId));
+		this.requests = requests;
 	}
 
 	public AvailabilityMultiResult checkAvailability()
 	{
-		final Set<BPartnerId> vendorIds = purchaseCandidatesByVendorId.keySet();
-
-		return vendorIds.stream()
+		return requests.stream()
 				.map(this::checkAvailabilityAndConvertThrowable)
 				.reduce(AvailabilityMultiResult::merge)
 				.orElse(AvailabilityMultiResult.EMPTY);
@@ -84,45 +68,41 @@ class AvailabilityCheckCommand
 
 	public void checkAvailabilityAsync(@NonNull final AvailabilityCheckCallback callback)
 	{
-		final Properties localCtx = Env.copyCtx(Env.getCtx());
-
-		for (final BPartnerId vendorId : purchaseCandidatesByVendorId.keySet())
-		{
-			CompletableFuture
-					.supplyAsync(() -> {
-						try (final IAutoCloseable ctxWithinAsyncThread = Env.switchContext(localCtx))
-						{
-							return checkAvailabilityAndConvertThrowable(vendorId);
-						}
-					})
-					.whenComplete((result, throwable) -> {
-
-						final boolean resultWasFound = result != null && !result.isEmpty();
-						final boolean errorOccured = throwable != null;
-						if (resultWasFound || errorOccured)
-						{
-							callback.onResult(result, throwable);
-						}
-					});
-		}
+		requests.forEach(request -> checkAvailabilityAsync(request, callback));
 	}
 
-	private AvailabilityMultiResult checkAvailabilityAndConvertThrowable(final BPartnerId vendorId)
+	private void checkAvailabilityAsync(@NonNull final AvailabilityRequest request, @NonNull final AvailabilityCheckCallback callback)
 	{
-		if (!vendorProvidesAvailabilityCheck(vendorId))
-		{
-			return AvailabilityMultiResult.EMPTY;
-		}
+		final Properties localCtx = Env.copyCtx(Env.getCtx());
 
-		final Set<AvailabilityRequestItem> requestItems = createRequestItems(vendorId);
-		if (requestItems.isEmpty())
+		CompletableFuture
+				.supplyAsync(() -> {
+					try (final IAutoCloseable ctxWithinAsyncThread = Env.switchContext(localCtx))
+					{
+						return checkAvailabilityAndConvertThrowable(request);
+					}
+				})
+				.whenComplete((result, throwable) -> {
+
+					final boolean resultWasFound = result != null && !result.isEmpty();
+					final boolean errorOccured = throwable != null;
+					if (resultWasFound || errorOccured)
+					{
+						callback.onResult(result, throwable);
+					}
+				});
+	}
+
+	private AvailabilityMultiResult checkAvailabilityAndConvertThrowable(final AvailabilityRequest request)
+	{
+		if (!vendorProvidesAvailabilityCheck(request.getVendorId()))
 		{
 			return AvailabilityMultiResult.EMPTY;
 		}
 
 		try
 		{
-			return checkAvailability0(vendorId, requestItems);
+			return checkAvailability0(request);
 		}
 		catch (final Throwable t)
 		{
@@ -130,22 +110,18 @@ class AvailabilityCheckCommand
 		}
 	}
 
-	private AvailabilityMultiResult checkAvailability0(
-			@NonNull final BPartnerId vendorId,
-			@NonNull final Set<AvailabilityRequestItem> requestItems)
+	private AvailabilityMultiResult checkAvailability0(@NonNull final AvailabilityRequest request)
 	{
 		final VendorGatewayService vendorGatewayService = vendorGatewayRegistry
-				.getSingleVendorGatewayService(vendorId.getRepoId())
+				.getSingleVendorGatewayService(request.getVendorId())
 				.orElse(null);
 		if (vendorGatewayService == null)
 		{
+			// shall not happen because we already checked that
 			return AvailabilityMultiResult.EMPTY;
 		}
 
-		final AvailabilityResponse availabilityResponse = vendorGatewayService.retrieveAvailability(AvailabilityRequest.builder()
-				.vendorId(vendorId.getRepoId())
-				.availabilityRequestItems(requestItems)
-				.build());
+		final AvailabilityResponse availabilityResponse = vendorGatewayService.retrieveAvailability(request);
 
 		final ImmutableList.Builder<AvailabilityResult> result = ImmutableList.builder();
 		for (final AvailabilityResponseItem responseItem : availabilityResponse.getAvailabilityResponseItems())
@@ -183,60 +159,8 @@ class AvailabilityCheckCommand
 		return new AvailabilityException(errorItems);
 	}
 
-	private Set<AvailabilityRequestItem> createRequestItems(final BPartnerId vendorId)
+	private boolean vendorProvidesAvailabilityCheck(final int vendorBPartnerId)
 	{
-		return purchaseCandidatesByVendorId.get(vendorId)
-				.stream()
-				.filter(PurchaseCandidateAndTrackingId::isNotProcessed)
-				.map(PurchaseCandidateAndTrackingId::createAvailabilityRequestItem)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	private boolean vendorProvidesAvailabilityCheck(@NonNull final BPartnerId vendorBPartnerId)
-	{
-		return vendorGatewayRegistry.getSingleVendorGatewayService(vendorBPartnerId.getRepoId()).isPresent();
-	}
-
-	@lombok.Value
-	@lombok.Builder
-	private static final class PurchaseCandidateAndTrackingId
-	{
-		public static PurchaseCandidateAndTrackingId ofMapEntry(Map.Entry<TrackingId, PurchaseCandidate> entry)
-		{
-			return builder().trackingId(entry.getKey()).purchaseCandidate(entry.getValue()).build();
-		}
-
-		@NonNull
-		TrackingId trackingId;
-		@NonNull
-		PurchaseCandidate purchaseCandidate;
-
-		public BPartnerId getVendorId()
-		{
-			return purchaseCandidate.getVendorId();
-		}
-
-		public boolean isProcessed()
-		{
-			return purchaseCandidate.isProcessed();
-		}
-
-		public boolean isNotProcessed()
-		{
-			return !isProcessed();
-		}
-
-		public AvailabilityRequestItem createAvailabilityRequestItem()
-		{
-			final ProductAndQuantity productAndQuantity = purchaseCandidate.createProductAndQuantity();
-
-			return AvailabilityRequestItem.builder()
-					.trackingId(trackingId)
-					.productAndQuantity(productAndQuantity)
-					.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(purchaseCandidate.getId(), -1))
-					.salesOrderLineId(OrderAndLineId.getOrderLineRepoIdOr(purchaseCandidate.getSalesOrderAndLineId(), -1))
-					.build();
-		}
-
+		return vendorGatewayRegistry.getSingleVendorGatewayService(vendorBPartnerId).isPresent();
 	}
 }

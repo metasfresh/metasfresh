@@ -1,7 +1,6 @@
 package de.metas.purchasecandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
@@ -24,7 +23,6 @@ import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -44,6 +42,7 @@ import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
@@ -75,11 +74,13 @@ import lombok.NonNull;
 @Repository
 public class PurchaseCandidateRepository
 {
-	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
-
-	private final PurchaseItemRepository purchaseItemRepository;
-
+	// services
 	private final CurrencyRepository currencyRepository;
+	private final PurchaseItemRepository purchaseItemRepository;
+	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
+
+	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
 
 	public PurchaseCandidateRepository(
 			@NonNull final PurchaseItemRepository purchaseItemRepository,
@@ -125,7 +126,6 @@ public class PurchaseCandidateRepository
 			return ImmutableListMultimap.of();
 		}
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, salesOrderLineIds)
@@ -144,7 +144,6 @@ public class PurchaseCandidateRepository
 			return Stream.empty();
 		}
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID, PurchaseCandidateId.toIntSet(purchaseCandidateIds))
 				.create()
@@ -159,7 +158,6 @@ public class PurchaseCandidateRepository
 
 	public Set<PurchaseCandidateId> retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(@NonNull final OrderId salesOrderId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, salesOrderId.getRepoId())
 				.andCollectChildren(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID)
@@ -203,7 +201,7 @@ public class PurchaseCandidateRepository
 		final Map<PurchaseCandidateId, I_C_PurchaseCandidate> existingRecordsById;
 		if (!existingPurchaseCandidateIds.isEmpty())
 		{
-			existingRecordsById = Services.get(IQueryBL.class)
+			existingRecordsById = queryBL
 					.createQueryBuilder(I_C_PurchaseCandidate.class)
 					.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID, PurchaseCandidateId.toIntSet(existingPurchaseCandidateIds))
 					.create()
@@ -238,7 +236,8 @@ public class PurchaseCandidateRepository
 
 	private ILockAutoCloseable lockByIds(final Set<PurchaseCandidateId> purchaseCandidateIds)
 	{
-		return Services.get(ILockManager.class).lock()
+		final ILockManager lockManager = Services.get(ILockManager.class);
+		return lockManager.lock()
 				.setOwner(lockOwner)
 				.setAutoCleanup(true)
 				.addRecordsByModel(TableRecordReference.ofRecordIds(I_C_PurchaseCandidate.Table_Name, PurchaseCandidateId.toIntSet(purchaseCandidateIds)))
@@ -279,7 +278,7 @@ public class PurchaseCandidateRepository
 
 		final BPartnerId vendorId = purchaseCandidate.getVendorId();
 		record.setVendor_ID(vendorId != null ? vendorId.getRepoId() : -1);
-		record.setC_BPartner_Product_ID(purchaseCandidate.getVendorProductInfoId().map(VendorProductInfoId::getRepoId).orElse(-1));
+		// record.setC_BPartner_Product_ID(purchaseCandidate.getVendorProductInfoId().map(VendorProductInfoId::getRepoId).orElse(-1));
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
 
 		updateRecordFromPurchaseProfitInfo(record, purchaseCandidate.getProfitInfo());
@@ -307,19 +306,11 @@ public class PurchaseCandidateRepository
 
 		final boolean locked = lockManager.isLocked(purchaseCandidateRecord);
 
-		final VendorProductInfo vendorProductInfo = toVendorProductInfo(purchaseCandidateRecord);
-
 		final LocalDateTime dateRequired = TimeUtil.asLocalDateTime(purchaseCandidateRecord.getDateRequired());
 		final LocalDateTime dateReminder = TimeUtil.asLocalDateTime(purchaseCandidateRecord.getReminderDate());
 		final Duration reminderTime = dateRequired != null && dateReminder != null ? Duration.between(dateRequired, dateReminder) : null;
 
 		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIdsOrNull(purchaseCandidateRecord.getC_OrderSO_ID(), purchaseCandidateRecord.getC_OrderLineSO_ID());
-		BigDecimal salesOrderQtyToDeliver = null;
-		if (salesOrderAndLineId != null)
-		{
-			final I_C_OrderLine salesOrderLine = load(salesOrderAndLineId.getOrderLineRepoId(), I_C_OrderLine.class);
-			salesOrderQtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
-		}
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.locked(locked)
@@ -330,17 +321,21 @@ public class PurchaseCandidateRepository
 				.dateRequired(dateRequired)
 				.reminderTime(reminderTime)
 				//
+				.vendorId(BPartnerId.ofRepoId(purchaseCandidateRecord.getVendor_ID()))
+				//
 				.orgId(OrgId.ofRepoId(purchaseCandidateRecord.getAD_Org_ID()))
 				.warehouseId(WarehouseId.ofRepoId(purchaseCandidateRecord.getM_WarehousePO_ID()))
 				//
 				.productId(ProductId.ofRepoId(purchaseCandidateRecord.getM_Product_ID()))
+				// .vendorProductNo(purchaseCandidateRecord.getVendorProductNo()) // TODO
+				.vendorProductNo(productsRepo.retrieveProductValueByProductId(purchaseCandidateRecord.getM_Product_ID()))
 				.uomId(purchaseCandidateRecord.getC_UOM_ID())
-				.vendorProductInfo(vendorProductInfo)
 				//
 				.qtyToPurchase(purchaseCandidateRecord.getQtyToPurchase())
-				.salesOrderQtyToDeliver(salesOrderQtyToDeliver)
 				//
 				.profitInfo(toPurchaseProfitInfo(purchaseCandidateRecord))
+				//
+				.aggregatePOs(purchaseCandidateRecord.isAggregatePO())
 				//
 				.build();
 
@@ -383,20 +378,6 @@ public class PurchaseCandidateRepository
 		}
 	}
 
-	private VendorProductInfo toVendorProductInfo(final I_C_PurchaseCandidate purchaseCandidateRecord)
-	{
-		final I_C_BPartner_Product bpartnerProduct = purchaseCandidateRecord.getC_BPartner_Product_ID() > 0
-				? loadOutOfTrx(purchaseCandidateRecord.getC_BPartner_Product_ID(), I_C_BPartner_Product.class)
-				: null;
-
-		return VendorProductInfo.builderFromDataRecord()
-				.bpartnerProductRecord(bpartnerProduct)
-				.bpartnerVendorIdOverride(BPartnerId.ofRepoIdOrNull(purchaseCandidateRecord.getVendor_ID()))
-				.productIdOverride(ProductId.ofRepoIdOrNull(purchaseCandidateRecord.getM_Product_ID()))
-				.aggregatePOsOverride(purchaseCandidateRecord.isAggregatePO())
-				.build();
-	}
-
 	public void deleteByIds(final Collection<PurchaseCandidateId> purchaseCandidateIds)
 	{
 		if (purchaseCandidateIds.isEmpty())
@@ -404,7 +385,6 @@ public class PurchaseCandidateRepository
 			return;
 		}
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID, PurchaseCandidateId.toIntSet(purchaseCandidateIds))
 				.create()
@@ -413,8 +393,7 @@ public class PurchaseCandidateRepository
 
 	public Set<PurchaseCandidateReminder> retrieveReminders()
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PurchaseCandidate.class)
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false) // not processed
 				.addNotNull(I_C_PurchaseCandidate.COLUMN_Vendor_ID)

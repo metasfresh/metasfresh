@@ -2,6 +2,9 @@ package de.metas.vendor.gateway.api;
 
 import java.math.BigDecimal;
 
+import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
+
 import lombok.NonNull;
 import lombok.Value;
 
@@ -30,9 +33,23 @@ import lombok.Value;
 @Value(staticConstructor = "of")
 public class ProductAndQuantity
 {
-	@NonNull
-	String productIdentifier;
+	public static final ProductAndQuantity of(
+			@NonNull final String productIdentifier,
+			@NonNull final BigDecimal quantity)
+	{
+		return new ProductAndQuantity(productIdentifier, quantity);
+	}
 
-	@NonNull
+	String productIdentifier;
 	BigDecimal quantity;
+
+	private ProductAndQuantity(
+			@NonNull final String productIdentifier,
+			@NonNull final BigDecimal quantity)
+	{
+		Check.assumeNotEmpty(productIdentifier, "productIdentifier is not empty");
+
+		this.productIdentifier = productIdentifier;
+		this.quantity = NumberUtils.stripTrailingDecimalZeros(quantity);
+	}
 }

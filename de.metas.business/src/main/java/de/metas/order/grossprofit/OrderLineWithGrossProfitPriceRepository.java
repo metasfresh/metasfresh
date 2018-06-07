@@ -1,10 +1,9 @@
 package de.metas.order.grossprofit;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
-
 import java.util.Collection;
 import java.util.Optional;
 
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
@@ -14,6 +13,7 @@ import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
 import lombok.NonNull;
@@ -43,6 +43,8 @@ import lombok.NonNull;
 @Repository
 public class OrderLineWithGrossProfitPriceRepository
 {
+	// services
+	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final CurrencyRepository currencyRepository;
 
 	public OrderLineWithGrossProfitPriceRepository(@NonNull final CurrencyRepository currencyRepository)
@@ -62,7 +64,7 @@ public class OrderLineWithGrossProfitPriceRepository
 			return Optional.empty();
 		}
 
-		final ImmutableSet<Money> profitBasePrices = loadByIds(OrderLineId.toIntSet(orderLineIds), I_C_OrderLine.class)
+		final ImmutableSet<Money> profitBasePrices = ordersRepo.getOrderLinesByIds(orderLineIds, I_C_OrderLine.class)
 				.stream()
 				.map(this::getProfitBasePrice)
 				.collect(ImmutableSet.toImmutableSet());
@@ -74,7 +76,7 @@ public class OrderLineWithGrossProfitPriceRepository
 		{
 			return Optional.of(profitBasePrices.iterator().next());
 		}
-		else if (Money.isSameCurrency(profitBasePrices))
+		else if (!Money.isSameCurrency(profitBasePrices))
 		{
 			return Optional.empty();
 		}

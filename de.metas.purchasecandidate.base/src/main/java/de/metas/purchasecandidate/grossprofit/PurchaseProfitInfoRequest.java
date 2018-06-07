@@ -2,6 +2,8 @@ package de.metas.purchasecandidate.grossprofit;
 
 import java.time.LocalDateTime;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.bpartner.BPartnerId;
 
 import com.google.common.collect.ImmutableSet;
@@ -52,6 +54,6 @@ public class PurchaseProfitInfoRequest
 	Quantity orderedQty;
 	@NonNull
 	BPartnerId vendorId;
-	@NonNull
+	@Nullable
 	PaymentTermId paymentTermId;
 }

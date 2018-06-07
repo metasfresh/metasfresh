@@ -62,6 +62,11 @@ public class PurchaseOrderItem implements PurchaseItem
 		return (PurchaseOrderItem)purchaseItem;
 	}
 
+	public static PurchaseOrderItem castOrNull(final PurchaseItem purchaseItem)
+	{
+		return (purchaseItem instanceof PurchaseOrderItem) ? cast(purchaseItem) : null;
+	}
+
 	@Getter
 	private final PurchaseItemId purchaseItemId;
 
@@ -108,6 +113,26 @@ public class PurchaseOrderItem implements PurchaseItem
 				"If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
 				remotePurchaseOrderId);
 		this.transactionReference = transactionReference;
+	}
+
+	private PurchaseOrderItem(final PurchaseOrderItem from, final PurchaseCandidate newPurchaseCandidate)
+	{
+		this.purchaseItemId = from.purchaseItemId;
+
+		this.purchaseCandidate = newPurchaseCandidate;
+
+		this.purchasedQty = from.purchasedQty;
+		this.datePromised = from.datePromised;
+		this.remotePurchaseOrderId = from.remotePurchaseOrderId;
+
+		this.purchaseOrderAndLineId = from.purchaseOrderAndLineId;
+
+		this.transactionReference = from.transactionReference;
+	}
+
+	public PurchaseOrderItem copy(final PurchaseCandidate newPurchaseCandidate)
+	{
+		return new PurchaseOrderItem(this, newPurchaseCandidate);
 	}
 
 	@Override

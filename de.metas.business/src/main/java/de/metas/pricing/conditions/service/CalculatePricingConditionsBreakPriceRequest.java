@@ -1,18 +1,15 @@
-package de.metas.purchasecandidate;
+package de.metas.pricing.conditions.service;
 
 import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.service.OrgId;
-import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.order.OrderAndLineId;
-import de.metas.product.ProductId;
+import de.metas.lang.SOTrx;
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.purchasecandidate.base
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -20,12 +17,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,21 +31,13 @@ import lombok.Value;
 
 @Value
 @Builder
-class PurchaseCandidateImmutableFields
+public class CalculatePricingConditionsBreakPriceRequest
 {
-	OrderAndLineId salesOrderAndLineId;
+	@lombok.NonNull
+	PricingConditionsBreak pricingConditionsBreak;
+	@lombok.NonNull
+	BPartnerId bpartnerId;
+	@lombok.NonNull
+	SOTrx soTrx;
 
-	@NonNull
-	BPartnerId vendorId;
-
-	@NonNull
-	OrgId orgId;
-	@NonNull
-	WarehouseId warehouseId;
-	@NonNull
-	ProductId productId;
-	String vendorProductNo;
-	int uomId;
-	
-	boolean aggregatePOs;
 }

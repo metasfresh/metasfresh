@@ -6,6 +6,7 @@ package de.metas.pricing.conditions.service;
 import java.math.BigDecimal;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsId;
@@ -46,6 +47,7 @@ public class PricingConditionsResult
 	Percent discount;
 	int paymentTermId;
 
+	CurrencyId currencyId;
 	BigDecimal priceListOverride;
 	BigDecimal priceStdOverride;
 	BigDecimal priceLimitOverride;
@@ -59,6 +61,7 @@ public class PricingConditionsResult
 	public PricingConditionsResult(
 			final Percent discount,
 			final int paymentTermId,
+			final CurrencyId currencyId,
 			final BigDecimal priceListOverride,
 			final BigDecimal priceStdOverride,
 			final BigDecimal priceLimitOverride,
@@ -69,6 +72,7 @@ public class PricingConditionsResult
 		this.discount = discount != null ? discount : Percent.ZERO;
 		this.paymentTermId = paymentTermId;
 
+		this.currencyId = currencyId;
 		this.priceListOverride = priceListOverride;
 		this.priceStdOverride = priceStdOverride;
 		this.priceLimitOverride = priceLimitOverride;

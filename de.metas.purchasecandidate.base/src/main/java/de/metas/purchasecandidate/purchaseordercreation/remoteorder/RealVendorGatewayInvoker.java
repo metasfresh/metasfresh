@@ -16,9 +16,11 @@ import com.google.common.collect.Maps;
 
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.order.LocalPurchaseOrderForRemoteOrderCreated;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
@@ -76,7 +78,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
 		final ImmutableMap<PurchaseOrderRequestItem, PurchaseCandidate> requestItem2Candidate = //
-				Maps.uniqueIndex(purchaseCandidates, PurchaseCandidate::createPurchaseOrderRequestItem);
+				Maps.uniqueIndex(purchaseCandidates, RealVendorGatewayInvoker::createPurchaseOrderRequestItem);
 
 		final PurchaseOrderRequest purchaseOrderRequest = PurchaseOrderRequest.builder()
 				.orgId(orgId.getRepoId())
@@ -126,6 +128,15 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 
 		map = mapBuilder.build();
 		return result.build();
+	}
+
+	private static PurchaseOrderRequestItem createPurchaseOrderRequestItem(final PurchaseCandidate purchaseCandidate)
+	{
+		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidate.getVendorProductNo(), purchaseCandidate.getQtyToPurchase());
+		return PurchaseOrderRequestItem.builder()
+				.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(purchaseCandidate.getId(), -1))
+				.productAndQuantity(productAndQuantity)
+				.build();
 	}
 
 	@Override

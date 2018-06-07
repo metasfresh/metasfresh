@@ -10,6 +10,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -54,6 +55,7 @@ import lombok.NonNull;
  */
 /* package */ class CalculatePricingConditionsCommand
 {
+	// services
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
@@ -164,12 +166,14 @@ import lombok.NonNull;
 			final int basePricingSystemId = priceOverride.getBasePricingSystemId();
 
 			final IPricingResult productPrices = computePricesForBasePricingSystem(basePricingSystemId);
+			final CurrencyId currencyId = productPrices.getCurrencyId();
 			final BigDecimal priceStd = productPrices.getPriceStd();
 			final BigDecimal priceList = productPrices.getPriceList();
 			final BigDecimal priceLimit = productPrices.getPriceLimit();
 
 			final BigDecimal priceStdAddAmt = priceOverride.getBasePriceAddAmt();
 
+			result.currencyId(currencyId);
 			result.basePricingSystemId(basePricingSystemId);
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
@@ -177,6 +181,7 @@ import lombok.NonNull;
 		}
 		else if (priceOverrideType == PriceOverrideType.FIXED_PRICE)
 		{
+			// result.currencyId(currencyId); // TODO set currency from pricing conditions break?!
 			result.priceStdOverride(priceOverride.getFixedPrice());
 		}
 		else

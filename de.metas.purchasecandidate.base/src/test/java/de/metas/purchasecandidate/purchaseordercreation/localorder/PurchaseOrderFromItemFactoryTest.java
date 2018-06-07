@@ -31,11 +31,11 @@ import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.model.I_C_Order;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
-import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -178,19 +178,19 @@ public class PurchaseOrderFromItemFactoryTest
 		save(salesOrderLine);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.id(VendorProductInfoId.ofRepoId(10))
 				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
-				.productId(ProductId.ofRepoId(20))
-				.productName("productName")
-				.productNo("productNo")
+				.productAndCategoryId(ProductAndCategoryId.of(20, 30))
+				.vendorProductNo("productNo")
+				.vendorProductName("productName")
 				.build();
 		return PurchaseCandidate.builder()
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
+				.vendorId(vendorProductInfo.getVendorId())
+				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(ProductId.ofRepoId(5))
 				.uomId(6)
-				.vendorProductInfo(vendorProductInfo)
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)
 				.dateRequired(PURCHASE_CANDIDATE_DATE_REQUIRED)

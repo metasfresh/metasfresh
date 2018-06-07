@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 
@@ -42,6 +43,11 @@ public interface IPricingResult
 	int getC_Currency_ID();
 
 	void setC_Currency_ID(int currencyId);
+
+	default CurrencyId getCurrencyId()
+	{
+		return CurrencyId.ofRepoId(getC_Currency_ID());
+	}
 
 	int getPrice_UOM_ID();
 

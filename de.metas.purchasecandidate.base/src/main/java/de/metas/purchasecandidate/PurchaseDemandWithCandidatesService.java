@@ -4,11 +4,13 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -16,16 +18,33 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 
+import de.metas.lang.SOTrx;
+import de.metas.money.Currency;
+import de.metas.money.CurrencyRepository;
+import de.metas.money.Money;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderLineId;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
+import de.metas.pricing.conditions.service.IPricingConditionsService;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup.PurchaseCandidatesGroupBuilder;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoFactory;
-import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoRequest;
-import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -57,70 +76,168 @@ public class PurchaseDemandWithCandidatesService
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
 	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
+	private final VendorProductInfoRepository vendorProductInfosRepo;
+	private final CurrencyRepository currencyRepo;
+	//
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
-	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
 	public PurchaseDemandWithCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
 			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
-			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory)
+			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory,
+			@NonNull final VendorProductInfoRepository vendorProductInfosRepo,
+			@NonNull final CurrencyRepository currencyRepo)
 	{
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
 		this.purchaseProfitInfoFactory = purchaseProfitInfoFactory;
+		this.vendorProductInfosRepo = vendorProductInfosRepo;
+		this.currencyRepo = currencyRepo;
 	}
 
-	public List<PurchaseDemandWithCandidates> getOrCreatePurchaseCandidates(final List<PurchaseDemand> purchaseDemands)
+	public List<PurchaseDemandWithCandidates> getOrCreatePurchaseCandidatesGroups(final List<PurchaseDemand> demands)
 	{
-		final Set<PurchaseDemandId> demandIdsToLoad = purchaseDemands.stream()
-				.map(PurchaseDemand::getId)
-				.filter(PurchaseDemandId::isTable)
+		final Set<PurchaseDemand> demandsToLoad = demands.stream()
+				.filter(demand -> demand.getId().isTable())
 				.collect(ImmutableSet.toImmutableSet());
 
 		//
 		// Get pre-existing purchase candidates to the result
-		final ImmutableListMultimap<PurchaseDemandId, PurchaseCandidate> //
-		preExistingCandidatesByDemandId = purchaseCandidateRepository.getAllByDemandIds(demandIdsToLoad);
+		final ImmutableListMultimap<PurchaseDemandId, PurchaseCandidatesGroup> //
+		existingCandidatesGroups = getExistingPurchaseCandidatesGroups(demandsToLoad);
 
 		//
 		// create and add new purchase candidates
-		final ImmutableSet<VendorProductInfoId> alreadySeenVendorProductInfoIds = extractVendorProductInfoIdsOfNotProcessedCandidates(preExistingCandidatesByDemandId.values());
-		final ImmutableListMultimap<PurchaseDemandId, PurchaseCandidate> //
-		newCandidatesByDemandId = createMissingPurchaseCandidates(purchaseDemands, alreadySeenVendorProductInfoIds);
+		final Set<BPartnerId> alreadySeenVendorIds = extractVendorIds(existingCandidatesGroups.values());
+		final ImmutableListMultimap<PurchaseDemandId, PurchaseCandidatesGroup> //
+		newCandidatesGroups = createMissingPurchaseCandidatesGroups(demands, alreadySeenVendorIds);
 
 		//
 		// Assemble both Multimaps and preserve demands order
-		return purchaseDemands
+		return demands
 				.stream()
 				.map(demand -> PurchaseDemandWithCandidates.builder()
 						.purchaseDemand(demand)
-						.purchaseCandidates(preExistingCandidatesByDemandId.get(demand.getId()))
-						.purchaseCandidates(newCandidatesByDemandId.get(demand.getId()))
+						.purchaseCandidatesGroups(existingCandidatesGroups.get(demand.getId()))
+						.purchaseCandidatesGroups(newCandidatesGroups.get(demand.getId()))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ImmutableSet<VendorProductInfoId> extractVendorProductInfoIdsOfNotProcessedCandidates(final Collection<PurchaseCandidate> candidates)
+	private static ImmutableSet<BPartnerId> extractVendorIds(final Collection<PurchaseCandidatesGroup> candidatesGroups)
 	{
-		return candidates.stream()
-				.filter(Predicates.not(PurchaseCandidate::isProcessed))
-				.map(PurchaseCandidate::getVendorProductInfoId)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.collect(ImmutableSet.toImmutableSet());
+		return candidatesGroups.stream().map(PurchaseCandidatesGroup::getVendorId).collect(ImmutableSet.toImmutableSet());
 	}
 
-	private ImmutableListMultimap<PurchaseDemandId, PurchaseCandidate> createMissingPurchaseCandidates(
-			@NonNull final List<PurchaseDemand> demands,
-			@NonNull final ImmutableSet<VendorProductInfoId> vendorProductInfoIdsToExclude)
+	private ImmutableListMultimap<PurchaseDemandId, PurchaseCandidatesGroup> getExistingPurchaseCandidatesGroups(final Collection<PurchaseDemand> demands)
 	{
-		final ImmutableListMultimap.Builder<PurchaseDemandId, PurchaseCandidate> //
-		candidatesByDemandId = ImmutableListMultimap.builder();
+		final Map<PurchaseDemandId, PurchaseDemand> demandsById = Maps.uniqueIndex(demands, PurchaseDemand::getId);
+		return purchaseCandidateRepository.getAllByDemandIds(demandsById.keySet())
+				.asMap()
+				.entrySet()
+				.stream()
+				.flatMap(entry -> groupAndStreamPurchaseCandidates(demandsById.get(entry.getKey()), entry.getValue()))
+				.collect(GuavaCollectors.toImmutableListMultimap());
+	}
+
+	private Stream<Map.Entry<PurchaseDemandId, PurchaseCandidatesGroup>> groupAndStreamPurchaseCandidates(final PurchaseDemand demand, final Collection<PurchaseCandidate> candidates)
+	{
+		final ListMultimap<PurchaseCandidatesGroupKey, PurchaseCandidate> candidatesByKey = Multimaps.index(candidates, this::extractPurchaseCandidatesGroupKey);
+
+		final List<PurchaseCandidatesGroup> candidatesGroups = candidatesByKey.asMap()
+				.entrySet()
+				.stream()
+				.map(entry -> createPurchaseCandidatesGroup(demand, entry.getKey(), entry.getValue()))
+				.collect(ImmutableList.toImmutableList());
+
+		final PurchaseDemandId demandId = demand.getId();
+		return candidatesGroups.stream().map(candidatesGroup -> GuavaCollectors.entry(demandId, candidatesGroup));
+	}
+
+	private PurchaseCandidatesGroup createPurchaseCandidatesGroup(final PurchaseDemand demand, final PurchaseCandidatesGroupKey groupKey, final Collection<PurchaseCandidate> candidates)
+	{
+		BigDecimal qtyToPurchase = BigDecimal.ZERO;
+		BigDecimal purchasedQty = BigDecimal.ZERO;
+		final Set<PurchaseCandidateId> purchaseCandidateIds = new LinkedHashSet<>();
+		final Set<OrderAndLineId> salesOrderAndLineIds = new LinkedHashSet<>();
+		for (final PurchaseCandidate candidate : candidates)
+		{
+			qtyToPurchase = qtyToPurchase.add(candidate.getQtyToPurchase());
+			purchasedQty = purchasedQty.add(candidate.getPurchasedQty());
+
+			if (candidate.getId() != null)
+			{
+				purchaseCandidateIds.add(candidate.getId());
+			}
+			if (candidate.getSalesOrderAndLineId() != null)
+			{
+				salesOrderAndLineIds.add(candidate.getSalesOrderAndLineId());
+			}
+		}
+
+		final BPartnerId vendorId = groupKey.getVendorId();
+		final ProductId productId = groupKey.getProductId();
+		final OrgId orgId = groupKey.getOrgId();
+		final VendorProductInfo vendorProductInfo = vendorProductInfosRepo.getVendorProductInfo(vendorId, productId, orgId);
+
+		final PurchaseProfitInfo profitInfo = getPurchaseProfitInfo(demand, vendorProductInfo);
+
+		final PurchaseCandidatesGroupBuilder builder = PurchaseCandidatesGroup.builder()
+				.orgId(orgId)
+				.warehouseId(groupKey.getWarehouseId())
+				//
+				.vendorId(vendorId)
+				//
+				.productId(productId)
+				.vendorProductNo(vendorProductInfo.getVendorProductNo())
+				.vendorProductName(vendorProductInfo.getVendorProductName())
+				//
+				.qtyToPurchase(qtyToPurchase)
+				.purchasedQty(purchasedQty)
+				//
+				.profitInfo(profitInfo)
+				//
+				.readonly(false)
+				//
+				.purchaseCandidateIds(purchaseCandidateIds)
+				.salesOrderAndLineIds(salesOrderAndLineIds);
+
+		return builder.build();
+	}
+
+	private PurchaseCandidatesGroupKey extractPurchaseCandidatesGroupKey(final PurchaseCandidate candidate)
+	{
+		return PurchaseCandidatesGroupKey.builder()
+				.orgId(candidate.getOrgId())
+				.warehouseId(candidate.getWarehouseId())
+				.vendorId(candidate.getVendorId())
+				.productId(candidate.getProductId())
+				.build();
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	private static final class PurchaseCandidatesGroupKey
+	{
+		OrgId orgId;
+		WarehouseId warehouseId;
+
+		BPartnerId vendorId;
+
+		ProductId productId;
+	}
+
+	private ImmutableListMultimap<PurchaseDemandId, PurchaseCandidatesGroup> createMissingPurchaseCandidatesGroups(
+			@NonNull final List<PurchaseDemand> demands,
+			@NonNull final Set<BPartnerId> vendorIdsToExclude)
+	{
+		final ImmutableListMultimap.Builder<PurchaseDemandId, PurchaseCandidatesGroup> candidatesByDemandId = ImmutableListMultimap.builder();
 
 		for (final PurchaseDemand demand : demands)
 		{
-			final ImmutableList<PurchaseCandidate> demandCandidates = createMissingPurchaseCandidates(demand, vendorProductInfoIdsToExclude);
+			final List<PurchaseCandidatesGroup> demandCandidates = createMissingPurchaseCandidatesGroups(demand, vendorIdsToExclude);
 			if (demandCandidates.isEmpty())
 			{
 				continue;
@@ -131,90 +248,137 @@ public class PurchaseDemandWithCandidatesService
 		return candidatesByDemandId.build();
 	}
 
-	private ImmutableList<PurchaseCandidate> createMissingPurchaseCandidates(
+	private ImmutableList<PurchaseCandidatesGroup> createMissingPurchaseCandidatesGroups(
 			@NonNull final PurchaseDemand demand,
-			@NonNull final ImmutableSet<VendorProductInfoId> vendorProductInfoIdsToExclude)
+			@NonNull final Set<BPartnerId> vendorIdsToExclude)
 	{
-		final Collection<VendorProductInfo> vendorProductInfos = retrieveVendorProductInfos(demand.getProductId(), demand.getOrgId());
+		final Collection<VendorProductInfo> vendorProductInfos = vendorProductInfosRepo.getVendorProductInfos(demand.getProductId(), demand.getOrgId());
 
-		final ImmutableList<PurchaseCandidate> candidates = vendorProductInfos.stream()
+		final ImmutableList<PurchaseCandidatesGroup> candidatesGroups = vendorProductInfos.stream()
 
 				// only if vendor was not already considered (i.e. there was no purchase candidate for it)
-				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getId().get()))
+				.filter(vendorProductInfo -> !vendorIdsToExclude.contains(vendorProductInfo.getVendorId()))
 
 				// create and collect them
-				.flatMap(vendorProductInfo -> createPurchaseCandidates(demand, vendorProductInfo).stream())
+				.map(vendorProductInfo -> createNewPurchaseCandidatesGroup(demand, vendorProductInfo))
 				.collect(ImmutableList.toImmutableList());
 
 		// TODO: don't save them here!
 		// purchaseCandidateRepository.saveAll(candidates);
 
-		return candidates;
+		return candidatesGroups;
 	}
 
-	private List<PurchaseCandidate> createPurchaseCandidates(
+	private PurchaseCandidatesGroup createNewPurchaseCandidatesGroup(
 			@NonNull final PurchaseDemand purchaseDemand,
 			@NonNull final VendorProductInfo vendorProductInfo)
 	{
-		final LocalDateTime salesDatePromised = purchaseDemand.getDatePromised();
+		final WarehouseId warehouseId = getPurchaseWarehouseId(purchaseDemand);
+		final LocalDateTime salesDatePromised = purchaseDemand.getSalesDatePromised();
 
-		LocalDateTime purchaseDatePromised = salesDatePromised;
-		Duration reminderTime = null;
-
+		final BPartnerId vendorId = vendorProductInfo.getVendorId();
 		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(
-				vendorProductInfo.getVendorId(),
+				vendorId,
 				salesDatePromised.toLocalDate())
 				.orElse(null);
-		if (bpPurchaseSchedule != null)
-		{
-			final LocalDateTime calculatedPurchaseDatePromised = bpPurchaseScheduleService.calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule).orElse(null);
-			if (calculatedPurchaseDatePromised != null)
-			{
-				purchaseDatePromised = calculatedPurchaseDatePromised;
-			}
+		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule);
+		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
-			reminderTime = bpPurchaseSchedule.getReminderTime();
-		}
+		final PurchaseProfitInfo purchaseProfitInfo = getPurchaseProfitInfo(purchaseDemand, vendorProductInfo);
 
-		final List<PurchaseProfitInfo> purchaseProfitInfos = getPurchaseProfitInfos(purchaseDemand, vendorProductInfo, salesDatePromised);
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+				.salesOrderAndLineId(purchaseDemand.getSalesOrderAndLineId())
+				//
+				.dateRequired(purchaseDatePromised)
+				.reminderTime(reminderTime)
+				//
+				.orgId(purchaseDemand.getOrgId())
+				.warehouseId(warehouseId)
+				.vendorId(vendorId)
+				.vendorProductNo(vendorProductInfo.getVendorProductNo())
+				//
+				.productId(vendorProductInfo.getProductId())
+				.uomId(purchaseDemand.getUOMId())
+				//
+				.qtyToPurchase(BigDecimal.ZERO)
+				//
+				.profitInfo(purchaseProfitInfo)
+				//
+				.aggregatePOs(vendorProductInfo.isAggregatePOs())
+				//
+				.build();
 
-		final ImmutableList.Builder<PurchaseCandidate> result = ImmutableList.builder();
-		for (final PurchaseProfitInfo purchaseProfitInfo : purchaseProfitInfos)
-		{
-			final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-					.salesOrderAndLineId(purchaseDemand.getSalesOrderAndLineId())
-					//
-					.dateRequired(purchaseDatePromised)
-					.reminderTime(reminderTime)
-					//
-					.orgId(purchaseDemand.getOrgId())
-					.warehouseId(getPurchaseWarehouseId(purchaseDemand))
-					//
-					.productId(vendorProductInfo.getProductId())
-					.uomId(purchaseDemand.getUOMId())
-					.vendorProductInfo(vendorProductInfo)
-					//
-					.qtyToPurchase(BigDecimal.ZERO)
-					//
-					.profitInfo(purchaseProfitInfo)
-					//
-					.build();
-			result.add(purchaseCandidate);
-		}
-		return result.build();
+		return PurchaseCandidatesGroup.of(purchaseCandidate);
 	}
 
-	private List<PurchaseProfitInfo> getPurchaseProfitInfos(final PurchaseDemand purchaseDemand, final VendorProductInfo vendorProductInfo, final LocalDateTime salesDatePromised)
+	private IPricingContext createPricingContext(final PricingConditionsBreak pricingConditionsBreak, final BPartnerId vendorId)
 	{
-		final List<PurchaseProfitInfo> purchaseProfitInfos = purchaseProfitInfoFactory.createInfos(PurchaseProfitInfoRequest.builder()
-				.salesOrderLineIds(purchaseDemand.getSalesOrderLineIds())
-				.datePromised(salesDatePromised)
-				.productId(purchaseDemand.getProductId())
-				.orderedQty(purchaseDemand.getQtyToDeliverTotal())
-				.vendorId(vendorProductInfo.getVendorId())
-				.paymentTermId(vendorProductInfo.getPaymentTermId())
+		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
+		final ProductId productId = pricingConditionsBreak.getMatchCriteria().getProductId();
+		pricingCtx.setM_Product_ID(ProductId.toRepoId(productId));
+		pricingCtx.setQty(BigDecimal.ONE);
+		pricingCtx.setBPartnerId(vendorId);
+		pricingCtx.setSOTrx(SOTrx.PURCHASE.toBoolean());
+
+		return pricingCtx;
+	}
+
+	private LocalDateTime calculatePurchaseDatePromised(final LocalDateTime salesDatePromised, final BPPurchaseSchedule bpPurchaseSchedule)
+	{
+		if (bpPurchaseSchedule != null)
+		{
+			final LocalDateTime purchaseDatePromised = bpPurchaseScheduleService.calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule).orElse(null);
+			if (purchaseDatePromised != null)
+			{
+				return purchaseDatePromised;
+			}
+		}
+
+		// fallback
+		return salesDatePromised;
+	}
+
+	private PurchaseProfitInfo getPurchaseProfitInfo(final PurchaseDemand demand, final VendorProductInfo vendorProductInfo)
+	{
+		final Set<OrderLineId> salesOrderLineIds = demand.getSalesOrderLineIds();
+		final Quantity qtyToDeliver = demand.getQtyToDeliver();
+
+		final BPartnerId vendorId = vendorProductInfo.getVendorId();
+		final ProductAndCategoryId productAndCategoryId = vendorProductInfo.getProductAndCategoryId();
+		final PricingConditionsBreakQuery pricingConditionsBreakQuery = createPricingConditionsBreakQuery(productAndCategoryId, qtyToDeliver);
+		final PricingConditionsBreak pricingConditionsBreak = vendorProductInfo.getPricingConditionsBreakOrNull(pricingConditionsBreakQuery);
+
+		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
+				.forcePricingConditionsBreak(pricingConditionsBreak)
+				// .bpartnerFlatDiscount(bpartnerFlatDiscount) // TODO
+				.pricingCtx(createPricingContext(pricingConditionsBreak, vendorId))
 				.build());
-		return purchaseProfitInfos;
+
+		final BigDecimal purchaseBasePrice = pricingConditionsResult.getPriceStdOverride();
+		if (purchaseBasePrice == null)
+		{
+			return null;
+		}
+
+		final Currency currency = currencyRepo.getById(pricingConditionsResult.getCurrencyId());
+		final BigDecimal purchaseNetPrice = pricingConditionsBreak.getDiscount().subtractFromBase(purchaseBasePrice, 2);
+		// TODO: subtract paymentTerm discount if any
+
+		return PurchaseProfitInfo.builder()
+				.salesNetPrice(purchaseProfitInfoFactory.retrieveSalesNetPrice(salesOrderLineIds))
+				.purchaseGrossPrice(Money.of(purchaseBasePrice, currency))
+				.purchaseNetPrice(Money.of(purchaseNetPrice, currency))
+				.build();
+	}
+
+	private static PricingConditionsBreakQuery createPricingConditionsBreakQuery(final ProductAndCategoryId productAndCategoryId, final Quantity qtyToDeliver)
+	{
+		return PricingConditionsBreakQuery.builder()
+				.productAndCategoryId(productAndCategoryId)
+				// .attributeInstances(attributeInstances)// TODO
+				.qty(qtyToDeliver.getQty())
+				.price(BigDecimal.ZERO) // N/A
+				.build();
 	}
 
 	private WarehouseId getPurchaseWarehouseId(final PurchaseDemand purchaseDemand)
@@ -226,17 +390,5 @@ public class PurchaseDemandWithCandidatesService
 		}
 
 		return purchaseDemand.getWarehouseId();
-	}
-
-	private Collection<VendorProductInfo> retrieveVendorProductInfos(@NonNull final ProductId productId, @NonNull final OrgId orgId)
-	{
-//		bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(adClientId, false);
-		
-		return partnerProductDAO
-				.retrieveAllVendors(productId, orgId)
-				.stream()
-				.map(VendorProductInfo::fromDataRecord)
-				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(VendorProductInfo::getVendorId))
-				.values();
 	}
 }
