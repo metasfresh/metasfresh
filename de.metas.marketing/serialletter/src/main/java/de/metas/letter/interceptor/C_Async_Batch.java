@@ -56,15 +56,12 @@ public class C_Async_Batch
 	public void print(final I_C_Async_Batch asyncBatch)
 	{
 
-		if (asyncBatch.isProcessed())
+		if (asyncBatch.isProcessed()
+				&& LetterConstants.C_Async_Batch_InternalName_CreateLettersAsync.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
 		{
-			//
-			// trigger printing if was an creating letter batch
-			if (LetterConstants.C_Async_Batch_InternalName_CreateLettersAsync.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
-			{
-				runPrintingProcess(asyncBatch);
-			}
+			runPrintingProcess(asyncBatch);
 		}
+	}
 
 	}
 
