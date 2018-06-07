@@ -43,6 +43,10 @@ public interface IOrderLineBL extends ISingletonService
 
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
+	Quantity getQtyOrdered(OrderAndLineId orderAndLineId);
+
+	Quantity getQtyToDeliver(OrderAndLineId orderAndLineId);
+
 	/**
 	 * Creates a new order line using the given {@code order} as header.
 	 *
