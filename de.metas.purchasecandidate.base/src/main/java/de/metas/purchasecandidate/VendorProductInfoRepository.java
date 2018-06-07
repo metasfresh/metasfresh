@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
@@ -102,6 +103,7 @@ public class VendorProductInfoRepository
 	{
 		final I_C_BPartner vendorRecord = bpartnersRepo.getById(vendorId);
 		final boolean aggregatePOs = vendorRecord.isAggregatePO();
+		final Percent vendorFlatDiscount = Percent.of(vendorRecord.getFlatDiscount());
 
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsId);
 
@@ -121,6 +123,7 @@ public class VendorProductInfoRepository
 				.vendorProductNo(vendorProductNo)
 				.vendorProductName(vendorProductName)
 				.aggregatePOs(aggregatePOs)
+				.vendorFlatDiscount(vendorFlatDiscount)
 				.pricingConditions(pricingConditions)
 				.build();
 	}

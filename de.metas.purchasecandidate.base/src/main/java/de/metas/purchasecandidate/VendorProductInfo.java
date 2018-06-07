@@ -1,12 +1,16 @@
 package de.metas.purchasecandidate;
 
+import java.math.BigDecimal;
+
 import org.adempiere.bpartner.BPartnerId;
 
+import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,83 +48,8 @@ public class VendorProductInfo
 
 	boolean aggregatePOs;
 
+	Percent vendorFlatDiscount;
 	private PricingConditions pricingConditions;
-
-	// public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProductRecord)
-	// {
-	// return builderFromDataRecord()
-	// .bpartnerProductRecord(bpartnerProductRecord)
-	// .build();
-	// }
-	//
-	// @Builder(builderMethodName = "builderFromDataRecord", builderClassName = "FromDataRecordBuilder")
-	// public static VendorProductInfo buildFromDataRecord(
-	// final I_C_BPartner_Product bpartnerProductRecord,
-	// final ProductId productIdOverride,
-	// final BPartnerId bpartnerVendorIdOverride,
-	// final Boolean aggregatePOsOverride)
-	// {
-	// final ProductId productId = Util.coalesceSuppliers(
-	// () -> productIdOverride,
-	// () -> bpartnerProductRecord != null ? ProductId.ofRepoId(bpartnerProductRecord.getM_Product_ID()) : null);
-	// if (productId == null)
-	// {
-	// throw new AdempiereException("Cannot extract ProductId from bpartnerProductRecord=" + bpartnerProductRecord + ", productIdOverride=" + productIdOverride);
-	// }
-	//
-	// final String productNo = Util.coalesceSuppliers(
-	// () -> bpartnerProductRecord != null ? bpartnerProductRecord.getVendorProductNo() : null,
-	// () -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductNo() : null,
-	// () -> Services.get(IProductBL.class).getProductValue(productId));
-	//
-	// final String productName = Util.coalesceSuppliers(
-	// () -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductName() : null,
-	// () -> Services.get(IProductBL.class).getProductName(productId));
-	//
-	// final BPartnerId vendorId = Util.coalesceSuppliers(
-	// () -> bpartnerVendorIdOverride,
-	// () -> bpartnerProductRecord != null ? BPartnerId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_ID()) : null);
-	// if (vendorId == null)
-	// {
-	// throw new AdempiereException("Cannot extract ProductId from bpartnerProductRecord=" + bpartnerProductRecord + ", bpartnerVendorIdOverride=" + bpartnerVendorIdOverride);
-	// }
-	//
-	// final I_C_BPartner vendorBPartnerRecord = Services.get(IBPartnerDAO.class).getById(vendorId);
-	// final PaymentTermId paymentTermId = retrievePaymentTermIdOrNull(vendorBPartnerRecord);
-	//
-	// final boolean aggregatePOs;
-	// if (aggregatePOsOverride != null)
-	// {
-	// aggregatePOs = aggregatePOsOverride;
-	// }
-	// else
-	// {
-	// final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(vendorId);
-	// aggregatePOs = bpartner.isAggregatePO();
-	// }
-	//
-	// return builder()
-	// .id(bpartnerProductRecord != null ? VendorProductInfoId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_Product_ID()) : null)
-	// .vendorId(vendorId)
-	// .paymentTermId(paymentTermId)
-	// .productId(productId)
-	// .productNo(productNo)
-	// .productName(productName)
-	// .aggregatePOs(aggregatePOs)
-	// .build();
-	// }
-	//
-	// private static PaymentTermId retrievePaymentTermIdOrNull(@NonNull final I_C_BPartner bpartnerRecord)
-	// {
-	// if (bpartnerRecord.getPO_PaymentTerm_ID() > 0)
-	// {
-	// return PaymentTermId.ofRepoId(bpartnerRecord.getPO_PaymentTerm_ID());
-	// }
-	//
-	// return Services
-	// .get(IPaymentTermRepository.class)
-	// .getDefaultPaymentTermIdOrNull();
-	// }
 
 	@Builder
 	private VendorProductInfo(
@@ -132,6 +61,7 @@ public class VendorProductInfo
 			//
 			final boolean aggregatePOs,
 			//
+			final Percent vendorFlatDiscount,
 			@NonNull final PricingConditions pricingConditions)
 	{
 		this.vendorId = vendorId;
@@ -142,6 +72,7 @@ public class VendorProductInfo
 
 		this.aggregatePOs = aggregatePOs;
 
+		this.vendorFlatDiscount = vendorFlatDiscount != null ? vendorFlatDiscount : Percent.ZERO;
 		this.pricingConditions = pricingConditions;
 	}
 
@@ -150,8 +81,19 @@ public class VendorProductInfo
 		return getProductAndCategoryId().getProductId();
 	}
 
-	public PricingConditionsBreak getPricingConditionsBreakOrNull(final PricingConditionsBreakQuery query)
+	public PricingConditionsBreak getPricingConditionsBreakOrNull(final Quantity qtyToDeliver)
 	{
+		final PricingConditionsBreakQuery query = createPricingConditionsBreakQuery(qtyToDeliver);
 		return getPricingConditions().pickApplyingBreak(query);
+	}
+
+	private PricingConditionsBreakQuery createPricingConditionsBreakQuery(final Quantity qtyToDeliver)
+	{
+		return PricingConditionsBreakQuery.builder()
+				.productAndCategoryId(getProductAndCategoryId())
+				// .attributeInstances(attributeInstances)// TODO
+				.qty(qtyToDeliver.getAsBigDecimal())
+				.price(BigDecimal.ZERO) // N/A
+				.build();
 	}
 }

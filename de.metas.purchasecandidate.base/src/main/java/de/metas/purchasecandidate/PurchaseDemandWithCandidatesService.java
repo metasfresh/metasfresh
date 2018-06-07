@@ -30,6 +30,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
+import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.Currency;
@@ -41,12 +42,10 @@ import de.metas.order.OrderLineId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
-import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup.PurchaseCandidatesGroupBuilder;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -375,15 +374,13 @@ public class PurchaseDemandWithCandidatesService
 	{
 		final Set<OrderLineId> salesOrderLineIds = demand.getSalesOrderLineIds();
 		final Quantity qtyToDeliver = demand.getQtyToDeliver();
-
 		final BPartnerId vendorId = vendorProductInfo.getVendorId();
-		final ProductAndCategoryId productAndCategoryId = vendorProductInfo.getProductAndCategoryId();
-		final PricingConditionsBreakQuery pricingConditionsBreakQuery = createPricingConditionsBreakQuery(productAndCategoryId, qtyToDeliver);
-		final PricingConditionsBreak pricingConditionsBreak = vendorProductInfo.getPricingConditionsBreakOrNull(pricingConditionsBreakQuery);
+		final Percent vendorFlatDiscount = vendorProductInfo.getVendorFlatDiscount();
+		final PricingConditionsBreak pricingConditionsBreak = vendorProductInfo.getPricingConditionsBreakOrNull(qtyToDeliver);
 
 		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
 				.forcePricingConditionsBreak(pricingConditionsBreak)
-				// .bpartnerFlatDiscount(bpartnerFlatDiscount) // TODO
+				.bpartnerFlatDiscount(vendorFlatDiscount)
 				.pricingCtx(createPricingContext(pricingConditionsBreak, vendorId))
 				.build());
 
@@ -402,16 +399,6 @@ public class PurchaseDemandWithCandidatesService
 				.salesNetPrice(purchaseProfitInfoFactory.retrieveSalesNetPrice(salesOrderLineIds))
 				.purchaseGrossPrice(Money.of(purchaseBasePrice, currency))
 				.purchaseNetPrice(Money.of(purchaseNetPrice, currency))
-				.build();
-	}
-
-	private static PricingConditionsBreakQuery createPricingConditionsBreakQuery(final ProductAndCategoryId productAndCategoryId, final Quantity qtyToDeliver)
-	{
-		return PricingConditionsBreakQuery.builder()
-				.productAndCategoryId(productAndCategoryId)
-				// .attributeInstances(attributeInstances)// TODO
-				.qty(qtyToDeliver.getAsBigDecimal())
-				.price(BigDecimal.ZERO) // N/A
 				.build();
 	}
 
