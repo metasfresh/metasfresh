@@ -3,6 +3,7 @@
  */
 package de.metas.letter.process;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -131,6 +132,7 @@ public class C_Letter_PrintAutomatically extends JavaProcess
 		if (selectionLength <= 0)
 		{
 			log.info("Nothing to print!");
+			return Collections.emptyList();
 		}
 
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
