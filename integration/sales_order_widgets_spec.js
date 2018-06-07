@@ -1,12 +1,7 @@
 describe('Sales order window widgets test', function() {
-  before(function() {
-    cy.visit('/login');
-
-    cy.get('input[name=username]').type('kuba');
-    cy.get('input[name=password]').type('kuba1234{enter}');
-
-    cy.url().should('not.include', '/login');
-    cy.get('.header-item').should('contain', 'Dashboard');
+  before(function(){
+    // login before each test
+    cy.loginByForm('kuba', 'kuba1234');
   });
 
   context('Toggle widgets', function() {

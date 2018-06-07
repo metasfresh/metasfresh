@@ -1,14 +1,7 @@
 describe('Business partner window widgets test', function() {
-  before(function() {
-    cy.visit('/login');
-
-    cy.get('input[name=username]').type('kuba');
-    cy.get('input[name=password]').type('kuba1234{enter}');
-
-    // cy.get('button').click();
-
-    cy.url().should('not.include', '/login');
-    cy.get('.header-item').should('contain', 'Dashboard');
+  before(function(){
+    // login before each test
+    cy.loginByForm('kuba', 'kuba1234');
   });
 
   context('Tabs', function() {
@@ -21,6 +14,10 @@ describe('Business partner window widgets test', function() {
 
     context('Vendor', function() {
       it('Check if list widget works properly', function() {
+      cy
+        .get('.header-breadcrumb-sitename')
+        .should('contain', 'Cypress Test Partner #1');
+
         cy
           .get('.nav-item[title="Vendor"]')
           .click()
