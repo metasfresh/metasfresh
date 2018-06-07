@@ -20,6 +20,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -39,6 +40,7 @@ import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineRepository;
+import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -113,13 +115,17 @@ public class PurchaseRowsLoaderTest
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setUOMSymbol("testUOMSympol");
 		saveRecord(uom);
-		
+
 		this.TEN = Quantity.of(BigDecimal.TEN, uom);
 
 		warehouse = newInstance(I_M_Warehouse.class);
 		saveRecord(warehouse);
 
+		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
+		saveRecord(productCategory);
+
 		product = newInstance(I_M_Product.class);
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		product.setC_UOM(uom);
 		saveRecord(product);
 
@@ -167,6 +173,8 @@ public class PurchaseRowsLoaderTest
 				.productAndCategoryId(ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
 				.vendorProductNo("bPartnerProduct.VendorProductNo")
 				.vendorProductName("bPartnerProduct.ProductName")
+				.pricingConditions(PricingConditions.builder()
+						.build())
 				.build();
 
 		final PurchaseDemand demand = SalesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
@@ -234,6 +242,7 @@ public class PurchaseRowsLoaderTest
 				.qtyToPurchase(Quantity.of(orderLine.getQtyOrdered(), orderLine.getM_Product().getC_UOM()))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
 				.vendorId(vendorProductInfo.getVendorId())
+				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.warehouseId(WarehouseId.ofRepoId(30))
 				.profitInfo(profitInfo)
