@@ -200,6 +200,7 @@ public class PurchaseDemandWithCandidatesService
 				.productId(productId)
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.vendorProductName(vendorProductInfo.getVendorProductName())
+				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				//
 				.qtyToPurchase(qtyToPurchase)
 				.purchasedQty(purchasedQty)
@@ -292,7 +293,7 @@ public class PurchaseDemandWithCandidatesService
 		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
 		final PurchaseProfitInfo purchaseProfitInfo = getPurchaseProfitInfoNoFail(purchaseDemand, vendorProductInfo);
-		
+
 		final I_C_UOM uom = uomsRepo.getById(purchaseDemand.getUOMId());
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()

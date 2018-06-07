@@ -57,6 +57,7 @@ public class PurchaseCandidatesGroup
 				.productId(purchaseCandidate.getProductId())
 				.vendorProductNo(purchaseCandidate.getVendorProductNo())
 				.vendorProductName("") // TODO
+				.aggregatePOs(purchaseCandidate.isAggregatePOs())
 				//
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
@@ -89,6 +90,7 @@ public class PurchaseCandidatesGroup
 	ProductId productId;
 	String vendorProductNo;
 	String vendorProductName;
+	boolean aggregatePOs;
 
 	@NonNull
 	Quantity qtyToPurchase;
