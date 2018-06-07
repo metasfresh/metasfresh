@@ -348,6 +348,11 @@ public final class Quantity implements Comparable<Quantity>
 		return new Quantity(BigDecimal.ZERO, uom, BigDecimal.ZERO, sourceUom);
 	}
 
+	public Quantity toZeroIfNegative()
+	{
+		return qty.signum() >= 0 ? this : toZero();
+	}
+
 	/**
 	 * @param uom
 	 * @return infinite quantity (using given UOM)
