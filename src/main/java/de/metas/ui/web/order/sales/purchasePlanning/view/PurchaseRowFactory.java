@@ -1,11 +1,9 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Services;
@@ -79,8 +77,7 @@ public class PurchaseRowFactory
 	private PurchaseRow createLineRow(
 			@NonNull final PurchaseCandidatesGroup purchaseCandidatesGroup,
 			@NonNull final PurchaseDemandId purchaseDemandId,
-			@Nullable final Currency convertAmountsToCurrency,
-			@NotNull final LocalDateTime datePromised)
+			@Nullable final Currency convertAmountsToCurrency)
 	{
 		final PurchaseProfitInfo profitInfo = convertToCurrencyIfPossible(purchaseCandidatesGroup.getProfitInfo(), convertAmountsToCurrency);
 
@@ -88,7 +85,6 @@ public class PurchaseRowFactory
 				.lookups(lookups)
 				.purchaseCandidatesGroup(purchaseCandidatesGroup.changeProfitInfo(profitInfo))
 				.purchaseDemandId(purchaseDemandId)
-				.datePromised(datePromised)
 				.build();
 	}
 

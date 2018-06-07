@@ -122,7 +122,6 @@ class PurchaseRowsLoader
 				final PurchaseRow purchaseCandidateRow = purchaseRowFactory.lineRowBuilder()
 						.purchaseCandidatesGroup(purchaseCandidatesGroup)
 						.purchaseDemandId(demand.getId())
-						.datePromised(demand.getSalesDatePromised())
 						.convertAmountsToCurrency(demand.getCurrency())
 						.build();
 

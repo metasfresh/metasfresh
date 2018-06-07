@@ -203,7 +203,6 @@ public final class PurchaseRow implements IViewRow
 	private PurchaseRow(
 			@NonNull final PurchaseCandidatesGroup purchaseCandidatesGroup,
 			@NonNull final PurchaseDemandId purchaseDemandId,
-			@NonNull final LocalDateTime datePromised,
 			//
 			@NonNull final PurchaseRowLookups lookups)
 	{
@@ -244,7 +243,7 @@ public final class PurchaseRow implements IViewRow
 			this.profitPercent = null;
 		}
 
-		this.datePromised = datePromised;
+		this.datePromised = purchaseCandidatesGroup.getPurchaseDatePromised();
 
 		this.readonly = purchaseCandidatesGroup.isReadonly();
 

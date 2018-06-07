@@ -95,7 +95,6 @@ public class PurchaseRowFactoryTest
 		final PurchaseRow candidateRow = purchaseRowFactory.lineRowBuilder()
 				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(purchaseCandidate))
 				.purchaseDemandId(PurchaseDemandId.ofOrderAndLineId(purchaseCandidate.getSalesOrderAndLineId()))
-				.datePromised(SystemTime.asLocalDateTime())
 				.convertAmountsToCurrency(currency)
 				.build();
 
@@ -148,6 +147,7 @@ public class PurchaseRowFactoryTest
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.vendorId(vendorProductInfo.getVendorId())
+				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(vendorProductInfo.getProductId())
 				.qtyToPurchase(ONE)
