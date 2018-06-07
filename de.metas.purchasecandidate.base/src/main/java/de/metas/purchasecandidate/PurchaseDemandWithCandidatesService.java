@@ -39,6 +39,7 @@ import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
+import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -49,7 +50,6 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup.PurchaseCandidatesGroupBuilder;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
-import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoFactory;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -82,7 +82,7 @@ public class PurchaseDemandWithCandidatesService
 	private static final Logger logger = LogManager.getLogger(PurchaseDemandWithCandidatesService.class);
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
-	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
+	private final OrderLineWithGrossProfitPriceRepository grossProfitPriceRepo;
 	private final VendorProductInfoRepository vendorProductInfosRepo;
 	private final CurrencyRepository currencyRepo;
 	//
@@ -94,13 +94,13 @@ public class PurchaseDemandWithCandidatesService
 	public PurchaseDemandWithCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
 			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
-			@NonNull final PurchaseProfitInfoFactory purchaseProfitInfoFactory,
+			@NonNull final OrderLineWithGrossProfitPriceRepository grossProfitPriceRepo,
 			@NonNull final VendorProductInfoRepository vendorProductInfosRepo,
 			@NonNull final CurrencyRepository currencyRepo)
 	{
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
-		this.purchaseProfitInfoFactory = purchaseProfitInfoFactory;
+		this.grossProfitPriceRepo = grossProfitPriceRepo;
 		this.vendorProductInfosRepo = vendorProductInfosRepo;
 		this.currencyRepo = currencyRepo;
 	}
@@ -197,7 +197,7 @@ public class PurchaseDemandWithCandidatesService
 		final OrgId orgId = groupKey.getOrgId();
 		final VendorProductInfo vendorProductInfo = vendorProductInfosRepo.getVendorProductInfo(vendorId, productId, orgId);
 
-		final PurchaseProfitInfo profitInfo = getPurchaseProfitInfoNoFail(demand, vendorProductInfo);
+		final PurchaseProfitInfo profitInfo = calculatePurchaseProfitInfoNoFail(demand, vendorProductInfo);
 
 		final PurchaseCandidatesGroupBuilder builder = PurchaseCandidatesGroup.builder()
 				.orgId(orgId)
@@ -302,7 +302,7 @@ public class PurchaseDemandWithCandidatesService
 		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule);
 		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
-		final PurchaseProfitInfo purchaseProfitInfo = getPurchaseProfitInfoNoFail(purchaseDemand, vendorProductInfo);
+		final PurchaseProfitInfo purchaseProfitInfo = calculatePurchaseProfitInfoNoFail(purchaseDemand, vendorProductInfo);
 
 		final I_C_UOM uom = uomsRepo.getById(purchaseDemand.getUOMId());
 
@@ -357,11 +357,11 @@ public class PurchaseDemandWithCandidatesService
 		return salesDatePromised;
 	}
 
-	private PurchaseProfitInfo getPurchaseProfitInfoNoFail(final PurchaseDemand demand, final VendorProductInfo vendorProductInfo)
+	private PurchaseProfitInfo calculatePurchaseProfitInfoNoFail(final PurchaseDemand demand, final VendorProductInfo vendorProductInfo)
 	{
 		try
 		{
-			return getPurchaseProfitInfo(demand, vendorProductInfo);
+			return calculatePurchaseProfitInfo(demand, vendorProductInfo);
 		}
 		catch (final Exception ex)
 		{
@@ -370,7 +370,7 @@ public class PurchaseDemandWithCandidatesService
 		}
 	}
 
-	private PurchaseProfitInfo getPurchaseProfitInfo(final PurchaseDemand demand, final VendorProductInfo vendorProductInfo)
+	private PurchaseProfitInfo calculatePurchaseProfitInfo(final PurchaseDemand demand, final VendorProductInfo vendorProductInfo)
 	{
 		final Set<OrderLineId> salesOrderLineIds = demand.getSalesOrderLineIds();
 		final Quantity qtyToDeliver = demand.getQtyToDeliver();
@@ -393,10 +393,11 @@ public class PurchaseDemandWithCandidatesService
 
 		final Currency currency = currencyRepo.getById(currencyId);
 		final BigDecimal purchaseNetPrice = pricingConditionsBreak.getDiscount().subtractFromBase(purchaseBasePrice, 2);
+		
 		// TODO: subtract paymentTerm discount if any
 
 		return PurchaseProfitInfo.builder()
-				.salesNetPrice(purchaseProfitInfoFactory.retrieveSalesNetPrice(salesOrderLineIds))
+				.salesNetPrice(grossProfitPriceRepo.getProfitMinBasePrice(salesOrderLineIds))
 				.purchaseGrossPrice(Money.of(purchaseBasePrice, currency))
 				.purchaseNetPrice(Money.of(purchaseNetPrice, currency))
 				.build();
