@@ -178,6 +178,17 @@ public final class DocumentFilter
 		return param.getValueAsBoolean(defaultValue);
 	}
 
+	public boolean getParameterValueAsBoolean(@NonNull final String parameterName, final boolean defaultValue)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return defaultValue;
+		}
+
+		return param.getValueAsBoolean(defaultValue);
+	}
+
 	public Date getParameterValueAsDate(@NonNull final String parameterName, final Date defaultValue)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
