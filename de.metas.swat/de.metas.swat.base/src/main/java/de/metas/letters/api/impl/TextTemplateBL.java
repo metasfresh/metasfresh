@@ -208,8 +208,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 		return jasperProcessId;
 	}
 
-	@Override
-	public void createLetterSpoolRecord(final int adPInstanceId, final Letter request, final int adClientId)
+	private static void createLetterSpoolRecord(final int adPInstanceId, final Letter request, final int adClientId)
 	{
 		final String sql = "INSERT INTO " + I_T_Letter_Spool.Table_Name + "("
 				+ " " + I_T_Letter_Spool.COLUMNNAME_AD_Client_ID

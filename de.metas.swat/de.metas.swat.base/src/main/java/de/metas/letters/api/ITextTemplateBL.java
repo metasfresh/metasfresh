@@ -78,7 +78,4 @@ public interface ITextTemplateBL extends ISingletonService
 	<T> void createLetters(Iterator<T> source, ILetterProducer<T> producer);
 
 	<T> I_C_Letter createLetter(T item, ILetterProducer<T> producer);
-
-	void createLetterSpoolRecord(int adPInstanceId, Letter request, int adClientId);
-
 }
