@@ -1,16 +1,11 @@
 package org.adempiere.location;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.user.User;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Repository;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.ILocationBL;
@@ -46,25 +41,27 @@ public class LocationRepository
 		final String address = Services.get(ILocationBL.class).mkAddress(locationRecord);
 
 		return Location.builder()
-				.locationId(LocationId.ofRepoId(locationRecord.getC_Location_ID()))
+				.id(LocationId.ofRepoId(locationRecord.getC_Location_ID()))
 				.address(address)
 				.build();
 	}
 
-	public List<Location> retrieveByUser(@NonNull final User user)
+	public LocationId getBilltoDefaultLocationIdByUser(@NonNull final User user)
 	{
 		if (user.getBpartnerId() == null)
 		{
-			return Collections.emptyList();
+			return null;
 		}
 
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		return bpartnersRepo.retrieveBPartnerLocations(user.getBpartnerId())
 				.stream()
-				.filter(I_C_BPartner_Location::isBillTo)
+				.filter(I_C_BPartner_Location::isBillToDefault)
 				.map(I_C_BPartner_Location::getC_Location)
 				.map(this::ofRecord)
-				.collect(ImmutableList.toImmutableList());
+				.findFirst()
+				.map(Location::getId)
+				.orElse(null);
 	}
 
 	public Location getByLocationId(@NonNull final LocationId locationId)

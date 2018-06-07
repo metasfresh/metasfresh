@@ -1,9 +1,8 @@
 package de.metas.marketing.base;
 
-import java.util.List;
 import java.util.stream.Stream;
 
-import org.adempiere.location.Location;
+import org.adempiere.location.LocationId;
 import org.adempiere.location.LocationRepository;
 import org.adempiere.user.User;
 import org.adempiere.util.Check;
@@ -15,6 +14,8 @@ import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
+import de.metas.marketing.base.model.Platform;
+import de.metas.marketing.base.model.PlatformRepository;
 import lombok.NonNull;
 
 /*
@@ -45,14 +46,17 @@ public class CampaignService
 	private final ContactPersonRepository contactPersonRepository;
 	private final CampaignRepository campaignRepository;
 	private final LocationRepository locationRepository;
+	private final PlatformRepository platformRepository;
 
 	public CampaignService(@NonNull final ContactPersonRepository contactPersonRepository,
 			@NonNull final CampaignRepository campaignRepository,
-			@NonNull final LocationRepository locationRepository)
+			@NonNull final LocationRepository locationRepository,
+			@NonNull final PlatformRepository platformRepository)
 	{
 		this.contactPersonRepository = contactPersonRepository;
 		this.campaignRepository = campaignRepository;
 		this.locationRepository = locationRepository;
+		this.platformRepository = platformRepository;
 	}
 
 	public void addAsContactPersonsToCampaign(
@@ -60,7 +64,7 @@ public class CampaignService
 			@NonNull final CampaignId campaignId)
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
-		users.forEach(user -> addToCampaignIfHasEmailAddress0(user, campaign));
+		users.forEach(user -> addToCampaignIfHasMaillAddressOrLocation(user, campaign));
 	}
 
 	public void addToCampaignIfHasEmailAddress(
@@ -68,28 +72,32 @@ public class CampaignService
 			@NonNull final CampaignId campaignId)
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
-		addToCampaignIfHasEmailAddress0(user, campaign);
+		addToCampaignIfHasMaillAddressOrLocation(user, campaign);
 	}
 
-	private void addToCampaignIfHasEmailAddress0(
+	private void addToCampaignIfHasMaillAddressOrLocation(
 			@NonNull final User user,
 			@NonNull final Campaign campaign)
 	{
-		if (Check.isEmpty(user.getEmailAddress(), true))
+
+		final Platform platform = platformRepository.getById(campaign.getPlatformId());
+		final boolean isRequiredLocation = platform.isRequiredLocation();
+		final boolean isRequiredMailAddres =  platform.isRequiredMailAddress();
+
+		if (isRequiredMailAddres && Check.isEmpty(user.getEmailAddress(), true))
 		{
-			Loggables.get().addLog("Skip user because it has no email address; user={}", user);
+			Loggables.get().addLog("Skip user because it has no email address or campaign does not reuquires mail adddress; user={}", user);
 			return;
 		}
 
-		final List<Location> locations = locationRepository.retrieveByUser(user);
-		if (locations.isEmpty())
+		final LocationId billToDefaultLocationId = locationRepository.getBilltoDefaultLocationIdByUser(user);
+		if (isRequiredLocation && billToDefaultLocationId == null)
 		{
-			Loggables.get().addLog("Skip user because it has no location; user={}", user);
+			Loggables.get().addLog("Skip user because it has no bill to default location or campaign does not requires location; user={}", user);
 			return;
 		}
-		final Location location = locations.get(0);
 
-		final ContactPerson contactPerson = ContactPerson.newForUserAndPlatform(user, campaign.getPlatformId(), location);
+		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), billToDefaultLocationId);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
 		campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaign.getCampaignId());
@@ -102,10 +110,8 @@ public class CampaignService
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
 
-		final List<Location> locations = locationRepository.retrieveByUser(user);
-		final Location location = locations.get(0);
-
-		final ContactPerson contactPerson = ContactPerson.newForUserAndPlatform(user, campaign.getPlatformId(), location);
+		final LocationId billToDefaultLocationId = locationRepository.getBilltoDefaultLocationIdByUser(user);
+		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), billToDefaultLocationId);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
 		contactPersonRepository.revokeConsent(savedContactPerson);

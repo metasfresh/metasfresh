@@ -66,7 +66,7 @@ public class ContactPersonRepository
 
 		contactPersonRecord.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
 		contactPersonRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
-		contactPersonRecord.setC_Location_ID(contactPerson.getLocationId().getRepoId());
+		contactPersonRecord.setC_Location_ID(LocationId.toRepoIdOr(contactPerson.getLocationId(), -1));
 
 		contactPersonRecord.setName(contactPerson.getName());
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());

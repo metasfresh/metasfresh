@@ -31,7 +31,7 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class Location
 {
-	LocationId locationId;
+	LocationId id;
 
 	@Nullable
 	String address;

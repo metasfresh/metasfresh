@@ -40,5 +40,10 @@ public class LocationId
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
+
+	public static int toRepoIdOr(final LocationId locationId, final int defaultValue)
+	{
+		return locationId != null ? locationId.getRepoId() : defaultValue;
+	}
 }
 

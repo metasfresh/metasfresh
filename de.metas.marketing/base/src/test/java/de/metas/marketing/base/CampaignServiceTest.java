@@ -30,6 +30,7 @@ import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Consent;
 import de.metas.marketing.base.model.I_MKTG_Platform;
+import de.metas.marketing.base.model.PlatformRepository;
 
 /*
  * #%L
@@ -58,7 +59,8 @@ import de.metas.marketing.base.model.I_MKTG_Platform;
 		CampaignService.class,
 		CampaignRepository.class,
 		ContactPersonRepository.class,
-		LocationRepository.class
+		LocationRepository.class,
+		PlatformRepository.class
 		})
 public class CampaignServiceTest
 {

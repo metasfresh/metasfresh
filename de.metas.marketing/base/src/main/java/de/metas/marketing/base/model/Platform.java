@@ -36,6 +36,8 @@ public class Platform
 	String name;
 	String platformGatewayId;
 	PlatformId platformId;
+	boolean isRequiredLocation;
+	boolean isRequiredMailAddress;
 
 	/** @return existing repository ID or throws exception */
 	public int getRepoId()
