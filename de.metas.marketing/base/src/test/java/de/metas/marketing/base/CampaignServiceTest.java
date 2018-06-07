@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.location.LocationRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
@@ -22,7 +23,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.StartupListener;
-import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPersonRepository;
@@ -57,7 +57,8 @@ import de.metas.marketing.base.model.I_MKTG_Platform;
 		UserRepository.class,
 		CampaignService.class,
 		CampaignRepository.class,
-		ContactPersonRepository.class
+		ContactPersonRepository.class,
+		LocationRepository.class
 		})
 public class CampaignServiceTest
 {
