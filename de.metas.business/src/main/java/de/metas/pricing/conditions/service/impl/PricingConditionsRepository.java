@@ -59,6 +59,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.lang.Percent;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditions;
@@ -161,7 +162,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				//
 				.bpartnerFlatDiscount(schemaBreakRecord.isBPartnerFlatDiscount())
 				.discount(Percent.of(schemaBreakRecord.getBreakDiscount()))
-				.paymentTermId(schemaBreakRecord.getC_PaymentTerm_ID())
+				.paymentTermId(PaymentTermId.ofRepoIdOrNull(schemaBreakRecord.getC_PaymentTerm_ID()))
 				//
 				.qualityDiscountPercentage(schemaBreakRecord.getQualityIssuePercentage())
 				//
@@ -334,7 +335,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 		if (request.getPaymentTermId() != null)
 		{
-			schemaBreak.setC_PaymentTerm_ID(request.getPaymentTermId());
+			schemaBreak.setC_PaymentTerm_ID(PaymentTermId.getRepoId(request.getPaymentTermId()));
 		}
 
 		//

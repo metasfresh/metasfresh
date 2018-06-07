@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsId;
@@ -45,7 +46,7 @@ public class PricingConditionsResult
 	public static final PricingConditionsResult ZERO = builder().build();
 
 	Percent discount;
-	int paymentTermId;
+	PaymentTermId paymentTermId;
 
 	CurrencyId currencyId;
 	BigDecimal priceListOverride;
@@ -60,7 +61,7 @@ public class PricingConditionsResult
 	@Builder
 	public PricingConditionsResult(
 			final Percent discount,
-			final int paymentTermId,
+			final PaymentTermId paymentTermId,
 			final CurrencyId currencyId,
 			final BigDecimal priceListOverride,
 			final BigDecimal priceStdOverride,

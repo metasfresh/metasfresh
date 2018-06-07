@@ -17,6 +17,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -146,7 +147,7 @@ class OrderLinePriceCalculator
 	private void updateOrderLineFromPricingConditionsResult(final I_C_OrderLine orderLine, final PricingConditionsResult pricingConditionsResult)
 	{
 		final int basePricingSystemId;
-		final int paymentTermId;
+		final PaymentTermId paymentTermId;
 		final int discountSchemaId;
 		final int discountSchemaBreakId;
 		final boolean tempPricingConditions;
@@ -175,7 +176,7 @@ class OrderLinePriceCalculator
 		else
 		{
 			basePricingSystemId = -1;
-			paymentTermId = -1;
+			paymentTermId = null;
 
 			discountSchemaId = -1;
 			discountSchemaBreakId = -1;
@@ -183,7 +184,7 @@ class OrderLinePriceCalculator
 		}
 
 		orderLine.setBase_PricingSystem_ID(basePricingSystemId);
-		orderLine.setC_PaymentTerm_Override_ID(paymentTermId);
+		orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.getRepoId(paymentTermId));
 
 		orderLine.setM_DiscountSchema_ID(discountSchemaId);
 		orderLine.setM_DiscountSchemaBreak_ID(discountSchemaBreakId);
@@ -204,8 +205,8 @@ class OrderLinePriceCalculator
 			return false;
 		}
 
-		final int paymentTermId = pricingConditionsResult.getPaymentTermId();
-		if (paymentTermId > 0 && paymentTermId != orderLine.getC_PaymentTerm_Override_ID())
+		final PaymentTermId paymentTermId = pricingConditionsResult.getPaymentTermId();
+		if (paymentTermId != null && paymentTermId.getRepoId() != orderLine.getC_PaymentTerm_Override_ID())
 		{
 			return false;
 		}
