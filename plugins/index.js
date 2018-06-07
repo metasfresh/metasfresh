@@ -11,17 +11,9 @@
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
 
-// module.exports = () => {
-//   // `on` is used to hook into various events Cypress emits
-//   // `config` is the resolved Cypress config
-// };
-
 const webpackPre = require('@cypress/webpack-preprocessor')
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const APIconfig = require('../config');
-
-console.log('config: ', APIconfig);
 
 module.exports = (on) => {
   const options = {
@@ -31,11 +23,17 @@ module.exports = (on) => {
     watchOptions: {},
   }
 
-  options.webpackOptions.plugins.push(
+  const opts = [ ...options.webpackOptions.plugins,
     new webpack.DefinePlugin({
-      config: APIconfig,
+      config: JSON.stringify({
+        "API_URL": "http://w101.metasfresh.com:8081/rest/api",
+        "PLUGIN_API_URL": "http://w101.metasfresh.com:9192/",
+        "WS_URL": "http://w101.metasfresh.com:8081/stomp",
+      })
     })
-  );
+  ];
+
+  options.webpackOptions.plugins = opts;
 
   on('file:preprocessor', webpackPre(options))
 }
