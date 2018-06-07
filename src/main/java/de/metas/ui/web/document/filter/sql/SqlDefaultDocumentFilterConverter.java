@@ -84,7 +84,8 @@ import lombok.NonNull;
 	public String getSql(
 			@NonNull final SqlParamsCollector sqlParams,
 			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts)
+			@NonNull final SqlOptions sqlOpts,
+			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		final String filterId = filter.getFilterId();
 

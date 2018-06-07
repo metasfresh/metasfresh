@@ -35,6 +35,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -152,11 +153,14 @@ public final class DefaultView implements IEditableView
 				{
 					viewDataRepository.deleteSelection(viewId);
 				}
+				
+				final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
 				final ViewRowIdsOrderedSelection defaultSelection = viewDataRepository.createOrderedSelection(
 						getViewEvaluationCtx(),
 						viewId,
 						ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)),
-						applySecurityRestrictions);
+						applySecurityRestrictions,
+						context);
 
 				return new ViewRowIdsOrderedSelections(defaultSelection);
 			});
