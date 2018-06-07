@@ -7,7 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import org.adempiere.bpartner.BPartnerId;
 import org.springframework.stereotype.Repository;
 
-import de.metas.letters.model.I_C_Letter;
 import lombok.NonNull;
 
 /*
@@ -62,6 +61,7 @@ public class LetterRepository
 		letterRecord.setAD_BoilerPlate_ID(letter.getBoilerPlateId());
 		letterRecord.setLetterSubject(letter.getSubject());
 		letterRecord.setLetterBody(letter.getBody());
+		letterRecord.setBPartnerAddress(letter.getAddress());
 		letterRecord.setC_BP_Contact_ID(letter.getUserId().getRepoId());
 		letterRecord.setC_BPartner_ID(letter.getBpartnerId().getRepoId());
 
@@ -72,5 +72,4 @@ public class LetterRepository
 				.id(LetterId.ofRepoId(letterRecord.getC_Letter_ID()))
 				.build();
 	}
-
 }
