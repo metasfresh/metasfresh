@@ -16,7 +16,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.notification.INotificationBL;
@@ -70,7 +69,7 @@ public class C_Letter_PrintAutomatically extends JavaProcess
 	{
 		if (asyncBacthId > 0)
 		{
-			final I_AD_PInstance pinstance = InterfaceWrapperHelper.create(getCtx(), getAD_PInstance_ID(), I_AD_PInstance.class, ITrx.TRXNAME_None);
+			final I_AD_PInstance pinstance = InterfaceWrapperHelper.load(getAD_PInstance_ID(), I_AD_PInstance.class);
 			pinstance.setAD_User_ID(getProcessInfo().getAD_User_ID());
 			InterfaceWrapperHelper.save(pinstance);
 
@@ -88,7 +87,7 @@ public class C_Letter_PrintAutomatically extends JavaProcess
 	private void print(final IPrintingQueueSource source)
 	{
 
-		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, (TrxRunnable)localTrxName -> {
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
 			try
 			{
 
@@ -122,9 +121,11 @@ public class C_Letter_PrintAutomatically extends JavaProcess
 	 */
 	private List<IPrintingQueueSource> createPrintingQueueSource()
 	{
-		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Printing_Queue.class)
+		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Printing_Queue.class, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_Async_Batch_ID, asyncBacthId)
+				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_Processed, false)
 				.create();
 
 		final int selectionLength = query.createSelection(getAD_PInstance_ID());
