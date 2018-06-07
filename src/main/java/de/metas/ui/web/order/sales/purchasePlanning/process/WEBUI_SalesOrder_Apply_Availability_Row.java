@@ -14,14 +14,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRow;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowId;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseView;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -49,9 +47,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class WEBUI_SalesOrder_Apply_Availability_Row
-		extends ViewBasedProcessTemplate
-		implements IProcessPrecondition
+public class WEBUI_SalesOrder_Apply_Availability_Row extends PurchaseViewBasedProcess
 {
 
 	@Override
@@ -154,11 +150,5 @@ public class WEBUI_SalesOrder_Apply_Availability_Row
 	private static final boolean isPositive(final Quantity qty)
 	{
 		return qty != null && qty.signum() > 0;
-	}
-
-	@Override
-	protected PurchaseView getView()
-	{
-		return (PurchaseView)super.getView();
 	}
 }
