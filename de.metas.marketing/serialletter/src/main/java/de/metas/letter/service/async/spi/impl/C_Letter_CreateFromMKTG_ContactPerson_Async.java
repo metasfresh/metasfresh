@@ -1,5 +1,7 @@
 package de.metas.letter.service.async.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
 
 import org.adempiere.location.Location;
@@ -11,11 +13,12 @@ import org.compiere.util.Env;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.letters.api.ITextTemplateBL;
+import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.Letter;
 import de.metas.letters.model.LetterRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
+import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 
 /*
@@ -54,7 +57,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 		final LocationRepository locationRepo = Adempiere.getBean(LocationRepository.class);
 
 
-		final List<I_MKTG_Campaign_ContactPerson> campaignContactPersons = queueDAO.retrieveItems(workPackage, I_MKTG_Campaign_ContactPerson.class, localTrxName);
+		final List<I_MKTG_Campaign_ContactPerson> campaignContactPersons = queueDAO.retrieveAllItems(workPackage, I_MKTG_Campaign_ContactPerson.class);
 
 		for (final I_MKTG_Campaign_ContactPerson campaignContactPerson : campaignContactPersons)
 		{
@@ -62,20 +65,28 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 			final Location location = locationRepo.getByLocationId(contactPerson.getLocationId());
 
 			// create letter
+			final I_MKTG_Campaign mktgCampaign = campaignContactPerson.getMKTG_Campaign();
+			String subject = "";
+			String body = "";
+			if (mktgCampaign.getAD_BoilerPlate_ID() > 0)
+			{
+				final I_AD_BoilerPlate boilerPlate = load(mktgCampaign.getAD_BoilerPlate_ID(), I_AD_BoilerPlate.class);
+				subject = boilerPlate.getSubject();
+				body = boilerPlate.getTextSnippext();
+			}
 			Letter letter = Letter.builder()
-					.boilerPlateId(campaignContactPerson.getMKTG_Campaign().getAD_BoilerPlate_ID())
+					.boilerPlateId(mktgCampaign.getAD_BoilerPlate_ID())
+					.adOrgId(mktgCampaign.getAD_Org_ID())
 					.bpartnerId(contactPerson.getBPartnerId())
 					.userId(contactPerson.getUserId())
-					.subject(campaignContactPerson.getMKTG_Campaign().getName() + contactPerson.getName())
-					.body(campaignContactPerson.getMKTG_Campaign().getName())
 					.address(location.getAddress())
+					.adLanguage(Env.getAD_Language())
+					.subject(subject)
+					.body(body)
 					.build();
 
 			// save letter
 			letter = letterRepo.save(letter);
-
-			// create T_Letter_Spool record
-			Services.get(ITextTemplateBL.class).createLetterSpoolRecord(workPackage.getAD_PInstance_Creator_ID(), letter, Env.getAD_Client_ID());
 		}
 
 		return Result.SUCCESS;
