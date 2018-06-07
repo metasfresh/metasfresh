@@ -129,6 +129,12 @@
 			<type>jar</type>
 		</dependency>
 
+		<!-- needed to communicate with the app server via REST-over-JMS -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
