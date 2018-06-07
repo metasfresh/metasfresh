@@ -91,7 +91,7 @@ public class CampaignService
 		}
 
 		final LocationId billToDefaultLocationId = locationRepository.getBilltoDefaultLocationIdByUser(user);
-		if (isRequiredLocation && billToDefaultLocationId == null)
+		if (isRequiredLocation && billToDefaultLocationId == null )
 		{
 			Loggables.get().addLog("Skip user because it has no bill to default location or campaign does not requires location; user={}", user);
 			return;
