@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Location;
+import de.metas.lang.SOTrx;
 import de.metas.pricing.service.IPriceListDAO;
 
 /*
@@ -106,7 +107,7 @@ public class PriceListDAOTest
 		save(bpl);
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(pricingSystem.getM_PricingSystem_ID(), bpl, true);
+		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(pricingSystem.getM_PricingSystem_ID(), bpl, SOTrx.SALES);
 
 		assertThat(pl).isNotNull();
 		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl2.getM_PriceList_ID());
@@ -142,7 +143,7 @@ public class PriceListDAOTest
 		save(bpl);
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(pricingSystem.getM_PricingSystem_ID(), bpl, true);
+		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(pricingSystem.getM_PricingSystem_ID(), bpl, SOTrx.SALES);
 
 		assertThat(pl).isNotNull();
 		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl1.getM_PriceList_ID());

@@ -72,6 +72,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderPA;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
+import lombok.NonNull;
 
 public class OrderBL implements IOrderBL
 {
@@ -183,13 +184,14 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocation, order.isSOTrx());
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocation, soTrx);
 		if (priceList == null)
 		{
 			// Fail if no price list found
 			final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.create(Env.getCtx(), pricingSystemId, I_M_PricingSystem.class, ITrx.TRXNAME_None);
 			final String pricingSystemName = pricingSystem == null ? "-" : pricingSystem.getName();
-			throw new PriceListNotFoundException(pricingSystemName, order.isSOTrx());
+			throw new PriceListNotFoundException(pricingSystemName, soTrx);
 		}
 
 		order.setM_PriceList(priceList);
@@ -210,12 +212,13 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final I_M_PriceList pl = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocation, order.isSOTrx());
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		final I_M_PriceList pl = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocation, soTrx);
 		if (pl == null)
 		{
 			final I_M_PricingSystem pricingSystem = order.getM_PricingSystem();
 			final String pricingSystemName = pricingSystem == null ? "-" : pricingSystem.getName();
-			throw new PriceListNotFoundException(pricingSystemName, order.isSOTrx());
+			throw new PriceListNotFoundException(pricingSystemName, soTrx);
 		}
 	}
 
@@ -242,11 +245,12 @@ public class OrderBL implements IOrderBL
 
 		final int pricingSystemId = pricingSystemIdOverride > 0 ? pricingSystemIdOverride : order.getM_PricingSystem_ID();
 		final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
-		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocation, order.isSOTrx());
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocation, soTrx);
 		return priceList != null ? priceList.getM_PriceList_ID() : -1;
 	}
 
-	private I_M_PriceList retrievePriceListOrNull(final int pricingSystemId, final BillBPartnerAndShipToLocation bpartnerAndLocation, final boolean isSOTrx)
+	private I_M_PriceList retrievePriceListOrNull(final int pricingSystemId, final BillBPartnerAndShipToLocation bpartnerAndLocation, @NonNull final SOTrx soTrx)
 	{
 		final int shipBPLocationId = bpartnerAndLocation.getShip_BPartner_Location_ID();
 		if (shipBPLocationId <= 0)
@@ -256,7 +260,7 @@ public class OrderBL implements IOrderBL
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_C_BPartner_Location shipBPLocation = loadOutOfTrx(shipBPLocationId, I_C_BPartner_Location.class);
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, shipBPLocation, isSOTrx);
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, shipBPLocation, soTrx);
 		return priceList;
 	}
 

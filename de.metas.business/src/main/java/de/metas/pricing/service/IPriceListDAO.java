@@ -33,6 +33,8 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 
+import de.metas.lang.SOTrx;
+
 public interface IPriceListDAO extends ISingletonService
 {
 	public static final int M_PricingSystem_ID_None = 100;
@@ -55,15 +57,14 @@ public interface IPriceListDAO extends ISingletonService
 	 *
 	 * @param pricingSystem
 	 * @param countryId
-	 * @param isSoTrx true is sales, false if purchase, null to return both
-	 * @return
+	 * @param soTrx sales, purchase or null to return both
 	 */
-	Iterator<I_M_PriceList> retrievePriceLists(int pricingSystemId, int countryId, Boolean isSOPriceList);
+	Iterator<I_M_PriceList> retrievePriceLists(int pricingSystemId, int countryId, SOTrx soTrx);
 
 	/**
 	 * @return the price list for the given pricing system and location or <code>null</code>.
 	 */
-	I_M_PriceList retrievePriceListByPricingSyst(int pricingSystemId, I_C_BPartner_Location bpartnerLocation, boolean isSOPriceList);
+	I_M_PriceList retrievePriceListByPricingSyst(int pricingSystemId, I_C_BPartner_Location bpartnerLocation, SOTrx soTrx);
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>

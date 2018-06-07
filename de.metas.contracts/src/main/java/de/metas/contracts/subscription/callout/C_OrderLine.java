@@ -41,11 +41,13 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
@@ -57,9 +59,9 @@ public class C_OrderLine
 		final int bPartnerId = ol.getC_BPartner_ID();
 
 		final I_C_Order order = ol.getC_Order();
-		final boolean isSOTrx = order.isSOTrx();
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
-		if (productId <= 0 || bPartnerId <= 0 || !isSOTrx)
+		if (productId <= 0 || bPartnerId <= 0 || soTrx.isPurchase())
 		{
 			return;
 		}
@@ -86,7 +88,7 @@ public class C_OrderLine
 			return;
 		}
 
-		updatePrices(ol, isSOTrx);
+		updatePrices(ol, soTrx);
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyEntered })
@@ -94,17 +96,17 @@ public class C_OrderLine
 	{
 
 		final I_C_Order order = ol.getC_Order();
-		final boolean isSOTrx = order.isSOTrx();
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
-		if (!isSOTrx || ol.getC_Flatrate_Conditions_ID() <= 0)
+		if (soTrx.isPurchase() || ol.getC_Flatrate_Conditions_ID() <= 0)
 		{
 			return; // leave this job to the adempiere standard callouts
 		}
 
-		updatePrices(ol, isSOTrx);
+		updatePrices(ol, soTrx);
 	}
 
-	private void updatePrices(final I_C_OrderLine ol, final boolean isSOTrx)
+	private void updatePrices(final I_C_OrderLine ol, @NonNull final SOTrx soTrx)
 	{
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -129,7 +131,7 @@ public class C_OrderLine
 
 		final Timestamp date = order.getDateOrdered();
 
-		final I_M_PriceList subscriptionPL = priceListDAO.retrievePriceListByPricingSyst(pricingSysytemId, bpLocation, isSOTrx);
+		final I_M_PriceList subscriptionPL = priceListDAO.retrievePriceListByPricingSyst(pricingSysytemId, bpLocation, soTrx);
 
 		final int numberOfRuns = subscriptionBL.computeNumberOfRuns(flatrateConditions.getC_Flatrate_Transition(), date);
 

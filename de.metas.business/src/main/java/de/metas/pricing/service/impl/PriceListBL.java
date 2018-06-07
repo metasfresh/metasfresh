@@ -89,7 +89,7 @@ public class PriceListBL implements IPriceListBL
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx.isSales());
+		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx);
 		if (!pricelists.hasNext())
 		{
 			return null;

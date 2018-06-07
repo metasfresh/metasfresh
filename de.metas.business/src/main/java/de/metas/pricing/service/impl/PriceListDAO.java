@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.service.IPriceListDAO;
 import lombok.NonNull;
@@ -69,7 +70,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList retrievePriceListByPricingSyst(final int pricingSystemId, @NonNull final I_C_BPartner_Location bpartnerLocation, final boolean isSOPriceList)
+	public I_M_PriceList retrievePriceListByPricingSyst(final int pricingSystemId, @NonNull final I_C_BPartner_Location bpartnerLocation, final SOTrx soTrx)
 	{
 		// In case we are dealing with Pricing System None, return the PriceList none
 		if (pricingSystemId == M_PricingSystem_ID_None)
@@ -80,14 +81,14 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		final int countryId = bpartnerLocation.getC_Location().getC_Country_ID();
-		final List<I_M_PriceList> priceLists = retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, isSOPriceList);
+		final List<I_M_PriceList> priceLists = retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, soTrx);
 		return !priceLists.isEmpty() ? priceLists.get(0) : null;
 	}
 
 	@Override
-	public Iterator<I_M_PriceList> retrievePriceLists(final int pricingSystemId, final int countryId, final Boolean isSOPriceList)
+	public Iterator<I_M_PriceList> retrievePriceLists(final int pricingSystemId, final int countryId, final SOTrx soTrx)
 	{
-		return retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, isSOPriceList)
+		return retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, soTrx)
 				.iterator();
 	}
 	
@@ -97,7 +98,7 @@ public class PriceListDAO implements IPriceListDAO
 			final @CacheCtx Properties ctx,
 			final int pricingSystemId,
 			final int countryId,
-			final Boolean isSOPriceList)
+			final SOTrx soTrx)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_M_PriceList> queryBuilder = queryBL.createQueryBuilder(I_M_PriceList.class, ctx, ITrx.TRXNAME_None)
@@ -107,9 +108,9 @@ public class PriceListDAO implements IPriceListDAO
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_M_PriceList.COLUMNNAME_C_Country_ID);
 
-		if (isSOPriceList != null)
+		if (soTrx != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOPriceList);
+			queryBuilder.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, soTrx.isSales());
 		}
 		else
 		{

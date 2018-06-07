@@ -37,6 +37,7 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -103,7 +104,7 @@ public class OLCandPIIPValidator implements IOLCandValidator
 		final Timestamp datePromisedEffective = olCandEffectiveValuesBL.getDatePromisedEffective(olCand);
 		final I_C_BPartner_Location billBPLocation = olCandEffectiveValuesBL.getBill_Location_Effective(olCand);
 
-		final I_M_PriceList pl = Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocation, true);
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocation, SOTrx.SALES);
 		if (pl == null)
 		{
 			throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + billBPLocation);

@@ -18,6 +18,7 @@ import org.compiere.util.Util;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPriceListDAO;
@@ -90,7 +91,7 @@ public class FlatrateTermPricing
 		final I_C_BPartner_Location bpLocationToUse = Util.coalesceSuppliers(term::getDropShip_Location, term::getBill_Location);
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemIdToUse, bpLocationToUse, true);
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemIdToUse, bpLocationToUse, SOTrx.SALES);
 		if (priceList == null)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(term);

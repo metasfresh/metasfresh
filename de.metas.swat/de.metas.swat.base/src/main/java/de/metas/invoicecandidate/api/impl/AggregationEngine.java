@@ -70,6 +70,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
+import de.metas.lang.SOTrx;
 import de.metas.pricing.service.IPriceListDAO;
 import lombok.NonNull;
 
@@ -337,7 +338,7 @@ public class AggregationEngine implements IAggregationEngine
 		else
 		{
 			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(ic.getM_PricingSystem_ID(), ic.getBill_Location(), ic.isSOTrx());
+			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(ic.getM_PricingSystem_ID(), ic.getBill_Location(), SOTrx.ofBoolean(ic.isSOTrx()));
 			if (pl == null)
 			{
 				final Properties ctx = InterfaceWrapperHelper.getCtx(ic);

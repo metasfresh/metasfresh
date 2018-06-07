@@ -110,7 +110,7 @@ public class InOutBL implements IInOutBL
 
 		Check.assume(pricingSystemId > 0, "No pricing system found for M_InOut_ID={}", inOut.getM_InOut_ID());
 
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, inOut.getC_BPartner_Location(), soTrx.isSales());
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, inOut.getC_BPartner_Location(), soTrx);
 
 		Check.errorIf(priceList == null,
 				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",

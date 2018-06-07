@@ -86,6 +86,7 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMonitoringBL;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -713,7 +714,7 @@ public class SubscriptionBL implements ISubscriptionBL
 				priceListDAO.retrievePriceListByPricingSyst(
 						mPricingSystemId,
 						ol.getC_BPartner_Location(),
-						true),
+						SOTrx.SALES),
 				I_M_PriceList.class);
 
 		final IProductPA productPA = Services.get(IProductPA.class);

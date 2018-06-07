@@ -16,6 +16,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -26,6 +27,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
@@ -74,6 +76,7 @@ import lombok.NonNull;
 public class PurchaseDemandWithCandidatesService
 {
 	// services
+	private static final Logger logger = LogManager.getLogger(PurchaseDemandWithCandidatesService.class);
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
 	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
@@ -183,7 +186,7 @@ public class PurchaseDemandWithCandidatesService
 		final OrgId orgId = groupKey.getOrgId();
 		final VendorProductInfo vendorProductInfo = vendorProductInfosRepo.getVendorProductInfo(vendorId, productId, orgId);
 
-		final PurchaseProfitInfo profitInfo = getPurchaseProfitInfo(demand, vendorProductInfo);
+		final PurchaseProfitInfo profitInfo = getPurchaseProfitInfoNoFail(demand, vendorProductInfo);
 
 		final PurchaseCandidatesGroupBuilder builder = PurchaseCandidatesGroup.builder()
 				.orgId(orgId)
@@ -285,7 +288,7 @@ public class PurchaseDemandWithCandidatesService
 		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule);
 		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
-		final PurchaseProfitInfo purchaseProfitInfo = getPurchaseProfitInfo(purchaseDemand, vendorProductInfo);
+		final PurchaseProfitInfo purchaseProfitInfo = getPurchaseProfitInfoNoFail(purchaseDemand, vendorProductInfo);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.salesOrderAndLineId(purchaseDemand.getSalesOrderAndLineId())
@@ -337,6 +340,19 @@ public class PurchaseDemandWithCandidatesService
 
 		// fallback
 		return salesDatePromised;
+	}
+
+	private PurchaseProfitInfo getPurchaseProfitInfoNoFail(final PurchaseDemand demand, final VendorProductInfo vendorProductInfo)
+	{
+		try
+		{
+			return getPurchaseProfitInfo(demand, vendorProductInfo);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed computing purchase profit info for demand={}, vendorProductInfo={}. Returning null.", demand, vendorProductInfo, ex);
+			return null;
+		}
 	}
 
 	private PurchaseProfitInfo getPurchaseProfitInfo(final PurchaseDemand demand, final VendorProductInfo vendorProductInfo)
