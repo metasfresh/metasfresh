@@ -9,4 +9,9 @@ config_js_file='/usr/share/nginx/html/config.js'
 sed -Ei "s/WEBUI_API_HOST/${webapi_host}/g" $config_js_file
 sed -Ei "s/WEBUI_API_PORT/${webapi_port}/g" $config_js_file
 
+echo "WEBUI_API_HOST=$webapi_host"
+echo "WEBUI_API_PORT=$webapi_port"
+
+echo "Starting nginx -g 'daemon off;'"
+
 nginx -g 'daemon off;'
