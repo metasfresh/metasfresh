@@ -4,7 +4,10 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.uom.api.IUOMDAO;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -46,6 +49,7 @@ class AvailabilityCheckCommand
 {
 	// services
 	private final VendorGatewayRegistry vendorGatewayRegistry;
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	private final ImmutableSet<AvailabilityRequest> requests;
 
@@ -126,8 +130,9 @@ class AvailabilityCheckCommand
 		final ImmutableList.Builder<AvailabilityResult> result = ImmutableList.builder();
 		for (final AvailabilityResponseItem responseItem : availabilityResponse.getAvailabilityResponseItems())
 		{
+			final I_C_UOM uom = uomsRepo.getById(responseItem.getUomId());
 			final AvailabilityResult availabilityResult = AvailabilityResult
-					.prepareBuilderFor(responseItem)
+					.prepareBuilderFor(responseItem, uom)
 					.build();
 
 			result.add(availabilityResult);

@@ -1,8 +1,5 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,7 +9,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
@@ -58,7 +54,7 @@ public class PurchaseCandidateAggregate
 
 	private final ArrayList<PurchaseCandidate> purchaseCandidates = new ArrayList<>();
 	private Quantity qtyToDeliver;
-	private Quantity qtyToDeliverTotal;
+	private Quantity qtyAlreadyPurchased;
 	private LocalDateTime datePromised;
 	private final HashSet<OrderLineId> salesOrderLineIds = new HashSet<>();
 
@@ -66,10 +62,6 @@ public class PurchaseCandidateAggregate
 	{
 		this.aggregationKey = aggregationKey;
 		purchaseDemandId = PurchaseDemandId.newAggregateId();
-
-		final I_C_UOM uom = loadOutOfTrx(aggregationKey.getUomId(), I_C_UOM.class); // TODO: get rid of this loader!
-		qtyToDeliver = Quantity.zero(uom);
-		qtyToDeliverTotal = Quantity.zero(uom);
 	}
 
 	public void add(@NonNull final PurchaseCandidate purchaseCandidate)
@@ -83,11 +75,11 @@ public class PurchaseCandidateAggregate
 		purchaseCandidates.add(purchaseCandidate);
 
 		//
-		final BigDecimal qtyToPurchase = purchaseCandidate.getQtyToPurchase();
-		final BigDecimal purchasedQty = purchaseCandidate.getPurchasedQty();
-		final BigDecimal qtyToPurchaseTotal = qtyToPurchase.add(purchasedQty);
-		qtyToDeliver = qtyToDeliver.add(qtyToPurchase);
-		qtyToDeliverTotal = qtyToDeliverTotal.add(qtyToPurchaseTotal);
+		final Quantity qtyToPurchase = purchaseCandidate.getQtyToPurchase();
+		qtyToDeliver = Quantity.addNullables(qtyToDeliver, qtyToPurchase);
+
+		final Quantity purchasedQty = purchaseCandidate.getPurchasedQty();
+		qtyAlreadyPurchased = Quantity.addNullables(qtyAlreadyPurchased, purchasedQty);
 
 		//
 		datePromised = TimeUtil.min(datePromised, purchaseCandidate.getDateRequired());
@@ -125,7 +117,7 @@ public class PurchaseCandidateAggregate
 
 	public Quantity getQtyToDeliverTotal()
 	{
-		return qtyToDeliverTotal;
+		return qtyToDeliver.add(qtyAlreadyPurchased);
 	}
 
 	public Quantity getQtyToDeliver()

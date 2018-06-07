@@ -13,14 +13,15 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -48,6 +49,8 @@ import lombok.NonNull;
 @Repository
 public class PurchaseItemRepository
 {
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	
 	public void storeRecords(@NonNull final List<? extends PurchaseItem> purchaseItems)
 	{
 		purchaseItems.forEach(PurchaseItemRepository::validateAndStore);
@@ -161,7 +164,7 @@ public class PurchaseItemRepository
 		}
 	}
 
-	private static void createForRecord(
+	private void createForRecord(
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final I_C_PurchaseCandidate_Alloc record)
 	{
@@ -169,17 +172,17 @@ public class PurchaseItemRepository
 
 		if (record.getAD_Issue_ID() <= 0)
 		{
-			// TODO: don't use order line loader directly, here!
-			final I_C_OrderLine purchaseOrderLine = load(record.getC_OrderLinePO_ID(), I_C_OrderLine.class);
+			final OrderAndLineId purchaseOrderAndLineId = OrderAndLineId.ofRepoIds(record.getC_OrderPO_ID(), record.getC_OrderLinePO_ID());
+			final Quantity purchasedQty = orderLineBL.getQtyOrdered(purchaseOrderAndLineId);
 
 			final PurchaseOrderItem purchaseOrderItem = PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
 					.purchaseItemId(PurchaseItemId.ofRepoId(record.getC_PurchaseCandidate_Alloc_ID()))
 					.datePromised(TimeUtil.asLocalDateTime(record.getDatePromised()))
-					.purchasedQty(purchaseOrderLine.getQtyOrdered())
+					.purchasedQty(purchasedQty)
 					.remotePurchaseOrderId(record.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)
-					.purchaseOrderAndLineId(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()))
+					.purchaseOrderAndLineId(purchaseOrderAndLineId)
 					.build();
 
 			purchaseCandidate.addLoadedPurchaseOrderItem(purchaseOrderItem);

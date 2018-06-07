@@ -15,6 +15,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
+import de.metas.quantity.Quantity;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
@@ -99,7 +100,8 @@ public class AvailabilityCheckService
 
 	private static AvailabilityRequestItem createAvailabilityRequestItem(final TrackingId trackingId, final PurchaseCandidatesGroup purchaseCandidatesGroup)
 	{
-		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidatesGroup.getVendorProductNo(), purchaseCandidatesGroup.getQtyToPurchase());
+		final Quantity qtyToPurchase = purchaseCandidatesGroup.getQtyToPurchase();
+		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidatesGroup.getVendorProductNo(), qtyToPurchase.getAsBigDecimal(), qtyToPurchase.getUOMId());
 
 		return AvailabilityRequestItem.builder()
 				.trackingId(trackingId)

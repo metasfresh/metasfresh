@@ -48,7 +48,6 @@ class PurchaseCandidateImmutableFields
 	@NonNull
 	ProductId productId;
 	String vendorProductNo;
-	int uomId;
 	
 	boolean aggregatePOs;
 }

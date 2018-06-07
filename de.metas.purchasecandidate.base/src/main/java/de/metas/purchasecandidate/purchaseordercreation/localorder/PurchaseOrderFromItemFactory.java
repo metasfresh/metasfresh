@@ -97,13 +97,13 @@ import lombok.NonNull;
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
-						pruchaseOrderItem.getProductId().getRepoId(),
+						pruchaseOrderItem.getProductId(),
 						pruchaseOrderItem.getUomId())
 				.orElseGet(() -> orderFactory
 						.newOrderLine()
-						.productId(pruchaseOrderItem.getProductId().getRepoId()));
+						.productId(pruchaseOrderItem.getProductId()));
 
-		orderLineBuilder.addQty(pruchaseOrderItem.getPurchasedQty(), pruchaseOrderItem.getUomId());
+		orderLineBuilder.addQty(pruchaseOrderItem.getPurchasedQty());
 
 		purchaseItem2OrderLine.put(pruchaseOrderItem, orderLineBuilder);
 	}

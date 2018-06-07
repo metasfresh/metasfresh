@@ -30,26 +30,30 @@ import lombok.Value;
  * #L%
  */
 
-@Value(staticConstructor = "of")
+@Value
 public class ProductAndQuantity
 {
 	public static final ProductAndQuantity of(
 			@NonNull final String productIdentifier,
-			@NonNull final BigDecimal quantity)
+			@NonNull final BigDecimal quantity,
+			final int uomId)
 	{
-		return new ProductAndQuantity(productIdentifier, quantity);
+		return new ProductAndQuantity(productIdentifier, quantity, uomId);
 	}
 
 	String productIdentifier;
 	BigDecimal quantity;
+	int uomId;
 
 	private ProductAndQuantity(
 			@NonNull final String productIdentifier,
-			@NonNull final BigDecimal quantity)
+			@NonNull final BigDecimal quantity,
+			final int uomId)
 	{
 		Check.assumeNotEmpty(productIdentifier, "productIdentifier is not empty");
 
 		this.productIdentifier = productIdentifier;
 		this.quantity = NumberUtils.stripTrailingDecimalZeros(quantity);
+		this.uomId = uomId;
 	}
 }

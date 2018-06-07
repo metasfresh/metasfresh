@@ -12,10 +12,12 @@ import java.util.stream.Stream;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -86,6 +88,7 @@ public class PurchaseDemandWithCandidatesService
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	public PurchaseDemandWithCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
@@ -162,14 +165,14 @@ public class PurchaseDemandWithCandidatesService
 
 	private PurchaseCandidatesGroup createPurchaseCandidatesGroup(final PurchaseDemand demand, final PurchaseCandidatesGroupKey groupKey, final Collection<PurchaseCandidate> candidates)
 	{
-		BigDecimal qtyToPurchase = BigDecimal.ZERO;
-		BigDecimal purchasedQty = BigDecimal.ZERO;
+		Quantity qtyToPurchase = null;
+		Quantity purchasedQty = null;
 		final Set<PurchaseCandidateId> purchaseCandidateIds = new LinkedHashSet<>();
 		final Set<OrderAndLineId> salesOrderAndLineIds = new LinkedHashSet<>();
 		for (final PurchaseCandidate candidate : candidates)
 		{
-			qtyToPurchase = qtyToPurchase.add(candidate.getQtyToPurchase());
-			purchasedQty = purchasedQty.add(candidate.getPurchasedQty());
+			qtyToPurchase = Quantity.addNullables(qtyToPurchase, candidate.getQtyToPurchase());
+			purchasedQty = Quantity.addNullables(purchasedQty, candidate.getPurchasedQty());
 
 			if (candidate.getId() != null)
 			{
@@ -289,6 +292,8 @@ public class PurchaseDemandWithCandidatesService
 		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
 		final PurchaseProfitInfo purchaseProfitInfo = getPurchaseProfitInfoNoFail(purchaseDemand, vendorProductInfo);
+		
+		final I_C_UOM uom = uomsRepo.getById(purchaseDemand.getUOMId());
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.salesOrderAndLineId(purchaseDemand.getSalesOrderAndLineId())
@@ -302,9 +307,8 @@ public class PurchaseDemandWithCandidatesService
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				//
 				.productId(vendorProductInfo.getProductId())
-				.uomId(purchaseDemand.getUOMId())
 				//
-				.qtyToPurchase(BigDecimal.ZERO)
+				.qtyToPurchase(Quantity.zero(uom))
 				//
 				.profitInfo(purchaseProfitInfo)
 				//
@@ -394,7 +398,7 @@ public class PurchaseDemandWithCandidatesService
 		return PricingConditionsBreakQuery.builder()
 				.productAndCategoryId(productAndCategoryId)
 				// .attributeInstances(attributeInstances)// TODO
-				.qty(qtyToDeliver.getQty())
+				.qty(qtyToDeliver.getAsBigDecimal())
 				.price(BigDecimal.ZERO) // N/A
 				.build();
 	}

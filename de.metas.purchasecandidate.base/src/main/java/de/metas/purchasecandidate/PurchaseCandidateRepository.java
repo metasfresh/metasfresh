@@ -18,12 +18,14 @@ import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -47,6 +49,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -79,6 +82,7 @@ public class PurchaseCandidateRepository
 	private final PurchaseItemRepository purchaseItemRepository;
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final transient IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
 
@@ -271,8 +275,11 @@ public class PurchaseCandidateRepository
 		record.setAD_Org_ID(purchaseCandidate.getOrgId().getRepoId());
 		record.setM_WarehousePO_ID(purchaseCandidate.getWarehouseId().getRepoId());
 		record.setM_Product_ID(purchaseCandidate.getProductId().getRepoId());
-		record.setC_UOM_ID(purchaseCandidate.getUomId());
-		record.setQtyToPurchase(purchaseCandidate.getQtyToPurchase());
+		
+		final Quantity qtyToPurchase = purchaseCandidate.getQtyToPurchase();
+		record.setC_UOM_ID(qtyToPurchase.getUOMId());
+		record.setQtyToPurchase(qtyToPurchase.getAsBigDecimal());
+		
 		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getDateRequired()));
 		record.setReminderDate(TimeUtil.asTimestamp(purchaseCandidate.getReminderDate()));
 
@@ -311,6 +318,8 @@ public class PurchaseCandidateRepository
 		final Duration reminderTime = dateRequired != null && dateReminder != null ? Duration.between(dateRequired, dateReminder) : null;
 
 		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIdsOrNull(purchaseCandidateRecord.getC_OrderSO_ID(), purchaseCandidateRecord.getC_OrderLineSO_ID());
+		final I_C_UOM uom = uomsRepo.getById(purchaseCandidateRecord.getC_UOM_ID());
+		final Quantity qtyToPurchase = Quantity.of(purchaseCandidateRecord.getQtyToPurchase(), uom);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.locked(locked)
@@ -329,9 +338,8 @@ public class PurchaseCandidateRepository
 				.productId(ProductId.ofRepoId(purchaseCandidateRecord.getM_Product_ID()))
 				// .vendorProductNo(purchaseCandidateRecord.getVendorProductNo()) // TODO
 				.vendorProductNo(productsRepo.retrieveProductValueByProductId(purchaseCandidateRecord.getM_Product_ID()))
-				.uomId(purchaseCandidateRecord.getC_UOM_ID())
 				//
-				.qtyToPurchase(purchaseCandidateRecord.getQtyToPurchase())
+				.qtyToPurchase(qtyToPurchase)
 				//
 				.profitInfo(toPurchaseProfitInfo(purchaseCandidateRecord))
 				//
@@ -343,7 +351,7 @@ public class PurchaseCandidateRepository
 
 		return purchaseCandidate;
 	}
-
+	
 	private PurchaseProfitInfo toPurchaseProfitInfo(final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
 		final int currencyId = purchaseCandidateRecord.getC_Currency_ID();

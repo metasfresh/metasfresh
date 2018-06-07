@@ -1,11 +1,11 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -13,6 +13,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,11 +22,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -53,19 +56,44 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseItemRepositoryTest
 {
+	private I_C_UOM EACH;
+	private Quantity ZERO;
+	private Quantity ONE;
+	private Quantity TEN;
+
+	private I_M_Product product;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		this.EACH = createUOM("Ea");
+		this.ZERO = Quantity.of(BigDecimal.ZERO, EACH);
+		this.ONE = Quantity.of(BigDecimal.ONE, EACH);
+		this.TEN = Quantity.of(BigDecimal.TEN, EACH);
+
+		product = newInstanceOutOfTrx(I_M_Product.class);
+		product.setC_UOM_ID(EACH.getC_UOM_ID());
+		save(product);
+	}
+
+	private I_C_UOM createUOM(final String name)
+	{
+		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
+		uom.setName(name);
+		uom.setUOMSymbol(name);
+		save(uom);
+		return uom;
 	}
 
 	@Test
 	public void storeRecords_purchaseOrderItems()
 	{
-		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(10);
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(10, ONE);
 		final PurchaseOrderItem orderItem = createAndAddPurchaseOrderItem(purchaseCandidate);
 
-		final I_C_OrderLine purchaseOrderLine = createPurchaseOrderLine();
+		final I_C_OrderLine purchaseOrderLine = createPurchaseOrderLine(TEN);
 		orderItem.setPurchaseOrderLineIdAndMarkProcessed(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()));
 
 		// invoke the method under test
@@ -86,10 +114,10 @@ public class PurchaseItemRepositoryTest
 	@Test
 	public void storeAndLoad_purchaseOrderItems()
 	{
-		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(10);
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(10, ONE);
 		final PurchaseOrderItem originalPurchaseOrderItem = createAndAddPurchaseOrderItem(purchaseCandidate);
 
-		final I_C_OrderLine purchaseOrderLine = createPurchaseOrderLine();
+		final I_C_OrderLine purchaseOrderLine = createPurchaseOrderLine(TEN);
 		originalPurchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()));
 
 		// invoke the method under test
@@ -97,7 +125,7 @@ public class PurchaseItemRepositoryTest
 		purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseOrderItems());
 
 		//
-		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(10);
+		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(10, ONE);
 		assertThat(newPurchaseCandidate.getPurchaseOrderItems()).isEmpty(); // guard, loading the purchaseOrderItems is what *we* want to do now
 		purchaseItemRepository.retrieveForPurchaseCandidate(newPurchaseCandidate);
 
@@ -110,11 +138,12 @@ public class PurchaseItemRepositoryTest
 		assertThat(retrievedPurchaseOrderItem.getPurchaseOrderAndLineId().getOrderLineRepoId()).isEqualTo(purchaseOrderLine.getC_OrderLine_ID());
 	}
 
-	private I_C_OrderLine createPurchaseOrderLine()
+	private I_C_OrderLine createPurchaseOrderLine(final Quantity qtyOrdered)
 	{
 		final I_C_OrderLine purchaseOrderLine = newInstance(I_C_OrderLine.class);
 		purchaseOrderLine.setC_Order_ID(50);
-		purchaseOrderLine.setQtyOrdered(TEN);
+		purchaseOrderLine.setM_Product_ID(product.getM_Product_ID());
+		purchaseOrderLine.setQtyOrdered(qtyOrdered.getAsBigDecimal());
 		save(purchaseOrderLine);
 		return purchaseOrderLine;
 	}

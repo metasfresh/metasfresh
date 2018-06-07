@@ -2,7 +2,6 @@ package de.metas.purchasecandidate;
 
 import static java.util.stream.Collectors.toCollection;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,6 +26,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
+import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -68,10 +68,10 @@ public class PurchaseCandidate
 	private PurchaseCandidateId id;
 
 	@NonNull
-	private BigDecimal qtyToPurchase;
+	private Quantity qtyToPurchase;
 
 	@Setter(AccessLevel.NONE)
-	private BigDecimal qtyToPurchaseInitial;
+	private Quantity qtyToPurchaseInitial;
 
 	@Setter(AccessLevel.NONE)
 	private PurchaseProfitInfo profitInfo;
@@ -111,9 +111,8 @@ public class PurchaseCandidate
 			//
 			@NonNull final ProductId productId,
 			@NonNull final String vendorProductNo,
-			final int uomId,
 			//
-			@NonNull final BigDecimal qtyToPurchase,
+			@NonNull final Quantity qtyToPurchase,
 			//
 			@NonNull final LocalDateTime dateRequired,
 			final Duration reminderTime,
@@ -124,8 +123,6 @@ public class PurchaseCandidate
 			//
 			final boolean aggregatePOs)
 	{
-		Check.assume(uomId > 0, "uomId > 0");
-
 		this.id = id;
 
 		identifier = PurchaseCandidateImmutableFields.builder()
@@ -135,7 +132,6 @@ public class PurchaseCandidate
 				.warehouseId(warehouseId)
 				.productId(productId)
 				.vendorProductNo(vendorProductNo)
-				.uomId(uomId)
 				.aggregatePOs(aggregatePOs)
 				.build();
 
@@ -203,11 +199,6 @@ public class PurchaseCandidate
 	public String getVendorProductNo()
 	{
 		return getIdentifier().getVendorProductNo();
-	}
-
-	public int getUomId()
-	{
-		return getIdentifier().getUomId();
 	}
 
 	public WarehouseId getWarehouseId()
@@ -354,7 +345,7 @@ public class PurchaseCandidate
 			return this;
 		}
 
-		public OrderItemBuilder purchasedQty(@NonNull final BigDecimal purchasedQty)
+		public OrderItemBuilder purchasedQty(@NonNull final Quantity purchasedQty)
 		{
 			innerBuilder.purchasedQty(purchasedQty);
 			return this;
@@ -400,11 +391,12 @@ public class PurchaseCandidate
 		purchaseOrderItems.add(purchaseOrderItem);
 	}
 
-	public BigDecimal getPurchasedQty()
+	public Quantity getPurchasedQty()
 	{
 		return purchaseOrderItems.stream()
 				.map(PurchaseOrderItem::getPurchasedQty)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
+				.reduce(Quantity::add)
+				.orElseGet(() -> getQtyToPurchase().toZero());
 	}
 
 	public List<PurchaseOrderItem> getPurchaseOrderItems()

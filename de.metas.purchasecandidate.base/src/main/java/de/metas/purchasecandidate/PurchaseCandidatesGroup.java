@@ -1,6 +1,5 @@
 package de.metas.purchasecandidate;
 
-import java.math.BigDecimal;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
@@ -15,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -91,9 +91,9 @@ public class PurchaseCandidatesGroup
 	String vendorProductName;
 
 	@NonNull
-	BigDecimal qtyToPurchase;
+	Quantity qtyToPurchase;
 	@NonNull
-	BigDecimal purchasedQty;
+	Quantity purchasedQty;
 
 	@Nullable
 	PurchaseProfitInfo profitInfo;

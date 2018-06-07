@@ -1,6 +1,5 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
@@ -19,6 +18,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
+import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -80,7 +80,7 @@ public class PurchaseOrderItem implements PurchaseItem
 	private final PurchaseCandidate purchaseCandidate;
 
 	@Getter
-	private final BigDecimal purchasedQty;
+	private final Quantity purchasedQty;
 
 	@Getter
 	private final LocalDateTime datePromised;
@@ -92,7 +92,7 @@ public class PurchaseOrderItem implements PurchaseItem
 	private PurchaseOrderItem(
 			final PurchaseItemId purchaseItemId,
 			@NonNull final PurchaseCandidate purchaseCandidate,
-			@NonNull final BigDecimal purchasedQty,
+			@NonNull final Quantity purchasedQty,
 			@NonNull final LocalDateTime datePromised,
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
@@ -148,7 +148,13 @@ public class PurchaseOrderItem implements PurchaseItem
 
 	public int getUomId()
 	{
-		return getPurchaseCandidate().getUomId();
+		final Quantity purchasedQty = getPurchasedQty();
+		if (purchasedQty != null)
+		{
+			return purchasedQty.getUOMId();
+		}
+
+		return getQtyToPurchase().getUOMId();
 	}
 
 	public OrgId getOrgId()
@@ -177,7 +183,7 @@ public class PurchaseOrderItem implements PurchaseItem
 		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
 	}
 
-	private BigDecimal getQtyToPurchase()
+	private Quantity getQtyToPurchase()
 	{
 		return getPurchaseCandidate().getQtyToPurchase();
 	}
