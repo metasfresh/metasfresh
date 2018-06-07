@@ -27,6 +27,7 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.lang.SOTrx;
 import de.metas.money.Currency;
+import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -355,12 +356,13 @@ public class PurchaseDemandWithCandidatesService
 				.build());
 
 		final BigDecimal purchaseBasePrice = pricingConditionsResult.getPriceStdOverride();
-		if (purchaseBasePrice == null)
+		final CurrencyId currencyId = pricingConditionsResult.getCurrencyId();
+		if (purchaseBasePrice == null || currencyId == null)
 		{
 			return null;
 		}
 
-		final Currency currency = currencyRepo.getById(pricingConditionsResult.getCurrencyId());
+		final Currency currency = currencyRepo.getById(currencyId);
 		final BigDecimal purchaseNetPrice = pricingConditionsBreak.getDiscount().subtractFromBase(purchaseBasePrice, 2);
 		// TODO: subtract paymentTerm discount if any
 

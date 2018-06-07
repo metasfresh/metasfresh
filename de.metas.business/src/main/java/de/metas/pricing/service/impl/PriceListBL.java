@@ -73,7 +73,7 @@ public class PriceListBL implements IPriceListBL
 			final int pricingSystemId,
 			final int countryId,
 			final Timestamp date,
-			@NonNull final SOTrx soTrx,
+			final SOTrx soTrx,
 			final Boolean processedPLVFiltering)
 	{
 		Check.assumeNotNull(date, "Param 'date' is not null; other params: country={}, soTrx={}, processedPLVFiltering={}", countryId, soTrx, processedPLVFiltering);
