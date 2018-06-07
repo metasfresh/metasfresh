@@ -3,6 +3,8 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -64,9 +66,9 @@ class PurchaseRowLookups
 	}
 
 	public LookupValue createProductLookupValue(
-			final ProductId productId,
-			final String productValue,
-			final String productName)
+			@Nullable final ProductId productId,
+			@Nullable final String productValue,
+			@Nullable final String productName)
 	{
 		if (productId == null)
 		{

@@ -15,6 +15,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,12 +31,12 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
-import de.metas.product.ProductId;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.VendorProductInfo;
-import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
@@ -83,9 +84,8 @@ public class PurchaseRowFactoryTest
 				new AvailableToPromiseRepository(),
 				new MoneyService());
 
-		final PurchaseRow candidateRow = purchaseRowFactory
-				.rowFromPurchaseCandidateBuilder()
-				.purchaseCandidate(purchaseCandidate)
+		final PurchaseRow candidateRow = purchaseRowFactory.lineRowBuilder()
+				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(purchaseCandidate))
 				.purchaseDemandId(PurchaseDemandId.ofOrderAndLineId(purchaseCandidate.getSalesOrderAndLineId()))
 				.datePromised(SystemTime.asLocalDateTime())
 				.convertAmountsToCurrency(currency)
@@ -104,24 +104,27 @@ public class PurchaseRowFactoryTest
 
 	public PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId)
 	{
-		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
-		save(bPartner);
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		save(bpartner);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setUOMSymbol("uomSympol");
 		save(uom);
 
+		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
+		save(productCategory);
+
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setC_UOM(uom);
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		save(product);
-		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		final ProductAndCategoryId productAndCategoryId = ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID());
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.id(VendorProductInfoId.ofRepoId(10))
-				.vendorId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
-				.productId(productId)
-				.productNo("productNo")
-				.productName("productName")
+				.vendorId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
+				.productAndCategoryId(productAndCategoryId)
+				.vendorProductNo("productNo")
+				.vendorProductName("productName")
 				.build();
 
 		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo
@@ -136,9 +139,10 @@ public class PurchaseRowFactoryTest
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(1, 2))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
-				.productId(productId)
+				.vendorId(vendorProductInfo.getVendorId())
+				.aggregatePOs(vendorProductInfo.isAggregatePOs())
+				.productId(vendorProductInfo.getProductId())
 				.uomId(uom.getC_UOM_ID())
-				.vendorProductInfo(vendorProductInfo)
 				.qtyToPurchase(ONE)
 				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.profitInfo(profitInfo)

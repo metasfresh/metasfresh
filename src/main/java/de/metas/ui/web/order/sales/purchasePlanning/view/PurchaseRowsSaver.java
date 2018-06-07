@@ -94,10 +94,11 @@ class PurchaseRowsSaver
 		Check.errorUnless(PurchaseRowType.LINE.equals(purchaseRow.getType()),
 				"The given row's type needs to be {}, but is {}; purchaseRow={}", PurchaseRowType.LINE, purchaseRow.getType(), purchaseRow);
 
-		final PurchaseCandidate purchaseCandidate = existingPurchaseCandidatesById.get(purchaseRow.getPurchaseCandidateId());
+		final PurchaseCandidateId purchaseCandidateId = null; // purchaseRow.getPurchaseCandidateId() // FIXME: use groups
+		final PurchaseCandidate purchaseCandidate = existingPurchaseCandidatesById.get(purchaseCandidateId);
 		Check.errorIf(purchaseCandidate == null,
 				"Missing purchaseCandidate with C_PurchaseCandidate_ID={}; purchaseRow={}, existingPurchaseCandidatesById={}",
-				purchaseRow.getPurchaseCandidateId(), purchaseRow, existingPurchaseCandidatesById);
+				purchaseCandidateId, purchaseRow, existingPurchaseCandidatesById);
 
 		purchaseCandidate.setQtyToPurchase(purchaseRow.getQtyToPurchase());
 		purchaseCandidate.setDateRequired(TimeUtil.asLocalDateTime(purchaseRow.getDatePromised()));

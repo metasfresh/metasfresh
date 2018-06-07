@@ -5,14 +5,9 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.OrgId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -21,10 +16,15 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.product.ProductId;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup;
+import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandId;
+import de.metas.purchasecandidate.availability.AvailabilityResult;
+import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
@@ -40,8 +40,6 @@ import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
-import lombok.ToString;
 
 /*
  * #%L
@@ -65,10 +63,8 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString(exclude = "_fieldNameAndJsonValues")
-public class PurchaseRow implements IViewRow
+public final class PurchaseRow implements IViewRow
 {
-
 	private static final Logger logger = LogManager.getLogger(PurchaseRow.class);
 
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
@@ -154,18 +150,11 @@ public class PurchaseRow implements IViewRow
 	@Getter
 	private final IViewRowType rowType;
 
-	private ImmutableList<PurchaseRow> includedRows;
+	private ImmutableList<PurchaseRow> _includedRows = ImmutableList.of();
 
-	@Getter
-	private final PurchaseCandidateId purchaseCandidateId;
-	@Getter
-	private final OrgId orgId;
-	@Getter
-	private final WarehouseId warehouseId;
-	private final boolean readonly;
 	private final PurchaseProfitInfo profitInfo;
 
-	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName;
+	private final boolean readonly;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
@@ -176,34 +165,70 @@ public class PurchaseRow implements IViewRow
 					.build();
 	private static final ImmutableMap<String, ViewEditorRenderMode> ViewEditorRenderModeByFieldName_Inherit = ImmutableMap.of();
 
-	@Builder(toBuilder = true)
+	@Builder(builderMethodName = "groupRowBuilder", builderClassName = "GroupRowBuilder")
 	private PurchaseRow(
-			@NonNull final PurchaseRowId rowId,
-			@NonNull final IViewRowType rowType,
-			@NonNull final LookupValue product,
-			@Nullable final LookupValue attributeSetInstance,
-			@Nullable final LookupValue vendorBPartner,
-			@Nullable final BigDecimal qtyAvailableToPromise,
-			@Nullable final PurchaseProfitInfo profitInfo,
-			@NonNull final String uomOrAvailablility,
-			@Nullable final BigDecimal qtyToDeliver,
-			@Nullable final BigDecimal qtyToPurchase,
-			@Nullable final BigDecimal purchasedQty,
-			@Nullable final LocalDateTime datePromised,
-			@Singular final ImmutableList<PurchaseRow> includedRows,
-			final PurchaseCandidateId purchaseCandidateId,
-			final OrgId orgId,
-			final WarehouseId warehouseId,
-			final boolean readonly)
+			@NonNull final PurchaseDemand demand,
+			@NonNull final BigDecimal qtyAvailableToPromise,
+			@NonNull final List<PurchaseRow> includedRows,
+			//
+			@NonNull final PurchaseRowLookups lookups)
 	{
-		this.rowId = rowId;
-		this.rowType = rowType;
-		this.product = product;
-		this.attributeSetInstance = attributeSetInstance;
-		this.vendorBPartner = vendorBPartner;
-		this.qtyAvailableToPromise = qtyAvailableToPromise;
+		this.rowId = PurchaseRowId.groupId(demand.getId());
+		this.rowType = PurchaseRowType.GROUP;
 
-		this.profitInfo = profitInfo;
+		this.product = lookups.createProductLookupValue(demand.getProductId());
+		this.attributeSetInstance = lookups.createASILookupValue(demand.getAttributeSetInstanceId());
+
+		this.vendorBPartner = null;
+
+		final Quantity qtyToDeliver = demand.getQtyToDeliver();
+		this.uomOrAvailablility = qtyToDeliver.getUOMSymbol();
+		this.qtyAvailableToPromise = qtyAvailableToPromise;
+		this.qtyToDeliver = qtyToDeliver.getQty();
+		this.qtyToPurchase = null;
+		this.purchasedQty = null;
+
+		this.profitInfo = null;
+		this.salesNetPrice = null;
+		this.purchaseNetPrice = null;
+		this.profitPercent = null;
+
+		this.datePromised = demand.getSalesDatePromised();
+
+		this.readonly = true;
+
+		setIncludedRows(ImmutableList.copyOf(includedRows));
+		updateQtysFromIncludedRows();
+
+		logger.trace("Group row created: {}, RO={} -- this={}", this.rowId, this.readonly, this);
+	}
+
+	@Builder(builderMethodName = "lineRowBuilder", builderClassName = "LineRowBuilder")
+	private PurchaseRow(
+			@NonNull final PurchaseCandidatesGroup purchaseCandidatesGroup,
+			@NonNull final PurchaseDemandId purchaseDemandId,
+			@NonNull final LocalDateTime datePromised,
+			//
+			@NonNull final PurchaseRowLookups lookups)
+	{
+		final BPartnerId vendorId = purchaseCandidatesGroup.getVendorId();
+		final ProductId productId = purchaseCandidatesGroup.getProductId();
+
+		this.rowId = PurchaseRowId.lineId(purchaseDemandId, vendorId, /* processedPurchaseCandidateId */null);
+		this.rowType = PurchaseRowType.LINE;
+
+		this.product = lookups.createProductLookupValue(productId);
+		this.attributeSetInstance = null;
+
+		this.vendorBPartner = lookups.createBPartnerLookupValue(vendorId);
+
+		this.uomOrAvailablility = lookups.createUOMLookupValueForProductId(productId);
+		this.qtyAvailableToPromise = null;
+		this.qtyToDeliver = null;
+		this.qtyToPurchase = purchaseCandidatesGroup.getQtyToPurchase();
+		this.purchasedQty = purchaseCandidatesGroup.getPurchasedQty();
+
+		this.profitInfo = purchaseCandidatesGroup.getProfitInfo();
 		if (profitInfo != null)
 		{
 			this.salesNetPrice = profitInfo.getSalesNetPrice()
@@ -221,36 +246,77 @@ public class PurchaseRow implements IViewRow
 			this.profitPercent = null;
 		}
 
-		this.uomOrAvailablility = uomOrAvailablility;
-		this.qtyToDeliver = qtyToDeliver;
-		this.qtyToPurchase = Util.coalesce(qtyToPurchase, BigDecimal.ZERO);
-		this.purchasedQty = Util.coalesce(purchasedQty, BigDecimal.ZERO);
-
-		Check.assume(rowType == PurchaseRowType.AVAILABILITY_DETAIL || datePromised != null, "datePromised shall not be null");
 		this.datePromised = datePromised;
 
-		if (rowType == PurchaseRowType.LINE && !includedRows.isEmpty())
-		{
-			throw new AdempiereException("Lines does not allow included rows");
-		}
+		this.readonly = purchaseCandidatesGroup.isReadonly();
 
-		setIncludedRows(includedRows);
+		logger.trace("Line row created: {}, RO={} -- this={}", this.rowId, this.readonly, this);
+	}
 
-		this.purchaseCandidateId = purchaseCandidateId;
-		this.orgId = orgId;
-		this.warehouseId = warehouseId;
-		this.readonly = readonly;
+	@Builder(builderMethodName = "availabilityDetailSuccessBuilder", builderClassName = "availabilityDetailSuccessBuilder")
+	private PurchaseRow(
+			@NonNull final AvailabilityResult availabilityResult,
+			@NonNull final PurchaseRow lineRow)
+	{
+		final String availabilityText = !Check.isEmpty(availabilityResult.getAvailabilityText(), true)
+				? availabilityResult.getAvailabilityText()
+				: availabilityResult.getType().translate();
 
-		viewEditorRenderModeByFieldName = readonly //
-				? ViewEditorRenderModeByFieldName_ReadOnly //
-				: ViewEditorRenderModeByFieldName_Inherit;
+		this.rowId = lineRow.getRowId().withAvailabilityAndRandomDistinguisher(availabilityResult.getType());
+		this.rowType = PurchaseRowType.AVAILABILITY_DETAIL;
 
-		if (rowType == PurchaseRowType.GROUP)
-		{
-			updateQtysFromIncludedRows();
-		}
+		this.product = lineRow.product;
+		this.attributeSetInstance = lineRow.attributeSetInstance;
 
-		logger.trace("Created: {}, RO={} -- this={}", this.rowId, this.readonly, this);
+		this.vendorBPartner = null;
+
+		this.uomOrAvailablility = availabilityText;
+		this.qtyAvailableToPromise = null;
+		this.qtyToDeliver = null;
+		this.qtyToPurchase = availabilityResult.getQty();
+		this.purchasedQty = null;
+
+		this.profitInfo = null;
+		this.salesNetPrice = null;
+		this.purchaseNetPrice = null;
+		this.profitPercent = null;
+
+		this.datePromised = availabilityResult.getDatePromised();
+
+		this.readonly = true;
+
+		logger.trace("Availability success row created: {}, RO={} -- this={}", this.rowId, this.readonly, this);
+	}
+
+	@Builder(builderMethodName = "availabilityDetailErrorBuilder", builderClassName = "availabilityDetailErrorBuilder")
+	private PurchaseRow(
+			@NonNull final Throwable throwable,
+			@NonNull final PurchaseRow lineRow)
+	{
+		this.rowId = lineRow.getRowId().withAvailabilityAndRandomDistinguisher(Type.NOT_AVAILABLE);
+		this.rowType = PurchaseRowType.AVAILABILITY_DETAIL;
+
+		this.product = lineRow.product;
+		this.attributeSetInstance = lineRow.attributeSetInstance;
+
+		this.vendorBPartner = null;
+
+		this.uomOrAvailablility = AdempiereException.extractMessage(throwable);
+		this.qtyAvailableToPromise = null;
+		this.qtyToDeliver = null;
+		this.qtyToPurchase = BigDecimal.ZERO;
+		this.purchasedQty = null;
+
+		this.profitInfo = null;
+		this.salesNetPrice = null;
+		this.purchaseNetPrice = null;
+		this.profitPercent = null;
+
+		this.datePromised = null;
+
+		this.readonly = true;
+
+		logger.trace("Availability success row created: {}, RO={} -- this={}", this.rowId, this.readonly, this);
 	}
 
 	private PurchaseRow(@NonNull final PurchaseRow from)
@@ -273,16 +339,11 @@ public class PurchaseRow implements IViewRow
 		this.purchasedQty = from.purchasedQty;
 		this.datePromised = from.datePromised;
 
-		setIncludedRows(from.includedRows.stream()
+		setIncludedRows(from.getIncludedRows().stream()
 				.map(PurchaseRow::copy)
 				.collect(ImmutableList.toImmutableList()));
 
-		this.purchaseCandidateId = from.purchaseCandidateId;
-		this.orgId = from.orgId;
-		this.warehouseId = from.warehouseId;
 		this.readonly = from.readonly;
-
-		viewEditorRenderModeByFieldName = from.viewEditorRenderModeByFieldName;
 
 		_fieldNameAndJsonValues = from._fieldNameAndJsonValues;
 	}
@@ -346,7 +407,9 @@ public class PurchaseRow implements IViewRow
 	@Override
 	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
 	{
-		return viewEditorRenderModeByFieldName;
+		return readonly //
+				? ViewEditorRenderModeByFieldName_ReadOnly //
+				: ViewEditorRenderModeByFieldName_Inherit;
 	}
 
 	private void resetFieldNameAndJsonValues()
@@ -355,25 +418,30 @@ public class PurchaseRow implements IViewRow
 	}
 
 	@Override
-	public List<PurchaseRow> getIncludedRows()
+	public synchronized List<PurchaseRow> getIncludedRows()
 	{
+		final ImmutableList<PurchaseRow> includedRows = _includedRows;
 		return includedRows;
+	}
+
+	private synchronized void setIncludedRows(@NonNull final ImmutableList<PurchaseRow> includedRows)
+	{
+		final ImmutableList<DocumentId> distinctRowIds = includedRows.stream().map(PurchaseRow::getId).distinct().collect(ImmutableList.toImmutableList());
+		Check.errorIf(distinctRowIds.size() != includedRows.size(), "The given includedRows contain at least one duplicates rowId; includedRows={}", includedRows);
+
+		this._includedRows = includedRows;
 	}
 
 	public PurchaseRow getIncludedRowById(@NonNull final PurchaseRowId rowId)
 	{
-		final ImmutableMap<PurchaseRowId, PurchaseRow> includedRowsByRowId = this.includedRows.stream()
-				.collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
-
-		final PurchaseRow row = includedRowsByRowId.get(rowId);
-		if (row == null)
-		{
-			throw new EntityNotFoundException("Included row not found")
-					.appendParametersToMessage()
-					.setParameter("rowId", rowId)
-					.setParameter("this", this);
-		}
-		return row;
+		return getIncludedRows()
+				.stream()
+				.filter(includedRow -> includedRow.getRowId().equals(rowId))
+				.findFirst()
+				.orElseThrow(() -> new EntityNotFoundException("Included row not found")
+						.appendParametersToMessage()
+						.setParameter("rowId", rowId)
+						.setParameter("this", this));
 	}
 
 	private void setQtyToPurchase(@NonNull final BigDecimal qtyToPurchase)
@@ -429,7 +497,7 @@ public class PurchaseRow implements IViewRow
 
 	}
 
-	public void changeQtyToPurchase(
+	public synchronized void changeQtyToPurchase(
 			@NonNull final PurchaseRowId includedRowId,
 			@NonNull final BigDecimal qtyToPurchase)
 	{
@@ -442,7 +510,7 @@ public class PurchaseRow implements IViewRow
 		updateQtysFromIncludedRows();
 	}
 
-	public void changeDatePromised(
+	public synchronized void changeDatePromised(
 			@NonNull final PurchaseRowId includedRowId,
 			@NonNull final LocalDateTime datePromised)
 	{
@@ -452,16 +520,6 @@ public class PurchaseRow implements IViewRow
 
 		lineRow.assertRowEditable();
 		lineRow.setDatePromised(datePromised);
-	}
-
-	public int getProductId()
-	{
-		return product.getIdAsInt();
-	}
-
-	public int getVendorBPartnerId()
-	{
-		return vendorBPartner.getIdAsInt();
 	}
 
 	public void setAvailabilityInfoRow(@NonNull PurchaseRow availabilityResultRow)
@@ -475,13 +533,5 @@ public class PurchaseRow implements IViewRow
 		availabilityResultRows.forEach(availabilityResultRow -> availabilityResultRow.assertRowType(PurchaseRowType.AVAILABILITY_DETAIL));
 
 		setIncludedRows(ImmutableList.copyOf(availabilityResultRows));
-	}
-
-	private void setIncludedRows(@NonNull final ImmutableList<PurchaseRow> includedRows)
-	{
-		final ImmutableList<DocumentId> distinctRowIds = includedRows.stream().map(PurchaseRow::getId).distinct().collect(ImmutableList.toImmutableList());
-		Check.errorIf(distinctRowIds.size() != includedRows.size(), "The given includedRows contain at least one duplicates rowId; includedRows={}", includedRows);
-
-		this.includedRows = includedRows;
 	}
 }

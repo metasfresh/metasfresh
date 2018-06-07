@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
-import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.availability.AvailabilityCheckService;
@@ -117,13 +117,12 @@ class PurchaseRowsLoader
 
 			final List<PurchaseRow> purchaseCandidateRows = new ArrayList<>();
 			final List<TrackingId> trackingIds = new ArrayList<>();
-			for (final PurchaseCandidate purchaseCandidate : demandWithCandidates.getPurchaseCandidates())
+			for (final PurchaseCandidatesGroup purchaseCandidatesGroup : demandWithCandidates.getPurchaseCandidatesGroups())
 			{
-				final PurchaseRow purchaseCandidateRow = purchaseRowFactory
-						.rowFromPurchaseCandidateBuilder()
-						.purchaseCandidate(purchaseCandidate)
+				final PurchaseRow purchaseCandidateRow = purchaseRowFactory.lineRowBuilder()
+						.purchaseCandidatesGroup(purchaseCandidatesGroup)
 						.purchaseDemandId(demand.getId())
-						.datePromised(demand.getDatePromised())
+						.datePromised(demand.getSalesDatePromised())
 						.convertAmountsToCurrency(demand.getCurrency())
 						.build();
 
@@ -131,7 +130,7 @@ class PurchaseRowsLoader
 
 				final TrackingId trackingId = TrackingId.random();
 				trackingIds.add(trackingId);
-				resultBuilder.purchaseCandidate(trackingId, purchaseCandidate);
+				resultBuilder.purchaseCandidatesGroup(trackingId, purchaseCandidatesGroup);
 				resultBuilder.purchaseCandidateRow(trackingId, purchaseCandidateRow);
 			}
 
@@ -148,7 +147,7 @@ class PurchaseRowsLoader
 	@VisibleForTesting
 	PurchaseCandidatesAvailabilityRequest createAvailabilityRequest(@NonNull final PurchaseRowsList rows)
 	{
-		return PurchaseCandidatesAvailabilityRequest.of(rows.getPurchaseCandidates());
+		return PurchaseCandidatesAvailabilityRequest.of(rows.getPurchaseCandidatesGroups());
 	}
 
 	private boolean isMakeAsynchronousAvailiabilityCheck()
@@ -219,8 +218,8 @@ class PurchaseRowsLoader
 
 			for (final AvailabilityResult availabilityResult : availabilityResults.getByTrackingId(trackingId))
 			{
-				final PurchaseRow availabilityResultRow = purchaseRowFactory.rowFromAvailabilityResultBuilder()
-						.parentRow(purchaseRowToAugment)
+				final PurchaseRow availabilityResultRow = purchaseRowFactory.availabilityDetailSuccessBuilder()
+						.lineRow(purchaseRowToAugment)
 						.availabilityResult(availabilityResult)
 						.build();
 
@@ -252,14 +251,13 @@ class PurchaseRowsLoader
 					continue;
 				}
 
-				final PurchaseRow availabilityResultRow = purchaseRowFactory
-						.rowFromThrowableBuilder()
-						.parentRow(purchaseRowToAugment)
+				final PurchaseRow availabilityResultRow = purchaseRowFactory.availabilityDetailErrorBuilder()
+						.lineRow(purchaseRowToAugment)
 						.throwable(errorItem.getError())
 						.build();
 
 				purchaseRowToAugment.setAvailabilityInfoRow(availabilityResultRow);
-				
+
 				changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, purchaseRowToAugment.getId()));
 			}
 
@@ -289,19 +287,19 @@ class PurchaseRowsLoader
 		private final ImmutableList<PurchaseRow> topLevelRows;
 		private final ImmutableMap<TrackingId, PurchaseRowId> trackingIdsByTopLevelRowIds;
 		@Getter
-		private final ImmutableMap<TrackingId, PurchaseCandidate> purchaseCandidates;
+		private final ImmutableMap<TrackingId, PurchaseCandidatesGroup> purchaseCandidatesGroups;
 		private final ImmutableMap<TrackingId, PurchaseRow> purchaseCandidateRows;
 
 		@lombok.Builder
 		public PurchaseRowsList(
 				@NonNull @lombok.Singular final ImmutableList<PurchaseRow> topLevelRows,
 				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseRowId> trackingIdsByTopLevelRowIds,
-				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseCandidate> purchaseCandidates,
+				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseCandidatesGroup> purchaseCandidatesGroups,
 				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseRow> purchaseCandidateRows)
 		{
 			this.topLevelRows = topLevelRows;
 			this.trackingIdsByTopLevelRowIds = trackingIdsByTopLevelRowIds;
-			this.purchaseCandidates = purchaseCandidates;
+			this.purchaseCandidatesGroups = purchaseCandidatesGroups;
 			this.purchaseCandidateRows = purchaseCandidateRows;
 		}
 
