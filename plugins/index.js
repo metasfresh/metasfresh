@@ -16,7 +16,13 @@
 //   // `config` is the resolved Cypress config
 // };
 
-const webpack = require('@cypress/webpack-preprocessor')
+const webpackPre = require('@cypress/webpack-preprocessor')
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const APIconfig = require('../config');
+
+console.log('config: ', APIconfig);
+
 module.exports = (on) => {
   const options = {
     // send in the options from your webpack.config.js, so it works the same
@@ -25,5 +31,11 @@ module.exports = (on) => {
     watchOptions: {},
   }
 
-  on('file:preprocessor', webpack(options))
+  options.webpackOptions.plugins.push(
+    new webpack.DefinePlugin({
+      config: APIconfig,
+    })
+  );
+
+  on('file:preprocessor', webpackPre(options))
 }
