@@ -28,7 +28,6 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -148,9 +147,6 @@ public final class PurchaseRow implements IViewRow
 	//
 	private final PurchaseRowId rowId;
 
-	@Getter
-	private final IViewRowType rowType;
-
 	private ImmutableList<PurchaseRow> _includedRows = ImmutableList.of();
 
 	private final boolean readonly;
@@ -175,7 +171,6 @@ public final class PurchaseRow implements IViewRow
 			@NonNull final PurchaseRowLookups lookups)
 	{
 		this.rowId = PurchaseRowId.groupId(demand.getId());
-		this.rowType = PurchaseRowType.GROUP;
 
 		this.product = lookups.createProductLookupValue(demand.getProductId());
 		this.attributeSetInstance = lookups.createASILookupValue(demand.getAttributeSetInstanceId());
@@ -215,8 +210,7 @@ public final class PurchaseRow implements IViewRow
 		final BPartnerId vendorId = purchaseCandidatesGroup.getVendorId();
 		final ProductId productId = purchaseCandidatesGroup.getProductId();
 
-		this.rowId = PurchaseRowId.lineId(purchaseDemandId, vendorId, /* processedPurchaseCandidateId */null);
-		this.rowType = PurchaseRowType.LINE;
+		this.rowId = PurchaseRowId.lineId(purchaseDemandId, vendorId);
 
 		this.product = lookups.createProductLookupValue(productId);
 		this.attributeSetInstance = null;
@@ -267,7 +261,6 @@ public final class PurchaseRow implements IViewRow
 				: availabilityResult.getType().translate();
 
 		this.rowId = lineRow.getRowId().withAvailabilityAndRandomDistinguisher(availabilityResult.getType());
-		this.rowType = PurchaseRowType.AVAILABILITY_DETAIL;
 
 		this.product = lineRow.product;
 		this.attributeSetInstance = lineRow.attributeSetInstance;
@@ -298,7 +291,6 @@ public final class PurchaseRow implements IViewRow
 			@NonNull final PurchaseRow lineRow)
 	{
 		this.rowId = lineRow.getRowId().withAvailabilityAndRandomDistinguisher(Type.NOT_AVAILABLE);
-		this.rowType = PurchaseRowType.AVAILABILITY_DETAIL;
 
 		this.product = lineRow.product;
 		this.attributeSetInstance = lineRow.attributeSetInstance;
@@ -326,7 +318,6 @@ public final class PurchaseRow implements IViewRow
 	private PurchaseRow(@NonNull final PurchaseRow from)
 	{
 		this.rowId = from.rowId;
-		this.rowType = from.rowType;
 		this.product = from.product;
 		this.attributeSetInstance = from.attributeSetInstance;
 		this.vendorBPartner = from.vendorBPartner;
@@ -374,9 +365,9 @@ public final class PurchaseRow implements IViewRow
 	}
 
 	@Override
-	public IViewRowType getType()
+	public PurchaseRowType getType()
 	{
-		return rowType;
+		return rowId.getType();
 	}
 
 	@Override
@@ -494,6 +485,7 @@ public final class PurchaseRow implements IViewRow
 
 	public void assertRowType(@NonNull final PurchaseRowType expectedRowType)
 	{
+		final PurchaseRowType rowType = getType();
 		if (rowType != expectedRowType)
 		{
 			throw new AdempiereException("Expected " + expectedRowType + " but it was " + rowType + ": " + this);
@@ -507,11 +499,12 @@ public final class PurchaseRow implements IViewRow
 	{
 		assertRowType(PurchaseRowType.GROUP);
 
-		final PurchaseRow row = getIncludedRowById(includedRowId);
-		row.assertRowEditable();
+		final PurchaseRow includedRow = getIncludedRowById(includedRowId);
+		includedRow.assertRowEditable();
+		includedRow.assertRowType(PurchaseRowType.LINE);
 
-		final I_C_UOM uom = row.getQtyToPurchase().getUOM();
-		row.setQtyToPurchase(Quantity.of(qtyToPurchase, uom));
+		final I_C_UOM uom = includedRow.getQtyToPurchase().getUOM();
+		includedRow.setQtyToPurchase(Quantity.of(qtyToPurchase, uom));
 
 		updateQtysFromIncludedRows();
 	}
@@ -522,10 +515,11 @@ public final class PurchaseRow implements IViewRow
 	{
 		assertRowType(PurchaseRowType.GROUP);
 
-		final PurchaseRow row = getIncludedRowById(includedRowId);
-		row.assertRowEditable();
+		final PurchaseRow includedRow = getIncludedRowById(includedRowId);
+		includedRow.assertRowEditable();
+		includedRow.assertRowType(PurchaseRowType.LINE);
 
-		row.setQtyToPurchase(qtyToPurchase);
+		includedRow.setQtyToPurchase(qtyToPurchase);
 
 		updateQtysFromIncludedRows();
 	}

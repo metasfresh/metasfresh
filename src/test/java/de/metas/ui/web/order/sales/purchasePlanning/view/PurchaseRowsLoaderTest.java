@@ -192,11 +192,11 @@ public class PurchaseRowsLoaderTest
 
 		assertThat(topLevelRows).hasSize(1);
 		final PurchaseRow groupRow = topLevelRows.get(0);
-		assertThat(groupRow.getRowType()).isEqualTo(PurchaseRowType.GROUP);
+		assertThat(groupRow.getType()).isEqualTo(PurchaseRowType.GROUP);
 		assertThat(groupRow.getIncludedRows()).hasSize(1);
 
 		final PurchaseRow purchaseRow = groupRow.getIncludedRows().get(0);
-		assertThat(purchaseRow.getRowType()).isEqualTo(PurchaseRowType.LINE);
+		assertThat(purchaseRow.getType()).isEqualTo(PurchaseRowType.LINE);
 		assertThat(purchaseRow.getIncludedRows()).isEmpty();
 
 		// @formatter:off
@@ -215,7 +215,7 @@ public class PurchaseRowsLoaderTest
 		assertThat(purchaseRow.getIncludedRows()).hasSize(1);
 
 		final PurchaseRow availabilityRow = purchaseRow.getIncludedRows().get(0);
-		assertThat(availabilityRow.getRowType()).isEqualTo(PurchaseRowType.AVAILABILITY_DETAIL);
+		assertThat(availabilityRow.getType()).isEqualTo(PurchaseRowType.AVAILABILITY_DETAIL);
 		assertThat(availabilityRow.getRowId().toDocumentId()).isNotEqualTo(purchaseRow.getRowId().toDocumentId());
 	}
 

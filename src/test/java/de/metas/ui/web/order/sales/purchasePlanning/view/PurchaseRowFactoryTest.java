@@ -105,8 +105,6 @@ public class PurchaseRowFactoryTest
 		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId(
 				I_C_OrderLine.Table_Name,
 				purchaseCandidate.getSalesOrderAndLineId().getOrderLineRepoId()));
-		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(PurchaseCandidateId.ofRepoId(30));
-
 	}
 
 	public PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId)
