@@ -1,5 +1,6 @@
 package de.metas.purchasecandidate;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
@@ -62,6 +63,8 @@ public class PurchaseCandidatesGroup
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				//
+				.purchaseDatePromised(purchaseCandidate.getDateRequired())
+				//
 				.profitInfo(purchaseCandidate.getProfitInfo())
 				//
 				.readonly(purchaseCandidate.isProcessedOrLocked());
@@ -97,10 +100,12 @@ public class PurchaseCandidatesGroup
 	@NonNull
 	Quantity purchasedQty;
 
+	@NonNull
+	LocalDateTime purchaseDatePromised;
+
 	@Nullable
 	PurchaseProfitInfo profitInfo;
 
-	// purchaseCandidate.isProcessedOrLocked()
 	boolean readonly;
 
 	@NonNull

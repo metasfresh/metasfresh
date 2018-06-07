@@ -13,11 +13,13 @@ import java.util.stream.Stream;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -163,16 +165,23 @@ public class PurchaseDemandWithCandidatesService
 		return candidatesGroups.stream().map(candidatesGroup -> GuavaCollectors.entry(demandId, candidatesGroup));
 	}
 
-	private PurchaseCandidatesGroup createPurchaseCandidatesGroup(final PurchaseDemand demand, final PurchaseCandidatesGroupKey groupKey, final Collection<PurchaseCandidate> candidates)
+	private PurchaseCandidatesGroup createPurchaseCandidatesGroup(
+			@NonNull final PurchaseDemand demand,
+			@NonNull final PurchaseCandidatesGroupKey groupKey,
+			@NonNull final Collection<PurchaseCandidate> candidates)
 	{
+		Check.assumeNotEmpty(candidates, "candidates is not empty");
+
 		Quantity qtyToPurchase = null;
 		Quantity purchasedQty = null;
+		LocalDateTime purchaseDatePromised = null;
 		final Set<PurchaseCandidateId> purchaseCandidateIds = new LinkedHashSet<>();
 		final Set<OrderAndLineId> salesOrderAndLineIds = new LinkedHashSet<>();
 		for (final PurchaseCandidate candidate : candidates)
 		{
 			qtyToPurchase = Quantity.addNullables(qtyToPurchase, candidate.getQtyToPurchase());
 			purchasedQty = Quantity.addNullables(purchasedQty, candidate.getPurchasedQty());
+			purchaseDatePromised = TimeUtil.min(purchaseDatePromised, candidate.getDateRequired());
 
 			if (candidate.getId() != null)
 			{
@@ -204,6 +213,8 @@ public class PurchaseDemandWithCandidatesService
 				//
 				.qtyToPurchase(qtyToPurchase)
 				.purchasedQty(purchasedQty)
+				//
+				.purchaseDatePromised(purchaseDatePromised)
 				//
 				.profitInfo(profitInfo)
 				//
