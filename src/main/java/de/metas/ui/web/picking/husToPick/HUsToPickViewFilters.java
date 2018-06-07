@@ -11,15 +11,19 @@ import org.compiere.util.DB;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.i18n.IMsgBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -36,12 +40,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,13 +53,15 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-/* package */ class HUsToPickViewFilters
+class HUsToPickViewFilters
 {
 	private static final String LocatorBarcode_FilterId = "LocatorBarcodeFilter";
 	private static final String PARAM_Barcode = "Barcode";
 
 	private static final String HU_IDS_FilterId = "HU_IDS_Filter";
-	private static final String PARAM_ConsiderAttributes = "ConsiderAttributes";
+	private static final String PARAM_ConsiderAttributes = "de.metas.ui.web.picking.HUsToPickViewFilters.ConsiderAttributes";
+	
+	static final String PARAM_CurrentShipmentScheduleId = "CurrentShipmentScheduleId";
 
 	public static ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
 	{
@@ -91,7 +97,11 @@ import lombok.experimental.UtilityClass;
 		return filters.getParamValueAsString(LocatorBarcode_FilterId, PARAM_Barcode);
 	}
 
-	public static String getLocatorBarcodeFilterSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, final SqlOptions sqlOpts)
+	public static String getLocatorBarcodeFilterSql(
+			final SqlParamsCollector sqlParamsOut,
+			final DocumentFilter filter,
+			final SqlOptions sqlOpts,
+			final SqlDocumentFilterConverterContext context)
 	{
 		if (!LocatorBarcode_FilterId.equals(filter.getFilterId()))
 		{
@@ -113,20 +123,31 @@ import lombok.experimental.UtilityClass;
 				.addParameter(DocumentFilterParamDescriptor.builder()
 						.setFieldName(PARAM_ConsiderAttributes)
 						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(PARAM_ConsiderAttributes))
-						.setMandatory(true)
+						.setMandatory(false)
+						.setDefaultValue(false)
 						.setWidgetType(DocumentFieldWidgetType.YesNo))
 				.build();
 	}
 
-	public static String getHUIdsFilterSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, final SqlOptions sqlOpts)
+	public static String getHUIdsFilterSql(
+			final SqlParamsCollector sqlParamsOut,
+			final DocumentFilter filter,
+			final SqlOptions sqlOpts,
+			final SqlDocumentFilterConverterContext context)
 	{
 		if (!HU_IDS_FilterId.equals(filter.getFilterId()))
 		{
 			throw new AdempiereException("Invalid filterId " + filter.getFilterId() + ". Expected: " + HU_IDS_FilterId);
 		}
 
-		final Boolean considerAttributes = filter.getParameterValueAsBoolean(PARAM_ConsiderAttributes, true);
-		final List<Integer> huIds = retrieveAvailableHuIdsForCurrentShipmentScheduleId(considerAttributes);
+		final int shipmentScheduleId = context.getPropertyAsInt(PARAM_CurrentShipmentScheduleId, -1);
+		if (shipmentScheduleId <= 0)
+		{
+			return "/* no shipment schedule */ 1=0";
+		}
+
+		final boolean considerAttributes = filter.getParameterValueAsBoolean(PARAM_ConsiderAttributes, false);
+		final List<Integer> huIds = retrieveAvailableHuIdsForCurrentShipmentScheduleId(shipmentScheduleId, considerAttributes);
 		if (huIds.isEmpty())
 		{
 			return "/* no M_HU_IDs */ 1=0";
@@ -136,14 +157,12 @@ import lombok.experimental.UtilityClass;
 		return sql;
 	}
 
-	private static List<Integer> retrieveAvailableHuIdsForCurrentShipmentScheduleId(final boolean considerAttributes)
+	private static List<Integer> retrieveAvailableHuIdsForCurrentShipmentScheduleId(final int shipmentScheduleId, final boolean considerAttributes)
 	{
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
-		// final int shipmentScheduleId = getView().getCurrentShipmentScheduleId();
-
 		final PickingHUsQuery query = PickingHUsQuery.builder()
-				// .shipmentSchedule(loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class)) // TODO: provide the IView as parameter; take the shipment schedule from the view
+				.shipmentSchedule(loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class))
 				.onlyTopLevelHUs(false)
 				.onlyIfAttributesMatchWithShipmentSchedules(considerAttributes)
 				.build();
