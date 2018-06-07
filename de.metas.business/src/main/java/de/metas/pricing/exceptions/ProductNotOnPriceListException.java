@@ -112,6 +112,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 		}
 
 		//
+		sb.insertFirst(" - ");
 		sb.insertFirstADMessage(AD_Message);
 		return sb.build();
 	}
