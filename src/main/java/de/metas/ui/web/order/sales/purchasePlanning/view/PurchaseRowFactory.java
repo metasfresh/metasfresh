@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +19,15 @@ import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.Currency;
 import de.metas.money.MoneyService;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -56,6 +61,7 @@ public class PurchaseRowFactory
 	private final AvailableToPromiseRepository availableToPromiseRepository;
 	private final MoneyService moneyService;
 	private final PurchaseRowLookups lookups;
+	private final IProductBL productsBL = Services.get(IProductBL.class);
 
 	public PurchaseRowFactory(
 			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
@@ -122,15 +128,20 @@ public class PurchaseRowFactory
 				.build();
 	}
 
-	private BigDecimal getQtyAvailableToPromise(final PurchaseDemand demand)
+	private Quantity getQtyAvailableToPromise(final PurchaseDemand demand)
 	{
-		return availableToPromiseRepository.retrieveAvailableStockQtySum(AvailableToPromiseQuery.builder()
-				.productId(demand.getProductId().getRepoId())
+		final ProductId productId = demand.getProductId();
+		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository.retrieveAvailableStockQtySum(AvailableToPromiseQuery.builder()
+				.productId(productId.getRepoId())
 				.date(demand.getPreparationDate())
 				.storageAttributesKey(AttributesKeys
 						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId().getRepoId())
 						.orElse(AttributesKey.ALL))
 				.build());
+
+		final I_C_UOM uom = productsBL.getStockingUOM(productId);
+
+		return Quantity.of(qtyAvailableToPromise, uom);
 	}
 
 	@Builder(builderMethodName = "availabilityDetailSuccessBuilder", builderClassName = "AvailabilityDetailSuccessBuilder")

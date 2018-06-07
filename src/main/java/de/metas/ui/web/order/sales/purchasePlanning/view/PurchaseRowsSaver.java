@@ -1,22 +1,30 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import org.compiere.util.TimeUtil;
+import org.adempiere.util.Services;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.printing.esb.base.util.Check;
+import de.metas.order.IOrderLineBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemandId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -44,7 +52,9 @@ import lombok.NonNull;
 
 class PurchaseRowsSaver
 {
+	// services
 	private final PurchaseCandidateRepository purchaseCandidatesRepo;
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	@Builder
 	private PurchaseRowsSaver(
@@ -69,6 +79,7 @@ class PurchaseRowsSaver
 		final List<PurchaseCandidate> purchaseCandidatesToSave = groupingRows.stream()
 				.flatMap(grouppingRow -> grouppingRow.getIncludedRows().stream()) // purchase candidate lines
 				.map(row -> updatePurchaseCandidate(row, existingPurchaseCandidatesById))
+				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
 
 		purchaseCandidatesRepo.saveAll(purchaseCandidatesToSave);
@@ -79,35 +90,159 @@ class PurchaseRowsSaver
 				.map(PurchaseCandidate::getId)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
-		final Set<PurchaseCandidateId> purchaseCandidateIdsToDelete = existingPurchaseCandidatesById.keySet().stream()
-				.filter(id -> !purchaseCandidateIdsSaved.contains(id))
+		final Set<PurchaseCandidateId> purchaseCandidateIdsToDelete = existingPurchaseCandidatesById.values()
+				.stream()
+				.filter(candidate -> !candidate.isProcessedOrLocked()) // don't delete processed/locked candidates
+				.filter(candidate -> !purchaseCandidateIdsSaved.contains(candidate.getId()))
+				.map(candidate -> candidate.getId())
 				.collect(ImmutableSet.toImmutableSet());
 		purchaseCandidatesRepo.deleteByIds(purchaseCandidateIdsToDelete);
 
 		return purchaseCandidatesToSave;
 	}
 
-	private PurchaseCandidate updatePurchaseCandidate(
+	private List<PurchaseCandidate> updatePurchaseCandidate(
 			@NonNull final PurchaseRow purchaseRow,
 			@NonNull final Map<PurchaseCandidateId, PurchaseCandidate> existingPurchaseCandidatesById)
 	{
-		Check.errorUnless(PurchaseRowType.LINE.equals(purchaseRow.getType()),
-				"The given row's type needs to be {}, but is {}; purchaseRow={}", PurchaseRowType.LINE, purchaseRow.getType(), purchaseRow);
+		purchaseRow.assertRowType(PurchaseRowType.LINE);
 
-		final PurchaseCandidateId purchaseCandidateId = null; // purchaseRow.getPurchaseCandidateId() // FIXME: use groups
-		final PurchaseCandidate purchaseCandidate = existingPurchaseCandidatesById.get(purchaseCandidateId);
-		Check.errorIf(purchaseCandidate == null,
-				"Missing purchaseCandidate with C_PurchaseCandidate_ID={}; purchaseRow={}, existingPurchaseCandidatesById={}",
-				purchaseCandidateId, purchaseRow, existingPurchaseCandidatesById);
+		Quantity qtyToPurchaseRemaining = purchaseRow.getQtyToPurchase();
+		if (qtyToPurchaseRemaining == null || qtyToPurchaseRemaining.signum() <= 0)
+		{
+			return ImmutableList.of();
+		}
 
-		purchaseCandidate.setQtyToPurchase(purchaseRow.getQtyToPurchase());
-		purchaseCandidate.setDateRequired(TimeUtil.asLocalDateTime(purchaseRow.getDatePromised()));
+		final LocalDateTime purchaseDatePromised = purchaseRow.getDatePromised();
+		final List<PurchaseCandidate> allCandidates = getPurchaseCandidatesForRow(purchaseRow, existingPurchaseCandidatesById);
 
-		Check.errorIf(
-				purchaseCandidate.isProcessedOrLocked() && purchaseCandidate.hasChanges(),
-				"The given purchaseRow has changes, but its purchaseCandidate is not editable; purchaseRow={}; purchaseCandidate={}",
-				purchaseRow, purchaseCandidate);
+		//
+		// Adjust qtyToPurchaseRemaining: Subtract the qtyToPurchase which was already processed
+		{
+			final Optional<Quantity> qtyToPurchaseProcessed = computeQtyToPurchaseAlreadyProcessed(allCandidates);
+			if (qtyToPurchaseProcessed.isPresent())
+			{
+				qtyToPurchaseRemaining = qtyToPurchaseRemaining.subtract(qtyToPurchaseProcessed.get());
+			}
+			if (qtyToPurchaseRemaining.signum() < 0)
+			{
+				// TODO: throw exception?
+				return ImmutableList.of();
+			}
+			else if (qtyToPurchaseRemaining.signum() == 0)
+			{
+				return ImmutableList.of();
+			}
+		}
 
-		return purchaseCandidate;
+		//
+		// Extract all updatable candidates
+		final ArrayList<PurchaseCandidate> candidatesToUpdate = allCandidates.stream()
+				.filter(candidate -> !candidate.isProcessedOrLocked())
+				.collect(Collectors.toCollection(ArrayList::new));
+
+		final ArrayList<PurchaseCandidate> candidatesChanged = new ArrayList<>();
+
+		//
+		// Distribute qtyToPurchase to updatable purchase candidates (FIFO order)
+		while (qtyToPurchaseRemaining.signum() > 0 && !candidatesToUpdate.isEmpty())
+		{
+			final PurchaseCandidate candidate = candidatesToUpdate.remove(0);
+
+			final Quantity qtyToPurchaseTarget = getQtyToPurchaseTarget(candidate);
+			final Quantity qtyToPurchase = qtyToPurchaseTarget.min(qtyToPurchaseRemaining);
+			candidate.setQtyToPurchase(qtyToPurchase);
+			candidate.setDateRequired(purchaseDatePromised);
+
+			candidatesChanged.add(candidate);
+			qtyToPurchaseRemaining = qtyToPurchaseRemaining.subtract(qtyToPurchase);
+		}
+
+		//
+		// If there is no remaining qty to purchase then ZERO all the remaining purchase candidates lines
+		if (qtyToPurchaseRemaining.signum() <= 0)
+		{
+			while (!candidatesToUpdate.isEmpty())
+			{
+				final PurchaseCandidate candidate = candidatesToUpdate.remove(0);
+				candidate.setQtyToPurchase(candidate.getQtyToPurchase().toZero());
+
+				candidatesChanged.add(candidate);
+			}
+		}
+		//
+		// If there is remaining qty to purchase then add it to last changed purchase candidate line
+		else if (!candidatesToUpdate.isEmpty())
+		{
+			final PurchaseCandidate lastCandidate = candidatesToUpdate.get(candidatesToUpdate.size() - 1);
+			lastCandidate.setQtyToPurchase(lastCandidate.getQtyToPurchase().add(qtyToPurchaseRemaining));
+			lastCandidate.setDateRequired(purchaseDatePromised);
+
+			qtyToPurchaseRemaining = qtyToPurchaseRemaining.toZero();
+		}
+		//
+		// If there is remaining qty to purchase but no purchase candidate to add to then create a new candidate
+		else
+		{
+			final PurchaseCandidatesGroup candidatesGroup = purchaseRow.getPurchaseCandidatesGroup();
+			final PurchaseCandidate newCandidate = PurchaseCandidate.builder()
+					// .salesOrderAndLineId(candidatesGroup.getSalesOrderAndLineId()) // TODO: which sales order line to pick?!
+					//
+					.dateRequired(purchaseDatePromised)
+					// .reminderTime(reminderTime) // TODO reminder time
+					//
+					.orgId(candidatesGroup.getOrgId())
+					.warehouseId(candidatesGroup.getWarehouseId())
+					.vendorId(candidatesGroup.getVendorId())
+					.vendorProductNo(candidatesGroup.getVendorProductNo())
+					//
+					.productId(candidatesGroup.getProductId())
+					//
+					.qtyToPurchase(qtyToPurchaseRemaining)
+					//
+					.aggregatePOs(candidatesGroup.isAggregatePOs())
+					//
+					.build();
+
+			candidatesChanged.add(newCandidate);
+			qtyToPurchaseRemaining = qtyToPurchaseRemaining.toZero();
+		}
+
+		return candidatesChanged;
+	}
+
+	private static List<PurchaseCandidate> getPurchaseCandidatesForRow(
+			final PurchaseRow row,
+			final Map<PurchaseCandidateId, PurchaseCandidate> existingPurchaseCandidatesById)
+	{
+		final PurchaseCandidatesGroup candidatesGroup = row.getPurchaseCandidatesGroup();
+		return candidatesGroup.getPurchaseCandidateIds()
+				.stream()
+				.map(existingPurchaseCandidatesById::get)
+				.filter(Predicates.notNull())
+				.sorted(Comparator.comparing(candidate -> candidate.getId().getRepoId()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static Optional<Quantity> computeQtyToPurchaseAlreadyProcessed(final Collection<PurchaseCandidate> candidates)
+	{
+		return candidates.stream()
+				.filter(PurchaseCandidate::isProcessedOrLocked)
+				.map(PurchaseCandidate::getQtyToPurchase)
+				.reduce(Quantity::add);
+	}
+
+	private Quantity getQtyToPurchaseTarget(final PurchaseCandidate candidate)
+	{
+		if (candidate.getSalesOrderAndLineId() != null)
+		{
+			return orderLineBL.getQtyToDeliver(candidate.getSalesOrderAndLineId())
+					.toZeroIfNegative();
+		}
+		else
+		{
+			// TODO: handle this case
+			return candidate.getQtyToPurchase().toZero();
+		}
 	}
 }

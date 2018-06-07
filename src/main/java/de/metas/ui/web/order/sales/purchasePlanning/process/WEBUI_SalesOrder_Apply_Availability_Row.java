@@ -1,6 +1,5 @@
 package de.metas.ui.web.order.sales.purchasePlanning.process;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -8,7 +7,6 @@ import java.util.Set;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ListMultimap;
@@ -19,6 +17,7 @@ import com.google.common.collect.Multimaps;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRow;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowId;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseView;
@@ -137,7 +136,7 @@ public class WEBUI_SalesOrder_Apply_Availability_Row
 				.map(availabilityRowId -> ImmutablePair.of( // map to pair (availabilityRowId, availabilityRow)
 						availabilityRowId,
 						view.getById(availabilityRowId.toDocumentId())))
-				.filter(availabilityRowId2row -> Util.coalesce(availabilityRowId2row.getRight().getQtyToPurchase(), BigDecimal.ZERO).signum() > 0)
+				.filter(availabilityRowId2row -> isPositive(availabilityRowId2row.getRight().getQtyToPurchase()))
 
 				.map(availabilityRowId2row -> ImmutablePair.of( // map to pair (lineRow, availabilityRow)
 						view.getById(availabilityRowId2row.getLeft().toLineRowId().toDocumentId()),
@@ -150,6 +149,11 @@ public class WEBUI_SalesOrder_Apply_Availability_Row
 						MultimapBuilder.hashKeys().arrayListValues()::build));
 
 		return ImmutableMultimap.copyOf(lineRow2AvailabilityRows);
+	}
+
+	private static final boolean isPositive(final Quantity qty)
+	{
+		return qty != null && qty.signum() > 0;
 	}
 
 	@Override

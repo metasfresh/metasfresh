@@ -1,5 +1,10 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import org.compiere.model.I_C_UOM;
+
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -40,6 +45,16 @@ public class PurchaseRowTestTools
 				.precision(2)
 				.build();
 	}
+	
+	public I_C_UOM createUOM(final String name)
+	{
+		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
+		uom.setName(name);
+		uom.setUOMSymbol(name);
+		save(uom);
+		return uom;
+	}
+
 
 	public PurchaseProfitInfo createProfitInfo(@NonNull final Currency currency)
 	{

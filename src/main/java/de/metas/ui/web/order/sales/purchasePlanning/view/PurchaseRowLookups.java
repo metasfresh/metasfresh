@@ -142,7 +142,7 @@ class PurchaseRowLookups
 		return createUOMLookupValue(uom);
 	}
 
-	private String createUOMLookupValue(final I_C_UOM uom)
+	public String createUOMLookupValue(final I_C_UOM uom)
 	{
 		return translate(uom, I_C_UOM.class).getUOMSymbol();
 	}

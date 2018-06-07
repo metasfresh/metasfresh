@@ -1,11 +1,11 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.bpartner.BPartnerId;
@@ -54,6 +54,7 @@ import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.purchasecandidate.availability.PurchaseCandidatesAvailabilityRequest;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowsLoader.PurchaseRowsList;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -93,7 +94,7 @@ public class PurchaseRowsLoaderTest
 
 	private I_C_Currency currency;
 
-	private I_C_UOM uom;
+	private Quantity TEN;
 
 	private I_M_Warehouse warehouse;
 
@@ -109,9 +110,11 @@ public class PurchaseRowsLoaderTest
 		org = newInstance(I_AD_Org.class);
 		saveRecord(org);
 
-		uom = newInstance(I_C_UOM.class);
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setUOMSymbol("testUOMSympol");
 		saveRecord(uom);
+		
+		this.TEN = Quantity.of(BigDecimal.TEN, uom);
 
 		warehouse = newInstance(I_M_Warehouse.class);
 		saveRecord(warehouse);
@@ -150,9 +153,9 @@ public class PurchaseRowsLoaderTest
 		salesOrderLineRecord.setM_Warehouse(warehouse);
 		salesOrderLineRecord.setC_Order(salesOrderRecord);
 		salesOrderLineRecord.setC_Currency(currency);
-		salesOrderLineRecord.setC_UOM(uom);
-		salesOrderLineRecord.setQtyEntered(TEN);
-		salesOrderLineRecord.setQtyOrdered(TEN);
+		salesOrderLineRecord.setC_UOM_ID(TEN.getUOMId());
+		salesOrderLineRecord.setQtyEntered(TEN.getAsBigDecimal());
+		salesOrderLineRecord.setQtyOrdered(TEN.getAsBigDecimal());
 		salesOrderLineRecord.setDatePromised(SystemTime.asTimestamp());
 		save(salesOrderLineRecord);
 
@@ -228,9 +231,8 @@ public class PurchaseRowsLoaderTest
 				.orgId(OrgId.ofRepoId(20))
 				.dateRequired(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.qtyToPurchase(orderLine.getQtyOrdered())
+				.qtyToPurchase(Quantity.of(orderLine.getQtyOrdered(), orderLine.getM_Product().getC_UOM()))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
-				.uomId(orderLine.getM_Product().getC_UOM_ID())
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.warehouseId(WarehouseId.ofRepoId(30))

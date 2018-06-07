@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -106,13 +107,13 @@ public final class PurchaseRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
 	})
-	private final BigDecimal qtyAvailableToPromise;
+	private final Quantity qtyAvailableToPromise;
 
 	@ViewColumn(captionKey = "QtyToDeliver", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
-	private final BigDecimal qtyToDeliver;
+	private final Quantity qtyToDeliver;
 
 	public static final String FIELDNAME_QtyToPurchase = "qtyToPurchase";
 	@ViewColumn(fieldName = FIELDNAME_QtyToPurchase, captionKey = "QtyToPurchase", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS, layouts = {
@@ -120,7 +121,7 @@ public final class PurchaseRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 	})
 	@Getter
-	private BigDecimal qtyToPurchase;
+	private Quantity qtyToPurchase;
 
 	public static final String FIELDNAME_PurchasedQty = "purchasedQty";
 	@ViewColumn(fieldName = FIELDNAME_PurchasedQty, captionKey = "PurchasedQty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.NEVER, layouts = {
@@ -128,7 +129,7 @@ public final class PurchaseRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 55)
 	})
 	@Getter
-	private BigDecimal purchasedQty;
+	private Quantity purchasedQty;
 
 	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Text, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
@@ -152,9 +153,9 @@ public final class PurchaseRow implements IViewRow
 
 	private ImmutableList<PurchaseRow> _includedRows = ImmutableList.of();
 
-	private final PurchaseProfitInfo profitInfo;
-
 	private final boolean readonly;
+	@Getter
+	private final PurchaseCandidatesGroup purchaseCandidatesGroup;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
@@ -168,7 +169,7 @@ public final class PurchaseRow implements IViewRow
 	@Builder(builderMethodName = "groupRowBuilder", builderClassName = "GroupRowBuilder")
 	private PurchaseRow(
 			@NonNull final PurchaseDemand demand,
-			@NonNull final BigDecimal qtyAvailableToPromise,
+			@NonNull final Quantity qtyAvailableToPromise,
 			@NonNull final List<PurchaseRow> includedRows,
 			//
 			@NonNull final PurchaseRowLookups lookups)
@@ -184,11 +185,11 @@ public final class PurchaseRow implements IViewRow
 		final Quantity qtyToDeliver = demand.getQtyToDeliver();
 		this.uomOrAvailablility = qtyToDeliver.getUOMSymbol();
 		this.qtyAvailableToPromise = qtyAvailableToPromise;
-		this.qtyToDeliver = qtyToDeliver.getQty();
+		this.qtyToDeliver = qtyToDeliver;
 		this.qtyToPurchase = null;
 		this.purchasedQty = null;
 
-		this.profitInfo = null;
+		this.purchaseCandidatesGroup = null;
 		this.salesNetPrice = null;
 		this.purchaseNetPrice = null;
 		this.profitPercent = null;
@@ -222,13 +223,16 @@ public final class PurchaseRow implements IViewRow
 
 		this.vendorBPartner = lookups.createBPartnerLookupValue(vendorId);
 
-		this.uomOrAvailablility = lookups.createUOMLookupValueForProductId(productId);
+		final Quantity qtyToPurchase = purchaseCandidatesGroup.getQtyToPurchase();
+		this.uomOrAvailablility = lookups.createUOMLookupValue(qtyToPurchase.getUOM());
 		this.qtyAvailableToPromise = null;
 		this.qtyToDeliver = null;
-		this.qtyToPurchase = purchaseCandidatesGroup.getQtyToPurchase();
+		this.qtyToPurchase = qtyToPurchase;
 		this.purchasedQty = purchaseCandidatesGroup.getPurchasedQty();
 
-		this.profitInfo = purchaseCandidatesGroup.getProfitInfo();
+		this.purchaseCandidatesGroup = purchaseCandidatesGroup;
+
+		final PurchaseProfitInfo profitInfo = purchaseCandidatesGroup.getProfitInfo();
 		if (profitInfo != null)
 		{
 			this.salesNetPrice = profitInfo.getSalesNetPrice()
@@ -276,7 +280,7 @@ public final class PurchaseRow implements IViewRow
 		this.qtyToPurchase = availabilityResult.getQty();
 		this.purchasedQty = null;
 
-		this.profitInfo = null;
+		this.purchaseCandidatesGroup = null;
 		this.salesNetPrice = null;
 		this.purchaseNetPrice = null;
 		this.profitPercent = null;
@@ -304,10 +308,10 @@ public final class PurchaseRow implements IViewRow
 		this.uomOrAvailablility = AdempiereException.extractMessage(throwable);
 		this.qtyAvailableToPromise = null;
 		this.qtyToDeliver = null;
-		this.qtyToPurchase = BigDecimal.ZERO;
+		this.qtyToPurchase = null;
 		this.purchasedQty = null;
 
-		this.profitInfo = null;
+		this.purchaseCandidatesGroup = null;
 		this.salesNetPrice = null;
 		this.purchaseNetPrice = null;
 		this.profitPercent = null;
@@ -329,7 +333,7 @@ public final class PurchaseRow implements IViewRow
 		this.qtyAvailableToPromise = from.qtyAvailableToPromise;
 		this.uomOrAvailablility = from.uomOrAvailablility;
 
-		this.profitInfo = from.profitInfo;
+		this.purchaseCandidatesGroup = from.purchaseCandidatesGroup;
 		this.salesNetPrice = from.salesNetPrice;
 		this.purchaseNetPrice = from.purchaseNetPrice;
 		this.profitPercent = from.profitPercent;
@@ -444,17 +448,17 @@ public final class PurchaseRow implements IViewRow
 						.setParameter("this", this));
 	}
 
-	private void setQtyToPurchase(@NonNull final BigDecimal qtyToPurchase)
+	private void setQtyToPurchase(final Quantity qtyToPurchase)
 	{
-		Check.assume(qtyToPurchase.signum() >= 0, "qtyToPurchase shall be positive");
+		Check.assume(qtyToPurchase == null || qtyToPurchase.signum() >= 0, "qtyToPurchase shall be positive");
 
 		this.qtyToPurchase = qtyToPurchase;
 		resetFieldNameAndJsonValues();
 	}
 
-	private void setPurchasedQty(@NonNull final BigDecimal purchasedQty)
+	private void setPurchasedQty(final Quantity purchasedQty)
 	{
-		Check.assume(qtyToPurchase.signum() >= 0, "purchasedQty shall be positive");
+		Check.assume(purchasedQty == null || purchasedQty.signum() >= 0, "purchasedQty shall be positive");
 
 		this.purchasedQty = purchasedQty;
 		resetFieldNameAndJsonValues();
@@ -462,12 +466,12 @@ public final class PurchaseRow implements IViewRow
 
 	private void updateQtysFromIncludedRows()
 	{
-		BigDecimal qtyToPurchaseSum = BigDecimal.ZERO;
-		BigDecimal purchasedQtySum = BigDecimal.ZERO;
+		Quantity qtyToPurchaseSum = null;
+		Quantity purchasedQtySum = null;
 		for (final PurchaseRow includedRow : getIncludedRows())
 		{
-			qtyToPurchaseSum = qtyToPurchaseSum.add(includedRow.getQtyToPurchase());
-			purchasedQtySum = purchasedQtySum.add(includedRow.getPurchasedQty());
+			qtyToPurchaseSum = Quantity.addNullables(qtyToPurchaseSum, includedRow.getQtyToPurchase());
+			purchasedQtySum = Quantity.addNullables(purchasedQtySum, includedRow.getPurchasedQty());
 		}
 
 		this.setQtyToPurchase(qtyToPurchaseSum);
@@ -488,7 +492,7 @@ public final class PurchaseRow implements IViewRow
 		}
 	}
 
-	private void assertRowType(@NonNull final PurchaseRowType expectedRowType)
+	public void assertRowType(@NonNull final PurchaseRowType expectedRowType)
 	{
 		if (rowType != expectedRowType)
 		{
@@ -505,6 +509,22 @@ public final class PurchaseRow implements IViewRow
 
 		final PurchaseRow row = getIncludedRowById(includedRowId);
 		row.assertRowEditable();
+
+		final I_C_UOM uom = row.getQtyToPurchase().getUOM();
+		row.setQtyToPurchase(Quantity.of(qtyToPurchase, uom));
+
+		updateQtysFromIncludedRows();
+	}
+
+	public synchronized void changeQtyToPurchase(
+			@NonNull final PurchaseRowId includedRowId,
+			@NonNull final Quantity qtyToPurchase)
+	{
+		assertRowType(PurchaseRowType.GROUP);
+
+		final PurchaseRow row = getIncludedRowById(includedRowId);
+		row.assertRowEditable();
+
 		row.setQtyToPurchase(qtyToPurchase);
 
 		updateQtysFromIncludedRows();

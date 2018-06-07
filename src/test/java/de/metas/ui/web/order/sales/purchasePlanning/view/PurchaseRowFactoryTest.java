@@ -1,10 +1,10 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.bpartner.BPartnerId;
@@ -38,6 +38,7 @@ import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
@@ -68,12 +69,18 @@ public class PurchaseRowFactoryTest
 {
 	private Currency currency;
 
+	private I_C_UOM EACH;
+	private Quantity ONE;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		currency = PurchaseRowTestTools.createCurrency();
+		
+		this.EACH = PurchaseRowTestTools.createUOM("Ea");
+		this.ONE = Quantity.of(BigDecimal.ONE, EACH);
 	}
 
 	@Test
@@ -142,7 +149,6 @@ public class PurchaseRowFactoryTest
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(vendorProductInfo.getProductId())
-				.uomId(uom.getC_UOM_ID())
 				.qtyToPurchase(ONE)
 				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.profitInfo(profitInfo)
