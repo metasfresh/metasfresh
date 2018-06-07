@@ -6,7 +6,7 @@ import de.metas.event.IEventListener;
 import lombok.NonNull;
 
 /**
- * Forward {@link Event}s from {@link IEventBus} to JMS.
+ * Forward {@link Event}s from {@link IEventBus} to the remote endpoint (AMQP).
  *
  * @author tsa
  *
