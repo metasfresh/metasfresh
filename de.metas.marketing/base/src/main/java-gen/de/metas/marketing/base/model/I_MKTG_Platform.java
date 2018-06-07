@@ -124,6 +124,52 @@ public interface I_MKTG_Platform
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Requires Location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsRequiresLocation (boolean IsRequiresLocation);
+
+	/**
+	 * Get Requires Location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isRequiresLocation();
+
+    /** Column definition for IsRequiresLocation */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Platform, Object> COLUMN_IsRequiresLocation = new org.adempiere.model.ModelColumn<I_MKTG_Platform, Object>(I_MKTG_Platform.class, "IsRequiresLocation", null);
+    /** Column name IsRequiresLocation */
+    public static final String COLUMNNAME_IsRequiresLocation = "IsRequiresLocation";
+
+	/**
+	 * Set Requires Mail Address.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsRequiresMailAddres (boolean IsRequiresMailAddres);
+
+	/**
+	 * Get Requires Mail Address.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isRequiresMailAddres();
+
+    /** Column definition for IsRequiresMailAddres */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Platform, Object> COLUMN_IsRequiresMailAddres = new org.adempiere.model.ModelColumn<I_MKTG_Platform, Object>(I_MKTG_Platform.class, "IsRequiresMailAddres", null);
+    /** Column name IsRequiresMailAddres */
+    public static final String COLUMNNAME_IsRequiresMailAddres = "IsRequiresMailAddres";
+
+	/**
 	 * Set Marketing Platform GatewayId.
 	 *
 	 * <br>Type: List

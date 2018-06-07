@@ -14,7 +14,7 @@ public class X_MKTG_Platform extends org.compiere.model.PO implements I_MKTG_Pla
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1774562859L;
+	private static final long serialVersionUID = -863365227L;
 
     /** Standard Constructor */
     public X_MKTG_Platform (Properties ctx, int MKTG_Platform_ID, String trxName)
@@ -22,6 +22,8 @@ public class X_MKTG_Platform extends org.compiere.model.PO implements I_MKTG_Pla
       super (ctx, MKTG_Platform_ID, trxName);
       /** if (MKTG_Platform_ID == 0)
         {
+			setIsRequiresLocation (false); // N
+			setIsRequiresMailAddres (false); // N
 			setMKTG_Platform_ID (0);
 			setName (null);
         } */
@@ -41,6 +43,52 @@ public class X_MKTG_Platform extends org.compiere.model.PO implements I_MKTG_Pla
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Requires Location.
+		@param IsRequiresLocation Requires Location	  */
+	@Override
+	public void setIsRequiresLocation (boolean IsRequiresLocation)
+	{
+		set_Value (COLUMNNAME_IsRequiresLocation, Boolean.valueOf(IsRequiresLocation));
+	}
+
+	/** Get Requires Location.
+		@return Requires Location	  */
+	@Override
+	public boolean isRequiresLocation () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsRequiresLocation);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Requires Mail Address.
+		@param IsRequiresMailAddres Requires Mail Address	  */
+	@Override
+	public void setIsRequiresMailAddres (boolean IsRequiresMailAddres)
+	{
+		set_Value (COLUMNNAME_IsRequiresMailAddres, Boolean.valueOf(IsRequiresMailAddres));
+	}
+
+	/** Get Requires Mail Address.
+		@return Requires Mail Address	  */
+	@Override
+	public boolean isRequiresMailAddres () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsRequiresMailAddres);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	/** 
 	 * MarketingPlatformGatewayId AD_Reference_ID=540858
