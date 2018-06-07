@@ -1,5 +1,6 @@
 package org.adempiere.location;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -52,6 +53,11 @@ public class LocationRepository
 
 	public List<Location> retrieveByUser(@NonNull final User user)
 	{
+		if (user.getBpartnerId() == null)
+		{
+			return Collections.emptyList();
+		}
+
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		return bpartnersRepo.retrieveBPartnerLocations(user.getBpartnerId())
 				.stream()
