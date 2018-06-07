@@ -11,6 +11,7 @@ import org.compiere.model.IQuery;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -73,16 +74,14 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 			return MSG_Error + ": 0 records enqueued";
 		}
 
-		final I_C_Async_Batch asyncbatch = createAsycnBatch();
-		for (final Integer campaignContactPersonId : campaignContactPersonIds)
-		{
-			enqueue(asyncbatch, campaignContactPersonId);
-		}
-
+		final I_C_Async_Batch asyncbatch = createAsycnBatch(campaignContactPersonIds.size());
+		final IWorkPackageBuilder workPackageBuilder = createWorkPackageBuilde(asyncbatch);
+		campaignContactPersonIds.forEach(campaignContactPersonId -> addElement(workPackageBuilder, campaignContactPersonId));
+		workPackageBuilder.build();
 		return MSG_OK;
 	}
 
-	private I_C_Async_Batch createAsycnBatch()
+	private I_C_Async_Batch createAsycnBatch(final int size)
 	{
 		// Create Async Batch for tracking
 		return asyncBatchBL.newAsyncBatch()
@@ -93,22 +92,28 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 				.build();
 	}
 
-	private void enqueue(@NonNull final I_C_Async_Batch asyncbatch, final Integer campaignContactPersonId)
+	private IWorkPackageBuilder createWorkPackageBuilde(@NonNull final I_C_Async_Batch asyncbatch)
+	{
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(getCtx(), C_Letter_CreateFromMKTG_ContactPerson_Async.class);
+		return queue
+				.newBlock()
+				.setAD_PInstance_Creator_ID(getAD_PInstance_ID())
+				.setContext(getCtx())
+				.newWorkpackage()
+				.setC_Async_Batch(asyncbatch)
+				.bindToThreadInheritedTrx();
+
+	}
+
+	private void addElement(@NonNull final IWorkPackageBuilder workPackageBuilder, final Integer campaignContactPersonId)
 	{
 		if (campaignContactPersonId == null || campaignContactPersonId <= 0)
 		{
 			// should not happen
-			return;
+			return ;
 		}
 
 		final I_MKTG_Campaign_ContactPerson campaignContactPerson = load(campaignContactPersonId, I_MKTG_Campaign_ContactPerson.class);
-
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(getCtx(), C_Letter_CreateFromMKTG_ContactPerson_Async.class);
-		queue.newBlock()
-				.setContext(getCtx())
-				.newWorkpackage()
-				.setC_Async_Batch(asyncbatch) // set the async batch in workpackage in order to track it
-				.addElement(campaignContactPerson)
-				.build();
+		workPackageBuilder.addElement(campaignContactPerson);
 	}
 }
