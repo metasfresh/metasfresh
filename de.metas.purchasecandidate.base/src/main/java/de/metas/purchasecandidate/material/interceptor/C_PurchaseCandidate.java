@@ -7,6 +7,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
@@ -50,7 +51,12 @@ public class C_PurchaseCandidate
 	private final PostMaterialEventService postMaterialEventService;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
-	public C_PurchaseCandidate(@NonNull final PostMaterialEventService postMaterialEventService,
+	/**
+	 * @param postMaterialEventService needs to be lazy because of some dependencies with Adempiere.java
+	 * @param productDescriptorFactory
+	 */
+	public C_PurchaseCandidate(
+			@NonNull @Lazy final PostMaterialEventService postMaterialEventService,
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
 		this.postMaterialEventService = postMaterialEventService;

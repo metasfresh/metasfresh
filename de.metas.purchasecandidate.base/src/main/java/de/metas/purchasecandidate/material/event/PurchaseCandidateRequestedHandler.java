@@ -73,7 +73,6 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	@Override
 	public void handleEvent(@NonNull final PurchaseCandidateRequestedEvent event)
 	{
-		// TODO Auto-generated method stub
 		final MaterialDescriptor materialDescriptor = event.getPurchaseMaterialDescriptor();
 
 		final OrderAndLineId orderandLineIdOrNull = OrderAndLineId.ofRepoIdsOrNull(
