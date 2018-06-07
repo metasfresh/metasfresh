@@ -94,7 +94,7 @@ class PricingConditionsRowReducers
 		// Payment Term
 		if (request.getPaymentTermId() != null)
 		{
-			builder.paymentTermId(request.getPaymentTermId().orElse(-1));
+			builder.paymentTermId(request.getPaymentTermId().orElse(null));
 		}
 
 		//

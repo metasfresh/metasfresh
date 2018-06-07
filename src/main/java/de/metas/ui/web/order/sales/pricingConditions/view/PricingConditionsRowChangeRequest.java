@@ -1,9 +1,11 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.OptionalInt;
 
 import de.metas.lang.Percent;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -43,7 +45,7 @@ public class PricingConditionsRowChangeRequest
 	PricingConditionsBreakId sourcePricingConditionsBreakId;
 
 	Percent discount;
-	OptionalInt paymentTermId;
+	Optional<PaymentTermId> paymentTermId;
 
 	PriceChange priceChange;
 

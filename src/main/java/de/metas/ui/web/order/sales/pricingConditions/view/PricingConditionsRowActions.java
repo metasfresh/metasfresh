@@ -2,9 +2,11 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 
 import de.metas.lang.Percent;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
@@ -62,8 +64,8 @@ public class PricingConditionsRowActions
 			else if (PricingConditionsRow.FIELDNAME_PaymentTerm.equals(fieldName))
 			{
 				final LookupValue paymentTerm = fieldChangeRequest.getValueAsIntegerLookupValue();
-				final OptionalInt paymentTermId = paymentTerm != null && paymentTerm.getIdAsInt() > 0 ? OptionalInt.of(paymentTerm.getIdAsInt()) : OptionalInt.empty();
-				builder.paymentTermId(paymentTermId);
+				final PaymentTermId paymentTermId = paymentTerm != null ? PaymentTermId.ofRepoIdOrNull(paymentTerm.getIdAsInt()) : null;
+				builder.paymentTermId(Optional.ofNullable(paymentTermId));
 			}
 		}
 
