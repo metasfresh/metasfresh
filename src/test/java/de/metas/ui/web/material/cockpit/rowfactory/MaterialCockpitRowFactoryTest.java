@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
@@ -266,15 +267,14 @@ public class MaterialCockpitRowFactoryTest
 			@NonNull final List<MaterialCockpitRow> rows,
 			@NonNull final DimensionSpecGroup dimensionspecGroup)
 	{
-		final MaterialCockpitRow emptyGroupRow = rows.stream()
-				.filter(row -> {
-
-					return Objects.equals(
-							row.getProductCategoryOrSubRowName(),
-							dimensionspecGroup.getGroupName().getDefaultValue());
-				})
-				.findFirst().get();
-		return emptyGroupRow;
+		final String groupName = dimensionspecGroup.getGroupName().getDefaultValue();
+		return rows.stream()
+				.filter(row -> Objects.equals(row.getProductCategoryOrSubRowName(), groupName))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("Row row found matching: " + groupName)
+						.appendParametersToMessage()
+						.setParameter("dimensionspecGroup", dimensionspecGroup)
+						.setParameter("rows", rows));
 	}
 
 	private static MaterialCockpitRow extractSingleCountingRow(
