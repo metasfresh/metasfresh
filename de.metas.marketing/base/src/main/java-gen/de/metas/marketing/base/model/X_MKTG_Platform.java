@@ -14,7 +14,7 @@ public class X_MKTG_Platform extends org.compiere.model.PO implements I_MKTG_Pla
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -863365227L;
+	private static final long serialVersionUID = -1619590635L;
 
     /** Standard Constructor */
     public X_MKTG_Platform (Properties ctx, int MKTG_Platform_ID, String trxName)
@@ -22,8 +22,8 @@ public class X_MKTG_Platform extends org.compiere.model.PO implements I_MKTG_Pla
       super (ctx, MKTG_Platform_ID, trxName);
       /** if (MKTG_Platform_ID == 0)
         {
-			setIsRequiresLocation (false); // N
-			setIsRequiresMailAddres (false); // N
+			setIsRequiredLocation (false); // N
+			setIsRequiredMailAddres (false); // N
 			setMKTG_Platform_ID (0);
 			setName (null);
         } */
@@ -45,19 +45,19 @@ public class X_MKTG_Platform extends org.compiere.model.PO implements I_MKTG_Pla
     }
 
 	/** Set Requires Location.
-		@param IsRequiresLocation Requires Location	  */
+		@param IsRequiredLocation Requires Location	  */
 	@Override
-	public void setIsRequiresLocation (boolean IsRequiresLocation)
+	public void setIsRequiredLocation (boolean IsRequiredLocation)
 	{
-		set_Value (COLUMNNAME_IsRequiresLocation, Boolean.valueOf(IsRequiresLocation));
+		set_Value (COLUMNNAME_IsRequiredLocation, Boolean.valueOf(IsRequiredLocation));
 	}
 
 	/** Get Requires Location.
 		@return Requires Location	  */
 	@Override
-	public boolean isRequiresLocation () 
+	public boolean isRequiredLocation () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsRequiresLocation);
+		Object oo = get_Value(COLUMNNAME_IsRequiredLocation);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -68,19 +68,19 @@ public class X_MKTG_Platform extends org.compiere.model.PO implements I_MKTG_Pla
 	}
 
 	/** Set Requires Mail Address.
-		@param IsRequiresMailAddres Requires Mail Address	  */
+		@param IsRequiredMailAddres Requires Mail Address	  */
 	@Override
-	public void setIsRequiresMailAddres (boolean IsRequiresMailAddres)
+	public void setIsRequiredMailAddres (boolean IsRequiredMailAddres)
 	{
-		set_Value (COLUMNNAME_IsRequiresMailAddres, Boolean.valueOf(IsRequiresMailAddres));
+		set_Value (COLUMNNAME_IsRequiredMailAddres, Boolean.valueOf(IsRequiredMailAddres));
 	}
 
 	/** Get Requires Mail Address.
 		@return Requires Mail Address	  */
 	@Override
-	public boolean isRequiresMailAddres () 
+	public boolean isRequiredMailAddres () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsRequiresMailAddres);
+		Object oo = get_Value(COLUMNNAME_IsRequiredMailAddres);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

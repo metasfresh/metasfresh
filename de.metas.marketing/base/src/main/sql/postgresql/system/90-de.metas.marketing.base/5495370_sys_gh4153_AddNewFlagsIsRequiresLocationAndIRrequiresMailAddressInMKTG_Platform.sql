@@ -78,3 +78,64 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,564467,0,541104,552160,541587,'F',TO_TIMESTAMP('2018-06-07 13:09:57','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Requires Location',20,0,0,TO_TIMESTAMP('2018-06-07 13:09:57','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2018-06-07T13:16:01.991
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET ColumnName='IsRequiredMailAddres',Updated=TO_TIMESTAMP('2018-06-07 13:16:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=544111
+;
+
+-- 2018-06-07T13:16:02.002
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsRequiredMailAddres', Name='Requires Mail Address', Description=NULL, Help=NULL WHERE AD_Element_ID=544111
+;
+
+-- 2018-06-07T13:16:02.009
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsRequiredMailAddres', Name='Requires Mail Address', Description=NULL, Help=NULL, AD_Element_ID=544111 WHERE UPPER(ColumnName)='ISREQUIREDMAILADDRES' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-06-07T13:16:02.011
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsRequiredMailAddres', Name='Requires Mail Address', Description=NULL, Help=NULL WHERE AD_Element_ID=544111 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-06-07T13:16:15.649
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET ColumnName='IsRequiredLocation',Updated=TO_TIMESTAMP('2018-06-07 13:16:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=544112
+;
+
+-- 2018-06-07T13:16:15.654
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsRequiredLocation', Name='Requires Location', Description=NULL, Help=NULL WHERE AD_Element_ID=544112
+;
+
+-- 2018-06-07T13:16:15.656
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsRequiredLocation', Name='Requires Location', Description=NULL, Help=NULL, AD_Element_ID=544112 WHERE UPPER(ColumnName)='ISREQUIREDLOCATION' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-06-07T13:16:15.658
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsRequiredLocation', Name='Requires Location', Description=NULL, Help=NULL WHERE AD_Element_ID=544112 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-06-07T13:16:30.360
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MKTG_Platform','ALTER TABLE public.MKTG_Platform ADD COLUMN IsRequiredLocation CHAR(1) DEFAULT ''N'' CHECK (IsRequiredLocation IN (''Y'',''N'')) NOT NULL')
+;
+
+-- 2018-06-07T13:16:34.858
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MKTG_Platform','ALTER TABLE public.MKTG_Platform ADD COLUMN IsRequiredMailAddres CHAR(1) DEFAULT ''N'' CHECK (IsRequiredMailAddres IN (''Y'',''N'')) NOT NULL')
+;
+
+
+
+/* DDL */ SELECT public.db_alter_table('MKTG_Platform','ALTER TABLE public.MKTG_Platform DROP COLUMN IsRequiresMailAddres')
+;
+
+
+
+/* DDL */ SELECT public.db_alter_table('MKTG_Platform','ALTER TABLE public.MKTG_Platform DROP COLUMN IsRequiresLocation')
+;
+
+
