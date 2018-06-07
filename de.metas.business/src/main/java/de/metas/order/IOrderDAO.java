@@ -1,5 +1,7 @@
 package de.metas.order;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
+
 import java.util.Collection;
 
 /*
@@ -15,15 +17,14 @@ import java.util.Collection;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 import java.util.List;
@@ -37,15 +38,26 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 
 import de.metas.interfaces.I_C_OrderLine;
+import lombok.NonNull;
 
 public interface IOrderDAO extends ISingletonService
 {
 	I_C_Order getById(final OrderId orderId);
-	
+
 	I_C_OrderLine getOrderLineById(final int orderLineId);
-	
+
 	I_C_OrderLine getOrderLineById(final OrderLineId orderLineId);
-	
+
+	default I_C_OrderLine getOrderLineById(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return getOrderLineById(orderAndLineId.getOrderLineId());
+	}
+
+	default <T extends org.compiere.model.I_C_OrderLine> List<T> getOrderLinesByIds(final Collection<OrderLineId> orderLineIds, final Class<T> modelType)
+	{
+		return loadByIds(OrderLineId.toIntSet(orderLineIds), modelType);
+	}
+
 	/**
 	 * @param ctx
 	 * @param bpartnerId

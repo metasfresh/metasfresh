@@ -65,7 +65,7 @@ public class PurchaseDemand
 	Currency currency;
 
 	@NonNull
-	LocalDateTime datePromised;
+	LocalDateTime salesDatePromised;
 	LocalDateTime preparationDate;
 
 	OrderAndLineId salesOrderAndLineId;
