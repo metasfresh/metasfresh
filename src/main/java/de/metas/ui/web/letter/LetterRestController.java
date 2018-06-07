@@ -10,7 +10,9 @@ import java.util.function.UnaryOperator;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.UserId;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.io.FileUtils;
@@ -34,7 +36,7 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.impl.PlainDocumentLocation;
 import de.metas.i18n.IMsgBL;
 import de.metas.letters.api.ITextTemplateBL;
-import de.metas.letters.api.LetterPDFCreateRequest;
+import de.metas.letters.model.Letter;
 import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -234,16 +236,16 @@ public class LetterRestController
 
 	private byte[] createPDFData(final WebuiLetter letter)
 	{
-		final LetterPDFCreateRequest request = LetterPDFCreateRequest.builder()
+		final Letter request = Letter.builder()
 				.adLanguage(userSession.getAD_Language())
-				.textTemplateId(letter.getTextTemplateId())
-				.letterSubject(letter.getSubject())
-				.letterBodyParsed(letter.getContent())
+				.boilerPlateId(letter.getTextTemplateId())
+				.subject(letter.getSubject())
+				.body(letter.getContent())
 				.adOrgId(letter.getAdOrgId())
-				.bpartnerId(letter.getBpartnerId())
+				.bpartnerId(BPartnerId.ofRepoId(letter.getBpartnerId()))
 				.bpartnerLocationId(letter.getBpartnerLocationId())
-				.bpartnerAddress(letter.getBpartnerAddress())
-				.bpartnerContactId(letter.getBpartnerContactId())
+				.address(letter.getBpartnerAddress())
+				.userId(UserId.ofRepoId(letter.getBpartnerContactId()))
 				.build();
 		return Services.get(ITextTemplateBL.class).createPDF(request);
 	}
