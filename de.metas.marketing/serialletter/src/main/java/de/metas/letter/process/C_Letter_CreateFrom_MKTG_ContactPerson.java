@@ -68,6 +68,11 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 				.map(I_MKTG_Campaign_ContactPerson::getMKTG_Campaign_ContactPerson_ID)
 				.collect(ImmutableList.toImmutableList());
 
+		if (campaignContactPersonIds.isEmpty())
+		{
+			return MSG_Error + ": 0 records enqueued";
+		}
+
 		final I_C_Async_Batch asyncbatch = createAsycnBatch();
 		for (final Integer campaignContactPersonId : campaignContactPersonIds)
 		{
