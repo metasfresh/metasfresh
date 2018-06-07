@@ -31,6 +31,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
+import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
@@ -78,7 +79,7 @@ public class PurchaseRowFactoryTest
 		AdempiereTestHelper.get().init();
 
 		currency = PurchaseRowTestTools.createCurrency();
-		
+
 		this.EACH = PurchaseRowTestTools.createUOM("Ea");
 		this.ONE = Quantity.of(BigDecimal.ONE, EACH);
 	}
@@ -130,6 +131,8 @@ public class PurchaseRowFactoryTest
 				.productAndCategoryId(productAndCategoryId)
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
+				.pricingConditions(PricingConditions.builder()
+						.build())
 				.build();
 
 		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo
