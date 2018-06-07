@@ -10,23 +10,23 @@ import { getUserSession } from '../api';
 // TODO: All requests should be moved to API
 
 export function getNotifications() {
-  return axios.get(config.API_URL + '/notifications/all?limit=20');
+  return axios.get(`${config.API_URL}/notifications/all?limit=20`);
 }
 
 export function getNotificationsEndpoint() {
-  return axios.get(config.API_URL + '/notifications/websocketEndpoint');
+  return axios.get(`${config.API_URL}/notifications/websocketEndpoint`);
 }
 
 export function markAllAsRead() {
-  return axios.put(config.API_URL + '/notifications/all/read');
+  return axios.put(`${config.API_URL}/notifications/all/read`);
 }
 
 export function markAsRead(id) {
-  return axios.put(config.API_URL + '/notifications/' + id + '/read');
+  return axios.put(`${config.API_URL}/notifications/${id}/read`);
 }
 
 export function deleteUserNotification(id) {
-  return axios.delete(config.API_URL + `/notifications?ids=${id}`);
+  return axios.delete(`${config.API_URL}/notifications?ids=${id}`);
 }
 
 export function getImageAction(id) {
@@ -43,23 +43,23 @@ export function postImageAction(data) {
 }
 
 export function getKPIsDashboard() {
-  return axios.get(config.API_URL + '/dashboard/kpis?silentError=true');
+  return axios.get(`${config.API_URL}/dashboard/kpis?silentError=true`);
 }
 
 export function getTargetIndicatorsDashboard() {
   return axios.get(
-    config.API_URL + '/dashboard/targetIndicators?silentError=true'
+    `${config.API_URL}/dashboard/targetIndicators?silentError=true`
   );
 }
 
 export function getKPIData(id) {
   return axios.get(
-    config.API_URL + '/dashboard/kpis/' + id + '/data?silentError=true'
+    `${config.API_URL}/dashboard/kpis/${id}/data?silentError=true`
   );
 }
 
 export function changeKPIItem(id, path, value) {
-  return axios.patch(config.API_URL + '/dashboard/kpis/' + id, [
+  return axios.patch(`${config.API_URL}/dashboard/kpis/${id}`, [
     {
       op: 'replace',
       path: path,
@@ -69,7 +69,7 @@ export function changeKPIItem(id, path, value) {
 }
 
 export function changeTargetIndicatorsItem(id, path, value) {
-  return axios.patch(config.API_URL + '/dashboard/targetIndicators/' + id, [
+  return axios.patch(`${config.API_URL}/dashboard/targetIndicators/${id}`, [
     {
       op: 'replace',
       path: path,
@@ -80,10 +80,7 @@ export function changeTargetIndicatorsItem(id, path, value) {
 
 export function getTargetIndicatorsData(id) {
   return axios.get(
-    config.API_URL +
-      '/dashboard/targetIndicators/' +
-      id +
-      '/data?silentError=true'
+    `${config.API_URL}/dashboard/targetIndicators/${id}/data?silentError=true`
   );
 }
 
