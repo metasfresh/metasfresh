@@ -10,6 +10,7 @@ import org.adempiere.util.Services;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.payment.api.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -103,8 +104,8 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 
 	private PriceOverride createBasePricingSystemPrice(final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
-		final int pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
-		if (pricingSystemId <= 0)
+		final PricingSystemId pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
+		if (pricingSystemId == null)
 		{
 			return PriceOverride.none();
 		}

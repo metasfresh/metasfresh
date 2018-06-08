@@ -6,12 +6,12 @@ import java.util.Objects;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
 
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreak.PricingConditionsBreakBuilder;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
-import de.metas.pricing.service.IPriceListDAO;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PriceChange;
@@ -145,8 +145,8 @@ class PricingConditionsRowReducers
 		}
 		else if (priceType == PriceOverrideType.BASE_PRICING_SYSTEM)
 		{
-			final int requestBasePricingSystemId = changes.getBasePricingSystemId() != null ? changes.getBasePricingSystemId().orElse(-1) : -1;
-			final int basePricingSystemId = Util.firstGreaterThanZero(requestBasePricingSystemId, price.getBasePricingSystemId(), IPriceListDAO.M_PricingSystem_ID_None);
+			final PricingSystemId requestBasePricingSystemId = changes.getBasePricingSystemId() != null ? changes.getBasePricingSystemId().orElse(null) : null;
+			final PricingSystemId basePricingSystemId = Util.coalesce(requestBasePricingSystemId, price.getBasePricingSystemId(), PricingSystemId.NONE);
 			final BigDecimal basePriceAddAmt = changes.getBasePriceAddAmt() != null ? changes.getBasePriceAddAmt() : price.getBasePriceAddAmt();
 			return PriceOverride.basePricingSystem(
 					basePricingSystemId,
