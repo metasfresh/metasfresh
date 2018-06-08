@@ -7,7 +7,7 @@ describe('Sales order window widgets test', function() {
   context('Toggle widgets', function() {
     beforeEach(function() {
       cy.visit('/window/143/1000489');
-      cy.get('.header-breadcrumb-sitename').should('contain', '0319');
+      cy.get('.header-breadcrumb-sitename').should('contain', '0359');
     });
 
     it('Select lookup option', function() {
@@ -18,12 +18,11 @@ describe('Sales order window widgets test', function() {
         .clear()
         .type('k');
 
-      cy.get('.input-dropdown-list.lookuplist').should('exist');
+      cy.get('.input-dropdown-list').should('exist');
       cy
-        .get('.input-dropdown-item-title')
-        .contains('kaystest')
+        .contains('.input-dropdown-list-option', '1000004_kaystest')
         .click();
-      cy.get('.input-dropdown-list.lookuplist').should('not.exist');
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
     });
   });
 });

@@ -23,6 +23,7 @@
 //
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+
 import { List } from 'immutable';
 import { goBack, push } from 'react-router-redux';
 
@@ -30,14 +31,18 @@ import { loginSuccess } from '../../src/actions/AppActions';
 import Auth from '../../src/services/Auth';
 
 context('Reusable "login" custom command', function() {
-  Cypress.Commands.add('loginByForm', (username, password) => {
+  Cypress.Commands.add('loginByForm', (username, password, redirect) => {
     Cypress.log({
       name: 'loginByForm',
       message: username + ' | ' + password,
     });
 
     const handleSuccess = function(){
-      Cypress.reduxStore.dispatch(push('/'));
+      if (redirect) {
+        Cypress.reduxStore.dispatch(goBack());
+      } else {
+        Cypress.reduxStore.dispatch(push('/'));
+      }
     };
 
     const checkIfAlreadyLogged = function() {
@@ -96,15 +101,4 @@ context('Reusable "login" custom command', function() {
       });
     })
   });
-
-
-  // beforeEach(function(){
-  //   // login before each test
-  //   cy.loginByForm('kuba', 'kuba1234');
-  // });
-
-  // it('can visit dashboard', function(){
-  //   cy.url().should('not.include', '/login');
-  //   cy.get('.header-item').should('contain', 'Dashboard');
-  // });
 });
