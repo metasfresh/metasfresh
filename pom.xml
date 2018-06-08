@@ -42,6 +42,9 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<jasperreports.version>6.5.1</jasperreports.version>
 
 		<itext.version>2.1.7.js6</itext.version>
+		
+		<!-- https://github.com/codecentric/spring-boot-admin -->
+		<spring-boot-admin.version>1.5.0</spring-boot-admin.version>
 	</properties>
 
 	<modules>
