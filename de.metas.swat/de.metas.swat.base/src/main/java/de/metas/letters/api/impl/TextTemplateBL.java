@@ -32,7 +32,6 @@ import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_User;
@@ -245,22 +244,6 @@ public final class TextTemplateBL implements ITextTemplateBL
 						request.getUserId() == null ? null : request.getUserId().getRepoId(),
 				},
 				ITrx.TRXNAME_None);
-	}
-
-	@Override
-	public boolean isEmpty(I_C_Letter letter)
-	{
-		if (letter == null)
-		{
-			return true;
-		}
-
-		if (Check.isEmpty(letter.getLetterSubject()) && Check.isEmpty(letter.getLetterBody()))
-		{
-			return true;
-		}
-
-		return false;
 	}
 
 	@Override

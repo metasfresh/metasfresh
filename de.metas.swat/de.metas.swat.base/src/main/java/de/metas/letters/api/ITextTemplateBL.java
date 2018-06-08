@@ -53,13 +53,6 @@ public interface ITextTemplateBL extends ISingletonService
 	byte[] createPDF(Letter request);
 
 	/**
-	 *
-	 * @param letter
-	 * @return true if letter is empty or subject and body are missing
-	 */
-	boolean isEmpty(I_C_Letter letter);
-
-	/**
 	 * Sets AD_BoilerPlate field, but also LetterSubject and LetterBody fields.
 	 *
 	 * @param letter
