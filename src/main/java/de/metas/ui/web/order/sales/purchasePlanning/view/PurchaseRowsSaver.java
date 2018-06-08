@@ -78,8 +78,8 @@ class PurchaseRowsSaver
 				.collect(ImmutableMap.toImmutableMap(PurchaseCandidate::getId, Function.identity()));
 
 		final List<PurchaseCandidate> purchaseCandidatesToSave = groupingRows.stream()
-				.flatMap(grouppingRow -> grouppingRow.getIncludedRows().stream()) // purchase candidate lines
-				.map(row -> updatePurchaseCandidate(row, existingPurchaseCandidatesById))
+				.flatMap(PurchaseRow::streamPurchaseCandidatesGroup)
+				.map(candidatesGroup -> updatePurchaseCandidate(candidatesGroup, existingPurchaseCandidatesById))
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
 
@@ -103,20 +103,18 @@ class PurchaseRowsSaver
 	}
 
 	private List<PurchaseCandidate> updatePurchaseCandidate(
-			@NonNull final PurchaseRow purchaseRow,
+			@NonNull final PurchaseCandidatesGroup candidatesGroup,
 			@NonNull final Map<PurchaseCandidateId, PurchaseCandidate> existingPurchaseCandidatesById)
 	{
-		purchaseRow.assertRowType(PurchaseRowType.LINE);
-
-		Quantity qtyToPurchaseRemaining = purchaseRow.getQtyToPurchase();
-		if (qtyToPurchaseRemaining == null || qtyToPurchaseRemaining.signum() <= 0)
+		Quantity qtyToPurchaseRemaining = candidatesGroup.getQtyToPurchase();
+		if (qtyToPurchaseRemaining.signum() <= 0)
 		{
 			return ImmutableList.of();
 		}
 
-		final PurchaseProfitInfo profitInfo = purchaseRow.getProfitInfo();
-		final LocalDateTime purchaseDatePromised = purchaseRow.getDatePromised();
-		final List<PurchaseCandidate> allCandidates = getPurchaseCandidatesForRow(purchaseRow, existingPurchaseCandidatesById);
+		final PurchaseProfitInfo profitInfo = candidatesGroup.getProfitInfo();
+		final LocalDateTime purchaseDatePromised = candidatesGroup.getPurchaseDatePromised();
+		final List<PurchaseCandidate> allCandidates = getPurchaseCandidates(candidatesGroup, existingPurchaseCandidatesById);
 
 		//
 		// Adjust qtyToPurchaseRemaining: Subtract the qtyToPurchase which was already processed
@@ -187,7 +185,6 @@ class PurchaseRowsSaver
 		// If there is remaining qty to purchase but no purchase candidate to add to then create a new candidate
 		else
 		{
-			final PurchaseCandidatesGroup candidatesGroup = purchaseRow.getPurchaseCandidatesGroup();
 			final PurchaseCandidate newCandidate = PurchaseCandidate.builder()
 					// .salesOrderAndLineId(candidatesGroup.getSalesOrderAndLineId()) // TODO: which sales order line to pick?!
 					//
@@ -214,11 +211,10 @@ class PurchaseRowsSaver
 		return candidatesChanged;
 	}
 
-	private static List<PurchaseCandidate> getPurchaseCandidatesForRow(
-			final PurchaseRow row,
+	private static List<PurchaseCandidate> getPurchaseCandidates(
+			final PurchaseCandidatesGroup candidatesGroup,
 			final Map<PurchaseCandidateId, PurchaseCandidate> existingPurchaseCandidatesById)
 	{
-		final PurchaseCandidatesGroup candidatesGroup = row.getPurchaseCandidatesGroup();
 		return candidatesGroup.getPurchaseCandidateIds()
 				.stream()
 				.map(existingPurchaseCandidatesById::get)

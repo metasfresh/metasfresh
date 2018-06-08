@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -41,6 +42,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -108,7 +110,7 @@ public final class PurchaseRow implements IViewRow
 	private Quantity qtyToPurchase;
 
 	@ViewColumn(fieldName = FIELDNAME_PurchasedQty, captionKey = "PurchasedQty", widgetType = DocumentFieldWidgetType.Quantity, seqNo = 55)
-	@Getter
+	@Getter(AccessLevel.PRIVATE)
 	private Quantity purchasedQty;
 
 	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Text, seqNo = 60)
@@ -124,7 +126,7 @@ public final class PurchaseRow implements IViewRow
 	private ImmutableMap<PurchaseRowId, PurchaseRow> _includedRowsById = ImmutableMap.of();
 
 	private final boolean readonly;
-	@Getter
+	@Getter(AccessLevel.PRIVATE)
 	private PurchaseCandidatesGroup purchaseCandidatesGroup;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
@@ -582,9 +584,20 @@ public final class PurchaseRow implements IViewRow
 		setIncludedRows(ImmutableList.copyOf(availabilityResultRows));
 	}
 
-	public PurchaseProfitInfo getProfitInfo()
+	public Stream<PurchaseCandidatesGroup> streamPurchaseCandidatesGroup()
 	{
+		final Stream<PurchaseCandidatesGroup> includedRowsStream = getIncludedRows()
+				.stream()
+				.flatMap(PurchaseRow::streamPurchaseCandidatesGroup);
+
 		final PurchaseCandidatesGroup candidatesGroup = getPurchaseCandidatesGroup();
-		return candidatesGroup != null ? candidatesGroup.getProfitInfo() : null;
+		if (candidatesGroup == null)
+		{
+			return includedRowsStream;
+		}
+		else
+		{
+			return Stream.concat(Stream.of(candidatesGroup), includedRowsStream);
+		}
 	}
 }
