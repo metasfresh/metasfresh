@@ -1,6 +1,5 @@
 package de.metas.purchasecandidate;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -20,7 +19,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -30,26 +28,12 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
-import de.metas.lang.Percent;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.money.Currency;
-import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyRepository;
-import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderLineId;
-import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingContext;
-import de.metas.pricing.conditions.PricingConditionsBreak;
-import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
-import de.metas.pricing.conditions.service.IPricingConditionsService;
-import de.metas.pricing.conditions.service.PricingConditionsResult;
-import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup.PurchaseCandidatesGroupBuilder;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoRequest;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoService;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -79,30 +63,24 @@ import lombok.NonNull;
 public class PurchaseDemandWithCandidatesService
 {
 	// services
-	private static final Logger logger = LogManager.getLogger(PurchaseDemandWithCandidatesService.class);
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
-	private final OrderLineWithGrossProfitPriceRepository grossProfitPriceRepo;
 	private final VendorProductInfoRepository vendorProductInfosRepo;
-	private final CurrencyRepository currencyRepo;
+	private final PurchaseProfitInfoService purchaseProfitInfoService;
 	//
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
-	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	public PurchaseDemandWithCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
 			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
-			@NonNull final OrderLineWithGrossProfitPriceRepository grossProfitPriceRepo,
 			@NonNull final VendorProductInfoRepository vendorProductInfosRepo,
-			@NonNull final CurrencyRepository currencyRepo)
+			final PurchaseProfitInfoService purchaseProfitInfoService)
 	{
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
-		this.grossProfitPriceRepo = grossProfitPriceRepo;
 		this.vendorProductInfosRepo = vendorProductInfosRepo;
-		this.currencyRepo = currencyRepo;
+		this.purchaseProfitInfoService = purchaseProfitInfoService;
 	}
 
 	public List<PurchaseDemandWithCandidates> getOrCreatePurchaseCandidatesGroups(final List<PurchaseDemand> demands)
@@ -197,7 +175,11 @@ public class PurchaseDemandWithCandidatesService
 		final OrgId orgId = groupKey.getOrgId();
 		final VendorProductInfo vendorProductInfo = vendorProductInfosRepo.getVendorProductInfo(vendorId, productId, orgId);
 
-		final PurchaseProfitInfo profitInfo = calculatePurchaseProfitInfoNoFail(demand, vendorProductInfo);
+		final PurchaseProfitInfo profitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest.builder()
+				.salesOrderLineIds(demand.getSalesOrderLineIds())
+				.qtyToDeliver(demand.getQtyToDeliver())
+				.vendorProductInfo(vendorProductInfo)
+				.build());
 
 		final PurchaseCandidatesGroupBuilder builder = PurchaseCandidatesGroup.builder()
 				.orgId(orgId)
@@ -288,11 +270,11 @@ public class PurchaseDemandWithCandidatesService
 	}
 
 	private PurchaseCandidatesGroup createNewPurchaseCandidatesGroup(
-			@NonNull final PurchaseDemand purchaseDemand,
+			@NonNull final PurchaseDemand demand,
 			@NonNull final VendorProductInfo vendorProductInfo)
 	{
-		final WarehouseId warehouseId = getPurchaseWarehouseId(purchaseDemand);
-		final LocalDateTime salesDatePromised = purchaseDemand.getSalesDatePromised();
+		final WarehouseId warehouseId = getPurchaseWarehouseId(demand);
+		final LocalDateTime salesDatePromised = demand.getSalesDatePromised();
 
 		final BPartnerId vendorId = vendorProductInfo.getVendorId();
 		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(
@@ -302,17 +284,21 @@ public class PurchaseDemandWithCandidatesService
 		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule);
 		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
-		final PurchaseProfitInfo purchaseProfitInfo = calculatePurchaseProfitInfoNoFail(purchaseDemand, vendorProductInfo);
+		final PurchaseProfitInfo purchaseProfitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest.builder()
+				.salesOrderLineIds(demand.getSalesOrderLineIds())
+				.qtyToDeliver(demand.getQtyToDeliver())
+				.vendorProductInfo(vendorProductInfo)
+				.build());
 
-		final I_C_UOM uom = uomsRepo.getById(purchaseDemand.getUOMId());
+		final I_C_UOM uom = uomsRepo.getById(demand.getUOMId());
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.salesOrderAndLineId(purchaseDemand.getSalesOrderAndLineId())
+				.salesOrderAndLineId(demand.getSalesOrderAndLineId())
 				//
 				.dateRequired(purchaseDatePromised)
 				.reminderTime(reminderTime)
 				//
-				.orgId(purchaseDemand.getOrgId())
+				.orgId(demand.getOrgId())
 				.warehouseId(warehouseId)
 				.vendorId(vendorId)
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
@@ -330,18 +316,6 @@ public class PurchaseDemandWithCandidatesService
 		return PurchaseCandidatesGroup.of(purchaseCandidate);
 	}
 
-	private IPricingContext createPricingContext(final PricingConditionsBreak pricingConditionsBreak, final BPartnerId vendorId)
-	{
-		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
-		final ProductId productId = pricingConditionsBreak.getMatchCriteria().getProductId();
-		pricingCtx.setM_Product_ID(ProductId.toRepoId(productId));
-		pricingCtx.setQty(BigDecimal.ONE);
-		pricingCtx.setBPartnerId(vendorId);
-		pricingCtx.setSOTrx(SOTrx.PURCHASE.toBoolean());
-
-		return pricingCtx;
-	}
-
 	private LocalDateTime calculatePurchaseDatePromised(final LocalDateTime salesDatePromised, final BPPurchaseSchedule bpPurchaseSchedule)
 	{
 		if (bpPurchaseSchedule != null)
@@ -355,52 +329,6 @@ public class PurchaseDemandWithCandidatesService
 
 		// fallback
 		return salesDatePromised;
-	}
-
-	private PurchaseProfitInfo calculatePurchaseProfitInfoNoFail(final PurchaseDemand demand, final VendorProductInfo vendorProductInfo)
-	{
-		try
-		{
-			return calculatePurchaseProfitInfo(demand, vendorProductInfo);
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed computing purchase profit info for demand={}, vendorProductInfo={}. Returning null.", demand, vendorProductInfo, ex);
-			return null;
-		}
-	}
-
-	private PurchaseProfitInfo calculatePurchaseProfitInfo(final PurchaseDemand demand, final VendorProductInfo vendorProductInfo)
-	{
-		final Set<OrderLineId> salesOrderLineIds = demand.getSalesOrderLineIds();
-		final Quantity qtyToDeliver = demand.getQtyToDeliver();
-		final BPartnerId vendorId = vendorProductInfo.getVendorId();
-		final Percent vendorFlatDiscount = vendorProductInfo.getVendorFlatDiscount();
-		final PricingConditionsBreak pricingConditionsBreak = vendorProductInfo.getPricingConditionsBreakOrNull(qtyToDeliver);
-
-		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
-				.forcePricingConditionsBreak(pricingConditionsBreak)
-				.bpartnerFlatDiscount(vendorFlatDiscount)
-				.pricingCtx(createPricingContext(pricingConditionsBreak, vendorId))
-				.build());
-
-		final BigDecimal purchaseBasePrice = pricingConditionsResult.getPriceStdOverride();
-		final CurrencyId currencyId = pricingConditionsResult.getCurrencyId();
-		if (purchaseBasePrice == null || currencyId == null)
-		{
-			return null;
-		}
-
-		final Currency currency = currencyRepo.getById(currencyId);
-		final BigDecimal purchaseNetPrice = pricingConditionsBreak.getDiscount().subtractFromBase(purchaseBasePrice, 2);
-		
-		// TODO: subtract paymentTerm discount if any
-
-		return PurchaseProfitInfo.builder()
-				.salesNetPrice(grossProfitPriceRepo.getProfitMinBasePrice(salesOrderLineIds))
-				.purchaseGrossPrice(Money.of(purchaseBasePrice, currency))
-				.purchaseNetPrice(Money.of(purchaseNetPrice, currency))
-				.build();
 	}
 
 	private WarehouseId getPurchaseWarehouseId(final PurchaseDemand purchaseDemand)

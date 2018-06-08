@@ -101,6 +101,5 @@ public class PurchaseProfitInfo
 			this.salesNetPrice = salesNetPrice;
 			return this;
 		}
-
 	}
 }
