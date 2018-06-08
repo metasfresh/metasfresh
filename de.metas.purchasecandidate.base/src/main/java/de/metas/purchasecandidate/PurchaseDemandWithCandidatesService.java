@@ -176,7 +176,7 @@ public class PurchaseDemandWithCandidatesService
 		final VendorProductInfo vendorProductInfo = vendorProductInfosRepo.getVendorProductInfo(vendorId, productId, orgId);
 
 		final PurchaseProfitInfo profitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest.builder()
-				.salesOrderLineIds(demand.getSalesOrderLineIds())
+				.salesOrderAndLineIds(demand.getSalesOrderAndLineIds())
 				.qtyToPurchase(qtyToPurchase)
 				.vendorProductInfo(vendorProductInfo)
 				.build());
@@ -187,12 +187,7 @@ public class PurchaseDemandWithCandidatesService
 				.orgId(orgId)
 				.warehouseId(groupKey.getWarehouseId())
 				//
-				.vendorId(vendorId)
-				//
-				.productId(productId)
-				.vendorProductNo(vendorProductInfo.getVendorProductNo())
-				.vendorProductName(vendorProductInfo.getVendorProductName())
-				.aggregatePOs(vendorProductInfo.isAggregatePOs())
+				.vendorProductInfo(vendorProductInfo)
 				//
 				.qtyToPurchase(qtyToPurchase)
 				.purchasedQty(purchasedQty)
@@ -200,8 +195,6 @@ public class PurchaseDemandWithCandidatesService
 				.purchaseDatePromised(purchaseDatePromised)
 				//
 				.profitInfo(profitInfo)
-				//
-				.readonly(false)
 				//
 				.purchaseCandidateIds(purchaseCandidateIds)
 				.salesOrderAndLineIds(salesOrderAndLineIds);
@@ -290,7 +283,7 @@ public class PurchaseDemandWithCandidatesService
 		final Quantity qtyToPurchase = Quantity.zero(uom);
 
 		final PurchaseProfitInfo purchaseProfitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest.builder()
-				.salesOrderLineIds(demand.getSalesOrderLineIds())
+				.salesOrderAndLineIds(demand.getSalesOrderAndLineIds())
 				.qtyToPurchase(qtyToPurchase)
 				.vendorProductInfo(vendorProductInfo)
 				.build());
@@ -316,7 +309,7 @@ public class PurchaseDemandWithCandidatesService
 				//
 				.build();
 
-		return PurchaseCandidatesGroup.of(demand.getId(), purchaseCandidate);
+		return PurchaseCandidatesGroup.of(purchaseCandidate, demand.getId(), vendorProductInfo);
 	}
 
 	private LocalDateTime calculatePurchaseDatePromised(final LocalDateTime salesDatePromised, final BPPurchaseSchedule bpPurchaseSchedule)

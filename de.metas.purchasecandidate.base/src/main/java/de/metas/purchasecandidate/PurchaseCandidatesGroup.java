@@ -48,8 +48,9 @@ import lombok.Value;
 public class PurchaseCandidatesGroup
 {
 	public static PurchaseCandidatesGroup of(
+			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final PurchaseDemandId demandId,
-			@NonNull final PurchaseCandidate purchaseCandidate)
+			@NonNull final VendorProductInfo vendorProductInfo)
 	{
 		final PurchaseCandidatesGroupBuilder builder = builder()
 				.demandId(demandId)
@@ -57,21 +58,14 @@ public class PurchaseCandidatesGroup
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				//
-				.vendorId(purchaseCandidate.getVendorId())
-				//
-				.productId(purchaseCandidate.getProductId())
-				.vendorProductNo(purchaseCandidate.getVendorProductNo())
-				.vendorProductName("") // TODO
-				.aggregatePOs(purchaseCandidate.isAggregatePOs())
+				.vendorProductInfo(vendorProductInfo)
 				//
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				//
 				.purchaseDatePromised(purchaseCandidate.getDateRequired())
 				//
-				.profitInfo(purchaseCandidate.getProfitInfo())
-				//
-				.readonly(purchaseCandidate.isProcessedOrLocked());
+				.profitInfo(purchaseCandidate.getProfitInfo());
 
 		if (purchaseCandidate.getId() != null)
 		{
@@ -94,13 +88,7 @@ public class PurchaseCandidatesGroup
 	WarehouseId warehouseId;
 
 	@NonNull
-	BPartnerId vendorId;
-
-	@NonNull
-	ProductId productId;
-	String vendorProductNo;
-	String vendorProductName;
-	boolean aggregatePOs;
+	VendorProductInfo vendorProductInfo;
 
 	@NonNull
 	Quantity qtyToPurchase;
@@ -112,8 +100,6 @@ public class PurchaseCandidatesGroup
 
 	@Nullable
 	PurchaseProfitInfo profitInfo;
-
-	boolean readonly;
 
 	@NonNull
 	@Singular
@@ -141,5 +127,25 @@ public class PurchaseCandidatesGroup
 		}
 
 		return toBuilder().profitInfo(newProfitInfo).build();
+	}
+
+	public BPartnerId getVendorId()
+	{
+		return getVendorProductInfo().getVendorId();
+	}
+
+	public String getVendorProductNo()
+	{
+		return getVendorProductInfo().getVendorProductNo();
+	}
+
+	public ProductId getProductId()
+	{
+		return getVendorProductInfo().getProductId();
+	}
+
+	public boolean isAggregatePOs()
+	{
+		return getVendorProductInfo().isAggregatePOs();
 	}
 }

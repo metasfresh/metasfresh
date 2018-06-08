@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
@@ -73,7 +75,7 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private Quantity qtyToPurchaseInitial;
 
-	@Setter(AccessLevel.NONE)
+	@Nullable
 	private PurchaseProfitInfo profitInfo;
 
 	@NonNull
@@ -167,6 +169,8 @@ public class PurchaseCandidate
 
 		qtyToPurchase = from.qtyToPurchase;
 		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
+		
+		profitInfo = from.profitInfo;
 
 		dateRequired = from.dateRequired;
 		dateRequiredInitial = from.dateRequiredInitial;

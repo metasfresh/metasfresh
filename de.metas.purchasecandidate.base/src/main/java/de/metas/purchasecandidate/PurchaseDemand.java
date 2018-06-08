@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.money.Currency;
 import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -75,9 +74,9 @@ public class PurchaseDemand
 		return qtyToDeliver.getUOMId();
 	}
 
-	public Set<OrderLineId> getSalesOrderLineIds()
+	public Set<OrderAndLineId> getSalesOrderAndLineIds()
 	{
 		final OrderAndLineId salesOrderAndLineId = getSalesOrderAndLineId();
-		return salesOrderAndLineId != null ? ImmutableSet.of(salesOrderAndLineId.getOrderLineId()) : ImmutableSet.of();
+		return salesOrderAndLineId != null ? ImmutableSet.of(salesOrderAndLineId) : ImmutableSet.of();
 	}
 }

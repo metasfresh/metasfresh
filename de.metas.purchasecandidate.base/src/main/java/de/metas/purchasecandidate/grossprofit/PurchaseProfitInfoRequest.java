@@ -2,7 +2,7 @@ package de.metas.purchasecandidate.grossprofit;
 
 import java.util.Set;
 
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -38,7 +38,7 @@ public class PurchaseProfitInfoRequest
 {
 	@NonNull
 	@Singular
-	Set<OrderLineId> salesOrderLineIds;
+	Set<OrderAndLineId> salesOrderAndLineIds;
 
 	@NonNull
 	Quantity qtyToPurchase;

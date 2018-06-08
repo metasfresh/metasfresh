@@ -53,9 +53,9 @@ public interface IOrderDAO extends ISingletonService
 		return getOrderLineById(orderAndLineId.getOrderLineId());
 	}
 
-	default <T extends org.compiere.model.I_C_OrderLine> List<T> getOrderLinesByIds(final Collection<OrderLineId> orderLineIds, final Class<T> modelType)
+	default <T extends org.compiere.model.I_C_OrderLine> List<T> getOrderLinesByIds(final Collection<OrderAndLineId> orderAndLineIds, final Class<T> modelType)
 	{
-		return loadByIds(OrderLineId.toIntSet(orderLineIds), modelType);
+		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), modelType);
 	}
 
 	/**

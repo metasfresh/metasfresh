@@ -14,7 +14,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
 import lombok.NonNull;
 
@@ -52,19 +52,19 @@ public class OrderLineWithGrossProfitPriceRepository
 		this.currencyRepository = currencyRepository;
 	}
 
-	public Optional<Money> getProfitBasePrice(@NonNull final OrderLineId orderLineId)
+	public Optional<Money> getProfitBasePrice(@NonNull final OrderAndLineId orderLineId)
 	{
 		return getProfitMinBasePrice(ImmutableList.of(orderLineId));
 	}
 
-	public Optional<Money> getProfitMinBasePrice(@NonNull final Collection<OrderLineId> orderLineIds)
+	public Optional<Money> getProfitMinBasePrice(@NonNull final Collection<OrderAndLineId> orderAndLineIds)
 	{
-		if (orderLineIds.isEmpty())
+		if (orderAndLineIds.isEmpty())
 		{
 			return Optional.empty();
 		}
 
-		final ImmutableSet<Money> profitBasePrices = ordersRepo.getOrderLinesByIds(orderLineIds, I_C_OrderLine.class)
+		final ImmutableSet<Money> profitBasePrices = ordersRepo.getOrderLinesByIds(orderAndLineIds, I_C_OrderLine.class)
 				.stream()
 				.map(this::getProfitBasePrice)
 				.collect(ImmutableSet.toImmutableSet());
