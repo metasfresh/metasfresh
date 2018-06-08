@@ -3,13 +3,17 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.compiere.model.I_C_UOM;
 
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -38,7 +42,9 @@ import lombok.Value;
 @Value
 public class PurchaseRowChangeRequest
 {
+	@Getter(AccessLevel.PRIVATE)
 	Quantity qtyToPurchase;
+	@Getter(AccessLevel.PRIVATE)
 	BigDecimal qtyToPurchaseWithoutUOM;
 
 	LocalDateTime purchaseDatePromised;
@@ -89,4 +95,22 @@ public class PurchaseRowChangeRequest
 
 		return builder.build();
 	}
+
+	public Quantity getQtyToPurchase(@NonNull final Supplier<I_C_UOM> defaultUOMSupplier)
+	{
+		if (getQtyToPurchase() != null)
+		{
+			return getQtyToPurchase();
+		}
+		else if (getQtyToPurchaseWithoutUOM() != null)
+		{
+			final BigDecimal qtyToPurchase = getQtyToPurchaseWithoutUOM();
+			return Quantity.of(qtyToPurchase, defaultUOMSupplier.get());
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 }

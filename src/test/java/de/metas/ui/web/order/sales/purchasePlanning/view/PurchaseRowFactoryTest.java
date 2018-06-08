@@ -19,6 +19,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -28,8 +29,6 @@ import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.money.Currency;
 import de.metas.money.Money;
-import de.metas.money.MoneyService;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
@@ -65,9 +64,17 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { //
+		StartupListener.class, ShutdownListener.class, //
+		PurchaseRowFactory.class, //
+		AvailableToPromiseRepository.class, //
+		DoNothingPurchaseProfitInfoServiceImpl.class //
+})
 public class PurchaseRowFactoryTest
 {
+	@Autowired
+	PurchaseRowFactory purchaseRowFactory;
+
 	private Currency currency;
 
 	private I_C_UOM EACH;
@@ -87,17 +94,14 @@ public class PurchaseRowFactoryTest
 	@Test
 	public void test()
 	{
-		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(30);
+		final VendorProductInfo vendorProductInfo = createVendorProductInfo();
+		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(30, vendorProductInfo);
 		final PurchaseDemandId demandId = PurchaseDemandId.ofTableAndRecordId(
 				I_C_OrderLine.Table_Name,
 				purchaseCandidate.getSalesOrderAndLineId().getOrderLineRepoId());
 
-		final PurchaseRowFactory purchaseRowFactory = new PurchaseRowFactory(
-				new AvailableToPromiseRepository(),
-				new MoneyService());
-
 		final PurchaseRow candidateRow = purchaseRowFactory.lineRowBuilder()
-				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(demandId, purchaseCandidate))
+				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(purchaseCandidate, demandId, vendorProductInfo))
 				.convertAmountsToCurrency(currency)
 				.build();
 
@@ -108,33 +112,8 @@ public class PurchaseRowFactoryTest
 		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(demandId);
 	}
 
-	public PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId)
+	public PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId, final VendorProductInfo vendorProductInfo)
 	{
-		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
-		save(bpartner);
-
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
-		uom.setUOMSymbol("uomSympol");
-		save(uom);
-
-		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
-		save(productCategory);
-
-		final I_M_Product product = newInstance(I_M_Product.class);
-		product.setC_UOM(uom);
-		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
-		save(product);
-		final ProductAndCategoryId productAndCategoryId = ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID());
-
-		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.vendorId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
-				.productAndCategoryId(productAndCategoryId)
-				.vendorProductNo("productNo")
-				.vendorProductName("productName")
-				.pricingConditions(PricingConditions.builder()
-						.build())
-				.build();
-
 		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo
 				.builder()
 				.salesNetPrice(Money.of(11, currency))
@@ -156,6 +135,34 @@ public class PurchaseRowFactoryTest
 				.profitInfo(profitInfo)
 				.processed(true) // imporant if we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
 				.locked(false)
+				.build();
+	}
+
+	private VendorProductInfo createVendorProductInfo()
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		save(bpartner);
+
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setUOMSymbol("uomSympol");
+		save(uom);
+
+		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
+		save(productCategory);
+
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setC_UOM(uom);
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
+		save(product);
+		final ProductAndCategoryId productAndCategoryId = ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID());
+
+		return VendorProductInfo.builder()
+				.vendorId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
+				.productAndCategoryId(productAndCategoryId)
+				.vendorProductNo("productNo")
+				.vendorProductName("productName")
+				.pricingConditions(PricingConditions.builder()
+						.build())
 				.build();
 	}
 

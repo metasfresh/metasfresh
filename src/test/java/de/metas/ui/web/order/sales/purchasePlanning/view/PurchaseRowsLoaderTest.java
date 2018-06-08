@@ -36,8 +36,6 @@ import de.metas.StartupListener;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
-import de.metas.money.MoneyService;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.pricing.conditions.PricingConditions;
@@ -84,7 +82,7 @@ import mockit.Mocked;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class })
 public class PurchaseRowsLoaderTest
 {
 	@Mocked
@@ -179,14 +177,14 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseDemand demand = SalesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, vendorProductInfo);
-		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(demand, purchaseCandidate);
+		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(demand, purchaseCandidate, vendorProductInfo);
 
 		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
 				.purchaseDemandWithCandidatesList(demandWithCandidates)
 				.viewSupplier(() -> null)
 				.purchaseRowFactory(new PurchaseRowFactory(
 						new AvailableToPromiseRepository(),
-						new MoneyService()))
+						new DoNothingPurchaseProfitInfoServiceImpl()))
 				.availabilityCheckService(availabilityCheckService)
 				.build();
 
@@ -252,11 +250,12 @@ public class PurchaseRowsLoaderTest
 
 	private static ImmutableList<PurchaseDemandWithCandidates> createPurchaseDemandWithCandidates(
 			final PurchaseDemand demand,
-			final PurchaseCandidate purchaseCandidate)
+			final PurchaseCandidate purchaseCandidate,
+			final VendorProductInfo vendorProductInfo)
 	{
 		return ImmutableList.of(PurchaseDemandWithCandidates.builder()
 				.purchaseDemand(demand)
-				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(demand.getId(), purchaseCandidate))
+				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(purchaseCandidate, demand.getId(), vendorProductInfo))
 				.build());
 	}
 }

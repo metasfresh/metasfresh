@@ -24,6 +24,7 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemandId;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -113,6 +114,7 @@ class PurchaseRowsSaver
 			return ImmutableList.of();
 		}
 
+		final PurchaseProfitInfo profitInfo = purchaseRow.getProfitInfo();
 		final LocalDateTime purchaseDatePromised = purchaseRow.getDatePromised();
 		final List<PurchaseCandidate> allCandidates = getPurchaseCandidatesForRow(purchaseRow, existingPurchaseCandidatesById);
 
@@ -153,6 +155,7 @@ class PurchaseRowsSaver
 			final Quantity qtyToPurchase = qtyToPurchaseTarget.min(qtyToPurchaseRemaining);
 			candidate.setQtyToPurchase(qtyToPurchase);
 			candidate.setDateRequired(purchaseDatePromised);
+			candidate.setProfitInfo(profitInfo);
 
 			candidatesChanged.add(candidate);
 			qtyToPurchaseRemaining = qtyToPurchaseRemaining.subtract(qtyToPurchase);

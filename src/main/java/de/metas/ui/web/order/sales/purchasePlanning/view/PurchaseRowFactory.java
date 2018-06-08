@@ -16,7 +16,6 @@ import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.Currency;
-import de.metas.money.MoneyService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -24,6 +23,7 @@ import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoService;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -56,16 +56,17 @@ public class PurchaseRowFactory
 	// services
 	private static final Logger logger = LogManager.getLogger(PurchaseRowFactory.class);
 	private final AvailableToPromiseRepository availableToPromiseRepository;
-	private final MoneyService moneyService;
+	private final PurchaseProfitInfoService purchaseProfitInfoService;
 	private final PurchaseRowLookups lookups;
 	private final IProductBL productsBL = Services.get(IProductBL.class);
 
 	public PurchaseRowFactory(
 			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
-			@NonNull final MoneyService moneyService)
+			@NonNull final PurchaseProfitInfoService purchaseProfitInfoService)
 	{
-		this.moneyService = moneyService;
 		this.availableToPromiseRepository = availableToPromiseRepository;
+		this.purchaseProfitInfoService = purchaseProfitInfoService;
+
 		lookups = PurchaseRowLookups.newInstance();
 	}
 
@@ -80,6 +81,7 @@ public class PurchaseRowFactory
 		final PurchaseProfitInfo profitInfo = convertToCurrencyIfPossible(purchaseCandidatesGroup.getProfitInfo(), convertAmountsToCurrency);
 
 		return PurchaseRow.lineRowBuilder()
+				.purchaseProfitInfoService(purchaseProfitInfoService)
 				.lookups(lookups)
 				.purchaseCandidatesGroup(purchaseCandidatesGroup.changeProfitInfo(profitInfo))
 				.build();
@@ -98,11 +100,7 @@ public class PurchaseRowFactory
 
 		try
 		{
-			return profitInfo.toBuilder()
-					.salesNetPrice(profitInfo.getSalesNetPrice().map(price -> moneyService.convertMoneyToCurrency(price, currencyTo)))
-					.purchaseNetPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseNetPrice(), currencyTo))
-					.purchaseGrossPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseGrossPrice(), currencyTo))
-					.build();
+			return purchaseProfitInfoService.convertToCurrency(profitInfo, currencyTo);
 		}
 		catch (final Exception ex)
 		{
