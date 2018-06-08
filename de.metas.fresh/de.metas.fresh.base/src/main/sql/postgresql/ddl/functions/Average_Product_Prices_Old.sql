@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.average_product_prices_old ( IN datefrom DATE, IN dateto DATE, IN issotrx character(1) );
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.average_product_prices_old ( IN datefrom DATE, IN dateto DATE, IN issotrx character(1) )
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.average_product_prices_old ( IN p_datefrom DATE, IN p_dateto DATE, IN p_issotrx character(1) );
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.average_product_prices_old ( IN p_datefrom DATE, IN p_dateto DATE, IN p_issotrx character(1) )
 RETURNS TABLE 
 (
 	ProduktNr character varying(40),
@@ -36,7 +36,7 @@ SELECT
 		THEN currencyConvert(ic.PriceActual_Net_Effective * ic.qtyOrdered
 			, ic.C_Currency_ID -- p_curfrom_id
 			, (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'CHF') -- p_curto_id
-			, $2 -- p_convdate -- date to 
+			, p_dateto -- p_convdate -- date to 
 			, (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P') -- p_conversiontype_id
 			, ic.AD_Client_ID
 			, ic.AD_Org_ID --ad_org_id
@@ -81,9 +81,9 @@ LEFT OUTER JOIN PP_Order pp ON ic.Record_ID = pp.PP_Order_ID AND ic.AD_Table_ID 
 LEFT OUTER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
 
 WHERE 
-	ic.isSOTrx = $3
-	AND ic.DateOrdered >= $1 -- date from
-	AND ic.DateOrdered <= $2 --  date to
+	ic.isSOTrx = p_issotrx
+	AND ic.DateOrdered >= p_datefrom -- date from
+	AND ic.DateOrdered <= p_dateto --  date to
 	--
 	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 $$
