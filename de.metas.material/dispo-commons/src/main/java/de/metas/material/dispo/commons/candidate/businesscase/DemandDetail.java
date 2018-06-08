@@ -7,8 +7,6 @@ import javax.annotation.Nullable;
 import org.adempiere.util.Check;
 
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
@@ -95,21 +93,6 @@ public class DemandDetail implements BusinessCaseDetail
 				.subscriptionProgressId(supplyRequiredDescriptor.getSubscriptionProgressId())
 				.plannedQty(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
 				.build();
-	}
-
-	public static DemandDetail forDemandDetailRecord(
-			@NonNull final I_MD_Candidate_Demand_Detail demandDetailRecord)
-	{
-		final I_MD_Candidate demandRecord = demandDetailRecord.getMD_Candidate();
-
-		return DemandDetail.builder()
-				.shipmentScheduleId(demandDetailRecord.getM_ShipmentSchedule_ID())
-				.forecastId(demandRecord.getM_Forecast_ID())
-				.forecastLineId(demandDetailRecord.getM_ForecastLine_ID())
-				.orderId(demandRecord.getC_Order_ID())
-				.orderLineId(demandDetailRecord.getC_OrderLine_ID())
-				.subscriptionProgressId(demandDetailRecord.getC_SubscriptionProgress_ID())
-				.plannedQty(demandDetailRecord.getPlannedQty()).build();
 	}
 
 	public static DemandDetail forShipmentScheduleIdAndOrderLineId(

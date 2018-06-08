@@ -28,9 +28,11 @@ import org.junit.Test;
 
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
@@ -72,9 +74,9 @@ public class StockCandidateServiceTests
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(new PurchaseDetailRepoHelper());
 
-		candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		candidateRepositoryCommands = new CandidateRepositoryWriteService(new PurchaseDetailRepoHelper());
 		stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryCommands);
@@ -150,7 +152,7 @@ public class StockCandidateServiceTests
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
-				.id(23)
+				.id(CandidateId.ofRepoId(23))
 				.build();
 
 		stockCandidateService.updateQty(candidate);
@@ -165,7 +167,7 @@ public class StockCandidateServiceTests
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor().withQuantity(BigDecimal.ONE))
-				.id(candidateRecord.getMD_Candidate_ID())
+				.id(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
 				.build();
 
 		final Candidate result = stockCandidateService.updateQty(candidate);

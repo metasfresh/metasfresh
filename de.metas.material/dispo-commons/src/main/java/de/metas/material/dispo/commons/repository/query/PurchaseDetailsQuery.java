@@ -1,7 +1,10 @@
 package de.metas.material.dispo.commons.repository.query;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import lombok.Builder;
 import lombok.Value;
 
@@ -30,22 +33,41 @@ import lombok.Value;
 @Value
 public class PurchaseDetailsQuery
 {
+	public static PurchaseDetailsQuery ofPurchaseDetailOrNull(@Nullable final PurchaseDetail purchaseDetail)
+	{
+		if (purchaseDetail == null)
+		{
+			return null;
+		}
+		return PurchaseDetailsQuery.builder()
+				.productPlanningRepoId(purchaseDetail.getProductPlanningRepoId())
+				.purchaseCandidateRepoId(purchaseDetail.getPurchaseCandidateRepoId())
+				.receiptScheduleRepoId(purchaseDetail.getReceiptScheduleRepoId())
+				.build();
+	}
+
 	/** a value <= 0 means "unspecified" */
 	int purchaseCandidateRepoId;
 
 	/** a value <= 0 means "unspecified" */
 	int receiptScheduleRepoId;
 
+	/** a value <= 0 means "unspecified" */
+	int productPlanningRepoId;
+
 	@Builder
 	private PurchaseDetailsQuery(
+			final int productPlanningRepoId,
 			final int purchaseCandidateRepoId,
 			final int receiptScheduleRepoId)
 	{
+		this.productPlanningRepoId = productPlanningRepoId;
 		this.purchaseCandidateRepoId = purchaseCandidateRepoId;
 		this.receiptScheduleRepoId = receiptScheduleRepoId;
 
 		Check.errorIf(
-				purchaseCandidateRepoId <= 0 && receiptScheduleRepoId <= 0,
-				"At least one of purchaseCandidateRepoId and receiptScheduleRepoId needs to be > 1");
+				purchaseCandidateRepoId <= 0 && receiptScheduleRepoId <= 0 && productPlanningRepoId <= 0,
+				"At least one of productPlanningRepoId, purchaseCandidateRepoId and receiptScheduleRepoId needs to be > 1");
 	}
+
 }

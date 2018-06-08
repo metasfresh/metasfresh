@@ -8,6 +8,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail.PurchaseDetailBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -66,9 +67,25 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 
 		final MaterialDescriptor purchaseMaterialDescriptor = event.getPurchaseMaterialDescriptor();
 
-		final CandidateBuilder candidateBuilder = createCandidateBuilder(event);
+		final CandidatesQuery query = createCandidatesQuery(event);
+		final Candidate existingCandidteOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 
-		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
+		final CandidateBuilder candidateBuilder;
+		final PurchaseDetailBuilder purchaseDetailBuilder;
+		if (existingCandidteOrNull != null)
+		{
+			candidateBuilder = existingCandidteOrNull.toBuilder();
+			purchaseDetailBuilder = PurchaseDetail
+					.cast(existingCandidteOrNull.getBusinessCaseDetail())
+					.toBuilder();
+		}
+		else
+		{
+			candidateBuilder = createInitialBuilder();
+			purchaseDetailBuilder = PurchaseDetail.builder();
+		}
+
+		final PurchaseDetail purchaseDetail = purchaseDetailBuilder
 				.plannedQty(purchaseMaterialDescriptor.getQuantity())
 				.vendorRepoId(purchaseMaterialDescriptor.getBPartnerId())
 				.purchaseCandidateRepoId(event.getPurchaseCandidateRepoId())
@@ -85,21 +102,6 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 	}
 
 	protected abstract CandidatesQuery createCandidatesQuery(@NonNull final PurchaseCandidateEvent event);
-
-	private CandidateBuilder createCandidateBuilder(@NonNull final PurchaseCandidateEvent event)
-	{
-		final CandidatesQuery query = createCandidatesQuery(event);
-		final Candidate existingCandidteOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
-		if (existingCandidteOrNull != null)
-		{
-			return existingCandidteOrNull.toBuilder();
-		}
-		else
-		{
-			// should not happen, but know nows..maybe the candidate was deleted meanwhile
-			return createInitialBuilder();
-		}
-	}
 
 	protected final CandidateBuilder createInitialBuilder()
 	{

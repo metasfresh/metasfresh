@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -68,9 +69,9 @@ public class PPOrderUtilTest
 		relatedProductionDetail.setMD_Candidate(candidateWithRelatedProdDetail);
 		save(relatedProductionDetail);
 
-		final List<Candidate> result = PPOrderUtil.retrieveCandidatesForPPOrderId(new CandidateRepositoryRetrieval(), 23);
+		final List<Candidate> result = PPOrderUtil.retrieveCandidatesForPPOrderId(new CandidateRepositoryRetrieval(new PurchaseDetailRepoHelper()), 23);
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getId()).isEqualTo(relatedProductionDetail.getMD_Candidate_ID());
+		assertThat(result.get(0).getId().getRepoId()).isEqualTo(relatedProductionDetail.getMD_Candidate_ID());
 	}
 
 	private I_MD_Candidate createCandidateRecord(@NonNull final Timestamp dateProjected)

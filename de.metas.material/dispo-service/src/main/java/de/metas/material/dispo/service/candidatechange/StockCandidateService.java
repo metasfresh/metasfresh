@@ -6,17 +6,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Preconditions;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
@@ -131,11 +131,11 @@ public class StockCandidateService
 	 */
 	public Candidate updateQty(@NonNull final Candidate candidateToUpdate)
 	{
-		Preconditions.checkState(candidateToUpdate.getId() > 0,
-				"Parameter 'candidateToUpdate' needs to have Id > 0; candidateToUpdate=%s",
+		Check.errorIf(candidateToUpdate.getId().isNull(),
+				"Parameter 'candidateToUpdate' needs to have a not-null Id; candidateToUpdate=%s",
 				candidateToUpdate);
 
-		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId(), I_MD_Candidate.class);
+		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId().getRepoId(), I_MD_Candidate.class);
 		final BigDecimal oldQty = candidateRecord.getQty();
 
 		candidateRecord.setQty(candidateToUpdate.getQuantity());
@@ -192,7 +192,7 @@ public class StockCandidateService
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.type(CandidateType.STOCK)
 				.matchExactStorageAttributesKey(true)
-				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
+				.parentId(CandidateId.UNSPECIFIED)
 				.build();
 	}
 

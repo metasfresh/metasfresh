@@ -79,7 +79,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 		// TODO 3034 test: if we add a supplyCandidate that has an unspecified parent-id and and in DB there is an MD_Candidate with parentId > 0,
 		// then supplyCandidateDeltaWithId needs to have that parentId
 		final Candidate supplyCandidateDeltaWithId = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
-		final Candidate supplyCandidateWithIdAndParentId = supplyCandidateDeltaWithId.withQuantity(supplyCandidate.getQuantity());
+		final Candidate supplyCandidateWithIdAndQty = supplyCandidateDeltaWithId.withQuantity(supplyCandidate.getQuantity());
 
 		if (supplyCandidateDeltaWithId.getQuantity().signum() == 0)
 		{
@@ -88,17 +88,17 @@ public class SupplyCandiateHandler implements CandidateHandler
 
 		final Candidate parentStockCandidateWithIdAndDelta;
 
-		final boolean alreadyHasParentStockCandidate = supplyCandidateWithIdAndParentId.getParentId() > 0;
+		final boolean alreadyHasParentStockCandidate = !supplyCandidateWithIdAndQty.getParentId().isNull();
 		if (alreadyHasParentStockCandidate)
 		{
 			final Candidate parentStockCandidate = candidateRepository
-					.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithIdAndParentId.getParentId()));
+					.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithIdAndQty.getParentId()));
 			parentStockCandidateWithIdAndDelta = stockCandidateService.updateQty(
 					parentStockCandidate.withQuantity(supplyCandidate.getQuantity()));
 		}
 		else
 		{
-			final Candidate newSupplyCandidateParent = stockCandidateService.createStockCandidate(supplyCandidateWithIdAndParentId);
+			final Candidate newSupplyCandidateParent = stockCandidateService.createStockCandidate(supplyCandidateWithIdAndQty);
 			parentStockCandidateWithIdAndDelta = candidateRepositoryWriteService.addOrUpdatePreserveExistingSeqNo(newSupplyCandidateParent);
 		}
 
@@ -107,7 +107,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 		// set the stock candidate as parent for the supply candidate
 		// the return value would have qty=0, but in the repository we updated the parent-ID
 		candidateRepositoryWriteService.updateCandidateById(
-				supplyCandidateWithIdAndParentId
+				supplyCandidateWithIdAndQty
 						.withParentId(parentStockCandidateWithIdAndDelta.getId())
 						.withSeqNo(parentStockCandidateWithIdAndDelta.getSeqNo() + 1));
 

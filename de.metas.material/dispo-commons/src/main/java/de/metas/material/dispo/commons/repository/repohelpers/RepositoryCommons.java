@@ -1,4 +1,4 @@
-package de.metas.material.dispo.commons.repository;
+package de.metas.material.dispo.commons.repository.repohelpers;
 
 import java.util.List;
 import java.util.Objects;
@@ -16,11 +16,14 @@ import org.compiere.model.IQuery;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -57,9 +60,6 @@ public class RepositoryCommons
 
 	/**
 	 * Turns the given segment into the "where part" of a big query builder. Does not specify the ordering.
-	 *
-	 * @param query
-	 * @return
 	 */
 	public IQueryBuilder<I_MD_Candidate> mkQueryBuilder(@NonNull final CandidatesQuery query)
 	{
@@ -73,9 +73,9 @@ public class RepositoryCommons
 			builder.filter(ConstantQueryFilter.of(false));
 			return builder;
 		}
-		else if (query.getId() > 0)
+		else if (!query.getId().isUnspecified())
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId().getRepoId());
 			return builder;
 		}
 
@@ -84,9 +84,9 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, query.getType().toString());
 		}
 
-		if (query.getParentId() >= 0)
+		if (!query.getParentId().isUnspecified())
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, query.getParentId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, query.getParentId().getRepoId());
 		}
 
 		if (query.getGroupId() > 0)
@@ -325,6 +325,11 @@ public class RepositoryCommons
 			}
 			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, transactionDetailSubQueryBuilder.create());
 		}
+	}
+
+	public CandidateId candidateIdOf(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		return CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID());
 	}
 
 	public <T> T retrieveSingleCandidateDetail(

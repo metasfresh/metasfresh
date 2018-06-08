@@ -4,11 +4,13 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import lombok.NonNull;
@@ -57,11 +59,12 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 		final CandidateBuilder candidateBuilder = createCandidateBuilder(event);
 
 		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
-				.orderedQty(event.getMaterialDescriptor().getQuantity())
+				.plannedQty(event.getMaterialDescriptor().getQuantity())
 				.orderLineRepoId(extractOrderLineRepoId(event))
 				.purchaseCandidateRepoId(extractPurchaseCandidateRepoId(event))
 				.vendorRepoId(event.getMaterialDescriptor().getBPartnerId())
 				.receiptScheduleRepoId(event.getReceiptScheduleId())
+				.advised(Flag.FALSE_DONT_UPDATE)
 				.build();
 
 		final Candidate supplyCandidate = candidateBuilder
@@ -83,15 +86,19 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 		else
 		{
 			// should not happen, but know nows..maybe the candidate was deleted meanwhile
-			return createInitialBuilder();
+			return createInitialBuilder(event);
 		}
 	}
 
 	protected abstract CandidatesQuery createCandidatesQuery(@NonNull final AbstractReceiptScheduleEvent event);
 
-	private final CandidateBuilder createInitialBuilder()
+	private final CandidateBuilder createInitialBuilder(@NonNull final AbstractReceiptScheduleEvent event)
 	{
+		final EventDescriptor eventDescriptor = event.getEventDescriptor();
+
 		return Candidate.builder()
+				.clientId(eventDescriptor.getClientId())
+				.orgId(eventDescriptor.getOrgId())
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE);
 	}

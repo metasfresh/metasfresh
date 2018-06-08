@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1776266296L;
+	private static final long serialVersionUID = 540540812L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -191,6 +191,8 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public static final String MD_CANDIDATE_BUSINESSCASE_SHIPMENT = "SHIPMENT";
 	/** FORECAST = FORECAST */
 	public static final String MD_CANDIDATE_BUSINESSCASE_FORECAST = "FORECAST";
+	/** PURCHASE = PURCHASE */
+	public static final String MD_CANDIDATE_BUSINESSCASE_PURCHASE = "PURCHASE";
 	/** Set Geschäftsvorfall.
 		@param MD_Candidate_BusinessCase Geschäftsvorfall	  */
 	@Override

@@ -65,12 +65,12 @@ public class Candidate
 
 	CandidateStatus status;
 
-	int id;
+	CandidateId id;
 
 	/**
 	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
 	 */
-	int parentId;
+	CandidateId parentId;
 
 	/**
 	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
@@ -129,7 +129,11 @@ public class Candidate
 		{
 			return groupId;
 		}
-		return id;
+		if (id == null)
+		{
+			return 0;
+		}
+		return id.getRepoId();
 	}
 
 	public Date getDate()
@@ -173,8 +177,8 @@ public class Candidate
 			@NonNull final CandidateType type,
 			final CandidateBusinessCase businessCase,
 			final CandidateStatus status,
-			final int id,
-			final int parentId,
+			final CandidateId id,
+			final CandidateId parentId,
 			final int groupId,
 			final int seqNo,
 			@NonNull final MaterialDescriptor materialDescriptor,
@@ -187,8 +191,13 @@ public class Candidate
 		this.type = type;
 		this.businessCase = businessCase;
 		this.status = status;
-		this.id = id;
-		this.parentId = parentId;
+
+		this.id = Util.coalesce(id, CandidateId.NULL);
+		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");
+
+		this.parentId = Util.coalesce(parentId, CandidateId.NULL);
+		Check.errorIf(this.parentId.isUnspecified(), "The given parentId may be null or CandidateId.NULL, but not unspecified");
+
 		this.groupId = groupId;
 		this.seqNo = seqNo;
 

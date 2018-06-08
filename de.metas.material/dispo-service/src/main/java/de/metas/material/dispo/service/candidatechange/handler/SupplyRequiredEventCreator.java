@@ -88,7 +88,7 @@ public class SupplyRequiredEventCreator
 			@NonNull final BigDecimal qty)
 	{
 		return SupplyRequiredDescriptor.builder()
-				.demandCandidateId(candidate.getId())
+				.demandCandidateId(candidate.getId().getRepoId())
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(candidate.getClientId(), candidate.getOrgId()))
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty));
 	}

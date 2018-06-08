@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
+import static de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons.retrieveSingleCandidateDetail;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -20,11 +21,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
+import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -59,6 +64,13 @@ import lombok.NonNull;
 @Service
 public class CandidateRepositoryWriteService
 {
+	private final PurchaseDetailRepoHelper purchaseDetailRepoHelper;
+
+	public CandidateRepositoryWriteService(@NonNull final PurchaseDetailRepoHelper purchaseDetailRepoHelper)
+	{
+		this.purchaseDetailRepoHelper = purchaseDetailRepoHelper;
+	}
+
 	/**
 	 * Stores the given {@code candidate}.
 	 * If there is already an existing candidate in the store, it is loaded, its fields are updated and the result is saved.<br>
@@ -92,7 +104,7 @@ public class CandidateRepositoryWriteService
 
 	public Candidate updateCandidateById(@NonNull final Candidate candidate)
 	{
-		Check.errorIf(candidate.getId() <= 0, "The candidate parameter needs to have Id>0; candidate={}", candidate);
+		Check.errorIf(candidate.getId().isNull(), "The candidate parameter needs to have an id; candidate={}", candidate);
 		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
 
 		return addOrUpdate(query, candidate, false);
@@ -131,6 +143,8 @@ public class CandidateRepositoryWriteService
 
 		addOrReplaceDemandDetail(candidate, synchedRecord);
 
+		addOrReplacePurchaseDetail(candidate, synchedRecord);
+
 		addOrReplaceTransactionDetail(candidate, synchedRecord);
 
 		return createNewCandidateWithIdsFromRecord(candidate, synchedRecord).withQuantity(qtyDelta);
@@ -151,8 +165,8 @@ public class CandidateRepositoryWriteService
 		Preconditions.checkState(
 				candidateRecord == null
 						|| isNew(candidateRecord)
-						|| candidate.getId() <= 0
-						|| Objects.equals(candidateRecord.getMD_Candidate_ID(), candidate.getId()),
+						|| candidate.getId().isNull()
+						|| Objects.equals(candidateRecord.getMD_Candidate_ID(), candidate.getId().getRepoId()),
 				"The given MD_Candidate is not new and its ID is different from the ID of the given Candidate; MD_Candidate=%s; candidate=%s",
 				candidateRecord, candidate);
 
@@ -206,9 +220,9 @@ public class CandidateRepositoryWriteService
 			candidateRecord.setMD_Candidate_BusinessCase(candidate.getBusinessCase().toString());
 		}
 
-		if (candidate.getParentId() > 0)
+		if (!candidate.getParentId().isNull())
 		{
-			candidateRecord.setMD_Candidate_Parent_ID(candidate.getParentId());
+			candidateRecord.setMD_Candidate_Parent_ID(candidate.getParentId().getRepoId());
 		}
 
 		final boolean candidateHasSeqNoToSync = candidate.getSeqNo() > 0;
@@ -299,7 +313,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Prod_Detail productionDetailRecordToUpdate;
-		final I_MD_Candidate_Prod_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Prod_Detail.class);
+		final I_MD_Candidate_Prod_Detail existingDetail = retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Prod_Detail.class);
 		if (existingDetail == null)
 		{
 			productionDetailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
@@ -311,11 +325,11 @@ public class CandidateRepositoryWriteService
 		{
 			productionDetailRecordToUpdate = existingDetail;
 
-			if (productionDetail.getPickDirectlyIfFeasible().updateExistingRecord())
+			if (productionDetail.getPickDirectlyIfFeasible().isUpdateExistingRecord())
 			{
 				productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().toBoolean());
 			}
-			if (productionDetail.getAdvised().updateExistingRecord())
+			if (productionDetail.getAdvised().isUpdateExistingRecord())
 			{
 				productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().toBoolean());
 			}
@@ -345,7 +359,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Dist_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Dist_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Dist_Detail.class);
+		final I_MD_Candidate_Dist_Detail existingDetail = retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Dist_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
@@ -355,7 +369,7 @@ public class CandidateRepositoryWriteService
 		else
 		{
 			detailRecordToUpdate = existingDetail;
-			if(distributionDetail.getPickDirectlyIfFeasible().updateExistingRecord())
+			if (distributionDetail.getPickDirectlyIfFeasible().isUpdateExistingRecord())
 			{
 				detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().toBoolean());
 			}
@@ -376,9 +390,7 @@ public class CandidateRepositoryWriteService
 	}
 
 	@VisibleForTesting
-	void addOrReplaceDemandDetail(
-			@NonNull final Candidate candidate,
-			@NonNull final I_MD_Candidate synchedRecord)
+	void addOrReplaceDemandDetail(@NonNull final Candidate candidate, @NonNull final I_MD_Candidate synchedRecord)
 	{
 		if (candidate.getDemandDetail() == null)
 		{
@@ -386,7 +398,10 @@ public class CandidateRepositoryWriteService
 		}
 
 		final I_MD_Candidate_Demand_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Demand_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Demand_Detail.class);
+		final I_MD_Candidate_Demand_Detail existingDetail = retrieveSingleCandidateDetail(
+				synchedRecord,
+				I_MD_Candidate_Demand_Detail.class);
+
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Demand_Detail.class, synchedRecord);
@@ -406,6 +421,14 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(detailRecordToUpdate);
+	}
+
+	private void addOrReplacePurchaseDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final I_MD_Candidate synchedRecord)
+	{
+		final PurchaseDetail purchaseDetail = PurchaseDetail.castOrNull(candidate.getBusinessCaseDetail());
+		purchaseDetailRepoHelper.save(purchaseDetail, synchedRecord);
 	}
 
 	@VisibleForTesting
@@ -446,8 +469,8 @@ public class CandidateRepositoryWriteService
 			@NonNull final I_MD_Candidate candidateRecord)
 	{
 		return candidate
-				.withId(candidateRecord.getMD_Candidate_ID())
-				.withParentId(candidateRecord.getMD_Candidate_Parent_ID())
+				.withId(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
+				.withParentId(CandidateId.ofRepoIdOrNull(candidateRecord.getMD_Candidate_Parent_ID()))
 				.withGroupId(candidateRecord.getMD_Candidate_GroupId())
 				.withSeqNo(candidateRecord.getSeqNo());
 	}

@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -80,6 +82,9 @@ public class RequestMaterialOrderService
 				break;
 			case DISTRIBUTION:
 				createAndFireDDOrderRequestedEvent(group);
+				break;
+			case PURCHASE:
+				createAndFirePurchaseCandidateRequestedEvent(group);
 				break;
 			default:
 				break;
@@ -229,5 +234,26 @@ public class RequestMaterialOrderService
 								.build())
 						.build())
 				.build();
+	}
+
+	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group)
+	{
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group);
+		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+	}
+
+	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group)
+	{
+		final Candidate createdCandidate = ListUtils.singleElement(group);
+
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(createdCandidate.getClientId(), createdCandidate.getOrgId()))
+				.purchaseMaterialDescriptor(createdCandidate.getMaterialDescriptor())
+				.supplyCandidateRepoId(createdCandidate.getId().getRepoId())
+				.salesOrderLineRepoId(createdCandidate.getAdditionalDemandDetail().getOrderLineId())
+				.salesOrderRepoId(createdCandidate.getAdditionalDemandDetail().getOrderId())
+				.build();
+
+		return purchaseCandidateRequestedEvent;
 	}
 }

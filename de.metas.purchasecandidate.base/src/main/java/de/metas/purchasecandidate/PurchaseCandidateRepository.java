@@ -460,7 +460,7 @@ public class PurchaseCandidateRepository
 	public PurchaseCandidateId save(@NonNull final PurchaseCandidate purchaseCandidate)
 	{
 		I_C_PurchaseCandidate purchaseCandidateRecord;
-		if (purchaseCandidate.getId() != null)
+		if (purchaseCandidate.getId() == null)
 		{
 			purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
 		}

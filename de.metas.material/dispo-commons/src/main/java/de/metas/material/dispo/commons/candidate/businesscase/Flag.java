@@ -48,7 +48,7 @@ public enum Flag
 		return this.equals(TRUE);
 	}
 
-	public boolean updateExistingRecord()
+	public boolean isUpdateExistingRecord()
 	{
 		return !this.equals(FALSE_DONT_UPDATE);
 	}

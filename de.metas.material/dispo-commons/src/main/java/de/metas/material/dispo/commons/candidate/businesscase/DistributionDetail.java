@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -49,7 +50,9 @@ public class DistributionDetail implements BusinessCaseDetail
 
 	boolean advised;
 
-	Flag pickDirectlyIfFeasible;
+	@NonNull
+	@Default
+	Flag pickDirectlyIfFeasible=Flag.FALSE;
 
 	@NonNull
 	BigDecimal plannedQty;
@@ -74,5 +77,4 @@ public class DistributionDetail implements BusinessCaseDetail
 	{
 		return CandidateBusinessCase.DISTRIBUTION;
 	}
-
 }

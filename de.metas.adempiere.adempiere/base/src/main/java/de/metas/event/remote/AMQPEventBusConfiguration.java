@@ -6,7 +6,9 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.connection.ConnectionNameStrategy;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -49,10 +51,17 @@ public class AMQPEventBusConfiguration
 	public static final String EVENTS_QUEUE_NAME_SPEL = "#{metasfreshEventsQueue.name}";
 	public static final String EVENTS_EXCHANGE_NAME = "metasfresh-events";
 
-	private static final AnonymousQueue.NamingStrategy eventQueueNamingStrategy = new AnonymousQueue.Base64UrlNamingStrategy("metasfresh.events-");
+	@Value("${spring.application.name:spring.application.name-not-set}")
+	private String appName;
+
+	@Bean
+	public AnonymousQueue.NamingStrategy namingStrategy()
+	{
+		return new AnonymousQueue.Base64UrlNamingStrategy("metasfresh.events." + appName + "-");
+	}
 
 	@Bean(EVENTS_QUEUE_BEAN_NAME)
-	public AnonymousQueue eventsQueue()
+	public AnonymousQueue eventsQueue(AnonymousQueue.NamingStrategy eventQueueNamingStrategy)
 	{
 		return new AnonymousQueue(eventQueueNamingStrategy);
 	}
@@ -64,9 +73,11 @@ public class AMQPEventBusConfiguration
 	}
 
 	@Bean
-	public Binding eventsBinding()
+	public Binding eventsBinding(AnonymousQueue.NamingStrategy eventQueueNamingStrategy)
 	{
-		return BindingBuilder.bind(eventsQueue()).to(eventsExchange());
+		return BindingBuilder
+				.bind(eventsQueue(eventQueueNamingStrategy))
+				.to(eventsExchange());
 	}
 
 	@Bean
@@ -87,6 +98,18 @@ public class AMQPEventBusConfiguration
 		final DefaultMessageHandlerMethodFactory factory = new DefaultMessageHandlerMethodFactory();
 		factory.setMessageConverter(messageConverter());
 		return factory;
+	}
+
+	/**
+	 * Attempt to set the application name (e.g. metasfresh-webui-api) as the rabbitmq connection name.
+	 * Thx to https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-messaging.html#boot-features-rabbitmq
+	 *
+	 * (although right now it doesn't need to work..)
+	 */
+	@Bean
+	public ConnectionNameStrategy connectionNameStrategy()
+	{
+		return connectionFactory -> appName;
 	}
 
 	@Bean

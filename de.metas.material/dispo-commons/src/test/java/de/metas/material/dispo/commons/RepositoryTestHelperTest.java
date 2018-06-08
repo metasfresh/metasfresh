@@ -9,9 +9,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.AttributesKey;
@@ -40,17 +42,21 @@ import de.metas.material.event.commons.AttributesKey;
 
 public class RepositoryTestHelperTest
 {
+	private RepositoryTestHelper repositoryTestHelper;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(new PurchaseDetailRepoHelper());
+
+		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
 	}
 
 	@Test
 	public void mkQueryForStockUntilDate_has_unspecified_StorageAttributesKey()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
 
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper
 				.mkQueryForStockUntilDate(EventTestHelper.NOW);
@@ -62,14 +68,12 @@ public class RepositoryTestHelperTest
 	@Test
 	public void constructor_sets_up_candidates_correctly()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
-
 		final Candidate laterStockCandidate = repositoryTestHelper.laterStockCandidate;
 		final Candidate stockCandidate = repositoryTestHelper.stockCandidate;
 
 		assertThat(laterStockCandidate.getDate()).isAfter(stockCandidate.getDate());
-		assertThat(laterStockCandidate.getId()).isGreaterThan(0);
-		assertThat(stockCandidate.getId()).isGreaterThan(0);
+		assertThat(laterStockCandidate.getId().isNull()).isFalse();
+		assertThat(stockCandidate.getId().isNull()).isFalse();
 		assertThat(stockCandidate.getId()).isNotEqualTo(laterStockCandidate.getId());
 
 		final I_MD_Candidate stockCandidateRecord = retrieveForId(stockCandidate.getId());
@@ -81,22 +85,20 @@ public class RepositoryTestHelperTest
 		assertThat(laterStockCandidateRecord.getQty()).isEqualByComparingTo("10");
 	}
 
-	private static I_MD_Candidate retrieveForId(final int candidateRecordId)
+	private static I_MD_Candidate retrieveForId(final CandidateId candidateId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
-						candidateRecordId)
+						candidateId.getRepoId())
 				.create().firstOnly(I_MD_Candidate.class);
 	}
 
 	@Test
 	public void constructor_sets_up_candidates_correctly_and_queries_work()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
-
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper.mkQueryForStockUntilDate(EventTestHelper.NOW);
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(new PurchaseDetailRepoHelper());
 		final Candidate retrievedStockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockCandidatequery);
 		assertThat(retrievedStockCandidate).isNotNull();
 		assertThat(retrievedStockCandidate).isEqualTo(repositoryTestHelper.stockCandidate);

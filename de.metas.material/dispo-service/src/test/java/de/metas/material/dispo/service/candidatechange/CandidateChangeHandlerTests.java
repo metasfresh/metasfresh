@@ -38,14 +38,16 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -110,8 +112,9 @@ public class CandidateChangeHandlerTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
-		candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		final PurchaseDetailRepoHelper purchaseDetailRepoHelper = new PurchaseDetailRepoHelper();
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(purchaseDetailRepoHelper);
+		candidateRepositoryCommands = new CandidateRepositoryWriteService(purchaseDetailRepoHelper);
 
 		stockRepository = new AvailableToPromiseRepository();
 		stockCandidateService = new StockCandidateService(
@@ -308,7 +311,7 @@ public class CandidateChangeHandlerTests
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
 				.materialDescriptorQuery(materialDescriptorQuery)
-				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
+				.parentId(CandidateId.UNSPECIFIED)
 				.build();
 	}
 

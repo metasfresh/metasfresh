@@ -39,11 +39,7 @@ public class ProductionDetail implements BusinessCaseDetail
 	public static ProductionDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)
 	{
 		final boolean canBeCast = businessCaseDetail != null && businessCaseDetail instanceof ProductionDetail;
-		if (canBeCast)
-		{
-			return cast(businessCaseDetail);
-		}
-		return null;
+		return canBeCast ? cast(businessCaseDetail) : null;
 	}
 
 	public static ProductionDetail cast(@NonNull final BusinessCaseDetail businessCaseDetail)

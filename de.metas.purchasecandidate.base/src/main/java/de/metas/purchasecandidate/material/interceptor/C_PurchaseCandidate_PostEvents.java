@@ -15,6 +15,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
 import de.metas.purchasecandidate.material.event.PurchaseCandidateRequestedHandler;
@@ -46,7 +47,7 @@ import lombok.NonNull;
 
 @Interceptor(I_C_PurchaseCandidate.class)
 @Component
-public class C_PurchaseCandidate
+public class C_PurchaseCandidate_PostEvents
 {
 	private final PostMaterialEventService postMaterialEventService;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
@@ -55,7 +56,7 @@ public class C_PurchaseCandidate
 	 * @param postMaterialEventService needs to be lazy because of some dependencies with Adempiere.java
 	 * @param productDescriptorFactory
 	 */
-	public C_PurchaseCandidate(
+	public C_PurchaseCandidate_PostEvents(
 			@NonNull @Lazy final PostMaterialEventService postMaterialEventService,
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
@@ -85,17 +86,34 @@ public class C_PurchaseCandidate
 				.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
-				// .
+				.supplyRequiredDescriptor(createSupplyRequiredDescritproOrNull(purchaseCandidateRecord))
 				.build();
 
 		postMaterialEventService.postEventAfterNextCommit(purchaseCandidateCreatedEvent);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	private SupplyRequiredDescriptor createSupplyRequiredDescritproOrNull(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
+	{
+		if (purchaseCandidateRecord.getC_OrderLineSO_ID() <= 0)
+		{
+			return null;
+		}
+		return SupplyRequiredDescriptor.builder()
+				.orderId(purchaseCandidateRecord.getC_OrderSO_ID())
+				.orderLineId(purchaseCandidateRecord.getC_OrderLineSO_ID())
+				.build();
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE })
 	public void postPurchaseCandidateUpdatedEvent(
 			@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord,
 			@NonNull final ModelChangeType type)
 	{
+		final boolean isNewPurchaseCandidateRecord = type.isNew() || InterceptorUtil.isJustActivated(purchaseCandidateRecord);
+		if (isNewPurchaseCandidateRecord)
+		{
+			return;
+		}
 
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
 

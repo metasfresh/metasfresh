@@ -1,14 +1,21 @@
 package de.metas.purchasecandidate.material.event;
 
 import java.util.Collection;
+import java.util.Optional;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
+import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.Profiles;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -21,6 +28,8 @@ import de.metas.product.ProductRepository;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasing.api.IBPartnerProductDAO;
 import lombok.NonNull;
 
 /*
@@ -46,6 +55,7 @@ import lombok.NonNull;
  */
 
 @Service
+@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with PurchaseCandidateRequestedEvent
 public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<PurchaseCandidateRequestedEvent>
 {
 	private final ProductRepository productRepository;
@@ -81,7 +91,10 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 		final Product product = productRepository.getById(ProductId.ofRepoId(materialDescriptor.getProductId()));
 
+		final VendorProductInfo vendorProductInfo = quickAndDirtyCreateVendorProductInfo(event);
+
 		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidate.builder()
+				.vendorProductInfo(vendorProductInfo)
 				.dateRequired(TimeUtil.asLocalDateTime(materialDescriptor.getDate()))
 				.orgId(OrgId.ofRepoId(event.getEventDescriptor().getOrgId()))
 				.processed(false)
@@ -98,6 +111,42 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 		saveCandidateAndPostCreatedEvent(event, newPurchaseCandidate);
 	}
 
+	// TODO remove as vendorProduct is removed from PurchaseCandidate
+	private VendorProductInfo quickAndDirtyCreateVendorProductInfo(@NonNull final PurchaseCandidateRequestedEvent event)
+	{
+		final MaterialDescriptor materialDescriptor = event.getPurchaseMaterialDescriptor();
+
+		final int vendorId;
+		final int productId = materialDescriptor.getProductId();
+
+		if (event.getPurchaseMaterialDescriptor().getBPartnerId() > 0)
+		{
+			vendorId = event.getPurchaseMaterialDescriptor().getBPartnerId();
+		}
+		else
+		{
+			final int orgId = event.getEventDescriptor().getOrgId();
+
+			final Optional<I_C_BPartner_Product> defaultVendor = Services.get(IBPartnerProductDAO.class)
+					.retrieveDefaultVendor(productId, orgId);
+			vendorId = defaultVendor
+					.orElseThrow(() -> new AdempiereException("missing default vendor for productId=" + productId + " and orgId=" + orgId + ";"))
+					.getC_BPartner_ID();
+
+		}
+		final I_C_BPartner_Product bPArtnerProductRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, vendorId)
+				.orderBy().addColumn(I_C_BPartner_Product.COLUMN_C_BPartner_Product_ID).endOrderBy()
+				.create()
+				.first(I_C_BPartner_Product.class);
+
+		final VendorProductInfo vendorProductInfo = VendorProductInfo.builderFromDataRecord().bpartnerProductRecord(bPArtnerProductRecord).build();
+		return vendorProductInfo;
+	}
+
 	private void saveCandidateAndPostCreatedEvent(
 			@NonNull final PurchaseCandidateRequestedEvent requestedEvent,
 			@NonNull final PurchaseCandidate newPurchaseCandidate)
@@ -109,6 +158,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			final PurchaseCandidateId newPurchaseCandidateId = purchaseCandidateRepository.save(newPurchaseCandidate);
 
 			final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
+					.eventDescriptor(requestedEvent.getEventDescriptor().copy())
 					.purchaseCandidateRepoId(newPurchaseCandidateId.getRepoId())
 					.purchaseMaterialDescriptor(requestedEvent.getPurchaseMaterialDescriptor())
 					.supplyCandidateRepoId(requestedEvent.getSupplyCandidateRepoId())

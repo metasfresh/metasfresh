@@ -2,11 +2,13 @@ package de.metas.material.planning.purchaseorder;
 
 import java.util.List;
 
+import org.adempiere.util.Loggables;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
@@ -56,13 +58,20 @@ public class PurchaseCandidateAdvisedEventCreator
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
+		final MaterialDescriptor purchaseMaterialDescriptor = supplyRequiredDescriptor
+				.getMaterialDescriptor()
+				.withBPartnerId(0); // currently we don't propose a vendor
+
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent
 				.builder()
 				.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
+				.purchaseMaterialDescriptor(purchaseMaterialDescriptor)
 				.build();
+
+		Loggables.get().addLog("Created PurchaseCandidateAdvisedEvent");
 		return ImmutableList.of(event);
 	}
 }

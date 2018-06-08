@@ -1,4 +1,4 @@
-package de.metas.material.dispo.commons.repository;
+package de.metas.material.dispo.commons.repository.query;
 
 import java.util.Date;
 
@@ -6,6 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
@@ -17,11 +18,9 @@ import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
-import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -53,7 +52,7 @@ public final class PurchaseCandidateAdvisedHandler
 {
 
 	private final CandidateChangeService candidateChangeHandler;
-	private final PostMaterialEventService materialEventService;
+	private final RequestMaterialOrderService requestMaterialOrderService;
 
 	/**
 	 *
@@ -62,10 +61,10 @@ public final class PurchaseCandidateAdvisedHandler
 	 */
 	public PurchaseCandidateAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final PostMaterialEventService materialEventService)
+			@NonNull final RequestMaterialOrderService requestMaterialOrderService)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
-		this.materialEventService = materialEventService;
+		this.requestMaterialOrderService = requestMaterialOrderService;
 	}
 
 	@Override
@@ -94,12 +93,15 @@ public final class PurchaseCandidateAdvisedHandler
 				.plannedQty(purchaseMaterialDescriptor.getQuantity())
 				.vendorRepoId(purchaseMaterialDescriptor.getBPartnerId())
 				.purchaseCandidateRepoId(-1)
+				.productPlanningRepoId(event.getProductPlanningId())
 				.advised(Flag.TRUE)
 				.build();
 
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE)
+				.clientId(event.getEventDescriptor().getClientId())
+				.orgId(event.getEventDescriptor().getOrgId())
 				.status(CandidateStatus.doc_planned)
 				.materialDescriptor(purchaseMaterialDescriptor)
 				.businessCaseDetail(purchaseDetail)
@@ -109,14 +111,7 @@ public final class PurchaseCandidateAdvisedHandler
 		final Candidate createdCandidate = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 		if (event.isDirectlyCreatePurchaseCandidate())
 		{
-			final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
-					.eventDescriptor(event.getEventDescriptor().copy())
-					.purchaseMaterialDescriptor(purchaseMaterialDescriptor)
-					.supplyCandidateRepoId(createdCandidate.getId())
-					.salesOrderLineRepoId(demandDetail.getOrderLineId())
-					.salesOrderRepoId(demandDetail.getOrderId())
-					.build();
-			materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+			requestMaterialOrderService.requestMaterialOrder(createdCandidate.getGroupId());
 		}
 	}
 }

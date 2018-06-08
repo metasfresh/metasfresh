@@ -142,7 +142,6 @@ public class M_ReceiptSchedule
 				receiptSchedule,
 				I_M_ReceiptSchedule.class);
 
-
 		final BigDecimal oldOrderedQuantity = extractQtyOrdered(oldReceiptSchedule);
 
 		final BigDecimal qtyReserved = extractQtyReserved(receiptSchedule);
