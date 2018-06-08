@@ -1,7 +1,5 @@
 package de.metas.material.dispo.commons.repository;
 
-import static de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons.createCandidateDetailQueryBuilder;
-import static de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons.retrieveSingleCandidateDetail;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
 import java.sql.Timestamp;
@@ -232,7 +230,7 @@ public class CandidateRepositoryRetrieval
 	private static ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Prod_Detail productionDetail = //
-				retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
+				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
 		if (productionDetail == null)
 		{
 			return null;
@@ -244,7 +242,7 @@ public class CandidateRepositoryRetrieval
 	private static DistributionDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Dist_Detail distributionDetail = //
-				retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Dist_Detail.class);
+				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Dist_Detail.class);
 		if (distributionDetail == null)
 		{
 			return null;
@@ -253,12 +251,10 @@ public class CandidateRepositoryRetrieval
 		return DistributionDetail.forDistributionDetailRecord(distributionDetail);
 	}
 
-
-
 	private static DemandDetail createDemandDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = //
-				retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Demand_Detail.class);
+				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Demand_Detail.class);
 		if (demandDetailRecord == null)
 		{
 			return null;
@@ -270,7 +266,7 @@ public class CandidateRepositoryRetrieval
 	private static List<TransactionDetail> createTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords = //
-				createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Transaction_Detail.class)
+				RepositoryCommons.createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Transaction_Detail.class)
 						.list();
 
 		final ImmutableList.Builder<TransactionDetail> result = ImmutableList.builder();

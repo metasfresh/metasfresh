@@ -1,6 +1,5 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
-import static de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons.retrieveSingleCandidateDetail;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -81,7 +80,7 @@ public class PurchaseDetailRepoHelper
 			return;
 		}
 
-		I_MD_Candidate_Purchase_Detail recordToUpdate = retrieveSingleCandidateDetail(
+		I_MD_Candidate_Purchase_Detail recordToUpdate = RepositoryCommons.retrieveSingleCandidateDetail(
 				candidateRecord,
 				I_MD_Candidate_Purchase_Detail.class);
 		if (recordToUpdate == null)
