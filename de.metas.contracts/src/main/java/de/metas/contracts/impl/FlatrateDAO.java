@@ -676,6 +676,7 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		final String wc = I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " >= ? AND "
 				+ I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " <= ? AND "
+				// + I_C_Invoice_Candidate.COLUMNNAME_Processed + "='N' AND "  // TODO: remove again!
 				+ " NOT EXISTS ( "
 				+ "     select 1 from " + I_C_Invoice_Clearing_Alloc.Table_Name + " ica "
 				+ "     where ica." + I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID + "="

@@ -517,7 +517,7 @@ public final class CacheMgt
 				final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
 				if (itemsRemoved > 0)
 				{
-					log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
+					log.debug("Reset cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
 					total += itemsRemoved;
 					counter++;
 				}
@@ -530,7 +530,7 @@ public final class CacheMgt
 					final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
 					if (itemsRemoved > 0)
 					{
-						log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
+						log.debug("Reset cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
 						total += itemsRemoved;
 						counter++;
 					}
