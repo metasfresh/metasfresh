@@ -51,6 +51,9 @@ public @interface ViewColumn
 	/** true if user is allowed to sort by this column */
 	boolean sorting() default true;
 
+	/** Display sequence number. Overridden by {@link ViewColumnLayout#seqNo()}. */
+	int seqNo() default Integer.MIN_VALUE;
+
 	/**
 	 * Column layout profiles.
 	 *
