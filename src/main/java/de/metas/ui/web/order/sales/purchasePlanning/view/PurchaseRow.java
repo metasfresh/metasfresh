@@ -3,8 +3,10 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
@@ -13,6 +15,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
@@ -147,7 +150,7 @@ public final class PurchaseRow implements IViewRow
 	//
 	private final PurchaseRowId rowId;
 
-	private ImmutableList<PurchaseRow> _includedRows = ImmutableList.of();
+	private ImmutableMap<PurchaseRowId, PurchaseRow> _includedRowsById = ImmutableMap.of();
 
 	private final boolean readonly;
 	@Getter
@@ -202,14 +205,12 @@ public final class PurchaseRow implements IViewRow
 	@Builder(builderMethodName = "lineRowBuilder", builderClassName = "LineRowBuilder")
 	private PurchaseRow(
 			@NonNull final PurchaseCandidatesGroup purchaseCandidatesGroup,
-			@NonNull final PurchaseDemandId purchaseDemandId,
-			//
 			@NonNull final PurchaseRowLookups lookups)
 	{
 		final BPartnerId vendorId = purchaseCandidatesGroup.getVendorId();
 		final ProductId productId = purchaseCandidatesGroup.getProductId();
 
-		this.rowId = PurchaseRowId.lineId(purchaseDemandId, vendorId);
+		this.rowId = PurchaseRowId.lineId(purchaseCandidatesGroup.getDemandId(), vendorId);
 
 		this.product = lookups.createProductLookupValue(productId);
 		this.attributeSetInstance = null;
@@ -412,35 +413,37 @@ public final class PurchaseRow implements IViewRow
 	}
 
 	@Override
-	public synchronized List<PurchaseRow> getIncludedRows()
+	public Collection<PurchaseRow> getIncludedRows()
 	{
-		final ImmutableList<PurchaseRow> includedRows = _includedRows;
-		return includedRows;
+		return _includedRowsById.values();
 	}
 
-	private synchronized void setIncludedRows(@NonNull final ImmutableList<PurchaseRow> includedRows)
+	private void setIncludedRows(@NonNull final ImmutableList<PurchaseRow> includedRows)
 	{
-		final ImmutableList<DocumentId> distinctRowIds = includedRows.stream().map(PurchaseRow::getId).distinct().collect(ImmutableList.toImmutableList());
-		Check.errorIf(distinctRowIds.size() != includedRows.size(), "The given includedRows contain at least one duplicates rowId; includedRows={}", includedRows);
-
-		this._includedRows = includedRows;
+		this._includedRowsById = Maps.uniqueIndex(includedRows, PurchaseRow::getRowId);
 	}
 
 	public PurchaseRow getIncludedRowById(@NonNull final PurchaseRowId rowId)
 	{
-		return getIncludedRows()
-				.stream()
-				.filter(includedRow -> includedRow.getRowId().equals(rowId))
-				.findFirst()
-				.orElseThrow(() -> new EntityNotFoundException("Included row not found")
-						.appendParametersToMessage()
-						.setParameter("rowId", rowId)
-						.setParameter("this", this));
+		final PurchaseRow includedRow = _includedRowsById.get(rowId);
+		if (includedRow == null)
+		{
+			throw new EntityNotFoundException("Included row not found")
+					.appendParametersToMessage()
+					.setParameter("rowId", rowId)
+					.setParameter("this", this);
+		}
+		return includedRow;
 	}
 
 	private void setQtyToPurchase(final Quantity qtyToPurchase)
 	{
 		Check.assume(qtyToPurchase == null || qtyToPurchase.signum() >= 0, "qtyToPurchase shall be positive");
+
+		if (Objects.equals(this.qtyToPurchase, qtyToPurchase))
+		{
+			return;
+		}
 
 		this.qtyToPurchase = qtyToPurchase;
 		resetFieldNameAndJsonValues();
@@ -449,6 +452,11 @@ public final class PurchaseRow implements IViewRow
 	private void setPurchasedQty(final Quantity purchasedQty)
 	{
 		Check.assume(purchasedQty == null || purchasedQty.signum() >= 0, "purchasedQty shall be positive");
+
+		if (Objects.equals(this.purchasedQty, purchasedQty))
+		{
+			return;
+		}
 
 		this.purchasedQty = purchasedQty;
 		resetFieldNameAndJsonValues();
@@ -470,6 +478,11 @@ public final class PurchaseRow implements IViewRow
 
 	private void setDatePromised(@NonNull final LocalDateTime datePromised)
 	{
+		if (Objects.equals(this.datePromised, datePromised))
+		{
+			return;
+		}
+
 		this.datePromised = datePromised;
 		resetFieldNameAndJsonValues();
 	}
@@ -492,48 +505,37 @@ public final class PurchaseRow implements IViewRow
 
 	}
 
-	public synchronized void changeQtyToPurchase(
-			@NonNull final PurchaseRowId includedRowId,
-			@NonNull final BigDecimal qtyToPurchase)
+	void changeIncludedRow(@NonNull final PurchaseRowId includedRowId, @NonNull final PurchaseRowChangeRequest request)
 	{
 		assertRowType(PurchaseRowType.GROUP);
 
 		final PurchaseRow includedRow = getIncludedRowById(includedRowId);
-		includedRow.assertRowEditable();
-		includedRow.assertRowType(PurchaseRowType.LINE);
-
-		final I_C_UOM uom = includedRow.getQtyToPurchase().getUOM();
-		includedRow.setQtyToPurchase(Quantity.of(qtyToPurchase, uom));
+		includedRow.changeRow(request);
 
 		updateQtysFromIncludedRows();
 	}
 
-	public synchronized void changeQtyToPurchase(
-			@NonNull final PurchaseRowId includedRowId,
-			@NonNull final Quantity qtyToPurchase)
+	private void changeRow(@NonNull final PurchaseRowChangeRequest request)
 	{
-		assertRowType(PurchaseRowType.GROUP);
+		assertRowType(PurchaseRowType.LINE);
+		assertRowEditable();
 
-		final PurchaseRow includedRow = getIncludedRowById(includedRowId);
-		includedRow.assertRowEditable();
-		includedRow.assertRowType(PurchaseRowType.LINE);
+		if (request.getQtyToPurchase() != null)
+		{
+			final Quantity qtyToPurchase = request.getQtyToPurchase();
+			setQtyToPurchase(qtyToPurchase);
+		}
+		else if (request.getQtyToPurchaseWithoutUOM() != null)
+		{
+			final BigDecimal qtyToPurchase = request.getQtyToPurchaseWithoutUOM();
+			final I_C_UOM uom = getQtyToPurchase().getUOM();
+			setQtyToPurchase(Quantity.of(qtyToPurchase, uom));
+		}
 
-		includedRow.setQtyToPurchase(qtyToPurchase);
-
-		updateQtysFromIncludedRows();
-	}
-
-	public synchronized void changeDatePromised(
-			@NonNull final PurchaseRowId includedRowId,
-			@NonNull final LocalDateTime datePromised)
-	{
-		assertRowType(PurchaseRowType.GROUP);
-
-		final PurchaseRow lineRow = getIncludedRowById(includedRowId);
-		lineRow.assertRowEditable();
-		lineRow.assertRowType(PurchaseRowType.LINE);
-
-		lineRow.setDatePromised(datePromised);
+		if (request.getPurchaseDatePromised() != null)
+		{
+			setDatePromised(request.getPurchaseDatePromised());
+		}
 	}
 
 	public void setAvailabilityInfoRow(@NonNull PurchaseRow availabilityResultRow)

@@ -1,9 +1,5 @@
 package de.metas.ui.web.order.sales.purchasePlanning.process;
 
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -18,11 +14,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRow;
+import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowChangeRequest;
+import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowChangeRequest.PurchaseRowChangeRequestBuilder;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowId;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseView;
-import de.metas.ui.web.view.event.ViewChangesCollector;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
 
 /*
@@ -49,7 +44,6 @@ import lombok.NonNull;
 
 public class WEBUI_SalesOrder_Apply_Availability_Row extends PurchaseViewBasedProcess
 {
-
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -71,24 +65,13 @@ public class WEBUI_SalesOrder_Apply_Availability_Row extends PurchaseViewBasedPr
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Multimap<PurchaseRow, PurchaseRow> lineRows2availabilityRows = //
-				extractLineRow2availabilityRows();
+		final Multimap<PurchaseRow, PurchaseRow> lineRows2availabilityRows = extractLineRow2availabilityRows();
 
 		Check.errorIf(hasMultipleAvailabilityRowsPerLineRow(lineRows2availabilityRows),
 				"The selected rows contain > 1 availability row for one line row; lineRows2availabilityRows={}",
 				lineRows2availabilityRows);
 
-		final Set<DocumentId> documentIdsToUpdate = new HashSet<>();
-
-		for (final Entry<PurchaseRow, PurchaseRow> lineRow2availabilityRow : lineRows2availabilityRows.entries())
-		{
-			final DocumentId groupRowDocumentId = updateLineAndGroupRow(lineRow2availabilityRow);
-			documentIdsToUpdate.add(groupRowDocumentId);
-		}
-
-		ViewChangesCollector
-				.getCurrentOrAutoflush()
-				.collectRowsChanged(getView(), DocumentIdsSelection.of(documentIdsToUpdate));
+		lineRows2availabilityRows.forEach(this::updateLineAndGroupRow);
 
 		return MSG_OK;
 	}
@@ -96,27 +79,19 @@ public class WEBUI_SalesOrder_Apply_Availability_Row extends PurchaseViewBasedPr
 	private static boolean hasMultipleAvailabilityRowsPerLineRow(
 			@NonNull final Multimap<PurchaseRow, PurchaseRow> lineRows2availabilityRows)
 	{
-		return lineRows2availabilityRows.asMap().entrySet().stream()
+		return lineRows2availabilityRows
+				.asMap()
+				.entrySet()
+				.stream()
 				.anyMatch(lineRow2availabilityRows -> lineRow2availabilityRows.getValue().size() > 1);
 	}
 
-	public DocumentId updateLineAndGroupRow(
-			@NonNull final Entry<PurchaseRow, PurchaseRow> lineRow2availabilityRow)
+	public void updateLineAndGroupRow(@NonNull final PurchaseRow lineRow, @NonNull final PurchaseRow availabilityRow)
 	{
-		final PurchaseRow lineRow = lineRow2availabilityRow.getKey();
-		final PurchaseRowId lineRowId = PurchaseRowId.fromDocumentId(lineRow.getId());
+		final PurchaseRowId lineRowId = lineRow.getRowId();
+		final PurchaseRowChangeRequest lineChangeRequest = createPurchaseRowChangeRequest(availabilityRow);
 
-		final DocumentId groupRowDocumentId = lineRowId.toGroupRowId().toDocumentId();
-		final PurchaseRow groupRow = getView().getById(groupRowDocumentId);
-
-		final PurchaseRow availabilityRow = lineRow2availabilityRow.getValue();
-
-		if (availabilityRow.getDatePromised() != null)
-		{
-			groupRow.changeDatePromised(lineRowId, availabilityRow.getDatePromised());
-		}
-		groupRow.changeQtyToPurchase(lineRowId, availabilityRow.getQtyToPurchase());
-		return groupRowDocumentId;
+		patchViewRow(lineRowId, lineChangeRequest);
 	}
 
 	private Multimap<PurchaseRow, PurchaseRow> extractLineRow2availabilityRows()
@@ -150,5 +125,18 @@ public class WEBUI_SalesOrder_Apply_Availability_Row extends PurchaseViewBasedPr
 	private static final boolean isPositive(final Quantity qty)
 	{
 		return qty != null && qty.signum() > 0;
+	}
+
+	private static PurchaseRowChangeRequest createPurchaseRowChangeRequest(final PurchaseRow availabilityRow)
+	{
+		final PurchaseRowChangeRequestBuilder requestBuilder = PurchaseRowChangeRequest.builder();
+
+		if (availabilityRow.getDatePromised() != null)
+		{
+			requestBuilder.purchaseDatePromised(availabilityRow.getDatePromised());
+		}
+		requestBuilder.qtyToPurchase(availabilityRow.getQtyToPurchase());
+
+		return requestBuilder.build();
 	}
 }

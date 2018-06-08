@@ -88,13 +88,16 @@ public class PurchaseRowFactoryTest
 	public void test()
 	{
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(30);
+		final PurchaseDemandId demandId = PurchaseDemandId.ofTableAndRecordId(
+				I_C_OrderLine.Table_Name,
+				purchaseCandidate.getSalesOrderAndLineId().getOrderLineRepoId());
+
 		final PurchaseRowFactory purchaseRowFactory = new PurchaseRowFactory(
 				new AvailableToPromiseRepository(),
 				new MoneyService());
 
 		final PurchaseRow candidateRow = purchaseRowFactory.lineRowBuilder()
-				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(purchaseCandidate))
-				.purchaseDemandId(PurchaseDemandId.ofOrderAndLineId(purchaseCandidate.getSalesOrderAndLineId()))
+				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(demandId, purchaseCandidate))
 				.convertAmountsToCurrency(currency)
 				.build();
 
@@ -102,9 +105,7 @@ public class PurchaseRowFactoryTest
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(id);
 
 		assertThat(purchaseRowId.getVendorId()).isEqualTo(purchaseCandidate.getVendorId());
-		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId(
-				I_C_OrderLine.Table_Name,
-				purchaseCandidate.getSalesOrderAndLineId().getOrderLineRepoId()));
+		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(demandId);
 	}
 
 	public PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId)

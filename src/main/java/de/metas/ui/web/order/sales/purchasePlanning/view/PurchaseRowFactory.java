@@ -22,7 +22,6 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
-import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
@@ -76,7 +75,6 @@ public class PurchaseRowFactory
 	@Builder(builderMethodName = "lineRowBuilder", builderClassName = "LineRowBuilder")
 	private PurchaseRow createLineRow(
 			@NonNull final PurchaseCandidatesGroup purchaseCandidatesGroup,
-			@NonNull final PurchaseDemandId purchaseDemandId,
 			@Nullable final Currency convertAmountsToCurrency)
 	{
 		final PurchaseProfitInfo profitInfo = convertToCurrencyIfPossible(purchaseCandidatesGroup.getProfitInfo(), convertAmountsToCurrency);
@@ -84,7 +82,6 @@ public class PurchaseRowFactory
 		return PurchaseRow.lineRowBuilder()
 				.lookups(lookups)
 				.purchaseCandidatesGroup(purchaseCandidatesGroup.changeProfitInfo(profitInfo))
-				.purchaseDemandId(purchaseDemandId)
 				.build();
 	}
 

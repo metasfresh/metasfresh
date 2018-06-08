@@ -24,7 +24,6 @@ import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.availability.AvailabilityCheckService;
 import de.metas.purchasecandidate.availability.AvailabilityException;
 import de.metas.purchasecandidate.availability.AvailabilityMultiResult;
-import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.PurchaseCandidatesAvailabilityRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -121,7 +120,6 @@ class PurchaseRowsLoader
 			{
 				final PurchaseRow purchaseCandidateRow = purchaseRowFactory.lineRowBuilder()
 						.purchaseCandidatesGroup(purchaseCandidatesGroup)
-						.purchaseDemandId(demand.getId())
 						.convertAmountsToCurrency(demand.getCurrency())
 						.build();
 
@@ -206,27 +204,23 @@ class PurchaseRowsLoader
 
 		for (final TrackingId trackingId : availabilityResults.getTrackingIds())
 		{
-			final PurchaseRow purchaseRowToAugment = rows.getPurchaseRowByTrackingId(trackingId);
-			if (purchaseRowToAugment == null)
+			final PurchaseRow lineRow = rows.getPurchaseRowByTrackingId(trackingId);
+			if (lineRow == null)
 			{
 				logger.warn("No row found for {}. Skip updating the row with availability results.", trackingId);
 				continue;
 			}
 
-			final ImmutableList.Builder<PurchaseRow> availabilityResultRows = ImmutableList.builder();
+			final ImmutableList<PurchaseRow> availabilityResultRows = availabilityResults.getByTrackingId(trackingId)
+					.stream()
+					.map(availabilityResult -> purchaseRowFactory.availabilityDetailSuccessBuilder()
+							.lineRow(lineRow)
+							.availabilityResult(availabilityResult)
+							.build())
+					.collect(ImmutableList.toImmutableList());
+			lineRow.setAvailabilityInfoRows(availabilityResultRows);
 
-			for (final AvailabilityResult availabilityResult : availabilityResults.getByTrackingId(trackingId))
-			{
-				final PurchaseRow availabilityResultRow = purchaseRowFactory.availabilityDetailSuccessBuilder()
-						.lineRow(purchaseRowToAugment)
-						.availabilityResult(availabilityResult)
-						.build();
-
-				availabilityResultRows.add(availabilityResultRow);
-			}
-			purchaseRowToAugment.setAvailabilityInfoRows(availabilityResultRows.build());
-
-			changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, purchaseRowToAugment.getId()));
+			changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, lineRow.getId()));
 		}
 
 		notifyViewOfChanges(changedRowIds);
@@ -243,21 +237,21 @@ class PurchaseRowsLoader
 			for (final AvailabilityException.ErrorItem errorItem : availabilityException.getErrorItems())
 			{
 				final TrackingId trackingId = errorItem.getTrackingId();
-				final PurchaseRow purchaseRowToAugment = rows.getPurchaseRowByTrackingId(trackingId);
-				if (purchaseRowToAugment == null)
+				final PurchaseRow lineRow = rows.getPurchaseRowByTrackingId(trackingId);
+				if (lineRow == null)
 				{
-					logger.warn("No row found for {}. Skip updating the row with availability errors: {}", trackingId, errorItem);
+					logger.warn("No line row found for {}. Skip updating the row with availability errors: {}", trackingId, errorItem);
 					continue;
 				}
 
 				final PurchaseRow availabilityResultRow = purchaseRowFactory.availabilityDetailErrorBuilder()
-						.lineRow(purchaseRowToAugment)
+						.lineRow(lineRow)
 						.throwable(errorItem.getError())
 						.build();
 
-				purchaseRowToAugment.setAvailabilityInfoRow(availabilityResultRow);
+				lineRow.setAvailabilityInfoRow(availabilityResultRow);
 
-				changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, purchaseRowToAugment.getId()));
+				changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, lineRow.getId()));
 			}
 
 			notifyViewOfChanges(changedRowIds);
@@ -265,6 +259,7 @@ class PurchaseRowsLoader
 		else
 		{
 			// TODO: display an error-message in the webui
+			logger.warn("Got unknown exception while doing availability check. Ignored.", throwable);
 		}
 	}
 

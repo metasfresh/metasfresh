@@ -203,7 +203,7 @@ public class PurchaseRowsLoaderTest
 		assertThat(groupRow.getType()).isEqualTo(PurchaseRowType.GROUP);
 		assertThat(groupRow.getIncludedRows()).hasSize(1);
 
-		final PurchaseRow purchaseRow = groupRow.getIncludedRows().get(0);
+		final PurchaseRow purchaseRow = groupRow.getIncludedRows().iterator().next();
 		assertThat(purchaseRow.getType()).isEqualTo(PurchaseRowType.LINE);
 		assertThat(purchaseRow.getIncludedRows()).isEmpty();
 
@@ -222,7 +222,7 @@ public class PurchaseRowsLoaderTest
 		loader.createAndAddAvailabilityResultRows(rowsList);
 		assertThat(purchaseRow.getIncludedRows()).hasSize(1);
 
-		final PurchaseRow availabilityRow = purchaseRow.getIncludedRows().get(0);
+		final PurchaseRow availabilityRow = purchaseRow.getIncludedRows().iterator().next();
 		assertThat(availabilityRow.getType()).isEqualTo(PurchaseRowType.AVAILABILITY_DETAIL);
 		assertThat(availabilityRow.getRowId().toDocumentId()).isNotEqualTo(purchaseRow.getRowId().toDocumentId());
 	}
@@ -256,7 +256,7 @@ public class PurchaseRowsLoaderTest
 	{
 		return ImmutableList.of(PurchaseDemandWithCandidates.builder()
 				.purchaseDemand(demand)
-				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(purchaseCandidate))
+				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(demand.getId(), purchaseCandidate))
 				.build());
 	}
 }
