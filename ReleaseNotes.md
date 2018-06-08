@@ -13,8 +13,12 @@ Here come the actual release notes:
 # metasfresh 5.61 (2018-24)
 ## Features
 * metasfresh
+  * [#4143](https://github.com/metasfresh/metasfresh/issues/4143) WebUI: Translation Window for Messages
+    * New Window in WebUI that allows to maintain the message Translations.
   * [#4173](https://github.com/metasfresh/metasfresh/issues/4173) Translations for Purchase Dispo modal Overlay Fields
     * Field Translations added for Purchase Dispo modal overlay in Sales Order and Purchase Candidates.
+  * [#4178](https://github.com/metasfresh/metasfresh/issues/4178) Pricing Conditions Cockpit Translations in Material Cockpit
+    * Improving Translations for en_US and de_DE for Pricing Conditions Actions.
 
 ## Fixes
 * metasfresh-webui-frontend
@@ -38,6 +42,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4033](https://github.com/metasfresh/metasfresh/issues/4033) Pharma: MSV3 Purchase Functionality in purchase candidates
+    * New Feature in Purchase Candidates, now allowing to use the MSV3 Order Functionality there too.
   * [#4116](https://github.com/metasfresh/metasfresh/issues/4116) WebUI: Translation Window for Tax Rates
     * New Window in WebUI for the maintenance of Tax Rate Translations.
   * [#4117](https://github.com/metasfresh/metasfresh/issues/4117) WebUI: Add missing Translations in Product Window
@@ -47,6 +52,7 @@ Here come the actual release notes:
   * [#4119](https://github.com/metasfresh/metasfresh/issues/4119) WebUI: Translation Window for Tax Category
     * New Window in WebUI for the maintenance of Tax Category Translations.
   * [#4127](https://github.com/metasfresh/metasfresh/issues/4127) Batch entry product ID
+    * Batch Entry improvement, now integrating the Product Identifier configuration.
   * [#4135](https://github.com/metasfresh/metasfresh/issues/4135) Webui: Add Document References to all Windows with Translations
     * Improved the navigation beween master data and translation windows, adding references to the translation window & table.
   * [#4138](https://github.com/metasfresh/metasfresh/issues/4138) WebUI: Translation Window for Paymentterm
@@ -56,6 +62,7 @@ Here come the actual release notes:
   * [#4158](https://github.com/metasfresh/metasfresh/issues/4158) WebUI Sitemap: Missing Translations en_US
     * Improvement of the Translation for en_US for the WebUI menu, windows and tabs.
   * [#4161](https://github.com/metasfresh/metasfresh/issues/4161) Improve error message regarding illegal HU status changes
+    * Extended error Message for the Notification of invalid Handling Unit State changes.
   * [#4165](https://github.com/metasfresh/metasfresh/issues/4165) Extend Billing Candidates Filtering for contracts
     * New Filter criteria added to billing candidates window, allowing to filter by candidate controller.
   
@@ -65,14 +72,20 @@ Here come the actual release notes:
 
 * metasfresh-dist
   * [#45](https://github.com/metasfresh/metasfresh-dist/issues/45) publish standalone jasper/reporting files
+    * Internal housekeeping improvement for the automatic publishing of standalone Jasper Files.
 
 ## Fixes
 * metasfresh
   * [#4122](https://github.com/metasfresh/metasfresh/issues/4122) Transform action throws error
+    * Fixes an error in certain cases of Handling Unit Transformations.
   * [#4123](https://github.com/metasfresh/metasfresh/issues/4123) Dunning Jasper does not work
+    * Fixes the Jasper Report for Dunning Documents.
   * [#4125](https://github.com/metasfresh/metasfresh/issues/4125) Sometimes I got NPE when posting an allocation
+    * Improvement of the Payment Allocation accounting.
   * [#4147](https://github.com/metasfresh/metasfresh/issues/4147) Error when posting a zero-sum invoice
+    * Fixes the posting of Invoices with 0 Sum.
   * [#4163](https://github.com/metasfresh/metasfresh/issues/4163) "Overlapping term" error when completing subscription order
+    * Fixes an error for the contract creation that occurred when completing a subscription order.
 
 * metasfresh-frontent-webui
   * [#1813](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1813) Cannot set attribute in orderline grid view
