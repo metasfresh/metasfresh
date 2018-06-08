@@ -331,7 +331,7 @@ public class Doc_AllocationHdr extends Doc
 			// https://github.com/metasfresh/metasfresh/issues/3988 - if tax correction is needed, it has to be a dedicated fact;
 			// otherwise, FactTrxLinesType.extractType will fail
 			final List<Fact> taxCorrectionFacts = createTaxCorrection(fact.getAcctSchema(), line);
-			facts.addAll(taxCorrectionFacts);
+			m_facts.addAll(taxCorrectionFacts);
 		}            	// for all lines
 
 		// reset line info
