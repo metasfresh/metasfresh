@@ -40,7 +40,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4033](https://github.com/metasfresh/metasfresh/issues/4033) Pharma: MSV3 Purchase Functionality in purchase candidates
-    * New Feature in Purchase Candidates, now allowing to use the MSV3 Order Functionalaity there too.
+    * New Feature in Purchase Candidates, now allowing to use the MSV3 Order Functionality there too.
   * [#4116](https://github.com/metasfresh/metasfresh/issues/4116) WebUI: Translation Window for Tax Rates
     * New Window in WebUI for the maintenance of Tax Rate Translations.
   * [#4117](https://github.com/metasfresh/metasfresh/issues/4117) WebUI: Add missing Translations in Product Window
