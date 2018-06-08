@@ -76,10 +76,6 @@ INNER JOIN C_BPartner bp ON ic.Bill_Bpartner_ID = bp.C_BPartner_ID
 INNER JOIN C_UOM uom ON ic.C_UOM_ID = uom.C_UOM_ID
 INNER JOIN C_UOM price_uom ON ic.Price_UOM_ID = price_uom.C_UOM_ID
 
-LEFT OUTER JOIN C_UOM_Conversion uconv ON uconv.C_UOM_ID = uom.C_UOM_ID
-												AND uconv.C_UOM_To_ID = price_uom.C_UOM_ID
-												AND p.M_Product_ID = uconv.M_Product_ID	
-
 INNER JOIN C_Currency c ON ic.C_Currency_ID = c.C_Currency_ID
 
 LEFT OUTER JOIN C_OrderLine ol ON ic.Record_ID = ol.C_OrderLine_ID AND ic.AD_Table_ID = get_Table_ID('C_OrderLine')
