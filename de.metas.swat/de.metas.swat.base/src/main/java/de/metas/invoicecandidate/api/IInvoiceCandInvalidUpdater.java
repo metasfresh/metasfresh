@@ -104,9 +104,9 @@ public interface IInvoiceCandInvalidUpdater
 	{
 		//
 		// Pricing System & Currency 
-		if (priceAndTax.getPricingSystemId() > 0)
+		if (priceAndTax.getPricingSystemId() != null)
 		{
-			ic.setM_PricingSystem_ID(priceAndTax.getPricingSystemId());
+			ic.setM_PricingSystem_ID(priceAndTax.getPricingSystemId().getRepoId());
 		}
 		if (priceAndTax.getPriceListVersionId() > 0)
 		{

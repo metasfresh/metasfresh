@@ -776,7 +776,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		return PriceAndTax.builder()
-				.pricingSystemId(pricingResult.getM_PricingSystem_ID())
+				.pricingSystemId(pricingResult.getPricingSystemId())
 				// #367: there is a corner case where we need to know the PLV is order to later know the correct M_PriceList_ID.
 				// also see the javadoc of inOutBL.createPricingCtx(fromInOutLine)
 				.priceListVersionId(pricingResult.getM_PriceList_Version_ID())

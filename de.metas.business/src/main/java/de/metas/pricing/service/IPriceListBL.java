@@ -13,11 +13,11 @@ package de.metas.pricing.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,6 +29,8 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.lang.SOTrx;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 
 /**
  * @author RC
@@ -36,8 +38,13 @@ import de.metas.lang.SOTrx;
  */
 public interface IPriceListBL extends ISingletonService
 {
-	int getPricePrecision(int priceListId);
-	
+	int getPricePrecision(PriceListId priceListId);
+
+	default int getPricePrecision(final int priceListId)
+	{
+		return getPricePrecision(PriceListId.ofRepoIdOrNull(priceListId));
+	}
+
 	/**
 	 * @param pricingSystem
 	 * @param countryId
@@ -47,7 +54,7 @@ public interface IPriceListBL extends ISingletonService
 	 * @return the current price list for vendor if any (for the giver pricing system), null otherwise
 	 */
 	I_M_PriceList getCurrentPricelistOrNull(
-			int pricingSystemId,
+			PricingSystemId pricingSystemId,
 			int countryId,
 			Timestamp date,
 			SOTrx soTrx);
@@ -64,7 +71,7 @@ public interface IPriceListBL extends ISingletonService
 	 * @return
 	 */
 	I_M_PriceList_Version getCurrentPriceListVersionOrNull(
-			int pricingSystemId,
+			PricingSystemId pricingSystemId,
 			int countryId,
 			Timestamp date,
 			SOTrx soTrx,

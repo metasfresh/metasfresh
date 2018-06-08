@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
-import de.metas.pricing.service.IPriceListDAO;
 
 public abstract class AbstractPriceListBasedRule implements IPricingRule
 {
@@ -54,7 +53,7 @@ public abstract class AbstractPriceListBasedRule implements IPricingRule
 			return false;
 		}
 
-		if (pricingCtx.getM_PriceList_ID() <= 0)
+		if (pricingCtx.getPriceListId() == null)
 		{
 			final String msg = "pricingCtx {} contains no priceList";
 			Loggables.get().addLog(msg, pricingCtx);
@@ -63,7 +62,7 @@ public abstract class AbstractPriceListBasedRule implements IPricingRule
 			return false; // false;
 		}
 
-		if (pricingCtx.getM_PriceList_ID() == IPriceListDAO.M_PriceList_ID_None)
+		if (pricingCtx.getPriceListId().isNone())
 		{
 			log.info("Not applying because PriceList is NoPriceList ({})", pricingCtx);
 			return false;

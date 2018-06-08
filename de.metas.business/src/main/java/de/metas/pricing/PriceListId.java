@@ -2,6 +2,7 @@ package de.metas.pricing;
 
 import org.adempiere.util.Check;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -27,17 +28,38 @@ import lombok.Value;
  */
 
 @Value
-public class PriceListId
+public class PriceListId implements RepoIdAware
 {
-	int repoId;
-
 	public static PriceListId ofRepoId(final int repoId)
 	{
+		if (repoId == NONE.repoId)
+		{
+			return NONE;
+		}
 		return new PriceListId(repoId);
 	}
+
+	public static PriceListId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static int getRepoId(final PriceListId PriceListId)
+	{
+		return PriceListId != null ? PriceListId.getRepoId() : -1;
+	}
+
+	public static final PriceListId NONE = new PriceListId(100);
+
+	int repoId;
 
 	private PriceListId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	public boolean isNone()
+	{
+		return repoId == NONE.repoId;
 	}
 }

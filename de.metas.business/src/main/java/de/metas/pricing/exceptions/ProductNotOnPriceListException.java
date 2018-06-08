@@ -11,6 +11,8 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.pricing.IPricingContext;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 
@@ -58,9 +60,9 @@ public class ProductNotOnPriceListException extends AdempiereException
 			sb.appendADElement("M_Product_ID").append(": ").append(productName);
 		}
 
-		final int pricingSystemId = pricingCtx.getM_PricingSystem_ID();
-		final int priceListId = pricingCtx.getM_PriceList_ID();
-		if (priceListId > 0)
+		final PricingSystemId pricingSystemId = pricingCtx.getPricingSystemId();
+		final PriceListId priceListId = pricingCtx.getPriceListId();
+		if (priceListId != null)
 		{
 			final String priceListName = Services.get(IPriceListDAO.class).getPriceListName(priceListId);
 			if (!sb.isEmpty())
@@ -69,7 +71,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 			}
 			sb.appendADElement("M_PriceList_ID").append(": ").append(priceListName);
 		}
-		else if (pricingSystemId > 0)
+		else if (pricingSystemId != null)
 		{
 			final String pricingSystemName = Services.get(IPriceListDAO.class).getPricingSystemName(pricingSystemId);
 			if (!sb.isEmpty())

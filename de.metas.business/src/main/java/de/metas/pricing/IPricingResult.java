@@ -101,13 +101,13 @@ public interface IPricingResult
 
 	void setCalculated(boolean calculated);
 
-	int getM_PricingSystem_ID();
+	PricingSystemId getPricingSystemId();
 
-	void setM_PricingSystem_ID(final int pricingSystemId);
+	void setPricingSystemId(PricingSystemId pricingSystemId);
 
-	void setM_PriceList_ID(int tM_PriceList_ID);
+	void setPriceListId(PriceListId priceListId);
 
-	int getM_PriceList_ID();
+	PriceListId getPriceListId();
 
 	void setM_PriceList_Version_ID(int M_PriceList_Version_ID);
 

@@ -1,6 +1,5 @@
 package de.metas.order.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -35,6 +34,7 @@ import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -55,7 +55,6 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -70,6 +69,8 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderPA;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
 import lombok.NonNull;
@@ -131,26 +132,25 @@ public class OrderBL implements IOrderBL
 		if (overridePricingSystem || previousPricingSystemId <= 0)
 		{
 			final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
-			final int bPartnerId = bpartnerAndLocation.getBill_BPartner_ID();
-			if (bPartnerId <= 0)
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bpartnerAndLocation.getBill_BPartner_ID());
+			if (bpartnerId == null)
 			{
 				logger.debug("Order {} has no C_BPartner_ID. Doing nothing", order);
 				return;
 			}
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-			final String trxName = InterfaceWrapperHelper.getTrxName(order);
-			final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-			final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, bPartnerId, SOTrx.ofBoolean(order.isSOTrx()), trxName);
+			final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+			final PricingSystemId pricingSysId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
 
 			final boolean throwExIfNotFound = !overridePricingSystemAndDontThrowExIfNotFound;
-			if (pricingSysId <= 0 && throwExIfNotFound)
+			if (pricingSysId == null && throwExIfNotFound)
 			{
-				final I_C_BPartner bPartner = load(bPartnerId, I_C_BPartner.class);
-				Check.errorIf(true, "Unable to find pricing system for BPartner {}_{}; SOTrx={}", bPartner.getName(), bPartner.getValue(), order.isSOTrx());
+				final String bpartnerName = Services.get(IBPartnerBL.class).getBPartnerValueAndName(bpartnerId);
+				Check.errorIf(true, "Unable to find pricing system for BPartner {}_{}; SOTrx={}", bpartnerName, soTrx);
 			}
 
-			order.setM_PricingSystem_ID(pricingSysId);
+			order.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSysId));
 		}
 
 		//
@@ -170,8 +170,8 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setPriceList(final I_C_Order order)
 	{
-		final int pricingSystemId = order.getM_PricingSystem_ID();
-		if (pricingSystemId <= 0)
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
+		if (pricingSystemId == null)
 		{
 			logger.debug("order {} has no M_PricingSystem_ID. Doing nothing", order);
 			return;
@@ -189,8 +189,7 @@ public class OrderBL implements IOrderBL
 		if (priceList == null)
 		{
 			// Fail if no price list found
-			final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.create(Env.getCtx(), pricingSystemId, I_M_PricingSystem.class, ITrx.TRXNAME_None);
-			final String pricingSystemName = pricingSystem == null ? "-" : pricingSystem.getName();
+			final String pricingSystemName = Services.get(IPriceListDAO.class).getPricingSystemName(pricingSystemId);
 			throw new PriceListNotFoundException(pricingSystemName, soTrx);
 		}
 
@@ -200,8 +199,8 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void checkForPriceList(final I_C_Order order)
 	{
-		final int pricingSystemId = order.getM_PricingSystem_ID();
-		if (pricingSystemId <= 0)
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
+		if (pricingSystemId == null)
 		{
 			return;
 		}
@@ -223,16 +222,16 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public int retrievePriceListId(final I_C_Order order, final int pricingSystemIdOverride)
+	public PriceListId retrievePriceListId(final I_C_Order order, final PricingSystemId pricingSystemIdOverride)
 	{
-		final int orderPriceListId = order.getM_PriceList_ID();
-		if (orderPriceListId > 0)
+		final PriceListId orderPriceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
+		if (orderPriceListId != null)
 		{
-			if (pricingSystemIdOverride > 0)
+			if (pricingSystemIdOverride != null)
 			{
 				final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 				final I_M_PriceList priceList = priceListDAO.getById(orderPriceListId);
-				if (priceList.getM_PricingSystem_ID() == pricingSystemIdOverride)
+				if (priceList.getM_PricingSystem_ID() == pricingSystemIdOverride.getRepoId())
 				{
 					return orderPriceListId;
 				}
@@ -243,14 +242,14 @@ public class OrderBL implements IOrderBL
 			}
 		}
 
-		final int pricingSystemId = pricingSystemIdOverride > 0 ? pricingSystemIdOverride : order.getM_PricingSystem_ID();
+		final PricingSystemId pricingSystemId = pricingSystemIdOverride != null ? pricingSystemIdOverride : PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
 		final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocation, soTrx);
-		return priceList != null ? priceList.getM_PriceList_ID() : -1;
+		return priceList != null ? PriceListId.ofRepoId(priceList.getM_PriceList_ID()) : null;
 	}
 
-	private I_M_PriceList retrievePriceListOrNull(final int pricingSystemId, final BillBPartnerAndShipToLocation bpartnerAndLocation, @NonNull final SOTrx soTrx)
+	private I_M_PriceList retrievePriceListOrNull(final PricingSystemId pricingSystemId, final BillBPartnerAndShipToLocation bpartnerAndLocation, @NonNull final SOTrx soTrx)
 	{
 		final int shipBPLocationId = bpartnerAndLocation.getShip_BPartner_Location_ID();
 		if (shipBPLocationId <= 0)

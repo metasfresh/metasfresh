@@ -35,6 +35,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import lombok.NonNull;
 
@@ -43,14 +45,31 @@ public class PriceListDAO implements IPriceListDAO
 	private static final transient Logger logger = LogManager.getLogger(PriceListDAO.class);
 
 	@Override
-	public I_M_PriceList getById(final int priceListId)
+	public I_M_PricingSystem getPricingSystemById(final PricingSystemId pricingSystemId)
 	{
-		if (priceListId <= 0)
+		if (pricingSystemId == null)
 		{
 			return null;
 		}
 
-		return loadOutOfTrx(priceListId, I_M_PriceList.class);
+		return loadOutOfTrx(pricingSystemId.getRepoId(), I_M_PricingSystem.class);
+	}
+
+	@Override
+	public I_M_PriceList getById(final int priceListId)
+	{
+		return getById(PriceListId.ofRepoIdOrNull(priceListId));
+	}
+
+	@Override
+	public I_M_PriceList getById(final PriceListId priceListId)
+	{
+		if (priceListId == null)
+		{
+			return null;
+		}
+
+		return loadOutOfTrx(priceListId.getRepoId(), I_M_PriceList.class);
 	}
 
 	@Override
@@ -70,12 +89,17 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList retrievePriceListByPricingSyst(final int pricingSystemId, @NonNull final I_C_BPartner_Location bpartnerLocation, final SOTrx soTrx)
+	public I_M_PriceList retrievePriceListByPricingSyst(final PricingSystemId pricingSystemId, @NonNull final I_C_BPartner_Location bpartnerLocation, final SOTrx soTrx)
 	{
-		// In case we are dealing with Pricing System None, return the PriceList none
-		if (pricingSystemId == M_PricingSystem_ID_None)
+		if (pricingSystemId == null)
 		{
-			final I_M_PriceList pl = loadOutOfTrx(M_PriceList_ID_None, I_M_PriceList.class);
+			return null;
+		}
+
+		// In case we are dealing with Pricing System None, return the PriceList none
+		if (pricingSystemId.isNone())
+		{
+			final I_M_PriceList pl = loadOutOfTrx(PricingSystemId.NONE.getRepoId(), I_M_PriceList.class);
 			Check.assumeNotNull(pl, "pl with M_PriceList_ID={} is not null", M_PriceList_ID_None);
 			return pl;
 		}
@@ -86,17 +110,16 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public Iterator<I_M_PriceList> retrievePriceLists(final int pricingSystemId, final int countryId, final SOTrx soTrx)
+	public Iterator<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final int countryId, final SOTrx soTrx)
 	{
 		return retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, soTrx)
 				.iterator();
 	}
-	
 
 	@Cached(cacheName = I_M_PriceList.Table_Name + "#by#M_PricingSystem_ID#C_Country_ID#IsSOPriceList")
 	public ImmutableList<I_M_PriceList> retrievePriceLists(
 			final @CacheCtx Properties ctx,
-			final int pricingSystemId,
+			final PricingSystemId pricingSystemId,
 			final int countryId,
 			final SOTrx soTrx)
 	{
@@ -129,15 +152,16 @@ public class PriceListDAO implements IPriceListDAO
 			final Boolean processed)
 	{
 		final Properties ctx = getCtx(priceList);
-		final int priceListId = priceList.getM_PriceList_ID();
+		final PriceListId priceListId = PriceListId.ofRepoId(priceList.getM_PriceList_ID());
 		final I_M_PriceList_Version plv = retrievePriceListVersionOrNull(ctx, priceListId, date, processed);
 		return plv;
 	}
 
 	@Override
 	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date#Processed")
-	public I_M_PriceList_Version retrievePriceListVersionOrNull(@CacheCtx final Properties ctx,
-			final int priceListId,
+	public I_M_PriceList_Version retrievePriceListVersionOrNull(
+			@CacheCtx final Properties ctx,
+			final PriceListId priceListId,
 			final Date date,
 			final Boolean processed)
 	{
@@ -265,14 +289,14 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public String getPricingSystemName(final int pricingSystemId)
+	public String getPricingSystemName(final PricingSystemId pricingSystemId)
 	{
-		if (pricingSystemId <= 0)
+		if (pricingSystemId == null)
 		{
 			return "-";
 		}
 
-		final I_M_PricingSystem pricingSystem = loadOutOfTrx(pricingSystemId, I_M_PricingSystem.class);
+		final I_M_PricingSystem pricingSystem = getPricingSystemById(pricingSystemId);
 		if (pricingSystem == null)
 		{
 			return "<" + pricingSystemId + ">";
@@ -282,9 +306,9 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public String getPriceListName(final int priceListId)
+	public String getPriceListName(final PriceListId priceListId)
 	{
-		if (priceListId <= 0)
+		if (priceListId == null)
 		{
 			return "-";
 		}
@@ -297,9 +321,9 @@ public class PriceListDAO implements IPriceListDAO
 
 		return priceList.getName();
 	}
-	
+
 	@Override
-	public Set<Integer> retrieveCountryIdsByPricingSystem(int pricingSystemId)
+	public Set<Integer> retrieveCountryIdsByPricingSystem(@NonNull final PricingSystemId pricingSystemId)
 	{
 		final List<Integer> countryIds = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_PriceList.class)

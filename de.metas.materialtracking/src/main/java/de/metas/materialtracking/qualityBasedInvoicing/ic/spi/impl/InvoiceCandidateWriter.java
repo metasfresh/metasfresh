@@ -65,6 +65,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoice
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupByTypeComparator;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 
@@ -420,7 +421,7 @@ public class InvoiceCandidateWriter
 
 		//
 		// Pricing
-		ic.setM_PricingSystem_ID(pricingResult.getM_PricingSystem_ID());
+		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
 		ic.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
 		ic.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID());
 		ic.setPriceEntered(pricingResult.getPriceStd());

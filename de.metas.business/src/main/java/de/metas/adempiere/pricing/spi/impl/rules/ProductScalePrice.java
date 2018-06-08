@@ -38,6 +38,7 @@ import org.compiere.model.MProduct;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.rules.AbstractPriceListBasedRule;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
@@ -121,7 +122,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		final Properties ctx = pricingCtx.getCtx();
 		final int m_M_Product_ID = pricingCtx.getM_Product_ID();
 		int m_M_PriceList_Version_ID = pricingCtx.getM_PriceList_Version_ID();
-		int m_M_PriceList_ID = pricingCtx.getM_PriceList_ID();
+		PriceListId priceListId = pricingCtx.getPriceListId();
 		//
 		BigDecimal m_PriceStd = null;
 		BigDecimal m_PriceList = null;
@@ -141,10 +142,10 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		final MProduct prod = MProduct.get(ctx, m_M_Product_ID);
 		m_C_UOM_ID = prod.getC_UOM_ID();
 
-		if (m_M_PriceList_ID <= 0)
+		if (priceListId == null)
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
-			m_M_PriceList_ID = priceListVersion.getM_PriceList_ID();
+			priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
 		}
 
 		if (m_M_PriceList_Version_ID <= 0)
@@ -154,7 +155,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 
 		// TODO handle bom-prices for products that don't have a price themselves.
 
-		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(m_M_PriceList_ID);
+		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
 		currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
 		m_enforcePriceLimit = priceList.isEnforcePriceLimit();
 		m_isTaxIncluded = priceList.isTaxIncluded();

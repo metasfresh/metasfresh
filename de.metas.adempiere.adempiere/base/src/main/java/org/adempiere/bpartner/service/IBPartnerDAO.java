@@ -40,6 +40,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.lang.SOTrx;
+import de.metas.pricing.PricingSystemId;
 import lombok.NonNull;
 
 public interface IBPartnerDAO extends ISingletonService
@@ -114,9 +115,9 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @param trxName
 	 * @return M_PricingSystem_ID or 0
 	 */
-	int retrievePricingSystemId(Properties ctx, int bPartnerId, SOTrx soTrx, String trxName);
+	PricingSystemId retrievePricingSystemId(Properties ctx, int bPartnerId, SOTrx soTrx, String trxName);
 
-	int retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
+	PricingSystemId retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
 
 	I_M_Shipper retrieveShipper(int bPartnerId, String trxName);
 

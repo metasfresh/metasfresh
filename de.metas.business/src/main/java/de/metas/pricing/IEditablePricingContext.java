@@ -60,11 +60,11 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setPriceDate(final Timestamp priceDate);
 
-	IEditablePricingContext setM_PricingSystem_ID(final int pricingSystemId);
+	IEditablePricingContext setPricingSystemId(PricingSystemId pricingSystemId);
+
+	IEditablePricingContext setPriceListId(PriceListId priceListId);
 
 	IEditablePricingContext setM_PriceList_Version_ID(final int m_PriceList_Version_ID);
-
-	IEditablePricingContext setM_PriceList_ID(final int M_PriceList_ID);
 
 	IEditablePricingContext setM_Product_ID(final int m_Product_ID);
 

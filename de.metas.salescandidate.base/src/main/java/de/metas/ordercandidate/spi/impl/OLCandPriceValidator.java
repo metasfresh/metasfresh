@@ -43,6 +43,7 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
 
 /**
  * Validates and sets the given OLCand's pricing data.
@@ -139,7 +140,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 		olCand.setPriceActual(priceInternal);
 		olCand.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
-		olCand.setM_PricingSystem_ID(pricingResult.getM_PricingSystem_ID());
+		olCand.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
 
 		// task 08803: we provide the pricing result and expect that OLCandPricingASIListener will keep the ASI up to date
 		DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT.setValue(olCand, pricingResult);
@@ -161,9 +162,8 @@ public class OLCandPriceValidator implements IOLCandValidator
 			final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 			final BigDecimal qtyOverride = null;
-			final int pricingSystemIdOverride = 0;
 			final Timestamp datePromisedEffective = olCandEffectiveValuesBL.getDatePromisedEffective(olCand);
-			final IPricingResult pricingResult = olCandBL.computePriceActual(olCand, qtyOverride, pricingSystemIdOverride, datePromisedEffective);
+			final IPricingResult pricingResult = olCandBL.computePriceActual(olCand, qtyOverride, PricingSystemId.NULL, datePromisedEffective);
 
 			return pricingResult;
 		}

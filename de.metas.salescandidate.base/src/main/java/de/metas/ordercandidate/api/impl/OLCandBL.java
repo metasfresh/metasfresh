@@ -56,6 +56,8 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
@@ -83,15 +85,15 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public int getPricingSystemId(@NonNull final I_C_OLCand olCand, final OLCandOrderDefaults orderDefaults)
+	public PricingSystemId getPricingSystemId(@NonNull final I_C_OLCand olCand, final OLCandOrderDefaults orderDefaults)
 	{
 		Check.assumeNotNull(olCand, "Param 'olCand' not null");
 
 		if (olCand.getM_PricingSystem_ID() > 0)
 		{
-			return olCand.getM_PricingSystem_ID();
+			return PricingSystemId.ofRepoId(olCand.getM_PricingSystem_ID());
 		}
-		else if (orderDefaults != null && orderDefaults.getPricingSystemId() > 0)
+		else if (orderDefaults != null && orderDefaults.getPricingSystemId() != null)
 		{
 			return orderDefaults.getPricingSystemId();
 		}
@@ -102,7 +104,7 @@ public class OLCandBL implements IOLCandBL
 
 			final int bpartnerId = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
 
-			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(Env.getCtx(), bpartnerId, SOTrx.SALES, ITrx.TRXNAME_None);
+			final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemId(Env.getCtx(), bpartnerId, SOTrx.SALES, ITrx.TRXNAME_None);
 			return pricingSystemId;
 		}
 	}
@@ -138,7 +140,7 @@ public class OLCandBL implements IOLCandBL
 	public IPricingResult computePriceActual(
 			final I_C_OLCand olCand,
 			final BigDecimal qtyOverride,
-			final int pricingSystemIdOverride,
+			final PricingSystemId pricingSystemIdOverride,
 			final Timestamp date)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
@@ -163,13 +165,13 @@ public class OLCandBL implements IOLCandBL
 			pricingCtx.setC_Country_ID(dropShipLocation.getC_Location().getC_Country_ID());
 
 			final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQty();
-			final int pricingSystemId = pricingSystemIdOverride > 0 ? pricingSystemIdOverride : getPricingSystemId(olCand, OLCandOrderDefaults.NULL);
+			final PricingSystemId pricingSystemId = pricingSystemIdOverride != null ? pricingSystemIdOverride : getPricingSystemId(olCand, OLCandOrderDefaults.NULL);
 
-			if (pricingSystemId <= 0)
+			if (pricingSystemId == null)
 			{
 				throw new AdempiereException("@M_PricingSystem@ @NotFound@");
 			}
-			pricingCtx.setM_PricingSystem_ID(pricingSystemId); // set it to the context that way it will also be in the result, even if the pricing rules won't need it
+			pricingCtx.setPricingSystemId(pricingSystemId); // set it to the context that way it will also be in the result, even if the pricing rules won't need it
 
 			pricingCtx.setBPartnerId(billBPartnerId);
 			pricingCtx.setQty(qty);
@@ -183,7 +185,7 @@ public class OLCandBL implements IOLCandBL
 			{
 				throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
 			}
-			pricingCtx.setM_PriceList_ID(pl.getM_PriceList_ID());
+			pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
 			pricingCtx.setM_Product_ID(effectiveValuesBL.getM_Product_Effective_ID(olCand));
 
 			pricingResult = pricingBL.calculatePrice(pricingCtx);

@@ -45,6 +45,8 @@ import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -116,15 +118,15 @@ public class C_OrderLine
 		final I_C_Flatrate_Conditions flatrateConditions = ol.getC_Flatrate_Conditions();
 		final I_C_Order order = ol.getC_Order();
 
-		final int pricingSysytemId;
+		final PricingSystemId pricingSysytemId;
 
 		if (flatrateConditions.getM_PricingSystem_ID() > 0)
 		{
-			pricingSysytemId = flatrateConditions.getM_PricingSystem_ID();
+			pricingSysytemId = PricingSystemId.ofRepoId(flatrateConditions.getM_PricingSystem_ID());
 		}
 		else
 		{
-			pricingSysytemId = order.getM_PricingSystem_ID();
+			pricingSysytemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
 		}
 
 		final I_C_BPartner_Location bpLocation = ol.getC_BPartner_Location();
@@ -162,14 +164,14 @@ public class C_OrderLine
 
 		// qty ordered needs to be set because it will be used to compute the
 		// line's NetLineAmount in MOrderLine.beforeSave()
-		ol.setQtyOrdered(priceQty.getQty());
+		ol.setQtyOrdered(priceQty.getAsBigDecimal());
 
-		ol.setQtyEnteredInPriceUOM(priceQty.getQty());
+		ol.setQtyEnteredInPriceUOM(priceQty.getAsBigDecimal());
 
 		// now compute the new prices
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(ol)
-				.priceListIdOverride(subscriptionPL.getM_PriceList_ID())
+				.priceListIdOverride(PriceListId.ofRepoId(subscriptionPL.getM_PriceList_ID()))
 				.qtyOverride(priceQty)
 				.resultUOM(ResultUOM.PRICE_UOM)
 				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)

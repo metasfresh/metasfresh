@@ -92,6 +92,7 @@ import de.metas.monitoring.api.IMonitoringBL;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductPA;
 import de.metas.workflow.api.IWFExecutionFactory;
@@ -404,7 +405,11 @@ public class SubscriptionBL implements ISubscriptionBL
 			newTerm.setM_PricingSystem_ID(olCand.getM_PricingSystem_ID());
 		}
 
-		final IPricingResult pricingResult = olCandBL.computePriceActual(olCand, newTerm.getPlannedQtyPerUnit(), newTerm.getM_PricingSystem_ID(), olCand.getDateCandidate());
+		final IPricingResult pricingResult = olCandBL.computePriceActual(
+				olCand, 
+				newTerm.getPlannedQtyPerUnit(), 
+				PricingSystemId.ofRepoIdOrNull(newTerm.getM_PricingSystem_ID()), 
+				olCand.getDateCandidate());
 
 		newTerm.setPriceActual(pricingResult.getPriceStd());
 		newTerm.setC_UOM_ID(pricingResult.getPrice_UOM_ID());
@@ -683,7 +688,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	@Override
 	public BigDecimal computePriceDifference(
 			final Properties ctx,
-			final int mPricingSystemId,
+			final PricingSystemId pricingSystemId,
 			final List<I_C_SubscriptionProgress> deliveries,
 			final String trxName)
 	{
@@ -712,7 +717,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_PriceList pl = InterfaceWrapperHelper.create(
 				priceListDAO.retrievePriceListByPricingSyst(
-						mPricingSystemId,
+						pricingSystemId,
 						ol.getC_BPartner_Location(),
 						SOTrx.SALES),
 				I_M_PriceList.class);

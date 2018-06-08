@@ -35,6 +35,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.lang.RepoIdAware;
 import lombok.NonNull;
 
 /**
@@ -91,6 +92,12 @@ public final class CacheImmutableClassesIndex
 	{
 		// Primitive types are always immutable
 		if (clazz.isPrimitive())
+		{
+			return true;
+		}
+		
+		// Assume IDs are immutable
+		if (RepoIdAware.class.isAssignableFrom(clazz))
 		{
 			return true;
 		}

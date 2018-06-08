@@ -36,6 +36,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.PricingSystemId;
 
 /**
  * Implementors of this class have the job to create and invalidate {@link I_C_Invoice_Candidate} records.
@@ -255,7 +256,7 @@ public interface IInvoiceCandidateHandler
 	{
 		public static final PriceAndTax NONE = builder().build();
 
-		int pricingSystemId;
+		PricingSystemId pricingSystemId;
 		int priceListVersionId;
 		CurrencyId currencyId;
 

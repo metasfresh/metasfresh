@@ -66,6 +66,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.pricing.PricingSystemId;
 import lombok.NonNull;
 
 public class BPartnerDAO implements IBPartnerDAO
@@ -259,13 +260,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public int retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final SOTrx soTrx)
+	public PricingSystemId retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final SOTrx soTrx)
 	{
 		return retrievePricingSystemId(Env.getCtx(), bPartnerId.getRepoId(), soTrx, ITrx.TRXNAME_None);
 	}
 
 	@Override
-	public int retrievePricingSystemId(
+	public PricingSystemId retrievePricingSystemId(
 			final Properties ctx,
 			final int bPartnerId,
 			final SOTrx soTrx,
@@ -289,7 +290,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (bpPricingSysId != null && bpPricingSysId > 0)
 		{
 			logger.debug("Got M_PricingSystem_ID={} from bPartner={}", bpPricingSysId, bPartner);
-			return bpPricingSysId;
+			return PricingSystemId.ofRepoId(bpPricingSysId);
 		}
 
 		final int bpGroupId = bPartner.getC_BP_Group_ID();
@@ -312,7 +313,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			if (bpGroupPricingSysId != null && bpGroupPricingSysId > 0)
 			{
 				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
-				return bpGroupPricingSysId;
+				return PricingSystemId.ofRepoId(bpGroupPricingSysId);
 			}
 		}
 
@@ -322,12 +323,12 @@ public class BPartnerDAO implements IBPartnerDAO
 			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(MOrgInfo.get(ctx, adOrgId, null), I_AD_OrgInfo.class);
 			if (orgInfo.getM_PricingSystem_ID() > 0)
 			{
-				return orgInfo.getM_PricingSystem_ID();
+				return PricingSystemId.ofRepoId(orgInfo.getM_PricingSystem_ID());
 			}
 		}
 
-		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning 0", bPartner, soTrx);
-		return 0;
+		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning null", bPartner, soTrx);
+		return null;
 	}
 
 	@Override

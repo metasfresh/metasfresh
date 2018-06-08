@@ -35,6 +35,8 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import lombok.Getter;
@@ -56,8 +58,12 @@ class PricingResult implements IPricingResult
 {
 	private boolean calculated = false;
 
-	private int M_PricingSystem_ID = -1;
-	private int M_PriceList_ID = -1;
+	@Getter
+	@Setter
+	private PricingSystemId pricingSystemId;
+	@Getter
+	@Setter
+	private PriceListId priceListId;
 	@Setter
 	@Getter
 	private CurrencyId currencyId;
@@ -86,30 +92,6 @@ class PricingResult implements IPricingResult
 	private final List<IPricingRule> rulesApplied = new ArrayList<>();
 
 	private final List<IPricingAttribute> pricingAttributes = new ArrayList<>();
-
-	@Override
-	public int getM_PricingSystem_ID()
-	{
-		return M_PricingSystem_ID;
-	}
-
-	@Override
-	public void setM_PricingSystem_ID(final int pricingSystemId)
-	{
-		M_PricingSystem_ID = pricingSystemId;
-	}
-
-	@Override
-	public void setM_PriceList_ID(final int M_PriceList_ID)
-	{
-		this.M_PriceList_ID = M_PriceList_ID;
-	}
-
-	@Override
-	public int getM_PriceList_ID()
-	{
-		return M_PriceList_ID;
-	}
 
 	/**
 	 * @return the c_UOM_ID

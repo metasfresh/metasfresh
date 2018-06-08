@@ -41,9 +41,9 @@ public interface IPricingContext extends IContextAware
 
 	I_M_Product getM_Product();
 
-	int getM_PricingSystem_ID();
+	PricingSystemId getPricingSystemId();
 
-	int getM_PriceList_ID();
+	PriceListId getPriceListId();
 
 	int getM_PriceList_Version_ID();
 
@@ -68,7 +68,7 @@ public interface IPricingContext extends IContextAware
 	BigDecimal getQty();
 
 	boolean isSOTrx();
-	
+
 	default SOTrx getSoTrx()
 	{
 		return SOTrx.ofBoolean(isSOTrx());

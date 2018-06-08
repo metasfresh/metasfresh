@@ -40,6 +40,8 @@ import org.junit.Test;
 
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 
 public class PricingContextTest
 {
@@ -70,9 +72,9 @@ public class PricingContextTest
 		pricingCtx.setC_UOM_ID(nextId++);
 		pricingCtx.setConvertPriceToContextUOM(true);
 		pricingCtx.setDisallowDiscount(true);
-		pricingCtx.setM_PriceList_ID(nextId++);
+		pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(nextId++));
+		pricingCtx.setPriceListId(PriceListId.ofRepoId(nextId++));
 		pricingCtx.setM_PriceList_Version_ID(nextId++);
-		pricingCtx.setM_PricingSystem_ID(nextId++);
 		pricingCtx.setM_Product_ID(nextId++);
 		pricingCtx.setManualPrice(true);
 		pricingCtx.setPP_Product_BOM_ID(nextId++);

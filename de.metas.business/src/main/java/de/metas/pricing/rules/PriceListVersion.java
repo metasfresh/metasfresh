@@ -87,7 +87,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		}
 		
 		return Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(Env.getCtx(),
-				pricingCtx.getM_PriceList_ID(),
+				pricingCtx.getPriceListId(),
 				pricingCtx.getPriceDate(),
 				(Boolean)null // processed
 		);

@@ -44,6 +44,8 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
@@ -98,7 +100,7 @@ public class OLCandPIIPValidator implements IOLCandValidator
 
 	private void checkForPrice(final I_C_OLCand olCand, final int packingMaterialProductId)
 	{
-		final int pricingSystemId = olCand.getM_PricingSystem_ID();
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(olCand.getM_PricingSystem_ID());
 
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		final Timestamp datePromisedEffective = olCandEffectiveValuesBL.getDatePromisedEffective(olCand);
@@ -116,8 +118,8 @@ public class OLCandPIIPValidator implements IOLCandValidator
 		pricingCtx.setSOTrx(true);
 		pricingCtx.setQty(BigDecimal.ONE); // we don't care for the actual quantity we just want to verify that there is a price
 
-		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
-		pricingCtx.setM_PriceList_ID(pl.getM_PriceList_ID());
+		pricingCtx.setPricingSystemId(pricingSystemId);
+		pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
 		pricingCtx.setM_Product_ID(packingMaterialProductId);
 		pricingCtx.setPriceDate(datePromisedEffective);
 		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(olCand.getC_Currency_ID()));

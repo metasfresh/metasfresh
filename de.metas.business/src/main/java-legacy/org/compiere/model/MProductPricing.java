@@ -26,6 +26,7 @@ import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 
@@ -118,25 +119,20 @@ public class MProductPricing
 	}
 
 	/**
-	 * Get PriceList ID
-	 * 
-	 * @return pl
-	 */
-	public int getM_PriceList_ID()
-	{
-		return pricingCtx.getM_PriceList_ID();
-	}	// getM_PriceList_ID
-
-	/**
 	 * Set PriceList
 	 * 
 	 * @param M_PriceList_ID pl
 	 */
 	public void setM_PriceList_ID(int M_PriceList_ID)
 	{
-		pricingCtx.setM_PriceList_ID(M_PriceList_ID);
-		resetResult();
+		setPriceListId(PriceListId.ofRepoIdOrNull(M_PriceList_ID));
 	}	// setM_PriceList_ID
+	
+	public void setPriceListId(PriceListId priceListId)
+	{
+		pricingCtx.setPriceListId(priceListId);
+		resetResult();
+	}
 
 	/**
 	 * Get PriceList Version

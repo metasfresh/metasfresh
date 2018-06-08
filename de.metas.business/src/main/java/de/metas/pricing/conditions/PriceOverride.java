@@ -2,9 +2,9 @@ package de.metas.pricing.conditions;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 
+import de.metas.pricing.PricingSystemId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -38,9 +38,8 @@ public class PriceOverride
 		return NONE;
 	}
 
-	public static PriceOverride basePricingSystem(final int pricingSystemId, @NonNull final BigDecimal basePriceAddAmt)
+	public static PriceOverride basePricingSystem(@NonNull final PricingSystemId pricingSystemId, @NonNull final BigDecimal basePriceAddAmt)
 	{
-		Check.assumeGreaterThanZero(pricingSystemId, "pricingSystemId");
 		return new PriceOverride(PriceOverrideType.BASE_PRICING_SYSTEM, /* fixedPrice */null, pricingSystemId, basePriceAddAmt);
 	}
 
@@ -50,7 +49,7 @@ public class PriceOverride
 		{
 			return ZERO;
 		}
-		return new PriceOverride(PriceOverrideType.FIXED_PRICE, fixedPrice, /* pricingSystemId */-1, /* basePriceAddAmt */null);
+		return new PriceOverride(PriceOverrideType.FIXED_PRICE, fixedPrice, /* pricingSystemId */null, /* basePriceAddAmt */null);
 	}
 
 	public static PriceOverride fixedZeroPrice()
@@ -59,11 +58,11 @@ public class PriceOverride
 	}
 
 	private static final PriceOverride NONE = new PriceOverride();
-	private static final PriceOverride ZERO = new PriceOverride(PriceOverrideType.FIXED_PRICE, /* fixedPrice */BigDecimal.ZERO, /* pricingSystemId */-1, /* basePriceAddAmt */null);
+	private static final PriceOverride ZERO = new PriceOverride(PriceOverrideType.FIXED_PRICE, /* fixedPrice */BigDecimal.ZERO, /* pricingSystemId */null, /* basePriceAddAmt */null);
 
 	@NonNull
 	PriceOverrideType type;
-	int basePricingSystemId;
+	PricingSystemId basePricingSystemId;
 	BigDecimal basePriceAddAmt;
 	BigDecimal fixedPrice;
 
@@ -71,19 +70,19 @@ public class PriceOverride
 	{
 		type = PriceOverrideType.NONE;
 		fixedPrice = null;
-		basePricingSystemId = -1;
+		basePricingSystemId = null;
 		basePriceAddAmt = null;
 	}
 
 	private PriceOverride(
 			@NonNull final PriceOverrideType type,
 			final BigDecimal fixedPrice,
-			final int basePricingSystemId,
+			final PricingSystemId basePricingSystemId,
 			final BigDecimal basePriceAddAmt)
 	{
 		this.type = type;
 		this.fixedPrice = NumberUtils.stripTrailingDecimalZeros(fixedPrice);
-		this.basePricingSystemId = basePricingSystemId > 0 ? basePricingSystemId : -1;
+		this.basePricingSystemId = basePricingSystemId;
 		this.basePriceAddAmt = NumberUtils.stripTrailingDecimalZeros(basePriceAddAmt);
 	}
 

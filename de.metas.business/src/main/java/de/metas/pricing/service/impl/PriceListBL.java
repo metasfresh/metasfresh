@@ -32,6 +32,8 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.lang.SOTrx;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import lombok.NonNull;
@@ -39,9 +41,9 @@ import lombok.NonNull;
 public class PriceListBL implements IPriceListBL
 {
 	@Override
-	public int getPricePrecision(final int priceListId)
+	public int getPricePrecision(final PriceListId priceListId)
 	{
-		if(priceListId <= 0)
+		if(priceListId == null)
 		{
 			return 2; // default
 		}
@@ -52,7 +54,7 @@ public class PriceListBL implements IPriceListBL
 
 	@Override
 	public I_M_PriceList getCurrentPricelistOrNull(
-			final int pricingSystemId,
+			final PricingSystemId pricingSystemId,
 			final int countryId,
 			final Timestamp date,
 			@NonNull final SOTrx soTrx)
@@ -70,7 +72,7 @@ public class PriceListBL implements IPriceListBL
 
 	@Override
 	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(
-			final int pricingSystemId,
+			final PricingSystemId pricingSystemId,
 			final int countryId,
 			final Timestamp date,
 			final SOTrx soTrx,
@@ -83,7 +85,7 @@ public class PriceListBL implements IPriceListBL
 			return null;
 		}
 
-		if (pricingSystemId <= 0)
+		if (pricingSystemId == null)
 		{
 			return null;
 		}
