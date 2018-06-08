@@ -3,6 +3,8 @@
  */
 package de.metas.letter;
 
+import lombok.experimental.UtilityClass;
+
 /*
  * #%L
  * marketing-serialletter
@@ -29,6 +31,7 @@ package de.metas.letter;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@UtilityClass
 public class LetterConstants
 {
 	/**
