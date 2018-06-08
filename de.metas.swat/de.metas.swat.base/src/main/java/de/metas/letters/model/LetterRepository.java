@@ -42,6 +42,7 @@ public class LetterRepository
 				.address(letterRecord.getBPartnerAddress())
 				.boilerPlateId(letterRecord.getAD_BoilerPlate_ID())
 				.body(letterRecord.getLetterBody())
+				.body(letterRecord.getLetterBodyParsed())
 				.subject(letterRecord.getLetterSubject())
 				.build();
 	}
@@ -61,6 +62,7 @@ public class LetterRepository
 		letterRecord.setAD_BoilerPlate_ID(letter.getBoilerPlateId());
 		letterRecord.setLetterSubject(letter.getSubject());
 		letterRecord.setLetterBody(letter.getBody());
+		letterRecord.setLetterBodyParsed(letter.getBodyParsed());
 		letterRecord.setBPartnerAddress(letter.getAddress());
 		letterRecord.setC_BP_Contact_ID(letter.getUserId().getRepoId());
 		letterRecord.setC_BPartner_ID(letter.getBpartnerId().getRepoId());

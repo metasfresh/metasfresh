@@ -49,6 +49,7 @@ public class Letter
 
 	final String body;
 
+
 	final int boilerPlateId;
 
 	final String address;
