@@ -63,8 +63,6 @@ public class C_Async_Batch
 		}
 	}
 
-	}
-
 	private void runPrintingProcess(final I_C_Async_Batch asyncBatch)
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
