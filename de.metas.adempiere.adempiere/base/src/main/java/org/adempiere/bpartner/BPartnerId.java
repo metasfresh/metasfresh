@@ -5,6 +5,7 @@ import org.adempiere.util.Check;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -30,7 +31,7 @@ import lombok.Value;
  */
 
 @Value
-public class BPartnerId
+public class BPartnerId implements RepoIdAware
 {
 	int repoId;
 

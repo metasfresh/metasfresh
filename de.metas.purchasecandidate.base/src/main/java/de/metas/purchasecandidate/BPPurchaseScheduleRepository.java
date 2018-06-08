@@ -1,5 +1,9 @@
 package de.metas.purchasecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -110,10 +114,13 @@ public class BPPurchaseScheduleRepository
 		}
 
 		return BPPurchaseSchedule.builder()
+				.bpPurchaseScheduleId(BPPurchaseScheduleId.ofRepoId(scheduleRecord.getC_BP_PurchaseSchedule_ID()))
 				.validFrom(TimeUtil.asLocalDate(scheduleRecord.getValidFrom()))
 				.frequency(frequency)
 				.dailyPreparationTimes(extractPreparationTimes(daysOfWeek, scheduleRecord))
 				.reminderTime(Duration.ofMinutes(scheduleRecord.getReminderTimeInMin()))
+				.leadTimeOffset(Duration.ofDays(scheduleRecord.getLeadTimeOffset()))
+				.bpartnerId(BPartnerId.ofRepoId(scheduleRecord.getC_BPartner_ID()))
 				.build();
 	}
 
@@ -126,6 +133,22 @@ public class BPPurchaseScheduleRepository
 		else if (X_C_BP_PurchaseSchedule.FREQUENCYTYPE_Monthly.equals(frequencyType))
 		{
 			return FrequencyType.Monthly;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown " + FrequencyType.class + ": " + frequencyType);
+		}
+	}
+
+	private static String toFrequencyTypeString(final FrequencyType frequencyType)
+	{
+		if (FrequencyType.Weekly.equals(frequencyType))
+		{
+			return X_C_BP_PurchaseSchedule.FREQUENCYTYPE_Weekly;
+		}
+		else if (FrequencyType.Monthly.equals(frequencyType))
+		{
+			return X_C_BP_PurchaseSchedule.FREQUENCYTYPE_Monthly;
 		}
 		else
 		{
@@ -244,6 +267,98 @@ public class BPPurchaseScheduleRepository
 			return schedules.stream()
 					.filter(schedule -> schedule.getValidFrom().compareTo(date) <= 0)
 					.findFirst();
+		}
+	}
+
+	public BPPurchaseSchedule changeLeadTimeOffset(final BPPurchaseSchedule bpPurchaseSchedule, Duration leadTimeOffset)
+	{
+		bpPurchaseSchedule.toBuilder()
+				.leadTimeOffset(leadTimeOffset)
+				.build();
+
+		save(bpPurchaseSchedule);
+
+		return bpPurchaseSchedule;
+	}
+
+	public BPPurchaseSchedule save(@NonNull final BPPurchaseSchedule schedule)
+	{
+		final I_C_BP_PurchaseSchedule scheduleRecord = createOrUpdateRecord(schedule);
+		saveRecord(schedule);
+
+		return schedule.toBuilder()
+				.bpPurchaseScheduleId(BPPurchaseScheduleId.ofRepoId(scheduleRecord.getC_BP_PurchaseSchedule_ID()))
+				.build();
+	}
+
+	private I_C_BP_PurchaseSchedule createOrUpdateRecord(@NonNull final BPPurchaseSchedule schedule)
+	{
+		final I_C_BP_PurchaseSchedule scheduleRecord;
+		if (schedule.getBpPurchaseScheduleId() != null)
+		{
+			final int repoId = schedule.getBpPurchaseScheduleId().getRepoId();
+			scheduleRecord = load(repoId, I_C_BP_PurchaseSchedule.class);
+		}
+		else
+		{
+			scheduleRecord = newInstance(I_C_BP_PurchaseSchedule.class);
+		}
+
+		scheduleRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(schedule.getBpartnerId(), 0));
+		scheduleRecord.setValidFrom(TimeUtil.asTimestamp(schedule.getValidFrom()));
+		scheduleRecord.setLeadTimeOffset((int)schedule.getLeadTimeOffset().toDays());
+		scheduleRecord.setReminderTimeInMin((int)schedule.getReminderTime().toMinutes());
+		final Frequency frequency = schedule.getFrequency();
+		scheduleRecord.setFrequencyType(toFrequencyTypeString(frequency.getType()));
+		if (frequency.getType() == FrequencyType.Weekly)
+		{
+			scheduleRecord.setFrequency(frequency.getEveryNthWeek());
+		}
+		else if (frequency.getType() == FrequencyType.Monthly)
+		{
+			scheduleRecord.setFrequency(frequency.getEveryNthMonth());
+			scheduleRecord.setMonthDay(frequency.getOnlyDaysOfMonth()
+					.stream()
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("No month of the day " + Frequency.class + ": " + frequency)));
+		}
+
+		final ImmutableSet<DayOfWeek> daysOfWeek = frequency.getOnlyDaysOfWeek();
+		setDaysOfWeek(scheduleRecord, daysOfWeek);
+
+		return scheduleRecord;
+	}
+
+
+	private static void setDaysOfWeek(@NonNull final I_C_BP_PurchaseSchedule scheduleRecord, @NonNull final ImmutableSet<DayOfWeek> daysOfWeek)
+	{
+		if (daysOfWeek.contains(DayOfWeek.MONDAY))
+		{
+			scheduleRecord.setOnMonday(true);
+		}
+		if (daysOfWeek.contains(DayOfWeek.TUESDAY))
+		{
+			scheduleRecord.setOnTuesday(true);
+		}
+		if (daysOfWeek.contains(DayOfWeek.WEDNESDAY))
+		{
+			scheduleRecord.setOnWednesday(true);
+		}
+		if (daysOfWeek.contains(DayOfWeek.THURSDAY))
+		{
+			scheduleRecord.setOnThursday(true);
+		}
+		if (daysOfWeek.contains(DayOfWeek.FRIDAY))
+		{
+			scheduleRecord.setOnFriday(true);
+		}
+		if (daysOfWeek.contains(DayOfWeek.SATURDAY))
+		{
+			scheduleRecord.setOnSaturday(true);
+		}
+		if (daysOfWeek.contains(DayOfWeek.SUNDAY))
+		{
+			scheduleRecord.setOnSunday(true);
 		}
 	}
 }

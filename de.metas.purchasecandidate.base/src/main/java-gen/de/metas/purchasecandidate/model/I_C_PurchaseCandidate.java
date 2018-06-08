@@ -361,6 +361,33 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_IsAggregatePO = "IsAggregatePO";
 
 	/**
+	 * Set M_AttributeInstance.
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_AttributeInstance_ID (int M_AttributeInstance_ID);
+
+	/**
+	 * Get M_AttributeInstance.
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_AttributeInstance_ID();
+
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeInstance();
+
+	public void setM_AttributeInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeInstance);
+
+    /** Column definition for M_AttributeInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeInstance_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_AttributeSetInstance>(I_C_PurchaseCandidate.class, "M_AttributeInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+    /** Column name M_AttributeInstance_ID */
+    public static final String COLUMNNAME_M_AttributeInstance_ID = "M_AttributeInstance_ID";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
