@@ -40,6 +40,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4033](https://github.com/metasfresh/metasfresh/issues/4033) Pharma: MSV3 Purchase Functionality in purchase candidates
+    * New Feature in Purchase Candidates, now allowing to use the MSV3 Order Functionalaity there too.
   * [#4116](https://github.com/metasfresh/metasfresh/issues/4116) WebUI: Translation Window for Tax Rates
     * New Window in WebUI for the maintenance of Tax Rate Translations.
   * [#4117](https://github.com/metasfresh/metasfresh/issues/4117) WebUI: Add missing Translations in Product Window
@@ -49,6 +50,7 @@ Here come the actual release notes:
   * [#4119](https://github.com/metasfresh/metasfresh/issues/4119) WebUI: Translation Window for Tax Category
     * New Window in WebUI for the maintenance of Tax Category Translations.
   * [#4127](https://github.com/metasfresh/metasfresh/issues/4127) Batch entry product ID
+    * Batch Entry improvement, now integrating the Product Identifier configuration.
   * [#4135](https://github.com/metasfresh/metasfresh/issues/4135) Webui: Add Document References to all Windows with Translations
     * Improved the navigation beween master data and translation windows, adding references to the translation window & table.
   * [#4138](https://github.com/metasfresh/metasfresh/issues/4138) WebUI: Translation Window for Paymentterm
@@ -58,6 +60,7 @@ Here come the actual release notes:
   * [#4158](https://github.com/metasfresh/metasfresh/issues/4158) WebUI Sitemap: Missing Translations en_US
     * Improvement of the Translation for en_US for the WebUI menu, windows and tabs.
   * [#4161](https://github.com/metasfresh/metasfresh/issues/4161) Improve error message regarding illegal HU status changes
+    * Extended error Message for the Notification of invalid Handling Unit State changes.
   * [#4165](https://github.com/metasfresh/metasfresh/issues/4165) Extend Billing Candidates Filtering for contracts
     * New Filter criteria added to billing candidates window, allowing to filter by candidate controller.
   
