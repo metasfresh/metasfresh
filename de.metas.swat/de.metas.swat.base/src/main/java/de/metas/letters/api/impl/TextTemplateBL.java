@@ -239,10 +239,10 @@ public final class TextTemplateBL implements ITextTemplateBL
 						10, // seqNo
 						request.getSubject(),
 						request.getBody(),
-						request.getBpartnerId().getRepoId(),
+						request.getBpartnerId() == null ? null : request.getBpartnerId().getRepoId(),
 						request.getBpartnerLocationId(),
 						request.getAddress(),
-						request.getUserId().getRepoId(),
+						request.getUserId() == null ? null : request.getUserId().getRepoId(),
 				},
 				ITrx.TRXNAME_None);
 	}
