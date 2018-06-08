@@ -47,9 +47,13 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class PurchaseCandidatesGroup
 {
-	public static PurchaseCandidatesGroup of(final PurchaseCandidate purchaseCandidate)
+	public static PurchaseCandidatesGroup of(
+			@NonNull final PurchaseDemandId demandId,
+			@NonNull final PurchaseCandidate purchaseCandidate)
 	{
 		final PurchaseCandidatesGroupBuilder builder = builder()
+				.demandId(demandId)
+				//
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				//
@@ -80,6 +84,9 @@ public class PurchaseCandidatesGroup
 
 		return builder.build();
 	}
+
+	@NonNull
+	PurchaseDemandId demandId;
 
 	@NonNull
 	OrgId orgId;

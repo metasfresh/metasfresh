@@ -177,11 +177,13 @@ public class PurchaseDemandWithCandidatesService
 
 		final PurchaseProfitInfo profitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest.builder()
 				.salesOrderLineIds(demand.getSalesOrderLineIds())
-				.qtyToDeliver(demand.getQtyToDeliver())
+				.qtyToPurchase(qtyToPurchase)
 				.vendorProductInfo(vendorProductInfo)
 				.build());
 
 		final PurchaseCandidatesGroupBuilder builder = PurchaseCandidatesGroup.builder()
+				.demandId(demand.getId())
+				//
 				.orgId(orgId)
 				.warehouseId(groupKey.getWarehouseId())
 				//
@@ -284,13 +286,14 @@ public class PurchaseDemandWithCandidatesService
 		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule);
 		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
+		final I_C_UOM uom = uomsRepo.getById(demand.getUOMId());
+		final Quantity qtyToPurchase = Quantity.zero(uom);
+
 		final PurchaseProfitInfo purchaseProfitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest.builder()
 				.salesOrderLineIds(demand.getSalesOrderLineIds())
-				.qtyToDeliver(demand.getQtyToDeliver())
+				.qtyToPurchase(qtyToPurchase)
 				.vendorProductInfo(vendorProductInfo)
 				.build());
-
-		final I_C_UOM uom = uomsRepo.getById(demand.getUOMId());
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.salesOrderAndLineId(demand.getSalesOrderAndLineId())
@@ -305,7 +308,7 @@ public class PurchaseDemandWithCandidatesService
 				//
 				.productId(vendorProductInfo.getProductId())
 				//
-				.qtyToPurchase(Quantity.zero(uom))
+				.qtyToPurchase(qtyToPurchase)
 				//
 				.profitInfo(purchaseProfitInfo)
 				//
@@ -313,7 +316,7 @@ public class PurchaseDemandWithCandidatesService
 				//
 				.build();
 
-		return PurchaseCandidatesGroup.of(purchaseCandidate);
+		return PurchaseCandidatesGroup.of(demand.getId(), purchaseCandidate);
 	}
 
 	private LocalDateTime calculatePurchaseDatePromised(final LocalDateTime salesDatePromised, final BPPurchaseSchedule bpPurchaseSchedule)

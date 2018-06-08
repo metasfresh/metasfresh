@@ -86,28 +86,32 @@ public class PurchaseProfitInfoService
 	public PurchaseProfitInfo calculate(@NonNull final PurchaseProfitInfoRequest request)
 	{
 		final Set<OrderLineId> salesOrderLineIds = request.getSalesOrderLineIds();
-		final Quantity qtyToDeliver = request.getQtyToDeliver();
+		final Quantity qtyToPurchase = request.getQtyToPurchase();
 		final VendorProductInfo vendorProductInfo = request.getVendorProductInfo();
 
 		final BPartnerId vendorId = vendorProductInfo.getVendorId();
 		final Percent vendorFlatDiscount = vendorProductInfo.getVendorFlatDiscount();
-		final PricingConditionsBreak pricingConditionsBreak = vendorProductInfo.getPricingConditionsBreakOrNull(qtyToDeliver);
+		final PricingConditionsBreak vendorPricingConditionsBreak = vendorProductInfo.getPricingConditionsBreakOrNull(qtyToPurchase);
 
-		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
-				.forcePricingConditionsBreak(pricingConditionsBreak)
+		final PricingConditionsResult vendorPricingConditionsResult = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
+				.forcePricingConditionsBreak(vendorPricingConditionsBreak)
 				.bpartnerFlatDiscount(vendorFlatDiscount)
-				.pricingCtx(createPricingContext(pricingConditionsBreak, vendorId))
+				.pricingCtx(createPricingContext(vendorPricingConditionsBreak, vendorId))
 				.build());
 
-		final BigDecimal purchaseBasePrice = pricingConditionsResult.getPriceStdOverride();
-		final CurrencyId currencyId = pricingConditionsResult.getCurrencyId();
+		final BigDecimal purchaseBasePrice = vendorPricingConditionsResult.getPriceStdOverride();
+		final CurrencyId currencyId = vendorPricingConditionsResult.getCurrencyId();
 		if (purchaseBasePrice == null || currencyId == null)
 		{
+			if (currencyId == null && purchaseBasePrice != null)
+			{
+				logger.warn("Returning null because currency is not set, even though price is set: {}", vendorPricingConditionsResult);
+			}
 			return null;
 		}
 
 		final Currency currency = currencyRepo.getById(currencyId);
-		final BigDecimal purchaseNetPrice = pricingConditionsBreak.getDiscount().subtractFromBase(purchaseBasePrice, 2);
+		final BigDecimal purchaseNetPrice = vendorPricingConditionsBreak.getDiscount().subtractFromBase(purchaseBasePrice, 2);
 
 		// TODO: subtract paymentTerm discount if any
 

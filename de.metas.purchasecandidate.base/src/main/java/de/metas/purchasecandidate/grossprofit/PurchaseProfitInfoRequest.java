@@ -41,7 +41,7 @@ public class PurchaseProfitInfoRequest
 	Set<OrderLineId> salesOrderLineIds;
 
 	@NonNull
-	Quantity qtyToDeliver;
+	Quantity qtyToPurchase;
 
 	@NonNull
 	VendorProductInfo vendorProductInfo;
