@@ -768,3 +768,8 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-08 16:29:29'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-08 16:29:41','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Message',Description='',Help='' WHERE AD_Field_ID=564551 AND AD_Language='en_US'
 ;
 
+-- 2018-06-08T16:33:14.327
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540444,Updated=TO_TIMESTAMP('2018-06-08 16:33:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=119
+;
+
