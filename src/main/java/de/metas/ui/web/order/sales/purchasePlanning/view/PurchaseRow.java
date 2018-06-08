@@ -35,9 +35,7 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
-import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -77,81 +75,46 @@ public final class PurchaseRow implements IViewRow
 	@Nullable
 	private final PurchaseRowLookups lookups;
 
+	public static final String FIELDNAME_QtyToPurchase = "qtyToPurchase";
+	public static final String FIELDNAME_PurchasedQty = "purchasedQty";
+	public static final String FIELDNAME_DatePromised = "datePromised";
+
 	//
-	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
-	})
+	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 10)
 	private final LookupValue product;
-	@ViewColumn(captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 15)
-	})
+	@ViewColumn(captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 15)
 	private final LookupValue attributeSetInstance;
 
-	@ViewColumn(captionKey = "Vendor_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
-	})
+	@ViewColumn(captionKey = "Vendor_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 20)
 	private final LookupValue vendorBPartner;
 
-	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_CustomerPriceGrossProfit, widgetType = DocumentFieldWidgetType.Amount, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 23),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 23)
-	})
+	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_CustomerPriceGrossProfit, widgetType = DocumentFieldWidgetType.Amount, seqNo = 23)
 	private BigDecimal salesNetPrice;
 
-	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_PurchasePriceActual, widgetType = DocumentFieldWidgetType.Amount, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 25)
-	})
+	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_PurchasePriceActual, widgetType = DocumentFieldWidgetType.Amount, seqNo = 25)
 	private BigDecimal purchaseNetPrice;
 
-	@ViewColumn(captionKey = "PercentGrossProfit", widgetType = DocumentFieldWidgetType.Amount, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 25)
-	})
+	@ViewColumn(captionKey = "PercentGrossProfit", widgetType = DocumentFieldWidgetType.Amount, seqNo = 25)
 	private BigDecimal profitPercent;
 
-	@ViewColumn(captionKey = "Qty_AvailableToPromise", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
-	})
+	@ViewColumn(captionKey = "Qty_AvailableToPromise", widgetType = DocumentFieldWidgetType.Quantity, seqNo = 30)
 	private final Quantity qtyAvailableToPromise;
 
-	@ViewColumn(captionKey = "QtyToDeliver", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
-	})
+	@ViewColumn(captionKey = "QtyToDeliver", widgetType = DocumentFieldWidgetType.Quantity, seqNo = 40)
 	private final Quantity qtyToDeliver;
 
-	public static final String FIELDNAME_QtyToPurchase = "qtyToPurchase";
-	@ViewColumn(fieldName = FIELDNAME_QtyToPurchase, captionKey = "QtyToPurchase", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
-	})
+	@ViewColumn(fieldName = FIELDNAME_QtyToPurchase, captionKey = "QtyToPurchase", widgetType = DocumentFieldWidgetType.Quantity, seqNo = 50)
 	@Getter
 	private Quantity qtyToPurchase;
 
-	public static final String FIELDNAME_PurchasedQty = "purchasedQty";
-	@ViewColumn(fieldName = FIELDNAME_PurchasedQty, captionKey = "PurchasedQty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.NEVER, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 55),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 55)
-	})
+	@ViewColumn(fieldName = FIELDNAME_PurchasedQty, captionKey = "PurchasedQty", widgetType = DocumentFieldWidgetType.Quantity, seqNo = 55)
 	@Getter
 	private Quantity purchasedQty;
 
-	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Text, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
-	})
+	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Text, seqNo = 60)
 	private String uomOrAvailablility;
 
-	public static final String FIELDNAME_DatePromised = "datePromised";
-	@ViewColumn(fieldName = FIELDNAME_DatePromised, captionKey = "DatePromised", widgetType = DocumentFieldWidgetType.DateTime, editor = ViewEditorRenderMode.ALWAYS, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 70)
-	})
+	@ViewColumn(fieldName = FIELDNAME_DatePromised, captionKey = "DatePromised", widgetType = DocumentFieldWidgetType.DateTime, seqNo = 70)
 	@Getter
 	private LocalDateTime datePromised;
 
@@ -171,7 +134,11 @@ public final class PurchaseRow implements IViewRow
 					.put(FIELDNAME_QtyToPurchase, ViewEditorRenderMode.NEVER)
 					.put(FIELDNAME_DatePromised, ViewEditorRenderMode.NEVER)
 					.build();
-	private static final ImmutableMap<String, ViewEditorRenderMode> ViewEditorRenderModeByFieldName_Inherit = ImmutableMap.of();
+	private static final ImmutableMap<String, ViewEditorRenderMode> ViewEditorRenderModeByFieldName_Editable = //
+			ImmutableMap.<String, ViewEditorRenderMode> builder()
+					.put(FIELDNAME_QtyToPurchase, ViewEditorRenderMode.ALWAYS)
+					.put(FIELDNAME_DatePromised, ViewEditorRenderMode.ALWAYS)
+					.build();
 
 	@Builder(builderMethodName = "groupRowBuilder", builderClassName = "GroupRowBuilder")
 	private PurchaseRow(
@@ -395,9 +362,7 @@ public final class PurchaseRow implements IViewRow
 	@Override
 	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
 	{
-		return readonly //
-				? ViewEditorRenderModeByFieldName_ReadOnly //
-				: ViewEditorRenderModeByFieldName_Inherit;
+		return readonly ? ViewEditorRenderModeByFieldName_ReadOnly : ViewEditorRenderModeByFieldName_Editable;
 	}
 
 	private void resetFieldNameAndJsonValues()
