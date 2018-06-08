@@ -8,6 +8,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.X_PP_Order_BOMLine;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -90,7 +91,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 			final String internalReason = StringUtils.formatMessage("The selected ppOrderLineRow is not an issue row; selectedRow={}", singleSelectedRow);
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 		}
-		if (singleSelectedRow.isProcessed())
+		if (singleSelectedRow.isProcessed() && !(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(singleSelectedRow.getIssueMethod())))
 		{
 			final String internalReason = StringUtils.formatMessage("The selected ppOrderLineRow is already flagged as processed; selectedRow={}", singleSelectedRow);
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);

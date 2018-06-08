@@ -1,6 +1,8 @@
 package de.metas.ui.web.pporder.process;
 
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
+import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
@@ -50,23 +52,27 @@ public class WEBUI_PP_Order_ReverseCandidate
 	{
 		if (!getSelectedRowIds().isSingleDocumentId())
 		{
-			return ProcessPreconditionsResolution.reject("Select one line");
+			final String internalReason = StringUtils.formatMessage("Select one line");
+			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 		}
 
 		final PPOrderLineRow row = getSingleSelectedRow();
-		if(row.isSourceHU())
+		if (row.isSourceHU())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not available for source HU line");
 		}
 
 		if (row.getPP_Order_Qty_ID() <= 0)
 		{
-			return ProcessPreconditionsResolution.reject("Not an issue/receipt line");
+			final String internalReason = StringUtils.formatMessage("Not an issue/receipt line");
+			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
+
 		}
 
-		if (row.isProcessed())
+		if (row.isProcessed() && !(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(row.getIssueMethod())))
 		{
-			return ProcessPreconditionsResolution.reject("Only not processed");
+			final String internalReason = StringUtils.formatMessage("Only not processed");
+			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 		}
 
 		return ProcessPreconditionsResolution.accept();
