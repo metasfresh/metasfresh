@@ -1,7 +1,5 @@
 package de.metas.letter.service.async.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.List;
 
 import org.adempiere.location.Location;
@@ -13,6 +11,7 @@ import org.compiere.util.Env;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.Letter;
 import de.metas.letters.model.LetterRepository;
@@ -70,7 +69,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 			String body = "";
 			if (mktgCampaign.getAD_BoilerPlate_ID() > 0)
 			{
-				final I_AD_BoilerPlate boilerPlate = load(mktgCampaign.getAD_BoilerPlate_ID(), I_AD_BoilerPlate.class);
+				final I_AD_BoilerPlate boilerPlate = Services.get(ITextTemplateBL.class).getById(mktgCampaign.getAD_BoilerPlate_ID());
 				subject = boilerPlate.getSubject();
 				body = boilerPlate.getTextSnippext();
 			}
@@ -83,6 +82,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 					.adLanguage(Env.getAD_Language())
 					.subject(subject)
 					.body(body)
+					.bodyParsed(body)
 					.build();
 
 			// save letter

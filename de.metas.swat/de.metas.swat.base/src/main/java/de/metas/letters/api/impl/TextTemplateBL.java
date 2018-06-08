@@ -1,5 +1,7 @@
 package de.metas.letters.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -337,4 +339,9 @@ public final class TextTemplateBL implements ITextTemplateBL
 		}
 	}
 
+	@Override
+	public I_AD_BoilerPlate getById(int boilerPlateId)
+	{
+		return load(boilerPlateId, I_AD_BoilerPlate.class);
+	}
 }
