@@ -46,7 +46,7 @@ describe('Business partner window widgets test', function() {
           .get('.input-dropdown-list')
           .should('exist')
           .find('.input-dropdown-list-option')
-          .contains('none');
+          .contains('Pickup');
       });
     });
   });
