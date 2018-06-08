@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lang.Percent;
 import de.metas.order.IOrderBL;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
@@ -102,7 +100,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
 				.precision(precision)
-				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.bpartnerId(order.getC_BPartner_ID())
 				.isSOTrx(order.isSOTrx());
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
@@ -145,7 +143,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.uomId(invoiceCandidate.getC_UOM_ID())
 				.type(GroupCompensationType.ofAD_Ref_List_Value(invoiceCandidate.getGroupCompensationType()))
 				.amtType(GroupCompensationAmtType.ofAD_Ref_List_Value(invoiceCandidate.getGroupCompensationAmtType()))
-				.percentage(Percent.of(invoiceCandidate.getGroupCompensationPercentage()))
+				.percentage(invoiceCandidate.getGroupCompensationPercentage())
 				.baseAmt(invoiceCandidate.getGroupCompensationBaseAmt())
 				.price(price)
 				.qty(qty)

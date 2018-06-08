@@ -22,6 +22,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
 
@@ -90,7 +92,7 @@ public class MDunningRun extends X_C_DunningRun
 			.setOnlyActiveRecords(true)
 			.setParameters(new Object[]{getC_Dunning_ID(), getC_DunningLevel_ID()})
 			.setOrderBy("DaysAfterDue DESC, C_DunningLevel_ID")
-			.list(MDunningLevel.class);
+			.list();
 		} else {
 			// all levels of the dun
 			levels = new Query(
@@ -101,7 +103,7 @@ public class MDunningRun extends X_C_DunningRun
 			.setOnlyActiveRecords(true)
 			.setParameters(new Object[]{getC_Dunning_ID()})
 			.setOrderBy("DaysAfterDue DESC, C_DunningLevel_ID")
-			.list(MDunningLevel.class);
+			.list();
 		}
 		m_levels = new MDunningLevel[levels.size()];
 		levels.toArray (m_levels);
@@ -130,7 +132,7 @@ public class MDunningRun extends X_C_DunningRun
 			return m_entries;
 		
 		String sql = "SELECT * FROM C_DunningRunEntry WHERE C_DunningRun_ID=? ORDER BY C_DunningLevel_ID, C_DunningRunEntry_ID";
-		ArrayList<MDunningRunEntry> list = new ArrayList<>();
+		ArrayList<MDunningRunEntry> list = new ArrayList<MDunningRunEntry>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

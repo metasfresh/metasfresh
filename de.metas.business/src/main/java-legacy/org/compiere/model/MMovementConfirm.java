@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
@@ -147,7 +146,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 		}
 		String sql = "SELECT * FROM M_MovementLineConfirm "
 			+ "WHERE M_MovementConfirm_ID=?";
-		ArrayList<MMovementLineConfirm> list = new ArrayList<>();
+		ArrayList<MMovementLineConfirm> list = new ArrayList<MMovementLineConfirm>();
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -469,7 +468,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 			if (m_inventoryFrom == null)
 			{
 				MWarehouse wh = MWarehouse.get(getCtx(), loc.getM_Warehouse_ID());
-				m_inventoryFrom = new MInventory (wh, ITrx.TRXNAME_ThreadInherited);
+				m_inventoryFrom = new MInventory (wh);
 				m_inventoryFrom.setDescription(Msg.translate(getCtx(), "M_MovementConfirm_ID") + " " + getDocumentNo());
 				if (!m_inventoryFrom.save(get_TrxName()))
 				{
@@ -511,7 +510,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 			if (m_inventoryTo == null)
 			{
 				MWarehouse wh = MWarehouse.get(getCtx(), loc.getM_Warehouse_ID());
-				m_inventoryTo = new MInventory (wh, ITrx.TRXNAME_ThreadInherited);
+				m_inventoryTo = new MInventory (wh);
 				m_inventoryTo.setDescription(Msg.translate(getCtx(), "M_MovementConfirm_ID") + " " + getDocumentNo());
 				if (!m_inventoryTo.save(get_TrxName()))
 				{

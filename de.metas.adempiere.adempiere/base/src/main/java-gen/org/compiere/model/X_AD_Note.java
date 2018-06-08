@@ -14,7 +14,7 @@ public class X_AD_Note extends org.compiere.model.PO implements I_AD_Note, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -352645187L;
+	private static final long serialVersionUID = 893034238L;
 
     /** Standard Constructor */
     public X_AD_Note (Properties ctx, int AD_Note_ID, String trxName)
@@ -634,22 +634,6 @@ public class X_AD_Note extends org.compiere.model.PO implements I_AD_Note, org.c
 	public java.lang.String getTextMsg () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_TextMsg);
-	}
-
-	/** Set View ID.
-		@param ViewId View ID	  */
-	@Override
-	public void setViewId (java.lang.String ViewId)
-	{
-		set_Value (COLUMNNAME_ViewId, ViewId);
-	}
-
-	/** Get View ID.
-		@return View ID	  */
-	@Override
-	public java.lang.String getViewId () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ViewId);
 	}
 
 	/** Set Sql WHERE.

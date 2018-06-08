@@ -62,9 +62,4 @@ public interface IAttributeValueCallout
 	boolean isReadonlyUI(final IAttributeValueContext ctx, IAttributeSet attributeSet, I_M_Attribute attribute);
 
 	boolean isAlwaysEditableUI(IAttributeValueContext ctx, IAttributeSet attributeSet, I_M_Attribute attribute);
-	
-	default boolean isDisplayedUI(IAttributeSet attributeSet, I_M_Attribute attribute)
-	{
-		return true;
-	}
 }

@@ -276,29 +276,6 @@ public interface I_M_HU_PI_Attribute
     public static final String COLUMNNAME_IsMandatory = "IsMandatory";
 
 	/**
-	 * Set OnlyIfInProductAttributeSet.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsOnlyIfInProductAttributeSet (boolean IsOnlyIfInProductAttributeSet);
-
-	/**
-	 * Get OnlyIfInProductAttributeSet.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isOnlyIfInProductAttributeSet();
-
-    /** Column definition for IsOnlyIfInProductAttributeSet */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsOnlyIfInProductAttributeSet = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "IsOnlyIfInProductAttributeSet", null);
-    /** Column name IsOnlyIfInProductAttributeSet */
-    public static final String COLUMNNAME_IsOnlyIfInProductAttributeSet = "IsOnlyIfInProductAttributeSet";
-
-	/**
 	 * Set Schreibgeschützt.
 	 * Feld / Eintrag / Berecih ist schreibgeschützt
 	 *

@@ -33,6 +33,11 @@ public class LoginRequest implements Serializable
 	private String password;
 	private String hostKey = null;
 
+	public LoginRequest()
+	{
+		super();
+	}
+
 	@Override
 	public String toString()
 	{

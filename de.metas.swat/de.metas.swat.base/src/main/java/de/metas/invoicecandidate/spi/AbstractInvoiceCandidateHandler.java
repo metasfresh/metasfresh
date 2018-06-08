@@ -95,12 +95,6 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		ic.setLineNetAmt(netAmtToInvoice);
 	}
 
-	@Override
-	public void setInvoiceSchedule(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		ic.setC_InvoiceSchedule_ID(ic.getBill_BPartner().getC_InvoiceSchedule_ID());
-	}
-
 	private BigDecimal computeNetAmtUsingQty(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final BigDecimal qty)

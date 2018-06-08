@@ -1,62 +1,77 @@
 package org.adempiere.util.time;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
+/*
+ * #%L
+ * de.metas.util
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import com.google.common.base.MoreObjects;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * A {@link TimeSource} implementation which returns a preset time.
- *
+ * 
  * Mainly this class is used in testing.
- *
+ * 
  * @author tsa
  *
  */
 public class FixedTimeSource implements TimeSource
 {
-	private final long millis;
+	private final Date date;
 
 	/**
-	 *
+	 * 
 	 * @param year
 	 * @param month 1..12
 	 * @param day
-	 * @param hour 0..23
+	 * @param hour
 	 * @param minute
-	 * @param second
+	 * @param sec
 	 */
-	public FixedTimeSource(final int year, final int month, final int day, final int hour, final int minute, final int second)
+	public FixedTimeSource(int year, int month, int day, int hour, int minute, int sec)
 	{
-		this(LocalDateTime.of(year, month, day, hour, minute, second));
+		super();
+
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.set(Calendar.YEAR, year);
+		cal.set(Calendar.MONTH, month - 1); // 0..11
+		cal.set(Calendar.DAY_OF_MONTH, day);
+		cal.set(Calendar.HOUR_OF_DAY, hour);
+		cal.set(Calendar.MINUTE, minute);
+		cal.set(Calendar.SECOND, sec);
+		cal.set(Calendar.MILLISECOND, 0);
+		date = new Date(cal.getTimeInMillis());
 	}
 
-	public FixedTimeSource(final Date date)
+	public FixedTimeSource(Date date)
 	{
-		millis = date.getTime();
-	}
-
-	public FixedTimeSource(final LocalDateTime date)
-	{
-		millis = date.atZone(ZoneId.systemDefault())
-				.toInstant()
-				.toEpochMilli();
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("millis", millis)
-				.add("date", Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDateTime())
-				.toString();
+		super();
+		this.date = date;
 	}
 
 	@Override
 	public long millis()
 	{
-		return millis;
+		return date.getTime();
 	}
 }

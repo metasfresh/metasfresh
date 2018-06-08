@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software; you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program; if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
 package org.compiere.wf;
 
@@ -38,6 +38,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -71,12 +72,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
-import de.metas.event.Topic;
-import de.metas.event.Type;
 import de.metas.i18n.IMsgBL;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 
@@ -90,10 +86,10 @@ import de.metas.process.ProcessInfoParameter;
  */
 public class MWFActivity extends X_AD_WF_Activity implements Runnable
 {
-	private static final long serialVersionUID = 2987002047442429221L;
-	
-	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("de.metas.document.UserNotifications", Type.REMOTE);
-	private static final String MSG_NotApproved = "NotApproved";
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1584816335412184476L;
 
 	/**
 	 * Get Activities for table/record
@@ -104,7 +100,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 * @param activeOnly if true only not processed records are returned
 	 * @return activity
 	 */
-	private static MWFActivity[] get(Properties ctx, int AD_Table_ID, int Record_ID, boolean activeOnly)
+	public static MWFActivity[] get(Properties ctx, int AD_Table_ID, int Record_ID, boolean activeOnly)
 	{
 		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer("AD_Table_ID=? AND Record_ID=?");
@@ -118,7 +114,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		List<MWFActivity> list = new Query(ctx, Table_Name, whereClause.toString(), null)
 				.setParameters(params)
 				.setOrderBy(COLUMNNAME_AD_WF_Activity_ID)
-				.list(MWFActivity.class);
+				.list();
 
 		MWFActivity[] retValue = new MWFActivity[list.size()];
 		list.toArray(retValue);
@@ -425,6 +421,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 
 		return Services.get(IDocumentBL.class).getDocumentOrNull(po);
 	}
+
 
 	/**
 	 * Get PO AD_Client_ID
@@ -1194,7 +1191,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					else if (resp.isRole())
 					{
 						final List<Integer> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(resp.getAD_Role_ID());
-						if (allRoleUserIds.contains(m_process.getAD_User_ID()))
+						if(allRoleUserIds.contains(m_process.getAD_User_ID()))
 						{
 							autoApproval = true;
 						}
@@ -1263,7 +1260,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		else
 			dbValue = valueStr;
 
-		final String nodeColumnName = Services.get(IADTableDAO.class).retrieveColumnName(getNode().getAD_Column_ID());
+		final String nodeColumnName= Services.get(IADTableDAO.class).retrieveColumnName(getNode().getAD_Column_ID());
 		po.set_ValueOfColumn(nodeColumnName, dbValue);
 
 		po.save();
@@ -1358,27 +1355,39 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			catch (Exception e)
 			{
 				newState = StateEngine.STATE_Terminated;
-				setTextMsg("User Choice: " + AdempiereException.extractMessage(e));
+				setTextMsg("User Choice: " + e.toString());
 				addTextMsg(e);
 				log.warn("", e);
 			}
-			
 			// Send Approval Notification
-			if (newState.equals(StateEngine.STATE_Aborted) && doc.getDoc_User_ID() > 0)
+			if (newState.equals(StateEngine.STATE_Aborted))
 			{
-				final String docInfo = (doc.getSummary() != null ? doc.getSummary() + "\n" : "")
-						+ (doc.getProcessMsg() != null ? doc.getProcessMsg() + "\n" : "")
-						+ (getTextMsg() != null ? getTextMsg() : "");
-				
-				final INotificationBL notificationBL = Services.get(INotificationBL.class);
-				notificationBL.sendAfterCommit(UserNotificationRequest.builder()
-						.topic(USER_NOTIFICATIONS_TOPIC)
-						.recipientUserId(doc.getDoc_User_ID())
-						.contentADMessage(MSG_NotApproved)
-						.contentADMessageParam(doc.toTableRecordReference())
-						.contentADMessageParam(docInfo)
-						.targetAction(TargetRecordAction.of(doc.toTableRecordReference()))
-						.build());
+				final I_AD_User to = Services.get(IUserDAO.class).retrieveUser(doc.getDoc_User_ID());
+				final IUserBL userBL = Services.get(IUserBL.class);
+				// send email
+				if (userBL.isNotificationEMail(to))
+				{
+					MClient client = MClient.get(getCtx(), doc.getAD_Client_ID());
+					client.sendEMail(doc.getDoc_User_ID(), Services.get(IMsgBL.class).getMsg(getCtx(), "NotApproved")
+							+ ": " + doc.getDocumentNo(),
+							(doc.getSummary() != null ? doc.getSummary() + "\n" : "")
+									+ (doc.getProcessMsg() != null ? doc.getProcessMsg() + "\n" : "")
+									+ (getTextMsg() != null ? getTextMsg() : ""), null);
+				}
+
+				// Send Note
+				if (userBL.isNotificationNote(to))
+				{
+					MNote note = new MNote(getCtx(), "NotApproved", doc.getDoc_User_ID(), null);
+					note.setTextMsg((doc.getSummary() != null ? doc.getSummary() + "\n" : "")
+							+ (doc.getProcessMsg() != null ? doc.getProcessMsg() + "\n" : "")
+							+ (getTextMsg() != null ? getTextMsg() : ""));
+					// 2007-06-08, matthiasO.
+					// Add record information to the note, so that the user receiving the
+					// note can jump to the doc easily
+					note.setRecord(m_po.get_Table_ID(), m_po.get_ID());
+					note.save();
+				}
 			}
 		}
 		setWFState(newState);
@@ -1394,7 +1403,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 */
 	public boolean forwardTo(int AD_User_ID, String textMsg)
 	{
-		if (AD_User_ID < 0)
+		if(AD_User_ID < 0)
 		{
 			log.warn("Does not exist - AD_User_ID=" + AD_User_ID);
 		}
@@ -1444,6 +1453,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			setTextMsg(textMsg);
 		setWFState(StateEngine.STATE_Completed);
 	}	// setUserConfirmation
+
 
 	private List<ProcessInfoParameter> createProcessInfoParameters(final PO po)
 	{

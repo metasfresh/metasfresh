@@ -1,10 +1,5 @@
 package org.adempiere.ad.table.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.createOld;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.translate;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -31,8 +26,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
@@ -40,6 +33,7 @@ import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
@@ -51,7 +45,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.DocumentConstants;
-import lombok.NonNull;
 
 public class ADTableDAO implements IADTableDAO
 {
@@ -201,14 +194,15 @@ public class ADTableDAO implements IADTableDAO
 		{
 			return "";
 		}
-		final I_AD_Window adWindowTrl = translate(adWindow, I_AD_Window.class);
+		final I_AD_Window adWindowTrl = InterfaceWrapperHelper.translate(adWindow, I_AD_Window.class);
 		return adWindowTrl.getName();
 	}
 
 	@Override
-	public void onTableNameRename(@NonNull final I_AD_Table table)
+	public void onTableNameRename(final I_AD_Table table)
 	{
-		final I_AD_Table tableOld = createOld(table, I_AD_Table.class);
+		Check.assumeNotNull(table, "table not null");
+		final I_AD_Table tableOld = InterfaceWrapperHelper.createOld(table, I_AD_Table.class);
 		final String tableNameOld = tableOld.getTableName();
 		final String tableNameNew = table.getTableName();
 
@@ -218,7 +212,7 @@ public class ADTableDAO implements IADTableDAO
 			return;
 		}
 
-		final Properties ctx = getCtx(table);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(table);
 		Services.get(ISequenceDAO.class).renameTableSequence(ctx, tableNameOld, tableNameNew);
 	}
 
@@ -240,20 +234,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 		@SuppressWarnings("deprecation")
 		final int tableID = MTable.getTable_ID(tableName);
-		return loadOutOfTrx(tableID, I_AD_Table.class); // load out of trx to benefit from caching
-	}
-
-
-	@Override
-	public I_AD_Table retrieveTableOrNull(@Nullable final String tableName)
-	{
-		@SuppressWarnings("deprecation")
-		final int tableID = MTable.getTable_ID(tableName);
-		if(tableID <= 0)
-		{
-			return null;
-		}
-		return loadOutOfTrx(tableID, I_AD_Table.class); // load out of trx to benefit from caching
+		return InterfaceWrapperHelper.create(Env.getCtx(), tableID, I_AD_Table.class, ITrx.TRXNAME_None);
 	}
 
 	@Override

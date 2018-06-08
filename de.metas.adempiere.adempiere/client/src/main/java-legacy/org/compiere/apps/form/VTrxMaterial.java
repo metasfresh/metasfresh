@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import javax.swing.JLabel;
 
-import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
@@ -43,6 +42,7 @@ import org.compiere.grid.ed.VLookup;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLocatorLookup;
+import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -124,7 +124,7 @@ public class VTrxMaterial extends TrxMaterial
 	 */
 	void jbInit() throws Exception
 	{
-		AdempierePLAF.setDefaultBackground(panel);
+		CompiereColor.setBackground(panel);
 		mainPanel.setLayout(mainLayout);
 		mainLayout.setVgap(10);
 		parameterPanel.setLayout(parameterLayout);

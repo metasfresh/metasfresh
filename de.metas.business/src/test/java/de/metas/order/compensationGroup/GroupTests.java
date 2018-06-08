@@ -4,11 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.lang.Percent;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
 
 /*
@@ -47,7 +45,7 @@ public class GroupTests
 		final Group group = Group.builder()
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
 				.precision(2)
-				.bpartnerId(BPartnerId.ofRepoId(3))
+				.bpartnerId(3)
 				.isSOTrx(true)
 				.regularLine(regularLine(480).build())
 				.regularLine(regularLine(260).build())
@@ -86,7 +84,7 @@ public class GroupTests
 		final Group group = Group.builder()
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
 				.precision(2)
-				.bpartnerId(BPartnerId.ofRepoId(3))
+				.bpartnerId(3)
 				.isSOTrx(true)
 				.regularLine(regularLine(480).build())
 				.regularLine(regularLine(260).build())
@@ -128,7 +126,7 @@ public class GroupTests
 				.seqNo(seqNo)
 				.type(GroupCompensationType.Discount)
 				.amtType(GroupCompensationAmtType.Percent)
-				.percentage(Percent.of(discountPerc))
+				.percentage(BigDecimal.valueOf(discountPerc))
 				// does not matter but needs to be filled
 				.productId(M_Product_ID)
 				.uomId(C_UOM_ID);
@@ -139,7 +137,7 @@ public class GroupTests
 		return GroupCompensationLineCreateRequest.builder()
 				.type(GroupCompensationType.Discount)
 				.amtType(GroupCompensationAmtType.Percent)
-				.percentage(Percent.of(discountPerc))
+				.percentage(BigDecimal.valueOf(discountPerc))
 				// does not matter but needs to be filled
 				.productId(M_Product_ID)
 				.uomId(C_UOM_ID)

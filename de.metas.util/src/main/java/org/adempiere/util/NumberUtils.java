@@ -35,6 +35,7 @@ public final class NumberUtils
 {
 	private NumberUtils()
 	{
+		super();
 	}
 
 	/**
@@ -195,5 +196,7 @@ public final class NumberUtils
 				return defaultValue;
 			}
 		}
+
 	}
+
 }

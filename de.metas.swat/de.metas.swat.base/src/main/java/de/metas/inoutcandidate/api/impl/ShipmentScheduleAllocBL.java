@@ -1,6 +1,5 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -29,7 +28,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
@@ -90,20 +88,15 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 		);
 
 		final BigDecimal qtyPickedToAdd;
-		switch (mode)
+		if (Mode.JUST_SET_QTY.equals(mode))
 		{
-			case JUST_SET_QTY:
-				qtyPickedToAdd = qtyPickedConv;
-				break;
-			case SUBTRACT_FROM_ALREADY_PICKED_QTY:
-				final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-				final BigDecimal qtyPickedOld = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(sched);
-				qtyPickedToAdd = qtyPickedConv.subtract(qtyPickedOld);
-				break;
-			default:
-				Check.errorIf(true, "Unexpected mode={}; qtyPicked={}; sched={}", mode, qtyPicked, sched);
-				qtyPickedToAdd = ZERO; // won't be reached
-				break;
+			qtyPickedToAdd = qtyPickedConv;
+		}
+		else
+		{
+			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+			final BigDecimal qtyPickedOld = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(sched);
+			qtyPickedToAdd = qtyPickedConv.subtract(qtyPickedOld);
 		}
 
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class, sched);

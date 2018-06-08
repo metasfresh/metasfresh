@@ -10,12 +10,12 @@ package de.metas.allocation.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,9 +36,9 @@ import com.google.common.base.Supplier;
  * Default allocation line build implementation. Other modules/project can subclass this if they need to build extended allocation lines.
  * <p>
  * Note that this builder is dump by intention. No assumptions, no code to automatically set field B after field A was set.
- *
+ * 
  * @author ts
- *
+ * 
  */
 public class DefaultAllocationLineBuilder implements IAllocationLineBuilder
 {
@@ -60,18 +60,25 @@ public class DefaultAllocationLineBuilder implements IAllocationLineBuilder
 		allocLine.setAD_Org_ID(ad_Org_ID);
 		return this;
 	}
-
+	
 	@Override
 	public final IAllocationLineBuilder setC_BPartner_ID(int c_BPartner_ID)
 	{
 		allocLine.setC_BPartner_ID(c_BPartner_ID);
 		return this;
 	}
-
+	
 	@Override
 	public final IAllocationLineBuilder setC_Invoice_ID(int c_Invoice_ID)
 	{
 		allocLine.setC_Invoice_ID(c_Invoice_ID);
+		return this;
+	}
+
+	@Override
+	public final IAllocationLineBuilder setPrepayOrder_ID(int C_Order_ID)
+	{
+		allocLine.setC_Order_ID(C_Order_ID);
 		return this;
 	}
 
@@ -186,7 +193,7 @@ public class DefaultAllocationLineBuilder implements IAllocationLineBuilder
 	}
 
 	/**
-	 *
+	 * 
 	 * @return C_BPartner_ID or -1
 	 */
 	public final int getC_BPartner_ID()

@@ -84,6 +84,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 	private RelationTypeZoomProvider(final Builder builder)
 	{
+		super();
+
 		directed = builder.isDirected();
 		zoomInfoId = builder.getZoomInfoId();
 		internalName = builder.getInternalName();
@@ -387,7 +389,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
 		query.setRecordCount(count, countDuration);
-
+		
 		Loggables.get().addLog("RelationTypeZoomProvider {} took {}", this, countDuration);
 	}
 
@@ -420,10 +422,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		private final int adReferenceId;
 		private final ITableRefInfo tableRefInfo;
 		private final ITranslatableString roleDisplayName;
-
-		/**
-		 * {@code true} means that this instance is based on an {@code AD_RelationType} whose target is a {@code AD_Table_ID/Record_ID} reference.
-		 */
 		private final boolean tableRecordIdTarget;
 
 		@lombok.Builder
@@ -463,27 +461,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			if (tableRecordIdTarget)
 			{
 				// the source always matches if the target is ReferenceTarget
-				logger.debug("matchesAsSource - return true because tableRecordIdTarget=true; this={}", this);
 				return true;
-			}
-
-			if (!zoomSource.isGenericZoomOrigin())
-			{
-				logger.warn("matchesAsSource - return false because zoomSource.isGenericZoomOrigin()==false; this={}; zoomSource={}", this, zoomSource);
-				return false;
-			}
-
-			final String keyColumnName = zoomSource.getKeyColumnNameOrNull();
-			if (Check.isEmpty(keyColumnName, true))
-			{
-				logger.warn("matchesAsSource - return false because zoomSource.getKeyColumnNameOrNull()==null; this={}; zoomSource={}", this, zoomSource);
-				return false;
 			}
 
 			final String whereClause = tableRefInfo.getWhereClause();
 			if (Check.isEmpty(whereClause, true))
 			{
-				logger.debug("matchesAsSource - return true because tableRefInfo.whereClause is empty; this={}", this);
+				logger.debug("whereClause is empty. Returning true (matching)");
 				return true;
 			}
 
@@ -492,6 +476,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			{
 				return false;
 			}
+
+			final String keyColumnName = zoomSource.getKeyColumnNameOrNull();
+			Check.assumeNotEmpty(keyColumnName, "keyColumn is not empty for {}", zoomSource);
 
 			final StringBuilder whereClauseEffective = new StringBuilder();
 			whereClauseEffective.append(parsedWhere);

@@ -133,8 +133,7 @@ public class TransactionCreatedHandlerTests
 			CandidatesQuery query;
 			candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
 			assertThat(query).isNotNull();
-			assertThat(query.getTransactionDetails()).hasSize(1);
-			assertThat(query.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
+			assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
 		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
@@ -178,8 +177,7 @@ public class TransactionCreatedHandlerTests
 			CandidatesQuery query;
 			candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
 			assertThat(query).isNotNull();
-			assertThat(query.getTransactionDetails()).hasSize(1);
-			assertThat(query.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
+			assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
 		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
@@ -302,13 +300,13 @@ public class TransactionCreatedHandlerTests
 		assertThat(query.getMaterialDescriptorQuery())
 				.as("If we have a demand detail, then only query via that demand detail")
 				.isNull();
-		assertThat(query.getTransactionDetails()).as("only search via the demand detail, if we have one").isEmpty();
+		assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
 	}
 
 	private TransactionCreatedEventBuilder createTransactionEventBuilderWithQuantity(@NonNull final BigDecimal quantity)
 	{
 		return TransactionCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.eventDescriptor(new EventDescriptor(10, 20))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.date(TimeUtil.parseTimestamp("2017-10-15"))

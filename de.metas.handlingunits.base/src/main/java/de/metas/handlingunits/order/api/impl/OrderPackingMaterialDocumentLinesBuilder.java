@@ -38,8 +38,6 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import lombok.NonNull;
 
 /**
@@ -182,14 +180,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		// pmOrderLine.setQtyEntered(pmOrderLine.getQtyOrdered());
 
 		pmOrderLine.setIsActive(true);
-		
-		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(pmOrderLine)
-				.resultUOM(ResultUOM.CONTEXT_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
-
+		orderLineBL.setPrices(pmOrderLine);
 		InterfaceWrapperHelper.save(pmOrderLine);
 	}
 

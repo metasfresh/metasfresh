@@ -33,6 +33,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
@@ -47,7 +48,6 @@ import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.handlingunits.report.HUReportExecutor;
@@ -56,10 +56,9 @@ import de.metas.handlingunits.report.HUToReport;
 import lombok.NonNull;
 
 /**
- * Model responsible for generating HU labels and reports.
+ * Model responsible for generating HU labels and reports
  *
- * Note: this component only returns {@link ITerminalKey}s whose underlying {@link I_M_HU_Process}es<br>
- * have {@link I_M_HU_Process#COLUMN_IsProvideAsUserAction} {@code ='Y'}.
+ * @author al
  */
 public class HUReportModel implements IDisposable
 {
@@ -80,11 +79,11 @@ public class HUReportModel implements IDisposable
 	 * @param terminalContext
 	 * @param referenceModel this model will be used to attach to it
 	 */
-	public HUReportModel(
-			@NonNull final ITerminalContext terminalContext,
+	public HUReportModel(final ITerminalContext terminalContext,
 			final HUToReport currentHU,
 			final Set<HUToReport> selectedHUs)
 	{
+		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.terminalContext = terminalContext;
 		pcs = terminalContext.createPropertyChangeSupport(this);
 
@@ -118,36 +117,27 @@ public class HUReportModel implements IDisposable
 		terminalContext.addToDisposableComponents(this);
 	}
 
-	private static final List<ITerminalKey> createHUADProcessKeys(
-			@NonNull final ITerminalContext terminalContext,
-			@NonNull final List<HUToReport> husToReport)
+	private static final List<ITerminalKey> createHUADProcessKeys(@NonNull final ITerminalContext terminalContext, final List<HUToReport> husToReport)
 	{
-		final Predicate<HUProcessDescriptor> huProcessDescriptorFilter = createHUProcessDescriptorFilter(husToReport);
-
 		final IMHUProcessDAO huProcessDAO = Services.get(IMHUProcessDAO.class);
 		return huProcessDAO
-				.getHUProcessDescriptors()
+				.getAllHUProcessDescriptors()
 				.stream()
-				.filter(huProcessDescriptorFilter)
+				.filter(createHUProcessDescriptorFilter(husToReport))
 				.map(huProcessDescriptor -> new HUADProcessKey(terminalContext, huProcessDescriptor.getProcessId()))
 				.sorted(HUADProcessKey.COMPARATOR_ByName)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * Creates a filter to exclude descriptions that
-	 * <li>shall not have a user action or</li>
-	 * <li>who don't match all of the unit types of the given {@code husToReport}</li>
-	 */
-	private static final Predicate<HUProcessDescriptor> createHUProcessDescriptorFilter(
-			@NonNull final List<HUToReport> husToReport)
+	private static final Predicate<HUProcessDescriptor> createHUProcessDescriptorFilter(final List<HUToReport> husToReport)
 	{
+		Check.assumeNotEmpty(husToReport, "husToReport is not empty");
+
 		final ImmutableSet<String> requiredHUUnitTypes = husToReport.stream()
-				.map(HUToReport::getHUUnitType)
+				.map(hu -> hu.getHUUnitType())
 				.collect(ImmutableSet.toImmutableSet());
 
-		return huProcessDescriptor -> huProcessDescriptor.isProvideAsUserAction()
-				&& huProcessDescriptor.appliesToAllHUUnitTypes(requiredHUUnitTypes);
+		return huProcessDescriptor -> huProcessDescriptor.appliesToAllHUUnitTypes(requiredHUUnitTypes);
 	}
 
 	private final void onReportKeyPressed(final ITerminalKey currentKey)

@@ -27,10 +27,10 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -150,7 +150,7 @@ public class MCostElement extends X_M_CostElement
 		return new Query(context.getCtx(), MCostElement.Table_Name, whereClause, context.getTrxName())
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
-				.list(MCostElement.class);
+				.list();
 	}	// getCostElementCostingMethod
 
 	/**
@@ -277,7 +277,7 @@ public class MCostElement extends X_M_CostElement
 		String whereClause = "AD_Client_ID = ? AND AD_Org_ID = ?";
 		List<MCostElement> list = new Query(ctx, Table_Name, whereClause, trxName)
 				.setParameters(new Object[] { AD_Client_ID, AD_Org_ID })
-				.list(MCostElement.class);
+				.list();
 		MCostElement[] retValue = new MCostElement[list.size()];
 		list.toArray(retValue);
 		return retValue;

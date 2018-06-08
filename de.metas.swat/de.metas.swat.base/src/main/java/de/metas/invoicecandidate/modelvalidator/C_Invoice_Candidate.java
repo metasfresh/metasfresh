@@ -30,12 +30,11 @@ import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.ModelValidator;
@@ -51,7 +50,6 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
@@ -225,7 +223,7 @@ public class C_Invoice_Candidate
 	 * {@link InterfaceWrapperHelper#hasChanges(Object)} returns <code>false</code>. In that case, the method does nothing.
 	 * <p>
 	 * Note: we invalidate more than just the given candidate, because at least for the case of "split"-candidates we need to do so, in order to update the new and the old candidate. See
-	 * {@link InvoiceCandBL#splitCandidate(I_C_Invoice_Candidate)}.
+	 * {@link InvoiceCandBL#splitCandidate(I_C_Invoice_Candidate, String)}.
 	 *
 	 * @param ic
 	 */
@@ -420,12 +418,4 @@ public class C_Invoice_Candidate
 		groupChangesHandler.onInvoiceCandidateChanged(invoiceCandidate);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt, I_C_Invoice_Candidate.COLUMNNAME_Processed })
-	public void triggerUpdateBPStats(final I_C_Invoice_Candidate ic)
-	{
-		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-						.bpartnerId(ic.getBill_BPartner_ID())
-						.build());
-	}
 }

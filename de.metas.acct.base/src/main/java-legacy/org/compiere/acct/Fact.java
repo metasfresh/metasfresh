@@ -46,14 +46,14 @@ import lombok.NonNull;
  *
  * @author Jorg Janke
  * @version $Id: Fact.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
- *
+ * 
  *          BF [ 2789949 ] Multicurrency in matching posting
  */
 public final class Fact
 {
 	/**
 	 * Constructor
-	 *
+	 * 
 	 * @param document pointer to document
 	 * @param acctSchema Account Schema to create accounts
 	 * @param defaultPostingType the default Posting type (actual,..) for this posting
@@ -175,7 +175,7 @@ public final class Fact
 
 	/**
 	 * Add Fact Line
-	 *
+	 * 
 	 * @param line fact line
 	 */
 	private final void add(final FactLine line)
@@ -186,7 +186,7 @@ public final class Fact
 
 	/**
 	 * Remove Fact Line
-	 *
+	 * 
 	 * @param line fact line
 	 */
 	public void remove(FactLine line)
@@ -234,7 +234,7 @@ public final class Fact
 
 	/**
 	 * Is Posting Type
-	 *
+	 * 
 	 * @param PostingType - see POST_*
 	 * @return true if document is posting type
 	 */
@@ -245,7 +245,7 @@ public final class Fact
 
 	/**
 	 * Is converted
-	 *
+	 * 
 	 * @return true if converted
 	 */
 	public boolean isConverted()
@@ -255,7 +255,7 @@ public final class Fact
 
 	/**
 	 * Get AcctSchema
-	 *
+	 * 
 	 * @return AcctSchema; never returns null
 	 */
 	public final MAcctSchema getAcctSchema()
@@ -270,7 +270,7 @@ public final class Fact
 
 	/**************************************************************************
 	 * Are the lines Source Balanced
-	 *
+	 * 
 	 * @return true if source lines balanced
 	 */
 	public boolean isSourceBalanced()
@@ -291,7 +291,7 @@ public final class Fact
 
 	/**
 	 * Return Source Balance
-	 *
+	 * 
 	 * @return source balance
 	 */
 	protected BigDecimal getSourceBalance()
@@ -309,7 +309,7 @@ public final class Fact
 	/**
 	 * Create Source Line for Suspense Balancing. Only if Suspense Balancing is enabled and not a multi-currency document (double check as otherwise the rule should not have fired) If not balanced
 	 * create balancing entry in currency of the document
-	 *
+	 * 
 	 * @return FactLine
 	 */
 	public FactLine balanceSource()
@@ -337,13 +337,14 @@ public final class Fact
 		// Convert
 		line.convert();
 		//
-		add(line);
+		log.debug(line.toString());
+		m_lines.add(line);
 		return line;
 	}   // balancingSource
 
 	/**************************************************************************
 	 * Are all segments balanced
-	 *
+	 * 
 	 * @return true if segments are balanced
 	 */
 	public boolean isSegmentBalanced()
@@ -356,9 +357,9 @@ public final class Fact
 
 		MAcctSchemaElement[] elements = m_acctSchema.getAcctSchemaElements();
 		// check all balancing segments
-		for (MAcctSchemaElement element : elements)
+		for (int i = 0; i < elements.length; i++)
 		{
-			MAcctSchemaElement ase = element;
+			MAcctSchemaElement ase = elements[i];
 			if (ase.isBalanced() && !isSegmentBalanced(ase.getElementType()))
 				return false;
 		}
@@ -367,7 +368,7 @@ public final class Fact
 
 	/**
 	 * Is Source Segment balanced.
-	 *
+	 * 
 	 * @param segmentType - see AcctSchemaElement.SEGMENT_* Implemented only for Org Other sensible candidates are Project, User1/2
 	 * @return true if segments are balanced
 	 */
@@ -415,8 +416,9 @@ public final class Fact
 	{
 		MAcctSchemaElement[] elements = m_acctSchema.getAcctSchemaElements();
 		// check all balancing segments
-		for (MAcctSchemaElement ase : elements)
+		for (int i = 0; i < elements.length; i++)
 		{
+			MAcctSchemaElement ase = elements[i];
 			if (ase.isBalanced())
 				balanceSegment(ase.getElementType());
 		}
@@ -424,7 +426,7 @@ public final class Fact
 
 	/**
 	 * Balance Source Segment
-	 *
+	 * 
 	 * @param elementType segment element type
 	 */
 	private void balanceSegment(String elementType)
@@ -500,8 +502,8 @@ public final class Fact
 					line.convert();
 					line.setAD_Org_ID(key.intValue());
 					//
-					add(line);
-					log.debug("({}) - {}", elementType, line);
+					m_lines.add(line);
+					log.debug("(" + elementType + ") - " + line);
 				}
 			}
 			map.clear();
@@ -510,7 +512,7 @@ public final class Fact
 
 	/**************************************************************************
 	 * Are the lines Accounting Balanced
-	 *
+	 * 
 	 * @return true if accounting lines are balanced
 	 */
 	public boolean isAcctBalanced()
@@ -529,7 +531,7 @@ public final class Fact
 
 	/**
 	 * Return Accounting Balance
-	 *
+	 * 
 	 * @return true if accounting lines are balanced
 	 */
 	protected BigDecimal getAcctBalance()
@@ -547,7 +549,7 @@ public final class Fact
 	/**
 	 * Balance Accounting Currency. If the accounting currency is not balanced, if Currency balancing is enabled create a new line using the currency balancing account with zero source balance or
 	 * adjust the line with the largest balance sheet account or if no balance sheet account exist, the line with the largest amount
-	 *
+	 * 
 	 * @return FactLine
 	 */
 	public FactLine balanceAccounting()
@@ -621,7 +623,8 @@ public final class Fact
 					drAmt = difference.negate();
 			}
 			line.setAmtAcct(drAmt, crAmt);
-			add(line);
+			log.debug(line.toString());
+			m_lines.add(line);
 		}
 		else
 		// Adjust biggest (Balance Sheet) line amount
@@ -706,7 +709,7 @@ public final class Fact
 
 	/**************************************************************************
 	 * String representation
-	 *
+	 * 
 	 * @return String
 	 */
 	@Override
@@ -722,7 +725,7 @@ public final class Fact
 
 	/**
 	 * Get Lines
-	 *
+	 * 
 	 * @return FactLine Array
 	 */
 	public FactLine[] getLines()
@@ -734,7 +737,7 @@ public final class Fact
 
 	/**
 	 * Save Fact
-	 *
+	 * 
 	 * @param trxName transaction
 	 * @return true if all lines were saved
 	 */
@@ -933,7 +936,7 @@ public final class Fact
 
 		/**
 		 * Creates the {@link FactLine} and adds it to {@link Fact}.
-		 *
+		 * 
 		 * @return created {@link FactLine}
 		 */
 		public FactLine buildAndAdd()
@@ -1215,7 +1218,7 @@ public final class Fact
 
 		/**
 		 * Sets the AmtSourceDr (if amtSource is positive) or AmtSourceCr (if amtSource is negative).
-		 *
+		 * 
 		 * @param amtSource
 		 */
 		public FactLineBuilder setAmtSourceDrOrCr(final BigDecimal amtSource)

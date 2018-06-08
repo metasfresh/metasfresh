@@ -20,12 +20,12 @@ import org.junit.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,7 +60,7 @@ public class AnnotatedModelInterceptorDisablerTest
 	{
 		assertThat(AnnotatedModelInterceptorDisabler.createHowtoDisableMessage(pointcut))
 				.isEqualTo("Model interceptor method org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod threw an exception."
-						+ "\nYou can disable this method with SysConfig InterceptorEnabled_org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod='N' (with AD_Client_ID and AD_Org_ID=0!)");
+						+ "\nYou can disable this method with SysConfig IntercetorEnabled_org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod='N' (with AD_Client_ID and AD_Org_ID=0!)");
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class AnnotatedModelInterceptorDisablerTest
 	private void setupSysConfig(final String sysConfigValue)
 	{
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
-		sysConfig.setName("InterceptorEnabled_org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod");
+		sysConfig.setName("IntercetorEnabled_org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod");
 		sysConfig.setValue(sysConfigValue);
 		save(sysConfig);
 	}

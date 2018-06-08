@@ -14,7 +14,7 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1111103403L;
+	private static final long serialVersionUID = 269562803L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Data (Properties ctx, int C_Flatrate_Data_ID, String trxName)

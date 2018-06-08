@@ -36,7 +36,6 @@ import com.google.common.collect.Multimap;
 
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import lombok.NonNull;
 
@@ -57,7 +56,7 @@ public class HUStatusBL implements IHUStatusBL
 
 			// e.g. if a purchase order is reactivated and there are already planning HUs that were supposed to be used on the material receipt
 			.put(X_M_HU.HUSTATUS_Planning, X_M_HU.HUSTATUS_Destroyed)
-
+			
 			// e.g. if you put an already picked HU onto a new pallet, the the pallet's status needs to go directly from planned to picked
 			.put(X_M_HU.HUSTATUS_Planning, X_M_HU.HUSTATUS_Picked)
 
@@ -108,7 +107,7 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
-	public void assertStatusChangeIsAllowed(final I_M_HU huRecord, final String oldHuStatus, final String newHuStatus)
+	public void assertStatusChangeIsAllowed(final String oldHuStatus, final String newHuStatus)
 	{
 		if (isStatusTransitionAllowed(oldHuStatus, newHuStatus))
 		{
@@ -116,7 +115,7 @@ public class HUStatusBL implements IHUStatusBL
 		}
 
 		// no need to add an user friendly AD_Message. If this happens, we have a bug to fix.
-		throw new HUException(StringUtils.formatMessage("Illegal M_HU.HUStatus change from {} to {}; hu={}", oldHuStatus, newHuStatus, huRecord));
+		throw new HUException(StringUtils.formatMessage("Illegal M_HU.HUStatus change from {} to {}", oldHuStatus, newHuStatus));
 	}
 
 	@VisibleForTesting

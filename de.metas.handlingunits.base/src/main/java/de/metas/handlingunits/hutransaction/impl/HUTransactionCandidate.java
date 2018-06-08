@@ -28,12 +28,10 @@ import java.util.UUID;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
@@ -235,7 +233,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 			else
 			{
 				final int huId = hu.getM_HU_ID();
-				final String piName = Services.get(IHandlingUnitsBL.class).getPI(hu).getName();
+				final String piName = hu.getM_HU_PI_Version().getM_HU_PI().getName();
 				sb.append(", hu=").append(huId).append("-").append(piName);
 			}
 		}
@@ -255,7 +253,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 			else
 			{
 				final int vhuId = vhu.getM_HU_ID();
-				final String piName = Services.get(IHandlingUnitsBL.class).getPI(vhu).getName();
+				final String piName = vhu.getM_HU_PI_Version().getM_HU_PI().getName();
 				sb.append(", vhu=").append(vhuId).append("-").append(piName);
 			}
 

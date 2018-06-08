@@ -32,13 +32,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
@@ -303,12 +302,6 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	{
 		final boolean skipMissingItems = true;
 		return retrieveItems(workPackage, clazz, DEFAULT_skipAlreadyScheduledItems, skipMissingItems, trxName);
-	}
-
-	@Override
-	public final <T> List<T> retrieveAllItems(final I_C_Queue_WorkPackage workPackage, final Class<T> clazz)
-	{
-		return retrieveItems(workPackage, clazz, false, false, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private final <T> List<T> retrieveItems(final I_C_Queue_WorkPackage workPackage, final Class<T> clazz, final boolean skipAlreadyScheduledItems, final boolean skipMissingItems, final String trxName)

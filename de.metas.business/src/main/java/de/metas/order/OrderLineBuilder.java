@@ -104,9 +104,9 @@ public class OrderLineBuilder
 		return parent;
 	}
 
-	public OrderAndLineId getCreatedOrderAndLineId()
+	public int getCreatedOrderLineId()
 	{
-		return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID());
+		return createdOrderLine.getC_OrderLine_ID();
 	}
 
 	public OrderLineBuilder productId(final int productId)

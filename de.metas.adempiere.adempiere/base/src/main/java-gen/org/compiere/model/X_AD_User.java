@@ -14,7 +14,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1762655832L;
+	private static final long serialVersionUID = 1360281306L;
 
     /** Standard Constructor */
     public X_AD_User (Properties ctx, int AD_User_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 			setIsDefaultContact (false); // N
 			setIsFullBPAccess (true); // Y
 			setIsInPayroll (false); // N
+			setIsMFProcurementUser (false); // N
 			setIsPurchaseContact_Default (false); // N
 			setIsSalesContact_Default (false); // N
 			setIsShipToContact_Default (false); // N
@@ -804,6 +805,32 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return false;
 	}
 
+	/** Set Mengenmeldung App.
+		@param IsMFProcurementUser 
+		Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann
+	  */
+	@Override
+	public void setIsMFProcurementUser (boolean IsMFProcurementUser)
+	{
+		set_Value (COLUMNNAME_IsMFProcurementUser, Boolean.valueOf(IsMFProcurementUser));
+	}
+
+	/** Get Mengenmeldung App.
+		@return Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann
+	  */
+	@Override
+	public boolean isMFProcurementUser () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsMFProcurementUser);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Einkaufskontakt.
 		@param IsPurchaseContact Einkaufskontakt	  */
 	@Override
@@ -958,25 +985,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_Lastname);
 	}
 
-	/** Set Memo.
-		@param Memo 
-		Memo Text
-	  */
-	@Override
-	public void setMemo (java.lang.String Memo)
-	{
-		set_Value (COLUMNNAME_Memo, Memo);
-	}
-
-	/** Get Memo.
-		@return Memo Text
-	  */
-	@Override
-	public java.lang.String getMemo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Memo);
-	}
-
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -1032,7 +1040,9 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Kennwort.
-		@param Password Kennwort	  */
+		@param Password 
+		Password of any length (case sensitive)
+	  */
 	@Override
 	public void setPassword (java.lang.String Password)
 	{
@@ -1040,7 +1050,8 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Get Kennwort.
-		@return Kennwort	  */
+		@return Password of any length (case sensitive)
+	  */
 	@Override
 	public java.lang.String getPassword () 
 	{

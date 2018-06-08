@@ -2,13 +2,12 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -17,7 +16,6 @@ import org.compiere.util.TimeUtil;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -215,23 +213,23 @@ public class OrderFactory
 		return this;
 	}
 
-	public OrderFactory datePromised(final LocalDateTime datePromised)
+	public OrderFactory datePromised(final Date datePromised)
 	{
 		assertNotBuilt();
 		order.setDatePromised(TimeUtil.asTimestamp(datePromised));
 		return this;
 	}
 
-	public OrderFactory shipBPartner(@NonNull final BPartnerId bpartnerId, final int bpartnerLocationId, final int contactId)
+	public OrderFactory shipBPartner(final int bpartnerId, final int bpartnerLocationId, final int contactId)
 	{
 		assertNotBuilt();
-		order.setC_BPartner_ID(bpartnerId.getRepoId());
+		order.setC_BPartner_ID(bpartnerId);
 		order.setC_BPartner_Location_ID(bpartnerLocationId);
 		order.setAD_User_ID(contactId);
 		return this;
 	}
 
-	public OrderFactory shipBPartner(final BPartnerId bpartnerId)
+	public OrderFactory shipBPartner(final int bpartnerId)
 	{
 		final int bpartnerLocationId = -1;
 		final int contactId = -1;

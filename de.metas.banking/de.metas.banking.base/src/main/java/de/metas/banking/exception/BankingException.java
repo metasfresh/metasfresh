@@ -26,9 +26,6 @@ package de.metas.banking.exception;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BP_BankAccount;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
-
 public class BankingException extends AdempiereException
 {
 	private final String errorMsg;
@@ -66,12 +63,10 @@ public class BankingException extends AdempiereException
 	}
 
 	@Override
-	protected ITranslatableString buildMessage()
+	protected String buildMessage()
 	{
-		final TranslatableStringBuilder sb = TranslatableStringBuilder.newInstance();
-		
-		sb.appendADMessage("Error");
-		sb.append(" ");
+		final StringBuilder sb = new StringBuilder();
+		sb.append("@Error@ ");
 		sb.append(errorMsg);
 		sb.append("\n");
 
@@ -94,6 +89,6 @@ public class BankingException extends AdempiereException
 			sb.append("\tBLZ: ").append(targetAcct.getRoutingNo());
 			sb.append("\n");
 		}
-		return sb.build();
+		return sb.toString();
 	}
 }

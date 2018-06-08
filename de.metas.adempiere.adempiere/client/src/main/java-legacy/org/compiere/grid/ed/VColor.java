@@ -21,22 +21,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.math.BigDecimal;
-import java.net.URL;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.model.MImage;
+import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CButton;
 import org.compiere.swing.ColorEditor;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
-import de.metas.util.MFColorType;
-import de.metas.util.MFColor;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 /**
  *  Color Editor.
@@ -78,7 +80,8 @@ public class VColor extends CButton
 
 	private GridTab            m_mTab;
 	private boolean         m_mandatory;
-	private MFColor   color = null;
+//	private int             m_AD_Color_ID = 0;
+	private CompiereColor   m_cc = null;
 	private Object          m_value;
 	/**	Logger			*/
 	private static Logger log = LogManager.getLogger(VColor.class);
@@ -121,12 +124,12 @@ public class VColor extends CButton
 	{
 		log.info("Value=" + value);
 		m_value = value;
-		color = getAdempiereColor();
+		m_cc = getAdempiereColor();
 
 		//  Display It
 		setText(getDisplay());
-		if (color != null)
-			setBackgroundColor(color);
+		if (m_cc != null)
+			setBackgroundColor(m_cc);
 		else
 		{
 			setOpaque(false);
@@ -152,7 +155,7 @@ public class VColor extends CButton
 	@Override
 	public String getDisplay()
 	{
-		if (color == null)
+		if (m_cc == null)
 			return "-/-";
 		return " ";
 	}   //  getDisplay
@@ -190,57 +193,61 @@ public class VColor extends CButton
 		return m_mField;
 	}
 	
-	private MFColor getAdempiereColor()
+	/*************************************************************************/
+
+	/**
+	 *  Load Color from Tab
+	 *  @return true if loaded
+	 *  @see org.compiere.model.MColor#getAdempiereColor
+	 */
+	private CompiereColor getAdempiereColor()
 	{
-		final Integer adColorId = (Integer)m_mTab.getValue("AD_Color_ID");
-		log.debug("AD_Color_ID=" + adColorId);
-		MFColor cc = null;
+		Integer AD_Color_ID = (Integer)m_mTab.getValue("AD_Color_ID");
+		log.debug("AD_Color_ID=" + AD_Color_ID);
+		CompiereColor cc = null;
 
 		//  Color Type
-		final String colorTypeCode = (String)m_mTab.getValue("ColorType");
-		if (colorTypeCode == null)
+		String ColorType = (String)m_mTab.getValue("ColorType");
+		if (ColorType == null)
 		{
 			log.debug("No ColorType");
 			return null;
 		}
 		//
-		final MFColorType colorType = MFColorType.ofCode(colorTypeCode);
-		if (colorType == MFColorType.FLAT)
+		if (ColorType.equals(CompiereColor.TYPE_FLAT))
 		{
-			cc = MFColor.ofFlatColor(getColor(true));
+			cc = new CompiereColor(getColor(true), true);
 		}
-		else if (colorType == MFColorType.GRADIENT)
+		else if (ColorType.equals(CompiereColor.TYPE_GRADIENT))
 		{
-			Integer repeatDistanceObj = (Integer)m_mTab.getValue("RepeatDistance");
-			int repeatDistance = repeatDistanceObj == null ? 0 : repeatDistanceObj.intValue();
-			String startPointStr = (String)m_mTab.getValue("StartPoint");
-			int startPoint = startPointStr == null ? 0 : Integer.parseInt(startPointStr);
-			cc = MFColor.ofGradientColor(getColor(true), getColor(false), startPoint, repeatDistance);
+			Integer RepeatDistance = (Integer)m_mTab.getValue("RepeatDistance");
+			String StartPoint = (String)m_mTab.getValue("StartPoint");
+			int repeatDistance = RepeatDistance == null ? 0 : RepeatDistance.intValue();
+			int startPoint = StartPoint == null ? 0 : Integer.parseInt(StartPoint);
+			cc = new CompiereColor(getColor(true), getColor(false), startPoint, repeatDistance);
 		}
-		else if (colorType == MFColorType.LINES)
+		else if (ColorType.equals(CompiereColor.TYPE_LINES))
 		{
 			BigDecimal LineWidth = (BigDecimal)m_mTab.getValue("LineWidth");
 			BigDecimal LineDistance = (BigDecimal)m_mTab.getValue("LineDistance");
 			int lineWidth = LineWidth == null ? 0 : LineWidth.intValue();
 			int lineDistance = LineDistance == null ? 0 : LineDistance.intValue();
-			cc = MFColor.ofLinesColor(getColor(false), getColor(true), lineWidth, lineDistance);
+			cc = new CompiereColor(getColor(false), getColor(true), lineWidth, lineDistance);
 		}
-		else if (colorType == MFColorType.TEXTURE)
+		else if (ColorType.equals(CompiereColor.TYPE_TEXTURE))
 		{
-			final Integer adImageId = (Integer)m_mTab.getValue("AD_Image_ID");
-			final URL url = getURL(adImageId);
+			Integer AD_Image_ID = (Integer)m_mTab.getValue("AD_Image_ID");
+			String url = getURL(AD_Image_ID);
 			if (url == null)
 				return null;
-			final BigDecimal ImageAlpha = (BigDecimal)m_mTab.getValue("ImageAlpha");
+			BigDecimal ImageAlpha = (BigDecimal)m_mTab.getValue("ImageAlpha");
 			float compositeAlpha = ImageAlpha == null ? 0.7f : ImageAlpha.floatValue();
-			cc = MFColor.ofTextureColor(url, getColor(true), compositeAlpha);
+			cc = new CompiereColor(url, getColor(true), compositeAlpha);
 		}
 		else
-		{
 			return null;
-		}
 
-		log.debug("AdempiereColor={}", cc);
+		log.debug("AdempiereColor=" + cc);
 		return cc;
 	}   //  getAdempiereColor
 
@@ -269,12 +276,30 @@ public class VColor extends CButton
 	 *  @param AD_Image_ID image
 	 *  @return URL as String or null
 	 */
-	private URL getURL(final Integer AD_Image_ID)
+	private String getURL (Integer AD_Image_ID)
 	{
-		if (AD_Image_ID == null || AD_Image_ID.intValue() <= 0)
+		if (AD_Image_ID == null || AD_Image_ID.intValue() == 0)
 			return null;
-		
-		return MImage.getURLOrNull(AD_Image_ID);
+		//
+		String retValue = null;
+		String sql = "SELECT ImageURL FROM AD_Image WHERE AD_Image_ID=?";
+		try
+		{
+			PreparedStatement pstmt = DB.prepareStatement(sql, null);
+			pstmt.setInt (1, AD_Image_ID.intValue());
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next())
+			{
+				retValue = rs.getString(1);
+			}
+			rs.close();
+			pstmt.close();
+		}
+		catch (SQLException e)
+		{
+			log.error(sql, e);
+		}
+		return retValue;
 	}   //  getURL
 
 	/*************************************************************************/
@@ -287,7 +312,7 @@ public class VColor extends CButton
 	public void actionPerformed (ActionEvent e)
 	{
 		//  Show Dialog
-		MFColor cc = ColorEditor.showDialog((JFrame)Env.getParent(this), color);
+		CompiereColor cc = ColorEditor.showDialog((JFrame)Env.getParent(this), m_cc);
 		if (cc == null)
 		{
 			log.info( "VColor.actionPerformed - no color");
@@ -297,7 +322,7 @@ public class VColor extends CButton
 		repaint();
 
 		//  Update Values
-		m_mTab.setValue("ColorType", cc.getType().getCode());
+		m_mTab.setValue("ColorType", cc.getType());
 		if (cc.isFlat())
 		{
 			setColor (cc.getFlatColor(), true);
@@ -323,7 +348,7 @@ public class VColor extends CButton
 		//	m_mTab.setValue("AD_Image_ID");
 			m_mTab.setValue("ImageAlpha", new BigDecimal(cc.getTextureCompositeAlpha()));
 		}
-		color = cc;
+		m_cc = cc;
 	}   //  actionPerformed
 
 	/**

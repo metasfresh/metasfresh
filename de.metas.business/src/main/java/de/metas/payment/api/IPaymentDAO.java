@@ -75,10 +75,10 @@ public interface IPaymentDAO extends ISingletonService
 	 * @return never return <code>null</code>, even if there are no allocations
 	 */
 	BigDecimal getAllocatedAmt(I_C_Payment payment);
-
+	
 	/**
 	 * retrieve allocated payments fro an invoice
-	 *
+	 * 
 	 * @param invoice
 	 * @return
 	 */
@@ -87,7 +87,7 @@ public interface IPaymentDAO extends ISingletonService
 	/**
 	 * Retrieve all the payments that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either PayAmt or OverUnderAmt. These entries will produce 0 in posting
-	 *
+	 * 
 	 * @param ctx
 	 * @param startTime
 	 * @return

@@ -5,8 +5,6 @@ import java.util.Set;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
-import lombok.EqualsAndHashCode;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -29,7 +27,6 @@ import lombok.EqualsAndHashCode;
  * #L%
  */
 
-@EqualsAndHashCode
 /*package*/final class ConstantTranslatableString implements ITranslatableString
 {
 	static final ConstantTranslatableString of(final String value)

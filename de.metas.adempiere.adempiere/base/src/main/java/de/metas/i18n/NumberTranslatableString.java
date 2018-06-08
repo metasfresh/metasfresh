@@ -8,7 +8,6 @@ import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
 
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -35,19 +34,13 @@ import lombok.ToString;
  */
 
 @ToString
-@EqualsAndHashCode
 public final class NumberTranslatableString implements ITranslatableString
 {
 	public static NumberTranslatableString of(final BigDecimal valueBD, final int displayType)
 	{
 		return new NumberTranslatableString(valueBD, displayType);
 	}
-
-	public static NumberTranslatableString of(final int valueInt)
-	{
-		return new NumberTranslatableString(BigDecimal.valueOf(valueInt), DisplayType.Integer);
-	}
-
+	
 	private final BigDecimal valueBD;
 	private final int displayType;
 

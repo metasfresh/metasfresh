@@ -33,8 +33,6 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 
-import de.metas.i18n.ITranslatableString;
-
 /**
  * @author cg
  *
@@ -93,6 +91,4 @@ public interface ICountryDAO extends ISingletonService
 	String retrieveCountryCode2ByCountryId(int countryId);
 
 	String retrieveCountryCode3ByCountryId(int countryId);
-
-	ITranslatableString getCountryNameById(int countryId);
 }

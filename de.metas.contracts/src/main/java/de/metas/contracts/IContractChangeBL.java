@@ -45,7 +45,7 @@ public interface IContractChangeBL extends ISingletonService
 	 *<code>changeDate</code> the cancellation date. If this this date is before the term's "regular" EndDate, it is also used to find the correct {@link de.metas.contracts.model.I_C_Contract_Change} record
 	 * for the cancel conditions.<br>
 	 * <code>isCloseInvoiceCandidate</code> this value is forwarded to the given term's <code>IsCloseInvoiceCandidate</code> column and will determine what to do with invoice candidates for the term which were not
-	 *  yet (fully) invoiced. See {@link de.metas.contracts.subscription.invoicecandidatehandler.FlatrateTermSubscription_Handler}<br>
+	 *  yet (fully) invoiced. See {@link de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler}<br>
 	 *<code>note></code> notice where additional infos are storred when cancelling the contract
 	 */
 	@Value

@@ -53,7 +53,6 @@ public class PickingConfigRepository
 		return PickingConfig.builder()
 				.webuiPickingTerminalViewProfileId(pickingConfigPO.getWEBUI_PickingTerminal_ViewProfile())
 				.allowOverDelivery(pickingConfigPO.isAllowOverdelivery())
-				.autoProcess(pickingConfigPO.isAutoProcess())
 				.build();
 	}
 }

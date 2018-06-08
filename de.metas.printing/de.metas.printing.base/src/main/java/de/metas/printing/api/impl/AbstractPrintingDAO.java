@@ -1,7 +1,5 @@
 package de.metas.printing.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 /*
  * #%L
  * de.metas.printing.base
@@ -37,10 +35,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
 
@@ -74,13 +72,13 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	private static final ModelDynAttributeAccessor<I_C_Printing_Queue_Recipient, Boolean> DYNATTR_DisableAggregationKeyUpdate = new ModelDynAttributeAccessor<>("DisableAggregationKeyUpdate", Boolean.class);
 
 	@Override
-	public final Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job job)
+	public Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job job)
 	{
 		return retrievePrintJobLines(job, SEQNO_First, SEQNO_Last);
 	}
 
 	@Override
-	public final Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job job, final int fromSeqNo, final int toSeqNo)
+	public Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job job, final int fromSeqNo, final int toSeqNo)
 	{
 		Check.assume(fromSeqNo == SEQNO_First || fromSeqNo > 0, "Valid fromSeqNo: {}", fromSeqNo);
 		Check.assume(toSeqNo == SEQNO_Last || fromSeqNo > 0, "Valid toSeqNo: {}", toSeqNo);
@@ -94,7 +92,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	protected abstract Iterator<I_C_Print_Job_Line> retrievePrintJobLines0(final I_C_Print_Job job, final int fromSeqNo, final int toSeqNo);
 
 	@Override
-	public final I_C_Print_Job_Line retrievePrintJobLine(final I_C_Print_Job job, final int seqNo)
+	public I_C_Print_Job_Line retrievePrintJobLine(final I_C_Print_Job job, final int seqNo)
 	{
 		final int seqNoReal = resolveSeqNo(job, seqNo);
 		Check.assume(seqNoReal > 0, "seqNo > 0");
@@ -118,7 +116,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	protected abstract int resolveSeqNo(final I_C_Print_Job job, final int seqNo);
 
 	@Override
-	public final Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job_Instructions jobInstructions)
+	public Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job_Instructions jobInstructions)
 	{
 		final I_C_Print_Job job = jobInstructions.getC_Print_Job();
 		final int fromSeqNo = jobInstructions.getC_PrintJob_Line_From().getSeqNo();
@@ -128,14 +126,14 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final int countItems(final Properties ctx, final IPrintingQueueQuery queueQuery, final String trxName)
+	public int countItems(final Properties ctx, final IPrintingQueueQuery queueQuery, final String trxName)
 	{
 		final IQuery<I_C_Printing_Queue> query = createQuery(ctx, queueQuery, trxName);
 		return query.count();
 	}
-
+	
 	@Override
-	public final List<I_C_Print_Job_Detail> retrievePrintJobDetails(final I_C_Print_Job_Line jobLine)
+	public List<I_C_Print_Job_Detail> retrievePrintJobDetails(final I_C_Print_Job_Line jobLine)
 	{
 		final List<I_C_Print_Job_Detail> details = retrievePrintJobDetailsIfAny(jobLine);
 
@@ -162,7 +160,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final void removeMediaSizes(final List<I_AD_PrinterHW_MediaSize> sizes)
+	public void removeMediaSizes(final List<I_AD_PrinterHW_MediaSize> sizes)
 	{
 		for (final I_AD_PrinterHW_MediaSize si : sizes)
 		{
@@ -171,7 +169,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final void removeCalibrations(final List<I_AD_PrinterHW_Calibration> calibrations)
+	public void removeCalibrations(final List<I_AD_PrinterHW_Calibration> calibrations)
 	{
 		for (final I_AD_PrinterHW_Calibration cal : calibrations)
 		{
@@ -180,7 +178,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final void removeMediaTrays(final List<I_AD_PrinterHW_MediaTray> trays)
+	public void removeMediaTrays(final List<I_AD_PrinterHW_MediaTray> trays)
 	{
 		for (final I_AD_PrinterHW_MediaTray tr : trays)
 		{
@@ -189,7 +187,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final List<I_AD_Printer> retrievePrintersOrNull(final I_AD_PrinterHW printerHW)
+	public List<I_AD_Printer> retrievePrintersOrNull(final I_AD_PrinterHW printerHW)
 	{
 		final List<I_AD_Printer_Matching> matchings = retrievePrinterMatchings(printerHW);
 		if (matchings == null)
@@ -200,8 +198,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		final List<I_AD_Printer> printers = new ArrayList<>();
 		for (final I_AD_Printer_Matching matching : matchings)
 		{
-			final I_AD_Printer printer = load(matching.getAD_Printer_ID(), I_AD_Printer.class);
-			printers.add(printer);
+			printers.add(matching.getAD_Printer());
 		}
 
 		return printers;
@@ -209,14 +206,14 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final I_AD_Printer_Config retrievePrinterConfig(final IContextAware ctx, final String hostKey, final int userToPrintId)
+	public I_AD_Printer_Config retrievePrinterConfig(final IContextAware ctx, final String hostKey, final int userToPrintId)
 	{
 		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Printer_Config.class, ctx)
 				.addOnlyActiveRecordsFilter();
 
 		if (!Check.isEmpty(hostKey, true))
 		{
-			queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostKey);
+			queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMN_HostKey, hostKey);
 		}
 		else
 		{
@@ -229,7 +226,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final I_AD_Printer_Matching retrievePrinterMatching(final String hostKey, final I_AD_PrinterRouting routing)
+	public I_AD_Printer_Matching retrievePrinterMatching(final String hostKey, final I_AD_PrinterRouting routing)
 	{
 		final I_AD_Printer_Matching matching = retrievePrinterMatchingOrNull(hostKey, InterfaceWrapperHelper.create(routing.getAD_Printer(), I_AD_Printer.class));
 		if (matching == null)
@@ -241,37 +238,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final I_AD_Printer_Matching retrievePrinterMatchingOrNull(final String hostKey, final I_AD_Printer printer)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Printer_Config.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostKey)
-				.andCollectChildren(I_AD_Printer_Matching.COLUMN_AD_Printer_Config_ID)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Printer_Matching.COLUMN_AD_Printer_ID, printer.getAD_Printer_ID())
-				.create()
-				.firstOnly(I_AD_Printer_Matching.class);
-	}
-
-	@Override
-	public final List<I_AD_Printer_Matching> retrievePrinterMatchings(final I_AD_PrinterHW printerHW)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Printer_Config.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, printerHW.getHostKey())
-				.andCollectChildren(I_AD_Printer_Matching.COLUMN_AD_Printer_Config_ID)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Printer_Matching.COLUMNNAME_AD_PrinterHW_ID, printerHW.getAD_PrinterHW_ID())
-				.orderBy()
-				.addColumnAscending(I_AD_Printer_Matching.COLUMNNAME_AD_Printer_Matching_ID).endOrderBy()
-				.create()
-				.list();
-	}
-
-	@Override
-	public final I_AD_PrinterTray_Matching retrievePrinterTrayMatching(final I_AD_Printer_Matching matching, final I_AD_PrinterRouting routing, final boolean throwExIfMissing)
+	public I_AD_PrinterTray_Matching retrievePrinterTrayMatching(final I_AD_Printer_Matching matching, final I_AD_PrinterRouting routing, final boolean throwExIfMissing)
 	{
 		final I_AD_PrinterTray_Matching trayMatching = retrievePrinterTrayMatchingOrNull(matching, routing.getAD_Printer_Tray_ID());
 		if (trayMatching == null && throwExIfMissing)
@@ -283,7 +250,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final List<Integer> retrievePrintingQueueRecipientIDs(final I_C_Printing_Queue printingQueue)
+	public List<Integer> retrievePrintingQueueRecipientIDs(final I_C_Printing_Queue printingQueue)
 	{
 		final List<Map<String, Object>> listDistinct = retrievePrintingQueueRecipientsQuery(printingQueue)
 				.addOnlyActiveRecordsFilter()
@@ -311,7 +278,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final List<I_C_Printing_Queue_Recipient> retrieveAllPrintingQueueRecipients(final I_C_Printing_Queue item)
+	public List<I_C_Printing_Queue_Recipient> retrieveAllPrintingQueueRecipients(final I_C_Printing_Queue item)
 	{
 		return retrievePrintingQueueRecipientsQuery(item)
 				.create()
@@ -319,7 +286,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final void deletePrintingQueueRecipients(final I_C_Printing_Queue item)
+	public void deletePrintingQueueRecipients(final I_C_Printing_Queue item)
 	{
 		for (final I_C_Printing_Queue_Recipient recipient : retrieveAllPrintingQueueRecipients(item))
 		{
@@ -329,14 +296,14 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final boolean isUpdatePrintingQueueAggregationKey(final I_C_Printing_Queue_Recipient recipient)
+	public boolean isUpdatePrintingQueueAggregationKey(final I_C_Printing_Queue_Recipient recipient)
 	{
 		final Boolean disabled = DYNATTR_DisableAggregationKeyUpdate.getValue(recipient);
 		return disabled != null && disabled ? false : true;
 	}
 
 	@Override
-	public final void setDisableAggregationKeyUpdate(final I_C_Printing_Queue_Recipient recipient)
+	public void setDisableAggregationKeyUpdate(final I_C_Printing_Queue_Recipient recipient)
 	{
 		DYNATTR_DisableAggregationKeyUpdate.setValue(recipient, true);
 	}
@@ -351,15 +318,15 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.create()
 				.firstOnly(I_AD_Print_Clients.class);
 	}
-
+	
 	@Override
-	public final List<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Printing_Queue printingQueue)
+	public List<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Printing_Queue printingQueue)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printingQueue);
 		final String trxName = InterfaceWrapperHelper.getTrxName(printingQueue);
 
 		final StringBuilder whereClause = new StringBuilder();
-		final List<Object> params = new ArrayList<>();
+		final List<Object> params = new ArrayList<Object>();
 
 		whereClause.append(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID).append("=?");
 		params.add(printingQueue.getC_Printing_Queue_ID());
@@ -368,24 +335,28 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.addEqualsFilter(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID, printingQueue.getC_Printing_Queue_ID())
 				.addOnlyActiveRecordsFilter()
 				.orderBy()
-				.addColumnAscending(I_C_Print_Job_Line.COLUMNNAME_SeqNo)
+				.addColumn(I_C_Print_Job_Line.COLUMNNAME_SeqNo, true)
 				.endOrderBy()
 				.create()
 				.list(I_C_Print_Job_Line.class);
 	}
 
+
 	@Override
-	public final I_AD_PrinterHW_MediaSize retrieveMediaSize(
-			@NonNull final I_AD_PrinterHW hwPrinter,
-			@NonNull final MediaSize mediaSize,
+	public final I_AD_PrinterHW_MediaSize retrieveMediaSize(final I_AD_PrinterHW hwPrinter,
+			final MediaSize mediaSize,
 			final boolean createIfNotExists)
 	{
+		Check.assume(hwPrinter != null, "Param 'hwPrinter' is not null");
+		Check.assume(mediaSize != null, "Param 'mediaSize' is not null");
+
 		final String mediaSizeName = mediaSize.getMediaSizeName().toString();
-		final I_AD_PrinterHW_MediaSize result = Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrinterHW_MediaSize.class)
+		final I_AD_PrinterHW_MediaSize result = Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrinterHW_MediaSize.class, hwPrinter)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_PrinterHW_MediaSize.COLUMN_AD_PrinterHW_ID, hwPrinter.getAD_PrinterHW_ID())
 				.addEqualsFilter(I_AD_PrinterHW_MediaSize.COLUMN_Name, mediaSizeName)
 				.create()
+				.setClient_ID()
 				.firstOnly(I_AD_PrinterHW_MediaSize.class);
 
 		if (result == null && createIfNotExists)
@@ -406,7 +377,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final I_C_Printing_Queue retrievePrintingQueue(@NonNull final I_AD_Archive archive)
+	public I_C_Printing_Queue retrievePrintingQueue(@NonNull final I_AD_Archive archive)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -414,15 +385,15 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Printing_Queue.COLUMN_AD_Archive_ID, archive.getAD_Archive_ID())
 				.orderBy()
-				.addColumnDescending(I_C_Printing_Queue.COLUMNNAME_Created)
-				.addColumnDescending(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID) // also order by ID in case created is not unique
+				.addColumn(I_C_Printing_Queue.COLUMNNAME_Created, false)
+				.addColumn(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID, false) // also order by ID in case created is not unique
 				.endOrderBy()
 				.create()
 				.first();
 	}
 
 	@Override
-	public final List<I_C_Print_PackageInfo> retrievePrintPackageInfos(@NonNull final I_C_Print_Package printPackage)
+	public List<I_C_Print_PackageInfo> retrievePrintPackageInfos(@NonNull final I_C_Print_Package printPackage)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Print_PackageInfo.class, printPackage)
 				.addOnlyActiveRecordsFilter()
@@ -433,7 +404,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
-	public final I_C_PrintPackageData retrievePrintPackageData(@NonNull final I_C_Print_Package printPackage)
+	public I_C_PrintPackageData retrievePrintPackageData(@NonNull final I_C_Print_Package printPackage)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PrintPackageData.class, printPackage)
 				.addOnlyActiveRecordsFilter()
@@ -445,28 +416,30 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.create()
 				.first(); // note: right now IDK why it's first an not firstOnly
 	}
-
+	
 	@Override
-	public final I_AD_PrinterHW retrieveVirtualPrinter(final Properties ctx, String hostkey, final String trxName)
+	public I_AD_PrinterHW retrieveVirtualPrinter(final Properties ctx, String hostkey, final String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
+		
+		
 		final IQuery<I_AD_Printer_Config> queryConfig = queryBL.createQueryBuilder(I_AD_Printer_Config.class)
-				.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostkey)
+				.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_HostKey, hostkey)
 				.create();
-
+		
 		final IQuery<I_AD_Printer_Matching> queryMatchings = queryBL.createQueryBuilder(I_AD_Printer_Matching.class)
 				.addInSubQueryFilter(I_AD_Printer_Matching.COLUMNNAME_AD_Printer_Config_ID, I_AD_Printer_Config.COLUMNNAME_AD_Printer_Config_ID, queryConfig)
 				.create();
-
+		
 		return queryBL.createQueryBuilder(I_AD_PrinterHW.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_PrinterHW.COLUMNNAME_OutputType, X_AD_PrinterHW.OUTPUTTYPE_PDF)
 				.addInArrayFilter(I_AD_PrinterHW.COLUMN_HostKey, hostkey, null)
 				.addInSubQueryFilter(I_AD_Printer_Matching.COLUMNNAME_AD_PrinterHW_ID, I_AD_PrinterHW.COLUMNNAME_AD_PrinterHW_ID, queryMatchings)
 				.orderBy()
-				.addColumnDescending(I_AD_PrinterHW.COLUMNNAME_HostKey).endOrderBy()
+				.addColumn(I_AD_PrinterHW.COLUMNNAME_HostKey, false).endOrderBy()
 				.create()
 				.first(I_AD_PrinterHW.class);
 	}
+
 }

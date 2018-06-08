@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,7 +26,6 @@ package de.metas.invoicecandidate.api.impl;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 
 import de.metas.aggregation.api.IAggregation;
@@ -40,8 +39,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 {
-	private final static String INVOICE_AGGREGATION_ID_FOR_PREPAYORDER = "InvoiceAggregationFactory_PrepayOrderAggregationId";
-
 	@Override
 	public IAggregationKeyBuilder<I_C_Invoice_Candidate> getAggregationKeyBuilder(final Properties ctx, final I_C_BPartner bpartner, final boolean isSOTrx, final String aggregationUsageLevel)
 	{
@@ -103,30 +100,6 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 			}
 		}
 		return aggregation;
-	}
-
-	@Override
-	public IAggregationKeyBuilder<I_C_Invoice_Candidate> getPrepayOrderAggregationKeyBuilder(final Properties ctx)
-	{
-		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
-
-		final int aggregationId = getPrepayOrder_Invoice_Aggregation_ID();
-
-		final IAggregationKeyBuilder<I_C_Invoice_Candidate> aggregation;
-		if (aggregationId > 0)
-		{
-			aggregation = aggregationFactory.getAggregationKeyBuilder(ctx, I_C_Invoice_Candidate.class, aggregationId);
-		}
-		else
-		{
-			aggregation = aggregationFactory.getDefaultAggregationKeyBuilder(ctx, I_C_Invoice_Candidate.class, true, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
-		}
-		return aggregation;
-	}
-
-	private int getPrepayOrder_Invoice_Aggregation_ID()
-	{
-		return Services.get(ISysConfigBL.class).getIntValue(INVOICE_AGGREGATION_ID_FOR_PREPAYORDER, -1);
 	}
 
 }

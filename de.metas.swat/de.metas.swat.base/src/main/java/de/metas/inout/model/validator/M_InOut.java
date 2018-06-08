@@ -1,11 +1,13 @@
 package de.metas.inout.model.validator;
 
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
@@ -17,10 +19,10 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.api.IMaterialBalanceDetailBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;
-import de.metas.inout.event.InOutUserNotificationsProducer;
-import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
+import de.metas.inout.event.InOutProcessedEventBus;
+import de.metas.inout.event.ReturnInOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout_Async;
+import de.metas.request.service.IRequestCreator;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut
@@ -30,8 +32,8 @@ public class M_InOut
 	public void onInit()
 	{
 		// Setup event bus topics on which swing client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InOutUserNotificationsProducer.EVENTBUS_TOPIC);
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(ReturnInOutUserNotificationsProducer.EVENTBUS_TOPIC);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InOutProcessedEventBus.EVENTBUS_TOPIC);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(ReturnInOutProcessedEventBus.EVENTBUS_TOPIC);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
@@ -123,9 +125,12 @@ public class M_InOut
 			return;
 		}
 
+		final Properties ctx = InterfaceWrapperHelper.getCtx(inOut);
+		final String trxName = InterfaceWrapperHelper.getTrxName(inOut);
+
 		// In case there are lines with issues, trigger the request creation for them.
 		// Note: The request creation will be done async
-		C_Request_CreateFromInout_Async.createWorkpackage(linesWithQualityIssues);
+		Services.get(IRequestCreator.class).createRequests(ctx, linesWithQualityIssues, trxName);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })

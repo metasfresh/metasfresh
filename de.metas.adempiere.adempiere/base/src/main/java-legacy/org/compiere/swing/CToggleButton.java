@@ -24,8 +24,7 @@ import javax.swing.JToggleButton;
 
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.AdempierePLAF;
-
-import de.metas.util.MFColor;
+import org.compiere.plaf.CompiereColor;
 
 /**
  *  Adempiere Color Taggle Button
@@ -169,10 +168,10 @@ public class CToggleButton extends JToggleButton implements CEditor
 	 *  Set Background
 	 *  @param bg AdempiereColor for Background, if null set standard background
 	 */
-	public void setBackgroundColor (MFColor bg)
+	public void setBackgroundColor (CompiereColor bg)
 	{
 		if (bg == null)
-			bg = MFColor.ofFlatColor(AdempierePLAF.getFormBackground());
+			bg = new CompiereColor(AdempierePLAF.getFormBackground());
 		setOpaque(true);
 		putClientProperty(AdempiereLookAndFeel.BACKGROUND, bg);
 		super.setBackground (bg.getFlatColor());
@@ -182,11 +181,11 @@ public class CToggleButton extends JToggleButton implements CEditor
 	 *  Get Background
 	 *  @return Color for Background
 	 */
-	public MFColor getBackgroundColor ()
+	public CompiereColor getBackgroundColor ()
 	{
 		try
 		{
-			return (MFColor)getClientProperty(AdempiereLookAndFeel.BACKGROUND);
+			return (CompiereColor)getClientProperty(AdempiereLookAndFeel.BACKGROUND);
 		}
 		catch (Exception e)
 		{

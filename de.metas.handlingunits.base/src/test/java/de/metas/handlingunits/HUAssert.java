@@ -27,10 +27,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
@@ -122,7 +122,7 @@ public final class HUAssert
 	{
 		final boolean destroyed = Services.get(IHandlingUnitsBL.class).isDestroyed(hu);
 		Assert.assertTrue("HU shall be destroyed"
-				+ "\nPI:" + Services.get(IHandlingUnitsBL.class).getPI(hu).getName()
+				+ "\nPI:" + hu.getM_HU_PI_Version().getM_HU_PI().getName()
 				+ "\nHU:" + hu,
 				destroyed);
 	}
@@ -182,7 +182,7 @@ public final class HUAssert
 	{
 		Assert.assertNotNull("hu shall not be null", hu);
 
-		final I_M_HU_PI_Version huPiVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(hu);
+		final I_M_HU_PI_Version huPiVersion = hu.getM_HU_PI_Version();
 		Assert.assertNotNull("HU_PI_Version shall not be null for " + hu, huPiVersion);
 
 		final I_M_HU_PI huPI = huPiVersion.getM_HU_PI();

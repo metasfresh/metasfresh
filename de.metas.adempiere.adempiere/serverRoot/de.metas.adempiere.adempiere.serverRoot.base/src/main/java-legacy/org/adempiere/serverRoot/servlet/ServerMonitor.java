@@ -19,13 +19,10 @@ package org.adempiere.serverRoot.servlet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
@@ -910,12 +907,9 @@ public class ServerMonitor extends HttpServlet
 			{
 				tr line = new tr();
 				line.addElement(new th().addElement("Trace File"));
-				
-				final String logFilePath = logFile.getAbsolutePath();
-				final a href = new a(NAME + "?Trace=" + encodeURLValue(logFilePath), logFile.getName());
+				final a href = new a(NAME + "?Trace=" + logFile, "Current");
 				href.setTarget("_blank");
-				href.setTitle(logFilePath);
-				line.addElement(new td().addElement(href).addElement(" (" + bytesToString(logFile.length()) + ")"));
+				line.addElement(new td().addElement(href));
 				table.addElement(line);
 			}
 
@@ -1016,7 +1010,7 @@ public class ServerMonitor extends HttpServlet
 			}
 
 			final String fileName = logFile.getAbsolutePath();
-			final a link = new a(NAME + "?Trace=" + encodeURLValue(fileName), logFile.getName());
+			final a link = new a(NAME + "?Trace=" + fileName, logFile.getName());
 			link.setTarget("_blank");
 			link.setTitle(fileName);
 			containerElement.addElement(link);
@@ -1027,19 +1021,6 @@ public class ServerMonitor extends HttpServlet
 		}
 
 		return containerElement;
-	}
-	
-	private static final String encodeURLValue(final String value)
-	{
-		try
-		{
-			return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			log.warn("Failed encoding '{}'. Returning it as is.", value, e);
-			return value;
-		}
 	}
 
 	private static final String bytesToString(final long sizeBytes)

@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_FreightCostDetail;
+import org.adempiere.pricing.exceptions.PriceListNotFoundException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -12,8 +13,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
-
-import de.metas.pricing.exceptions.PriceListNotFoundException;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -121,7 +120,13 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setM_PricingSystem_ID(I_C_Order order, boolean overridePricingSystem);
 
-	int retrievePriceListId(I_C_Order order, int pricingSystemIdOverride);
+	/**
+	 *
+	 * @param order
+	 * @return M_PriceList_ID
+	 * @see "<a href='http://dewiki908/mediawiki/index.php/Produktzulassung_Land_%282009_0027_G9%29'>(2009_0027_G9)<a>"
+	 */
+	int retrievePriceListId(I_C_Order order);
 
 	/**
 	 * Set Target Sales Document Type.
@@ -236,10 +241,4 @@ public interface IOrderBL extends ISingletonService
 	void updateOrderQtySums(I_C_Order order);
 
 	void updateDescriptionFromDocTypeTargetId(I_C_Order order);
-
-	/**
-	 * @param order
-	 * @return true if the order is a quotation (C_Order's C_DocType.docBaseType = SSO and DocSubType in ('OB' , 'ON' = Quotation or Proposal)
-	 */
-	boolean isQuotation(I_C_Order order);
 }

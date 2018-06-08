@@ -48,9 +48,6 @@ import ch.qos.logback.core.UnsynchronizedAppenderBase;
  * #L%
  */
 
-/**
- * Creates an {@link I_AD_Issue} for messages that are logged on level {@link Level#ERROR}.
- */
 public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
 {
 	public static final MetasfreshIssueAppender get()
@@ -70,7 +67,7 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 	private static final String NAME = "AD_ISSUE";
 
 	/** List of logger names which shall be ignored for AD_Issue reporting */
-	private final CopyOnWriteArraySet<String> skipIssueReporting_LoggerNames = new CopyOnWriteArraySet<>();
+	private final CopyOnWriteArraySet<String> skipIssueReporting_LoggerNames = new CopyOnWriteArraySet<String>();
 
 	/** List of Source Class Names which shall be ignored for AD_Issue reporting */
 	private final CopyOnWriteArraySet<String> skipIssueReporting_SourceClassNames = new CopyOnWriteArraySet<>();
@@ -88,6 +85,14 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 			return Boolean.TRUE; // enabled by default
 		}
 	};
+
+	/**************************************************************************
+	 * Constructor
+	 */
+	public MetasfreshIssueAppender()
+	{
+		super();
+	}
 
 	/** Temporary disable the issue reporting and returns an {@link IAutoCloseable} which will enable it back */
 	public final IAutoCloseable temporaryDisableIssueReporting()

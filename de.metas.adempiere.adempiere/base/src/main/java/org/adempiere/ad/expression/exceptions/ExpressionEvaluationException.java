@@ -6,10 +6,6 @@ import java.util.List;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.util.Check;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -23,11 +19,11 @@ import de.metas.i18n.TranslatableStringBuilder;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -94,12 +90,11 @@ public class ExpressionEvaluationException extends ExpressionException
 	}
 
 	@Override
-	protected ITranslatableString buildMessage()
+	protected String buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
-
-		final ITranslatableString originalMessage = getOriginalMessage();
-		if (!ImmutableTranslatableString.isBlank(originalMessage))
+		final StringBuilder message = new StringBuilder();
+		final String originalMessage = getOriginalMessage();
+		if (!Check.isEmpty(originalMessage))
 		{
 			message.append(originalMessage);
 		}
@@ -114,7 +109,7 @@ public class ExpressionEvaluationException extends ExpressionException
 
 			for (final IExpression<?> expression : expressions)
 			{
-				message.append("\n * ").appendObj(expression);
+				message.append("\n * ").append(expression);
 			}
 		}
 
@@ -123,6 +118,6 @@ public class ExpressionEvaluationException extends ExpressionException
 			message.append("\nPartial evaluated expression: ").append(partialEvaluatedExpression);
 		}
 
-		return message.build();
+		return message.toString();
 	}
 }

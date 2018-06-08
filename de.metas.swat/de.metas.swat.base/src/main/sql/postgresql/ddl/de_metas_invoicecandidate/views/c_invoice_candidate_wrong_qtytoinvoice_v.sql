@@ -12,9 +12,7 @@ SELECT
 	ic.UpdatedBy
 FROM C_Invoice_candidate ic 
 WHERE true 
-	AND ic.IsActive='Y'
-	AND (ic.updated + '00:10:00'::interval) < now() 
-	AND COALESCE(ic.processed_override, ic.processed) = 'N'
+	AND (ic.updated + '00:10:00'::interval) < now() AND COALESCE(ic.processed_override, ic.processed) = 'N'
 	AND ic.QTyToInvoice_Override IS NOT NULL 
 	AND ic.QTyToInvoice!=QTyToInvoice_Override
 	AND NOT EXISTS (select 1 from C_Invoice_Candidate_Recompute r where r.C_Invoice_Candidate_ID=ic.C_Invoice_Candidate_ID)

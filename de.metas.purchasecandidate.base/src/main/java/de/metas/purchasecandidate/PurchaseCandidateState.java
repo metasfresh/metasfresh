@@ -28,11 +28,12 @@ import lombok.Setter;
  */
 
 @Data
-class PurchaseCandidateState
+public class PurchaseCandidateState
 {
+	private boolean processed;
+
 	private final boolean locked;
 
-	private boolean processed;
 	@Setter(AccessLevel.NONE)
 	private boolean processedInitial;
 
@@ -46,16 +47,20 @@ class PurchaseCandidateState
 		this.locked = locked;
 	}
 
-	private PurchaseCandidateState(final PurchaseCandidateState from)
+	// don't use @lombok.AllArgsConstructor, because we might get the parameter ordering wrong.
+	private PurchaseCandidateState(
+			final boolean processed,
+			final boolean processedInitial,
+			final boolean locked)
 	{
-		this.processed = from.processed;
-		this.processedInitial = from.processedInitial;
-		this.locked = from.locked;
+		this.processed = processed;
+		this.processedInitial = processedInitial;
+		this.locked = locked;
 	}
 
-	public PurchaseCandidateState copy()
+	public PurchaseCandidateState createCopy()
 	{
-		return new PurchaseCandidateState(this);
+		return new PurchaseCandidateState(processed, processedInitial, locked);
 	}
 
 	public void setProcessed()

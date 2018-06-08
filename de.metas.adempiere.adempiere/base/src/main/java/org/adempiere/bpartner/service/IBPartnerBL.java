@@ -24,7 +24,6 @@ package org.adempiere.bpartner.service;
 
 import java.util.Properties;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -35,8 +34,6 @@ import de.metas.i18n.Language;
 
 public interface IBPartnerBL extends ISingletonService
 {
-	public String getBPartnerValueAndName(final BPartnerId bpartnerId);
-	
 	/**
 	 * make full address
 	 *
@@ -153,18 +150,4 @@ public interface IBPartnerBL extends ISingletonService
 	 * @task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
 	I_C_BPartner createFromTemplate(I_C_BPartner_QuickInput template);
-
-	/**
-	 * Retrieves the discount schema for the given BParnter. If the BPartner has none, it falls back to the partner's C_BP_Group.
-	 * If the partner has no group or that group hasn't a discount schema either, it returns <code>-1</code>.
-	 *
-	 * @param soTrx if <code>true</code>, the sales discount schema is returned, otherwise the purchase discount schema is returned.
-	 * @return partner's discount schema or -1
-	 */
-	int getDiscountSchemaId(I_C_BPartner bpartner, boolean soTrx);
-
-	/**
-	 * @return partner's discount schema or -1
-	 */
-	int getDiscountSchemaId(BPartnerId bpartnerId, boolean soTrx);
 }

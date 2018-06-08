@@ -41,7 +41,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -1125,25 +1124,14 @@ public class Viewer extends CFrame
 		final int AD_Table_ID = m_reportEngine.getPrintFormat().getAD_Table_ID();
 		
 		//	Get Find Tab Info
-		String sql = "SELECT t.AD_Tab_ID"
-				+ ", t." + I_AD_Tab.COLUMNNAME_Template_Tab_ID
-				// ,w.Name, t.Name, w.IsDefault, t.SeqNo, ABS (tt.AD_Window_ID-t.AD_Window_ID)
-				+ "FROM AD_Tab t"
-				+ " INNER JOIN AD_Window w ON (t.AD_Window_ID=w.AD_Window_ID)"
-				+ " INNER JOIN AD_Table tt ON (t.AD_Table_ID=tt.AD_Table_ID) "
-				+ "WHERE tt.AD_Table_ID=? "
-				+ "ORDER BY w.IsDefault DESC, t.SeqNo, ABS (tt.AD_Window_ID-t.AD_Window_ID)";
-		TabAndTemplateTabId tabAndTemplateTabId = DB.retrieveFirstRowOrNull(
-				sql,
-				Arrays.<Object> asList(AD_Table_ID),
-				rs -> TabAndTemplateTabId.builder()
-						.tabId(rs.getInt("AD_Tab_ID"))
-						.templateTabId(rs.getInt(I_AD_Tab.COLUMNNAME_Template_Tab_ID))
-						.build());
-		if(tabAndTemplateTabId == null)
-		{
-			tabAndTemplateTabId = TabAndTemplateTabId.NONE;
-		}
+		String sql = "SELECT t.AD_Tab_ID "
+			//	,w.Name, t.Name, w.IsDefault, t.SeqNo, ABS (tt.AD_Window_ID-t.AD_Window_ID)
+			+ "FROM AD_Tab t"
+			+ " INNER JOIN AD_Window w ON (t.AD_Window_ID=w.AD_Window_ID)"
+			+ " INNER JOIN AD_Table tt ON (t.AD_Table_ID=tt.AD_Table_ID) "
+			+ "WHERE tt.AD_Table_ID=? "
+			+ "ORDER BY w.IsDefault DESC, t.SeqNo, ABS (tt.AD_Window_ID-t.AD_Window_ID)";
+		final int AD_Tab_ID = DB.getSQLValue(ITrx.TRXNAME_None, sql, AD_Table_ID);
 
 		// ASP
 		final String ASPFilter = Services.get(IASPFiltersFactory.class)
@@ -1169,8 +1157,8 @@ public class Viewer extends CFrame
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, tabAndTemplateTabId.getTabId());
+			pstmt = DB.prepareStatement(sql, null);
+			pstmt.setInt(1, AD_Tab_ID);
 			rs = pstmt.executeQuery();
 			//
 			if (rs.next())
@@ -1192,22 +1180,17 @@ public class Viewer extends CFrame
 
 		GridField[] findFields = null;
 		if (tableName != null)
-		{
-			findFields = GridField.createSearchFields(m_ctx, m_WindowNo, 0, tabAndTemplateTabId.getTabId(), tabAndTemplateTabId.getTemplateTabId());
-		}
+			findFields = GridField.createSearchFields(m_ctx, m_WindowNo, 0, AD_Tab_ID);
 		
 		if (findFields == null)		//	No Tab for Table exists
-		{
 			bFind.setEnabled(false);
-		}
 		else
 		{
 			Find find = Find.builder()
 					.setParentFrame(this)
 					.setTargetWindowNo(m_WindowNo)
 					.setTitle(title)
-					.setAD_Tab_ID(tabAndTemplateTabId.getTabId())
-					.setTemplateTabId(tabAndTemplateTabId.getTemplateTabId())
+					.setAD_Tab_ID(AD_Tab_ID)
 					.setMaxQueryRecordsPerTab(maxQueryRecordsPerTab)
 					.setAD_Table_ID(AD_Table_ID)
 					.setTableName(tableName)
@@ -1335,15 +1318,5 @@ public class Viewer extends CFrame
 		m_reportEngine.setPrintFormat(MPrintFormat.get (Env.getCtx(), AD_PrintFormat_ID, true));
 		revalidateViewer();
 	}	//	cmd_translate
-	
-	@lombok.Builder
-	@lombok.Value
-	private static class TabAndTemplateTabId
-	{
-		static final TabAndTemplateTabId NONE = builder().build();
-		
-		int tabId;
-		int templateTabId;
-	}
 }	//	Viewer
 

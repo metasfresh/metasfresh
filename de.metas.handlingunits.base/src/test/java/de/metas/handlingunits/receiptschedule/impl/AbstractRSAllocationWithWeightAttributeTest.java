@@ -208,7 +208,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 			InterfaceWrapperHelper.setTrxName(tuHU, ITrx.TRXNAME_None); // FIXME workaround
 			for (final I_M_HU vhu : handlingUnitsDAO.retrieveIncludedHUs(tuHU))
 			{
-				final BigDecimal qtyToAllocate = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages().getQty();
+				final BigDecimal qtyToAllocate = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages();
 
 				final boolean deleteOldTUAllocations = false; // don't care; there shall be none
 				rsAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, uomKg, deleteOldTUAllocations);
@@ -238,7 +238,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 			boolean deleteOldTUAllocationsToUse = deleteOldTUAllocations;
 			for (final I_M_HU vhu : vhus)
 			{
-				final BigDecimal qtyToAllocate = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages().getQty();
+				final BigDecimal qtyToAllocate = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages();
 
 				rsAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, uomKg, deleteOldTUAllocationsToUse);
 				deleteOldTUAllocationsToUse = false;

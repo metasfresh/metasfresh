@@ -22,8 +22,7 @@ import javax.swing.JScrollPane;
 
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.AdempierePLAF;
-
-import de.metas.util.MFColor;
+import org.compiere.plaf.CompiereColor;
 
 /**
  *	Adempiere Srcoll Pane.
@@ -85,10 +84,10 @@ public class CScrollPane extends JScrollPane
 	 *  Set Background
 	 *  @param bg AdempiereColor for Background, if null set standard background
 	 */
-	public void setBackgroundColor (MFColor bg)
+	public void setBackgroundColor (CompiereColor bg)
 	{
 		if (bg == null)
-			bg = MFColor.ofFlatColor(AdempierePLAF.getFormBackground());
+			bg = new CompiereColor(AdempierePLAF.getFormBackground());
 		putClientProperty(AdempiereLookAndFeel.BACKGROUND, bg);
 	}   //  setBackground
 	

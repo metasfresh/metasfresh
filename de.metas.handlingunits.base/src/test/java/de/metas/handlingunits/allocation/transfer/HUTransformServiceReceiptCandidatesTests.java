@@ -54,7 +54,6 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -175,7 +174,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransformService.builderForHUcontext()
 				.huContext(data.helper.getHUContext()).build()
-				.cuToNewTUs(cuToSplit, Quantity.of(BigDecimal.ONE,data.helper.uomKg), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+				.cuToNewTUs(cuToSplit, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 
@@ -270,7 +269,7 @@ public class HUTransformServiceReceiptCandidatesTests
 				.huContext(data.helper.getHUContext())
 				.referencedObjects(ImmutableList.of(rs1TableRef, rs2TableRef))
 				.build()
-				.cuToExistingTU(cu2, Quantity.of(new BigDecimal("1.6"), data.helper.uomKg), existingTU);
+				.cuToExistingTU(cu2, new BigDecimal("1.6"), existingTU);
 
 		// secondCU is still there, with the remaining 1.4kg
 		final Node secondCUXML = HUXmlConverter.toXml(cu2);
@@ -363,7 +362,7 @@ public class HUTransformServiceReceiptCandidatesTests
 						rs1TableRef,
 						TableRecordReference.of(rs2)))
 				.build()
-				.cuToExistingTU(cu2, new Quantity(four, data.helper.uomKg), tuWithMixedCUs);
+				.cuToExistingTU(cu2, four, tuWithMixedCUs);
 
 		// data.helper.commitAndDumpHU(tuWithMixedCUs);
 		final Node tuWithMixedCUsXML = HUXmlConverter.toXml(tuWithMixedCUs);
@@ -481,7 +480,7 @@ public class HUTransformServiceReceiptCandidatesTests
 
 		// "Split off 5 CU on their own, without new TU"
 		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
-				.cuToNewCU(aggregateTU, new Quantity(BigDecimal.valueOf(5), data.helper.uomKg));
+				.cuToNewCU(aggregateTU, new BigDecimal("5"));
 		assertThat(newCUs.size(), is(1));
 		final I_M_HU newCU = newCUs.get(0);
 		// newCU does not have any TU component
@@ -517,7 +516,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		verifyQuantities(new BigDecimal("40"), new BigDecimal("9"), firstLU, aggregateTU, newCU, secondLU, singleNewTU);
 
 		// "Select the 5 CUs, Transform and put 1 CU on the free TU without LU"
-		HUTransformService.newInstance(data.helper.getHUContext()).cuToExistingTU(newCU, new Quantity(BigDecimal.ONE, data.helper.uomKg), singleNewTU);
+		HUTransformService.newInstance(data.helper.getHUContext()).cuToExistingTU(newCU, BigDecimal.ONE, singleNewTU);
 		// ..but all in all the qtys are unchanged
 		verifyQuantities(new BigDecimal("40"), new BigDecimal("9"), firstLU, aggregateTU, newCU, secondLU, singleNewTU);
 	}

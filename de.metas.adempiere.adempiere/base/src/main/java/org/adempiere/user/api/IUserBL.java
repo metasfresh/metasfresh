@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 
@@ -89,6 +90,22 @@ public interface IUserBL extends ISingletonService
 	String buildContactName(final String firstName, final String lastName);
 
 	/**
+	 * Get Notification via EMail
+	 *
+	 * @return true if email
+	 */
+	boolean isNotificationEMail(I_AD_User user);
+
+	/**
+	 * Get Notification via <code>AD_Note</code>
+	 *
+	 * @return true if note
+	 */
+	boolean isNotificationNote(I_AD_User user);
+
+	boolean isNotifyUserIncharge(I_AD_User recipient);
+
+	/**
 	 * Is the email valid
 	 *
 	 * @return return true if email is valid (artificial check)
@@ -101,15 +118,16 @@ public interface IUserBL extends ISingletonService
 	 * @return <code>null</code> if OK, error message if not ok
 	 */
 	ITranslatableString checkCanSendEMail(I_AD_User user);
-
+	
 	ITranslatableString checkCanSendEMail(int adUserId);
-
+	
 	default void assertCanSendEMail(final int adUserId)
 	{
-		final ITranslatableString errmsg = checkCanSendEMail(adUserId);
-		if (errmsg != null)
+		final ITranslatableString errmsg = Services.get(IUserBL.class).checkCanSendEMail(adUserId);
+		if(errmsg != null)
 		{
-			throw new AdempiereException("User cannot send emails: " + errmsg.translate(Env.getAD_Language(Env.getCtx())));
-		}
+			throw new AdempiereException("User cannot send emails: "+errmsg.translate(Env.getAD_Language(Env.getCtx())));
+}
 	}
+
 }

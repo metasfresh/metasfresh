@@ -8,30 +8,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_Order;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderAndLineId;
-import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
-import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 
@@ -57,8 +44,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseOrderFromItemsAggregatorTest
 {
 
@@ -76,31 +61,30 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final I_C_Order salesOrder = newInstance(I_C_Order.class);
 		save(salesOrder);
 
-		// needed to construct the user notification message
+		// neede to construct the user notification message
 		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
-		vendor.setValue("Vendor");
-		vendor.setName("Vendor");
 		save(vendor);
 
-		final ProductId productId = ProductId.ofRepoId(20);
+		final int productId = 20;
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.id(VendorProductInfoId.ofRepoId(10))
+				.bPartnerProductId(10)
 				.productId(productId)
-				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
+				.vendorBPartnerId(vendor.getC_BPartner_ID())
 				.productName("productName")
 				.productNo("productNo").build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.orgId(OrgId.ofRepoId(10))
-				.dateRequired(SystemTime.asLocalDateTime())
+				.orgId(10)
+				.dateRequired(SystemTime.asTimestamp())
 				.vendorProductInfo(vendorProductInfo)
+				.vendorBPartnerId(vendor.getC_BPartner_ID())
 				.productId(productId)
 				.qtyToPurchase(TEN)
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
-				.warehouseId(WarehouseId.ofRepoId(60))
+				.salesOrderId(salesOrder.getC_Order_ID())
+				.salesOrderLineId(50)
+				.warehouseId(60)
 				.uomId(70)
-				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();
 
 		final PurchaseOrderFromItemsAggregator aggregator = PurchaseOrderFromItemsAggregator.newInstance();
@@ -108,7 +92,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		Services.get(ITrxManager.class).run(() -> {
 			aggregator.add(PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
-					.datePromised(SystemTime.asLocalDateTime())
+					.datePromised(SystemTime.asTimestamp())
 					.purchasedQty(TEN)
 					.remotePurchaseOrderId(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID)
 					.build());

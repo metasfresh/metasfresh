@@ -17,9 +17,9 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.security.IRoleDAO;
@@ -95,7 +95,7 @@ public class MAlert extends X_AD_Alert
 		List <MAlertRule> list = new Query(getCtx(), MAlertRule.Table_Name, whereClause, null)
 			.setParameters(new Object[]{getAD_Alert_ID()})
 			.setOrderBy("Name, AD_AlertRule_ID")
-			.list(MAlertRule.class)
+			.list()
 		;
 		for (int i = 0; i < list.size(); i ++) {
 			MAlertRule rule = list.get( i );
@@ -120,7 +120,8 @@ public class MAlert extends X_AD_Alert
 		String whereClause = "AD_Alert_ID=?";
 		List <MAlertRecipient> list = new Query(getCtx(), MAlertRecipient.Table_Name, whereClause, null)
 			.setParameters(new Object[]{getAD_Alert_ID()})
-			.list(MAlertRecipient.class);
+			.list()
+		;
 		//
 		m_recipients = new MAlertRecipient[ list.size() ];
 		m_recipients = list.toArray (m_recipients);
@@ -176,9 +177,9 @@ public class MAlert extends X_AD_Alert
 	/**
 	 * @return unique list of recipient users
 	 */
-	public Set<Integer> getRecipientUsers() {
+	public Collection<Integer> getRecipientUsers() {
 		MAlertRecipient[] recipients = getRecipients(false);
-		TreeSet<Integer> users = new TreeSet<>();
+		TreeSet<Integer> users = new TreeSet<Integer>();
 		for (int i = 0; i < recipients.length; i++)
 		{
 			MAlertRecipient recipient = recipients[i];

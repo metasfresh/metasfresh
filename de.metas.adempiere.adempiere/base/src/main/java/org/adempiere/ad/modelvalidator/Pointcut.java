@@ -35,9 +35,6 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /* package */final class Pointcut implements IPointcut, Comparable<Pointcut>
 {
 	private final String pointcutId;
@@ -53,9 +50,6 @@ import lombok.Setter;
 	private Set<String> ignoredColumns = ImmutableSet.of();
 	private volatile Set<String> columnsToCheckForChanges = null;
 	private boolean onlyIfUIAction = false;
-	@Getter
-	@Setter
-	private boolean skipIfCopying = false;
 
 	public Pointcut(final PointcutType type, final Method method, final int[] timings, final boolean afterCommit)
 	{

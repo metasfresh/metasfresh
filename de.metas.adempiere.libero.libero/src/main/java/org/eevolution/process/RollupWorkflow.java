@@ -177,7 +177,7 @@ public class RollupWorkflow extends JavaProcess
 
 	private Collection<MProduct> getProducts()
 	{
-		List<Object> params = new ArrayList<>();
+		List<Object> params = new ArrayList<Object>();
 		StringBuffer whereClause = new StringBuffer("AD_Client_ID=?");
 		params.add(getAD_Client_ID());
 
@@ -201,7 +201,7 @@ public class RollupWorkflow extends JavaProcess
 		Collection<MProduct> products = new Query(getCtx(),MProduct.Table_Name, whereClause.toString(), get_TrxName())
 											.setOrderBy(MProduct.COLUMNNAME_LowLevel)
 											.setParameters(params)
-											.list(MProduct.class);
+											.list();
 		return products;
 	}
 

@@ -5,37 +5,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
-import de.metas.order.OrderAndLineId;
 import de.metas.order.event.OrderUserNotifications;
-import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.model.I_C_Order;
-import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
-import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -62,11 +50,9 @@ import mockit.Verifications;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseOrderFromItemFactoryTest
 {
-	private static final LocalDateTime PURCHASE_CANDIDATE_DATE_REQUIRED = SystemTime.asLocalDateTime();
+	private static final Timestamp PURCHASE_CANDIDATE_DATE_REQUIRED = SystemTime.asDayTimestamp();
 
 	private static final BigDecimal PURCHASE_CANDIDATE_QTY_TO_PURCHASE = BigDecimal.TEN;
 
@@ -82,7 +68,7 @@ public class PurchaseOrderFromItemFactoryTest
 	@Test
 	public void deviatingDatePromised()
 	{
-		final LocalDateTime deviatingDatePromised = PURCHASE_CANDIDATE_DATE_REQUIRED.plusDays(1);
+		final Timestamp deviatingDatePromised = TimeUtil.addDays(PURCHASE_CANDIDATE_DATE_REQUIRED, 1);
 
 		setAndRunMethodUnderTest(deviatingDatePromised, PURCHASE_CANDIDATE_QTY_TO_PURCHASE);
 
@@ -92,10 +78,10 @@ public class PurchaseOrderFromItemFactoryTest
 			NotificationRequest request;
 			orderUserNotifications.notifyOrderCompleted(request = withCapture()); times = 1;
 
-			final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
+			final IPair<String, Object[]> adMessageAndParams = request.getAdMessageAndParams();
 			assertThat(adMessageAndParams).isNotNull();
-			assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_DatePromised);
-			assertThat(adMessageAndParams.getParams()).hasSize(3);
+			assertThat(adMessageAndParams.getLeft()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_DatePromised);
+			assertThat(adMessageAndParams.getRight()).hasSize(3);
 		}};	// @formatter:on
 	}
 
@@ -112,10 +98,10 @@ public class PurchaseOrderFromItemFactoryTest
 			NotificationRequest request;
 			orderUserNotifications.notifyOrderCompleted(request = withCapture()); times = 1;
 
-			final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
+			final IPair<String, Object[]> adMessageAndParams = request.getAdMessageAndParams();
 			assertThat(adMessageAndParams).isNotNull();
-			assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity);
-			assertThat(adMessageAndParams.getParams()).hasSize(3);
+			assertThat(adMessageAndParams.getLeft()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity);
+			assertThat(adMessageAndParams.getRight()).hasSize(3);
 		}};	// @formatter:on
 	}
 
@@ -123,7 +109,7 @@ public class PurchaseOrderFromItemFactoryTest
 	public void deviatingPurchasedQtyAndDatePrmised()
 	{
 		final BigDecimal deviatingPurchasedQty = PURCHASE_CANDIDATE_QTY_TO_PURCHASE.subtract(BigDecimal.ONE);
-		final LocalDateTime deviatingDatePromised = PURCHASE_CANDIDATE_DATE_REQUIRED.plusDays(1);
+		final Timestamp deviatingDatePromised = TimeUtil.addDays(PURCHASE_CANDIDATE_DATE_REQUIRED, 1);
 
 		setAndRunMethodUnderTest(deviatingDatePromised, deviatingPurchasedQty);
 
@@ -133,14 +119,14 @@ public class PurchaseOrderFromItemFactoryTest
 			NotificationRequest request;
 			orderUserNotifications.notifyOrderCompleted(request = withCapture()); times = 1;
 
-			final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
+			final IPair<String, Object[]> adMessageAndParams = request.getAdMessageAndParams();
 			assertThat(adMessageAndParams).isNotNull();
-			assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity_AND_DatePromised);
-			assertThat(adMessageAndParams.getParams()).hasSize(3);
+			assertThat(adMessageAndParams.getLeft()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity_AND_DatePromised);
+			assertThat(adMessageAndParams.getRight()).hasSize(3);
 		}};	// @formatter:on
 	}
 
-	private void setAndRunMethodUnderTest(final LocalDateTime deviatingDatePromised, final BigDecimal deviatingPurchasedQty)
+	private void setAndRunMethodUnderTest(final Timestamp deviatingDatePromised, final BigDecimal deviatingPurchasedQty)
 	{
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate();
 
@@ -154,7 +140,7 @@ public class PurchaseOrderFromItemFactoryTest
 		Services.get(ITrxManager.class).run(() -> {
 
 			final PurchaseOrderFromItemFactory purchaseOrderFromItemFactory = PurchaseOrderFromItemFactory.builder()
-					.orderAggregationKey(PurchaseOrderAggregationKey.fromPurchaseOrderItem(pruchaseOrderItem))
+					.orderAggregationKey(PurchaseOrderAggregationKey.formPurchaseOrderItem(pruchaseOrderItem))
 					.userNotifications(orderUserNotifications)
 					.build();
 
@@ -178,20 +164,21 @@ public class PurchaseOrderFromItemFactoryTest
 		save(salesOrderLine);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.id(VendorProductInfoId.ofRepoId(10))
-				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
-				.productId(ProductId.ofRepoId(20))
+				.bPartnerProductId(10)
+				.vendorBPartnerId(vendor.getC_BPartner_ID())
+				.productId(20)
 				.productName("productName")
 				.productNo("productNo")
 				.build();
 		return PurchaseCandidate.builder()
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
-				.orgId(OrgId.ofRepoId(3))
-				.warehouseId(WarehouseId.ofRepoId(4))
-				.productId(ProductId.ofRepoId(5))
+				.salesOrderId(salesOrder.getC_Order_ID())
+				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
+				.orgId(3)
+				.warehouseId(4)
+				.productId(5)
 				.uomId(6)
+				.vendorBPartnerId(7)
 				.vendorProductInfo(vendorProductInfo)
-				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)
 				.dateRequired(PURCHASE_CANDIDATE_DATE_REQUIRED)
 				.processed(false)

@@ -29,11 +29,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -221,7 +221,7 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 
 		return false;
 	}
-
+	
 	@Override
 	public boolean isNull(final Object model, final String columnName)
 	{
@@ -242,14 +242,14 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 	}
 
 	@Override
-	public <T extends PO> T getPO(final Object model, final boolean strict)
+	public <T extends PO> T getPO(Object model, boolean strict)
 	{
 		if (strict)
 		{
 			return null;
 		}
-
-		if (model instanceof GridTab)
+		
+		if(model instanceof GridTab)
 		{
 			final GridTab gridTab = (GridTab)model;
 			return GridTabWrapper.getPO(Env.getCtx(), gridTab);
@@ -263,16 +263,10 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 
 		return wrapper.getPO();
 	}
-
+	
 	@Override
-	public Evaluatee getEvaluatee(final Object model)
+	public Evaluatee getEvaluatee(Object model)
 	{
 		return GridTabWrapper.getGridTab(model);
-	}
-
-	@Override
-	public boolean isCopy(final Object model)
-	{
-		return GridTabWrapper.getGridTab(model).getTableModel().isRecordCopyingMode();
 	}
 }

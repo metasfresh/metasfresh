@@ -31,11 +31,9 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Assert;
 
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.HUAndItemsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -69,7 +67,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 
 		if (_piItem != null)
 		{
-			assertModelEquals(prefix + "PI Item", _piItem, Services.get(IHandlingUnitsBL.class).getPIItem(huItem));
+			assertModelEquals(prefix + "PI Item", _piItem, huItem.getM_HU_PI_Item());
 		}
 
 		if (_itemType != null)
@@ -85,7 +83,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 
 		if (_packingMaterial != null)
 		{
-			assertThat(prefix + "PackingMaterial", _packingMaterial, is(Services.get(IHandlingUnitsBL.class).getHUPackingMaterial(huItem)));
+			assertThat(prefix + "PackingMaterial", _packingMaterial, is(huItem.getM_HU_PackingMaterial()));
 		}
 
 		if (includedHUExpectations != null)

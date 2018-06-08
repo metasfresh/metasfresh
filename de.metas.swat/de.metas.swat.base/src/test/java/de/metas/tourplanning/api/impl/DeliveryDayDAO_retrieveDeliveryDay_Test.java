@@ -1,7 +1,5 @@
 package de.metas.tourplanning.api.impl;
 
-import java.time.LocalDate;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -46,7 +44,7 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 	protected void afterInit()
 	{
 		tour = createTour("tour01");
-		tourVersion = createTourVersion(tour, LocalDate.of(2014, 1, 1));
+		tourVersion = createTourVersion(tour, createDate("2014-01-01"));
 		bpartner = createBPartner("bp1");
 		bpLocation = createBPLocation(bpartner);
 	}
@@ -107,6 +105,7 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 		testRetrieveDeliveryDay(dd3, "11.09.2014 23:59:59.999");
 	}
 
+	
 	private IDeliveryDayQueryParams createDeliveryDayQueryParams(final String deliveryDateStr)
 	{
 		final PlainDeliveryDayQueryParams params = new PlainDeliveryDayQueryParams();

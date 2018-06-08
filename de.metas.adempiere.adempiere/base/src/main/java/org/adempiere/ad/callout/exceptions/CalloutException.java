@@ -10,14 +10,14 @@ package org.adempiere.ad.callout.exceptions;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,7 +31,7 @@ public class CalloutException extends AdempiereException
 {
 
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 2766621229698377244L;
 
@@ -40,26 +40,19 @@ public class CalloutException extends AdempiereException
 
 	private ICalloutField field;
 
-	public CalloutException(final String message, final Throwable cause)
+	public CalloutException(String message, Throwable cause)
 	{
 		super(message, cause);
 	}
 
-	public CalloutException(final String message)
+	public CalloutException(String message)
 	{
 		super(message);
 	}
 
-	public CalloutException(final Throwable cause)
+	public CalloutException(Throwable cause)
 	{
 		super(cause);
-	}
-
-	@Override
-	public CalloutException setParameter(final String name, final Object value)
-	{
-		super.setParameter(name, value);
-		return this;
 	}
 
 	public ICalloutInstance getCalloutInstance()
@@ -67,18 +60,17 @@ public class CalloutException extends AdempiereException
 		return calloutInstance;
 	}
 
-	public CalloutException setCalloutInstance(final ICalloutInstance calloutInstance)
+	public CalloutException setCalloutInstance(ICalloutInstance calloutInstance)
 	{
 		this.calloutInstance = calloutInstance;
-		setParameter("calloutInstance", calloutInstance);
 		return this;
 	}
 
-	public CalloutException setCalloutInstanceIfAbsent(final ICalloutInstance calloutInstance)
+	public CalloutException setCalloutInstanceIfAbsent(ICalloutInstance calloutInstance)
 	{
 		if (this.calloutInstance == null)
 		{
-			setCalloutInstance(calloutInstance);
+			this.calloutInstance = calloutInstance;
 		}
 		return this;
 	}
@@ -88,17 +80,17 @@ public class CalloutException extends AdempiereException
 		return calloutExecutor;
 	}
 
-	public CalloutException setCalloutExecutor(final ICalloutExecutor calloutExecutor)
+	public CalloutException setCalloutExecutor(ICalloutExecutor calloutExecutor)
 	{
 		this.calloutExecutor = calloutExecutor;
 		return this;
 	}
 
-	public CalloutException setCalloutExecutorIfAbsent(final ICalloutExecutor calloutExecutor)
+	public CalloutException setCalloutExecutorIfAbsent(ICalloutExecutor calloutExecutor)
 	{
 		if (this.calloutExecutor == null)
 		{
-			setCalloutExecutor(calloutExecutor);
+			this.calloutExecutor = calloutExecutor;
 		}
 		return this;
 	}
@@ -106,7 +98,6 @@ public class CalloutException extends AdempiereException
 	public CalloutException setField(final ICalloutField field)
 	{
 		this.field = field;
-		setParameter("field", field);
 		return this;
 	}
 
@@ -114,7 +105,7 @@ public class CalloutException extends AdempiereException
 	{
 		if (this.field == null)
 		{
-			setField(field);
+			this.field = field;
 		}
 		return this;
 	}

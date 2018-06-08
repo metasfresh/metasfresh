@@ -52,9 +52,7 @@ public interface IHUInOutDAO extends ISingletonService
 	 * @param hu
 	 * @return
 	 */
-	I_M_InOutLine retrieveCompletedReceiptLineOrNull(I_M_HU hu);
-	
-	List<I_M_InOutLine> retrieveInOutLinesForHU(I_M_HU topLevelHU);
+	I_M_InOutLine retrieveInOutLineOrNull(I_M_HU hu);
 
 	/**
 	 * Retrieve the handling units assigned to the lines of a given inout if and only if they have status shipped.
@@ -63,6 +61,4 @@ public interface IHUInOutDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_HU> retrieveShippedHandlingUnits(I_M_InOut inOut);
-
-	List<I_M_HU> retrieveHUsForReceiptLineId(int receiptLineId);
 }

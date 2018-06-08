@@ -35,7 +35,6 @@ import org.adempiere.exceptions.DBException;
  *         https://sourceforge.net/tracker/?func=detail&aid=2818646&group_id=176962&atid=879335
  * @author Redhuan D. Oon <li>FR: [ 2214883 ] Remove SQL code and Replace for Query // introducing SQL String prompt in log.info <li>FR: [ 2214883 ] - to introduce .setClient_ID
  */
-@Deprecated
 public class Query extends TypedSqlQuery<Object>
 {
 	@SuppressWarnings("deprecation")
@@ -98,9 +97,10 @@ public class Query extends TypedSqlQuery<Object>
 	}
 
 	@Override
-	public List<Object> list() throws DBException
+	public <ET> List<ET> list() throws DBException
 	{
-		return super.list();
+		final List<ET> result = super.list();
+		return result;
 	}
 
 	@Override

@@ -884,6 +884,31 @@ public interface I_AD_User
     public static final String COLUMNNAME_IsLoginAsHostKey = "IsLoginAsHostKey";
 
 	/**
+	 * Set Mengenmeldung App.
+	 * Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsMFProcurementUser (boolean IsMFProcurementUser);
+
+	/**
+	 * Get Mengenmeldung App.
+	 * Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isMFProcurementUser();
+
+    /** Column definition for IsMFProcurementUser */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsMFProcurementUser = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsMFProcurementUser", null);
+    /** Column name IsMFProcurementUser */
+    public static final String COLUMNNAME_IsMFProcurementUser = "IsMFProcurementUser";
+
+	/**
 	 * Set Einkaufskontakt.
 	 *
 	 * <br>Type: YesNo
@@ -1045,31 +1070,6 @@ public interface I_AD_User
     public static final String COLUMNNAME_Lastname = "Lastname";
 
 	/**
-	 * Set Memo.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMemo (java.lang.String Memo);
-
-	/**
-	 * Get Memo.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMemo();
-
-    /** Column definition for Memo */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Memo", null);
-    /** Column name Memo */
-    public static final String COLUMNNAME_Memo = "Memo";
-
-	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
@@ -1121,6 +1121,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Kennwort.
+	 * Password of any length (case sensitive)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1130,6 +1131,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Kennwort.
+	 * Password of any length (case sensitive)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

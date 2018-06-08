@@ -9,7 +9,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Services;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -51,7 +50,7 @@ import lombok.experimental.UtilityClass;
 				queryBL.createQueryBuilder(I_MD_Candidate_Stock_v.class);
 
 		// Date
-		queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, TimeUtil.asTimestamp(query.getDate()));
+		queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, query.getDate());
 
 		// Warehouse
 		final Set<Integer> warehouseIds = query.getWarehouseIds();

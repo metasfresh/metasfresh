@@ -1,12 +1,5 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -55,10 +48,12 @@ import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.MPriceList;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
@@ -86,9 +81,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.pricing.service.IPriceListDAO;
 import de.metas.workflow.api.IWFExecutionFactory;
 
 public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
@@ -198,7 +191,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// If there were no lines generated, delete the invoice because it's pointless to have it.
 			if (lines.isEmpty())
 			{
-				delete(invoice);
+				InterfaceWrapperHelper.delete(invoice);
 				return;
 			}
 
@@ -226,7 +219,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			//
 			// Set the created invoice which will be retrieved by the caller.
-			createdInvoice = create(invoice, I_C_Invoice.class);
+			createdInvoice = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 		}
 
 		@Override
@@ -281,9 +274,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// => start creating the invoice from Order
 			if (createInvoiceFromOrder && invoiceHeader.getC_Order_ID() > 0)
 			{
-				final I_C_Order order = create(ctx, invoiceHeader.getC_Order_ID(), I_C_Order.class, trxName);
+				final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceHeader.getC_Order_ID(), I_C_Order.class, trxName);
 
-				invoice = create(
+				invoice = InterfaceWrapperHelper.create(
 						invoiceBL.createInvoiceFromOrder(
 								order,
 								// C_DocTypeTarget_ID => get it from Order Doc Type
@@ -297,7 +290,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// Validate M_PriceList_ID
 				final int invoicePriceListId = invoice.getM_PriceList_ID();
 				Check.assume(
-						invoicePriceListId == IPriceListDAO.M_PriceList_ID_None || invoicePriceListId == order.getM_PriceList_ID(),
+						invoicePriceListId == MPriceList.M_PriceList_ID_None || invoicePriceListId == order.getM_PriceList_ID(),
 						"M_PriceList_ID=" + invoicePriceListId + " is inconsistent with the M_PriceList_ID of " + order);
 			}
 			//
@@ -305,7 +298,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// => start creating the invoice from scratch
 			else
 			{
-				invoice = create(ctx, I_C_Invoice.class, trxName);
+				invoice = InterfaceWrapperHelper.create(ctx, I_C_Invoice.class, trxName);
 				invoice.setC_PaymentTerm_ID(invoiceHeader.getC_PaymentTerm_ID());
 
 				invoice.setAD_Org_ID(invoiceHeader.getAD_Org_ID());
@@ -350,7 +343,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			//
 			// Save and return the invoice
-			save(invoice);
+			InterfaceWrapperHelper.save(invoice);
 			return invoice;
 		}
 
@@ -493,8 +486,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				if (cand.getSplitAmt().signum() != 0)
 				{
-					final I_C_Invoice_Candidate splitCand = invoiceCandBL.splitCandidate(cand);
-					saveRecord(splitCand);
+					invoiceCandBL.splitCandidate(cand, localTrxName);
 				}
 
 				wfExecutionFactory.notifyActivityPerformed(cand, invoice); // 03745
@@ -534,7 +526,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					//
 					// Special case: we can retain the 1:n relation between C_OrderLine and C_InvoiceLine
-					final I_C_OrderLine orderLine = create(ilCtx, orderLineId, I_C_OrderLine.class, ilTrxName);
+					final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ilCtx, orderLineId, I_C_OrderLine.class, ilTrxName);
 
 					//
 					// Note that this also sets the order line's C_Tax_ID
@@ -562,7 +554,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					// Note: further down, we also deal with the case of iciolIds.size()>1
 					final int iciolId = iciolIds.iterator().next();
-					final I_C_InvoiceCandidate_InOutLine iciol = create(ilCtx, iciolId, I_C_InvoiceCandidate_InOutLine.class, ilTrxName);
+					final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.create(ilCtx, iciolId, I_C_InvoiceCandidate_InOutLine.class, ilTrxName);
 					invoiceLine.setM_InOutLine_ID(iciol.getM_InOutLine_ID());
 
 					// we rely on MInvoice.complete() to create the M_MatchInv record for PO and SO-Invoices, so don't create them again here.
@@ -626,7 +618,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					//
 					// Actually save the invoice line
-					save(invoiceLine);
+					InterfaceWrapperHelper.save(invoiceLine);
 
 					//
 					// Create/Update "invoice line" to "invoice candidate" allocations
@@ -692,12 +684,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private void set_QtyAndPriceOverrideToNull(final int invoiceCandidate_ID)
 		{
 
-			final I_C_Invoice_Candidate ic = create(Env.getCtx(), invoiceCandidate_ID, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
+			final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(Env.getCtx(), invoiceCandidate_ID, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
 
 			ic.setQtyToInvoice_Override(null);
 			ic.setPriceEntered_Override(null);
 
-			save(ic);
+			InterfaceWrapperHelper.save(ic);
 
 		}
 
@@ -710,9 +702,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 
 			// Create ASI
-			final I_M_AttributeSetInstance asi = create(getCtx(), I_M_AttributeSetInstance.class, getTrxName());
+			final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(getCtx(), I_M_AttributeSetInstance.class, getTrxName());
 			asi.setM_AttributeSet_ID(AttributeConstants.M_AttributeSet_ID_None);
-			save(asi);
+			InterfaceWrapperHelper.save(asi);
 
 			// Create one Attribute Instance for each invoice line attribute
 			for (final IInvoiceLineAttribute invoiceLineAttribute : invoiceLineAttributes)
@@ -725,12 +717,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		private final void createAttributeInstance(final I_M_AttributeSetInstance asi, final IInvoiceLineAttribute invoiceLineAttribute)
 		{
-			final I_M_AttributeInstance ai = newInstance(I_M_AttributeInstance.class, asi);
-			copyValues(invoiceLineAttribute.getAttributeInstanceTemplate(), ai);
+			final I_M_AttributeInstance ai = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
+			InterfaceWrapperHelper.copyValues(invoiceLineAttribute.getAttributeInstanceTemplate(), ai);
 			ai.setAD_Org_ID(asi.getAD_Org_ID());
 			ai.setM_AttributeSetInstance(asi);
 			ai.setIsActive(true);
-			save(ai);
+			InterfaceWrapperHelper.save(ai);
 		}
 
 		@Override
@@ -964,12 +956,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final I_AD_Note note;
 				if (userId != USERINCHARGE_NA)
 				{
-					note = create(ctx, I_AD_Note.class, trxName);
+					note = InterfaceWrapperHelper.create(ctx, I_AD_Note.class, trxName);
 					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P));
 
 					note.setAD_User_ID(userId);
 
-					final I_AD_User user = create(ctx, userId, I_AD_User.class, trxName);
+					final I_AD_User user = InterfaceWrapperHelper.create(ctx, userId, I_AD_User.class, trxName);
 					note.setAD_Org_ID(user.getAD_Org_ID());
 					note.setAD_User_ID(user.getAD_Client_ID());
 
@@ -990,7 +982,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 							MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P,
 							new Object[] { candidates.toString() });
 					note.setTextMsg(noteMsg);
-					save(note);
+					InterfaceWrapperHelper.save(note);
 					// @formatter:off
 					// for the time being, always output the warning, because we don't currently use the AD_Note feature and therefore the note wont be read.
 //					if (developerModeBL.isEnabled())
@@ -1015,7 +1007,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					final String candErrorMsg = error.getLocalizedMessage();
 
 					invoiceCandBL.setError(currentAffectedCand, candErrorMsg, note);
-					save(currentAffectedCand);
+					InterfaceWrapperHelper.save(currentAffectedCand);
 				}
 
 				if (note != null)

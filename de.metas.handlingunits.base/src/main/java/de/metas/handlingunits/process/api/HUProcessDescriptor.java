@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.adempiere.util.Check;
-import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -41,19 +40,12 @@ import lombok.Value;
 public class HUProcessDescriptor
 {
 	private final int processId;
-
-	private final boolean provideAsUserAction;
-
-	private final boolean acceptOnlyTopLevelHUs;
-
 	@Getter(AccessLevel.NONE)
 	private final ImmutableSet<String> acceptHUUnitTypes;
 
 	@Builder
 	private HUProcessDescriptor(
 			final int processId,
-			final Boolean provideAsUserAction,
-			final Boolean acceptOnlyTopLevelHUs,
 			@Singular final Set<String> acceptHUUnitTypes)
 	{
 		Check.assume(processId > 0, "processId > 0");
@@ -61,9 +53,6 @@ public class HUProcessDescriptor
 
 		this.processId = processId;
 		this.acceptHUUnitTypes = ImmutableSet.copyOf(acceptHUUnitTypes);
-
-		this.provideAsUserAction = Util.coalesce(provideAsUserAction, true);
-		this.acceptOnlyTopLevelHUs = Util.coalesce(acceptOnlyTopLevelHUs, false);
 	}
 
 	public boolean appliesToHUUnitType(@NonNull final String huUnitType)

@@ -5,7 +5,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
 
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -32,7 +31,6 @@ import lombok.ToString;
  */
 
 @ToString
-@EqualsAndHashCode
 public class ForwardingTranslatableString implements ITranslatableString
 {
 	public static final ForwardingTranslatableString of(final Supplier<ITranslatableString> delegateSupplier)

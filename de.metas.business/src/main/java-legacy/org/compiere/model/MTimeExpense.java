@@ -36,7 +36,6 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
-import de.metas.pricing.service.IPriceListDAO;
 
 /**
  * 	Time + Expense Model
@@ -119,7 +118,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		}
 		//
 		int C_Currency_ID = getC_Currency_ID();
-		ArrayList<MTimeExpenseLine> list = new ArrayList<>();
+		ArrayList<MTimeExpenseLine> list = new ArrayList<MTimeExpenseLine>();
 		//
 		String sql = "SELECT * FROM S_TimeExpenseLine WHERE S_TimeExpense_ID=? ORDER BY Line";
 		PreparedStatement pstmt = null;
@@ -601,7 +600,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 	@Override
 	public int getC_Currency_ID()
 	{
-		final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(getM_PriceList_ID());
+		MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID(), get_TrxName());
 		return pl.getC_Currency_ID();
 	}	//	getC_Currency_ID
 

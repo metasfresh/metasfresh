@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
@@ -29,9 +31,7 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -49,6 +49,35 @@ public class MTax extends X_C_Tax
 	private static final long serialVersionUID = 4140382472528327237L;
 
 
+	/**
+	 * 	Get All Tax codes (for AD_Client)
+	 *	@param ctx context
+	 *	@return MTax
+	 */
+	public static MTax[] getAll (Properties ctx)
+	{
+		int AD_Client_ID = Env.getAD_Client_ID(ctx);
+		MTax[] retValue = s_cacheAll.get(AD_Client_ID);
+		if (retValue != null)
+			return retValue;
+
+		//	Create it
+		//FR: [ 2214883 ] Remove SQL code and Replace for Query - red1
+		String whereClause = "AD_Client_ID=?";
+		List<MTax> list = new Query(ctx, MTax.Table_Name, whereClause, null)
+								.setParameters(new Object[]{AD_Client_ID})
+								.setOrderBy("C_Country_ID, C_Region_ID, To_Country_ID, To_Region_ID")
+								.list();
+		for (MTax tax : list)
+		{
+			s_cache.put(tax.get_ID(), tax);
+		}
+		retValue = list.toArray(new MTax[list.size()]);
+		s_cacheAll.put(AD_Client_ID, retValue);
+		return retValue;
+	}	//	getAll
+
+	
 	/**
 	 * 	Get Tax from Cache
 	 *	@param ctx context
@@ -73,15 +102,23 @@ public class MTax extends X_C_Tax
 	}	//	get
 
 	/**	Cache						*/
-	private static final CCache<Integer,MTax> s_cache = new CCache<>(Table_Name, 5);
+	private static CCache<Integer,MTax>		s_cache	= new CCache<Integer,MTax>(Table_Name, 5);
+	/**	Cache of Client						*/
+	private static CCache<Integer,MTax[]>	s_cacheAll = new CCache<Integer,MTax[]>(Table_Name, 5);
 	/**	Static Logger	*/
-	private static final Logger s_log = LogManager.getLogger(MTax.class);
+	private static Logger	s_log	= LogManager.getLogger(MTax.class);
 
 	
+	/**************************************************************************
+	 * 	Standard Constructor
+	 *	@param ctx context
+	 *	@param C_Tax_ID id
+	 *	@param trxName transaction
+	 */
 	public MTax (Properties ctx, int C_Tax_ID, String trxName)
 	{
 		super (ctx, C_Tax_ID, trxName);
-		if (is_new())
+		if (C_Tax_ID == 0)
 		{
 		//	setC_Tax_ID (0);		PK
 			setIsDefault (false);
@@ -89,7 +126,7 @@ public class MTax extends X_C_Tax
 			setIsSummary (false);
 			setIsTaxExempt (false);
 		//	setName (null);
-			setRate (BigDecimal.ZERO);
+			setRate (Env.ZERO);
 			setRequiresTaxCertificate (false);
 		//	setC_TaxCategory_ID (0);	//	FK
 			setSOPOType (SOPOTYPE_Both);
@@ -98,6 +135,12 @@ public class MTax extends X_C_Tax
 		}
 	}	//	MTax
 
+	/**
+	 * 	Load Constructor
+	 *	@param ctx context
+	 *	@param rs result set
+	 *	@param trxName transaction
+	 */
 	public MTax (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -115,12 +158,18 @@ public class MTax extends X_C_Tax
 	{
 		this (ctx, 0, trxName);
 		setName (Name);
-		setRate (Rate == null ? BigDecimal.ZERO : Rate);
+		setRate (Rate == null ? Env.ZERO : Rate);
 		setC_TaxCategory_ID (C_TaxCategory_ID);	//	FK
 	}	//	MTax
 
+	/**	100					*/
+	private static BigDecimal ONEHUNDRED = new BigDecimal(100);
 	/**	Child Taxes			*/
 	private MTax[]			m_childTaxes = null;
+	/** Postal Codes		*/
+	private MTaxPostal[]	m_postals = null;
+	
+	
 	/**
 	 * 	Get Child Taxes
 	 * 	@param requery reload
@@ -137,7 +186,7 @@ public class MTax extends X_C_Tax
 		String whereClause = COLUMNNAME_Parent_Tax_ID+"=?";
 		List<MTax> list = new Query(getCtx(), MTax.Table_Name, whereClause,  get_TrxName())
 		.setParameters(new Object[]{getC_Tax_ID()})
-	 	.list(MTax.class);	
+	 	.list();	
 		//red1 - end -
 	 
 		m_childTaxes = new MTax[list.size ()];
@@ -146,6 +195,45 @@ public class MTax extends X_C_Tax
 	}	//	getChildTaxes
 	
 	/**
+	 * Get Postal Qualifiers
+	 * @param requery requery
+	 * @return array of postal codes
+	 */
+	public MTaxPostal[] getPostals (boolean requery)
+	{
+		if (m_postals != null && !requery)
+			return m_postals;
+
+		//FR: [ 2214883 ] Remove SQL code and Replace for Query - red1
+		String whereClause = MTaxPostal.COLUMNNAME_C_Tax_ID+"=?";
+		List<MTaxPostal> list = new Query(getCtx(), MTaxPostal.Table_Name, whereClause,  get_TrxName())
+		.setParameters(new Object[]{getC_Tax_ID()})
+		.setOnlyActiveRecords(true)
+		.setOrderBy(MTaxPostal.COLUMNNAME_Postal+", "+MTaxPostal.COLUMNNAME_Postal_To)
+		.list();	
+		//red1 - end -
+
+		if (list.size() > 0) { 
+			m_postals = new MTaxPostal[list.size ()];
+			list.toArray (m_postals);
+		}
+		return m_postals;
+	}	//	getPostals
+	
+	/**
+	 * Do we have Postal Codes
+	 * @return true if postal codes exist
+	 */
+	public boolean isPostal()
+	{
+		if(getPostals(false) == null)
+			return false;
+		
+		return getPostals(false).length > 0;
+	}	//	isPostal
+	
+	/**
+	 * Is Zero Tax
 	 * @return true if tax rate is 0
 	 */
 	public boolean isZeroTax()

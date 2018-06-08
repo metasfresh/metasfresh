@@ -152,33 +152,6 @@ public interface I_I_Product
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Data import.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_DataImport_ID (int C_DataImport_ID);
-
-	/**
-	 * Get Data import.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_DataImport_ID();
-
-	public org.compiere.model.I_C_DataImport getC_DataImport();
-
-	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport);
-
-    /** Column definition for C_DataImport_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Product, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new org.adempiere.model.ModelColumn<I_I_Product, org.compiere.model.I_C_DataImport>(I_I_Product.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
-    /** Column name C_DataImport_ID */
-    public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
-
-	/**
 	 * Set Steuerkategorie.
 	 * Steuerkategorie
 	 *
@@ -767,8 +740,8 @@ public interface I_I_Product
     public static final String COLUMNNAME_M_PriceList_Version_Name = "M_PriceList_Version_Name";
 
 	/**
-	 * Set Produkt Kategorie.
-	 * Kategorie eines Produktes
+	 * Set Produkt-Kategorie.
+	 * Category of a Product
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -777,8 +750,8 @@ public interface I_I_Product
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt Kategorie.
-	 * Kategorie eines Produktes
+	 * Get Produkt-Kategorie.
+	 * Category of a Product
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -827,7 +800,7 @@ public interface I_I_Product
 	/**
 	 * Set M_ProductPlanningSchema_Selector.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -836,7 +809,7 @@ public interface I_I_Product
 	/**
 	 * Get M_ProductPlanningSchema_Selector.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -980,21 +953,21 @@ public interface I_I_Product
 	 * Set Package Size.
 	 * Size of a package
 	 *
-	 * <br>Type: String
+	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPackageSize (java.lang.String PackageSize);
+	public void setPackageSize (java.math.BigDecimal PackageSize);
 
 	/**
 	 * Get Package Size.
 	 * Size of a package
 	 *
-	 * <br>Type: String
+	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPackageSize();
+	public java.math.BigDecimal getPackageSize();
 
     /** Column definition for PackageSize */
     public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_PackageSize = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "PackageSize", null);

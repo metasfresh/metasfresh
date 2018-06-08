@@ -30,9 +30,9 @@ RETURNS TABLE
 	isDiscountPrinted character(1),
 	IsPrintTax character(1),
 	Description character varying(255),
-	productdescription character varying(255),
 	bp_product_no character varying(30),
 	bp_product_name character varying(100),
+	
 	p_value character varying(40),
 	p_description character varying(255),
 	invoice_description character varying(1024),
@@ -81,7 +81,6 @@ SELECT
 	i.isDiscountPrinted,
 	bpg.IsPrintTax,
 	il.Description,
-	il.ProductDescription,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
 	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,

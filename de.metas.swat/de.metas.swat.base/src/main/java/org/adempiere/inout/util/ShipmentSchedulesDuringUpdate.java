@@ -115,10 +115,12 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 			throw new IllegalArgumentException("completeStatus may not be " + CompleteStatus.INCOMPLETE_ORDER + " (this will be figured out later by this class)");
 		}
 
+		final I_M_ShipmentSchedule sched = deliveryLineCandidate.getShipmentSchedule();
+
 		//
 		// C_OrderLine_ID to M_InOutLine mapping
 		{
-			final DeliveryLineCandidate oldCandidate = shipmentScheduleId2DeliveryLineCandidate.put(deliveryLineCandidate.getShipmentScheduleId(), deliveryLineCandidate);
+			final DeliveryLineCandidate oldCandidate = shipmentScheduleId2DeliveryLineCandidate.put(sched.getM_ShipmentSchedule_ID(), deliveryLineCandidate);
 			if (oldCandidate != null && !oldCandidate.equals(deliveryLineCandidate))
 			{
 				throw new IllegalArgumentException("Aa deliveryLineCandidate was already set for order line in orderLineId2InOutLine mapping"
@@ -133,7 +135,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 
 	public void removeLine(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
 	{
-		final int shipmentScheduleId = deliveryLineCandidate.getShipmentScheduleId();
+		final int shipmentScheduleId = deliveryLineCandidate.getShipmentSchedule().getM_ShipmentSchedule_ID();
 		boolean success = shipmentScheduleId2DeliveryLineCandidate.remove(shipmentScheduleId) != null;
 		if (!success)
 		{
@@ -230,7 +232,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		int rmInOuts = 0;
 		for (final DeliveryGroupCandidate inOut : getCandidates())
 		{
-			if (!inOut.hasLines())
+			if (inOut.getLines().isEmpty())
 			{
 				final ArrayKey key = Util.mkKey(inOut.getBPartnerAddress(),
 						inOut.getWarehouseId(),
@@ -261,7 +263,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 			return;
 		}
 
-		final String deliveryRule = deliveryLineCandidate.getDeliveryRule();
+		final String deliveryRule = deliveryLineCandidate.getShipmentSchedule().getDeliveryRule();
 
 		if (X_C_Order.DELIVERYRULE_CompleteLine.equals(deliveryRule))
 		{
@@ -290,7 +292,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		if (lineIsIncompletelyDelivered)
 		{
 			deliveryLineCandidate.setQtyToDeliver(BigDecimal.ZERO);
-			deliveryLineCandidate.setDiscarded();
+			deliveryLineCandidate.setDiscarded(true);
 		}
 	}
 
@@ -307,13 +309,13 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 			return;
 		}
 
-		for (final DeliveryLineCandidate inOutLine : deliveryLineCandidate.getGroup().getLines())
+		for (final DeliveryLineCandidate inOutLinee : deliveryLineCandidate.getGroup().getLines())
 		{
-			inOutLine.setQtyToDeliver(BigDecimal.ZERO);
-			inOutLine.setDiscarded();
+			inOutLinee.setQtyToDeliver(BigDecimal.ZERO);
+			inOutLinee.setDiscarded(true);
 
 			// update the status to show why we set the quantity to zero
-			inOutLine.setCompleteStatus(CompleteStatus.INCOMPLETE_ORDER);
+			inOutLinee.setCompleteStatus(CompleteStatus.INCOMPLETE_ORDER);
 		}
 	}
 

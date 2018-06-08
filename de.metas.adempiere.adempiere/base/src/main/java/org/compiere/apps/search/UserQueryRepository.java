@@ -231,7 +231,7 @@ public class UserQueryRepository
 			if (!segmentStr.trim().startsWith(Join.AND.getCode())
 					&& !segmentStr.trim().startsWith(Join.OR.getCode()))
 			{
-				segmentStr = Join.AND.getCode() + segmentStr;
+				segmentStr = Join.AND.getCode() + FIELD_SEPARATOR + code;
 			}
 
 			final IUserQueryRestriction row = parseUserQuerySegment(segmentStr);

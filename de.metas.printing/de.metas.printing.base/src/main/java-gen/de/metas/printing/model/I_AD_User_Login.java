@@ -260,6 +260,7 @@ public interface I_AD_User_Login
 
 	/**
 	 * Set Kennwort.
+	 * Passwort beliebiger Länge (unterscheided Groß- und Kleinschreibung)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -269,6 +270,7 @@ public interface I_AD_User_Login
 
 	/**
 	 * Get Kennwort.
+	 * Passwort beliebiger Länge (unterscheided Groß- und Kleinschreibung)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

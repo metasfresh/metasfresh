@@ -53,8 +53,8 @@ public abstract class MSV3ClientBase
 			@NonNull final MSV3ClientConfig config)
 	{
 		this.config = config;
-		this.objectFactory = new ObjectFactory();
-		this.webServiceTemplate = connectionFactory.createWebServiceTemplate(config);
+		objectFactory = new ObjectFactory();
+		webServiceTemplate = connectionFactory.createWebServiceTemplate(config);
 	}
 
 	public abstract String getUrlSuffix();

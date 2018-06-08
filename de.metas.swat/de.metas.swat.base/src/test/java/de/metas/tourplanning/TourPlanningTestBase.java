@@ -32,22 +32,22 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.util.time.TimeSource;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.After;
 import org.junit.Assert;
@@ -167,10 +167,10 @@ public abstract class TourPlanningTestBase
 		return tour;
 	}
 
-	protected final I_M_TourVersion createTourVersion(final I_M_Tour tour, final LocalDate validFrom)
+	protected final I_M_TourVersion createTourVersion(final I_M_Tour tour, final Date validFrom)
 	{
 		final I_M_TourVersion tourVersion = InterfaceWrapperHelper.newInstance(I_M_TourVersion.class, tour);
-		tourVersion.setName(tour.getName() + "-" + validFrom);
+		tourVersion.setName(tour.getName() + "-" + dateFormat.format(validFrom));
 		tourVersion.setM_Tour(tour);
 		tourVersion.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		InterfaceWrapperHelper.save(tourVersion);
@@ -178,12 +178,12 @@ public abstract class TourPlanningTestBase
 		return tourVersion;
 	}
 
-	protected final LocalDate createDate(final String yyyyMMdd)
+	protected final Date createDate(final String yyyyMMdd)
 	{
 		try
 		{
 			final Date date = dateFormat.parse(yyyyMMdd);
-			return TimeUtil.asLocalDate(date);
+			return date;
 		}
 		catch (ParseException e)
 		{

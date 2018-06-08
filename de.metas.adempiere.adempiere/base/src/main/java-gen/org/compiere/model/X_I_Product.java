@@ -15,7 +15,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1009256563L;
+	private static final long serialVersionUID = -145461139L;
 
     /** Standard Constructor */
     public X_I_Product (Properties ctx, int I_Product_ID, String trxName)
@@ -133,40 +133,6 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_DataImport getC_DataImport() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class);
-	}
-
-	@Override
-	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
-	}
-
-	/** Set Data import.
-		@param C_DataImport_ID Data import	  */
-	@Override
-	public void setC_DataImport_ID (int C_DataImport_ID)
-	{
-		if (C_DataImport_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
-	}
-
-	/** Get Data import.
-		@return Data import	  */
-	@Override
-	public int getC_DataImport_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -671,9 +637,9 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
 	}
 
-	/** Set Produkt Kategorie.
+	/** Set Produkt-Kategorie.
 		@param M_Product_Category_ID 
-		Kategorie eines Produktes
+		Category of a Product
 	  */
 	@Override
 	public void setM_Product_Category_ID (int M_Product_Category_ID)
@@ -684,8 +650,8 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
 	}
 
-	/** Get Produkt Kategorie.
-		@return Kategorie eines Produktes
+	/** Get Produkt-Kategorie.
+		@return Category of a Product
 	  */
 	@Override
 	public int getM_Product_Category_ID () 
@@ -733,19 +699,11 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		return ii.intValue();
 	}
 
-	/** 
-	 * M_ProductPlanningSchema_Selector AD_Reference_ID=540829
-	 * Reference name: M_ProductPlanningSchema_Selector_List
-	 */
-	public static final int M_PRODUCTPLANNINGSCHEMA_SELECTOR_AD_Reference_ID=540829;
-	/** Normal = N */
-	public static final String M_PRODUCTPLANNINGSCHEMA_SELECTOR_Normal = "N";
 	/** Set M_ProductPlanningSchema_Selector.
 		@param M_ProductPlanningSchema_Selector M_ProductPlanningSchema_Selector	  */
 	@Override
 	public void setM_ProductPlanningSchema_Selector (java.lang.String M_ProductPlanningSchema_Selector)
 	{
-
 		set_Value (COLUMNNAME_M_ProductPlanningSchema_Selector, M_ProductPlanningSchema_Selector);
 	}
 
@@ -881,7 +839,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		Size of a package
 	  */
 	@Override
-	public void setPackageSize (java.lang.String PackageSize)
+	public void setPackageSize (java.math.BigDecimal PackageSize)
 	{
 		set_Value (COLUMNNAME_PackageSize, PackageSize);
 	}
@@ -890,9 +848,12 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		@return Size of a package
 	  */
 	@Override
-	public java.lang.String getPackageSize () 
+	public java.math.BigDecimal getPackageSize () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PackageSize);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageSize);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Preis gültig.

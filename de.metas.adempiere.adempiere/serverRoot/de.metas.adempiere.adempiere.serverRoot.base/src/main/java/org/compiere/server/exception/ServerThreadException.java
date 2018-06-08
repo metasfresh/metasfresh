@@ -13,20 +13,20 @@ package org.compiere.server.exception;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 
 /**
  * This exception is used if an error occurs during execution of an ADempiere server process.
@@ -55,15 +55,18 @@ public class ServerThreadException extends AdempiereException
 	{
 		super(cause);
 		this.adempiereProcessorName = adempiereProcessorName;
+		setParseTranslation(false);
 	}
 
 	@Override
-	protected ITranslatableString buildMessage()
+	protected String buildMessage()
 	{
 		final Throwable cause = getCause();
-		final String causeMessage = cause == null ? "unknown cause" : AdempiereException.extractMessage(cause);
+		final String causeMessage = cause == null ? "unknown cause" : cause.getLocalizedMessage();
 
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		return msgBL.getTranslatableMsgText(SERVER_THREAD_EXCEPTION_MESSAGE, adempiereProcessorName, causeMessage);
+		return msgBL.getMsg(getADLanguage(),
+				SERVER_THREAD_EXCEPTION_MESSAGE,
+				new Object[] { adempiereProcessorName, causeMessage });
 	}
 }

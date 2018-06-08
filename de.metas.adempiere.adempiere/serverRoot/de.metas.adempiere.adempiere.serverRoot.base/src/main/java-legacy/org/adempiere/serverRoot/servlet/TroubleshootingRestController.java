@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.event.Event;
+import de.metas.event.EventBusConstants;
+import de.metas.event.IEventBusFactory;
 import de.metas.logging.LogManager;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.Recipient;
-import de.metas.notification.UserNotificationRequest;
 
 /*
  * #%L
@@ -47,15 +47,16 @@ public class TroubleshootingRestController
 	public String pingNotifications()
 	{
 		final long id = nextNotificationId.getAndIncrement();
-
-		final UserNotificationRequest request = UserNotificationRequest.builder()
-				.recipient(Recipient.allUsers())
-				.subjectPlain("Notifications system test")
-				.contentPlain("Please ignore this message. It was issued by server to check the notifications system (#" + id + ").")
+		final Event event = Event.builder()
+				.setSummary("Notifications system test")
+				.setDetailPlain("Please ignore this message. It was issued by server to check the notifications system (#" + id + ").")
 				.build();
-		Services.get(INotificationBL.class).send(request);
 
-		final String message = "sent: " + request;
+		Services.get(IEventBusFactory.class)
+				.getEventBus(EventBusConstants.TOPIC_GeneralNotifications)
+				.postEvent(event);
+
+		final String message = "sent: " + event;
 		logger.info("pingNotifications: {}", message);
 		return message;
 	}

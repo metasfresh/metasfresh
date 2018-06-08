@@ -32,21 +32,11 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.MContactInterest;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_I_BPartner;
-import org.compiere.model.X_M_InOut;
-
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import lombok.NonNull;
 
 /**
  * Imports {@link I_I_BPartner} records to {@link I_C_BPartner}.
@@ -56,14 +46,10 @@ import lombok.NonNull;
  */
 public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 {
-	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormatId = "BPartnerImportProcess_BPPrintFormatId";
-	private final static String BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg = "BPartnerImportProcess_BPPrintFormatId_ErrorMsg";
-
 	private final BPartnerImportHelper bpartnerImporter;
 	private final BPartnerLocationImportHelper bpartnerLocationImporter;
 	private final BPartnerContactImportHelper bpartnerContactImporter;
 	private final BPartnerBankAccountImportHelper bpartnerBankAccountImportHelper;
-	private final BPCreditLimitImportHelper bpartnerCreditLimitImportHelper;
 
 	public BPartnerImportProcess()
 	{
@@ -71,7 +57,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		bpartnerLocationImporter = BPartnerLocationImportHelper.newInstance().setProcess(this);
 		bpartnerContactImporter = BPartnerContactImportHelper.newInstance().setProcess(this);
 		bpartnerBankAccountImportHelper = BPartnerBankAccountImportHelper.newInstance().setProcess(this);
-		bpartnerCreditLimitImportHelper = BPCreditLimitImportHelper.newInstance();
 	}
 
 	@Override
@@ -175,9 +160,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		bpartnerLocationImporter.importRecord(importRecord, context.getPreviousImportRecordsForSameBP());
 		bpartnerContactImporter.importRecord(importRecord);
 		bpartnerBankAccountImportHelper.importRecord(importRecord);
-		bpartnerCreditLimitImportHelper.importRecord(importRecord);
 		createUpdateInterestArea(importRecord);
-		createBPPrintFormatIfNeeded(importRecord);
 
 		context.collectImportRecordForSameBP(importRecord);
 
@@ -228,39 +211,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				true, // active
 				ITrx.TRXNAME_ThreadInherited);
 		ci.save();		// don't subscribe or re-activate
-	}
-
-	private final void createBPPrintFormatIfNeeded(@NonNull final I_I_BPartner importRecord)
-	{
-		if (importRecord.isShowDeliveryNote())
-		{
-			int bpPrintFormatId = importRecord.getC_BP_PrintFormat_ID();
-			if (bpPrintFormatId > 0)
-			{
-				return;
-			}
-
-			final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-					.adClientId(importRecord.getAD_Client_ID())
-					.adOrgId(importRecord.getAD_Org_ID())
-					.build());
-
-			final int AD_PrintFormat_ID =  Services.get(ISysConfigBL.class).getIntValue(BPARTNER_IMPORTPROCESS_BPPrintFormatId, -1);
-			if (AD_PrintFormat_ID <= 0 )
-			{
-				throw AdempiereException.ofADMessage(BPARTNER_IMPORTPROCESS_BPPrintFormatId_ErrorMsg);
-			}
-
-			final I_C_BP_PrintFormat bpPrintFormat = InterfaceWrapperHelper.newInstance(I_C_BP_PrintFormat.class);
-			bpPrintFormat.setAD_PrintFormat_ID(AD_PrintFormat_ID);
-			bpPrintFormat.setC_BPartner(importRecord.getC_BPartner());
-			bpPrintFormat.setC_DocType_ID(docTypeId);
-			bpPrintFormat.setAD_Table_ID(X_M_InOut.Table_ID);
-			InterfaceWrapperHelper.save(bpPrintFormat);
-
-			importRecord.setC_BP_PrintFormat(bpPrintFormat);
-		}
 	}
 
 	@Override

@@ -44,7 +44,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	private static final long serialVersionUID = 4180714433818623955L;
 
 	/** Static Cache : Window,Role,User -> array of window customizations */
-	private static final CCache<ArrayKey, MUserDefWin[]> s_cache = new CCache<>(Table_Name, 20, 0);
+	private static final CCache<ArrayKey, MUserDefWin[]> s_cache = new CCache<ArrayKey, MUserDefWin[]>(Table_Name, 20, 0);
 	/** No Windows (i.e. empty array) */
 	private static final MUserDefWin[] NoWindows = new MUserDefWin[]{};
 
@@ -83,7 +83,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 			.setParameters(AD_Window_ID, AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID)
 			.setOnlyActiveRecords(true)
 			.setOrderBy("AD_Client_ID, AD_Org_ID, COALESCE(AD_User_ID,0), COALESCE(AD_Role_ID,0)")
-			.list(MUserDefWin.class);
+			.list();
 		arr = list.toArray(new MUserDefWin[list.size()]);
 		if (arr.length > 0)
 		{
@@ -166,7 +166,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	 * @param reload if true, do not use cache
 	 * @return tab customizations for this window
 	 */
-	private MUserDefTab[] getTabs(boolean reload)
+	public MUserDefTab[] getTabs(boolean reload)
 	{
 		if (!reload && m_tabs != null)
 		{
@@ -177,7 +177,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 								.setParameters(get_ID())
 								.setOnlyActiveRecords(true)
 								.setOrderBy(MUserDefTab.COLUMNNAME_AD_Tab_ID)
-								.list(MUserDefTab.class);
+								.list();
 		//
 		m_tabs = list.toArray(new MUserDefTab[list.size()]);
 		return m_tabs;

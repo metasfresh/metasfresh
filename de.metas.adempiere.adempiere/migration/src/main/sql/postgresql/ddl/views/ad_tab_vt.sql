@@ -3,7 +3,6 @@ CREATE OR REPLACE VIEW ad_tab_vt AS
 SELECT
 trl.ad_language
 , t.ad_tab_id
-, t.Template_Tab_ID
 , t.ad_window_id
 , t.ad_table_id
 , trl.name
@@ -57,4 +56,3 @@ FROM ad_tab t
 JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
 JOIN ad_tab_trl trl ON t.ad_tab_id = trl.ad_tab_id
 WHERE t.isactive = 'Y'::bpchar AND tbl.isactive = 'Y'::bpchar;
-

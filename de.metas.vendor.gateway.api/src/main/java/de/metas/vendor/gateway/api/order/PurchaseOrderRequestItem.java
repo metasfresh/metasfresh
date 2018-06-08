@@ -1,7 +1,6 @@
 package de.metas.vendor.gateway.api.order;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
-import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -27,7 +26,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class PurchaseOrderRequestItem
 {
 	int purchaseCandidateId;

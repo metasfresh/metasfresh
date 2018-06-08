@@ -1,7 +1,5 @@
 package org.adempiere.mm.attributes.api;
 
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
  * de.metas.business
@@ -24,9 +22,12 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
 public final class AttributeConstants
 {
+	private AttributeConstants()
+	{
+	}
+
 	/**
 	 * No ASI (record which actually exists in M_AttributeSetInstance table)
 	 */
@@ -37,11 +38,4 @@ public final class AttributeConstants
 	 */
 	public static final int M_AttributeSet_ID_None = 0;
 
-
-	public static final String ATTR_TE = "HU_TE";
-	public static final String ATTR_DateReceived = "HU_DateReceived";
-
-	//
-	public static final String ATTR_SubProducerBPartner_Value = "SubProducerBPartner";
-	public static final String ATTR_BestBeforeDate = "HU_BestBeforeDate";
 }

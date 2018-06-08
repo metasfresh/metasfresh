@@ -6,9 +6,6 @@ import java.util.Set;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.ValueNamePair;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
 /**
  * Lookup Validation Rule Model
  * 
@@ -57,10 +54,7 @@ public interface IValidationRule
 	/**
 	 * @return filter to be applied after query; or {@link INamePairPredicate#NULL}
 	 */
-	default INamePairPredicate getPostQueryFilter()
-	{
-		return INamePairPredicate.NULL;
-	}
+	INamePairPredicate getPostQueryFilter();
 
 	/**
 	 * Specify for which table and column pair this validation rule shall not apply
@@ -68,22 +62,12 @@ public interface IValidationRule
 	 * @param tableName
 	 * @param columnName
 	 */
-	default void registerException(final String tableName, final String columnName)
-	{
-		throw new UnsupportedOperationException("Class " + getClass().getName() + " does not support registering exceptions");
-	}
+	void registerException(String tableName, String columnName);
 
 	/**
 	 * 
 	 * @return a list containing all the table+column pairs for which this validation rule shall not be applied
 	 */
-	default List<ValueNamePair> getExceptionTableAndColumns()
-	{
-		return ImmutableList.of();
-	}
+	List<ValueNamePair> getExceptionTableAndColumns();
 
-	default Set<String> getDependsOnTableNames()
-	{
-		return ImmutableSet.of();
-	}
 }

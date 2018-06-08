@@ -46,7 +46,6 @@ import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
-import org.springframework.core.io.Resource;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -372,18 +371,22 @@ public final class EMail implements Serializable
 		props.put("mail.store.protocol", "smtp");
 		props.put("mail.transport.protocol", "smtp");
 		props.put("mail.host", smtpHost);
-		props.put("mail.smtp.port", mailbox.getSmtpPort());
-		if(mailbox.isStartTLS())
+		if (logger.isTraceEnabled())
 		{
-			props.put("mail.smtp.starttls.enable", "true");
+			props.put("mail.debug", "true");
 		}
+
+		//
 		if (auth != null)
 		{
 			props.put("mail.smtp.auth", "true");
 		}
-		if (logger.isTraceEnabled())
+		if ("smtp.gmail.com".equalsIgnoreCase(smtpHost))
 		{
-			props.put("mail.debug", "true");
+			// TODO: make it configurable
+			// Enable gmail port and ttls - Hardcoded
+			props.put("mail.smtp.port", "587");
+			props.put("mail.smtp.starttls.enable", "true");
 		}
 
 		final Session session = Session.getInstance(props, auth);
@@ -836,12 +839,6 @@ public final class EMail implements Serializable
 		}
 		addAttachment(EMailAttachment.of(file));
 	}
-	
-	public void addAttachment(@NonNull final Resource resource)
-	{
-		addAttachment(EMailAttachment.of(resource));
-	}
-
 
 	/**
 	 * Add a collection of attachments

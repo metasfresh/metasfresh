@@ -37,13 +37,13 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
-import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
+import de.metas.shipper.gateway.api.ShipperGatewayService;
+import de.metas.shipper.gateway.api.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
-import lombok.ToString;
 
 /*
  * #%L
@@ -73,7 +73,6 @@ import lombok.ToString;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "huShipmentScheduleBL", "invoiceCandDAO", "invoiceCandBL", "trxManager" })
 public class HUShippingFacade
 {
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
@@ -83,18 +82,18 @@ public class HUShippingFacade
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final Supplier<ShipperGatewayFacade> shipperGatewayFacadeSupplier = //
-			() -> Adempiere.getBean(ShipperGatewayFacade.class);
+	private final Supplier<ShipperGatewayRegistry> shipperGatewayRegistrySupplier = //
+			() -> Adempiere.getBean(ShipperGatewayRegistry.class);
 
 	//
 	// Parameters
+	private final ILoggable loggable;
+	private final ImmutableList<I_M_HU> hus;
 	private final int addToShipperTransportationId;
 	private final boolean completeShipments;
 	private final BillAssociatedInvoiceCandidates invoiceMode;
 	private final boolean createShipperDeliveryOrders;
 	private LocalDate _shipperDeliveryOrderPickupDate = null; // lazy, will be fetched from Shipper Transportation
-	private final ImmutableList<I_M_HU> hus;
-	private final ILoggable loggable;
 
 	//
 	// State
@@ -216,7 +215,6 @@ public class HUShippingFacade
 		{
 			return;
 		}
-		Check.errorIf(addToShipperTransportationId <= 0, "If createShipperDeliveryOrders=true, then addToShipperTransportationId needs to be > 0; this={}", this);
 
 		mpackagesCreated
 				.stream()
@@ -225,37 +223,33 @@ public class HUShippingFacade
 				.forEach(this::generateShipperDeliveryOrderIfNeeded);
 	}
 
-	private void generateShipperDeliveryOrderIfNeeded(
-			final int shipperId,
-			@NonNull final Collection<I_M_Package> mpackages)
+	private void generateShipperDeliveryOrderIfNeeded(final int shipperId, final Collection<I_M_Package> mpackages)
 	{
-		final I_M_Shipper shipper = Check.assumeNotNull(
-				loadOutOfTrx(shipperId, I_M_Shipper.class),
-				"An M_Shipper record for shipperId={} exists",
-				shipperId);
-
+		final I_M_Shipper shipper = loadOutOfTrx(shipperId, I_M_Shipper.class);
 		final String shipperGatewayId = shipper.getShipperGateway();
 		if (Check.isEmpty(shipperGatewayId, true))
 		{
 			return;
 		}
 
-		final ShipperGatewayFacade shipperGatewayFacade = shipperGatewayFacadeSupplier.get();
-		if (!shipperGatewayFacade.hasServiceSupport(shipperGatewayId))
+		final ShipperGatewayRegistry shipperGatewayRegistry = //
+				shipperGatewayRegistrySupplier.get();
+		if (!shipperGatewayRegistry.hasServiceSupport(shipperGatewayId))
 		{
 			return;
 		}
 
+		final ShipperGatewayService shipperGatewayService = //
+				shipperGatewayRegistry.getShipperGatewayService(shipperGatewayId);
+
 		final Set<Integer> mpackageIds = mpackages.stream()
 				.map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
 
-		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
-				.pickupDate(getShipperDeliveryOrderPickupDate())
-				.packageIds(mpackageIds)
-				.shipperTransportationId(addToShipperTransportationId)
-				.shipperGatewayId(shipperGatewayId)
-				.build();
-		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
+		shipperGatewayService
+				.createAndSendDeliveryOrdersForPackages(DeliveryOrderCreateRequest.builder()
+						.pickupDate(getShipperDeliveryOrderPickupDate())
+						.packageIds(mpackageIds)
+						.build());
 	}
 
 	public LocalDate getShipperDeliveryOrderPickupDate()

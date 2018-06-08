@@ -85,6 +85,7 @@ import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
+import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.table.AnnotatedTableFactory;
 import org.compiere.swing.table.AnnotatedTableModel;
@@ -224,7 +225,7 @@ public class PaymentAllocationForm
 	private void jbInit()
 	{
 		final CPanel panel = new CPanel();
-		AdempierePLAF.setDefaultBackground(panel);
+		CompiereColor.setBackground(panel);
 
 		// mainPanel
 		final BorderLayout mainLayout = new BorderLayout();
@@ -749,7 +750,7 @@ public class PaymentAllocationForm
 	private boolean isAllowOnlyOneVendorDoc()
 	{
 		final Map<String, String> bpartnerIDsMap = sysConfigBL.getValuesForPrefix(SPECIALVENDORID_ALLOWMULTIPLEDOCSALLOCATION_PREFIX, Env.getAD_Client_ID(getCtx()), 0);
-		final List<String> bpartnerIDs = new ArrayList<>(new TreeMap<>(bpartnerIDsMap).values());
+		final List<String> bpartnerIDs = new ArrayList<String>(new TreeMap<String, String>(bpartnerIDsMap).values());
 
 		if (bpartnerIDs.size() == 0 || !bpartnerIDs.contains(Integer.toString(getC_BPartner_ID())))
 		{

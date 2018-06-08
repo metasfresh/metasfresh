@@ -1,18 +1,18 @@
 package de.metas.contracts.pricing;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPricingBL;
+import org.adempiere.pricing.api.IPricingContext;
+import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
+import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.logging.LogManager;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
-import de.metas.pricing.rules.IPricingRule;
-import de.metas.pricing.service.IPricingBL;
 import lombok.NonNull;
 
 /**
@@ -99,14 +99,27 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final I_M_PriceList subscriptionPriceList)
 	{
-		final IEditablePricingContext subscriptionPricingCtx = pricingCtx.copy();
-		
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
+		final IEditablePricingContext subscriptionPricingCtx = pricingBL.createPricingContext();
+		subscriptionPricingCtx.setAD_Table_ID(pricingCtx.getAD_Table_ID());
+		subscriptionPricingCtx.setC_BPartner_ID(pricingCtx.getC_BPartner_ID());
+		subscriptionPricingCtx.setC_Currency_ID(pricingCtx.getC_Currency_ID());
+		subscriptionPricingCtx.setC_UOM_ID(pricingCtx.getC_UOM_ID());
+		subscriptionPricingCtx.setM_Product_ID(pricingCtx.getM_Product_ID());
+		subscriptionPricingCtx.setPriceDate(pricingCtx.getPriceDate());
+		subscriptionPricingCtx.setQty(pricingCtx.getQty());
+		subscriptionPricingCtx.setSOTrx(pricingCtx.isSOTrx());
+		subscriptionPricingCtx.setAD_Table_ID(pricingCtx.getAD_Table_ID());
+		subscriptionPricingCtx.setRecord_ID(pricingCtx.getRecord_ID());
+		subscriptionPricingCtx.setDisallowDiscount(pricingCtx.isDisallowDiscount());
+
 		// don't set a ReferencedObject, so that this rule's 'applies()' method will return false
 		subscriptionPricingCtx.setReferencedObject(null);
 
 		// set the price list from subscription's M_Pricing_Systen
-		subscriptionPricingCtx.setM_PriceList_ID(subscriptionPriceList.getM_PriceList_ID());
 		subscriptionPricingCtx.setM_PriceList_Version_ID(0);
+		subscriptionPricingCtx.setM_PriceList_ID(subscriptionPriceList.getM_PriceList_ID());
 		
 		return subscriptionPricingCtx;
 	}
@@ -118,7 +131,7 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		if (!subscriptionPricingResult.isCalculated())
 		{
-			throw new ProductNotOnPriceListException(subscriptionPricingCtx);
+			throw new ProductNotOnPriceListException(subscriptionPricingCtx, 0);
 		}
 		return subscriptionPricingResult;
 	}
@@ -139,8 +152,8 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setDisallowDiscount(subscriptionPricingResult.isDisallowDiscount());
 
 		result.setUsesDiscountSchema(subscriptionPricingResult.isUsesDiscountSchema());
-		result.setPricingConditions(subscriptionPricingResult.getPricingConditions());
-		
+		// 08634: also set the discount schema
+		result.setM_DiscountSchema_ID(subscriptionPricingResult.getM_DiscountSchema_ID());
 		result.setEnforcePriceLimit(subscriptionPricingResult.isEnforcePriceLimit());
 		result.setM_PricingSystem_ID(subscriptionPricingResult.getM_PricingSystem_ID());
 		result.setM_PriceList_Version_ID(subscriptionPricingResult.getM_PriceList_Version_ID());

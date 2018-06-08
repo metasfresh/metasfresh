@@ -32,8 +32,7 @@ import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.AdempiereTabbedPaneUI;
 import org.adempiere.plaf.UIAction;
-
-import de.metas.util.MFColor;
+import org.compiere.plaf.CompiereColor;
 
 /**
  *  Adempiere Color Tabbed Pane
@@ -121,7 +120,7 @@ public class CTabbedPane extends JTabbedPane
 		if (bg.equals(getBackground()))
 			return;
 		super.setBackground (bg);
-		setBackgroundColor (MFColor.ofFlatColor(bg));
+		setBackgroundColor (new CompiereColor(bg));
 	}   //  setBackground
 
 	/**
@@ -136,10 +135,10 @@ public class CTabbedPane extends JTabbedPane
 	 *  Set Background
 	 *  @param bg AdempiereColor for Background, if null set standard background
 	 */
-	public void setBackgroundColor (MFColor bg)
+	public void setBackgroundColor (CompiereColor bg)
 	{
 		if (bg == null)
-			bg = MFColor.ofFlatColor(AdempierePLAF.getFormBackground());
+			bg = new CompiereColor(AdempierePLAF.getFormBackground());
 		putClientProperty(AdempiereLookAndFeel.BACKGROUND, bg);
 		super.setBackground (bg.getFlatColor());
 		//
@@ -150,11 +149,11 @@ public class CTabbedPane extends JTabbedPane
 	 *  Get Background
 	 *  @return Color for Background
 	 */
-	public MFColor getBackgroundColor ()
+	public CompiereColor getBackgroundColor ()
 	{
 		try
 		{
-			return (MFColor)getClientProperty(AdempiereLookAndFeel.BACKGROUND);
+			return (CompiereColor)getClientProperty(AdempiereLookAndFeel.BACKGROUND);
 		}
 		catch (Exception e)
 		{
@@ -326,7 +325,7 @@ public class CTabbedPane extends JTabbedPane
 	}	//	setMnemonicAt
 
 	/** Used Mnemonics		*/
-	private ArrayList<Character> m_mnemonic = new ArrayList<>(10);
+	private ArrayList<Character> m_mnemonic = new ArrayList<Character>(10);
 
 	
 	/**
@@ -338,7 +337,7 @@ public class CTabbedPane extends JTabbedPane
 	{
 		StringBuilder sb = new StringBuilder ("CTabbedPane [");
 		sb.append(super.toString());
-		MFColor bg = getBackgroundColor();
+		CompiereColor bg = getBackgroundColor();
 		if (bg != null)
 			sb.append(bg.toString());
 		sb.append("]");

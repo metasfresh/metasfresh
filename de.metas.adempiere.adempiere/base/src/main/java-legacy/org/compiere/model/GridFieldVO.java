@@ -152,12 +152,9 @@ public class GridFieldVO implements Serializable
 	 *  @param rs resultset AD_Field_v
 	 *  @return MFieldVO
 	 */
-	static GridFieldVO create (
-			final Properties ctx,
-			final int WindowNo,
-			final int TabNo,
-			final int AD_Window_ID,
-			final int AD_Tab_ID,
+	static GridFieldVO create (final Properties ctx,
+			final int WindowNo, final int TabNo,
+			final int AD_Window_ID, final int AD_Tab_ID,
 			final boolean readOnly,
 			final boolean loadAllLanguages,
 			final ResultSet rs)

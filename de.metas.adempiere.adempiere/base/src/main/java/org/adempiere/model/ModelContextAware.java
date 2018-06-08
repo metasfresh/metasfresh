@@ -25,8 +25,6 @@ package org.adempiere.model;
 
 import java.util.Properties;
 
-import org.adempiere.util.lang.IContextAware;
-
 /**
  * Note: use {@link InterfaceWrapperHelper#getContextAware(Object)} do get an instance.
  *

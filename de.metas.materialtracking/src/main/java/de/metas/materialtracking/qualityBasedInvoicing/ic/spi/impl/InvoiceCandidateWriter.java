@@ -34,12 +34,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
@@ -64,7 +64,6 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoice
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupByTypeComparator;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
-import de.metas.pricing.IPricingResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 
@@ -413,8 +412,7 @@ public class InvoiceCandidateWriter
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));
 
 		// bill partner data
-		final BPartnerId billBPartnerId = vendorInvoicingInfo.getBill_BPartner_ID();
-		ic.setBill_BPartner_ID(billBPartnerId != null ? billBPartnerId.getRepoId() : -1);
+		ic.setBill_BPartner_ID(vendorInvoicingInfo.getBill_BPartner_ID());
 		ic.setBill_Location_ID(vendorInvoicingInfo.getBill_Location_ID());
 		ic.setBill_User_ID(vendorInvoicingInfo.getBill_User_ID());
 
@@ -426,7 +424,7 @@ public class InvoiceCandidateWriter
 		ic.setPriceEntered(pricingResult.getPriceStd());
 		ic.setPriceActual(pricingResult.getPriceStd());
 		ic.setIsTaxIncluded(pricingResult.isTaxIncluded()); // 08457: Configure new IC from pricing result
-		ic.setDiscount(pricingResult.getDiscount().getValueAsBigDecimal());
+		ic.setDiscount(pricingResult.getDiscount());
 		ic.setC_Currency_ID(pricingResult.getC_Currency_ID());
 
 		// InvoiceRule

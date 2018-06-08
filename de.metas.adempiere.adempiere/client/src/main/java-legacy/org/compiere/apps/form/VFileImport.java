@@ -46,7 +46,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
-import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.apps.ConfirmPanel;
@@ -57,6 +56,7 @@ import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.impexp.ImportStatus;
 import org.compiere.model.I_AD_ImpFormat;
+import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.ListComboBoxModel;
@@ -162,7 +162,7 @@ public class VFileImport extends CPanel
 	 */
 	private void jbInit() throws Exception
 	{
-		AdempierePLAF.setDefaultBackground(this);
+		CompiereColor.setBackground(this);
 
 		bFile.addActionListener(this);
 

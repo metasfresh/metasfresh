@@ -59,10 +59,7 @@ public class M_Attribute extends CalloutEngine
 			{
 				// Update Attribute's value type from generator
 				final String valueType = handler.getAttributeValueType();
-				if(valueType != null)
-				{
-					attribute.setAttributeValueType(valueType);
-				}
+				attribute.setAttributeValueType(valueType);
 			}
 		}
 

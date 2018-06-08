@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,7 +48,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUItemStorage;
 
 public class HUIteratorTest extends AbstractHUTest
@@ -65,7 +64,7 @@ public class HUIteratorTest extends AbstractHUTest
 
 		//
 		// Handling Units Definition
-		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product);
 		{
 			final I_M_HU_PI_Item huDefIFCO_item_MI = helper.createHU_PI_Item_Material(huDefIFCO);
 			helper.assignProduct(huDefIFCO_item_MI, pTomato, new BigDecimal("20"), uomEach);
@@ -73,7 +72,7 @@ public class HUIteratorTest extends AbstractHUTest
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 		}
 
-		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product);
 		{
 			helper.createHU_PI_Item_IncludedHU(huDefPalet, huDefIFCO, new BigDecimal("2"));
 			helper.createHU_PI_Item_PackingMaterial(huDefPalet, pmPallets);
@@ -87,12 +86,12 @@ public class HUIteratorTest extends AbstractHUTest
 		final I_M_HU palet1_ifco1 = createHU("palet1_ifco1", huDefIFCO, palet1);
 		final I_M_HU palet1_ifco2 = createHU("palet1_ifco2", huDefIFCO, palet1);
 
-		final List<Integer> seenHuIdsExpected = new ArrayList<>();
+		final List<Integer> seenHuIdsExpected = new ArrayList<Integer>();
 		seenHuIdsExpected.add(palet1.getM_HU_ID());
 		seenHuIdsExpected.add(palet1_ifco1.getM_HU_ID());
 		seenHuIdsExpected.add(palet1_ifco2.getM_HU_ID());
 
-		final List<Integer> seenHuIds = new ArrayList<>();
+		final List<Integer> seenHuIds = new ArrayList<Integer>();
 		final HUIterator iterator = new HUIterator();
 		iterator.setListener(new HUIteratorListenerAdapter()
 		{
@@ -120,7 +119,7 @@ public class HUIteratorTest extends AbstractHUTest
 		final I_M_HU palet1_ifco1 = createHU("palet1_ifco1", huDefIFCO, palet1);
 		final I_M_HU palet1_ifco2 = createHU("palet1_ifco2", huDefIFCO, palet1);
 
-		final List<Integer> seenHuIds = new ArrayList<>();
+		final List<Integer> seenHuIds = new ArrayList<Integer>();
 		final HUIterator iterator = new HUIterator();
 		iterator.setListener(new HUIteratorListenerAdapter()
 		{
@@ -179,7 +178,7 @@ public class HUIteratorTest extends AbstractHUTest
 		final HUIterator iterator = new HUIterator();
 		iterator.setListener(new HUIteratorListenerAdapter()
 		{
-			final Map<Integer, Boolean> huId2called = new HashMap<>();
+			final Map<Integer, Boolean> huId2called = new HashMap<Integer, Boolean>();
 
 			@Override
 			public Result beforeHU(final IMutable<I_M_HU> hu)
@@ -215,7 +214,7 @@ public class HUIteratorTest extends AbstractHUTest
 	{
 		final IHUIterator iterator = new HUIterator();
 
-		final List<I_M_HU> beforeHUs = new ArrayList<>();
+		final List<I_M_HU> beforeHUs = new ArrayList<I_M_HU>();
 		final HUIteratorListenerAdapter listener = new HUIteratorListenerAdapter()
 		{
 			@Override
@@ -324,13 +323,13 @@ public class HUIteratorTest extends AbstractHUTest
 
 		//
 		// Build a map about what HUs we expected on each depth/level.
-		final Map<Integer, List<? extends Object>> depth2expectedItems = new HashMap<>();
+		final Map<Integer, List<? extends Object>> depth2expectedItems = new HashMap<Integer, List<? extends Object>>();
 		{
 			depth2expectedItems.put(IHUIterator.DEPTH_STARTING_HU, Arrays.<Object> asList(palet1));
 			depth2expectedItems.put(IHUIterator.DEPTH_STARTING_HU_Item, handlingUnitsDAO.retrieveItems(palet1));
 			depth2expectedItems.put(IHUIterator.DEPTH_FIRSTHUCHILD_HU, Arrays.<Object> asList(palet1_ifco1, palet1_ifco2));
 
-			final List<I_M_HU_Item> huItems_FirstChild = new ArrayList<>();
+			final List<I_M_HU_Item> huItems_FirstChild = new ArrayList<I_M_HU_Item>();
 			huItems_FirstChild.addAll(handlingUnitsDAO.retrieveItems(palet1_ifco1));
 			huItems_FirstChild.addAll(handlingUnitsDAO.retrieveItems(palet1_ifco2));
 			depth2expectedItems.put(IHUIterator.DEPTH_FIRSTHUCHILD_HU_Item, huItems_FirstChild);
@@ -383,7 +382,7 @@ public class HUIteratorTest extends AbstractHUTest
 	private I_M_HU createHU(final String name, final I_M_HU_PI huPI, final I_M_HU parent)
 	{
 		final IHUContext huContext = helper.getHUContext();
-
+		
 		//
 		// Search or create the parent item to link to
 		I_M_HU_Item parentItemToUse = null;
@@ -410,9 +409,9 @@ public class HUIteratorTest extends AbstractHUTest
 		huBuilder.setM_HU_Item_Parent(parentItemToUse);
 		huBuilder.setC_BPartner(null); // no BP available in our test
 		final I_M_HU hu = huBuilder.create(huPI);
-
+		
 		POJOWrapper.setInstanceName(hu, name);
-
+		
 		return hu;
 	}
 }

@@ -83,55 +83,55 @@ public class C_Flatrate_Term_Extend
 
 	private void extendSingleTerm(@Nullable final Boolean forceComplete)
 	{
-			final I_C_Flatrate_Term contractToExtend = getRecord(I_C_Flatrate_Term.class);
+		final I_C_Flatrate_Term contractToExtend = getRecord(I_C_Flatrate_Term.class);
 
-			// we are called from a given term => extend the term
-			final ContractExtendingRequest context = ContractExtendingRequest.builder()
-					.AD_PInstance_ID(getAD_PInstance_ID())
-					.contract(contractToExtend)
-					.forceExtend(true)
-					.forceComplete(forceComplete)
-					.nextTermStartDate(p_startDate)
-					.build();
+		// we are called from a given term => extend the term
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(getAD_PInstance_ID())
+				.contract(contractToExtend)
+				.forceExtend(true)
+				.forceComplete(forceComplete)
+				.nextTermStartDate(p_startDate)
+				.build();
 
-			flatrateBL.extendContract(context);
+		flatrateBL.extendContract(context);
 
-			addLog("@Processed@: @C_Flatrate_Term_ID@ " + contractToExtend.getC_Flatrate_Term_ID());
+		addLog("@Processed@: @C_Flatrate_Term_ID@ " + contractToExtend.getC_Flatrate_Term_ID());
 
-			getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(contractToExtend));
-		}
+		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(contractToExtend));
+	}
 
 	private void extendAllEligibleTerms(@Nullable final Boolean forceComplete)
-		{
+	{
 		final ICompositeQueryFilter<I_C_Flatrate_Term> notQuitOrVoidedFilter = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
 				.setJoinOr()
 				.addNotInArrayFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, Arrays.asList(X_C_Flatrate_Term.CONTRACTSTATUS_Quit, X_C_Flatrate_Term.CONTRACTSTATUS_Voided))
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, null);
 
-			final Iterator<I_C_Flatrate_Term> termsToExtend = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_AD_PInstance_EndOfTerm_ID, 0, null)
-					.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
-					.addCompareFilter(I_C_Flatrate_Term.COLUMN_NoticeDate, Operator.LESS, SystemTime.asTimestamp())
+		final Iterator<I_C_Flatrate_Term> termsToExtend = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_AD_PInstance_EndOfTerm_ID, 0, null)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMN_NoticeDate, Operator.LESS, SystemTime.asTimestamp())
 				.filter(notQuitOrVoidedFilter)
-					.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
-					.create()
-					.setClient_ID()
-					.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // guaranteed = true, because the term extension changes AD_PInstance_EndOfTerm_ID
-					.iterate(I_C_Flatrate_Term.class);
+				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
+				.create()
+				.setClient_ID()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // guaranteed = true, because the term extension changes AD_PInstance_EndOfTerm_ID
+				.iterate(I_C_Flatrate_Term.class);
 
 		int extendedCounter = 0;
 		int errorCounter = 0;
-			while (termsToExtend.hasNext())
-			{
-				final I_C_Flatrate_Term contractToExtend = termsToExtend.next();
-				final ContractExtendingRequest context = ContractExtendingRequest.builder()
-						.AD_PInstance_ID(getAD_PInstance_ID())
-						.contract(contractToExtend)
-						.forceExtend(false)
-						.forceComplete(forceComplete)
-						.nextTermStartDate(p_startDate)
-						.build();
+		while (termsToExtend.hasNext())
+		{
+			final I_C_Flatrate_Term contractToExtend = termsToExtend.next();
+			final ContractExtendingRequest context = ContractExtendingRequest.builder()
+					.AD_PInstance_ID(getAD_PInstance_ID())
+					.contract(contractToExtend)
+					.forceExtend(false)
+					.forceComplete(forceComplete)
+					.nextTermStartDate(p_startDate)
+					.build();
 			if (tryExtendTerm(context))
 			{
 				extendedCounter++;
@@ -163,7 +163,7 @@ public class C_Flatrate_Term_Extend
 			addLog("Error extending C_FlatrateTerm_ID={} with C_Flatrate_Data_ID={}; AD_Issue_ID={}; {} with message={}",
 					contract.getC_Flatrate_Term_ID(), contract.getC_Flatrate_Data_ID(), issue.getAD_Issue_ID(), e.getClass().getName(), e.getMessage());
 			return false;
-			}
 		}
-
 	}
+
+}

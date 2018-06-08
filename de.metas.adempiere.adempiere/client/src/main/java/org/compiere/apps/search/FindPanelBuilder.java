@@ -13,11 +13,11 @@ package org.compiere.apps.search;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,8 +32,6 @@ import org.compiere.model.GridTab;
 import org.compiere.model.GridTabMaxRowsRestrictionChecker;
 import org.compiere.model.MQuery;
 import org.compiere.util.Env;
-
-import lombok.NonNull;
 
 /**
  * Builder which is able to configure and create instances of {@link Find} dialog, {@link FindPanel}, {@link FindPanelContainer}.
@@ -50,7 +48,6 @@ public class FindPanelBuilder
 	//
 	private String title;
 	private int AD_Tab_ID;
-	private int templateTabId;
 	private int targetTabNo = -1; // metas-2009_0021_AP1_G113
 	private int AD_Table_ID;
 	private String tableName;
@@ -64,7 +61,7 @@ public class FindPanelBuilder
 	private Integer maxQueryRecordsPerTab = null;
 	private boolean embedded = false;
 
-	/* package */ FindPanelBuilder()
+	/* package */FindPanelBuilder()
 	{
 		super();
 	}
@@ -157,17 +154,6 @@ public class FindPanelBuilder
 		return AD_Tab_ID;
 	}
 
-	public FindPanelBuilder setTemplateTabId(final int templateTabId)
-	{
-		this.templateTabId = templateTabId;
-		return this;
-	}
-
-	public int getTemplateTabId()
-	{
-		return templateTabId;
-	}
-
 	public FindPanelBuilder setTargetTabNo(int targetTabNo)
 	{
 		this.targetTabNo = targetTabNo;
@@ -233,8 +219,7 @@ public class FindPanelBuilder
 	{
 		if (findFields == null)
 		{
-			final int tabNo = 0;
-			findFields = GridField.createSearchFields(Env.getCtx(), getTargetWindowNo(), tabNo, getAD_Tab_ID(), getTemplateTabId());
+			findFields = GridField.createSearchFields(Env.getCtx(), getTargetWindowNo(), 0, getAD_Tab_ID());
 		}
 
 		return findFields;
@@ -294,14 +279,15 @@ public class FindPanelBuilder
 	 * 
 	 * @param gridTab
 	 */
-	public FindPanelBuilder setGridTab(@NonNull final GridTab gridTab)
+	public FindPanelBuilder setGridTab(final GridTab gridTab)
 	{
+		Check.assumeNotNull(gridTab, "gridTab not null");
 		this.gridTab = gridTab;
 
+		final int adTabId = gridTab.getAD_Tab_ID();
 		final int targetWindowNo = gridTab.getWindowNo();
 		setTitle(gridTab.getName()); // title
-		setAD_Tab_ID(gridTab.getAD_Tab_ID());
-		setTemplateTabId(gridTab.getTemplateTabId());
+		setAD_Tab_ID(adTabId);
 		setMaxQueryRecordsPerTab(gridTab.getMaxQueryRecords());
 		setTargetWindowNo(targetWindowNo);
 		setTargetTabNo(gridTab.getTabNo()); // metas-2009_0021_AP1_G113

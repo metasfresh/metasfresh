@@ -13,11 +13,11 @@ package de.metas.adempiere.callout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -57,9 +57,6 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.purchasing.api.IBPartnerProductBL;
 
 /**
  * This callout's default behavior is determined by {@link ProductQtyOrderFastInputHandler}. To change the behavior, explicitly add further handlers using
@@ -119,7 +116,7 @@ public class OrderFastInput extends CalloutEngine
 		{
 			return NO_ERROR;
 		}
-
+		
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 		if (!order.isSOTrx())
 		{
@@ -193,11 +190,11 @@ public class OrderFastInput extends CalloutEngine
 		}
 
 		final GridTab gridTab = getGridTab(calloutField);
-		if (gridTab == null)
+		if(gridTab == null)
 		{
 			return NullInfoWindowGridRowBuilders.instance;
 		}
-
+		
 		final InfoWindowGridRowBuilders singletonBuilder = new InfoWindowGridRowBuilders();
 		final IGridTabRowBuilder builder = handlers.createLineBuilderFromHeader(gridTab);
 		builder.setSource(order);
@@ -263,7 +260,7 @@ public class OrderFastInput extends CalloutEngine
 
 	public static I_C_OrderLine addOrderLine(final Properties ctx, final I_C_Order order, final Consumer<Object> orderLineCustomizer)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);		
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		final I_C_OrderLine ol = orderLineBL.createOrderLine(order);
 
@@ -290,19 +287,13 @@ public class OrderFastInput extends CalloutEngine
 		}
 		// end: cg: 01717
 
-		// 3834
-		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(ol.getM_Product_ID(), ol.getC_BPartner_ID());
-
 		// set the prices before saveEx, because otherwise, priceEntered is
 		// reset and that way IOrderLineBL.setPrices can't tell whether it
 		// should use priceEntered or a computed price.
 		ol.setPriceEntered(BigDecimal.ZERO);
-		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.resultUOM(ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
+		orderLineBL.setPricesIfNotIgnored(ctx, ol,
+				true,  // usePriceUOM = true
+				ITrx.TRXNAME_None);
 
 		// set OL_DONT_UPDATE_ORDER to inform the ol's model validator not to update the order
 		final String dontUpdateOrderLock = OL_DONT_UPDATE_ORDER + order.getC_Order_ID();
@@ -377,7 +368,7 @@ public class OrderFastInput extends CalloutEngine
 		{
 			return;
 		}
-
+		
 		if (bPartnerId <= 0 && mTab.getField(COLUMNNAME_C_BPartner_ID).isDisplayed(true))
 		{
 			mTab.getField(COLUMNNAME_C_BPartner_ID).requestFocus();
@@ -412,11 +403,11 @@ public class OrderFastInput extends CalloutEngine
 	public static void clearFields(final ICalloutRecord calloutRecord, final boolean save)
 	{
 		final GridTab gridTab = GridTab.fromCalloutRecordOrNull(calloutRecord);
-		if (gridTab == null)
+		if(gridTab == null)
 		{
 			return;
 		}
-
+		
 		handlers.clearFields(gridTab);
 		if (save)
 		{

@@ -61,6 +61,4 @@ import java.util.Set;
 	Set<String> getColumnsToCheckForChanges();
 
 	boolean isOnlyIfUIAction();
-	
-	boolean isSkipIfCopying();
 }

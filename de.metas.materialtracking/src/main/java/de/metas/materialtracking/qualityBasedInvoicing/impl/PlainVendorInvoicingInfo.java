@@ -1,7 +1,5 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import org.adempiere.bpartner.BPartnerId;
-
 /*
  * #%L
  * de.metas.materialtracking
@@ -32,7 +30,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 
 public class PlainVendorInvoicingInfo implements IVendorInvoicingInfo
 {
-	private BPartnerId billBPartnerId;
+	private int billBPartnerId = -1;
 	private int billLocationId = -1;
 	private int billUserId = -1;
 	private int currencyId = -1;
@@ -57,14 +55,14 @@ public class PlainVendorInvoicingInfo implements IVendorInvoicingInfo
 	}
 
 	@Override
-	public BPartnerId getBill_BPartner_ID()
+	public int getBill_BPartner_ID()
 	{
 		return billBPartnerId;
 	}
 
-	public void setBill_BPartner_ID(final BPartnerId billBPartnerId)
+	public void setBill_BPartner_ID(final int bill_BPartner_ID)
 	{
-		this.billBPartnerId = billBPartnerId;
+		this.billBPartnerId = bill_BPartner_ID;
 	}
 
 	@Override

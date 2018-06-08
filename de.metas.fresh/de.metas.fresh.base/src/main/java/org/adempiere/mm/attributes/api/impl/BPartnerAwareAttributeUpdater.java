@@ -30,10 +30,10 @@ import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.IBPartnerAware;
 import org.adempiere.mm.attributes.api.IBPartnerAwareAttributeService;
 import org.adempiere.mm.attributes.api.IBPartnerAwareFactory;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -124,7 +124,7 @@ public class BPartnerAwareAttributeUpdater
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getCreateASI(asiAware);
 
 		// Check if the attribute was already set in the ASI
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId);
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId, InterfaceWrapperHelper.getTrxName(asi));
 		if (ai != null)
 		{
 			// In case it was, just leave it as it is

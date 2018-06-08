@@ -140,9 +140,4 @@ import lombok.NonNull;
 	{
 		return null;
 	}
-	@Override
-	public boolean isOnlyIfInProductAttributeSet()
-	{
-		return false;
-	}
 }

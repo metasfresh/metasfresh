@@ -13,7 +13,6 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -211,11 +210,11 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	}
 
 	@Override
-	public <T> T getValue(
-			@NonNull final Object model,
-			@NonNull final String columnName,
-			final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
+	public <T> T getValue(final Object model, final String columnName, final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
 	{
+		Check.assumeNotNull(model, "model is not null");
+		Check.assumeNotNull(columnName, "columnName is not null");
+
 		return getHelperThatCanHandle(model)
 				.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
@@ -233,7 +232,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return getHelperThatCanHandle(model)
 				.isValueChanged(model, columnNames);
 	}
-
+	
 	@Override
 	public boolean isNull(final Object model, final String columnName)
 	{
@@ -241,7 +240,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		{
 			return true;
 		}
-
+		
 		return getHelperThatCanHandle(model)
 				.isNull(model, columnName);
 	}
@@ -267,7 +266,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		{
 			return null;
 		}
-
+		
 		// Short-circuit: model is already a PO instance
 		if (model instanceof PO)
 		{
@@ -292,14 +291,9 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 			final Evaluatee evaluatee = (Evaluatee)model;
 			return evaluatee;
 		}
-
+		
 		return getHelperThatCanHandle(model)
 				.getEvaluatee(model);
 	}
 
-	@Override
-	public boolean isCopy(@NonNull final Object model)
-	{
-		return getHelperThatCanHandle(model).isCopy(model);
-	}
 }

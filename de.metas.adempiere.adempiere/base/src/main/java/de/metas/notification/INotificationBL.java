@@ -1,10 +1,10 @@
 package de.metas.notification;
 
-import java.util.List;
-
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.I_AD_User;
 
-import de.metas.notification.spi.IRecordTextProvider;
+import de.metas.notification.spi.INotificationCtxProvider;
 
 /*
  * #%L
@@ -30,19 +30,22 @@ import de.metas.notification.spi.IRecordTextProvider;
 
 public interface INotificationBL extends ISingletonService
 {
-	NotificationSenderTemplate newNotificationSender();
+	void notifyUser(I_AD_User recipient,
+			String adMessage,
+			String messageText,
+			ITableRecordReference referencedrecord);
 
-	void send(UserNotificationRequest request);
+	/**
+	 * This method will be used when a new <{@code INotificationCtxProvider} implementation is registered.
+	 * 
+	 * @param ctxProvider
+	 */
+	void addCtxProvider(INotificationCtxProvider ctxProvider);
 
-	void sendAfterCommit(UserNotificationRequest request);
-
-	void sendAfterCommit(List<UserNotificationRequest> requests);
-
-	void addCtxProvider(IRecordTextProvider ctxProvider);
-
-	void setDefaultCtxProvider(IRecordTextProvider defaultCtxProvider);
-
-	UserNotificationsConfig getUserNotificationsConfig(int adUserId);
-
-	RoleNotificationsConfig getRoleNotificationsConfig(int adRoleId);
+	/**
+	 * Sets the default {@link INotificationCtxProvider} to be used if none of the registered ones match.
+	 * 
+	 * @param defaultCtxProvider
+	 */
+	void setDefaultCtxProvider(INotificationCtxProvider defaultCtxProvider);
 }

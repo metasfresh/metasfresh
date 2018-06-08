@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
@@ -81,7 +80,7 @@ public class MIndexTable extends X_AD_Index_Table
 		});
 	}
 	
-	private static CCache<String, MIndexTable> s_cacheName = new CCache<>(Table_Name + "_Name", 100);
+	private static CCache<String, MIndexTable> s_cacheName = new CCache<String, MIndexTable>(Table_Name + "_Name", 100);
 
 	private MIndexColumn[] m_columns = null;
 
@@ -91,15 +90,15 @@ public class MIndexTable extends X_AD_Index_Table
 		{
 			final List<MIndexTable> listAll = new Query(ctx, Table_Name, null, null)
 				.setOnlyActiveRecords(true)
-				.list(MIndexTable.class);
-			s_indexesByTable = new HashMap<>();
+				.list();
+			s_indexesByTable = new HashMap<String, List<MIndexTable>>();
 			for (final MIndexTable idxTable : listAll)
 			{
 				final String tableName = idxTable.getTableName();
 				List<MIndexTable> list = s_indexesByTable.get(tableName);
 				if (list == null)
 				{
-					list = new ArrayList<>();
+					list = new ArrayList<MIndexTable>();
 				}
 				list.add(idxTable);
 				s_indexesByTable.put(tableName, list);
@@ -172,7 +171,7 @@ public class MIndexTable extends X_AD_Index_Table
 					I_AD_Index_Column.COLUMNNAME_AD_Index_Table_ID + "=?",
 					get_TrxName()).setOrderBy(I_AD_Index_Column.COLUMNNAME_SeqNo)
 					.setOnlyActiveRecords(true).setParameters(
-							new Object[] { getAD_Index_Table_ID() }).list(MIndexColumn.class);
+							new Object[] { getAD_Index_Table_ID() }).list();
 			m_columns = list.toArray(new MIndexColumn[list.size()]);
 		}
 		return m_columns;
@@ -497,7 +496,7 @@ public class MIndexTable extends X_AD_Index_Table
 		}
 
 		final StringBuffer sql = new StringBuffer();
-		final List<Object> params = new ArrayList<>();
+		final List<Object> params = new ArrayList<Object>();
 		for (int i = 0; i < tab.getFieldCount(); i++)
 		{
 			final GridField field = tab.getField(i);
@@ -614,7 +613,7 @@ public class MIndexTable extends X_AD_Index_Table
 
 	public static List<I_AD_Index_Table> getAffectedIndexes(Properties ctx, GridTab tab, boolean newRecord)
 	{
-		final List<I_AD_Index_Table> list = new ArrayList<>();
+		final List<I_AD_Index_Table> list = new ArrayList<I_AD_Index_Table>();
 		for (final MIndexTable index : MIndexTable.getByTable(ctx, tab.getTableName()))
 		{
 			if (index.isMatched(tab, newRecord))

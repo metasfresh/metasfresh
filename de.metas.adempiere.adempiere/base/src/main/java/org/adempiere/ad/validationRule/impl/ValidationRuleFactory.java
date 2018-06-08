@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -55,12 +54,12 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 			logger.info("Registered rule class {} for {}", rule, tableName);
 		}
 	}
-
+	
 	@Override
 	public void registerValidationRuleException(final IValidationRule rule, final String ctxTableName, final String ctxColumnName)
 	{
 		Check.assume(rule != null, "rule not null");
-
+		
 		rule.registerException(ctxTableName, ctxColumnName);
 	}
 
@@ -98,7 +97,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		final String type = valRule.getType();
 		if (X_AD_Val_Rule.TYPE_SQL.equals(type))
 		{
-			return createSQLValidationRule(valRule);
+			return createSQLValidationRule(valRule.getName(), valRule.getCode());
 		}
 		else if (X_AD_Val_Rule.TYPE_Java.equals(type))
 		{
@@ -106,30 +105,12 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		}
 		else if (X_AD_Val_Rule.TYPE_Composite.equals(type))
 		{
-			return createCompositeValidationRule(tableName, valRule.getAD_Val_Rule_ID());
+			return createCompositeValidationRule(tableName, valRule);
 		}
 		else
 		{
 			throw new AdempiereException("@NotSupported@ @Type@:" + type + " (@AD_Val_Rule_ID@:" + valRule.getName() + ")");
 		}
-	}
-
-	private IValidationRule createSQLValidationRule(final I_AD_Val_Rule valRule)
-	{
-		final String whereClause = valRule.getCode();
-		if (Check.isEmpty(whereClause, true)) // shall not happen
-		{
-			logger.warn("Validation rule {} has no WHERE clause. Returning null.", valRule);
-			return NullValidationRule.instance;
-		}
-
-		final Set<String> dependsOnTableNames = Services.get(IValidationRuleDAO.class).retrieveValRuleDependsOnTableNames(valRule.getAD_Val_Rule_ID());
-
-		return SQLValidationRule.builder()
-				.name(valRule.getName())
-				.prefilterWhereClause(whereClause)
-				.dependsOnTableNames(dependsOnTableNames)
-				.build();
 	}
 
 	private IValidationRule createJavaValidationRule(final I_AD_Val_Rule valRule)
@@ -147,21 +128,25 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	@Override
 	public IValidationRule createSQLValidationRule(final String whereClause)
 	{
+		final String name = null; // N/A
+		return createSQLValidationRule(name, whereClause);
+
+	}
+
+	public IValidationRule createSQLValidationRule(final String name, final String whereClause)
+	{
 		if (Check.isEmpty(whereClause, true))
 		{
 			return NullValidationRule.instance;
 		}
 
-		return SQLValidationRule.builder()
-				.prefilterWhereClause(whereClause)
-				.build();
-
+		return new SQLValidationRule(name, whereClause);
 	}
 
-	private IValidationRule createCompositeValidationRule(final String tableName, final int valRuleId)
+	private IValidationRule createCompositeValidationRule(final String tableName, final I_AD_Val_Rule valRule)
 	{
 		final CompositeValidationRule.Builder builder = CompositeValidationRule.builder();
-		for (final I_AD_Val_Rule childValRule : Services.get(IValidationRuleDAO.class).retrieveChildValRules(valRuleId))
+		for (final I_AD_Val_Rule childValRule : Services.get(IValidationRuleDAO.class).retrieveChildValRules(valRule))
 		{
 			final IValidationRule childRule = create(tableName, childValRule);
 			builder.addExploded(childRule);
@@ -170,7 +155,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		return builder.build();
 	}
 
-	private List<IValidationRule> retrieveTableValidationRules(final String tableName, final String ctxTableName, final String ctxColumnName)
+	private List<IValidationRule> retrieveTableValidationRules(final String tableName,final String ctxTableName,  final String ctxColumnName)
 	{
 		final List<IValidationRule> rules = tableRulesMap.get(tableName);
 		if (rules == null || rules.isEmpty())
@@ -209,7 +194,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 
 		for (final ValueNamePair exceptionTableAndColumn : exceptionTableAndColumns)
 		{
-			if (exceptionTableAndColumn.getValue().equals(ctxTableName) && exceptionTableAndColumn.getName().equals(ctxColumnName))
+			if (exceptionTableAndColumn.getValue().equals(ctxTableName) && exceptionTableAndColumn.getName().equals(ctxColumnName) )
 			{
 				return false;
 			}

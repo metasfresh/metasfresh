@@ -42,7 +42,6 @@ import com.google.common.base.MoreObjects;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
-import lombok.NonNull;
 
 /**
  * Create MLookups
@@ -948,22 +947,16 @@ public class MLookupFactory
 
 	public static final class LanguageInfo
 	{
-		public static final LanguageInfo ofSpecificLanguage(@NonNull final Language language)
+		public static final LanguageInfo ofSpecificLanguage(final Language language)
 		{
-			return new LanguageInfo(language.getAD_Language());
-		}
-		
-		public static final LanguageInfo ofSpecificLanguage(final Properties ctx)
-		{
-			final String adLanguage = Env.getAD_Language(ctx);
-			return new LanguageInfo(adLanguage);
-		}
-		
-		public static final LanguageInfo ofSpecificLanguage(final String adLanguage)
-		{
-			return new LanguageInfo(adLanguage);
+			return new LanguageInfo(language);
 		}
 
+		public static final LanguageInfo ofSpecificLanguage(final Properties ctx)
+		{
+			final Language language = Env.getLanguage(ctx);
+			return new LanguageInfo(language);
+		}
 
 		public static final LanguageInfo USE_BASE_LANGAUGE = new LanguageInfo(true);
 		public static final LanguageInfo USE_TRANSLATION_LANGUAGE = new LanguageInfo(false);
@@ -978,12 +971,13 @@ public class MLookupFactory
 			this.adLanguage = null;
 		}
 
-		private LanguageInfo(@NonNull final String adLanguage)
+		private LanguageInfo(final Language language)
 		{
+			super();
+			Check.assumeNotNull(language, "Parameter language is not null");
 			this.useBaseLanguage = null; // N/A
-			this.adLanguage = adLanguage;
+			this.adLanguage = language.getAD_Language();
 		}
-
 
 		@Override
 		public String toString()

@@ -32,7 +32,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Month;
 import java.time.ZoneId;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -57,8 +56,6 @@ import lombok.NonNull;
  */
 public class TimeUtil
 {
-	private static final LocalDate DATE_1970_01_01 = LocalDate.of(1970, Month.JANUARY, 1);
-
 	/**
 	 * Get earliest time of a day (truncate)
 	 *
@@ -830,11 +827,11 @@ public class TimeUtil
 	 */
 	public static String formatElapsed(final Timestamp start, final Timestamp end)
 	{
-		if (start == null || end == null)
+		if(start == null || end == null)
 		{
 			return formatElapsed(0);
 		}
-
+		
 		final long startTime = start != null ? start.getTime() : System.currentTimeMillis();
 		final long endTime = end != null ? end.getTime() : System.currentTimeMillis();
 		return formatElapsed(endTime - startTime);
@@ -1044,26 +1041,6 @@ public class TimeUtil
 		}
 	}
 
-	public static final LocalDateTime min(final LocalDateTime date1, final LocalDateTime date2)
-	{
-		if (date1 == date2)
-		{
-			return date1;
-		}
-		else if (date1 == null)
-		{
-			return date2;
-		}
-		else if (date2 == null)
-		{
-			return date1;
-		}
-		else
-		{
-			return date1.compareTo(date2) <= 0 ? date1 : date2;
-		}
-	}
-
 	/** Truncate Second - S */
 	public static final String TRUNC_SECOND = "S";
 	/** Truncate Minute - M */
@@ -1226,46 +1203,6 @@ public class TimeUtil
 		return new Timestamp(gc.getTimeInMillis());
 	}
 
-	public static Timestamp asTimestamp(final Object obj)
-	{
-		if (obj == null)
-		{
-			return null;
-		}
-		else if (obj instanceof Timestamp)
-		{
-			return (Timestamp)obj;
-		}
-		else if (obj instanceof Date)
-		{
-			return new Timestamp(((Date)obj).getTime());
-		}
-		else if (obj instanceof LocalDateTime)
-		{
-			return Timestamp.valueOf((LocalDateTime)obj);
-		}
-		else if (obj instanceof LocalDate)
-		{
-			final LocalDate localDate = (LocalDate)obj;
-			final Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
-			return Timestamp.from(instant);
-		}
-		else if (obj instanceof LocalTime)
-		{
-			final LocalTime localTime = (LocalTime)obj;
-			final Instant instant = localTime.atDate(DATE_1970_01_01).atZone(ZoneId.systemDefault()).toInstant();
-			return Timestamp.from(instant);
-		}
-		else if (obj instanceof Instant)
-		{
-			return new Timestamp(Date.from((Instant)obj).getTime());
-		}
-		else
-		{
-			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Timestamp.class);
-		}
-	}
-
 	/** @return date as timestamp or null if the date is null */
 	public static Timestamp asTimestamp(final Date date)
 	{
@@ -1288,7 +1225,7 @@ public class TimeUtil
 		return new Timestamp(Date.from(instant).getTime());
 	}
 
-	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
+	public static Timestamp asTimestamp(final LocalDate localDate)
 	{
 		if (localDate == null)
 		{
@@ -1298,9 +1235,7 @@ public class TimeUtil
 		return Timestamp.from(instant);
 	}
 
-	public static Timestamp asTimestamp(
-			@Nullable final LocalDate localDate,
-			@Nullable final LocalTime localTime)
+	public static Timestamp asTimestamp(final LocalDate localDate, final LocalTime localTime)
 	{
 		final LocalDate localDateEff = localDate != null ? localDate : LocalDate.now();
 		final Instant instant;
@@ -1316,7 +1251,7 @@ public class TimeUtil
 		return Timestamp.from(instant);
 	}
 
-	public static Timestamp asTimestamp(@Nullable final LocalDateTime localDateTime)
+	public static Timestamp asTimestamp(final LocalDateTime localDateTime)
 	{
 		if (localDateTime == null)
 		{
@@ -1333,7 +1268,7 @@ public class TimeUtil
 	 * @return year last day with 00:00
 	 */
 	// metas
-	static public Timestamp getYearLastDay(@Nullable Date day)
+	static public Timestamp getYearLastDay(Date day)
 	{
 		if (day == null)
 		{
@@ -1358,7 +1293,7 @@ public class TimeUtil
 	 * @return year first day with 00:00
 	 */
 	// metas
-	static public Timestamp getYearFirstDay(@Nullable Date day)
+	static public Timestamp getYearFirstDay(Date day)
 	{
 		if (day == null)
 		{
@@ -1401,7 +1336,7 @@ public class TimeUtil
 
 	/**
 	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
-	 *
+	 * 
 	 * @param date
 	 * @return
 	 */
@@ -1521,16 +1456,6 @@ public class TimeUtil
 		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 	}
 
-	public static LocalDate asLocalDate(final Timestamp date)
-	{
-		if (date == null)
-		{
-			return null;
-		}
-
-		return date.toLocalDateTime().toLocalDate();
-	}
-
 	public static LocalTime asLocalTime(final Date time)
 	{
 		if (time == null)
@@ -1539,61 +1464,6 @@ public class TimeUtil
 		}
 
 		return time.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
-	}
-
-	public static LocalDateTime asLocalDateTime(final Timestamp date)
-	{
-		return date != null ? date.toLocalDateTime() : null;
-	}
-
-	public static LocalDateTime asLocalDateTime(final Date date)
-	{
-		if (date == null)
-		{
-			return null;
-		}
-		return date.toInstant()
-				.atZone(ZoneId.systemDefault())
-				.toLocalDateTime();
-	}
-
-	public static LocalDateTime asLocalDateTime(final Object obj)
-	{
-		if (obj == null)
-		{
-			return null;
-		}
-		else if (obj instanceof LocalDateTime)
-		{
-			return (LocalDateTime)obj;
-		}
-		else if (obj instanceof LocalDate)
-		{
-			return ((LocalDate)obj).atStartOfDay();
-		}
-		else if (obj instanceof Timestamp)
-		{
-			return ((Timestamp)obj).toLocalDateTime();
-		}
-		else if (obj instanceof Date)
-		{
-			return ((Date)obj).toInstant()
-					.atZone(ZoneId.systemDefault())
-					.toLocalDateTime();
-		}
-		else
-		{
-			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + LocalDateTime.class);
-		}
-	}
-
-	public static Date asDate(@NonNull final LocalDateTime localDateTime)
-	{
-		final Instant instant = localDateTime
-				.atZone(ZoneId.systemDefault())
-				.toInstant();
-
-		return Date.from(instant);
 	}
 
 }	// TimeUtil

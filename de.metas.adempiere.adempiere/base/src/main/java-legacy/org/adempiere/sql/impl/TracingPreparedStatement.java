@@ -409,12 +409,6 @@ class TracingPreparedStatement<StatementType extends CPreparedStatementProxy> ex
 	{
 		return trace(() -> delegate.executeQuery());
 	}
-	
-	@Override
-	public ResultSet executeQueryAndLogMigationScripts() throws SQLException
-	{
-		return trace(() -> delegate.executeQueryAndLogMigationScripts());
-	}
 
 	@Override
 	public final int executeUpdate() throws SQLException

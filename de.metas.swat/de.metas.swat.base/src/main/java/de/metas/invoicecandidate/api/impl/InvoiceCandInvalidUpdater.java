@@ -35,13 +35,14 @@ import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPol
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemChunkProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.IContextAware;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 
 import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -49,7 +50,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
@@ -117,7 +117,7 @@ import lombok.NonNull;
 			{
 				icTagger.untag();
 			}
-			catch (final Exception untagException)
+			catch (Exception untagException)
 			{
 				updateException.addSuppressed(untagException);
 			}
@@ -281,8 +281,6 @@ import lombok.NonNull;
 
 		// update BPartner data from 'ic'
 		invoiceCandidateHandlerBL.setBPartnerData(ic);
-
-		invoiceCandidateHandlerBL.setInvoiceSchedule(ic);
 
 		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic);
 

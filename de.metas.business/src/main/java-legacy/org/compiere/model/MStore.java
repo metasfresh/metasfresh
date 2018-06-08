@@ -30,12 +30,13 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
-import de.metas.email.Mailbox.MailboxBuilder;
+import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -377,19 +378,19 @@ public class MStore extends X_W_Store
 	{
 		final I_AD_Client client = getAD_Client();
 		final boolean isSmtpAuthorization = client.isSmtpAuthorization();
-		final MailboxBuilder mailboxBuilder = Mailbox.builder()
-				.smtpHost(client.getRequestEMail())
-				.email(client.getRequestEMail())
-				.username(client.getRequestUser())
-				.password(client.getRequestUserPW())
-				.smtpAuthorization(isSmtpAuthorization)
-				.sendFromServer(client.isServerEMail())
-				.adClientId(client.getAD_Client_ID());
+		final Mailbox.Builder mailboxBuilder = Mailbox.builder()
+				.setSmtpHost(client.getRequestEMail())
+				.setEmail(client.getRequestEMail())
+				.setUsername(client.getRequestUser())
+				.setPassword(client.getRequestUserPW())
+				.setSmtpAuthorization(isSmtpAuthorization)
+				.setSendFromServer(client.isServerEMail())
+				.setAD_Client_ID(client.getAD_Client_ID());
 		
 		final String wstoreEMail = getWStoreEMail();
 		if(!Check.isEmpty(wstoreEMail, true))
 		{
-			mailboxBuilder.email(wstoreEMail);
+			mailboxBuilder.setEmail(wstoreEMail);
 		}
 
 		// Authorization
@@ -398,8 +399,8 @@ public class MStore extends X_W_Store
 				&& getWStoreUser() != null
 				&& getWStoreUserPW() != null)
 		{
-			mailboxBuilder.username(getWStoreUser());
-			mailboxBuilder.password(getWStoreUserPW());
+			mailboxBuilder.setUsername(getWStoreUser());
+			mailboxBuilder.setPassword(getWStoreUserPW());
 		}
 
 		return mailboxBuilder.build();

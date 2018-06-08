@@ -88,7 +88,7 @@ public class C_PaySelection
 			final I_C_Currency iCurrency = invoice.getC_Currency();
 			final I_C_Currency baCurrency = bankAccount.getC_Currency();
 
-			throw new AdempiereException(MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency, new Object[] {
+			throw new AdempiereException(ctx, MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency, new Object[] {
 					paySelection.getName(), // name of the record we deal with
 					baCurrency.getISO_Code(), // BPBA Actual Currency (actual)
 					iCurrency.getISO_Code() }); // Invoice Currency (expected)

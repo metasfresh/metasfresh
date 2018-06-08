@@ -1,7 +1,5 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import org.adempiere.bpartner.BPartnerId;
-
 /*
  * #%L
  * de.metas.materialtracking
@@ -71,9 +69,9 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 	}
 
 	@Override
-	public BPartnerId getBill_BPartner_ID()
+	public int getBill_BPartner_ID()
 	{
-		return BPartnerId.ofRepoId(getC_Flatrate_Term().getBill_BPartner_ID());
+		return getC_Flatrate_Term().getBill_BPartner_ID();
 	}
 
 	@Override

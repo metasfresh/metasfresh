@@ -56,7 +56,7 @@ import de.metas.adempiere.report.jasper.JasperServerConstants;
 
 @RestController
 @RequestMapping(value = BarcodeRestController.ENDPOINT)
-@Profile(Profiles.PROFILE_JasperService)
+@Profile(Profiles.PROFILE_JasperServer)
 public class BarcodeRestController
 {
 	public static final String ENDPOINT = JasperServerConstants.SERVLET_ROOT + "/BarcodeServlet";

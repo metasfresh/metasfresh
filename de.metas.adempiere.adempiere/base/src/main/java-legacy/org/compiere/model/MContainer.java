@@ -20,10 +20,9 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.util.DB;
 import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
+import org.compiere.util.DB;
 
 /**
  * Container Model
@@ -136,7 +135,7 @@ public class MContainer extends X_CM_Container
 		List<MContainer> list = new Query(project.getCtx(), MContainer.Table_Name, whereClause, project.get_TrxName())
 		.setParameters(new Object[]{project.getCM_WebProject_ID ()})
 		.setOrderBy("CM_Container_ID")
-		.list(MContainer.class);
+		.list();
 		//
 		MContainer[] retValue = new MContainer[list.size ()];
 		list.toArray (retValue);
@@ -393,7 +392,6 @@ public class MContainer extends X_CM_Container
      * 
      * @return ID
      */
-	@Override
 	protected int saveNew_getID ()
 	{
 		if (m_stage != null)
@@ -406,7 +404,6 @@ public class MContainer extends X_CM_Container
      * 
      * @return info
      */
-	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MContainer[").append (get_ID ())
@@ -423,7 +420,6 @@ public class MContainer extends X_CM_Container
      *            save success
      * @return true if saved
      */
-	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (!success)
@@ -464,7 +460,6 @@ public class MContainer extends X_CM_Container
 		}
 	}
 	
-	@Override
 	protected boolean beforeDelete()
 	{
 		// Clean own index
@@ -496,7 +491,6 @@ public class MContainer extends X_CM_Container
      * @param success
      * @return deleted
      */
-	@Override
 	protected boolean afterDelete (boolean success)
 	{
 		if (!success)

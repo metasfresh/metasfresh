@@ -19,7 +19,7 @@ import de.metas.adempiere.report.jasper.JasperServerConstants;
  */
 @RestController
 @RequestMapping(value = MgtRestController.ENDPOINT)
-@Profile(Profiles.PROFILE_JasperService)
+@Profile(Profiles.PROFILE_JasperServer)
 public class MgtRestController
 {
 	public static final String ENDPOINT = JasperServerConstants.SERVLET_ROOT + "/MgtServlet";

@@ -8,7 +8,6 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestException;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Msv3FaultInfo;
@@ -69,7 +68,6 @@ public class MSV3ClientMultiException extends AdempiereException implements Avai
 
 	private MSV3ClientMultiException(@NonNull final Map<AvailabilityRequestItem, Throwable> requestItem2Exception)
 	{
-		super(ImmutableTranslatableString.empty());
 		this.requestItem2Exception = ImmutableMap.copyOf(requestItem2Exception);
 	}
 }

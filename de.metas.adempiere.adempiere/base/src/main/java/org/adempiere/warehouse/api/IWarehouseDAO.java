@@ -10,12 +10,12 @@ package org.adempiere.warehouse.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,9 +25,7 @@ package org.adempiere.warehouse.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.util.ISingletonService;
-import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
@@ -37,7 +35,7 @@ public interface IWarehouseDAO extends ISingletonService
 {
 	/**
 	 * Checks if the warehouse is covered in M_Warehouse_Routing as specific to one or more doc types
-	 *
+	 * 
 	 * @param ctx
 	 * @param warehouseId
 	 * @param trxName
@@ -47,7 +45,7 @@ public interface IWarehouseDAO extends ISingletonService
 
 	/**
 	 * Checks if the warehouse is valid for the given doc type.
-	 *
+	 * 
 	 * @param ctx
 	 * @param warehouseId
 	 * @param docType
@@ -60,7 +58,7 @@ public interface IWarehouseDAO extends ISingletonService
 
 	/**
 	 * retrieve warehouses for a specific docBaseType
-	 *
+	 * 
 	 * @param ctx
 	 * @param docBaseType
 	 * @return
@@ -69,18 +67,16 @@ public interface IWarehouseDAO extends ISingletonService
 
 	/**
 	 * retrieve the warehouse for the given org. The warehouse is taken from AD_OrgInfo. if no warehouse found returns null.
-	 *
+	 * 
 	 * @param ctx
 	 * @param org
 	 * @return
 	 */
 	I_M_Warehouse retrieveOrgWarehouse(Properties ctx, int adOrgId);
 
-	WarehouseId retrieveOrgWarehousePOId(OrgId orgId);
-
 	/**
 	 * Retrieve all warehouses for given organization
-	 *
+	 * 
 	 * @param ctx
 	 * @param AD_Org_ID
 	 * @return list of warehouses
@@ -89,7 +85,7 @@ public interface IWarehouseDAO extends ISingletonService
 
 	/**
 	 * Retrieve all warehouses that have the IsInTransit flag set, for given organization.
-	 *
+	 * 
 	 * @param ctx
 	 * @param adOrgId
 	 * @return list of in transit warehouses
@@ -98,7 +94,7 @@ public interface IWarehouseDAO extends ISingletonService
 
 	/**
 	 * Retrieve first InTransit warehouse
-	 *
+	 * 
 	 * @param ctx
 	 * @param adOrgId
 	 * @return in transit warehouse or null
@@ -107,9 +103,9 @@ public interface IWarehouseDAO extends ISingletonService
 	I_M_Warehouse retrieveWarehouseInTransitForOrg(Properties ctx, int adOrgId);
 
 	/**
-	 *
+	 * 
 	 * Retrieve all warehouses for a given context
-	 *
+	 * 
 	 * @param ctx
 	 * @return
 	 */
@@ -117,10 +113,5 @@ public interface IWarehouseDAO extends ISingletonService
 
 	WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(int warehouseId);
 
-	WarehousePickingGroup getWarehousePickingGroupById(int warehousePickingGroupId);
-
 	int retrieveLocatorIdByBarcode(String barcode);
-
-	int retrieveLocatorIdByValueAndWarehouseId(String locatorvalue, int warehouseId);
-
 }

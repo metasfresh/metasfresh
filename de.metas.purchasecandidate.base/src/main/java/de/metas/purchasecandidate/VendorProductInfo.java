@@ -1,22 +1,15 @@
 package de.metas.purchasecandidate;
 
-import java.util.Optional;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
+import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
 
-import de.metas.payment.api.IPaymentTermRepository;
-import de.metas.payment.api.PaymentTermId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
+import com.google.common.annotations.VisibleForTesting;
+
 import lombok.Builder;
+// import de.metas.interfaces.I_C_BPartner_Product;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -45,115 +38,59 @@ import lombok.Value;
 @Value
 public class VendorProductInfo
 {
-	Optional<VendorProductInfoId> id;
-
-	BPartnerId vendorId;
-
-	/** can be null if the resp. vendor can no payment term and none is flagged as default. */
-	PaymentTermId paymentTermId;
-
-	ProductId productId;
+	int bPartnerProductId;
+	int vendorBPartnerId;
+	int productId;
 
 	String productNo;
+
 	String productName;
 
-	boolean aggregatePOs;
-
-	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProductRecord)
+	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bPartnerProduct)
 	{
-		return builderFromDataRecord()
-				.bpartnerProductRecord(bpartnerProductRecord)
-				.build();
-	}
-
-	@Builder(builderMethodName = "builderFromDataRecord", builderClassName = "FromDataRecordBuilder")
-	public static VendorProductInfo buildFromDataRecord(
-			final I_C_BPartner_Product bpartnerProductRecord,
-			final ProductId productIdOverride,
-			final BPartnerId bpartnerVendorIdOverride,
-			final Boolean aggregatePOsOverride)
-	{
-		final ProductId productId = Util.coalesceSuppliers(
-				() -> productIdOverride,
-				() -> bpartnerProductRecord != null ? ProductId.ofRepoId(bpartnerProductRecord.getM_Product_ID()) : null);
-		if (productId == null)
-		{
-			throw new AdempiereException("Cannot extract ProductId from bpartnerProductRecord=" + bpartnerProductRecord + ", productIdOverride=" + productIdOverride);
-		}
+		final de.metas.interfaces.I_C_BPartner_Product extendedBPartnerProduct = create(
+				bPartnerProduct,
+				de.metas.interfaces.I_C_BPartner_Product.class);
 
 		final String productNo = Util.coalesceSuppliers(
-				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getVendorProductNo() : null,
-				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductNo() : null,
-				() -> Services.get(IProductBL.class).getProductValue(productId));
+				() -> extendedBPartnerProduct.getVendorProductNo(),
+				() -> extendedBPartnerProduct.getProductNo(),
+				() -> bPartnerProduct.getM_Product().getValue());
 
 		final String productName = Util.coalesceSuppliers(
-				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductName() : null,
-				() -> Services.get(IProductBL.class).getProductName(productId));
+				() -> extendedBPartnerProduct.getProductName(),
+				() -> bPartnerProduct.getM_Product().getName());
 
-		final BPartnerId vendorId = Util.coalesceSuppliers(
-				() -> bpartnerVendorIdOverride,
-				() -> bpartnerProductRecord != null ? BPartnerId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_ID()) : null);
-		if (vendorId == null)
-		{
-			throw new AdempiereException("Cannot extract ProductId from bpartnerProductRecord=" + bpartnerProductRecord + ", bpartnerVendorIdOverride=" + bpartnerVendorIdOverride);
-		}
+		final int bPartnerVendorId = Util.firstGreaterThanZero(
+				bPartnerProduct.getC_BPartner_Vendor_ID(),
+				bPartnerProduct.getC_BPartner_ID());
 
-		final I_C_BPartner vendorBPartnerRecord = Services.get(IBPartnerDAO.class).getById(vendorId);
-		final PaymentTermId paymentTermId = retrievePaymentTermIdOrNull(vendorBPartnerRecord);
-
-		final boolean aggregatePOs;
-		if (aggregatePOsOverride != null)
-		{
-			aggregatePOs = aggregatePOsOverride;
-		}
-		else
-		{
-			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(vendorId);
-			aggregatePOs = bpartner.isAggregatePO();
-		}
-
-		return builder()
-				.id(bpartnerProductRecord != null ? VendorProductInfoId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_Product_ID()) : null)
-				.vendorId(vendorId)
-				.paymentTermId(paymentTermId)
-				.productId(productId)
-				.productNo(productNo)
-				.productName(productName)
-				.aggregatePOs(aggregatePOs)
-				.build();
+		return new VendorProductInfo(
+				bPartnerProduct.getC_BPartner_Product_ID(),
+				bPartnerVendorId,
+				bPartnerProduct.getM_Product_ID(),
+				productNo,
+				productName);
 	}
 
-	private static PaymentTermId retrievePaymentTermIdOrNull(@NonNull final I_C_BPartner bpartnerRecord)
+	@VisibleForTesting
+	@Builder(toBuilder = true)
+	VendorProductInfo(
+			int bPartnerProductId,
+			int vendorBPartnerId,
+			int productId,
+			@NonNull String productNo,
+			@NonNull String productName)
 	{
-		if (bpartnerRecord.getPO_PaymentTerm_ID() > 0)
-		{
-			return PaymentTermId.ofRepoId(bpartnerRecord.getPO_PaymentTerm_ID());
-		}
+		Check.assume(bPartnerProductId > 0, "bPartnerProductId > 0");
+		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
+		Check.assume(productId > 0, "productId > 0");
 
-		return Services
-				.get(IPaymentTermRepository.class)
-				.getDefaultPaymentTermIdOrNull();
-	}
-
-	@Builder
-	private VendorProductInfo(
-			final VendorProductInfoId id,
-			@NonNull final BPartnerId vendorId,
-			@Nullable final PaymentTermId paymentTermId,
-			@NonNull final ProductId productId,
-			@NonNull final String productNo,
-			@NonNull final String productName,
-			final boolean aggregatePOs)
-	{
-		this.id = Optional.ofNullable(id);
-
-		this.vendorId = vendorId;
+		this.bPartnerProductId = bPartnerProductId;
+		this.vendorBPartnerId = vendorBPartnerId;
 		this.productId = productId;
-
 		this.productNo = productNo;
 		this.productName = productName;
-		this.aggregatePOs = aggregatePOs;
-		this.paymentTermId = paymentTermId;
 	}
 
 }

@@ -17,7 +17,7 @@ SELECT
 	COALESCE(NULLIF(bp_loc.gln,''), '0000000000000') as bp_gln,
 	substring(COALESCE(NULLIF(bp_loc.gln,''), '0000000000000') from 9 for 4) as bp_gln_9_12,
 	bp_loc.name as addr_name,
-	COALESCE(bp.CompanyName, bp.Name) || ', ' || loc.address1 || ', ' || loc.Postal || ' ' || loc.City,
+	COALESCE(bp.CompanyName, bp.Name) || ', ' || loc.address1 || ', ' || loc.Postal || '' || loc.City,
 	--AI 413 Ship to – Deliver to – Forward to EAN.UCC Global Location Number
 	report.get_barcode($1) || '413' || COALESCE(NULLIF(bp_loc.gln,''), '0000000000000') as barcode
 	

@@ -1,7 +1,6 @@
 package de.metas.inout.impl;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Collection;
 
 /*
@@ -34,18 +33,15 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
-import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public class InOutDAO implements IInOutDAO
@@ -224,18 +220,5 @@ public class InOutDAO implements IInOutDAO
 				.addCompareFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, Operator.GREATER, BigDecimal.ZERO);
 
 		return queryBuilder;
-	}
-
-	@Override
-	public LocalDate getLastInOutDate(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId, final boolean isSOTrx)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_InOutLine.class)
-				.addEqualsFilter(I_M_InOutLine.COLUMN_M_Product_ID, productId.getRepoId())
-				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
-				.addEqualsFilter(I_M_InOut.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
-				.addEqualsFilter(I_M_InOut.COLUMN_IsSOTrx, isSOTrx)
-				.create()
-				.aggregate(I_M_InOut.COLUMN_MovementDate, Aggregate.MAX, LocalDate.class);
 	}
 }

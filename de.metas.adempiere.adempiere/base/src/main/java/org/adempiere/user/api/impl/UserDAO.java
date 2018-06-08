@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -173,15 +174,22 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public I_AD_User retrieveDefaultUser(final I_C_BPartner bpartner)
+	public I_AD_User retrieveDefaultUser(I_C_BPartner bpartner)
 	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(bpartner, true);
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilderOutOfTrx(I_AD_User.class)
+
+		final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_AD_User.class)
+				.addColumn(I_AD_User.COLUMNNAME_AD_User_ID, false)
+				.createQueryOrderBy();
+
+		return queryBL.createQueryBuilder(I_AD_User.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
-				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
 				.create()
+				.setOnlyActiveRecords(true)
+				.setOrderBy(orderBy)
 				.first(I_AD_User.class);
 
 	}
@@ -205,7 +213,7 @@ public class UserDAO implements IUserDAO
 		return queryBL.createQueryBuilderOutOfTrx(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true)
-				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
+				.orderBy().addColumn(I_AD_User.COLUMNNAME_AD_User_ID, false).endOrderBy()
 				.create()
 				.listIds();
 	}

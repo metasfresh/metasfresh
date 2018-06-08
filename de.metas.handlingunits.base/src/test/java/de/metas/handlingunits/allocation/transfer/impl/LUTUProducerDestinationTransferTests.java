@@ -465,7 +465,25 @@ public class LUTUProducerDestinationTransferTests
 					data.helper.uomKg);
 			final List<I_M_HU> splitLUs = lutuProducer.getCreatedHUs();
 
-					assertThat(splitLUs.size(), is(1));
+			//
+			// now do some splitting
+			// final List<I_M_HU> splitLUs = new HUSplitBuilder(data.helper.ctx)
+			// .setHUToSplit(createdIFCOs.get(0))
+			// .setCUQty(new BigDecimal("35"))
+			// // LU
+			// .setLU_M_HU_PI_Item(data.piLU_Item_IFCO)
+			// .setMaxLUToAllocate(new BigDecimal("1"))
+			// // TU
+			// .setTU_M_HU_PI_Item(data.piTU_Item_IFCO)
+			// .setTUPerLU(new BigDecimal("1"))
+			// // CU
+			// .setCUProduct(data.helper.pTomato)
+			// .setCUPerTU(new BigDecimal("40")) // for starts we are OK with one IFCO to be represented inside out aggregated VHU
+			// .setCUUOM(uomKg)
+			// //
+			// .split();
+
+			assertThat(splitLUs.size(), is(1));
 
 			// Validate splitLUsXML
 			final Node splitLuXML = HUXmlConverter.toXml(splitLUs.get(0));
@@ -530,7 +548,7 @@ public class LUTUProducerDestinationTransferTests
 			lutuProducer.setLUItemPI(data.piLU_Item_IFCO);
 			lutuProducer.setMaxLUs(99);
 			lutuProducer.setMaxTUsPerLU(2);
-			lutuProducer.addCUPerTU(data.helper.pTomato, new BigDecimal("20"), data.helper.uomKg); // only allow 20kg, so that the 35kg don't fit into one IFCO
+			lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("20"), data.helper.uomKg); // only allow 20kg, so that the 35kg don't fit into one IFCO
 			lutuProducer.setCreateTUsForRemainingQty(false);
 
 			data.helper.transferMaterialToNewHUs(createdIFCOs,
@@ -937,7 +955,7 @@ public class LUTUProducerDestinationTransferTests
 		transferLutuProducer.setMaxLUs(1);
 		transferLutuProducer.setMaxTUsPerLU(1);
 		transferLutuProducer.setCreateTUsForRemainingQty(false);
-		transferLutuProducer.addCUPerTU(data.helper.pTomato, new BigDecimal("5"), data.helper.uomKg);
+		transferLutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("5"), data.helper.uomKg);
 
 		data.helper.transferMaterialToNewHUs(ImmutableList.of(luPalet),
 				transferLutuProducer,

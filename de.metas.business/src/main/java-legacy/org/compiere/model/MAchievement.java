@@ -21,10 +21,9 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.util.Env;
 import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
+import org.compiere.util.Env;
 
 /**
  * 	Performance Achievement
@@ -60,7 +59,7 @@ public class MAchievement extends X_PA_Achievement
 	{
 		String whereClause ="PA_Measure_ID=? AND IsAchieved='Y'"; 
 				List <MAchievement> list = new Query(ctx,MAchievement.Table_Name,  whereClause, null)
-				.setParameters(new Object[]{PA_Measure_ID}).setOrderBy("SeqNo, DateDoc").list(MAchievement.class);
+				.setParameters(new Object[]{PA_Measure_ID}).setOrderBy("SeqNo, DateDoc").list();
 				
 				MAchievement[] retValue = new MAchievement[list.size ()];
 				retValue = list.toArray (retValue);
@@ -98,7 +97,6 @@ public class MAchievement extends X_PA_Achievement
 	 * 	String Representation
 	 *	@return info
 	 */
-	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MAchievement[");
@@ -111,7 +109,6 @@ public class MAchievement extends X_PA_Achievement
 	 *	@param newRecord new
 	 *	@return true
 	 */
-	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (isAchieved())
@@ -130,7 +127,6 @@ public class MAchievement extends X_PA_Achievement
 	 *	@param success success
 	 *	@return success
 	 */
-	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (success)
@@ -143,7 +139,6 @@ public class MAchievement extends X_PA_Achievement
 	 *	@param success success
 	 *	@return success
 	 */
-	@Override
 	protected boolean afterDelete (boolean success)
 	{
 		if (success)

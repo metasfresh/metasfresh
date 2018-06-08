@@ -184,7 +184,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		// Reset standard columns (out of trx)
 		resetStandardColumns();
 
-		final ImportProcessResult importResult = ImportProcessResult.newInstance(getTargetTableName());
+		final ImportProcessResult importResult = new ImportProcessResult();
+		importResult.setTargetTableName(getTargetTableName());
 
 		//
 		// Update and validate

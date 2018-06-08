@@ -41,6 +41,8 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3TestingTools;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3FaultInfoDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3SubstitutionDataPersister;
+import de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder.MSV3PurchaseOrderClient;
+import de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder.MSV3PurchaseOrderRequestPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Auftragsart;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Bestellen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellenResponse;
@@ -101,17 +103,12 @@ public class MSV3PurchaseOrderClientTest
 	@Test
 	public void placeOrder() throws Exception
 	{
-		final PurchaseOrderRequestItem purchaseOrderRequestItem = PurchaseOrderRequestItem.builder()
-				.purchaseCandidateId(1)
-				.productAndQuantity(ProductAndQuantity.of("10055555", QTY_TO_PURCHASE))
-				.build();
+		final PurchaseOrderRequestItem purchaseOrderRequestItem = new PurchaseOrderRequestItem(
+				1, // id
+				new ProductAndQuantity("10055555", QTY_TO_PURCHASE));
 		final List<PurchaseOrderRequestItem> purchaseOrderRequestItems = ImmutableList.of(purchaseOrderRequestItem);
 
-		final PurchaseOrderRequest request = PurchaseOrderRequest.builder()
-				.orgId(10)
-				.vendorId(20)
-				.purchaseOrderRequestItems(purchaseOrderRequestItems)
-				.build();
+		final PurchaseOrderRequest request = new PurchaseOrderRequest(10, 20, purchaseOrderRequestItems);
 
 		msv3PurchaseOrderClient.prepare(request);
 

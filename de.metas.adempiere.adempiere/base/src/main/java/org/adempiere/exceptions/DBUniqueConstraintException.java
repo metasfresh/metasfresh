@@ -16,14 +16,15 @@ package org.adempiere.exceptions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.sql.SQLException;
 
@@ -33,9 +34,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.MIndexTable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
 
 /**
  * Unique Constraint Exception
@@ -108,21 +106,20 @@ public class DBUniqueConstraintException extends DBException
 	}
 
 	@Override
-	protected ITranslatableString buildMessage()
+	protected String buildMessage()
 	{
 		if (index != null)
 		{
-			final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
-
-			final ITranslatableString indexErrorMsg = index.get_ModelTranslationMap().getColumnTrl(MIndexTable.COLUMNNAME_ErrorMsg, index.getErrorMsg());
-			message.append(indexErrorMsg);
+			final String errorMsgTrl = index.get_Translation(MIndexTable.COLUMNNAME_ErrorMsg);
+			final StringBuilder msg = new StringBuilder();
+			msg.append(errorMsgTrl);
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
-				message.append("(AD_Index_Table:" + index.getName() + ")");
+				msg.append("(AD_Index_Table:" + index.getName() + ")");
 			}
 
-			return message.build();
+			return msg.toString();
 		}
 		else
 		{

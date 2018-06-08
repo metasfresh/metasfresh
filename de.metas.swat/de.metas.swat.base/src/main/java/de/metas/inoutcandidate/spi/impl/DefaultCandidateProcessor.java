@@ -32,6 +32,7 @@ import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
@@ -79,7 +80,7 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 				}
 				else
 				{
-					inOutLine.setDiscarded();
+					inOutLine.setDiscarded(true);
 				}
 
 				//
@@ -89,7 +90,7 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 
 				// task 08745: by default we don't allow this, to stay back wards compatible 
 				final boolean allowShipSingleNonItems = sysConfigBL.getBooleanValue(AD_SYSCONFIG_DE_METAS_INOUTCANDIDATE_ALLOW_SHIP_SINGLE_NON_ITEMS, false);
-				final boolean isItemProduct = productBL.isItem(inOutLine.getProductId());
+				final boolean isItemProduct = productBL.isItem(inOutLine.getM_Product());
 
 				if (!allowShipSingleNonItems && !isItemProduct)
 				{
@@ -101,7 +102,9 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 					boolean inOutContainsItem = false;
 					for (final DeliveryLineCandidate searchIol : inOut.getLines())
 					{
-						if (productBL.isItem(searchIol.getProductId()))
+						final I_M_Product iolProduct = searchIol.getM_Product();
+
+						if (productBL.isItem(iolProduct))
 						{
 							inOutContainsItem = true;
 							break;
@@ -112,11 +115,11 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 						// check if the delivery of this non-item has been
 						// enforced using QtyToDeliver_Override>0
 
-						final BigDecimal qtyToDeliverOverride = inOutLine.getQtyToDeliverOverride();
+						final BigDecimal qtyToDeliverOverride = inOutLine.getShipmentSchedule().getQtyToDeliver_Override();
 
 						if (qtyToDeliverOverride == null || qtyToDeliverOverride.signum() <= 0)
 						{
-							inOutLine.setDiscarded();
+							inOutLine.setDiscarded(true);
 							candidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(ctx, MSG_NO_ITEM_TO_SHIP));
 						}
 					}

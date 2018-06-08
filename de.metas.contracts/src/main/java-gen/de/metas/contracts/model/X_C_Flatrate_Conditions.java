@@ -15,7 +15,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2025576594L;
+	private static final long serialVersionUID = 60443327L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
@@ -39,13 +39,11 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 			setMargin_Min (BigDecimal.ZERO);
 			setM_Product_Flatrate_ID (0);
 			setName (null);
-			setOnFlatrateTermExtend (null); // 'Ca'
 			setProcessed (false); // N
 			setProcessing (false); // N
 			setType_Clearing (null); // EX
 			setType_Conditions (null);
 			setType_Flatrate (null); // NONE
-			setUOMType (null);
         } */
     }
 
@@ -237,8 +235,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
-	/** UnClose = UC */
-	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		Der zukünftige Status des Belegs
@@ -719,51 +715,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** 
-	 * OnFlatrateTermExtend AD_Reference_ID=540853
-	 * Reference name: Conditions_BehaviourWhenExtending
-	 */
-	public static final int ONFLATRATETERMEXTEND_AD_Reference_ID=540853;
-	/** CopyPrice = Co */
-	public static final String ONFLATRATETERMEXTEND_CopyPrice = "Co";
-	/** CalculatePrice = Ca */
-	public static final String ONFLATRATETERMEXTEND_CalculatePrice = "Ca";
-	/** Set Behaviour when extending contract.
-		@param OnFlatrateTermExtend Behaviour when extending contract	  */
-	@Override
-	public void setOnFlatrateTermExtend (java.lang.String OnFlatrateTermExtend)
-	{
-
-		set_Value (COLUMNNAME_OnFlatrateTermExtend, OnFlatrateTermExtend);
-	}
-
-	/** Get Behaviour when extending contract.
-		@return Behaviour when extending contract	  */
-	@Override
-	public java.lang.String getOnFlatrateTermExtend () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_OnFlatrateTermExtend);
-	}
-
-	/** Set Drucktext.
-		@param PrintName 
-		Bezeichnung, die auf dem Dokument oder der Korrespondenz gedruckt werden soll
-	  */
-	@Override
-	public void setPrintName (java.lang.String PrintName)
-	{
-		set_Value (COLUMNNAME_PrintName, PrintName);
-	}
-
-	/** Get Drucktext.
-		@return Bezeichnung, die auf dem Dokument oder der Korrespondenz gedruckt werden soll
-	  */
-	@Override
-	public java.lang.String getPrintName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_PrintName);
-	}
-
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
@@ -856,8 +807,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_QualityBasedInvoicing = "QualityBsd";
 	/** Procurement = Procuremnt */
 	public static final String TYPE_CONDITIONS_Procurement = "Procuremnt";
-	/** Refund = Refund */
-	public static final String TYPE_CONDITIONS_Refund = "Refund";
 	/** Set Vertragsart.
 		@param Type_Conditions Vertragsart	  */
 	@Override

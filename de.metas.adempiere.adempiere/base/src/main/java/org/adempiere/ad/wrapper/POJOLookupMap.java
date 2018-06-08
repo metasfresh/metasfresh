@@ -91,9 +91,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	private static final transient Logger logger = LogManager.getLogger(POJOLookupMap.class);
 	// NOTE: don't add services here, because in testing we are reseting the Services quite offen
 
-	private static final String COLUMNNAME_Created = "Created";
-	private static final String COLUMNNAME_Updated = "Updated";
-
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
 
 	public static POJOLookupMap get()
@@ -398,12 +395,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					id = nextId(tableName);
 					wrapper.setId(id);
 
-					wrapper.setValue(COLUMNNAME_Created, now);
-					wrapper.setValue(COLUMNNAME_Updated, now);
+					wrapper.setValue("Updated", now);
 				}
 				if (hasChanges(model))
 				{
-					wrapper.setValue(COLUMNNAME_Updated, now);
+					wrapper.setValue("Updated", now);
 				}
 
 				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);

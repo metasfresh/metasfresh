@@ -2,9 +2,8 @@ package de.metas.material.dispo.commons.repository;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -12,20 +11,16 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Functions;
 import org.adempiere.util.Functions.MemoizingFunction;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
@@ -61,8 +56,6 @@ import lombok.Value;
 @Service
 public class AvailableToPromiseRepository
 {
-	private static final String SYSCONFIG_ATP_ATTRIBUTES_KEYS = "de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.AttributesKeys";
-
 	@NonNull
 	public BigDecimal retrieveAvailableStockQtySum(@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
@@ -70,13 +63,6 @@ public class AvailableToPromiseRepository
 				.getResultGroups()
 				.stream().map(ResultGroup::getQty).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
-
-	@NonNull
-	public BigDecimal retrieveAvailableStockQtySum(@NonNull final AvailableToPromiseQuery query)
-	{
-		return retrieveAvailableStockQtySum(AvailableToPromiseMultiQuery.of(query));
-	}
-
 
 	@NonNull
 	public AvailableToPromiseResult retrieveAvailableStock(@NonNull AvailableToPromiseMultiQuery multiQuery)
@@ -112,13 +98,12 @@ public class AvailableToPromiseRepository
 		return retrieveAvailableStock(AvailableToPromiseMultiQuery.of(query));
 	}
 
-	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(
-			@NonNull final AvailableToPromiseMultiQuery multiQuery)
+	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
-		final MemoizingFunction<LocalDateTime, Timestamp> maxDateLessOrEqualFunction //
+		final MemoizingFunction<Date, Timestamp> maxDateLessOrEqualFunction //
 				= Functions.memoizing(date -> retrieveMaxDateLessOrEqual(date));
 
-		final UnaryOperator<AvailableToPromiseQuery> setStockQueryDateParameter = //
+		final UnaryOperator<AvailableToPromiseQuery> setStockQueryDataParameter = //
 				stockQuery -> {
 					final Timestamp latestDateOrNull = maxDateLessOrEqualFunction.apply(stockQuery.getDate());
 					if (latestDateOrNull == null)
@@ -136,14 +121,14 @@ public class AvailableToPromiseRepository
 
 		return multiQuery.getQueries()
 				.stream()
-				.map(setStockQueryDateParameter)
+				.map(setStockQueryDataParameter)
 				.filter(Predicates.notNull())
 				.map(createDbQueryForSingleStockQuery)
 				.reduce(IQuery.unionDistict())
 				.orElse(null);
 	}
 
-	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final LocalDateTime date)
+	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final Date date)
 	{
 		return Services.get(IQueryBL.class)
 
@@ -178,43 +163,6 @@ public class AvailableToPromiseRepository
 				.qty(stockRecord.getQty())
 				.build();
 	}
-
-	public Set<AttributesKey> getPredefinedStorageAttributeKeys()
-	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final int clientId = Env.getAD_Client_ID(Env.getCtx());
-		final int orgId = Env.getAD_Org_ID(Env.getCtx());
-
-		final String storageAttributesKeys = sysConfigBL.getValue(
-				SYSCONFIG_ATP_ATTRIBUTES_KEYS,
-				AttributesKey.ALL.getAsString(),
-				clientId, orgId);
-
-		return Splitter.on(",")
-				.trimResults()
-				.omitEmptyStrings()
-				.splitToList(storageAttributesKeys)
-				.stream()
-				.map(attributesKeyStr -> toAttributesKey(attributesKeyStr))
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	private static AttributesKey toAttributesKey(final String storageAttributesKey)
-	{
-		if ("<ALL_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
-		{
-			return AttributesKey.ALL;
-		}
-		else if ("<OTHER_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
-		{
-			return AttributesKey.OTHER;
-		}
-		else
-		{
-			return AttributesKey.ofString(storageAttributesKey);
-		}
-	}
-
 
 	@Value
 	private static class ProductAndAttributeKey

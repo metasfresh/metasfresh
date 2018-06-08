@@ -14,7 +14,7 @@ public class X_C_Contract_Term_Alloc extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 953936324L;
+	private static final long serialVersionUID = -1640019780L;
 
     /** Standard Constructor */
     public X_C_Contract_Term_Alloc (Properties ctx, int C_Contract_Term_Alloc_ID, String trxName)

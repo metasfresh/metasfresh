@@ -15,7 +15,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -83,10 +82,6 @@ import lombok.NonNull;
 			{
 				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
 			}
-			if (importRecord.getC_Job_ID() > 0)
-			{
-				user.setC_Job_ID(importRecord.getC_Job_ID());
-			}
 			user.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
 			updateWithAvailableImportRecordFields(importRecord, user);
 
@@ -106,10 +101,6 @@ import lombok.NonNull;
 			if (importRecord.getC_Greeting_ID() > 0)
 			{
 				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
-			}
-			if (importRecord.getC_Job_ID() > 0)
-			{
-				user.setC_Job_ID(importRecord.getC_Job_ID());
 			}
 			user.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
 			updateWithImportRecordFields(importRecord, user);
@@ -147,6 +138,7 @@ import lombok.NonNull;
 		user.setEMail(importRecord.getEMail());
 		user.setBirthday(importRecord.getBirthday());
 		user.setIsDefaultContact(importRecord.isDefaultContact());
+
 		user.setIsBillToContact_Default(importRecord.isBillToContact_Default());
 		user.setIsShipToContact_Default(importRecord.isShipToContact_Default());
 	}
@@ -157,7 +149,7 @@ import lombok.NonNull;
 	 * @param importRecord
 	 * @param user
 	 */
-	private static void updateWithAvailableImportRecordFields(@NonNull final I_I_BPartner importRecord, @NonNull final I_AD_User user)
+	private static void updateWithAvailableImportRecordFields(final I_I_BPartner importRecord, final I_AD_User user)
 	{
 		user.setFirstname(importRecord.getFirstname());
 		user.setLastname(importRecord.getLastname());
@@ -194,39 +186,8 @@ import lombok.NonNull;
 		{
 			user.setBirthday(importRecord.getBirthday());
 		}
-
-		setUserMemoFields(importRecord, user);
-		setDefaultFlagsForContact(importRecord, user);
-	}
-
-	private static void setUserMemoFields(@NonNull final I_I_BPartner importRecord, @NonNull final I_AD_User user)
-	{
-		setUserMemo(user, importRecord.getMemo());
-		setUserMemo(user, importRecord.getMemo1());
-		setUserMemo(user, importRecord.getMemo2());
-		setUserMemo(user, importRecord.getMemo3());
-	}
-
-	private static void setUserMemo(@NonNull final I_AD_User user, final String newMemoText)
-	{
-		if (!Check.isEmpty(newMemoText, true))
-		{
-			if (Check.isEmpty(user.getMemo(), true))
-			{
-				user.setMemo(newMemoText);
-			}
-			else
-			{
-				user.setMemo(user.getMemo()
-						.concat("\n")
-						.concat(newMemoText));
-			}
-		}
-	}
-
-	private static void setDefaultFlagsForContact(@NonNull final I_I_BPartner importRecord, @NonNull final I_AD_User user)
-	{
 		user.setIsDefaultContact(importRecord.isDefaultContact());
+
 		user.setIsBillToContact_Default(importRecord.isBillToContact_Default());
 		user.setIsShipToContact_Default(importRecord.isShipToContact_Default());
 	}

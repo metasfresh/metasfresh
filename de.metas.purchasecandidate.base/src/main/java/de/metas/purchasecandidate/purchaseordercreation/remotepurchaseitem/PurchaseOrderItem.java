@@ -1,25 +1,21 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_OrderLine;
 
 import com.google.common.base.Objects;
 
-import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderId;
-import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -63,7 +59,7 @@ public class PurchaseOrderItem implements PurchaseItem
 	}
 
 	@Getter
-	private final PurchaseItemId purchaseItemId;
+	private final int purchaseItemId;
 
 	@Getter
 	private final ITableRecordReference transactionReference;
@@ -71,37 +67,46 @@ public class PurchaseOrderItem implements PurchaseItem
 	@Getter
 	private final String remotePurchaseOrderId;
 
-	@Getter(AccessLevel.PRIVATE)
+	@Getter
 	private final PurchaseCandidate purchaseCandidate;
+
+	@Getter
+	private final int purchaseCandidateId;
 
 	@Getter
 	private final BigDecimal purchasedQty;
 
 	@Getter
-	private final LocalDateTime datePromised;
+	private final Date datePromised;
 
 	@Getter
-	private OrderAndLineId purchaseOrderAndLineId;
+	private int purchaseOrderId;
+
+	@Getter
+	private int purchaseOrderLineId;
 
 	@Builder(toBuilder = true)
 	private PurchaseOrderItem(
-			final PurchaseItemId purchaseItemId,
+			final int purchaseItemId,
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final BigDecimal purchasedQty,
-			@NonNull final LocalDateTime datePromised,
+			@NonNull final Date datePromised,
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
-			final OrderAndLineId purchaseOrderAndLineId)
+			final int purchaseOrderId,
+			final int purchaseOrderLineId)
 	{
 		this.purchaseItemId = purchaseItemId;
 
 		this.purchaseCandidate = purchaseCandidate;
+		this.purchaseCandidateId = purchaseCandidate.getPurchaseCandidateId();
 
 		this.purchasedQty = purchasedQty;
 		this.datePromised = datePromised;
 		this.remotePurchaseOrderId = remotePurchaseOrderId;
 
-		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
+		this.purchaseOrderLineId = purchaseOrderLineId;
+		this.purchaseOrderId = purchaseOrderId;
 
 		final boolean remotePurchaseExists = !Objects.equal(remotePurchaseOrderId, NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 		Check.errorIf(remotePurchaseExists && transactionReference == null,
@@ -110,70 +115,45 @@ public class PurchaseOrderItem implements PurchaseItem
 		this.transactionReference = transactionReference;
 	}
 
-	@Override
-	public PurchaseCandidateId getPurchaseCandidateId()
+	public int getProductId()
 	{
-		return getPurchaseCandidate().getId();
-	}
-
-	public ProductId getProductId()
-	{
-		return getPurchaseCandidate().getProductId();
+		return purchaseCandidate.getProductId();
 	}
 
 	public int getUomId()
 	{
-		return getPurchaseCandidate().getUomId();
+		return purchaseCandidate.getUomId();
 	}
 
-	public OrgId getOrgId()
+	public int getOrgId()
 	{
-		return getPurchaseCandidate().getOrgId();
+		return purchaseCandidate.getOrgId();
 	}
 
-	public WarehouseId getWarehouseId()
+	public int getWarehouseId()
 	{
-		return getPurchaseCandidate().getWarehouseId();
+		return purchaseCandidate.getWarehouseId();
 	}
 
-	public BPartnerId getVendorId()
+	public VendorProductInfo getVendorProductInfo()
 	{
-		return getPurchaseCandidate().getVendorId();
+		return purchaseCandidate.getVendorProductInfo();
 	}
 
-	public LocalDateTime getDateRequired()
+	public void setPurchaseOrderLineIdAndMarkProcessed(final int purchaseOrderLineId)
 	{
-		return getPurchaseCandidate().getDateRequired();
-	}
+		this.purchaseOrderId = load(purchaseOrderLineId, I_C_OrderLine.class).getC_Order_ID();
+		this.purchaseOrderLineId = purchaseOrderLineId;
 
-	public OrderId getSalesOrderId()
-	{
-		final OrderAndLineId salesOrderAndLineId = getPurchaseCandidate().getSalesOrderAndLineId();
-		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
-	}
-
-	private BigDecimal getQtyToPurchase()
-	{
-		return getPurchaseCandidate().getQtyToPurchase();
-	}
-
-	public boolean purchaseMatchesRequiredQty()
-	{
-		return getPurchasedQty().compareTo(getQtyToPurchase()) == 0;
-	}
-
-	private boolean purchaseMatchesOrExceedsRequiredQty()
-	{
-		return getPurchasedQty().compareTo(getQtyToPurchase()) >= 0;
-	}
-
-	public void setPurchaseOrderLineIdAndMarkProcessed(@NonNull final OrderAndLineId purchaseOrderAndLineId)
-	{
-		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
-
-		if (purchaseMatchesOrExceedsRequiredQty())
+		final boolean purchaseMatchesOrExceedsRequiredQty = getPurchasedQty().compareTo(purchaseCandidate.getQtyToPurchase()) >= 0;
+		if (purchaseMatchesOrExceedsRequiredQty)
 		{
 			purchaseCandidate.markProcessed();
 		}
+	}
+
+	public boolean pruchaseMatchesRequiredQty()
+	{
+		return getPurchasedQty().compareTo(purchaseCandidate.getQtyToPurchase()) == 0;
 	}
 }

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
 
 
@@ -89,7 +88,7 @@ public class MDunningLevel extends X_C_DunningLevel
 		final String whereClause = "C_Dunning_ID=? AND DaysAfterDue+DaysBetweenDunning<?";
 		List<MDunningLevel> list = new Query(getCtx(), Table_Name, whereClause, get_TrxName())
 				.setParameters(getC_Dunning_ID(), totalDays)
-				.list(MDunningLevel.class);
+				.list();
 		//
 		MDunningLevel[] retValue = new MDunningLevel[list.size()];
 		list.toArray(retValue);

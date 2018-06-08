@@ -10,12 +10,12 @@ package org.adempiere.ui.notifications;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,8 +56,6 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
-import de.metas.notification.UserNotification;
-import de.metas.notification.UserNotificationUtils;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -90,10 +88,34 @@ class SwingEventNotifierFrame extends JFrame
 	/**
 	 * {@link NotificationItem} callback. Called when user do some action on a displayed notification (e.g. close).
 	 */
-	private final INotificationItemPanelCallback notificationItemPanelCallback = item -> executeInEDTAfter(0, () -> fadeAwayAndDisposeNotificationItemNow(item));
+	private final INotificationItemPanelCallback notificationItemPanelCallback = new INotificationItemPanelCallback()
+	{
+
+		@Override
+		public void notificationClosed(final NotificationItem item)
+		{
+			executeInEDTAfter(0, new Runnable()
+			{
+
+				@Override
+				public void run()
+				{
+					fadeAwayAndDisposeNotificationItemNow(item);
+				}
+			});
+		}
+	};
 
 	/** Listen on {@link IEventBus} and fetched notifications to be displayed */
-	private IEventListener eventListener = (eventBus, event) -> SwingEventNotifierFrame.this.onEvent(event);
+	private IEventListener eventListener = new IEventListener()
+	{
+
+		@Override
+		public void onEvent(final IEventBus eventBus, final Event event)
+		{
+			SwingEventNotifierFrame.this.onEvent(event);
+		}
+	};
 
 	/**
 	 * UI scheduled commands executor. Don't use it directly, but use {@link #executeInEDTAfter(long, Runnable)}.
@@ -105,8 +127,10 @@ class SwingEventNotifierFrame extends JFrame
 					.setDaemon(true)
 					.build());
 
-	SwingEventNotifierFrame()
+	SwingEventNotifierFrame(final Set<Topic> topicsToSubscribe)
 	{
+		super();
+
 		//
 		// Max displayed notifications
 		maxNotifications = AdempierePLAF.getInt(SwingEventNotifierUI.NOTIFICATIONS_MaxDisplayed, SwingEventNotifierUI.NOTIFICATIONS_MaxDisplayed_Default);
@@ -143,21 +167,45 @@ class SwingEventNotifierFrame extends JFrame
 		}
 
 		//
-		// Subscribe to user notifications
-		Services.get(IEventBusFactory.class).registerWeakUserNotificationsListener(eventListener);
+		// Subscribe to given topics
+		for (final Topic topic : topicsToSubscribe)
+		{
+			addTopicToSubscribe(topic);
+		}
 
 		//
 		// Schedule and UI update of this frame
-		executeInEDTAfter(0, () -> updateUI());
+		executeInEDTAfter(0, new Runnable()
+		{
+
+			@Override
+			public void run()
+			{
+				updateUI();
+			}
+		});
 
 		//
 		// Check remote endpoint connection status and send notifications in case it's down.
 		Services.get(IEventBusFactory.class).checkRemoteEndpointStatus();
 	}
 
+	public void addTopicToSubscribe(final Topic topic)
+	{
+		if (!topicsSubscribed.add(topic))
+		{
+			// already subscribed
+			return;
+		}
+
+		Services.get(IEventBusFactory.class)
+				.getEventBus(topic)
+				.subscribeWeak(eventListener);
+	}
+
 	public Set<String> getSubscribedTopicNames()
 	{
-		final Set<String> result = new HashSet<>();
+		final Set<String> result = new HashSet<String>();
 		for (final Topic topic : topicsSubscribed)
 		{
 			result.add(topic.getFullName());
@@ -208,12 +256,18 @@ class SwingEventNotifierFrame extends JFrame
 			return;
 		}
 		final long delayMillisOrZero = delayMillis < 0 ? 0 : delayMillis;
-		scheduledExecutor.schedule(() -> {
-			if (isDisposed())
+		scheduledExecutor.schedule(new Runnable()
+		{
+
+			@Override
+			public void run()
 			{
-				return;
+				if (isDisposed())
+				{
+					return;
+				}
+				SwingUtilities.invokeLater(command);
 			}
-			SwingUtilities.invokeLater(command);
 		}, delayMillisOrZero, TimeUnit.MILLISECONDS);
 	}
 
@@ -262,7 +316,14 @@ class SwingEventNotifierFrame extends JFrame
 			// Schedule this notifications to automatically fade away.
 			if (autoFadeAwayTimeMillis > 0)
 			{
-				executeInEDTAfter(autoFadeAwayTimeMillis, () -> fadeAwayAndDisposeNotificationItemNow(item));
+				executeInEDTAfter(autoFadeAwayTimeMillis, new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						fadeAwayAndDisposeNotificationItemNow(item);
+					}
+				});
 			}
 		}
 
@@ -333,7 +394,14 @@ class SwingEventNotifierFrame extends JFrame
 		final NotificationItem notificationItem = toNotificationItem(event);
 
 		// Add the notification item component (in EDT)
-		executeInEDTAfter(0, () -> addNotificationItemNow(notificationItem));
+		executeInEDTAfter(0, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				addNotificationItemNow(notificationItem);
+			}
+		});
 	}
 
 	private boolean isEligibleToBeDisplayed(final Event event)
@@ -351,27 +419,36 @@ class SwingEventNotifierFrame extends JFrame
 	{
 		//
 		// Build summary text
-		final	String summaryTrl =  msgBL.getMsg(getCtx(), MSG_Notification_Summary_Default, new Object[] { Adempiere.getName() });
+		String summaryTrl = event.getSummary();
+		if (!Check.isEmpty(summaryTrl, true))
+		{
+			summaryTrl = EventHtmlMessageFormat.newInstance()
+					.setArguments(event.getProperties())
+					.format(summaryTrl);
+		}
+		if (Check.isEmpty(summaryTrl, true))
+		{
+			summaryTrl = msgBL.getMsg(getCtx(), MSG_Notification_Summary_Default, new Object[] { Adempiere.getName() });
+		}
 
-		final UserNotification notification = UserNotificationUtils.toUserNotification(event);
 		//
 		// Build detail message
 		final StringBuilder detailBuf = new StringBuilder();
 		{
 			// Add plain detail if any
-			final String detailPlain = notification.getDetailPlain();
+			final String detailPlain = event.getDetailPlain();
 			if (!Check.isEmpty(detailPlain, true))
 			{
 				detailBuf.append(detailPlain.trim());
 			}
 
 			// Translate, parse and add detail (AD_Message).
-			final String detailADMessage = notification.getDetailADMessage();
+			final String detailADMessage = event.getDetailADMessage();
 			if (!Check.isEmpty(detailADMessage, true))
 			{
 				final String detailTrl = msgBL.getMsg(getCtx(), detailADMessage);
 				final String detailTrlParsed = EventHtmlMessageFormat.newInstance()
-						.setArguments(notification.getDetailADMessageParams())
+						.setArguments(event.getProperties())
 						.format(detailTrl);
 				if (!Check.isEmpty(detailTrlParsed, true))
 				{

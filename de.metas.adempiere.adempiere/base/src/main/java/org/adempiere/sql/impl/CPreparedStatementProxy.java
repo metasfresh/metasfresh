@@ -116,18 +116,11 @@ import org.compiere.util.DB;
 		return rowSet;
 
 	}
-	
+
 	@Override
 	public final ResultSet executeQuery() throws SQLException
 	{
 		return getStatementImpl().executeQuery();
-	}
-	
-	@Override
-	public ResultSet executeQueryAndLogMigationScripts() throws SQLException
-	{
-		MigrationScriptFileLoggerHolder.logMigrationScript(getSql());
-		return executeQuery();
 	}
 
 	@Override

@@ -26,8 +26,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.exceptions.IExceptionWrapper;
 import org.compiere.util.DB;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.logging.LogManager;
 
 /**
@@ -275,27 +273,28 @@ public class DBException extends AdempiereException
 	}
 
 	@Override
-	protected ITranslatableString buildMessage()
+	protected String buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
-
-		message.append(super.buildMessage());
+		final StringBuilder sb = new StringBuilder();
+		final String msg = super.buildMessage();
+		if (!Check.isEmpty(msg))
+		{
+			sb.append(msg);
+		}
 
 		if (!Check.isEmpty(m_sql))
 		{
-			if (!message.isEmpty())
+			if (sb.length() > 0)
 			{
-				message.append(", ");
+				sb.append("\n");
 			}
-			message.append("\tSQL: ").append(m_sql);
-
+			sb.append("\tSQL: ").append(m_sql);
 			if (m_params != null && m_params.length > 0)
 			{
-				message.append("\n\tSQL params: ").append(Arrays.toString(m_params));
+				sb.append("\n\tSQL params: ").append(Arrays.toString(m_params));
 			}
 		}
-		
-		return message.build();
+		return sb.toString();
 	}
 
 	private static final boolean isErrorCode(final Throwable e, final int errorCode)

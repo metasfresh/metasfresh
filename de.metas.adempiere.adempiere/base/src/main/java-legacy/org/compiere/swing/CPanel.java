@@ -23,8 +23,7 @@ import javax.swing.JPanel;
 
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.AdempierePLAF;
-
-import de.metas.util.MFColor;
+import org.compiere.plaf.CompiereColor;
 
 /**
  *  Adempiere Panel supporting colored Backgrounds
@@ -90,7 +89,7 @@ public class CPanel extends JPanel
 	 * Creates a new <code>CPanel</code> with a double buffer and a flow layout.
 	 * @param bc Initial Background Color
 	 */
-	public CPanel(MFColor bc)
+	public CPanel(CompiereColor bc)
 	{
 		this ();
 		init();
@@ -120,17 +119,17 @@ public class CPanel extends JPanel
 		super.setBackground (bg);
 		//  ignore calls from javax.swing.LookAndFeel.installColors(LookAndFeel.java:61)
 		//if (!Trace.getCallerClass(1).startsWith("javax"))
-		setBackgroundColor (MFColor.ofFlatColor(bg));
+		setBackgroundColor (new CompiereColor(bg));
 	}   //  setBackground
 
 	/**
 	 *  Set Background
 	 *  @param bg AdempiereColor for Background, if null set standard background
 	 */
-	public void setBackgroundColor (MFColor bg)
+	public void setBackgroundColor (CompiereColor bg)
 	{
 		if (bg == null)
-			bg = MFColor.ofFlatColor(AdempierePLAF.getFormBackground());
+			bg = new CompiereColor(AdempierePLAF.getFormBackground());
 		setOpaque(true);	//	not transparent
 		putClientProperty(AdempiereLookAndFeel.BACKGROUND, bg);
 		super.setBackground (bg.getFlatColor());
@@ -140,11 +139,11 @@ public class CPanel extends JPanel
 	 *  Get Background
 	 *  @return Color for Background
 	 */
-	public MFColor getBackgroundColor ()
+	public CompiereColor getBackgroundColor ()
 	{
 		try
 		{
-			return (MFColor)getClientProperty(AdempiereLookAndFeel.BACKGROUND);
+			return (CompiereColor)getClientProperty(AdempiereLookAndFeel.BACKGROUND);
 		}
 		catch (Exception e)
 		{
@@ -198,7 +197,7 @@ public class CPanel extends JPanel
 	{
 		final StringBuilder sb = new StringBuilder("CPanel [");
 		sb.append(super.toString());
-		MFColor bg = getBackgroundColor();
+		CompiereColor bg = getBackgroundColor();
 		if (bg != null)
 			sb.append(bg.toString());
 		sb.append("]");

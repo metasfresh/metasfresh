@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -12,11 +13,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
-import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -24,9 +25,10 @@ import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.impl.InventoryAllocationDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
-import de.metas.inventory.event.InventoryUserNotificationsProducer;
+import de.metas.inventory.event.InventoryProcessedEventBus;
 import lombok.NonNull;
 
 /*
@@ -71,7 +73,7 @@ public class HUInternalUseInventoryProducer
 	//
 	// Parameters
 	private Timestamp _movementDate;
-	private String _docSubType = X_C_DocType.DOCSUBTYPE_InternalUseInventory;
+	private String _docSubType = X_C_DocType.DOCSUBTYPE_MaterialDisposal;
 	private final List<I_M_HU> _hus = new ArrayList<>();
 
 	private HUInternalUseInventoryProducer()
@@ -80,12 +82,12 @@ public class HUInternalUseInventoryProducer
 
 	public List<I_M_Inventory> createInventories()
 	{
-		final Map<Integer, List<I_M_HU>> topLevelHUsByWarehouseId = getTopLevelHUs()
+		final Map<Integer, List<I_M_HU>> husByWarehouseId = getTopLevelHUs()
 				.stream()
 				.collect(Collectors.groupingBy(hu -> hu.getM_Locator().getM_Warehouse_ID())); // we asserted earlier that each HU has a locator
 
 		final List<I_M_Inventory> result = new ArrayList<>();
-		for (final Map.Entry<Integer, List<I_M_HU>> warehouseIdAndHUs : topLevelHUsByWarehouseId.entrySet())
+		for (final Map.Entry<Integer, List<I_M_HU>> warehouseIdAndHUs : husByWarehouseId.entrySet())
 		{
 			final int warehouseId = warehouseIdAndHUs.getKey();
 			final List<I_M_HU> hus = warehouseIdAndHUs.getValue();
@@ -115,9 +117,10 @@ public class HUInternalUseInventoryProducer
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newWithThreadInheritedTrx());
 		huContext.setDate(getMovementDate());
 
+		final I_C_DocType materialDisposalDocType = getInventoryDocType(warehouse);
+
 		// Inventory allocation destination
-		final int materialDisposalDocTypeId = getInventoryDocTypeId(warehouse);
-		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(warehouse, materialDisposalDocTypeId);
+		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(warehouse, materialDisposalDocType);
 
 		//
 		// Create and configure Loader
@@ -147,8 +150,9 @@ public class HUInternalUseInventoryProducer
 		}
 		//
 		// Send notifications
-		InventoryUserNotificationsProducer.newInstance()
-				.notifyGenerated(inventories);
+		InventoryProcessedEventBus.newInstance()
+				.queueEventsUntilCurrentTrxCommit()
+				.notify(inventories);
 
 		return inventories;
 	}
@@ -180,14 +184,15 @@ public class HUInternalUseInventoryProducer
 		return _docSubType;
 	}
 
-	private int getInventoryDocTypeId(final I_M_Warehouse warehouse)
+	private I_C_DocType getInventoryDocType(final I_M_Warehouse warehouse)
 	{
-		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-				.docSubType(getDocSubType())
-				.adClientId(warehouse.getAD_Client_ID())
-				.adOrgId(warehouse.getAD_Org_ID())
-				.build());
+		final I_C_DocType docType = docTypeDAO.getDocType(
+				X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, // doc basetype
+				getDocSubType(), // doc subtype
+				warehouse.getAD_Client_ID(), // client
+				warehouse.getAD_Org_ID() // org
+		);
+		return docType;
 	}
 
 	/**
@@ -200,16 +205,18 @@ public class HUInternalUseInventoryProducer
 	 */
 	public HUInternalUseInventoryProducer addHUs(@NonNull final Collection<I_M_HU> hus)
 	{
-		hus.forEach(this::addHU);
+		assertEveryHuHasLocator(hus);
+		_hus.addAll(hus);
 		return this;
 	}
 
-	public HUInternalUseInventoryProducer addHU(@NonNull final I_M_HU hu)
+	private void assertEveryHuHasLocator(@NonNull final Collection<I_M_HU> hus)
 	{
-		Check.assume(hu.getM_Locator_ID() > 0, "HU needs to have a locator: {}", hu);
-
-		_hus.add(hu);
-		return this;
+		final Optional<I_M_HU> anyHuWithoutLocator = hus.stream().filter(hu -> hu.getM_Locator_ID() <= 0).findAny();
+		if (anyHuWithoutLocator.isPresent())
+		{
+			Check.errorIf(true, "Every given HU needs to have a locator, but at least one hu doesn't; hu=", anyHuWithoutLocator.get());
+		}
 	}
 
 	private List<I_M_HU> getTopLevelHUs()

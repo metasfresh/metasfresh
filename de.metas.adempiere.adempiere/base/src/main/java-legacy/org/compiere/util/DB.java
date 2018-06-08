@@ -28,8 +28,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -57,7 +55,6 @@ import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.db.AdempiereDatabase;
@@ -784,16 +781,10 @@ public final class DB
 			pstmt.setInt(index, ((Integer)param).intValue());
 		else if (param instanceof BigDecimal)
 			pstmt.setBigDecimal(index, (BigDecimal)param);
-		//
 		else if (param instanceof Timestamp)
 			pstmt.setTimestamp(index, (Timestamp)param);
 		else if (param instanceof java.util.Date) // metas: support for java.util.Date
 			pstmt.setTimestamp(index, new Timestamp(((java.util.Date)param).getTime()));
-		else if(param instanceof LocalDateTime)
-			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDateTime)param));
-		else if (param instanceof LocalDate)
-			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDate)param));
-		//
 		else if (param instanceof Boolean)
 			pstmt.setString(index, ((Boolean)param).booleanValue() ? "Y" : "N");
 		else
@@ -911,8 +902,7 @@ public final class DB
 
 			if (updateReturnProcessor != null)
 			{
-				// NOTE: this is an UPDATE query, so we shall log migration scripts
-				final ResultSet rs = cs.executeQueryAndLogMigationScripts();
+				final ResultSet rs = cs.executeQuery();
 				int rows = 0;
 				try
 				{
@@ -2322,26 +2312,20 @@ public final class DB
 	 *
 	 * @param columnName
 	 * @param paramsIn
-	 * @param paramsOut if null, the parameters will be embedded in returned SQL
+	 * @param paramsOut
 	 * @return sql
 	 * @see InArrayQueryFilter
 	 */
 	public static String buildSqlList(final String columnName, final Collection<? extends Object> paramsIn, final List<Object> paramsOut)
 	{
 		Check.assumeNotEmpty(paramsIn, "paramsIn not empty");
+		Check.assumeNotNull(paramsOut, "paramsOut not null");
 
-		final boolean embedSqlParams = paramsOut == null;
-		
-		final InArrayQueryFilter<?> builder = new InArrayQueryFilter<>(columnName, paramsIn)
-				.setEmbedSqlParams(embedSqlParams);
+		final InArrayQueryFilter<?> builder = new InArrayQueryFilter<>(columnName, paramsIn);
 		final String sql = builder.getSql();
-		
-		if(!embedSqlParams)
-		{
-			final List<Object> sqlParams = builder.getSqlParams(Env.getCtx());
-			paramsOut.addAll(sqlParams);
-		}
-		
+		final List<Object> sqlParams = builder.getSqlParams(Env.getCtx());
+
+		paramsOut.addAll(sqlParams);
 		return sql;
 	}
 
@@ -2525,44 +2509,73 @@ public final class DB
 	}
 
 	/**
-	 * @return default value for given <code>returnType</code>
+	 * Retrieves a primite value from given {@link ResultSet}. <br/>
+	 * The value is converted to given type.<br/>
+	 * In case the value is <code>null</code>, a default not null value will be returned (if that type has a default value).
+	 *
+	 * @param rs
+	 * @param columnIndex
+	 * @param returnType
+	 * @return
+	 * @throws SQLException
 	 */
 	@SuppressWarnings("unchecked")
-	public static final <AT> AT retrieveDefaultValue(final Class<AT> returnType)
+	public static final <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
 	{
+		AT value = null;
+		AT defaultValue = null;
 		if (returnType.isAssignableFrom(BigDecimal.class))
 		{
-			return (AT)BigDecimal.ZERO;
+			value = (AT)rs.getBigDecimal(columnIndex);
+			defaultValue = (AT)BigDecimal.ZERO;
 		}
 		else if (returnType.isAssignableFrom(Integer.class) || returnType == int.class)
 		{
-			return (AT)Integer.valueOf(0);
+			value = (AT)Integer.valueOf(rs.getInt(columnIndex));
+			defaultValue = (AT)Integer.valueOf(0);
 		}
 		else if (returnType.isAssignableFrom(Timestamp.class))
 		{
-			return null;
+			value = (AT)rs.getTimestamp(columnIndex);
 		}
 		else if (returnType.isAssignableFrom(Boolean.class) || returnType == boolean.class)
 		{
-			return (AT)Boolean.FALSE;
+			value = (AT)DisplayType.toBoolean(rs.getString(columnIndex), false);
+			defaultValue = (AT)Boolean.FALSE;
 		}
 		else if (returnType.isAssignableFrom(String.class))
 		{
-			return null;
+			value = (AT)rs.getString(columnIndex);
+			defaultValue = null;
 		}
 		else if (returnType.isAssignableFrom(Double.class) || returnType == double.class)
 		{
-			return (AT)Double.valueOf(0.00);
+			value = (AT)Double.valueOf(rs.getDouble(columnIndex));
+			defaultValue = (AT)Double.valueOf(0.00);
 		}
 		else
 		{
-			return null;
+			value = (AT)rs.getObject(columnIndex);
 		}
+
+		// If value is null, set returnType's default value
+		if (value == null)
+		{
+			value = defaultValue;
+		}
+
+		return value;
 	}
 
 	/**
 	 * Retrieves a primite value from given {@link ResultSet}. <br/>
 	 * The value is converted to given type.<br/>
+	 *
+	 * @param rs
+	 * @param columnName
+	 * @param returnType
+	 * @return
+	 * @throws SQLException
 	 */
 	@SuppressWarnings("unchecked")
 	public static final <AT> AT retrieveValue(final ResultSet rs, final String columnName, final Class<AT> returnType) throws SQLException
@@ -2572,11 +2585,11 @@ public final class DB
 		{
 			value = (AT)rs.getBigDecimal(columnName);
 		}
-		else if (returnType.isAssignableFrom(Double.class) || returnType == double.class)
+		else if (returnType.isAssignableFrom(Double.class))
 		{
 			value = (AT)Double.valueOf(rs.getDouble(columnName));
 		}
-		else if (returnType.isAssignableFrom(Integer.class) || returnType == int.class)
+		else if (returnType.isAssignableFrom(Integer.class))
 		{
 			value = (AT)Integer.valueOf(rs.getInt(columnName));
 		}
@@ -2589,9 +2602,9 @@ public final class DB
 			final Timestamp ts = rs.getTimestamp(columnName);
 			value = (AT)ts;
 		}
-		else if (returnType.isAssignableFrom(Boolean.class) || returnType == boolean.class)
+		else if (returnType.isAssignableFrom(Boolean.class))
 		{
-			value = (AT)StringUtils.toBoolean(rs.getString(columnName), Boolean.FALSE);
+			value = (AT)Boolean.valueOf("Y".equals(rs.getString(columnName)));
 		}
 		else if (returnType.isAssignableFrom(String.class))
 		{
@@ -2604,74 +2617,6 @@ public final class DB
 
 		return value;
 	}
-	
-	/**
-	 * Retrieves a primite value from given {@link ResultSet}. <br/>
-	 * The value is converted to given type.<br/>
-	 */
-	@SuppressWarnings("unchecked")
-	public static final <AT> AT retrieveValue(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
-	{
-		final AT value;
-		if (returnType.isAssignableFrom(BigDecimal.class))
-		{
-			value = (AT)rs.getBigDecimal(columnIndex);
-		}
-		else if (returnType.isAssignableFrom(Double.class) || returnType == double.class)
-		{
-			value = (AT)Double.valueOf(rs.getDouble(columnIndex));
-		}
-		else if (returnType.isAssignableFrom(Integer.class) || returnType == int.class)
-		{
-			value = (AT)Integer.valueOf(rs.getInt(columnIndex));
-		}
-		else if (returnType.isAssignableFrom(Timestamp.class))
-		{
-			value = (AT)rs.getTimestamp(columnIndex);
-		}
-		else if (returnType.isAssignableFrom(Date.class))
-		{
-			final Timestamp ts = rs.getTimestamp(columnIndex);
-			value = (AT)ts;
-		}
-		else if(returnType.isAssignableFrom(LocalDateTime.class))
-		{
-			final Timestamp ts = rs.getTimestamp(columnIndex);
-			value = (AT)TimeUtil.asLocalDateTime(ts);
-		}
-		else if(returnType.isAssignableFrom(LocalDate.class))
-		{
-			final Timestamp ts = rs.getTimestamp(columnIndex);
-			value = (AT)TimeUtil.asLocalDate(ts);
-		}
-		else if (returnType.isAssignableFrom(Boolean.class) || returnType == boolean.class)
-		{
-			value = (AT)StringUtils.toBoolean(rs.getString(columnIndex), Boolean.FALSE);
-		}
-		else if (returnType.isAssignableFrom(String.class))
-		{
-			value = (AT)rs.getString(columnIndex);
-		}
-		else
-		{
-			value = (AT)rs.getObject(columnIndex);
-		}
-
-		return value;
-	}
-
-	
-	public static final <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
-	{
-		final AT value = retrieveValue(rs, columnIndex, returnType);
-		if(value != null)
-		{
-			return value;
-		}
-		
-		return retrieveDefaultValue(returnType);
-	}
-
 
 	@FunctionalInterface
 	public static interface ResultSetConsumer
@@ -2705,42 +2650,4 @@ public final class DB
 			close(rs, pstmt);
 		}
 	}
-
-	@FunctionalInterface
-	public static interface ResultSetRowLoader<T>
-	{
-		T retrieveRow(ResultSet rs) throws SQLException;
-	}
-
-	public static <T> T retrieveFirstRowOrNull(
-			@NonNull final String sql,
-			@Nullable final List<Object> sqlParams,
-			@NonNull final ResultSetRowLoader<T> loader)
-	{
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-			if(rs.next())
-			{
-				return loader.retrieveRow(rs);
-			}
-			else
-			{
-				return null;
-			}
-		}
-		catch(SQLException ex)
-		{
-			throw new DBException(sql);
-		}
-		finally
-		{
-			close(rs, pstmt);
-		}
-	}
-
 } // DB

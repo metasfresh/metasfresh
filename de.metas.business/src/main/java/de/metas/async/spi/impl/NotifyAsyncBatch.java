@@ -27,12 +27,11 @@ import java.util.Properties;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.MClient;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -48,8 +47,6 @@ import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.INotifyAsyncBatch;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 
 public class NotifyAsyncBatch implements INotifyAsyncBatch
 {
@@ -98,7 +95,6 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 		Boolean isSent = null;
 		try
 		{
-			// FIXME: pls refactor this thing....
 
 			MADBoilerPlate.sendEMail(new IEMailEditor()
 			{
@@ -123,7 +119,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 				@Override
 				public EMail sendEMail(org.compiere.model.I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributesOld)
 				{
-					final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, Env.getAD_Client_ID(ctx));
+					final MClient client = MClient.get(ctx, Env.getAD_Client_ID(ctx));
 
 					final BoilerPlateContext attributesEffective;
 					{
@@ -153,13 +149,10 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 						return null;
 					//
 
-					Check.assume(asyncBatch.getCreatedBy() > 0, "CreatedBy > 0");
-					notificationBL.send(UserNotificationRequest.builder()
-							.recipientUserId(asyncBatch.getCreatedBy())
-							.subjectPlain(text.getSubject())
-							.contentPlain(message)
-							.targetAction(TargetRecordAction.of(TableRecordReference.of(asyncBatch)))
-							.build());
+					Check.assume(asyncBatch.getCreatedBy() > 0, "CreatedBy is not null!!!");
+					final I_AD_User to = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName);
+
+					notificationBL.notifyUser(to, text.getSubject(), message, TableRecordReference.of(asyncBatch));
 
 					return null;
 				}

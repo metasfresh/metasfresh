@@ -44,8 +44,6 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.impl.OrderLineBL;
 
 /**
@@ -116,22 +114,16 @@ public class OrderLine implements ModelValidator
 
 		if (!ol.isProcessed())
 		{
-			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-					.orderLine(ol)
-					.resultUOM(ResultUOM.PRICE_UOM)
-					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-					.updateLineNetAmt(true)
-					.build());
+			orderLineBL.setPricesIfNotIgnored(po.getCtx(), ol,
+					true, // usePriceUOM
+					po.get_TrxName());
 
 			logger.debug("Setting TaxAmtInfo for {}", ol);
-			orderLineBL.setTaxAmtInfo(ol);
+			orderLineBL.setTaxAmtInfoIfNotIgnored(po.getCtx(), ol, po.get_TrxName());
 		}
 
 		logger.debug("Making sure {} has a M_Shipper_ID", ol);
-		if(ol.getM_Shipper_ID() <= 0)
-		{
-			orderLineBL.setShipper(ol);
-		}
+		orderLineBL.setShipperIfNotIgnored(po.getCtx(), ol, false, po.get_TrxName());
 	}
 
 	private void onNewAndChangeAndDelete(final PO po, int type)
@@ -153,7 +145,7 @@ public class OrderLine implements ModelValidator
 			final boolean newOrDelete = type == TYPE_AFTER_NEW || type == TYPE_AFTER_DELETE;
 			final boolean linesAmtChanged = po.is_ValueChanged(I_C_OrderLine.COLUMNNAME_LineNetAmt);
 			final boolean notFixPrice = !X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(orderPO.getFreightCostRule());
-			final boolean isCopy = InterfaceWrapperHelper.isCopy(po); // metas: cg: task US215
+			final boolean isCopy = po.getDynAttribute(PO.DYNATTR_CopyRecordSupport_OldValue) == null ? false : true; // metas: cg: task US215
 			if (!isCopy && (linesAmtChanged || notFixPrice || newOrDelete))
 			{
 				if (MFreightCost.retriveFor(po.getCtx(), ol.getM_Product_ID(), po.get_TrxName()).isEmpty())

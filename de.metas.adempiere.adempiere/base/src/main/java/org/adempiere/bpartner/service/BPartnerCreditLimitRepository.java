@@ -8,7 +8,6 @@ import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -73,7 +72,7 @@ public class BPartnerCreditLimitRepository
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, true)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_IsApproved, true)
 				.addCompareFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
@@ -89,7 +88,7 @@ public class BPartnerCreditLimitRepository
 		final Comparator<I_C_BPartner_CreditLimit> byDateFromRevesed = //
 				Comparator.<I_C_BPartner_CreditLimit, Date> comparing(bpCreditLimit -> bpCreditLimit.getDateFrom()).reversed();
 
-		return byDateFromRevesed.thenComparing(byTypeSeqNoReversed);
+		return byTypeSeqNoReversed.thenComparing(byDateFromRevesed);
 	}
 
 	@Builder
@@ -118,20 +117,5 @@ public class BPartnerCreditLimitRepository
 				.creditLimitTypeId(type.getC_CreditLimit_Type_ID())
 				.seqNo(type.getSeqNo())
 				.build();
-	}
-
-	public Optional<I_C_BPartner_CreditLimit> retrieveCreditLimitByBPartnerId(final int bpartnerId, final int typeId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, true)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_CreditLimit_Type_ID, typeId)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.create()
-				.stream()
-				.sorted(comparator)
-				.findFirst();
 	}
 }

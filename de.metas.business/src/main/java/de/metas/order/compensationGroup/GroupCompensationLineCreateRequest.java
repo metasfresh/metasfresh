@@ -2,7 +2,6 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
-import de.metas.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,7 +40,7 @@ public final class GroupCompensationLineCreateRequest
 	@NonNull
 	private final GroupCompensationAmtType amtType;
 
-	private final Percent percentage;
+	private final BigDecimal percentage;
 	private final BigDecimal qty;
 	private final BigDecimal price;
 	

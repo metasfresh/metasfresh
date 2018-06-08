@@ -33,7 +33,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -155,7 +154,7 @@ public class LULoaderTest extends AbstractHUTest
 		final I_M_HU luHU = luHUs.get(luHUIndex);
 
 		final I_M_HU_Item tuParentHUItem = tuHU.getM_HU_Item_Parent();
-		final I_M_HU_PI_Item tuParentPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(tuParentHUItem);
+		final I_M_HU_PI_Item tuParentPIItem = tuParentHUItem.getM_HU_PI_Item();
 		Assert.assertEquals("TU was not added to right LU PI Item: " + tuHU,
 				luPIItem,// expected,
 				tuParentPIItem// actual

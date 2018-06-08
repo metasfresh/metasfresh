@@ -45,6 +45,11 @@ public class PrinterHWList implements Serializable
 		this.hwPrinters = hwPrinters;
 	}
 
+	public PrinterHWList()
+	{
+		super();
+	}
+
 	@Override
 	public String toString()
 	{

@@ -10,14 +10,14 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,6 +31,7 @@ import java.util.List;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Trx;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -306,7 +307,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		//
 		// Manually split the credit memo line.
 		// In production this will be generated when we generate the invoice
-		final I_C_Invoice_Candidate ic2_split = invoiceCandBL.splitCandidate(ic2);
+		final I_C_Invoice_Candidate ic2_split = invoiceCandBL.splitCandidate(ic2, Trx.createTrxName());
 		POJOWrapper.setInstanceName(ic2_split, "ic2_split");
 		getInvoiceCandidateValidator().invalidateCandidates(ic2_split);
 		InterfaceWrapperHelper.save(ic2_split);

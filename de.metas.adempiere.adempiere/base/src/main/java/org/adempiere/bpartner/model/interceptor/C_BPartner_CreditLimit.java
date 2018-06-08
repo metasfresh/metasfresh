@@ -57,7 +57,7 @@ public class C_BPartner_CreditLimit
 			final boolean isAutoApproval = type.isAutoApproval();
 			if (isAutoApproval)
 			{
-				bpCreditLimit.setProcessed(true);
+				bpCreditLimit.setIsApproved(true);
 			}
 		}
 	}

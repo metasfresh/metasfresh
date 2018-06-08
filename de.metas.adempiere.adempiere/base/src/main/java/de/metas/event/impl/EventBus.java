@@ -262,13 +262,10 @@ final class EventBus implements IEventBus
 		}
 		catch (final RuntimeException e)
 		{
-			if (!Adempiere.isUnitTestMode())
-			{
-				final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
-				eventLogUserService
-						.newErrorLogEntry(eventListener.getClass(), e)
-						.createAndStore();
-			}
+			final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
+			eventLogUserService
+					.newErrorLogEntry(eventListener.getClass(), e)
+					.createAndStore();
 		}
 		finally
 		{

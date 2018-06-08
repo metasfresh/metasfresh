@@ -27,6 +27,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -37,7 +41,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.StatusBar;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VLookup;
@@ -46,17 +49,16 @@ import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.MMatchPO;
+import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 /**
  *  Manual Matching
@@ -79,7 +81,6 @@ public class VMatch extends Match
 	 *  @param WindowNo window
 	 *  @param frame frame
 	 */
-	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		m_WindowNo = WindowNo;
@@ -101,7 +102,6 @@ public class VMatch extends Match
 			//
 			new Thread()
 			{
-				@Override
 				public void run()
 				{
 					log.info("Starting ...");
@@ -311,7 +311,7 @@ public class VMatch extends Match
 		xMatchedToTable.prepareTable(layout, "", "", true, "");
 
 		//  Visual
-		AdempierePLAF.setDefaultBackground(panel);
+		CompiereColor.setBackground (panel);
 
 		//  Listener
 		matchFrom.addActionListener(this);
@@ -339,7 +339,6 @@ public class VMatch extends Match
 	/**
 	 * 	Dispose
 	 */
-	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -352,7 +351,6 @@ public class VMatch extends Match
 	 *  Action Listener
 	 *  @param e event
 	 */
-	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -419,7 +417,6 @@ public class VMatch extends Match
 	 *  List Selection Listener - get Info and fill xMatchedTo
 	 *  @param e event
 	 */
-	@Override
 	public void valueChanged (ListSelectionEvent e)
 	{
 		if (e.getValueIsAdjusting())
@@ -472,7 +469,6 @@ public class VMatch extends Match
 	 *  Table Model Listener - calculate matchd Qty
 	 *  @param e event
 	 */
-	@Override
 	public void tableChanged (TableModelEvent e)
 	{
 		if (e.getColumn() != 0)

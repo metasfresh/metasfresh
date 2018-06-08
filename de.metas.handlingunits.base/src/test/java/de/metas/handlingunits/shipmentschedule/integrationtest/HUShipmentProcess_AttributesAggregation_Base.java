@@ -26,7 +26,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
+import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
 
 /*
  * #%L
@@ -57,10 +57,8 @@ import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
  * @task FRESH-578 #275
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class,
-		ShutdownListener.class,
-		ShipperGatewayServicesRegistry.class})
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
+		ShipperGatewayRegistry.class})
 public abstract class HUShipmentProcess_AttributesAggregation_Base extends AbstractHUShipmentProcessIntegrationTest
 {
 	private ShipmentScheduleQtyPickedExpectations afterPick_ShipmentScheduleQtyPickedExpectations = null;

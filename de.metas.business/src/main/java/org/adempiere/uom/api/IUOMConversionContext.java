@@ -39,19 +39,12 @@ import de.metas.quantity.Quantity;
  */
 public interface IUOMConversionContext
 {
-	@Deprecated
 	public static IUOMConversionContext of(final I_M_Product product)
 	{
-		return of(product != null ? product.getM_Product_ID() : -1);
-	}
-	
-	public static IUOMConversionContext of(final int productId)
-	{
-		return new UOMConversionContext(productId);
+		return new UOMConversionContext(product);
 	}
 
-
-	int getProductId();
+	I_M_Product getM_Product();
 
 	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code> using this context.

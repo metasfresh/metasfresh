@@ -48,4 +48,5 @@ public interface IHUInventoryBL extends ISingletonService
 	 * @return
 	 */
 	boolean isMaterialDisposal(I_M_Inventory inventory);
+
 }

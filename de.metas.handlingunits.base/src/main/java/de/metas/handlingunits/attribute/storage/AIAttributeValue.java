@@ -194,12 +194,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 		return true;
 	}
 
-	@Override
-	public boolean isOnlyIfInProductAttributeSet()
-	{
-		return false;
-	}
-
 	/**
 	 * @return our attribute instance's {@code M_Attribute_ID}.
 	 */

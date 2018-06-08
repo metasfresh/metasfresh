@@ -23,14 +23,12 @@ package de.metas.document;
  */
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_DocType;
 
-import de.metas.document.engine.IDocumentBL;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -39,7 +37,7 @@ import lombok.Value;
 public interface IDocTypeDAO extends ISingletonService
 {
 	I_C_DocType getById(int docTypeId);
-
+	
 	/**
 	 * @return C_DocType_ID or -1 if not found
 	 */
@@ -52,11 +50,17 @@ public interface IDocTypeDAO extends ISingletonService
 	@Deprecated
 	int getDocTypeId(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
 
-	int getDocTypeId(DocTypeQuery query) throws DocTypeNotFoundException;
+	int getDocTypeId(DocTypeQuery query);
 
 	/**
-	 * @param docSubType doc sub type or {@link #DOCSUBTYPE_Any}.
 	 *
+	 * @param ctx
+	 * @param docBaseType
+	 * @param docSubType doc sub type or {@link #DOCSUBTYPE_Any}.
+	 * @param adClientId
+	 * @param adOrgId
+	 * @param trxName
+	 * @return C_DocType_ID
 	 * @throws DocTypeNotFoundException if no document type was found
 	 */
 	@Deprecated
@@ -65,13 +69,7 @@ public interface IDocTypeDAO extends ISingletonService
 	@Deprecated
 	I_C_DocType getDocType(String docBaseType, String docSubType, int adClientId, int adOrgId);
 
-	Optional<I_C_DocType> retrieveDocType(DocTypeQuery docTypeQuery);
-
-	/**
-	 * Returns {@code true} if the given {@code documentModel}'s {@link IDocumentBL#COLUMNNAME_C_DocType_ID} value
-	 * is one of the ID that are matched by the given {@code docTypeQuery}.
-	 */
-	boolean queryMatchesDocTypeId(DocTypeQuery docTypeQuery, int docTypeId);
+	I_C_DocType getDocTypeOrNull(DocTypeQuery query);
 
 	/**
 	 * Retrieve all the doc types of a certain base type as a list
@@ -83,7 +81,7 @@ public interface IDocTypeDAO extends ISingletonService
 
 	/**
 	 * Retrieve the Counter_DocBaseType that fits the given DocBaseType.
-	 *
+	 * 
 	 * @param ctx
 	 * @param docBaseType
 	 * @return

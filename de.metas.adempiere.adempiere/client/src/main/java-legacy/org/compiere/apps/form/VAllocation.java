@@ -44,6 +44,7 @@ import org.compiere.grid.ed.VLookup;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
+import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
@@ -136,7 +137,7 @@ public class VAllocation extends Allocation
 	 */
 	private void jbInit() throws Exception
 	{
-		AdempierePLAF.setDefaultBackground(panel);
+		CompiereColor.setBackground(panel);
 		//
 		mainPanel.setLayout(mainLayout);
 		dateLabel.setText(Msg.getMsg(Env.getCtx(), "Date"));

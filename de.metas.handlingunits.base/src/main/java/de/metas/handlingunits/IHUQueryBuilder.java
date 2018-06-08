@@ -204,8 +204,6 @@ public interface IHUQueryBuilder
 	 */
 	Set<Integer> getOnlyInWarehouseIds();
 
-	IHUQueryBuilder addOnlyInLocatorId(int locatorId);
-
 	/**
 	 * See {@link IStorageQuery#setExcludeAfterPickingLocator(boolean)}.
 	 *

@@ -3,8 +3,6 @@ package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
@@ -12,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -39,22 +36,24 @@ import lombok.NonNull;
 @Service
 public class VendorGatewayInvokerFactory
 {
-	public VendorGatewayInvoker createForVendorId(@NonNull final BPartnerId vendorId)
+	public VendorGatewayInvoker createForVendorId(final int vendorBPartnerId)
 	{
-		final OrgId orgId = OrgId.ofRepoIdOrNull(Env.getAD_Org_ID(Env.getCtx()));
-		Check.errorIf(orgId == null || orgId.isAny(),
+		Check.assume(vendorBPartnerId > 0, "Given parameter vendorBPartnerId > 0");
+
+		final int orgId = Env.getAD_Org_ID(Env.getCtx());
+		Check.errorIf(orgId <= 0,
 				"Missing AD_Org_ID in the current ctx; ctx={}",
 				(Supplier<Object[]>)() -> Env.getEntireContext(Env.getCtx()));
 
 		final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
 		final Optional<VendorGatewayService> vendorGatewayService = vendorGatewayRegistry
-				.getSingleVendorGatewayService(vendorId.getRepoId());
+				.getSingleVendorGatewayService(vendorBPartnerId);
 
 		if (vendorGatewayService.isPresent())
 		{
 			return RealVendorGatewayInvoker.builder()
 					.orgId(orgId)
-					.vendorId(vendorId)
+					.vendorBPartnerId(vendorBPartnerId)
 					.vendorGatewayService(vendorGatewayService.get())
 					.build();
 		}

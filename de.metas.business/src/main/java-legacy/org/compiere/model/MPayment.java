@@ -29,13 +29,14 @@ import java.util.Properties;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -55,6 +56,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.process.IProcess;
 import de.metas.process.ProcessInfo;
 
@@ -117,7 +119,7 @@ public final class MPayment extends X_C_Payment
 		final String whereClause = "C_BPartner_ID=?";
 		final List<MPayment> list = new Query(ctx, I_C_Payment.Table_Name, whereClause, trxName)
 				.setParameters(C_BPartner_ID)
-				.list(MPayment.class);
+				.list();
 
 		//
 		final MPayment[] retValue = new MPayment[list.size()];
@@ -1887,14 +1889,9 @@ public final class MPayment extends X_C_Payment
 			return;
 		}
 
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
+		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
+		final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(partner);
 		final String soCreditStatus = stats.getSOCreditStatus();
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus))
-		{
-			return;
-		}
-
 		final BigDecimal crediUsed = stats.getSOCreditUsed();
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());
@@ -2210,6 +2207,7 @@ public final class MPayment extends X_C_Payment
 	public boolean allocateIt()
 	{
 		final boolean result = allocateIt0();
+		Services.get(IPrepayOrderAllocationBL.class).paymentAfterAllocateIt(this, result);
 		return result;
 	}
 
@@ -2932,7 +2930,7 @@ public final class MPayment extends X_C_Payment
 		final List<MInvoice> invoices = new Query(getCtx(), I_C_Invoice.Table_Name, whereClause, get_TrxName())
 				.setParameters(parameters)
 				.setClient_ID()
-				.list(MInvoice.class);
+				.list();
 
 		if (invoices.size() == 1)
 		{

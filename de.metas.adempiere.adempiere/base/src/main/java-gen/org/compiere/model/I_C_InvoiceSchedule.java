@@ -1,10 +1,29 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for C_InvoiceSchedule
  *  @author Adempiere (generated) 
+ *  @version Release 3.5.4a
  */
-@SuppressWarnings("javadoc")
 public interface I_C_InvoiceSchedule 
 {
 
@@ -12,469 +31,235 @@ public interface I_C_InvoiceSchedule
     public static final String Table_Name = "C_InvoiceSchedule";
 
     /** AD_Table_ID=257 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org
+    /** AccessLevel = 3 - Client - Org 
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+    BigDecimal accessLevel = BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
-	/**
-	 * Get Mandant.
-	 * Client/Tenant for this installation.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Client_ID();
-
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, org.compiere.model.I_AD_Client>(I_C_InvoiceSchedule.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/** Get Client.
+	  * Client/Tenant for this installation.
+	  */
+	public int getAD_Client_ID();
 
-	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, org.compiere.model.I_AD_Org>(I_C_InvoiceSchedule.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/**
-	 * Set Betrag.
-	 * Amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAmt (java.math.BigDecimal Amt);
+	/** Set Organization.
+	  * Organizational entity within client
+	  */
+	public void setAD_Org_ID (int AD_Org_ID);
 
-	/**
-	 * Get Betrag.
-	 * Amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getAmt();
+	/** Get Organization.
+	  * Organizational entity within client
+	  */
+	public int getAD_Org_ID();
 
-    /** Column definition for Amt */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_Amt = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "Amt", null);
     /** Column name Amt */
     public static final String COLUMNNAME_Amt = "Amt";
 
-	/**
-	 * Set Terminplan Rechnung.
-	 * Schedule for generating Invoices
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID);
+	/** Set Amount.
+	  * Amount
+	  */
+	public void setAmt (BigDecimal Amt);
 
-	/**
-	 * Get Terminplan Rechnung.
-	 * Schedule for generating Invoices
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_InvoiceSchedule_ID();
+	/** Get Amount.
+	  * Amount
+	  */
+	public BigDecimal getAmt();
 
-    /** Column definition for C_InvoiceSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_C_InvoiceSchedule_ID = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "C_InvoiceSchedule_ID", null);
     /** Column name C_InvoiceSchedule_ID */
     public static final String COLUMNNAME_C_InvoiceSchedule_ID = "C_InvoiceSchedule_ID";
 
-	/**
-	 * Get Erstellt.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
+	/** Set Invoice Schedule.
+	  * Schedule for generating Invoices
+	  */
+	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID);
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "Created", null);
+	/** Get Invoice Schedule.
+	  * Schedule for generating Invoices
+	  */
+	public int getC_InvoiceSchedule_ID();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/**
-	 * Get Erstellt durch.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
+	/** Get Created.
+	  * Date this record was created
+	  */
+	public Timestamp getCreated();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, org.compiere.model.I_AD_User>(I_C_InvoiceSchedule.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/**
-	 * Set Beschreibung.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDescription (java.lang.String Description);
+	/** Get Created By.
+	  * User who created this records
+	  */
+	public int getCreatedBy();
 
-	/**
-	 * Get Beschreibung.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDescription();
-
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
-	/**
-	 * Set Invoice on even weeks.
-	 * Send invoices on even weeks
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setEvenInvoiceWeek (boolean EvenInvoiceWeek);
+	/** Set Description.
+	  * Optional short description of the record
+	  */
+	public void setDescription (String Description);
 
-	/**
-	 * Get Invoice on even weeks.
-	 * Send invoices on even weeks
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public boolean isEvenInvoiceWeek();
+	/** Get Description.
+	  * Optional short description of the record
+	  */
+	public String getDescription();
 
-    /** Column definition for EvenInvoiceWeek */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_EvenInvoiceWeek = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "EvenInvoiceWeek", null);
     /** Column name EvenInvoiceWeek */
     public static final String COLUMNNAME_EvenInvoiceWeek = "EvenInvoiceWeek";
 
-	/**
-	 * Set Rechnungstag.
-	 * Day of Invoice Generation
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setInvoiceDay (int InvoiceDay);
+	/** Set Invoice on even weeks.
+	  * Send invoices on even weeks
+	  */
+	public void setEvenInvoiceWeek (boolean EvenInvoiceWeek);
 
-	/**
-	 * Get Rechnungstag.
-	 * Day of Invoice Generation
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getInvoiceDay();
+	/** Get Invoice on even weeks.
+	  * Send invoices on even weeks
+	  */
+	public boolean isEvenInvoiceWeek();
 
-    /** Column definition for InvoiceDay */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_InvoiceDay = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "InvoiceDay", null);
     /** Column name InvoiceDay */
     public static final String COLUMNNAME_InvoiceDay = "InvoiceDay";
 
-	/**
-	 * Set Letzter Tag Lieferungen.
-	 * Last day for including shipments
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setInvoiceDayCutoff (int InvoiceDayCutoff);
+	/** Set Invoice Day.
+	  * Day of Invoice Generation
+	  */
+	public void setInvoiceDay (int InvoiceDay);
 
-	/**
-	 * Get Letzter Tag Lieferungen.
-	 * Last day for including shipments
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getInvoiceDayCutoff();
+	/** Get Invoice Day.
+	  * Day of Invoice Generation
+	  */
+	public int getInvoiceDay();
 
-    /** Column definition for InvoiceDayCutoff */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_InvoiceDayCutoff = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "InvoiceDayCutoff", null);
     /** Column name InvoiceDayCutoff */
     public static final String COLUMNNAME_InvoiceDayCutoff = "InvoiceDayCutoff";
 
-	/**
-	 * Set Anz. Einheiten zwischen zwei Rechnungsstellungen.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setInvoiceDistance (int InvoiceDistance);
+	/** Set Invoice day cut-off.
+	  * Last day for including shipments
+	  */
+	public void setInvoiceDayCutoff (int InvoiceDayCutoff);
 
-	/**
-	 * Get Anz. Einheiten zwischen zwei Rechnungsstellungen.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getInvoiceDistance();
+	/** Get Invoice day cut-off.
+	  * Last day for including shipments
+	  */
+	public int getInvoiceDayCutoff();
 
-    /** Column definition for InvoiceDistance */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_InvoiceDistance = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "InvoiceDistance", null);
-    /** Column name InvoiceDistance */
-    public static final String COLUMNNAME_InvoiceDistance = "InvoiceDistance";
-
-	/**
-	 * Set Rechnungshäufigkeit.
-	 * How often invoices will be generated
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setInvoiceFrequency (java.lang.String InvoiceFrequency);
-
-	/**
-	 * Get Rechnungshäufigkeit.
-	 * How often invoices will be generated
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getInvoiceFrequency();
-
-    /** Column definition for InvoiceFrequency */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_InvoiceFrequency = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "InvoiceFrequency", null);
     /** Column name InvoiceFrequency */
     public static final String COLUMNNAME_InvoiceFrequency = "InvoiceFrequency";
 
-	/**
-	 * Set Wochentag.
-	 * Day to generate invoices
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setInvoiceWeekDay (java.lang.String InvoiceWeekDay);
+	/** Set Invoice Frequency.
+	  * How often invoices will be generated
+	  */
+	public void setInvoiceFrequency (String InvoiceFrequency);
 
-	/**
-	 * Get Wochentag.
-	 * Day to generate invoices
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getInvoiceWeekDay();
+	/** Get Invoice Frequency.
+	  * How often invoices will be generated
+	  */
+	public String getInvoiceFrequency();
 
-    /** Column definition for InvoiceWeekDay */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_InvoiceWeekDay = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "InvoiceWeekDay", null);
     /** Column name InvoiceWeekDay */
     public static final String COLUMNNAME_InvoiceWeekDay = "InvoiceWeekDay";
 
-	/**
-	 * Set Letzter Wochentag Lieferungen.
-	 * Last day in the week for shipments to be included
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setInvoiceWeekDayCutoff (java.lang.String InvoiceWeekDayCutoff);
+	/** Set Invoice Week Day.
+	  * Day to generate invoices
+	  */
+	public void setInvoiceWeekDay (String InvoiceWeekDay);
 
-	/**
-	 * Get Letzter Wochentag Lieferungen.
-	 * Last day in the week for shipments to be included
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getInvoiceWeekDayCutoff();
+	/** Get Invoice Week Day.
+	  * Day to generate invoices
+	  */
+	public String getInvoiceWeekDay();
 
-    /** Column definition for InvoiceWeekDayCutoff */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_InvoiceWeekDayCutoff = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "InvoiceWeekDayCutoff", null);
     /** Column name InvoiceWeekDayCutoff */
     public static final String COLUMNNAME_InvoiceWeekDayCutoff = "InvoiceWeekDayCutoff";
 
-	/**
-	 * Set Aktiv.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsActive (boolean IsActive);
+	/** Set Invoice weekday cutoff.
+	  * Last day in the week for shipments to be included
+	  */
+	public void setInvoiceWeekDayCutoff (String InvoiceWeekDayCutoff);
 
-	/**
-	 * Get Aktiv.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isActive();
+	/** Get Invoice weekday cutoff.
+	  * Last day in the week for shipments to be included
+	  */
+	public String getInvoiceWeekDayCutoff();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/**
-	 * Set Betragsgrenze.
-	 * Send invoices only if the amount exceeds the limit
-IMPORTANT: currently not used;
+	/** Set Active.
+	  * The record is active in the system
+	  */
+	public void setIsActive (boolean IsActive);
 
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsAmount (boolean IsAmount);
+	/** Get Active.
+	  * The record is active in the system
+	  */
+	public boolean isActive();
 
-	/**
-	 * Get Betragsgrenze.
-	 * Send invoices only if the amount exceeds the limit
-IMPORTANT: currently not used;
-
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isAmount();
-
-    /** Column definition for IsAmount */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_IsAmount = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "IsAmount", null);
     /** Column name IsAmount */
     public static final String COLUMNNAME_IsAmount = "IsAmount";
 
-	/**
-	 * Set Standard.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsDefault (boolean IsDefault);
+	/** Set Amount Limit.
+	  * Send invoices only if the amount exceeds the limit
+	  */
+	public void setIsAmount (boolean IsAmount);
 
-	/**
-	 * Get Standard.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isDefault();
+	/** Get Amount Limit.
+	  * Send invoices only if the amount exceeds the limit
+	  */
+	public boolean isAmount();
 
-    /** Column definition for IsDefault */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_IsDefault = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "IsDefault", null);
     /** Column name IsDefault */
     public static final String COLUMNNAME_IsDefault = "IsDefault";
 
-	/**
-	 * Set Name.
-	 * Alphanumeric identifier of the entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setName (java.lang.String Name);
+	/** Set Default.
+	  * Default value
+	  */
+	public void setIsDefault (boolean IsDefault);
 
-	/**
-	 * Get Name.
-	 * Alphanumeric identifier of the entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getName();
+	/** Get Default.
+	  * Default value
+	  */
+	public boolean isDefault();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
-	/**
-	 * Get Aktualisiert.
-	 * Date this record was updated
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getUpdated();
+	/** Set Name.
+	  * Alphanumeric identifier of the entity
+	  */
+	public void setName (String Name);
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, Object>(I_C_InvoiceSchedule.class, "Updated", null);
+	/** Get Name.
+	  * Alphanumeric identifier of the entity
+	  */
+	public String getName();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/**
-	 * Get Aktualisiert durch.
-	 * User who updated this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getUpdatedBy();
+	/** Get Updated.
+	  * Date this record was updated
+	  */
+	public Timestamp getUpdated();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_InvoiceSchedule, org.compiere.model.I_AD_User>(I_C_InvoiceSchedule.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/** Get Updated By.
+	  * User who updated this records
+	  */
+	public int getUpdatedBy();
 }

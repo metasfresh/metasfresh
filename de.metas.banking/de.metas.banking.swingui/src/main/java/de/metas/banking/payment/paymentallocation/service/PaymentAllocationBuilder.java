@@ -10,12 +10,12 @@ package de.metas.banking.payment.paymentallocation.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,21 +32,23 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.allocation.api.IAllocationBL;
@@ -202,6 +204,13 @@ public class PaymentAllocationBuilder
 			payableLineBuilder.setC_Payment_ID(paymentDocRef.getRecord_ID());
 		}
 		//
+		// Prepaid order - Payment
+		else if (I_C_Order.Table_Name.equals(payableDocTableName) && I_C_Payment.Table_Name.equals(paymentDocTableName))
+		{
+			payableLineBuilder.setPrepayOrder_ID(payableDocRef.getRecord_ID());
+			payableLineBuilder.setC_Payment_ID(paymentDocRef.getRecord_ID());
+		}
+		//
 		// Invoice - CreditMemo invoice or Sales invoice - Purchase Invoice
 		else if (I_C_Invoice.Table_Name.equals(payableDocTableName) && I_C_Invoice.Table_Name.equals(paymentDocTableName))
 		{
@@ -347,31 +356,41 @@ public class PaymentAllocationBuilder
 		}
 
 		// filter payments
-		final List<IPaymentDocument> paymentVendorDocuments = ListUtils.copyAndFilter(paymentDocuments, paymentDoc -> {
-			if (!paymentDoc.isVendorDocument())
+		final List<IPaymentDocument> paymentVendorDocuments = ListUtils.copyAndFilter(paymentDocuments, new Predicate<IPaymentDocument>()
+		{
+			@Override
+			public boolean apply(IPaymentDocument paymentDoc)
 			{
-				return false;
-			}
+				if (!paymentDoc.isVendorDocument())
+				{
+					return false;
+				}
 
-			return true;
+				return true;
+			}
 		});
 
 		//
 		// filter invoices and credit memos
 		final List<IPaymentDocument> paymentVendorDocuments_CreditMemos = new ArrayList<>();
-		final List<IPayableDocument> payableVendorDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, payable -> {
-			if (payable.isCreditMemo() && payable.isVendorDocument())
+		final List<IPayableDocument> payableVendorDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, new Predicate<IPayableDocument>()
+		{
+			@Override
+			public boolean apply(IPayableDocument payable)
 			{
-				paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
-				return false;
-			}
+				if (payable.isCreditMemo() && payable.isVendorDocument())
+				{
+					paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
+					return false;
+				}
 
-			if (!payable.isVendorDocument())
-			{
-				return false;
-			}
+				if (!payable.isVendorDocument())
+				{
+					return false;
+				}
 
-			return true;
+				return true;
+			}
 		});
 
 		if (paymentVendorDocuments.size() > 1 || payableVendorDocuments_NoCreditMemos.size() > 1 || paymentVendorDocuments_CreditMemos.size() > 1)
@@ -462,13 +481,18 @@ public class PaymentAllocationBuilder
 	private final List<AllocationLineCandidate> createAllocationLineCandidates_CreditMemosToInvoices(final List<IPayableDocument> payableDocuments)
 	{
 		final List<IPaymentDocument> paymentDocuments_CreditMemos = new ArrayList<>();
-		final List<IPayableDocument> payableDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, payable -> {
-			if (payable.isCreditMemo())
+		final List<IPayableDocument> payableDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, new Predicate<IPayableDocument>()
+		{
+			@Override
+			public boolean apply(IPayableDocument payable)
 			{
-				paymentDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
-				return false;
+				if (payable.isCreditMemo())
+				{
+					paymentDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
+					return false;
+				}
+				return true;
 			}
-			return true;
 		});
 
 		return createAllocationLineCandidates(payableDocuments_NoCreditMemos, paymentDocuments_CreditMemos);
@@ -477,19 +501,24 @@ public class PaymentAllocationBuilder
 	private final List<AllocationLineCandidate> createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(final List<IPayableDocument> payableDocuments)
 	{
 		final List<IPaymentDocument> paymentDocuments_PurchaseInvoices = new ArrayList<>();
-		final List<IPayableDocument> payableDocuments_SaleInvoices = ListUtils.copyAndFilter(payableDocuments, payable -> {
-			// do not support credit memo
-			if (payable.isCreditMemo())
+		final List<IPayableDocument> payableDocuments_SaleInvoices = ListUtils.copyAndFilter(payableDocuments, new Predicate<IPayableDocument>()
+		{
+			@Override
+			public boolean apply(IPayableDocument payable)
 			{
-				return false;
-			}
+				// do not support credit memo
+				if (payable.isCreditMemo())
+				{
+					return false;
+				}
 
-			if (!payable.isCustomerDocument())
-			{
-				paymentDocuments_PurchaseInvoices.add(PurchaseInvoiceAsPaymentDocument.wrap(payable));
-				return false;
+				if (!payable.isCustomerDocument())
+				{
+					paymentDocuments_PurchaseInvoices.add(PurchaseInvoiceAsPaymentDocument.wrap(payable));
+					return false;
+				}
+				return true;
 			}
-			return true;
 		});
 
 		return createAllocationLineCandidates(payableDocuments_SaleInvoices, paymentDocuments_PurchaseInvoices);

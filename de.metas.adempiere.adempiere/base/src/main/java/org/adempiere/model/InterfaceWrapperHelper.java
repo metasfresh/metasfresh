@@ -55,7 +55,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
@@ -73,8 +72,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /**
  * This class is heavily used throughout metasfresh. To understand what it's all about see the javadoc of {@link #create(Object, Class)}.
@@ -83,7 +80,6 @@ import lombok.experimental.UtilityClass;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@UtilityClass
 public class InterfaceWrapperHelper
 {
 	private static final transient Logger logger = LogManager.getLogger(InterfaceWrapperHelper.class);
@@ -239,10 +235,7 @@ public class InterfaceWrapperHelper
 	 *             </ul>
 	 */
 	@Deprecated
-	public static <T> T create(
-			@Nullable final Object model,
-			@NonNull final Class<T> modelClass,
-			final boolean useOldValues)
+	public static <T> T create(final Object model, final Class<T> modelClass, final boolean useOldValues)
 	{
 		if (model == null)
 		{
@@ -356,25 +349,6 @@ public class InterfaceWrapperHelper
 	public static <T> T load(final int id, final Class<T> modelClass)
 	{
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_ThreadInherited);
-	}
-
-	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
-	{
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
-	}
-
-	public static <T> List<T> loadByIdsOutOfTrx(final Set<Integer> ids, final Class<T> modelClass)
-	{
-		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
-	}
-
-	private static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
-	{
-		if (getInMemoryDatabaseForModel(modelClass) != null)
-		{
-			return POJOWrapper.loadByIds(ids, modelClass, trxName);
-		}
-		return POWrapper.loadByIds(ids, modelClass, trxName);
 	}
 
 	/**
@@ -541,16 +515,6 @@ public class InterfaceWrapperHelper
 		{
 			setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 		}
-	}
-
-
-	/**
-	 * Does the same as {@link #save(Object)},
-	 * but this method can be static-imported into repository implementations which usually have their own method named "save()".
-	 */
-	public static void saveRecord(final Object model)
-	{
-		save(model);
 	}
 
 	public static void save(final Object model)
@@ -1498,8 +1462,10 @@ public class InterfaceWrapperHelper
 		return POWrapper.isValueChanged(po, columnName);
 	}
 
-	public static boolean hasChanges(@NonNull final Object model)
+	public static boolean hasChanges(final Object model)
 	{
+		Check.assumeNotNull(model, "model not null");
+
 		if (POWrapper.isHandled(model))
 		{
 			return POWrapper.hasChanges(model);
@@ -1673,8 +1639,4 @@ public class InterfaceWrapperHelper
 		return POWrapper.checkZeroIdValue(columnName, value);
 	}
 
-	public static boolean isCopy(final Object model)
-	{
-		return helpers.isCopy(model);
-	}
 }

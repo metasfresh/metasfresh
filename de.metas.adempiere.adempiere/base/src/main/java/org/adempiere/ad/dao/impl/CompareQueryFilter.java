@@ -35,8 +35,6 @@ import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
 import org.compiere.util.Util;
 
-import lombok.NonNull;
-
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	/**
@@ -80,15 +78,12 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private final IQueryFilterModifier operand1Modifier;
 	private final IQueryFilterModifier operand2Modifier;
 
-	/* package */ CompareQueryFilter(
-			final String columnName,
-			@NonNull final Operator operator,
-			final Object value,
-			final IQueryFilterModifier modifier)
+	/* package */ CompareQueryFilter(final String columnName, final Operator operator, final Object value, final IQueryFilterModifier modifier)
 	{
 		this.operand1 = ModelColumnNameValue.<T> forColumnName(columnName);
 		this.operand2 = value;
 
+		Check.assumeNotNull(operator, "operator not null");
 		this.operator = operator;
 
 		this.operand1Modifier = Util.coalesce(modifier, NullQueryFilterModifier.instance);

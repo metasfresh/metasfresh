@@ -55,7 +55,7 @@ public class PackingTreeBL
 		final String trxName = null;
 		
 		String whereClause = I_M_PackagingTree.COLUMNNAME_C_BPartner_ID + " = ?  AND " +  I_M_PackagingTree.COLUMNNAME_Processed + " = ? ";
-		final List<Object> params = new ArrayList<>();
+		final List<Object> params = new ArrayList<Object>();
 		params.add(bp_id);
 		params.add(false);
 		if (warehouseDestID > 0)
@@ -97,9 +97,9 @@ public class PackingTreeBL
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
 				.setParameters(tree_id, type)
-				.list(X_M_PackagingTreeItem.class);
+				.list();
 		
-		final List<PackagingTreeItemComparable> result = new ArrayList<>();
+		final List<PackagingTreeItemComparable> result = new ArrayList<PackagingTreeItemComparable>();
 		
 		for (final X_M_PackagingTreeItem pi : list)
 		{
@@ -132,7 +132,7 @@ public class PackingTreeBL
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
 				.setParameters(id)
-				.list(X_M_PackagingTreeItemSched.class);
+				.list();
 
 	}
 	
@@ -152,7 +152,7 @@ public class PackingTreeBL
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
 				.setParameters(package_id, qty)
-				.list(X_M_PackageLine.class);
+				.list();
 
 		for (X_M_PackageLine pl : list)
 		{
@@ -183,7 +183,7 @@ public class PackingTreeBL
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
 				.setParameters(item_id)
-				.list(X_M_PackagingTreeItemSched.class);
+				.list();
 	}
 	
 	/**
@@ -201,7 +201,7 @@ public class PackingTreeBL
 		String whereClause = X_M_PackagingTreeItem.COLUMNNAME_M_PackageTree_ID + " IN (SELECT "
 				+ X_M_PackagingTreeItem.COLUMNNAME_M_PackageTree_ID + " FROM " + X_M_PackageTree.Table_Name + " WHERE " ;
 		
-		List<Object> params = new ArrayList<>();
+		List<Object> params = new ArrayList<Object>();
 		
 		if (isGrouppingByWarehouse)
 		{
@@ -237,7 +237,7 @@ public class PackingTreeBL
 				.setOnlyActiveRecords(true)
 				.setParameters(params)
 				.list(X_M_PackagingTreeItem.class);
-		List<PackagingTreeItemComparable> result = new ArrayList<>();
+		List<PackagingTreeItemComparable> result = new ArrayList<PackagingTreeItemComparable>();
 		for (X_M_PackagingTreeItem pi : list)
 		{
 			PackagingTreeItemComparable pic = new PackagingTreeItemComparable(pi.getCtx(), pi.getM_PackagingTreeItem_ID(), pi.get_TrxName());

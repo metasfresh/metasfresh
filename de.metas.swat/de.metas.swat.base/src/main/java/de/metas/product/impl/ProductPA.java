@@ -37,6 +37,7 @@ import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.X_M_ProductScalePrice;
+import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -196,13 +197,16 @@ public class ProductPA implements IProductPA
 			final int partnerId, final int priceListId, final BigDecimal qty,
 			final boolean soTrx)
 	{
+
 		final MProductPricing pricing = new MProductPricing(productId, partnerId, qty, soTrx);
+
 		pricing.setM_PriceList_ID(priceListId);
 
 		final BigDecimal priceStd = pricing.getPriceStd();
+
 		if (priceStd.signum() == 0)
 		{
-			pricing.throwProductNotOnPriceListException();
+			throw new ProductNotOnPriceListException(pricing, -1);
 		}
 		return priceStd;
 	}

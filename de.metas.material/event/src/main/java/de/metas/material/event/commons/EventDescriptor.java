@@ -3,13 +3,9 @@ package de.metas.material.event.commons;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IClientOrgAware;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -32,10 +28,21 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Data
+@AllArgsConstructor
 public class EventDescriptor
 {
+	@NonNull
+	private final Integer clientId;
+
+	@NonNull
+	private final Integer orgId;
+
+	public EventDescriptor createNew()
+	{
+		return new EventDescriptor(clientId, orgId);
+	}
+
 	/**
 	 *
 	 * @param clientOrgAware model which can be made into a {@link IClientOrgAware} via {@link InterfaceWrapperHelper#asColumnReferenceAwareOrNull(Object, Class)}.
@@ -48,24 +55,5 @@ public class EventDescriptor
 		return new EventDescriptor(
 				clientOrgAwareToUse.getAD_Client_ID(),
 				clientOrgAwareToUse.getAD_Org_ID());
-	}
-
-	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
-	{
-		return new EventDescriptor(adClientId, adOrgId);
-	}
-
-	@JsonProperty("clientId")
-	int clientId;
-	@JsonProperty("orgId")
-	int orgId;
-
-	@JsonCreator
-	private EventDescriptor(
-			@JsonProperty("clientId") @NonNull final Integer clientId,
-			@JsonProperty("orgId") @NonNull final Integer orgId)
-	{
-		this.clientId = clientId;
-		this.orgId = orgId;
 	}
 }

@@ -171,7 +171,7 @@ public class AggregateHUSelectPanel extends InventoryHUSelectPanel<AggregateHUSe
 		final int countOpenHUs = pickingSlotsToFree.size();
 		if (countOpenHUs <= 0)
 		{
-			final AdempiereException ex = new AdempiereException(MSG_NoOpenHUsToClose, new Object[] {});
+			final AdempiereException ex = new AdempiereException(ctx, MSG_NoOpenHUsToClose, new Object[] {});
 			getTerminalFactory().showWarning(this, ITerminalFactory.TITLE_ERROR, ex);
 			return;
 		}

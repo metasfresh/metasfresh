@@ -26,10 +26,5 @@ import java.util.Map;
 
 public interface AvailabilityRequestException
 {
-	static AvailabilityRequestException cast(final Throwable exception)
-	{
-		return (AvailabilityRequestException)exception;
-	}
-
 	Map<AvailabilityRequestItem, Throwable> getRequestItem2Exception();
 }

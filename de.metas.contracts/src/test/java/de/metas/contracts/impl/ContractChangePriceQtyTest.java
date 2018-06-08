@@ -49,7 +49,6 @@ import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.interceptor.M_ShipmentSchedule;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -72,7 +71,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	@Test
 	public void changeQty()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
+		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
 		final ContractChangePriceQtyService contractsRepository = Adempiere.getBean(ContractChangePriceQtyService.class);
 		final BigDecimal newQty = BigDecimal.valueOf(5);
 		contractsRepository.changeQtyIfNeeded(contract, newQty);
@@ -85,7 +84,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	@Test
 	public void changeQtyAndDeliver()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
+		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
 		final ContractChangePriceQtyService contractsRepository = Adempiere.getBean(ContractChangePriceQtyService.class);
 		deliverFirstSubscriptionProgress(contract);
 		final BigDecimal newQty = BigDecimal.valueOf(5);
@@ -99,7 +98,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	@Test
 	public void changePrice()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
+		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
 		final ContractChangePriceQtyService contractsRepository = Adempiere.getBean(ContractChangePriceQtyService.class);
 		final BigDecimal newPrice = BigDecimal.valueOf(5);
 		contractsRepository.changePriceIfNeeded(contract, newPrice);

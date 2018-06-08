@@ -55,7 +55,7 @@ public class PurchaseOrderFromItemsAggregator
 
 	private PurchaseOrderFromItemsAggregator()
 	{
-		setItemAggregationKeyBuilder(PurchaseOrderAggregationKey::fromPurchaseOrderItem);
+		setItemAggregationKeyBuilder(PurchaseOrderAggregationKey::formPurchaseOrderItem);
 	}
 
 	@Override

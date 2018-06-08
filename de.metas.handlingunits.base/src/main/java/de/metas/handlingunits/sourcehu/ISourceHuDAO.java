@@ -1,7 +1,6 @@
 package de.metas.handlingunits.sourcehu;
 
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.proxy.Cached;
@@ -59,8 +58,5 @@ public interface ISourceHuDAO extends ISingletonService
 	 */
 	List<I_M_HU> retrieveActiveSourceHus(MatchingSourceHusQuery query);
 
-	Set<Integer> retrieveActiveSourceHUIds(MatchingSourceHusQuery query);
-
 	List<I_M_Source_HU> retrieveActiveSourceHuMarkers(MatchingSourceHusQuery query);
-
 }

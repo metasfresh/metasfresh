@@ -5,7 +5,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
-import org.adempiere.ad.dao.cache.DirectModelCacheInvalidateRequestFactory;
 import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.ModelCacheInvalidateRequestFactory;
@@ -51,7 +50,7 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 	private static final Logger logger = LogManager.getLogger(ModelCacheInvalidationService.class);
 
 	private final SetMultimap<String, ModelCacheInvalidateRequestFactory> requestFactoriesByTableName = Multimaps.newSetMultimap(new ConcurrentHashMap<>(), ConcurrentHashMap::newKeySet);
-	private final Set<ModelCacheInvalidateRequestFactory> defaultRequestFactories = ImmutableSet.of(DirectModelCacheInvalidateRequestFactory.instance);
+	private final Set<ModelCacheInvalidateRequestFactory> defaultRequestFactories = ImmutableSet.of(new DefaultModelCacheInvalidateRequestFactory());
 
 	public ModelCacheInvalidationService()
 	{
@@ -86,7 +85,7 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 	}
 
 	@Override
-	public CacheInvalidateMultiRequest createRequest(@NonNull final Object model, @NonNull final ModelCacheInvalidationTiming timing)
+	public CacheInvalidateMultiRequest createRequest(final Object model, final ModelCacheInvalidationTiming timing)
 	{
 		final Set<CacheInvalidateRequest> requests = getRequestFactoriesForModel(model)
 				.stream()
@@ -106,5 +105,16 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 		final Set<ModelCacheInvalidateRequestFactory> factories = requestFactoriesByTableName.get(tableName);
 		return factories != null && !factories.isEmpty() ? factories : defaultRequestFactories;
+	}
+
+	private static final class DefaultModelCacheInvalidateRequestFactory implements ModelCacheInvalidateRequestFactory
+	{
+		@Override
+		public CacheInvalidateRequest createRequestFromModel(final Object model, final ModelCacheInvalidationTiming timing)
+		{
+			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+			final int recordId = InterfaceWrapperHelper.getId(model);
+			return CacheInvalidateRequest.rootRecord(tableName, recordId);
+		}
 	}
 }

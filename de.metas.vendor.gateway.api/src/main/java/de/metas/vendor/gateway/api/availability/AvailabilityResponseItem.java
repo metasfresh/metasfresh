@@ -57,9 +57,4 @@ public class AvailabilityResponseItem
 
 	@Nullable
 	String availabilityText;
-
-	public TrackingId getTrackingId()
-	{
-		return getCorrespondingRequestItem().getTrackingId();
-	}
 }

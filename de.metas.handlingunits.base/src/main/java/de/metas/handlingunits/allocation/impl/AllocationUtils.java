@@ -28,10 +28,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -246,10 +246,11 @@ public final class AllocationUtils
 	 * @param to
 	 * @param from
 	 */
-	public static void mergeAllocationResult(
-			@NonNull final IMutableAllocationResult to,
-			@NonNull final IAllocationResult from)
+	public static void mergeAllocationResult(final IMutableAllocationResult to, final IAllocationResult from)
 	{
+		Check.assumeNotNull(to, "to not null");
+		Check.assumeNotNull(from, "from not null");
+
 		to.subtractAllocatedQty(from.getQtyAllocated());
 		to.addTransactions(from.getTransactions());
 		to.addAttributeTransactions(from.getAttributeTransactions());

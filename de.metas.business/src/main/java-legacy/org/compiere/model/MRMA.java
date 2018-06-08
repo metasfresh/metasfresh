@@ -103,7 +103,7 @@ public class MRMA extends X_M_RMA implements IDocument
 		List<MRMALine> list = new Query(getCtx(), MRMALine.Table_Name, "M_RMA_ID=?", get_TrxName())
 		.setParameters(new Object[]{getM_RMA_ID()})
 		.setOrderBy(MRMALine.COLUMNNAME_Line)
-		.list(MRMALine.class);
+		.list();
 
 		m_lines = new MRMALine[list.size ()];
 		list.toArray (m_lines);
@@ -840,7 +840,7 @@ public class MRMA extends X_M_RMA implements IDocument
 
         int rmaLineIds[] = MRMALine.getAllIDs(MRMALine.Table_Name, whereClause.toString(), get_TrxName());
 
-        ArrayList<MRMALine> chargeLineList = new ArrayList<>();
+        ArrayList<MRMALine> chargeLineList = new ArrayList<MRMALine>();
 
         for (int i = 0; i < rmaLineIds.length; i++)
         {

@@ -5,7 +5,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
-import org.compiere.model.I_C_BPartner_Product;
+import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.procurement.base.IPMMProductBL;
 
 /*

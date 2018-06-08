@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,21 +25,19 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Util;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -46,15 +45,9 @@ import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.lang.Percent;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.order.PriceAndDiscount;
-import de.metas.pricing.limit.PriceLimitRuleResult;
-import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductBL;
 import lombok.Builder;
 import lombok.NonNull;
@@ -76,6 +69,12 @@ public class CalloutOrder extends CalloutEngine
 
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
+
+	/** Debug Steps */
+	private boolean steps = false;
+
+	// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
+	// public static final String COLNAME_QTY_AVAIL = "QtyAvailable";
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -356,14 +355,13 @@ public class CalloutOrder extends CalloutEngine
 				// #928: The IsDefaultContact is no longer important
 				// + " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
 				+ " , c." + I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
-		final Object[] sqlParams = new Object[] { C_BPartner_ID };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
+			pstmt.setInt(1, C_BPartner_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -540,9 +538,10 @@ public class CalloutOrder extends CalloutEngine
 				}
 			}
 		}
-		catch (final SQLException ex)
+		catch (final SQLException e)
 		{
-			throw new DBException(ex, sql, sqlParams);
+			log.error(sql, e);
+			return e.getLocalizedMessage();
 		}
 		finally
 		{
@@ -619,14 +618,21 @@ public class CalloutOrder extends CalloutEngine
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
 				+ "p.SO_Description,p.IsDiscountPrinted,"
 				+ "p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
-				+ "stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
-				+ "stats." + I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus + ", "
+				+ ", stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
+				+ ", "
 				+ "c.AD_User_ID,"
 				+ "p.PO_PriceList_ID, p.PaymentRulePO, p.PO_PaymentTerm_ID,"
 				+ "lbill.C_BPartner_Location_ID AS Bill_Location_ID "
 				+ "FROM C_BPartner p"
 
-				+ " INNER JOIN " + I_C_BPartner_Stats.Table_Name + " stats ON (p." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " = stats." + I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID + ")"
+				+ " INNER JOIN "
+				+ I_C_BPartner_Stats.Table_Name
+				+ " stats ON (p."
+				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " = stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
+				+ ")"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
 				// #928
@@ -637,9 +643,9 @@ public class CalloutOrder extends CalloutEngine
 				// metas: (2009 0027 G1): making sure that the default billTo
 				// location is used
 				+ " ORDER BY " + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
+
 		// metas end
 		; // #1
-		final Object[] sqlParams = new Object[] { bill_BPartner_ID };
 
 		final boolean IsSOTrx = order.isSOTrx();
 		PreparedStatement pstmt = null;
@@ -647,7 +653,7 @@ public class CalloutOrder extends CalloutEngine
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
+			pstmt.setInt(1, bill_BPartner_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -709,7 +715,7 @@ public class CalloutOrder extends CalloutEngine
 				// CreditAvailable
 				if (IsSOTrx)
 				{
-					final String creditStatus = rs.getString(I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus);
+					final String creditStatus = rs.getString("SOCreditStatus");
 					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
 							.bpartnerId(bill_BPartner_ID)
 							.creditStatus(creditStatus)
@@ -720,11 +726,11 @@ public class CalloutOrder extends CalloutEngine
 					{
 						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bill_BPartner_ID, order.getDateOrdered());
-						final BigDecimal creditUsed = Util.coalesce(rs.getBigDecimal(I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed), BigDecimal.ZERO);
-						final BigDecimal creditAvailable = creditLimit.subtract(creditUsed);
-						if (creditAvailable.signum() < 0)
+						final double creditUsed = rs.getDouble("SO_CreditUsed");
+						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
+						if (!rs.wasNull() && CreditAvailable.signum() < 0)
 						{
-							calloutField.fireDataStatusEEvent(MSG_CreditLimitOver, DisplayType.getNumberFormat(DisplayType.Amount).format(creditAvailable), false);
+							calloutField.fireDataStatusEEvent(MSG_CreditLimitOver, DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
 						}
 					}
 				}
@@ -791,9 +797,10 @@ public class CalloutOrder extends CalloutEngine
 				}
 			}
 		}
-		catch (final SQLException ex)
+		catch (final SQLException e)
 		{
-			throw new DBException(ex, sql, sqlParams);
+			log.error("bPartnerBill", e);
+			return e.getLocalizedMessage();
 		}
 		finally
 		{
@@ -833,6 +840,10 @@ public class CalloutOrder extends CalloutEngine
 		{
 			return NO_ERROR;
 		}
+		if (steps)
+		{
+			log.warn("init");
+		}
 
 		//
 		// Charge: reset
@@ -856,12 +867,81 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		/***** Price Calculation see also qty ****/
-		Services.get(IOrderLineBL.class).updatePrices(orderLine);
+		updatePrices(orderLine); // metas
 
 		orderLine.setQtyOrdered(orderLine.getQtyEntered());
 
-		handleIndividualDescription(orderLine);
+		if (orderLine.getC_Order().isSOTrx())
+		{
+			if (Services.get(IProductBL.class).isStocked(product))
+			{
+				final BigDecimal QtyOrdered = orderLine.getQtyOrdered();
+				int M_Warehouse_ID = orderLine.getM_Warehouse_ID();
+				if (M_Warehouse_ID <= 0)
+				{
+					M_Warehouse_ID = orderLine.getC_Order().getM_Warehouse_ID();
+				}
+				final int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();
+				BigDecimal available = MStorage.getQtyAvailable(M_Warehouse_ID, M_Product_ID, M_AttributeSetInstance_ID, null);
 
+				// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
+				// // metas: if we have the respective field, display the available qty
+				// GridField fieldQtyAvailable = mTab.getField(COLNAME_QTY_AVAIL);
+				// if (fieldQtyAvailable != null)
+				// {
+				// mTab.setValue(COLNAME_QTY_AVAIL, available);
+				// }
+
+				if (available == null)
+				{
+					available = BigDecimal.ZERO;
+				}
+				if (available.signum() == 0)
+				{
+					// metas: disable user message
+					// mTab.fireDataStatusEEvent ("NoQtyAvailable", "0", false);
+				}
+				else if (available.compareTo(QtyOrdered) < 0)
+				{
+					// metas: disable user message
+					// mTab.fireDataStatusEEvent ("InsufficientQtyAvailable",
+					// available.toString(), false);
+				}
+				else
+				{
+					int C_OrderLine_ID = orderLine.getC_OrderLine_ID();
+					if (C_OrderLine_ID <= 0)
+					{
+						C_OrderLine_ID = 0;
+					}
+					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
+							M_Warehouse_ID, M_Product_ID,
+							M_AttributeSetInstance_ID, C_OrderLine_ID);
+					if (notReserved == null)
+					{
+						notReserved = BigDecimal.ZERO;
+					}
+					final BigDecimal total = available.subtract(notReserved);
+					if (total.compareTo(QtyOrdered) < 0)
+					{
+						// metas: don't show warning
+						// String info = Msg.parseTranslation(ctx,
+						// "@QtyAvailable@=" + available
+						// + " - @QtyNotReserved@=" + notReserved
+						// + " = " + total);
+						// mTab.fireDataStatusEEvent("InsufficientQtyAvailable",
+						// info, false);
+					}
+				}
+			}
+		}
+		// metas (2008 0030 AP47)
+		handleIndividualDescription(orderLine);
+		//
+		if (steps)
+		{
+			log.warn("fini");
+		}
 		return tax(calloutField);
 	} // product
 
@@ -880,20 +960,19 @@ public class CalloutOrder extends CalloutEngine
 		if (orderLine.getM_Product_ID() > 0)
 		{
 			orderLine.setC_Charge(null);
-			throw new AdempiereException("ChargeExclusively");
+			return "ChargeExclusively";
 		}
 		orderLine.setM_AttributeSetInstance(null);
 		orderLine.setS_ResourceAssignment_ID(-1);
 		orderLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
 
 		final String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
-		final Object[] sqlParams = new Object[] { C_Charge_ID };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
+			pstmt.setInt(1, C_Charge_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -909,9 +988,10 @@ public class CalloutOrder extends CalloutEngine
 				// metas: end
 			}
 		}
-		catch (final SQLException ex)
+		catch (final SQLException e)
 		{
-			throw new DBException(ex, sql, sqlParams);
+			log.error(sql, e);
+			return e.getLocalizedMessage();
 		}
 		finally
 		{
@@ -933,17 +1013,18 @@ public class CalloutOrder extends CalloutEngine
 		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.resultUOM(ResultUOM.CONTEXT_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
+		orderLineBL.setPricesIfNotIgnored(ctx, ol,
+				false,  // usePriceUOM
+				null);
 
 		final Object value = calloutField.getValue();
 		if (value == null)
 		{
 			return NO_ERROR;
+		}
+		if (steps)
+		{
+			log.warn("init");
 		}
 
 		// Check Product
@@ -1014,6 +1095,11 @@ public class CalloutOrder extends CalloutEngine
 		{
 			ol.setC_Tax_ID(C_Tax_ID);
 		}
+		//
+		if (steps)
+		{
+			log.warn("fini");
+		}
 
 		return amt(calloutField);
 	} // tax
@@ -1030,8 +1116,6 @@ public class CalloutOrder extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
 		final Properties ctx = calloutField.getCtx();
 		final String changedColumnName = calloutField.getColumnName();
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
@@ -1039,77 +1123,115 @@ public class CalloutOrder extends CalloutEngine
 
 		final int priceUOMId = orderLine.getPrice_UOM_ID();
 		final int productId = orderLine.getM_Product_ID();
-		final int pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(order.getM_PriceList_ID());
+		final int stdPrecision = MPriceList.getStandardPrecision(ctx, order.getM_PriceList_ID());
 
 		//
-		PriceAndDiscount priceAndDiscount;
+		BigDecimal priceEntered;
+		BigDecimal priceActual;
 
 		// Qty changed - recalc price
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
+		// && !"N".equals(Env.getContext(ctx, WindowNo, CTX_DiscountSchema))
 		{
-			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.ofOrderLine(orderLine)
-					.toBuilder()
-					.applyPriceLimitRestrictions(false)
-					.build());
-
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision);
+			updatePrices(orderLine);
+			priceEntered = orderLine.getPriceEntered();
+			priceActual = orderLine.getPriceActual();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceActual.equals(changedColumnName))
 		{
-			final BigDecimal priceActual = orderLine.getPriceActual();
-			BigDecimal priceEntered = MUOMConversion.convertToProductUOM(ctx, productId, priceUOMId, priceActual);
+			priceActual = orderLine.getPriceActual();
+			priceEntered = MUOMConversion.convertToProductUOM(ctx, productId, priceUOMId, priceActual);
 			if (priceEntered == null)
 			{
 				priceEntered = priceActual;
 			}
-
-			priceAndDiscount = PriceAndDiscount.builder()
-					.precision(pricePrecision)
-					.priceEntered(priceEntered)
-					.priceActual(priceActual)
-					.discount(Percent.of(orderLine.getDiscount()))
-					.build();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision)
-					.updatePriceActual();
+			Services.get(IOrderLineBL.class).calculatePriceActual(orderLine, -1); // precision=-1, preserving old behavior (->called method shall find out itself)
+			priceActual = orderLine.getPriceActual();
+			priceEntered = orderLine.getPriceEntered();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName))
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision)
-					.updatePriceActualIfPriceEnteredIsNotZero();
+			priceEntered = orderLine.getPriceEntered();
+			if (priceEntered.signum() != 0)
+			{
+				final BigDecimal discount = orderLine.getDiscount();
+				priceActual = Services.get(IOrderLineBL.class).subtractDiscount(priceEntered, discount, stdPrecision);
+			}
+			else
+			{
+				priceActual = orderLine.getPriceActual();
+			}
 		}
 		// C_UOM_ID, PriceList, S_ResourceAssignment_ID
 		else
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision);
+			priceEntered = orderLine.getPriceEntered();
+			priceActual = orderLine.getPriceActual();
 		}
 
 		//
 		// Check PriceActual and enforce PriceLimit.
 		// Also, update Discount or PriceEntered if needed.
-		if (isEnforcePriceLimit(orderLine, order.isSOTrx()))
+		BigDecimal discount;
+		boolean underLimitPrice = false;
+		final BigDecimal priceLimit = orderLine.getPriceLimit();
+		if (priceLimit.signum() != 0
+				&& priceActual.compareTo(priceLimit) < 0
+				&& isEnforcePriceLimit(orderLine, order.isSOTrx()))
 		{
-			priceAndDiscount.applyTo(orderLine);
-			final PriceLimitRuleResult priceLimitResult = orderLineBL.computePriceLimit(orderLine);
-			priceAndDiscount = priceAndDiscount.enforcePriceLimit(priceLimitResult);
+			underLimitPrice = true;
+			priceActual = priceLimit;
+
+			if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName) && priceEntered.signum() != 0)
+			{
+				discount = orderLine.getDiscount();
+				priceEntered = Services.get(IOrderLineBL.class).calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, stdPrecision);
+			}
+			else if (priceEntered.signum() != 0)
+			{
+				discount = Services.get(IOrderLineBL.class).calculateDiscountFromPrices(priceEntered, priceActual, stdPrecision);
+			}
+			else
+			{
+				discount = orderLine.getDiscount();
+			}
+		}
+		else
+		{
+			discount = orderLine.getDiscount();
 		}
 
 		//
 		// Update order line
-		priceAndDiscount.applyTo(orderLine);
-		orderLineBL.updateLineNetAmt(orderLine);
-		orderLineBL.setTaxAmtInfo(orderLine);
-
-		if (!Check.isEmpty(priceAndDiscount.getPriceLimitEnforceExplanation(), true))
+		orderLine.setPriceEntered(priceEntered);
+		orderLine.setPriceActual(priceActual);
+		orderLine.setDiscount(discount);
+		updateLineNetAmtAndTax(orderLine, stdPrecision);
+		if (underLimitPrice)
 		{
-			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, priceAndDiscount.getPriceLimitEnforceExplanation(), /* isError */false);
+			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, "", false);
 		}
 
 		//
 		return NO_ERROR;
 	} // amt
+
+	private static void updateLineNetAmtAndTax(final I_C_OrderLine orderLine, final int stdPrecision)
+	{
+		final BigDecimal priceActual = orderLine.getPriceActual();
+		final BigDecimal qtyEnteredInPriceUOM = Services.get(IOrderLineBL.class).convertQtyEnteredToPriceUOM(orderLine);
+		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(priceActual);
+		if (LineNetAmt.scale() > stdPrecision)
+		{
+			LineNetAmt = LineNetAmt.setScale(stdPrecision, RoundingMode.HALF_UP);
+		}
+		orderLine.setLineNetAmt(LineNetAmt);
+
+		Services.get(IOrderLineBL.class).setTaxAmtInfoIfNotIgnored(Env.getCtx(), orderLine, ITrx.TRXNAME_None);
+	}
 
 	/**
 	 * Order Line - Quantity. - called from C_UOM_ID, QtyEntered, QtyOrdered - enforces qty UOM relationship
@@ -1124,6 +1246,10 @@ public class CalloutOrder extends CalloutEngine
 		final String columnName = calloutField.getColumnName();
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		final int M_Product_ID = orderLine.getM_Product_ID();
+		if (steps)
+		{
+			log.warn("init - M_Product_ID=" + M_Product_ID + " - ");
+		}
 
 		// No Product
 		if (M_Product_ID <= 0)
@@ -1139,7 +1265,7 @@ public class CalloutOrder extends CalloutEngine
 			final I_C_UOM uomFrom = orderLineOld.getC_UOM();
 			final I_C_UOM uomTo = orderLine.getC_UOM();
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
-			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product_ID());
+			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product());
 
 			final BigDecimal QtyEntered1 = uomConverter.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
@@ -1371,6 +1497,12 @@ public class CalloutOrder extends CalloutEngine
 		return !dontCheck;
 	}
 
+	// metas
+	public static void updatePrices(final I_C_OrderLine orderLine)
+	{
+		Services.get(IOrderLineBL.class).updatePrices(orderLine);
+	}
+
 	private static interface DropShipPartnerAware
 	{
 		public int getDropShip_BPartner_ID();
@@ -1454,9 +1586,10 @@ public class CalloutOrder extends CalloutEngine
 
 			}
 		}
-		catch (final SQLException ex)
+		catch (final SQLException e)
 		{
-			throw new DBException(ex, sql);
+			log.error(sql, e);
+			return e.getLocalizedMessage();
 		}
 		finally
 		{
@@ -1527,6 +1660,12 @@ public class CalloutOrder extends CalloutEngine
 			return false;
 		}
 
+		// User role allows us to overwrite PriceLimit, so we are not enforcing it
+		if (Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_OverwritePriceLimit))
+		{
+			return false;
+		}
+
 		return true;
 	}
 
@@ -1534,7 +1673,7 @@ public class CalloutOrder extends CalloutEngine
 	{
 		// 05118 : Also update the prices
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
-		Services.get(IOrderLineBL.class).updatePrices(orderLine);
+		updatePrices(orderLine);
 
 		return NO_ERROR;
 	}

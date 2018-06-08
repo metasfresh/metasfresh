@@ -1,30 +1,26 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.order.IOrderDAO;
+//import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.OrderFactory;
-import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
-import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
+import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
@@ -71,9 +67,7 @@ import lombok.NonNull;
 	final static String MSG_Different_Quantity_AND_DatePromised = //
 			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised";
 
-	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final OrderFactory orderFactory;
-
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
 
@@ -82,12 +76,12 @@ import lombok.NonNull;
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
 			@NonNull OrderUserNotifications userNotifications)
 	{
-		final BPartnerId vendorId = orderAggregationKey.getVendorId();
+		final int vendorBPartnerId = orderAggregationKey.getVendorBPartnerId();
 
 		this.orderFactory = OrderFactory.newPurchaseOrder()
-				.orgId(orderAggregationKey.getOrgId().getRepoId())
-				.warehouseId(orderAggregationKey.getWarehouseId().getRepoId())
-				.shipBPartner(vendorId)
+				.orgId(orderAggregationKey.getOrgId())
+				.warehouseId(orderAggregationKey.getWarehouseId())
+				.shipBPartner(vendorBPartnerId)
 				.datePromised(orderAggregationKey.getDatePromised());
 
 		this.userNotifications = userNotifications;
@@ -97,11 +91,11 @@ import lombok.NonNull;
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
-						pruchaseOrderItem.getProductId().getRepoId(),
+						pruchaseOrderItem.getProductId(),
 						pruchaseOrderItem.getUomId())
 				.orElseGet(() -> orderFactory
 						.newOrderLine()
-						.productId(pruchaseOrderItem.getProductId().getRepoId()));
+						.productId(pruchaseOrderItem.getProductId()));
 
 		orderLineBuilder.addQty(pruchaseOrderItem.getPurchasedQty(), pruchaseOrderItem.getUomId());
 
@@ -121,7 +115,7 @@ import lombok.NonNull;
 			return order;
 		}
 
-		final ADMessageAndParams adMessageAndParams = createMessageAndParamsOrNull(order);
+		final IPair<String, Object[]> adMessageAndParams = createMessageAndParamsOrNull(order);
 
 		final NotificationRequest request = NotificationRequest.builder()
 				.order(order)
@@ -129,6 +123,7 @@ import lombok.NonNull;
 				.adMessageAndParams(adMessageAndParams)
 				.build();
 
+		userNotifications.queueEventsUntilCurrentTrxCommit();
 		userNotifications.notifyOrderCompleted(request);
 
 		return order;
@@ -138,71 +133,72 @@ import lombok.NonNull;
 			@NonNull final PurchaseOrderItem pruchaseOrderItem,
 			@NonNull final OrderLineBuilder orderLineBuilder)
 	{
-		pruchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderAndLineId());
+		pruchaseOrderItem
+				.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderLineId());
 	}
 
-	private ADMessageAndParams createMessageAndParamsOrNull(@NonNull final I_C_Order order)
+	private IPair<String, Object[]> createMessageAndParamsOrNull(@NonNull final I_C_Order order)
 	{
 		boolean deviatingDatePromised = false;
 		boolean deviatingQuantity = false;
 		for (final PurchaseOrderItem purchaseOrderItem : purchaseItem2OrderLine.keySet())
 		{
-			final LocalDateTime dateRequired = purchaseOrderItem.getDateRequired();
+			final Date dateRequired = purchaseOrderItem.getPurchaseCandidate().getDateRequired();
 
-			if (!Objects.equals(dateRequired, TimeUtil.asLocalDateTime(order.getDatePromised())))
+			if (!Objects.equals(dateRequired, order.getDatePromised()))
 			{
 				deviatingDatePromised = true;
 			}
-			if (!purchaseOrderItem.purchaseMatchesRequiredQty())
+			if (!purchaseOrderItem.pruchaseMatchesRequiredQty())
 			{
 				deviatingQuantity = true;
 			}
 		}
 
+		final IPair<String, Object[]> adMessageAndParams;
 		if (deviatingDatePromised && deviatingQuantity)
 		{
-			return ADMessageAndParams.builder()
-					.adMessage(MSG_Different_Quantity_AND_DatePromised)
-					.params(createCommonMessageParams(order))
-					.build();
+			adMessageAndParams = ImmutablePair.of(
+					MSG_Different_Quantity_AND_DatePromised,
+					createCommonMessageParams(order));
 		}
 		else if (deviatingQuantity)
 		{
-			return ADMessageAndParams.builder()
-					.adMessage(MSG_Different_Quantity)
-					.params(createCommonMessageParams(order))
-					.build();
+			adMessageAndParams = ImmutablePair.of(
+					MSG_Different_Quantity,
+					createCommonMessageParams(order));
 		}
 		else if (deviatingDatePromised)
 		{
-			return ADMessageAndParams.builder()
-					.adMessage(MSG_Different_DatePromised)
-					.params(createCommonMessageParams(order))
-					.build();
+			adMessageAndParams = ImmutablePair.of(
+					MSG_Different_DatePromised,
+					createCommonMessageParams(order));
 		}
 		else
 		{
-			return null;
+			adMessageAndParams = null;
 		}
+		return adMessageAndParams;
 	}
 
-	private static List<Object> createCommonMessageParams(@NonNull final I_C_Order order)
+	private Object[] createCommonMessageParams(@NonNull final I_C_Order order)
 	{
 		final I_C_BPartner bpartner = order.getC_BPartner();
 		final String bpValue = bpartner.getValue();
 		final String bpName = bpartner.getName();
-		return ImmutableList.of(TableRecordReference.of(order), bpValue, bpName);
+		final Object[] params = new Object[] { TableRecordReference.of(order), bpValue, bpName };
+
+		return params;
 	}
 
 	private Set<Integer> getUserIdsToNotify()
 	{
-		final ImmutableSet<Integer> salesOrderIds = purchaseItem2OrderLine.keySet()
-				.stream()
-				.map(PurchaseOrderItem::getSalesOrderId)
-				.filter(Predicates.notNull())
-				.map(OrderId::getRepoId)
+		return purchaseItem2OrderLine.keySet().stream()
+				.map(PurchaseOrderItem::getPurchaseCandidate)
+				.map(PurchaseCandidate::getSalesOrderId)
+				.distinct()
+				.map(salesOrderId -> InterfaceWrapperHelper.load(salesOrderId, I_C_Order.class))
+				.map(I_C_Order::getCreatedBy)
 				.collect(ImmutableSet.toImmutableSet());
-
-		return ordersRepo.retriveOrderCreatedByUserIds(salesOrderIds);
 	}
 }

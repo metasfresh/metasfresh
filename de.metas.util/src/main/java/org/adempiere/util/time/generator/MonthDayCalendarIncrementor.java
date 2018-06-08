@@ -1,19 +1,38 @@
 package org.adempiere.util.time.generator;
 
-import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
+/*
+ * #%L
+ * de.metas.util
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import java.util.Calendar;
 
 import org.adempiere.util.Check;
 
-import lombok.Value;
-
 /**
  * Increment by a given number of months and always just to a given day of month.
- *
+ * 
  * @author tsa
  *
  */
-@Value
 /* package */class MonthDayCalendarIncrementor implements ICalendarIncrementor
 {
 	/**
@@ -29,62 +48,75 @@ import lombok.Value;
 	private final int monthsAmount;
 	private final int dayOfMonth;
 
-	public MonthDayCalendarIncrementor(final int monthsToAdd, final int dayOfMonth)
+	public MonthDayCalendarIncrementor(final int monthsAmount, final int dayOfMonth)
 	{
-		Check.assume(monthsToAdd > 0, "monthsToAdd({}) > 0", monthsToAdd);
-		Check.assume(dayOfMonth > 0, "dayOfMonth({}) > 0", dayOfMonth);
+		super();
 
-		monthsAmount = monthsToAdd;
+		Check.assume(monthsAmount >= 0, "monthsAmount({}) >= 0", monthsAmount);
+		this.monthsAmount = monthsAmount;
+
+		Check.assume(dayOfMonth > 0, "dayOfMonth({}) > 0", dayOfMonth);
 		this.dayOfMonth = dayOfMonth;
 	}
 
 	@Override
-	public LocalDate increment(final LocalDate date)
+	public String toString()
 	{
-		// Set Day of Month
-		LocalDate nextDate = withDayOfMonth(date);
+		return "MonthDayCalendarIncrement [monthsAmount=" + monthsAmount + ", dayOfMonth=" + dayOfMonth + "]";
+	}
 
-		// If we actually moved back or we did not move at all, we need to increment also
-		if (date.compareTo(nextDate) >= 0)
+	private final void setDayOfMonth(final Calendar calendar)
+	{
+		final int maxDayOfMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+		final int dayOfMonthActual;
+		if (dayOfMonth > maxDayOfMonth)
 		{
-			nextDate = nextDate.plusMonths(monthsAmount);
-
-			// make sure we still have the right Day Of Month set
-			// e.g. If current date is 28th Feb and our target day of month is 31, and we add 1 month we will get 28th March.
-			nextDate = withDayOfMonth(nextDate);
+			dayOfMonthActual = maxDayOfMonth;
+		}
+		else
+		{
+			dayOfMonthActual = dayOfMonth;
 		}
 
-		return nextDate;
+		calendar.set(Calendar.DAY_OF_MONTH, dayOfMonthActual);
 	}
 
 	@Override
-	public LocalDate decrement(final LocalDate date)
+	public void increment(final Calendar calendar)
 	{
-		// Set Day of Month
-		LocalDate prevDate = withDayOfMonth(date);
+		final long millisBefore = calendar.getTimeInMillis();
 
-		// If we actually moved forward or we did not move at all, we need to decrement also
-		if (date.compareTo(prevDate) <= 0)
+		// Set Day of Month
+		setDayOfMonth(calendar);
+
+		// If we actually moved back or we did not move at all, we need to increment also
+		if (millisBefore >= calendar.getTimeInMillis())
 		{
-			prevDate = prevDate.minusMonths(monthsAmount);
+			calendar.add(Calendar.MONTH, monthsAmount);
 
 			// make sure we still have the right Day Of Month set
 			// e.g. If current date is 28th Feb and our target day of month is 31, and we add 1 month we will get 28th March.
-			prevDate = withDayOfMonth(prevDate);
+			setDayOfMonth(calendar);
 		}
-
-		return prevDate;
 	}
 
-	private final LocalDate withDayOfMonth(final LocalDate date)
+	@Override
+	public void adjustToClosest(final Calendar calendar)
 	{
-		final int lastDayOfMonth = getLastDayOfMonth(date);
-		final int dayOfMonthEffective = Math.min(dayOfMonth, lastDayOfMonth);
-		return date.withDayOfMonth(dayOfMonthEffective);
+		final long millisBefore = calendar.getTimeInMillis();
+
+		// Set Day of Month
+		setDayOfMonth(calendar);
+
+		// If we actually moved back, we need to increment also
+		if (millisBefore > calendar.getTimeInMillis())
+		{
+			calendar.add(Calendar.MONTH, monthsAmount);
+
+			// make sure we still have the right Day Of Month set
+			// e.g. If current date is 28th Feb and our target day of month is 31, and we add 1 month we will get 28th March.
+			setDayOfMonth(calendar);
+		}
 	}
 
-	private static int getLastDayOfMonth(final LocalDate date)
-	{
-		return date.with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
-	}
 }

@@ -32,6 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPricingBL;
+import org.adempiere.pricing.api.IPricingContext;
+import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -42,7 +46,6 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
@@ -65,10 +68,6 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.impl.QualityInv
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.impl.QualityInvoiceLineGroup;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGroupsBuilder;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.service.IPricingBL;
 
 /**
  * Takes an {@link IQualityInspectionOrder} and creates {@link IQualityInvoiceLineGroup}s.
@@ -107,7 +106,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	private static final transient Logger logger = LogManager.getLogger(QualityInvoiceLineGroupsBuilder.class);
 
 	// Result
-	private final List<IQualityInvoiceLineGroup> _createdInvoiceLineGroups = new ArrayList<>();
+	private final List<IQualityInvoiceLineGroup> _createdInvoiceLineGroups = new ArrayList<IQualityInvoiceLineGroup>();
 
 	public QualityInvoiceLineGroupsBuilder(final IMaterialTrackingDocuments materialTrackingdocuments)
 	{
@@ -491,7 +490,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		//
 		// iterate allRegularOrders and create and add one QualityInvoiceLineGroup per date
-		final Map<Timestamp, QualityInvoiceLineGroup> date2InvoiceLineGroup = new HashMap<>();
+		final Map<Timestamp, QualityInvoiceLineGroup> date2InvoiceLineGroup = new HashMap<Timestamp, QualityInvoiceLineGroup>();
 		for (final IQualityInspectionOrder productionOrder : allProductionOrders)
 		{
 			final Timestamp dateOfProduction = TimeUtil.getDay(materialTrackingPPOrderBL.getDateOfProduction(productionOrder.getPP_Order()));
@@ -1168,7 +1167,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		pricingResult.setPriceLimit(priceToSet);
 		pricingResult.setPriceList(priceToSet);
 		pricingResult.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
-		pricingResult.setDiscount(Percent.ZERO);
+		pricingResult.setDiscount(BigDecimal.ZERO);
 		pricingResult.setCalculated(true);
 
 		return pricingResult;

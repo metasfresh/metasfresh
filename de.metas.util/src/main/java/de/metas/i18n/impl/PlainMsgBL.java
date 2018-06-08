@@ -23,7 +23,6 @@ package de.metas.i18n.impl;
  */
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -48,12 +47,6 @@ public class PlainMsgBL implements IMsgBL
 	}
 
 	@Override
-	public String getMsg(final String adLanguage, final String message, final List<Object> params)
-	{
-		return adLanguage + "_" + message + "_" + params;
-	}
-
-	@Override
 	public String getMsg(final Properties ctx, final String adMessage)
 	{
 		return adMessage;
@@ -68,21 +61,7 @@ public class PlainMsgBL implements IMsgBL
 	@Override
 	public String getMsg(final Properties ctx, final String adMessage, final Object[] params)
 	{
-		if (params == null || params.length == 0)
-		{
-			return adMessage;
-		}
 		return adMessage + "_" + Arrays.toString(params);
-	}
-
-	@Override
-	public String getMsg(final String adMessage, final List<Object> params)
-	{
-		if (params == null || params.isEmpty())
-		{
-			return adMessage;
-		}
-		return adMessage + "_" + params;
 	}
 
 	@Override
@@ -108,7 +87,7 @@ public class PlainMsgBL implements IMsgBL
 	{
 		return text;
 	}
-
+	
 	@Override
 	public String translate(final String adLanguage, final String text)
 	{
@@ -131,12 +110,6 @@ public class PlainMsgBL implements IMsgBL
 	public ITranslatableString getTranslatableMsgText(final String adMessage, final Object... msgParameters)
 	{
 		return ImmutableTranslatableString.constant(adMessage);
-	}
-
-	@Override
-	public ITranslatableString parseTranslatableString(final String text)
-	{
-		return ImmutableTranslatableString.constant(text);
 	}
 
 	@Override

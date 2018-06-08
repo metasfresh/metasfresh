@@ -1,5 +1,10 @@
 package de.metas.contracts.pricing;
 
+import org.adempiere.pricing.api.IPricingContext;
+import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.spi.IPricingRule;
+import org.compiere.util.Env;
+
 /*
  * #%L
  * de.metas.contracts
@@ -26,11 +31,7 @@ package de.metas.contracts.pricing;
 import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
-import de.metas.pricing.IPricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.rules.IPricingRule;
 
 /**
  * This pricing discount rule applies if
@@ -82,6 +83,6 @@ public class ContractDiscount implements IPricingRule
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		result.setDiscount(Percent.ONE_HUNDRED);
+		result.setDiscount(Env.ONEHUNDRED);
 	}
 }

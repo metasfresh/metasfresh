@@ -6,9 +6,6 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_Fact_Acct;
 
 import ch.qos.logback.classic.Level;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
 
 /**
  * Exception thrown by accounting engine on any document posting error.
@@ -49,14 +46,14 @@ public final class PostingException extends AdempiereException
 
 	public PostingException(final String message)
 	{
-		super(ImmutableTranslatableString.empty());
+		super();
 		setDetailMessage(message);
 	}
 
 	@Override
-	protected ITranslatableString buildMessage()
+	protected String buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final StringBuilder message = new StringBuilder();
 
 		// Error message
 		final String detailMessage = getDetailMessage();
@@ -73,47 +70,47 @@ public final class PostingException extends AdempiereException
 		final PostingStatus postingStatus = getPostingStatus();
 		if (postingStatus != null)
 		{
-			message.append("\n @Posted@: @").append(postingStatus.getAD_Message()).append("@ (").append(postingStatus.toString()).append(")");
+			message.append("\n @Posted@: @").append(postingStatus.getAD_Message()).append("@ (").append(postingStatus).append(")");
 		}
 
 		// Document
 		final Doc document = getDocument();
 		if (document != null)
 		{
-			message.append("\n @Document@: ").append(document.toString());
+			message.append("\n @Document@: ").append(document);
 		}
 		final DocLine documentLine = getDocLine();
 		if (documentLine != null)
 		{
-			message.append("\n @Line@: ").append(documentLine.toString());
+			message.append("\n @Line@: ").append(documentLine);
 		}
 
 		// Fact
 		final Fact fact = getFact();
 		if (fact != null)
 		{
-			message.append("\n Fact: ").append(fact.toString());
+			message.append("\n Fact: ").append(fact);
 		}
 
 		final I_Fact_Acct factLine = getFactLine();
 		if (factLine != null)
 		{
-			message.append("\n @Fact_Acct_ID@: ").append(factLine.toString());
+			message.append("\n @Fact_Acct_ID@: ").append(factLine);
 		}
 
 		// Account Schema
 		final I_C_AcctSchema acctSchema = getC_AcctSchema();
 		if (acctSchema != null)
 		{
-			message.append("\n @C_AcctSchema_ID@: ").append(acctSchema.toString());
+			message.append("\n @C_AcctSchema_ID@: ").append(acctSchema);
 		}
 
-		message.append("\n Preserve Posted status: ").appendObj(isPreserveDocumentPostedStatus());
+		message.append("\n Preserve Posted status: ").append(isPreserveDocumentPostedStatus());
 
 		// Other parameters
 		appendParameters(message);
 
-		return message.build();
+		return message.toString();
 	}
 
 	public PostingException setDocument(final Doc document)

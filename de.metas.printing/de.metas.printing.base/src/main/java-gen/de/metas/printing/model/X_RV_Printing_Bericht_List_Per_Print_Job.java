@@ -15,7 +15,7 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -417387767L;
+	private static final long serialVersionUID = 1455181475L;
 
     /** Standard Constructor */
     public X_RV_Printing_Bericht_List_Per_Print_Job (Properties ctx, int RV_Printing_Bericht_List_Per_Print_Job_ID, String trxName)
@@ -168,56 +168,6 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 		return ii.intValue();
 	}
 
-	/** Set Firmenname.
-		@param Companyname Firmenname	  */
-	@Override
-	public void setCompanyname (java.lang.String Companyname)
-	{
-		set_Value (COLUMNNAME_Companyname, Companyname);
-	}
-
-	/** Get Firmenname.
-		@return Firmenname	  */
-	@Override
-	public java.lang.String getCompanyname () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Companyname);
-	}
-
-	@Override
-	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class);
-	}
-
-	@Override
-	public void setC_Printing_Queue(de.metas.printing.model.I_C_Printing_Queue C_Printing_Queue)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class, C_Printing_Queue);
-	}
-
-	/** Set Druck-Warteschlangendatensatz.
-		@param C_Printing_Queue_ID Druck-Warteschlangendatensatz	  */
-	@Override
-	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID)
-	{
-		if (C_Printing_Queue_ID < 1) 
-			set_Value (COLUMNNAME_C_Printing_Queue_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Printing_Queue_ID, Integer.valueOf(C_Printing_Queue_ID));
-	}
-
-	/** Get Druck-Warteschlangendatensatz.
-		@return Druck-Warteschlangendatensatz	  */
-	@Override
-	public int getC_Printing_Queue_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public de.metas.printing.model.I_C_Print_Job getC_Print_Job() throws RuntimeException
 	{
@@ -268,6 +218,56 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 		return (java.lang.String)get_Value(COLUMNNAME_c_print_job_name);
 	}
 
+	@Override
+	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class);
+	}
+
+	@Override
+	public void setC_Printing_Queue(de.metas.printing.model.I_C_Printing_Queue C_Printing_Queue)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class, C_Printing_Queue);
+	}
+
+	/** Set Druck-Warteschlangendatensatz.
+		@param C_Printing_Queue_ID Druck-Warteschlangendatensatz	  */
+	@Override
+	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID)
+	{
+		if (C_Printing_Queue_ID < 1) 
+			set_Value (COLUMNNAME_C_Printing_Queue_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Printing_Queue_ID, Integer.valueOf(C_Printing_Queue_ID));
+	}
+
+	/** Get Druck-Warteschlangendatensatz.
+		@return Druck-Warteschlangendatensatz	  */
+	@Override
+	public int getC_Printing_Queue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Firmenname.
+		@param Companyname Firmenname	  */
+	@Override
+	public void setCompanyname (java.lang.String Companyname)
+	{
+		set_Value (COLUMNNAME_Companyname, Companyname);
+	}
+
+	/** Get Firmenname.
+		@return Firmenname	  */
+	@Override
+	public java.lang.String getCompanyname () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Companyname);
+	}
+
 	/** Set document.
 		@param document document	  */
 	@Override
@@ -284,7 +284,7 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 		return (java.lang.String)get_Value(COLUMNNAME_document);
 	}
 
-	/** Set Nr..
+	/** Set Beleg Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -294,7 +294,7 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Nr..
+	/** Get Beleg Nr..
 		@return Document sequence number of the document
 	  */
 	@Override

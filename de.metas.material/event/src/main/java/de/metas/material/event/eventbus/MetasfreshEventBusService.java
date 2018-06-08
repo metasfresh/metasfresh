@@ -81,7 +81,7 @@ public final class MetasfreshEventBusService
 		this.materialEventConverter = materialEventConverter;
 	}
 
-	private IEventBus getEventBus()
+	public IEventBus getEventBus()
 	{
 		final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 

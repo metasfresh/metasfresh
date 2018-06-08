@@ -9,30 +9,22 @@ import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice;
-import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.interceptor.MainValidator;
-import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.pricing.ContractDiscount;
-import de.metas.contracts.pricing.SubscriptionPricingRule;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.pricing.attributebased.impl.AttributePricing;
-import de.metas.pricing.rules.Discount;
-import de.metas.pricing.rules.PriceListVersion;
 
 /**
  * This class sets up basic master data like partners, addresses, users, flatrate conditions, flarate transitions that can be used in testing.
@@ -42,8 +34,8 @@ import de.metas.pricing.rules.PriceListVersion;
  */
 public class FlatrateTermTestHelper
 {
-	private final String invoiceCandClassname = FlatrateTerm_Handler.class.getName();
-	private final String shipmentCandClassname = SubscriptionShipmentScheduleHandler.class.getName();
+	private final String invoiceCandClassname = "de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler";
+	private final String shipmentCandClassname = "de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler";
 
 	private final Map<String, String> pricingRules = new HashMap<>();
 
@@ -166,12 +158,18 @@ public class FlatrateTermTestHelper
 
 	private void addPricingRules()
 	{
-		pricingRules.put("PriceListVersion", PriceListVersion.class.getName());
-		pricingRules.put("Discount", Discount.class.getName());
-		pricingRules.put("Product Scale Price", ProductScalePrice.class.getName());
-		pricingRules.put("Attribute pricing rule", AttributePricing.class.getName());
-		pricingRules.put("de.metas.contracts Discount", ContractDiscount.class.getName());
-		pricingRules.put("de.metas.contracts Subscription", SubscriptionPricingRule.class.getName());
+		// skipping this for now because is using directly the DB
+		// pricingRules.put("PriceListVersion + Vendor Break", "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB");
+		pricingRules.put("PriceListVersion", "org.adempiere.pricing.spi.impl.rules.PriceListVersion");
+		pricingRules.put("PriceList + VendorBreak", "org.adempiere.pricing.spi.impl.rules.PriceListVB");
+		pricingRules.put("PriceList", "org.adempiere.pricing.spi.impl.rules.PriceList");
+		pricingRules.put("BasePriceList + Vendor Break", "org.adempiere.pricing.spi.impl.rules.BasePriceListVB");
+		pricingRules.put("BasePriceList", "org.adempiere.pricing.spi.impl.rules.BasePriceList");
+		pricingRules.put("Discount", "org.adempiere.pricing.spi.impl.rules.Discount");
+		pricingRules.put("Product Scale Price", "de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice");
+		pricingRules.put("Attribute pricing rule", "de.metas.pricing.attributebased.impl.AttributePricing");
+		pricingRules.put("de.metas.contracts Discount", "de.metas.contracts.pricing.ContractDiscount");
+		pricingRules.put("de.metas.contracts Subscription", "de.metas.contracts.pricing.SubscriptionPricingRule");
 	}
 
 	private void createPricingRules()
@@ -192,14 +190,14 @@ public class FlatrateTermTestHelper
 
 	/**
 	 * Setup module interceptors: "de.metas.contracts" module - FULL (interceptors, factories, etc), like in production (used by some integration tests).
-	 *
+	 * 
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
-	 *
+	 * 
 	 * <pre>
 	&#64;RunWith(SpringRunner.class)
 	&#64;SpringBootTest(classes= StartupListener.class)
 	 * </pre>
-	 *
+	 * 
 	 * Otherwise, tests will probably fail due to spring application context.
 	 */
 	public final void setupModuleInterceptors_Contracts_Full()

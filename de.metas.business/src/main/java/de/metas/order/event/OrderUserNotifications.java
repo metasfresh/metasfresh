@@ -9,6 +9,8 @@ import javax.annotation.Nullable;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
@@ -17,15 +19,15 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.QueueableForwardingEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -50,15 +52,18 @@ import lombok.Value;
  * #L%
  */
 
-public class OrderUserNotifications
+public class OrderUserNotifications extends QueueableForwardingEventBus
 {
 	public static final OrderUserNotifications newInstance()
 	{
-		return new OrderUserNotifications();
+		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
+		final OrderUserNotifications orderUserNotifications = new OrderUserNotifications(eventBus);
+		orderUserNotifications.queueEventsUntilCurrentTrxCommit();
+		return orderUserNotifications;
 	}
 
-	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
-			.name("de.metas.order.UserNotifications")
+	public static final Topic EVENTBUS_TOPIC = Topic.builder()
+			.name("de.metas.order.OrderUserNotifications")
 			.type(Type.REMOTE)
 			.build();
 
@@ -67,8 +72,37 @@ public class OrderUserNotifications
 	private static final String MSG_PurchaseOrderCompleted = "Event_PurchaseOrderCreated";
 	private static final String MSG_SalesOrderCompleted = "Event_SalesOrderCreated";
 
-	private OrderUserNotifications()
+	private OrderUserNotifications(final IEventBus delegate)
 	{
+		super(delegate);
+	}
+
+	@Override
+	public OrderUserNotifications queueEvents()
+	{
+		super.queueEvents();
+		return this;
+	}
+
+	@Override
+	public OrderUserNotifications queueEventsUntilCurrentTrxCommit()
+	{
+		super.queueEventsUntilCurrentTrxCommit();
+		return this;
+	}
+
+	@Value
+	@Builder
+	public static class NotificationRequest
+	{
+		@NonNull
+		I_C_Order order;
+
+		@Nullable
+		Set<Integer> recipientUserIds;
+
+		@Nullable
+		IPair<String, Object[]> adMessageAndParams;
 	}
 
 	/**
@@ -93,16 +127,18 @@ public class OrderUserNotifications
 				.ofNullable(request.getRecipientUserIds())
 				.orElse(ImmutableSet.of(extractRecipientUserIdFromOrder(order)));
 
-		final ADMessageAndParams adMessageAndParams = Optional
+		final IPair<String, Object[]> adMessageAndParams = Optional
 				.ofNullable(request.getAdMessageAndParams())
 				.orElse(extractOrderCompletedADMessageAndParams(order));
 
 		try
 		{
-			postNotifications(createOrderCompletedEvents(
+			final List<Event> events = createOrderCompletedEvents(
 					order,
 					recipientUserIds,
-					adMessageAndParams));
+					adMessageAndParams);
+
+			events.forEach(this::postEvent);
 		}
 		catch (final Exception ex)
 		{
@@ -112,74 +148,43 @@ public class OrderUserNotifications
 		return this;
 	}
 
-	private final List<UserNotificationRequest> createOrderCompletedEvents(
+	private final List<Event> createOrderCompletedEvents(
 			@NonNull final I_C_Order order,
 			@NonNull final Set<Integer> recipientUserIds,
-			@NonNull final ADMessageAndParams adMessageAndParams)
+			@NonNull final IPair<String, Object[]> adMessageAndParams)
 	{
 		Check.assumeNotEmpty(recipientUserIds, "recipientUserIds is not empty");
 
+		// Extract event message parameters
+		final String adMessage = adMessageAndParams.getLeft();
+		final Object[] adMessageParams = adMessageAndParams.getRight();
+
+		// Create an return the event
 		return recipientUserIds.stream()
-				.filter(recipientUserId -> recipientUserId > 0)
-				.map(recipientUserId -> newUserNotificationRequest()
-						.recipientUserId(recipientUserId)
-						.contentADMessage(adMessageAndParams.getAdMessage())
-						.contentADMessageParams(adMessageAndParams.getParams())
-						.targetAction(TargetRecordAction.of(TableRecordReference.of(order)))
+				.map(recipientUserId -> Event.builder()
+						.setDetailADMessage(adMessage, adMessageParams)
+						.addRecipient_User_ID(recipientUserId)
+						.setRecord(TableRecordReference.of(order))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
+	private static IPair<String, Object[]> extractOrderCompletedADMessageAndParams(final I_C_Order order)
 	{
-		return UserNotificationRequest.builder()
-				.topic(USER_NOTIFICATIONS_TOPIC);
-	}
+		final String adMessage = order.isSOTrx() ? MSG_SalesOrderCompleted : MSG_PurchaseOrderCompleted;
 
-	private static ADMessageAndParams extractOrderCompletedADMessageAndParams(final I_C_Order order)
-	{
 		final I_C_BPartner bpartner = order.getC_BPartner();
-		return ADMessageAndParams.builder()
-				.adMessage(order.isSOTrx() ? MSG_SalesOrderCompleted : MSG_PurchaseOrderCompleted)
-				.param(TableRecordReference.of(order))
-				.param(bpartner.getValue())
-				.param(bpartner.getName())
-				.build();
+		final String bpValue = bpartner.getValue();
+		final String bpName = bpartner.getName();
+		final Object[] params = new Object[] { TableRecordReference.of(order), bpValue, bpName };
+
+		return ImmutablePair.of(adMessage, params);
 	}
 
 	private static int extractRecipientUserIdFromOrder(final I_C_Order order)
 	{
 		final Integer createdBy = InterfaceWrapperHelper.getValueOrNull(order, "CreatedBy");
 		return createdBy == null ? -1 : createdBy;
-	}
-
-	private void postNotifications(final List<UserNotificationRequest> notifications)
-	{
-		Services.get(INotificationBL.class).sendAfterCommit(notifications);
-	}
-
-	@Value
-	@Builder
-	public static class ADMessageAndParams
-	{
-		@NonNull
-		String adMessage;
-		@Singular
-		List<Object> params;
-	}
-
-	@Value
-	@Builder
-	public static class NotificationRequest
-	{
-		@NonNull
-		I_C_Order order;
-
-		@Nullable
-		Set<Integer> recipientUserIds;
-
-		@Nullable
-		ADMessageAndParams adMessageAndParams;
 	}
 
 }

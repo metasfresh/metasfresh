@@ -77,8 +77,12 @@ class DocLine_Allocation extends DocLine
 			creditMemoInvoice = false;
 			soTrxInvoice = null;
 		}
-
+		
         this.m_Counter_AllocationLine_ID = line.getCounter_AllocationLine_ID();
+
+		//
+		// Order (used for prepayments)
+		m_C_Order_ID = line.getC_Order_ID();
 
 		//
 		// Payment: via Cashbook (legacy)
@@ -119,7 +123,7 @@ class DocLine_Allocation extends DocLine
 	private final int m_Counter_AllocationLine_ID;
 	private DocLine_Allocation counterDocLine;
 	private final Set<Integer> salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds = new HashSet<>();
-
+	
 	private final int m_C_Payment_ID;
 	private final I_C_Payment payment;
 	private ICurrencyConversionContext paymentCurrencyConversionCtx;
@@ -127,6 +131,8 @@ class DocLine_Allocation extends DocLine
 
 	private final int m_C_CashLine_ID;
 	private final I_C_CashLine cashLine;
+
+	private final int m_C_Order_ID;
 
 	private final BigDecimal m_AllocatedAmt;
 	private final BigDecimal m_DiscountAmt;
@@ -170,7 +176,7 @@ class DocLine_Allocation extends DocLine
 		}
 		return allocatedAmt;
 	}
-
+	
 	/**
 	 * @return Returns the discountAmt.
 	 */
@@ -248,17 +254,17 @@ class DocLine_Allocation extends DocLine
 	{
 		return invoice;
 	}
-
+	
 	public int getCounter_AllocationLine_ID()
 	{
 		return m_Counter_AllocationLine_ID;
 	}
-
+	
 	public DocLine_Allocation getCounterDocLine()
 	{
 		return counterDocLine;
 	}
-
+	
 	void setCounterDocLine(final DocLine_Allocation counterDocLine)
 	{
 		Check.assumeNotNull(counterDocLine, "counterDocLine not null");
@@ -266,7 +272,7 @@ class DocLine_Allocation extends DocLine
 		Check.assume(counterDocLine.get_ID() == counterDocLineId, "Counter docline shall have ID={}: {}", counterDocLineId, counterDocLine);
 		this.counterDocLine = counterDocLine;
 	}
-
+	
 	/** @return true if this is a sales/purchase compensation line which was not already compensated */
 	public boolean isSalesPurchaseInvoiceToCompensate(final MAcctSchema as)
 	{
@@ -275,7 +281,7 @@ class DocLine_Allocation extends DocLine
 		{
 			return false;
 		}
-
+		
 		// Shall have an invoice set
 		if (!hasInvoiceDocument())
 		{
@@ -293,13 +299,13 @@ class DocLine_Allocation extends DocLine
 		{
 			return false;
 		}
-
+		
 		// The counter line shall have a invoice set
 		if (!counterLine.hasInvoiceDocument())
 		{
 			return false;
 		}
-
+		
 		// The counter line's invoice shall not be a credit memo
 		if (counterLine.isCreditMemoInvoice())
 		{
@@ -311,10 +317,10 @@ class DocLine_Allocation extends DocLine
 		{
 			return false;
 		}
-
+		
 		return true;
 	}
-
+	
 	public void markAsSalesPurchaseInvoiceCompensated(final MAcctSchema as)
 	{
 		final boolean added = salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.add(as.getC_AcctSchema_ID());
@@ -337,6 +343,14 @@ class DocLine_Allocation extends DocLine
 	public I_C_Payment getC_Payment()
 	{
 		return payment;
+	}
+
+	/**
+	 * @return Returns the c_Order_ID.
+	 */
+	public int getC_Order_ID()
+	{
+		return m_C_Order_ID;
 	}
 
 	public final boolean isSOTrxInvoice()
@@ -592,7 +606,7 @@ class DocLine_Allocation extends DocLine
 
 		return getC_BPartner_ID();
 	}
-
+	
 	public boolean isPaymentReceipt()
 	{
 		Check.assumeNotNull(paymentReceipt, "payment document exists");

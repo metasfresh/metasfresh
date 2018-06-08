@@ -55,15 +55,6 @@ public class ProductDescriptor
 	{
 		return new ProductDescriptor(productId, attributesKey, attributeSetInstanceId);
 	}
-	
-	public static final ProductDescriptor forProductAndAttributes(
-			final int productId,
-			@NonNull final AttributesKey attributesKey)
-	{
-		final int attributeSetInstanceId = 0;
-		return new ProductDescriptor(productId, attributesKey, attributeSetInstanceId);
-	}
-
 
 	@Getter
 	int productId;

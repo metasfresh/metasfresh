@@ -30,26 +30,24 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.util.Env;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.quantity.Quantity;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
+
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID })
 	public void onFlatrateConditions(final I_C_OrderLine ol, final ICalloutField field)
 	{
@@ -59,34 +57,35 @@ public class C_OrderLine
 		final I_C_Order order = ol.getC_Order();
 		final boolean isSOTrx = order.isSOTrx();
 
-		if (productId <= 0 || bPartnerId <= 0 || !isSOTrx)
+		if (productId == 0 || bPartnerId == 0 || !isSOTrx)
 		{
 			return;
 		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 
 		// resetting PriceEntered so that it won't override the new price
 		ol.setPriceEntered(BigDecimal.ZERO);
 
 		final int subscriptionId = ol.getC_Flatrate_Conditions_ID();
-		if (subscriptionId <= 0)
+
+		if (subscriptionId == 0)
 		{
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			final BigDecimal qtyEntered = ol.getQtyEntered();
 
-			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(Env.getCtx(), ol.getM_Product(), ol.getC_UOM(), qtyEntered);
+			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(ctx, ol.getM_Product(), ol.getC_UOM(), qtyEntered);
 			ol.setQtyOrdered(qtyOrdered);
 
-			Services.get(IOrderLineBL.class).updatePrices(OrderLinePriceUpdateRequest.builder()
-					.orderLine(ol)
-					.resultUOM(ResultUOM.PRICE_UOM)
-					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-					.updateLineNetAmt(true)
-					.build());
+			final int priceListId = order.getM_PriceList_ID();
+			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(ctx, ol, priceListId, qtyEntered, BigDecimal.ONE,
+					true, // usePriceUOM
+					null);
 
 			return;
 		}
 
-		updatePrices(ol, isSOTrx);
+		updatePrices(ctx, ol, isSOTrx);
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyEntered })
@@ -101,10 +100,14 @@ public class C_OrderLine
 			return; // leave this job to the adempiere standard callouts
 		}
 
-		updatePrices(ol, isSOTrx);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
+		updatePrices(ctx, ol, isSOTrx);
 	}
 
-	private void updatePrices(final I_C_OrderLine ol, final boolean isSOTrx)
+	private void updatePrices(
+			final Properties ctx,
+			final I_C_OrderLine ol,
+			final boolean isSOTrx)
 	{
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -133,22 +136,21 @@ public class C_OrderLine
 
 		final int numberOfRuns = subscriptionBL.computeNumberOfRuns(flatrateConditions.getC_Flatrate_Transition(), date);
 
-		final Properties ctx = Env.getCtx();
 		final I_C_Flatrate_Matching matching = subscriptionBL.retrieveMatching(
 				ctx,
 				ol.getC_Flatrate_Conditions_ID(),
 				ol.getM_Product(),
 				ITrx.TRXNAME_None);
 
-		
-		final Quantity qtyEntered = orderLineBL.getQtyEntered(ol);
-		final Quantity qtyEnteredInProductUOM = uomConversionBL.convertToProductUOM(qtyEntered, ol.getM_Product_ID());
-		
-		final Quantity qtyPerRun;
+		final BigDecimal qtyPerRun;
+		final BigDecimal qtyEnteredInProductUOM = uomConversionBL.convertToProductUOM(ctx,
+				ol.getM_Product(),
+				ol.getC_UOM(),
+				ol.getQtyEntered());
+
 		if (matching != null && matching.getQtyPerDelivery().signum() > 0)
 		{
-			final Quantity qtyPerDelivery = Quantity.of(matching.getQtyPerDelivery(), qtyEnteredInProductUOM.getUOM());
-			qtyPerRun = qtyPerDelivery.min(qtyEnteredInProductUOM);
+			qtyPerRun = matching.getQtyPerDelivery().min(qtyEnteredInProductUOM);
 		}
 		else
 		{
@@ -156,22 +158,21 @@ public class C_OrderLine
 		}
 
 		// priceQty is the qty do be delivered during one complete subscription term
-		final Quantity priceQty = qtyPerRun.multiply(numberOfRuns);
+		final BigDecimal priceQty = qtyPerRun.multiply(new BigDecimal(numberOfRuns));
 
 		// qty ordered needs to be set because it will be used to compute the
 		// line's NetLineAmount in MOrderLine.beforeSave()
-		ol.setQtyOrdered(priceQty.getQty());
+		ol.setQtyOrdered(priceQty);
 
-		ol.setQtyEnteredInPriceUOM(priceQty.getQty());
+		ol.setQtyEnteredInPriceUOM(priceQty);
 
 		// now compute the new prices
-		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.priceListIdOverride(subscriptionPL.getM_PriceList_ID())
-				.qtyOverride(priceQty)
-				.resultUOM(ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
+		orderLineBL.setPricesIfNotIgnored(ctx,
+				ol,
+				subscriptionPL.getM_PriceList_ID(),
+				priceQty,
+				BigDecimal.ONE,
+				true, // usePriceUOM
+				null);
 	}
 }

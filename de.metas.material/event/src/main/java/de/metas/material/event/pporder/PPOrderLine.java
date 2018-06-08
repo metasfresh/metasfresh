@@ -3,8 +3,6 @@ package de.metas.material.event.pporder;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -71,8 +69,6 @@ public class PPOrderLine
 
 	BigDecimal qtyRequired;
 
-	BigDecimal qtyDelivered;
-
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderLine(
@@ -82,8 +78,7 @@ public class PPOrderLine
 			@JsonProperty("receipt") @NonNull final Boolean receipt,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 			@JsonProperty("issueOrReceiveDate") @NonNull final Date issueOrReceiveDate,
-			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
-			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered)
+			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired)
 	{
 		this.description = description;
 
@@ -95,7 +90,6 @@ public class PPOrderLine
 		this.productDescriptor = productDescriptor;
 
 		this.qtyRequired = qtyRequired;
-		this.qtyDelivered = qtyDelivered;
 
 		this.issueOrReceiveDate = issueOrReceiveDate;
 	}

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.document.DocTypeQuery;
@@ -42,7 +43,7 @@ public class HUInventoryBL implements IHUInventoryBL
 	{
 		return HUInternalUseInventoryProducer.newInstance()
 				.setMovementDate(movementDate)
-				.setDocSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
+				.setDocSubType(X_C_DocType.DOCSUBTYPE_MaterialDisposal)
 				.addHUs(husToDestroy)
 				.createInventories();
 	}
@@ -50,14 +51,30 @@ public class HUInventoryBL implements IHUInventoryBL
 	@Override
 	public boolean isMaterialDisposal(final I_M_Inventory inventory)
 	{
-		final int disposalDocTypeId = Services.get(IDocTypeDAO.class)
-				.getDocTypeIdOrNull(DocTypeQuery.builder()
+		// in the case of returns the docSubType is null
+
+		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
+				.getDocTypeOrNull(DocTypeQuery.builder()
 						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-						.docSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
+						.docSubType(X_C_DocType.DOCSUBTYPE_MaterialDisposal)
+						.isSOTrx(false)
 						.adClientId(inventory.getAD_Client_ID())
 						.adOrgId(inventory.getAD_Org_ID())
 						.build());
+		if (returnsDocType == null)
+		{
+			// there is no material disposal doc type defined in the project. Return false by default
+			return false;
+		}
 
-		return disposalDocTypeId > 0 && disposalDocTypeId == inventory.getC_DocType_ID();
+		if (returnsDocType.getC_DocType_ID() != inventory.getC_DocType_ID())
+		{
+			// the inventory is not a material disposal
+			return false;
+		}
+
+		// the inout is a material disposal
+		return true;
 	}
+
 }

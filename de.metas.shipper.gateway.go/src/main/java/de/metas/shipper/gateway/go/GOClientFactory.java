@@ -2,9 +2,6 @@ package de.metas.shipper.gateway.go;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.shipper.gateway.go
@@ -28,28 +25,21 @@ import lombok.NonNull;
  */
 
 @Service
-public class GOClientFactory implements ShipperGatewayClientFactory
+public class GOClientFactory
 {
 	private final GOClientConfigRepository configRepo;
 
-	public GOClientFactory(@NonNull final GOClientConfigRepository configRepo)
+	GOClientFactory(final GOClientConfigRepository configRepo)
 	{
 		this.configRepo = configRepo;
 	}
 
-	@Override
-	public GOClient newClientForShipperId(final int shipperId)
+	public GOClient newGOClientForShipperId(final int shipperId)
 	{
 		final GOClientConfig config = configRepo.getByShipperId(shipperId);
 		return GOClient.builder()
 				.config(config)
 				.goClientLogger(DatabaseGOClientLogger.instance)
 				.build();
-	}
-
-	@Override
-	public String getShipperGatewayId()
-	{
-		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 }

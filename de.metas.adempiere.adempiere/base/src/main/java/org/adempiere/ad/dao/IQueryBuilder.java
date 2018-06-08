@@ -194,7 +194,7 @@ public interface IQueryBuilder<T>
 	/**
 	 * Filters those rows for whom the columnName's value is in given array.
 	 * If no values were provided the record is rejected.
-	 *
+	 * 
 	 * @param column
 	 * @param values the values to check again also supports {@code null} value among them.
 	 */
@@ -294,8 +294,7 @@ public interface IQueryBuilder<T>
 	 * @param collectedType
 	 * @return
 	 */
-	<CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType> IQueryBuilder<CollectedType> andCollect(
-			ModelColumn<ParentModelType, CollectedBaseType> column,
+	<CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType> IQueryBuilder<CollectedType> andCollect(ModelColumn<ParentModelType, CollectedBaseType> column,
 			Class<CollectedType> collectedType);
 
 	/**

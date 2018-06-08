@@ -1,17 +1,10 @@
 package org.adempiere.bpartner.service;
 
-import static java.math.BigDecimal.ZERO;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Util;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -41,42 +34,17 @@ import lombok.Value;
  */
 public interface IBPartnerStatsBL extends ISingletonService
 {
-	@Value
-	public static class CalculateSOCreditStatusRequest
-	{
-		BPartnerStats stat;
-		BigDecimal additionalAmt;
-		Timestamp date;
-		boolean forceCheckCreditStatus;
-
-		@Builder
-		private CalculateSOCreditStatusRequest(
-				@NonNull BPartnerStats stat,
-				@NonNull Timestamp date,
-				BigDecimal additionalAmt,
-				Boolean forceCheckCreditStatus)
-		{
-			this.stat = stat;
-			this.date = date;
-			this.additionalAmt = Util.coalesce(additionalAmt, ZERO);
-			this.forceCheckCreditStatus = Util.coalesce(forceCheckCreditStatus, false);
-		}
-	}
-
 	/**
 	 * Calculate the future/simulated SOCreditStatus for the given {@link BPartnerStats} object at a certain date
-	 * <br>
-	 * The computation can be forced with the flag <code>forceCheckCreditStatus</code><br>
-	 * If the status is <code>CreditStop</code>, the status can be recomputed only if flag <code>forceCheckCreditStatus</code> is on Y
-	 * <br>
-	 * <b>No updating</b>
+	 * No updating
 	 *
 	 * @param stat
 	 * @param additionalAmt
 	 * @param date
 	 * @return
 	 */
-	String calculateProjectedSOCreditStatus(CalculateSOCreditStatusRequest request);
+	String calculateSOCreditStatus(BPartnerStats stat, BigDecimal additionalAmt, Timestamp date);
+
 
 	/**
 	 * Logic to tell whether or not the given grandTotal makes the credit stop for the given BPartner stats.
@@ -89,6 +57,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 */
 	boolean isCreditStopSales(BPartnerStats stat, BigDecimal grandTotal, Timestamp date);
 
+
 	/**
 	 * Get Credit Watch % from the bpartner group of the given statistics
 	 *
@@ -96,6 +65,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 * @return
 	 */
 	BigDecimal getCreditWatchRatio(BPartnerStats stats);
+
 
 	void resetCreditStatusFromBPGroup(I_C_BPartner bpartner);
 }

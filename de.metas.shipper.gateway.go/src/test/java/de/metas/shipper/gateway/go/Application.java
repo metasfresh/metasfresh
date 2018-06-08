@@ -18,17 +18,18 @@ import org.springframework.context.annotation.Bean;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
+import de.metas.shipper.gateway.api.model.Address;
+import de.metas.shipper.gateway.api.model.CountryCode;
+import de.metas.shipper.gateway.api.model.DeliveryOrder;
+import de.metas.shipper.gateway.api.model.DeliveryPosition;
+import de.metas.shipper.gateway.api.model.PackageLabel;
+import de.metas.shipper.gateway.api.model.PackageLabels;
+import de.metas.shipper.gateway.api.model.PickupDate;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
 import de.metas.shipper.gateway.go.schema.GOServiceType;
-import de.metas.shipper.gateway.spi.model.Address;
-import de.metas.shipper.gateway.spi.model.CountryCode;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition;
-import de.metas.shipper.gateway.spi.model.PackageLabel;
-import de.metas.shipper.gateway.spi.model.PackageLabels;
-import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.NonNull;
 
 /*
@@ -63,7 +64,10 @@ public class Application
 	}
 
 	@Bean
-	CommandLineRunner test(final GOClient goClient)
+	CommandLineRunner test(
+			final GOClient goClient,
+			final ShipperGatewayRegistry shipperGatewayRegistry // not used, but just to make sure it loads OK
+	)
 	{
 		System.out.println("Using: " + goClient);
 
@@ -98,15 +102,11 @@ public class Application
 						.build())
 				.customerReference("some info for customer")
 				.serviceType(GOServiceType.Overnight)
-				.customDeliveryData(GoDeliveryOrderData
-						.builder()
-						.receiptConfirmationPhoneNumber("+40-746-010203")
-						.paidMode(GOPaidMode.Prepaid)
-						.selfDelivery(GOSelfDelivery.Pickup)
-						.selfPickup(GOSelfPickup.Delivery)
-						.build())
+				.paidMode(GOPaidMode.Prepaid)
+				.selfDelivery(GOSelfDelivery.Pickup)
+				.selfPickup(GOSelfPickup.Delivery)
+				.receiptConfirmationPhoneNumber("+40-746-010203")
 				.build();
-
 		return args -> {
 			final DeliveryOrder deliveryOrder = goClient.createDeliveryOrder(deliveryOrderCreateRequest);
 			goClient.completeDeliveryOrder(deliveryOrder);
@@ -157,6 +157,7 @@ public class Application
 		public CountryCodeFactory()
 		{
 			final ImmutableMap.Builder<String, CountryCode> countryCodesByAlpha2 = ImmutableMap.builder();
+			// final ImmutableMap.Builder<String, CountryCode> countryCodesByAlpha3 = ImmutableMap.builder();
 
 			for (final String countryCodeAlpha2 : Locale.getISOCountries())
 			{
@@ -167,9 +168,11 @@ public class Application
 						.alpha3(countryCodeAlpha3)
 						.build();
 				countryCodesByAlpha2.put(countryCodeAlpha2, countryCode);
+				// countryCodesByAlpha3.put(countryCodeAlpha3, countryCode);
 			}
 
 			this.countryCodesByAlpha2 = countryCodesByAlpha2.build();
+			// this.countryCodesByAlpha3 = countryCodesByAlpha3.build();
 		}
 
 		public CountryCode getCountryCodeByAlpha2(@NonNull final String countryCodeAlpha2)

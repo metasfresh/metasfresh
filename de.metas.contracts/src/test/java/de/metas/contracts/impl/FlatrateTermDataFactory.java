@@ -57,7 +57,7 @@ import lombok.Value;
 
 /**
  * *
- *
+ * 
  * @author metas-dev <dev@metasfresh.com>
  */
 
@@ -108,15 +108,14 @@ public class FlatrateTermDataFactory
 	}
 
 	@Builder(builderMethodName = "flatrateConditionsNew")
-	public static I_C_Flatrate_Conditions createFlatrateConditions(final String name, final String invoiceRule,
-			final String typeConditions, @NonNull final I_C_Calendar calendar, @NonNull final String onFlatrateTermExtend,
-			@NonNull final I_M_PricingSystem pricingSystem, final String extensionType)
+	public static I_C_Flatrate_Conditions createFlatrateConditions(final String name, final String invoiceRule, 
+			final String typeConditions, @NonNull final I_C_Calendar calendar, 
+			@NonNull final I_M_PricingSystem pricingSystem, final boolean isAutoRenew)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setM_PricingSystem(pricingSystem);
 		conditions.setInvoiceRule(invoiceRule);
 		conditions.setType_Conditions(typeConditions);
-		conditions.setOnFlatrateTermExtend(onFlatrateTermExtend);
 		conditions.setName(name);
 		save(conditions);
 
@@ -127,8 +126,8 @@ public class FlatrateTermDataFactory
 				.deliveryIntervalUnit(X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_MonatE)
 				.termDuration(1)
 				.termDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE)
-				.isAutoCompleteNewTerm(true)
-				.extensionType(extensionType)
+				.isAutoCompleteNewTerm(isAutoRenew)
+				.isAutoRenew(isAutoRenew)
 				.build();
 
 		conditions.setC_Flatrate_Transition(transition);
@@ -141,8 +140,8 @@ public class FlatrateTermDataFactory
 	}
 
 	@Builder(builderMethodName = "flatrateTransitionNew")
-	private static I_C_Flatrate_Transition createFlatrateTransition(final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Calendar calendar, final int termDuration, final String termDurationUnit,
-			final int deliveryInterval, final String deliveryIntervalUnit, final boolean isAutoCompleteNewTerm , final String extensionType)
+	private static I_C_Flatrate_Transition createFlatrateTransition(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Calendar calendar, final int termDuration, final String termDurationUnit,
+			final int deliveryInterval, final String deliveryIntervalUnit, final boolean isAutoRenew, final boolean isAutoCompleteNewTerm)
 	{
 		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
 		transition.setC_Calendar_Contract(calendar);
@@ -150,8 +149,8 @@ public class FlatrateTermDataFactory
 		transition.setTermDurationUnit(termDurationUnit);
 		transition.setDeliveryInterval(deliveryInterval);
 		transition.setDeliveryIntervalUnit(deliveryIntervalUnit);
+		transition.setIsAutoRenew(isAutoRenew);
 		transition.setIsAutoCompleteNewTerm(isAutoCompleteNewTerm);
-		transition.setExtensionType(extensionType);
 		transition.setC_Flatrate_Conditions_Next(conditions);
 		transition.setTermOfNotice(0);
 		transition.setTermOfNoticeUnit(X_C_Flatrate_Transition.TERMOFNOTICEUNIT_TagE);
@@ -183,20 +182,20 @@ public class FlatrateTermDataFactory
 		final private I_C_TaxCategory taxCategory;
 		final private I_C_Tax tax;
 	}
-
-
+	
+	
 	@Builder(builderMethodName = "productAndPricingNew")
 	public static ProductAndPricingSystem createProductAndPricing(final String productValue, final String productName,
 			@NonNull final I_C_Country country,	@NonNull final Timestamp validFrom, final boolean isTaxInclcuded)
 	{
 		final I_C_TaxCategory taxCategory = createTaxCategory();
-
+		
 		final I_C_Tax tax  = taxNew()
 				.country(country)
 				.taxCategory(taxCategory)
 				.validFrom(TimeUtil.addDays(validFrom, -10))
 				.build();
-
+		
 		final I_M_Product product = productNew()
 				.value(productValue)
 				.name(productName)
@@ -230,8 +229,8 @@ public class FlatrateTermDataFactory
 				.priceListVersion(priceListVersion)
 				.build();
 	}
-
-
+	
+	
 	private static I_C_TaxCategory createTaxCategory()
 	{
 		final I_C_TaxCategory taxCategory  = newInstance(I_C_TaxCategory.class);
@@ -239,7 +238,7 @@ public class FlatrateTermDataFactory
 		save(taxCategory);
 		return taxCategory;
 	}
-
+	
 	@Builder(builderMethodName = "taxNew")
 	public static I_C_Tax createTax(@NonNull final I_C_TaxCategory taxCategory, @NonNull final I_C_Country country, @NonNull final Timestamp validFrom)
 	{
@@ -315,7 +314,7 @@ public class FlatrateTermDataFactory
 		save(productPrice);
 		return productPrice;
 	}
-
+	
 	@Builder(builderMethodName = "productAcctNew")
 	public static I_M_Product_Acct createProductAcct(final I_M_Product product, final I_C_AcctSchema acctSchema)
 	{

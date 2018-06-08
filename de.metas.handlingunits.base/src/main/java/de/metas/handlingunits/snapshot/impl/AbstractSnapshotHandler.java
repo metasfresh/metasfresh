@@ -34,11 +34,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 
@@ -128,7 +127,7 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 			return _parentHandler.getContext();
 		}
 
-		return PlainContextAware.newWithThreadInheritedTrx();
+		throw new AdempiereException("Context is not configured to " + this);
 	}
 
 	@Override

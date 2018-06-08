@@ -54,7 +54,6 @@ import de.metas.logging.LogManager;
 	private int _tabNo;
 	private int _adWindowId;
 	private int _adTabId;
-	private int _templateTabId;
 	private boolean _tabReadOnly;
 	private boolean _loadAllLanguages = false;
 
@@ -82,13 +81,12 @@ import de.metas.logging.LogManager;
 		final int windowNo = getWindowNo();
 		final int tabNo = getTabNo();
 		final int AD_Window_ID = getAD_Window_ID();
-		final int adTabId = getAD_Tab_ID();
-		final int templateTabId = getTemplateTabIdEffective();
+		final int AD_Tab_ID = getAD_Tab_ID();
 		final boolean tabReadOnly = isTabReadOnly();
 		final boolean loadAllLanguages = isLoadAllLanguages();
 
 		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = GridFieldVO.getSQL(ctx, templateTabId, loadAllLanguages, sqlParams);
+		final String sql = GridFieldVO.getSQL(ctx, AD_Tab_ID, loadAllLanguages, sqlParams);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -107,12 +105,11 @@ import de.metas.logging.LogManager;
 				GridFieldVO field = fields.get(AD_Column_ID);
 				if (field == null)
 				{
-					field = GridFieldVO.create(ctx, windowNo, tabNo,
-							AD_Window_ID,
-							adTabId,
-							tabReadOnly,
-							loadAllLanguages,
-							rs);
+					field = GridFieldVO.create(ctx, windowNo, tabNo //
+							, AD_Window_ID, AD_Tab_ID //
+							, tabReadOnly //
+							, loadAllLanguages //
+							, rs);
 					if (field == null)
 					{
 						continue;
@@ -192,21 +189,10 @@ import de.metas.logging.LogManager;
 		_adTabId = AD_Tab_ID;
 		return this;
 	}
-	
-	public GridFieldVOsLoader setTemplateTabId(int templateTabId)
-	{
-		this._templateTabId = templateTabId;
-		return this;
-	}
 
 	private int getAD_Tab_ID()
 	{
 		return _adTabId;
-	}
-	
-	private int getTemplateTabIdEffective()
-	{
-		return _templateTabId > 0 ? _templateTabId : getAD_Tab_ID();
 	}
 
 	public GridFieldVOsLoader setTabReadOnly(final boolean tabReadOnly)

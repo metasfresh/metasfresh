@@ -11,6 +11,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -55,49 +56,58 @@ public class PickingSlotDAO implements IPickingSlotDAO
 
 	private static Predicate<I_M_PickingSlot> toPredicate(final PickingSlotQuery query)
 	{
-		return pickingSlot -> isPickingSlotMatching(pickingSlot, query);
+		return isWarehouseMatchingFilter(query.getWarehouseId())
+				.and(isAvailableForBPartnerFilter(query.getAvailableForBPartnerId(), query.getAvailableForBPartnerLocationId()))
+				.and(isAssignedToBPartnerFilter(query.getAssignedToBPartnerId(), query.getAssignedToBPartnerLocationId()))
+				.and(isPickingSlotMatchingBarcodeFilter(query.getBarcode()));
 	}
 
-	private static boolean isPickingSlotMatching(final I_M_PickingSlot pickingSlot, final PickingSlotQuery query)
+	private static final Predicate<I_M_PickingSlot> isWarehouseMatchingFilter(final int warehouseId)
 	{
-		if (query.getWarehouseId() > 0 && query.getWarehouseId() != pickingSlot.getM_Warehouse_ID())
+		if (warehouseId <= 0)
 		{
-			return false;
+			return Predicates.alwaysTrue();
 		}
 
+		return pickingSlot -> pickingSlot.getM_Warehouse_ID() == warehouseId;
+	}
+
+	private static final Predicate<I_M_PickingSlot> isAvailableForBPartnerFilter(final int bpartnerId, final int bpartnerLocationId)
+	{
 		final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
-		if (!pickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, query.getAvailableForBPartnerId(), query.getAvailableForBPartnerLocationId()))
+		return pickingSlot -> pickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId);
+	}
+
+	private static final Predicate<I_M_PickingSlot> isAssignedToBPartnerFilter(final int bpartnerId, final int bpartnerLocationId)
+	{
+		if (bpartnerId <= 0)
 		{
-			return false;
+			return Predicates.alwaysTrue();
 		}
 
-		// Check assigned BP
-		final int assignedToBPartnerId = query.getAssignedToBPartnerId();
-		final int assignedToBPartnerLocationId = query.getAssignedToBPartnerLocationId();
-		if (assignedToBPartnerId > 0)
+		if (bpartnerLocationId <= 0)
 		{
-			if (assignedToBPartnerId != pickingSlot.getC_BPartner_ID())
-			{
-				return false;
-			}
-			if (assignedToBPartnerLocationId > 0 && assignedToBPartnerLocationId != pickingSlot.getC_BPartner_Location_ID())
-			{
-				return false;
-			}
+			return pickingSlot -> pickingSlot.getC_BPartner_ID() == bpartnerId;
+		}
+		else
+		{
+			return pickingSlot -> pickingSlot.getC_BPartner_ID() == bpartnerId && pickingSlot.getC_BPartner_Location_ID() == bpartnerLocationId;
+		}
+	}
+
+	private static final Predicate<I_M_PickingSlot> isPickingSlotMatchingBarcodeFilter(final String barcode)
+	{
+		if (barcode == null)
+		{
+			return Predicates.alwaysTrue();
 		}
 
-		// Barcode
-		final String barcode = query.getBarcode();
-		if (barcode != null)
+		final String barcodeNorm = barcode.trim();
+		if (barcodeNorm.isEmpty())
 		{
-			final String barcodeNorm = barcode.trim();
-			if (!barcodeNorm.isEmpty() && !Objects.equals(pickingSlot.getPickingSlot(), barcode))
-			{
-				return false;
-			}
+			return Predicates.alwaysTrue();
 		}
 
-		//
-		return true;
+		return pickingSlot -> Objects.equals(pickingSlot.getPickingSlot(), barcode);
 	}
 }

@@ -11,8 +11,6 @@ import org.compiere.model.I_AD_User_AuthToken;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -40,7 +38,7 @@ public class UserAuthTokenRepository
 {
 	private final CCache<String, UserAuthToken> authTokensByToken = CCache.newCache(I_AD_User_AuthToken.Table_Name + "#by#token", 50, CCache.EXPIREMINUTES_Never);
 
-	public UserAuthToken getByToken(@NonNull final String token)
+	public UserAuthToken getByToken(final String token)
 	{
 		return authTokensByToken.getOrLoad(token, () -> retrieveByToken(token));
 	}
@@ -51,7 +49,6 @@ public class UserAuthTokenRepository
 				.createQueryBuilder(I_AD_User_AuthToken.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AuthToken, token)
-				.setLimit(2)
 				.create()
 				.list(I_AD_User_AuthToken.class);
 		if (userAuthTokens.isEmpty())

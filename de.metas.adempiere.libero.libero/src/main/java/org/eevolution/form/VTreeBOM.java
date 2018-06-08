@@ -85,8 +85,10 @@ import org.compiere.util.KeyNamePair;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -158,7 +160,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	protected StatusBar statusBar = new StatusBar();
 
 	private MiniTable tableBOM = new MiniTable();
-	private Vector<Vector<Object>> dataBOM = new Vector<>();
+	private Vector<Vector<Object>> dataBOM = new Vector<Vector<Object>>();
 	private Vector<String> columnNames;
 	//private VDate fieldGuaranteeDate = 
 	//4Layers - Set divider location variable
@@ -235,7 +237,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	private void loadTableBOM()
 	{
 		//  Header Info
-		columnNames = new Vector<>(18);
+		columnNames = new Vector<String>(18);
 
 		columnNames.add(Msg.translate(getCtx(), "Select"));	        // 0		
 		columnNames.add(Msg.translate(getCtx(), "IsActive"));       // 1
@@ -473,7 +475,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 		MPPProductBOM bomproduct = new MPPProductBOM(getCtx(), bomline.getPP_Product_BOM_ID(), null);
 		DefaultMutableTreeNode parent = new DefaultMutableTreeNode(productSummary(M_Product, false));
 
-		Vector<Object> line = new Vector<>(17);
+		Vector<Object> line = new Vector<Object>(17);
 		line.add( new Boolean(false));  //  0 Select
 		line.add( new Boolean(true));   //  1 IsActive
 		line.add( new Integer(bomline.getLine())); // 2 Line                
@@ -517,7 +519,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 			MProduct component = MProduct.get(getCtx(), bomline.getM_Product_ID());
 			//System.out.println("Componente :" + component.getValue() + "[" + component.getName() + "]");
 			//component(component);
-			Vector<Object> line = new Vector<>(17);
+			Vector<Object> line = new Vector<Object>(17);
 			line.add( new Boolean(false));  //  0 Select
 			line.add( new Boolean(true));   //  1 IsActive
 			line.add( new Integer(bomline.getLine())); // 2 Line                
@@ -794,7 +796,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 		String filter = MPPProductBOM.COLUMNNAME_Value+"=? AND AD_Client_ID=?";
 		return new Query (getCtx(), MPPProductBOM.Table_Name, filter, null)
 					.setParameters(new Object[]{productValue, ad_client_id})
-					.list(MPPProductBOM.class);
+					.list();
 		
 	}
 	private List<MPPProductBOM> getBOMs(int M_Product_ID, boolean onlyActiveRecords)
@@ -803,7 +805,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 						+(onlyActiveRecords ? " AND IsActive='Y'" : "");
 		return new Query(getCtx(), MPPProductBOM.Table_Name, filter, null)
 					.setParameters(new Object[]{M_Product_ID})
-					.list(MPPProductBOM.class);
+					.list();
 	}
 	
 	private List<MPPProductBOMLine> getBOMLines(int M_Product_ID) 
@@ -811,6 +813,6 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 		String filter = MPPProductBOMLine.COLUMNNAME_M_Product_ID+"=?";
 		return new Query(getCtx(), MPPProductBOMLine.Table_Name, filter, null)
 						.setParameters(new Object[]{M_Product_ID})
-						.list(MPPProductBOMLine.class);
+						.list();
 	}
 }	//	VTreeMaintenance

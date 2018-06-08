@@ -36,7 +36,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_C_Invoice_Detail;
 import de.metas.handlingunits.model.I_M_HU;
@@ -128,15 +127,14 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 				.create()
 				.list(I_PP_Cost_Collector.class);
 
-		final Map<Integer, I_M_HU_PI> topLevelHUIds = new HashMap<>();
+		final Map<Integer, I_M_HU_PI> topLevelHUIds = new HashMap<Integer, I_M_HU_PI>();
 		for (final I_PP_Cost_Collector costCollector : costCollectors)
 		{
 			final List<I_M_HU_Assignment> huAssignments = Services.get(IHUAssignmentDAO.class).retrieveHUAssignmentsForModel(costCollector);
 			for (final I_M_HU_Assignment huAssignment : huAssignments)
 			{
 				final I_M_HU hu = huAssignment.getM_HU();
-				final I_M_HU_PI huPI = Services.get(IHandlingUnitsBL.class).getPI(hu);
-				topLevelHUIds.put(hu.getM_HU_ID(), huPI);
+				topLevelHUIds.put(hu.getM_HU_ID(), hu.getM_HU_PI_Version().getM_HU_PI());
 			}
 		}
 

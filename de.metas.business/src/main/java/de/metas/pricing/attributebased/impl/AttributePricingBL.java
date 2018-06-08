@@ -8,6 +8,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPricingAttribute;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -21,7 +22,6 @@ import org.compiere.model.I_M_ProductPrice;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.IProductBL;
@@ -121,7 +121,7 @@ public class AttributePricingBL implements IAttributePricingBL
 	}
 
 	// task 08839
-	private final static ModelDynAttributeAccessor<IAttributeSetInstanceAware, IProductPriceAware> DYN_ATTR_IProductPriceAware = new ModelDynAttributeAccessor<>(IProductPriceAware.class);
+	private final static ModelDynAttributeAccessor<IAttributeSetInstanceAware, IProductPriceAware> DYN_ATTR_IProductPriceAware = new ModelDynAttributeAccessor<IAttributeSetInstanceAware, IProductPriceAware>(IProductPriceAware.class);
 
 	@Override
 	public void setDynAttrProductPriceAttributeAware(final IAttributeSetInstanceAware asiAware, final Optional<IProductPriceAware> productPriceAware)
@@ -132,17 +132,6 @@ public class AttributePricingBL implements IAttributePricingBL
 		}
 		DYN_ATTR_IProductPriceAware.setValue(asiAware, productPriceAware.orElse(null));
 	}
-	
-	@Override
-	public void setDynAttrProductPriceAttributeAware(final IAttributeSetInstanceAware asiAware, final IProductPriceAware productPriceAware)
-	{
-		if (asiAware == null)
-		{
-			return; // nothing to do
-		}
-		DYN_ATTR_IProductPriceAware.setValue(asiAware, productPriceAware);
-	}
-
 
 	@Override
 	public Optional<IProductPriceAware> getDynAttrProductPriceAttributeAware(final IAttributeSetInstanceAware asiAware)

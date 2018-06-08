@@ -5,20 +5,15 @@ import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Table;
+import org.compiere.util.TimeUtil;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 
@@ -44,15 +39,13 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseCandidateTest
 {
 	@Test
 	public void markProcessedAndCheckChanges()
 	{
 		final PurchaseCandidate candidate = PurchaseCandidateTestTool.createPurchaseCandidate(1);
-		assertThat(candidate.getSalesOrderAndLineId().getOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID); // guard
+		assertThat(candidate.getSalesOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID); // guard
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 		assertThat(candidate.isProcessed()).isFalse();
@@ -63,9 +56,9 @@ public class PurchaseCandidateTest
 		assertThat(candidate.copy().hasChanges()).isTrue();
 		assertThat(candidate.isProcessed()).isTrue();
 		assertThat(candidate.copy().isProcessed()).isTrue();
-		assertThat(candidate.copy().getSalesOrderAndLineId().getOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID);
+		assertThat(candidate.copy().getSalesOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID);
 
-		candidate.markSaved(PurchaseCandidateId.ofRepoId(1));
+		candidate.markSaved(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 	}
@@ -85,7 +78,7 @@ public class PurchaseCandidateTest
 		assertThat(candidate.getQtyToPurchase()).isEqualByComparingTo(newQtyRequired);
 		assertThat(candidate.copy().getQtyToPurchase()).isEqualByComparingTo(newQtyRequired);
 
-		candidate.markSaved(PurchaseCandidateId.ofRepoId(1));
+		candidate.markSaved(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 	}
@@ -97,7 +90,7 @@ public class PurchaseCandidateTest
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
-		final LocalDateTime newDatePromised = candidate.getDateRequired().plusDays(1);
+		final Date newDatePromised = TimeUtil.addDays(candidate.getDateRequired(), +1);
 		candidate.setDateRequired(newDatePromised);
 
 		assertThat(candidate.hasChanges()).isTrue();
@@ -105,7 +98,7 @@ public class PurchaseCandidateTest
 		assertThat(candidate.getDateRequired()).isEqualTo(newDatePromised);
 		assertThat(candidate.copy().getDateRequired()).isEqualTo(newDatePromised);
 
-		candidate.markSaved(PurchaseCandidateId.ofRepoId(1));
+		candidate.markSaved(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 	}
@@ -127,7 +120,7 @@ public class PurchaseCandidateTest
 
 		final PurchaseErrorItem purchaseErrorItem = purchaseErrorItems.get(0);
 		assertThat(purchaseErrorItem.getOrgId()).isEqualTo(candidate1.getOrgId());
-		assertThat(purchaseErrorItem.getPurchaseCandidateId()).isEqualTo(candidate1.getId());
+		assertThat(purchaseErrorItem.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
 		assertThat(purchaseErrorItem.getThrowable()).isSameAs(throwable);
 	}
 
@@ -139,14 +132,14 @@ public class PurchaseCandidateTest
 
 		candidate1.createOrderItem()
 				.purchasedQty(TEN)
-				.datePromised(SystemTime.asLocalDateTime())
+				.datePromised(SystemTime.asTimestamp())
 				.remotePurchaseOrderId("remotePurchaseOrderId")
 				.transactionReference(TableRecordReference.of(I_AD_Table.Table_Name, 30))
 				.buildAndAddToParent();
 
 		candidate1.createOrderItem()
 				.purchasedQty(ONE)
-				.datePromised(SystemTime.asLocalDateTime())
+				.datePromised(SystemTime.asTimestamp())
 				.remotePurchaseOrderId("remotePurchaseOrderId-2")
 				.transactionReference(TableRecordReference.of(I_AD_Table.Table_Name, 40))
 				.buildAndAddToParent();
@@ -159,13 +152,13 @@ public class PurchaseCandidateTest
 		final PurchaseOrderItem purchaseOrderItem1 = purchaseOrderItems.get(0);
 		assertThat(purchaseOrderItem1.getOrgId()).isEqualTo(candidate1.getOrgId());
 		assertThat(purchaseOrderItem1.getRemotePurchaseOrderId()).isEqualTo("remotePurchaseOrderId");
-		assertThat(purchaseOrderItem1.getPurchaseCandidateId()).isEqualTo(candidate1.getId());
+		assertThat(purchaseOrderItem1.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
 		assertThat(purchaseOrderItem1.getProductId()).isEqualTo(candidate1.getProductId());
 
 		final PurchaseOrderItem purchaseOrderItem2 = purchaseOrderItems.get(1);
 		assertThat(purchaseOrderItem2.getOrgId()).isEqualTo(candidate1.getOrgId());
 		assertThat(purchaseOrderItem2.getRemotePurchaseOrderId()).isEqualTo("remotePurchaseOrderId-2");
-		assertThat(purchaseOrderItem2.getPurchaseCandidateId()).isEqualTo(candidate1.getId());
+		assertThat(purchaseOrderItem2.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
 		assertThat(purchaseOrderItem2.getProductId()).isEqualTo(candidate1.getProductId());
 	}
 
@@ -176,6 +169,6 @@ public class PurchaseCandidateTest
 				.createPurchaseCandidate(20);
 		final String toString = purchaseCandidate.toString();
 		assertThat(toString).isNotNull();
-		assertThat(toString).startsWith("PurchaseCandidate(id=PurchaseCandidateId(repoId=20)");
+		assertThat(toString).startsWith("PurchaseCandidate(purchaseCandidateId=20");
 	}
 }

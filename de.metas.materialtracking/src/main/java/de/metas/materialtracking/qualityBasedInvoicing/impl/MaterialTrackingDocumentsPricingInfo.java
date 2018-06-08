@@ -14,11 +14,13 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -37,7 +39,6 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
-import de.metas.pricing.service.IPriceListDAO;
 
 /*
  * #%L
@@ -239,21 +240,21 @@ import de.metas.pricing.service.IPriceListDAO;
 				}
 			}
 
-			return ImmutablePair.of(plv, issuedInOutLinesForPPOrder);
+			return new ImmutablePair<>(plv, issuedInOutLinesForPPOrder);
 		}
 
 		private I_M_PriceList_Version retrivePLV(final I_M_InOutLine inOutLine)
 		{
 			final I_M_PricingSystem pricingSystem = getM_PricingSystem();
-			final int countryId = inOutLine.getM_InOut().getC_BPartner_Location().getC_Location().getC_Country_ID();
+			final I_C_Country country = inOutLine.getM_InOut().getC_BPartner_Location().getC_Location().getC_Country();
 			final Iterator<I_M_PriceList> priceLists = priceListDAO.retrievePriceLists(
-					pricingSystem.getM_PricingSystem_ID(),
-					countryId,
+					pricingSystem,
+					country,
 					false); // IsSOTrx=false
 
 			if (!priceLists.hasNext())
 			{
-				Loggables.get().addLog("Unable to retrieve a priceList for pricingSystem {0} and country {1}.", pricingSystem, countryId);
+				Loggables.get().addLog("Unable to retrieve a priceList for pricingSystem {0} and country {1}.", pricingSystem, country);
 				return null;
 			}
 

@@ -51,7 +51,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -679,25 +678,6 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 				}
 			};
 		}
-		else if(Comparable.class.isAssignableFrom(type))
-		{
-			return (result, value) -> {
-				final Comparable resultCmp = (Comparable)result;
-				final Comparable valueCmp = (Comparable)value;
-				if (resultCmp == null)
-				{
-					@SuppressWarnings("unchecked")
-					final R newResult = (R)valueCmp;
-					return newResult;
-				}
-				else
-				{
-					@SuppressWarnings("unchecked")
-					final R newResult = (R)(resultCmp.compareTo(valueCmp) >= 0 ? resultCmp : valueCmp);
-					return newResult;
-				}
-			};
-		}
 		else
 		{
 			throw new AdempiereException("Unsupported returnType '" + type + "' for MAX aggregation");
@@ -875,8 +855,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		for (final T record : records)
 		{
-			final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName)
-					.or(() -> DB.retrieveDefaultValue(valueType));
+			final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orNull();
 
 			@SuppressWarnings("unchecked")
 			final AT value = (AT)valueObj;

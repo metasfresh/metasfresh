@@ -4,6 +4,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 
+import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPricingBL;
+import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.spi.impl.rules.Discount;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -11,11 +15,6 @@ import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
-import de.metas.lang.Percent;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.rules.Discount;
-import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
 
@@ -55,7 +54,7 @@ public class GroupCompensationLineCreateRequestFactory
 		final GroupCompensationType type = extractGroupCompensationType(product);
 		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);
 
-		Percent percentage = Percent.ZERO;
+		BigDecimal percentage = BigDecimal.ZERO;
 		if (GroupCompensationType.Discount.equals(type) && GroupCompensationAmtType.Percent.equals(amtType))
 		{
 			percentage = calculateDefaultDiscountPercentage(templateLine, group);
@@ -83,7 +82,7 @@ public class GroupCompensationLineCreateRequestFactory
 		return GroupCompensationAmtType.ofAD_Ref_List_Value(Util.coalesce(product.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
 	}
 
-	private Percent calculateDefaultDiscountPercentage(final GroupTemplateLine templateLine, final Group group)
+	private BigDecimal calculateDefaultDiscountPercentage(final GroupTemplateLine templateLine, final Group group)
 	{
 		if (templateLine.getPercentage() != null)
 		{
@@ -93,13 +92,13 @@ public class GroupCompensationLineCreateRequestFactory
 		return retrieveDiscountPercentageFromPricing(templateLine, group);
 	}
 
-	private final Percent retrieveDiscountPercentageFromPricing(final GroupTemplateLine templateLine, final Group group)
+	private final BigDecimal retrieveDiscountPercentageFromPricing(final GroupTemplateLine templateLine, final Group group)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setM_Product_ID(templateLine.getProductId());
-		pricingCtx.setBPartnerId(group.getBpartnerId());
+		pricingCtx.setC_BPartner_ID(group.getBpartnerId());
 		pricingCtx.setSOTrx(group.isSOTrx());
 		pricingCtx.setDisallowDiscount(false);// just to be sure
 		pricingCtx.setQty(BigDecimal.ONE);

@@ -4,17 +4,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.service.OrgId;
+import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
@@ -54,20 +51,25 @@ import lombok.ToString;
 @ToString
 public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 {
-	private final OrgId orgId;
-	private final BPartnerId vendorId;
+	private final int orgId;
+
+	private final int vendorBPartnerId;
+
 	private final VendorGatewayService vendorGatewayService;
 
 	private Map<PurchaseOrderItem, RemotePurchaseOrderCreatedItem> map;
 
 	@Builder
 	private RealVendorGatewayInvoker(
-			@NonNull final OrgId orgId,
-			@NonNull final BPartnerId vendorId,
+			final int orgId,
+			final int vendorBPartnerId,
 			@NonNull final VendorGatewayService vendorGatewayService)
 	{
+		Check.assume(orgId > 0, "Given parameter orgId > 0");
+		Check.assume(vendorBPartnerId > 0, "Given parameter vendorBPartnerId > 0");
+
 		this.orgId = orgId;
-		this.vendorId = vendorId;
+		this.vendorBPartnerId = vendorBPartnerId;
 		this.vendorGatewayService = vendorGatewayService;
 	}
 
@@ -78,11 +80,8 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 		final ImmutableMap<PurchaseOrderRequestItem, PurchaseCandidate> requestItem2Candidate = //
 				Maps.uniqueIndex(purchaseCandidates, PurchaseCandidate::createPurchaseOrderRequestItem);
 
-		final PurchaseOrderRequest purchaseOrderRequest = PurchaseOrderRequest.builder()
-				.orgId(orgId.getRepoId())
-				.vendorId(vendorId.getRepoId())
-				.purchaseOrderRequestItems(requestItem2Candidate.keySet())
-				.build();
+		final PurchaseOrderRequest purchaseOrderRequest = //
+				new PurchaseOrderRequest(orgId, vendorBPartnerId, requestItem2Candidate.keySet());
 
 		final RemotePurchaseOrderCreated purchaseOrderResponse = vendorGatewayService.placePurchaseOrder(purchaseOrderRequest);
 
@@ -114,7 +113,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 			final PurchaseCandidate correspondingRequestCandidate = requestItem2Candidate.get(correspondingRequestItem);
 
 			final PurchaseOrderItem purchaseOrderItem = correspondingRequestCandidate.createOrderItem()
-					.datePromised(TimeUtil.asLocalDateTime(remotePurchaseOrderCreatedItem.getConfirmedDeliveryDate()))
+					.datePromised(remotePurchaseOrderCreatedItem.getConfirmedDeliveryDate())
 					.purchasedQty(remotePurchaseOrderCreatedItem.getConfirmedOrderQuantity())
 					.remotePurchaseOrderId(remotePurchaseOrderCreatedItem.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)
@@ -138,12 +137,10 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 	{
 		final RemotePurchaseOrderCreatedItem remotePurchaseOrderCreatedItem = map.get(purchaseOrderItem);
 
-		final OrderAndLineId purchaseOrderAndLineId = purchaseOrderItem.getPurchaseOrderAndLineId();
-
 		final LocalPurchaseOrderForRemoteOrderCreated localPurchaseOrderForRemoteOrderCreated = //
 				LocalPurchaseOrderForRemoteOrderCreated.builder()
-						.purchaseOrderId(OrderAndLineId.getOrderRepoIdOr(purchaseOrderAndLineId, -1))
-						.purchaseOrderLineId(OrderAndLineId.getOrderLineRepoIdOr(purchaseOrderAndLineId, -1))
+						.purchaseOrderId(purchaseOrderItem.getPurchaseOrderId())
+						.purchaseOrderLineId(purchaseOrderItem.getPurchaseOrderLineId())
 						.remotePurchaseOrderCreatedItem(remotePurchaseOrderCreatedItem)
 						.build();
 

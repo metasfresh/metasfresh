@@ -5,6 +5,7 @@ import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createLocator;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -21,8 +22,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.w3c.dom.Node;
-
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.HUTestHelper;
@@ -42,7 +41,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.trace.HUTransformTracingTests;
-import de.metas.quantity.Quantity;
 
 
 
@@ -77,6 +75,7 @@ import de.metas.quantity.Quantity;
  */
 public class HUTransformTestsBase
 {
+
 	private LUTUProducerDestinationTestSupport data;
 
 	private IHandlingUnitsDAO handlingUnitsDAO;
@@ -145,7 +144,7 @@ public class HUTransformTestsBase
 		// invoke the method under test
 		final List<I_M_HU> newCUs = HUTransformService
 				.newInstance(data.helper.getHUContext())
-				.cuToNewCU(cuToSplit, Quantity.of(BigDecimal.ONE, data.helper.uomKg));
+				.cuToNewCU(cuToSplit, BigDecimal.ONE);
 
 		assertThat(newCUs.size(), is(1));
 
@@ -175,7 +174,7 @@ public class HUTransformTestsBase
 
 		// invoke the method under test
 		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
-				.cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("3"), data.helper.uomKg));
+				.cuToNewCU(cuToSplit, new BigDecimal("3"));
 		assertThat(newCUs.size(), is(0));
 
 		return TestHUs.builder().input(cuToSplit).output(newCUs).build();
@@ -188,7 +187,7 @@ public class HUTransformTestsBase
 
 		// invoke the method under test
 		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
-				.cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("3"), data.helper.uomKg));
+				.cuToNewCU(cuToSplit, new BigDecimal("3"));
 
 		assertThat(newCUs.size(), is(1));
 		assertThat(newCUs.get(0).getM_HU_ID(), is(cuToSplit.getM_HU_ID()));
@@ -206,7 +205,7 @@ public class HUTransformTestsBase
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransformService.newInstance(data.helper.getHUContext())
-				.cuToNewTUs(cuToSplit, Quantity.of( BigDecimal.ONE, data.helper.uomKg), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+				.cuToNewTUs(cuToSplit, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 
@@ -319,7 +318,7 @@ public class HUTransformTestsBase
 		// Custom TU capacity (if specified)
 		if (customQtyCUsPerTU > 0)
 		{
-			lutuProducer.addCUPerTU(cuProduct, BigDecimal.valueOf(customQtyCUsPerTU), cuUOM);
+			lutuProducer.addTUCapacity(cuProduct, BigDecimal.valueOf(customQtyCUsPerTU), cuUOM);
 		}
 
 		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()

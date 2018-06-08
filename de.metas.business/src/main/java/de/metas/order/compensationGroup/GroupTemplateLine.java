@@ -9,7 +9,6 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.Predicates;
 
-import de.metas.lang.Percent;
 import lombok.Builder;
 import lombok.Value;
 
@@ -47,7 +46,7 @@ public class GroupTemplateLine
 
 	int id;
 	int productId;
-	private Percent percentage;
+	private BigDecimal percentage;
 	private Predicate<Group> groupMatcher;
 
 	@Builder
@@ -62,7 +61,7 @@ public class GroupTemplateLine
 
 		this.id = id > 0 ? id : 0;
 		this.productId = productId;
-		this.percentage = Percent.ofNullable(percentage);
+		this.percentage = percentage;
 		this.groupMatcher = groupMatcher != null ? groupMatcher : Predicates.alwaysTrue();
 	}
 

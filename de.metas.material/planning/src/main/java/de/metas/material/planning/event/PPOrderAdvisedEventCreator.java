@@ -70,7 +70,7 @@ public class PPOrderAdvisedEventCreator
 
 		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
-				.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
+				.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor().createNew())
 				.ppOrder(ppOrder)
 				.directlyCreatePPOrder(productPlanning.isCreatePlan())
 				.directlyPickSupply(productPlanning.isPickDirectlyIfFeasible())

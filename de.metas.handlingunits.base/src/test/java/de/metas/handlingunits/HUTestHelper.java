@@ -56,12 +56,12 @@ import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
@@ -138,7 +138,6 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.handlingunits.test.HUListAssertsBuilder;
@@ -680,9 +679,8 @@ public class HUTestHelper
 		huDefVirtual.setM_HU_PI_ID(HandlingUnitsDAO.VIRTUAL_HU_PI_ID);
 		InterfaceWrapperHelper.save(huDefVirtual);
 
-		createVersion(huDefVirtual,
-				true, // isCurrent
-				X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, HandlingUnitsDAO.VIRTUAL_HU_PI_Version_ID);
+		final String huUnitType = null; // any
+		createVersion(huDefVirtual, true, huUnitType, HandlingUnitsDAO.VIRTUAL_HU_PI_Version_ID);
 
 		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
 		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID);
@@ -989,9 +987,13 @@ public class HUTestHelper
 		return packingMaterial;
 	}
 
-	public I_M_HU_PI createHUDefinition(
-			@NonNull final String name,
-			@NonNull final String huUnitType)
+	public I_M_HU_PI createHUDefinition(final String name)
+	{
+		final String huUnitType = null;
+		return createHUDefinition(name, huUnitType);
+	}
+
+	public I_M_HU_PI createHUDefinition(final String name, final String huUnitType)
 	{
 		final I_M_HU_PI pi = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		pi.setName(name);
@@ -1015,11 +1017,7 @@ public class HUTestHelper
 		return createVersion(handlingUnit, current, huUnitType, huPIVersionId);
 	}
 
-	private I_M_HU_PI_Version createVersion(
-			final I_M_HU_PI pi,
-			final boolean current,
-			final String huUnitType,
-			final Integer huPIVersionId)
+	private I_M_HU_PI_Version createVersion(final I_M_HU_PI pi, final boolean current, final String huUnitType, final Integer huPIVersionId)
 	{
 		final I_M_HU_PI_Version version = InterfaceWrapperHelper.create(ctx, I_M_HU_PI_Version.class, ITrx.TRXNAME_None);
 		version.setName(pi.getName());
@@ -1212,6 +1210,13 @@ public class HUTestHelper
 		return attributeBuilder.create(ctx);
 	}
 
+	public void setAttributeValue(final I_M_HU hu, final I_M_Attribute attribute, final Object value)
+	{
+		final IAttributeStorageFactory storageFactory = getHUContext().getHUAttributeStorageFactory();
+		final IAttributeStorage attributes = storageFactory.getAttributeStorage(hu);
+		attributes.setValue(attribute, value);
+	}
+
 	public void createAttributeListValues(final org.compiere.model.I_M_Attribute attribute, final String... values)
 	{
 		for (final String value : values)
@@ -1345,7 +1350,7 @@ public class HUTestHelper
 			final ILUTUProducerAllocationDestination allocationDestination,
 			final BigDecimal cuQty)
 	{
-		final Capacity tuCapacity = allocationDestination.getSingleCUPerTU();
+		final Capacity tuCapacity = allocationDestination.getTUCapacity();
 		final I_M_Product cuProduct = tuCapacity.getM_Product();
 		final I_C_UOM cuUOM = tuCapacity.getC_UOM();
 
@@ -1457,14 +1462,12 @@ public class HUTestHelper
 
 	public List<I_M_HU> retrieveAllHandlingUnitsOfType(final I_M_HU_PI huPI)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		final List<I_M_HU> result = new ArrayList<>();
 
 		// Filter
 		for (final I_M_HU hu : retrieveAllHandlingUnits())
 		{
-			if (handlingUnitsBL.getPIVersion(hu).getM_HU_PI_ID() != huPI.getM_HU_PI_ID())
+			if (hu.getM_HU_PI_Version().getM_HU_PI_ID() != huPI.getM_HU_PI_ID())
 			{
 				continue;
 			}
@@ -1567,6 +1570,7 @@ public class HUTestHelper
 		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
 
 		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
+		// final HUProducerDestination destination = new HUProducerDestination(huPI);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 		lutuProducer.setLUPI(huPI);

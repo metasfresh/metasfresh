@@ -31,7 +31,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -115,8 +114,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
-				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
-				.extensionType(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne)
+				.isAutoRenew(true)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -182,8 +180,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
-				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
-				.extensionType(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne)
+				.isAutoRenew(true)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -244,8 +241,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
-				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
-				.extensionType(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne)
+				.isAutoRenew(true)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()

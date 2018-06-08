@@ -34,10 +34,10 @@ import java.util.function.Function;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -112,23 +112,20 @@ public class HUPickingSlotBL
 	@Override
 	public IQueueActionResult createCurrentHU(final I_M_PickingSlot pickingSlot, final I_M_HU_PI_Item_Product itemProduct)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
 		//
 		// Check: there is no current HU in this picking slot
 		if (pickingSlot.getM_HU_ID() > 0)
 		{
 			// We already have an HU in this slot => ERROR
 			final I_M_HU currentHU = pickingSlot.getM_HU();
-			final String currentHUStr = currentHU == null ? "-"
-					: currentHU.getValue() + " - " + handlingUnitsBL.getPIVersion(currentHU).getName();
+			final String currentHUStr = currentHU == null ? "-" : currentHU.getValue() + " - " + currentHU.getM_HU_PI_Version().getName();
 			throw new AdempiereException("@HandlingUnitAlreadyOpen@: " + currentHUStr);
 		}
 
 		//
 		// Create HU Context
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(pickingSlot);
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
+		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
 
 		//
 		// Create the new HU

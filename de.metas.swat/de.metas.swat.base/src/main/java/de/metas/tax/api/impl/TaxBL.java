@@ -47,11 +47,9 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.X_C_Tax;
-import org.compiere.model.X_C_TaxCategory;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -470,7 +468,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 	/**
 	 * Get Exempt Tax Code
-	 *
+	 * 
 	 * @param ctx context
 	 * @param AD_Org_ID org to find client
 	 * @return C_Tax_ID
@@ -562,25 +560,5 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		tax.setIsTaxExempt(false);
 		tax.setIsDocumentLevel(true);
 		// tax.setIsSalesTax(false); // does not matter
-	}
-
-	@Override
-	public int retrieveRegularTaxCategoryId()
-	{
-		final int taxCategoryId = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_TaxCategory.class)
-				.addEqualsFilter(I_C_TaxCategory.COLUMN_VATType, X_C_TaxCategory.VATTYPE_RegularVAT)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.orderBy(I_C_TaxCategory.COLUMN_Name)
-				.create()
-				.firstId();
-
-		if (taxCategoryId <= 0)
-		{
-			throw new AdempiereException("No tax category found for Regular VATType");
-		}
-
-		return taxCategoryId;
 	}
 }

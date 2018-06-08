@@ -29,7 +29,6 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -706,7 +705,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 		final List<MInOutConfirm> list = new Query(getCtx(), MInOutConfirm.Table_Name, "M_InOut_ID=?", get_TrxName())
 				.setParameters(new Object[] { getM_InOut_ID() })
-				.list(MInOutConfirm.class);
+				.list();
 		m_confirms = new MInOutConfirm[list.size()];
 		list.toArray(m_confirms);
 		return m_confirms;
@@ -1284,13 +1283,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		final BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
-
-		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
-				.stat(stats)
-				.additionalAmt(notInvoicedAmt)
-				.date(getMovementDate())
-				.build();
-		final String calculatedCreditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
+		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt, getMovementDate());
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
@@ -1302,13 +1295,6 @@ public class MInOut extends X_M_InOut implements IDocument
 	private boolean isCheckCreditLimitNeeded()
 	{
 		if (!(isSOTrx() && !isReversal()))
-		{
-			return false;
-		}
-
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
 		{
 			return false;
 		}
@@ -1370,8 +1356,10 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		// Outstanding (not processed) Incoming Confirmations ?
-		for (final MInOutConfirm confirm : getConfirmations(true))
+		final MInOutConfirm[] confirmations = getConfirmations(true);
+		for (final MInOutConfirm confirmation : confirmations)
 		{
+			final MInOutConfirm confirm = confirmation;
 			if (!confirm.isProcessed())
 			{
 				if (MInOutConfirm.CONFIRMTYPE_CustomerConfirmation.equals(confirm.getConfirmType()))

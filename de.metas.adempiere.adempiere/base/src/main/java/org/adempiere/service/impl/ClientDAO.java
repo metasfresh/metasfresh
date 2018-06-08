@@ -1,7 +1,5 @@
 package org.adempiere.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -43,11 +41,6 @@ import de.metas.adempiere.util.CacheCtx;
 
 public class ClientDAO implements IClientDAO
 {
-	@Override
-	public I_AD_Client getById(final int adClientId)
-	{
-		return loadOutOfTrx(adClientId, I_AD_Client.class);
-	}
 
 	@Override
 	public I_AD_Client retriveClient(Properties ctx, int adClientId)

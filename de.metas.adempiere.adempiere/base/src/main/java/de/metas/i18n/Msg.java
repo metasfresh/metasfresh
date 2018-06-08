@@ -5,19 +5,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Element;
@@ -31,11 +28,9 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import lombok.NonNull;
-import lombok.Singular;
 
 /**
  * Reads all Messages and stores them in a HashMap
@@ -76,8 +71,7 @@ public final class Msg
 	}
 
 	/** Messages cache: AD_Language to MessageValue to Translated message text */
-	private final CCache<String, CCache<String, Message>> adLanguage2messages = CCache.newCache("msg_lang", 10, CCache.EXPIREMINUTES_Never);
-	private final CCache<String, Element> elementsByElementName = CCache.newLRUCache(I_AD_Element.Table_Name, 500, CCache.EXPIREMINUTES_Never);
+	private final CCache<String, CCache<String, Message>> adLanguage2messages = new CCache<>("msg_lang", 2, 0); // expire=never
 
 	/**
 	 * Get Language specific Message Map
@@ -108,7 +102,7 @@ public final class Msg
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return new CCache<>(I_AD_Message.Table_Name, MAP_SIZE, CCache.EXPIREMINUTES_Never);
+			return new CCache<>(I_AD_Message.Table_Name, MAP_SIZE, 0); // expireMinutes=0=never
 		}
 
 		// If there is no database connection, postpone the messages loading
@@ -125,7 +119,7 @@ public final class Msg
 			return null;
 		}
 
-		final CCache<String, Message> msg = new CCache<>(I_AD_Message.Table_Name, MAP_SIZE, CCache.EXPIREMINUTES_Never);
+		final CCache<String, Message> msg = new CCache<>(I_AD_Message.Table_Name, MAP_SIZE, 0); // expireMinutes=0=never
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -183,13 +177,21 @@ public final class Msg
 	 */
 	public void reset()
 	{
+		if (adLanguage2messages == null)
+		{
+			return;
+		}
+
 		// clear all languages
-		new ArrayList<>(adLanguage2messages.values()).forEach(CCache::reset);
+		final Iterator<CCache<String, Message>> iterator = adLanguage2messages.values().iterator();
+		while (iterator.hasNext())
+		{
+			final CCache<String, Message> hm = iterator.next();
+			hm.reset();
+		}
 		adLanguage2messages.clear();
-
-		elementsByElementName.clear();
 	}   // reset
-
+	
 	public static void cacheReset()
 	{
 		get().reset();
@@ -401,11 +403,6 @@ public final class Msg
 	public static String getMsg(final String adLanguage, final String AD_Message, final Object[] args)
 	{
 		final String msg = getMsg(adLanguage, AD_Message);
-		if(args == null || args.length == 0)
-		{
-			return msg;
-		}
-		
 		String retStr = msg;
 		try
 		{
@@ -430,7 +427,7 @@ public final class Msg
 		{
 			keyFunction = Message::getAD_Message;
 		}
-
+		
 		return get().lookupForPrefix(adLanguage, prefix)
 				.collect(ImmutableMap.toImmutableMap(keyFunction, Message::getMsgText));
 	}
@@ -503,24 +500,26 @@ public final class Msg
 	 * Get Translation for Element
 	 * 
 	 * @param adLanguage language
-	 * @param columnName column name
+	 * @param ColumnName column name
 	 * @param isSOTrx if false PO terminology is used (if exists)
 	 * @return Name of the Column or "" if not found
 	 */
-	public static String getElement(final String adLanguage, final String columnName, final boolean isSOTrx)
+	public static String getElement(final String adLanguage, String ColumnName, final boolean isSOTrx)
 	{
-		if (columnName == null || columnName.isEmpty())
+		if (ColumnName == null || ColumnName.equals(""))
 		{
 			return "";
 		}
 
-		final String elementName;
+		final String adLanguageToUse = notNullOrBaseLanguage(adLanguage);
+
+		// metas: begin
 		String displayColumnName = I_AD_Element.COLUMNNAME_Name;
 		{
-			final int idx = columnName.indexOf("/");
+			final int idx = ColumnName.indexOf("/");
 			if (idx > 0)
 			{
-				final String display = columnName.substring(idx + 1);
+				final String display = ColumnName.substring(idx + 1);
 				if ("Name".equalsIgnoreCase(display))
 				{
 					displayColumnName = I_AD_Element.COLUMNNAME_Name;
@@ -535,86 +534,61 @@ public final class Msg
 				}
 				else
 				{
-					s_log.warn("Unknow element field {} in {}", display, columnName, new Exception());
+					s_log.warn("Unknow element field {} in {}", display, ColumnName, new Exception());
 				}
-				elementName = columnName.substring(0, idx);
-			}
-			else
-			{
-				elementName = columnName;
+				ColumnName = ColumnName.substring(0, idx);
 			}
 		}
+		// metas: end
 
-		final ITranslatableString text = get().getElement(elementName)
-				.getText(displayColumnName, isSOTrx);
-
-		final boolean isBaseLanguage = adLanguage == null || adLanguage.isEmpty() || Env.isBaseLanguage(adLanguage, "AD_Element");
-		return isBaseLanguage ? text.getDefaultValue() : text.translate(adLanguage);
-	}
-
-	private Element getElement(final String elementName)
-	{
-		return elementsByElementName.getOrLoad(elementName.toUpperCase(), () -> retrieveElement(elementName));
-	}
-
-	private static Element retrieveElement(final String elementName)
-	{
-		final String sql = "SELECT"
-				+ " e.ColumnName"
-				//
-				+ ", e.Name"
-				+ ", e.PO_Name"
-				+ ", e.PrintName"
-				+ ", e.PO_PrintName"
-				+ ", e.Description"
-				+ ", e.PO_Description"
-				//
-				+ ", t.AD_Language"
-				+ ", t.Name as TRL_Name"
-				+ ", t.PO_Name as TRL_PO_Name"
-				+ ", t.PrintName as TRL_PrintName"
-				+ ", t.PO_PrintName as TRL_PO_PrintName"
-				+ ", t.Description as TRL_Description"
-				+ ", t.PO_Description as TRL_PO_Description"
-				//
-				+ " FROM AD_Element e"
-				+ " LEFT OUTER JOIN AD_Element_Trl t ON (t.AD_Element_ID=e.AD_Element_ID)"
-				+ " WHERE UPPER(e.ColumnName)=UPPER(?)";
-		final Object[] sqlParams = new Object[] { elementName };
-
+		// Check AD_Element
+		String retStr = "";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-			final Element.ElementBuilder elementBuilder = Element.builder().elementName(elementName);
-			while (rs.next())
+			try
 			{
-				elementBuilder
-						.name(Element.DEFAULT_LANG, rs.getString("Name"))
-						.printName(Element.DEFAULT_LANG, rs.getString("PrintName"))
-						.description(Element.DEFAULT_LANG, rs.getString("Description"))
-						.poName(Element.DEFAULT_LANG, rs.getString("PO_Name"))
-						.poPrintName(Element.DEFAULT_LANG, rs.getString("PO_PrintName"))
-						.poDescription(Element.DEFAULT_LANG, rs.getString("PO_Description"));
-
-				final String adLanguage = rs.getString("AD_Language");
-				elementBuilder
-						.name(adLanguage, rs.getString("TRL_Name"))
-						.printName(adLanguage, rs.getString("TRL_PrintName"))
-						.description(adLanguage, rs.getString("TRL_Description"))
-						.poName(adLanguage, rs.getString("TRL_PO_Name"))
-						.poPrintName(adLanguage, rs.getString("TRL_PO_PrintName"))
-						.poDescription(adLanguage, rs.getString("TRL_PO_Description"));
+				if (adLanguageToUse == null || adLanguageToUse.length() == 0 || Env.isBaseLanguage(adLanguageToUse, "AD_Element"))
+				{
+					pstmt = DB.prepareStatement("SELECT Name, PO_Name, PrintName, PO_PrintName, Description, PO_Description FROM AD_Element WHERE UPPER(ColumnName)=?", null);
+				}
+				else
+				{
+					pstmt = DB.prepareStatement("SELECT t.Name, t.PO_Name, t.PrintName, t.PO_PrintName, t.Description, t.PO_Description FROM AD_Element_Trl t, AD_Element e "
+							+ "WHERE t.AD_Element_ID=e.AD_Element_ID AND UPPER(e.ColumnName)=? "
+							+ "AND t.AD_Language=?", null);
+					pstmt.setString(2, adLanguageToUse);
+				}
 			}
-
-			return elementBuilder.build();
+			catch (final Exception e)
+			{
+				return ColumnName;
+			}
+			finally
+			{
+				DB.close(rs);
+				rs = null;
+			}
+			pstmt.setString(1, ColumnName.toUpperCase());
+			rs = pstmt.executeQuery();
+			if (rs.next())
+			{
+				retStr = rs.getString(displayColumnName);
+				if (!isSOTrx)
+				{
+					final String temp = rs.getString("PO_" + displayColumnName);
+					if (temp != null && temp.length() > 0)
+					{
+						retStr = temp;
+					}
+				}
+			}
 		}
-		catch (final SQLException ex)
+		catch (final SQLException e)
 		{
-			throw new DBException(ex, sql, sqlParams);
+			s_log.error("getElement", e);
+			return "";
 		}
 		finally
 		{
@@ -622,7 +596,12 @@ public final class Msg
 			rs = null;
 			pstmt = null;
 		}
-	}
+		if (retStr != null)
+		{
+			return retStr.trim();
+		}
+		return retStr;
+	}   // getElement
 
 	/**
 	 * Get Translation for Element using Sales terminology
@@ -796,7 +775,7 @@ public final class Msg
 		final String adLanguage = Env.getAD_Language(ctx);
 		return parseTranslation(adLanguage, text);
 	}
-
+	
 	/**
 	 * Translate elements enclosed in "@" (at sign)
 	 * 
@@ -888,7 +867,7 @@ public final class Msg
 				msgTextAndTip.append(" ").append(SEPARATOR).append(this.msgTip);
 			}
 			this.msgTextAndTip = msgTextAndTip.toString();
-
+			
 			this.missing = missing;
 		}
 
@@ -922,91 +901,10 @@ public final class Msg
 		{
 			return msgTextAndTip;
 		}
-
+		
 		public boolean isMissing()
 		{
 			return missing;
-		}
-	}
-
-	@lombok.Value
-	private static final class Element
-	{
-		public static String DEFAULT_LANG = "";
-
-		String elementName;
-
-		ITranslatableString name;
-		ITranslatableString printName;
-		ITranslatableString description;
-
-		ITranslatableString poName;
-		ITranslatableString poPrintName;
-		ITranslatableString poDescription;
-
-		@lombok.Builder
-		private Element(
-				@NonNull final String elementName,
-				@Singular final Map<String, String> names,
-				@Singular final Map<String, String> printNames,
-				@Singular final Map<String, String> descriptions,
-				@Singular final Map<String, String> poNames,
-				@Singular final Map<String, String> poPrintNames,
-				@Singular final Map<String, String> poDescriptions)
-		{
-			this.elementName = elementName;
-			this.name = toTranslatableString(names, ITranslatableString.empty());
-			this.printName = toTranslatableString(printNames, ITranslatableString.empty());
-			this.description = toTranslatableString(descriptions, ITranslatableString.empty());
-			this.poName = toTranslatableString(poNames, this.name);
-			this.poPrintName = toTranslatableString(poPrintNames, this.printName);
-			this.poDescription = toTranslatableString(poDescriptions, this.description);
-		}
-
-		private static final ITranslatableString toTranslatableString(final Map<String, String> map, final ITranslatableString fallback)
-		{
-			final String defaultValue = normalizeString(map.get(DEFAULT_LANG), fallback.getDefaultValue());
-
-			final Set<String> adLanguages = ImmutableSet.<String> builder()
-					.addAll(map.keySet())
-					.addAll(fallback.getAD_Languages())
-					.build();
-
-			final Map<String, String> trlMap = adLanguages.stream()
-					.filter(adLanguage -> !DEFAULT_LANG.equals(adLanguage))
-					.map(adLanguage -> {
-						final String text = normalizeString(map.get(adLanguage), fallback.translate(adLanguage));
-						return GuavaCollectors.entry(adLanguage, text);
-					})
-					.collect(GuavaCollectors.toImmutableMap());
-			return ImmutableTranslatableString.ofMap(trlMap, defaultValue);
-		}
-
-		private static final String normalizeString(final String str, final String fallback)
-		{
-			if (!Check.isEmpty(str, true))
-			{
-				return str.trim();
-			}
-			if (fallback != null)
-			{
-				return fallback;
-			}
-			return "";
-		}
-
-		public ITranslatableString getText(final String displayColumnName, final boolean isSOTrx)
-		{
-			switch (displayColumnName)
-			{
-				case I_AD_Element.COLUMNNAME_Description:
-					return isSOTrx ? description : poDescription;
-				case I_AD_Element.COLUMNNAME_PrintName:
-					return isSOTrx ? printName : poPrintName;
-				case I_AD_Element.COLUMNNAME_Name:
-				default:
-					return isSOTrx ? name : poName;
-			}
 		}
 	}
 }	// Msg

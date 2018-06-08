@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -67,31 +66,28 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		}
 
 		final ImmutableMap.Builder<Integer, I_M_Attribute> attributes = ImmutableMap.builder();
-		final ImmutableMap.Builder<String, I_M_Attribute> attributesByKey = ImmutableMap.builder();
-		final ImmutableMap.Builder<String, Object> valuesByAttributeKey = ImmutableMap.builder();
+		final ImmutableMap.Builder<Integer, Object> valuesByAttributeId = ImmutableMap.builder();
 
 		valuesByAttributeIdObj.forEach((attributeIdObj, value) -> {
 			final int attributeId = Integer.parseInt(attributeIdObj.toString());
 			final I_M_Attribute attribute = load(attributeId, I_M_Attribute.class);
-			final String attributeKey = attribute.getValue();
 
 			attributes.put(attributeId, attribute);
-			attributesByKey.put(attributeKey, attribute);
-			valuesByAttributeKey.put(attributeKey, value);
+			valuesByAttributeId.put(attributeId, value);
 		});
 
-		return new ImmutableAttributeSet(attributes.build(), attributesByKey.build(), valuesByAttributeKey.build());
+		return new ImmutableAttributeSet(attributes.build(), valuesByAttributeId.build());
 	}
 
-	public static ImmutableAttributeSet createSubSet(
-			@NonNull final IAttributeSet attributeSet,
-			@NonNull final Predicate<I_M_Attribute> filter)
+	public static ImmutableAttributeSet copyOf(final IAttributeSet attributeSet)
 	{
+		if (attributeSet instanceof ImmutableAttributeSet)
+		{
+			return (ImmutableAttributeSet)attributeSet;
+		}
 
 		final Builder builder = builder();
 		attributeSet.getAttributes()
-				.stream()
-				.filter(filter)
 				.forEach(attribute -> {
 					final Object value = attributeSet.getValue(attribute);
 					builder.attributeValue(attribute, value);
@@ -103,57 +99,52 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	public static final ImmutableAttributeSet EMPTY = new ImmutableAttributeSet();
 
 	private final ImmutableMap<Integer, I_M_Attribute> attributes;
-	private final ImmutableMap<String, I_M_Attribute> attributesByKey;
-	private final ImmutableMap<String, Object> valuesByAttributeKey;
-
+	private final ImmutableMap<Integer, Object> valuesByAttributeId;
 
 	private ImmutableAttributeSet(
 			@NonNull final ImmutableMap<Integer, I_M_Attribute> attributes,
-			@NonNull final ImmutableMap<String, I_M_Attribute> attributesByKey,
-			@NonNull final ImmutableMap<String, Object> valuesByAttributeKey)
+			@NonNull final ImmutableMap<Integer, Object> valuesByAttributeId)
 	{
 		this.attributes = attributes;
-		this.attributesByKey = attributesByKey;
-		this.valuesByAttributeKey = valuesByAttributeKey;
+		this.valuesByAttributeId = valuesByAttributeId;
 	}
 
 	private ImmutableAttributeSet()
 	{
 		attributes = ImmutableMap.of();
-		attributesByKey = ImmutableMap.of();
-		valuesByAttributeKey = ImmutableMap.of();
+		valuesByAttributeId = ImmutableMap.of();
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.addValue(valuesByAttributeKey)
+				.addValue(valuesByAttributeId)
 				.toString();
 	}
 
 	public boolean isEmpty()
 	{
-		return attributesByKey.isEmpty();
+		return attributes.isEmpty();
 	}
 
 	@Override
 	public Collection<I_M_Attribute> getAttributes()
 	{
-		return attributesByKey.values();
+		return attributes.values();
 	}
 
 	@Override
-	public boolean hasAttribute(final String attributeKey)
+	public boolean hasAttribute(final I_M_Attribute attribute)
 	{
-		return attributesByKey.containsKey(attributeKey);
+		return attributes.containsKey(attribute.getM_Attribute_ID());
 	}
-	
-	private final void assertAttributeExists(final String attributeKey)
+
+	private final void assertAttributeExists(final I_M_Attribute attribute)
 	{
-		if (!hasAttribute(attributeKey))
+		if (!hasAttribute(attribute))
 		{
-			throw new AdempiereException("Attribute does not exist: " + attributeKey);
+			throw new AdempiereException("Attribute does not exist: " + attribute);
 		}
 	}
 
@@ -164,23 +155,23 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
-	public String getAttributeValueType(@NonNull final I_M_Attribute attribute)
+	public String getAttributeValueType(final I_M_Attribute attribute)
 	{
-		assertAttributeExists(attribute.getValue());
+		assertAttributeExists(attribute);
 		return attribute.getAttributeValueType();
 	}
 
 	@Override
-	public Object getValue(@NonNull final String attributeKey)
+	public Object getValue(final I_M_Attribute attribute)
 	{
-		assertAttributeExists(attributeKey);
-		return valuesByAttributeKey.get(attributeKey);
+		assertAttributeExists(attribute);
+		return valuesByAttributeId.get(attribute.getM_Attribute_ID());
 	}
 
 	@Override
-	public BigDecimal getValueAsBigDecimal(final String attributeKey)
+	public BigDecimal getValueAsBigDecimal(final I_M_Attribute attribute)
 	{
-		final Object valueObj = getValue(attributeKey);
+		final Object valueObj = getValue(attribute);
 		if (valueObj == null)
 		{
 			return null;
@@ -202,9 +193,9 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
-	public int getValueAsInt(final String attributeKey)
+	public int getValueAsInt(final I_M_Attribute attribute)
 	{
-		final Object valueObj = getValue(attributeKey);
+		final Object valueObj = getValue(attribute);
 		if (valueObj == null)
 		{
 			return 0;
@@ -226,9 +217,9 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
-	public Date getValueAsDate(final String attributeKey)
+	public Date getValueAsDate(final I_M_Attribute attribute)
 	{
-		final Object valueObj = getValue(attributeKey);
+		final Object valueObj = getValue(attribute);
 		if (valueObj == null)
 		{
 			return null;
@@ -250,14 +241,14 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
-	public String getValueAsString(final String attributeKey)
+	public String getValueAsString(final I_M_Attribute attribute)
 	{
-		final Object valueObj = getValue(attributeKey);
+		final Object valueObj = getValue(attribute);
 		return valueObj != null ? valueObj.toString() : null;
 	}
 
 	@Override
-	public void setValue(final String attributeKey, final Object value)
+	public void setValue(final I_M_Attribute attribute, final Object value)
 	{
 		throw new AdempiereException("Attribute set is immutable: " + this);
 	}
@@ -281,9 +272,8 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	//
 	public static final class Builder
 	{
-		private final LinkedHashMap<String, Object> valuesByAttributeKey = new LinkedHashMap<>();
+		private final LinkedHashMap<Integer, Object> valuesByAttributeId = new LinkedHashMap<>();
 		private final LinkedHashMap<Integer, I_M_Attribute> attributes = new LinkedHashMap<>();
-		private final LinkedHashMap<String, I_M_Attribute> attributesByKey = new LinkedHashMap<>();
 
 		private Builder()
 		{
@@ -297,8 +287,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			}
 			return new ImmutableAttributeSet(
 					ImmutableMap.copyOf(attributes),
-					ImmutableMap.copyOf(attributesByKey),
-					ImmutableMap.copyOf(valuesByAttributeKey));
+					ImmutableMap.copyOf(valuesByAttributeId));
 		}
 
 		public Builder attributeValue(final int attributeId, final Object attributeValue)
@@ -312,17 +301,14 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			final int attributeId = attribute.getM_Attribute_ID();
 			attributes.put(attributeId, attribute);
-			
-			final String attributeKey = attribute.getValue();
-			attributesByKey.put(attributeKey, attribute);
 
 			if (attributeValue == null)
 			{
-				valuesByAttributeKey.remove(attributeKey);
+				valuesByAttributeId.remove(attributeId);
 			}
 			else
 			{
-				valuesByAttributeKey.put(attributeKey, attributeValue);
+				valuesByAttributeId.put(attributeId, attributeValue);
 			}
 
 			return this;

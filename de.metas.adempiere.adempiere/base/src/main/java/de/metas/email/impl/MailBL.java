@@ -53,25 +53,23 @@ public class MailBL implements IMailBL
 			final String customType,
 			final I_AD_User user)
 	{
-		final Mailbox mailbox = findMailBox(client, AD_Org_ID, AD_Process_ID, docType, customType);
+		Mailbox mailbox = findMailBox(client, AD_Org_ID, AD_Process_ID, docType, customType);
 		Check.errorIf(mailbox == null, "Unable to find IMailbox for AD_Client={}, AD_Org_ID={}, AD_Process_ID={}, customeType={}",
 				client, AD_Org_ID, AD_Process_ID, customType);
-
-		if (user == null)
+		if (user != null)
 		{
-			return mailbox;
+			mailbox = Mailbox.builder()
+					.setAllFrom(mailbox)
+					.setEmail(user.getEMail())
+					.setUsername(user.getEMailUser())
+					.setPassword(user.getEMailUserPW())
+					.setAD_User_ID(user.getAD_User_ID())
+					.build();
 		}
-
-		// use smtpHost from AD_MailConfig, but user data from AD_User
-		return mailbox.toBuilder()
-				.email(user.getEMail())
-				.username(user.getEMailUser())
-				.password(user.getEMailUserPW())
-				.adUserId(user.getAD_User_ID())
-				.build();
+		return mailbox;
 	}
 
-	private Mailbox findMailBox(final I_AD_Client client, final int adOrgId, final int processID, final I_C_DocType docType, final String customType)
+	public Mailbox findMailBox(final I_AD_Client client, final int adOrgId, final int processID, final I_C_DocType docType, final String customType)
 	{
 		log.debug("Looking for AD_Client_ID={}, AD_Org_ID={}, AD_Process_ID={}, customType={}", client, adOrgId, processID, customType);
 
@@ -85,17 +83,15 @@ public class MailBL implements IMailBL
 			{
 				final I_AD_MailBox adMailbox = config.getAD_MailBox();
 				final Mailbox mailbox = Mailbox.builder()
-						.smtpHost(adMailbox.getSMTPHost())
-						.smtpPort(adMailbox.getSMTPPort())
-						.startTLS(adMailbox.isStartTLS())
-						.email(adMailbox.getEMail())
-						.username(adMailbox.getUserName())
-						.password(adMailbox.getPassword())
-						.smtpAuthorization(adMailbox.isSmtpAuthorization())
-						.sendFromServer(client.isServerEMail())
-						.adClientId(client.getAD_Client_ID())
-						.adUserId(-1)
-						.columnUserTo(config.getColumnUserTo())
+						.setSmtpHost(adMailbox.getSMTPHost())
+						.setEmail(adMailbox.getEMail())
+						.setUsername(adMailbox.getUserName())
+						.setPassword(adMailbox.getPassword())
+						.setSmtpAuthorization(adMailbox.isSmtpAuthorization())
+						.setSendFromServer(client.isServerEMail())
+						.setAD_Client_ID(client.getAD_Client_ID())
+						.setAD_User_ID(-1)
+						.setColumnUserTo(config.getColumnUserTo())
 						.build();
 
 				if (log.isDebugEnabled())
@@ -107,24 +103,16 @@ public class MailBL implements IMailBL
 			}
 		}
 
-		final String smtpHost = client.getSMTPHost();
-		if(Check.isEmpty(smtpHost, true))
-		{
-			throw new AdempiereException("Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost.");
-		}
-
 		final Mailbox mailbox = Mailbox.builder()
-				.smtpHost(smtpHost)
-				.smtpPort(client.getSMTPPort())
-				.startTLS(client.isStartTLS())
-				.email(client.getRequestEMail())
-				.username(client.getRequestUser())
-				.password(client.getRequestUserPW())
-				.smtpAuthorization(client.isSmtpAuthorization())
-				.sendFromServer(client.isServerEMail())
-				.adClientId(client.getAD_Client_ID())
-				.adUserId(-1)
-				.columnUserTo(null)
+				.setSmtpHost(client.getSMTPHost())
+				.setEmail(client.getRequestEMail())
+				.setUsername(client.getRequestUser())
+				.setPassword(client.getRequestUserPW())
+				.setSmtpAuthorization(client.isSmtpAuthorization())
+				.setSendFromServer(client.isServerEMail())
+				.setAD_Client_ID(client.getAD_Client_ID())
+				.setAD_User_ID(-1)
+				.setColumnUserTo(null)
 				.build();
 		log.debug("Fallback to AD_Client settings: {}", mailbox);
 		return mailbox;
@@ -172,8 +160,8 @@ public class MailBL implements IMailBL
 			String message,
 			final boolean html)
 	{
-		Check.assumeNotEmpty(to, "Param 'to' is not empty (mailbox={}, subject={})", mailbox, subject);
-		Check.assumeNotNull(mailbox, "Param 'mailbox' is not null (mailbox={}, subject={})", mailbox, subject);
+		Check.assumeNotEmpty(to, "Param 'to' is not empty");
+		Check.assumeNotNull(mailbox, "Param 'mailbox' is not null");
 
 		if (mailbox.getEmail() == null
 				// || mailbox.getUsername() == null

@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.commons.lang.NotImplementedException;
@@ -16,7 +17,6 @@ import org.compiere.model.I_M_Product;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.pricing.rules.IPricingRule;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMProductBL;
@@ -101,12 +101,6 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	public I_M_Product getM_Product()
 	{
 		return orderLine.getM_Product();
-	}
-	
-	@Override
-	public int getProductId()
-	{
-		return orderLine.getM_Product_ID();
 	}
 
 	@Override

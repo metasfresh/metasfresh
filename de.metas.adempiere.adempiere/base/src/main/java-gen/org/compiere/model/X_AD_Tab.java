@@ -1,3 +1,19 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -14,7 +30,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1018450953L;
+	private static final long serialVersionUID = 1240549239L;
 
     /** Standard Constructor */
     public X_AD_Tab (Properties ctx, int AD_Tab_ID, String trxName)
@@ -25,20 +41,29 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 			setAD_Tab_ID (0);
 			setAD_Table_ID (0);
 			setAD_Window_ID (0);
-			setEntityType (null); // U
+			setEntityType (null);
+// U
 			setHasTree (false);
-			setIsAdvancedTab (false); // N
-			setIsCheckParentsChanged (true); // Y
-			setIsGridModeOnly (false); // N
-			setIsInsertRecord (true); // Y
+			setIsAdvancedTab (false);
+// N
+			setIsCheckParentsChanged (true);
+// Y
+			setIsGridModeOnly (false);
+// N
+			setIsInsertRecord (true);
+// Y
 			setIsReadOnly (false);
-			setIsRefreshAllOnActivate (false); // N
-			setIsSearchCollapsed (true); // Y
+			setIsRefreshAllOnActivate (false);
+// N
+			setIsSearchCollapsed (true);
+// Y
 			setIsSingleRow (false);
-			setIsSortTab (false); // N
+			setIsSortTab (false);
+// N
 			setIsTranslationTab (false);
 			setName (null);
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM AD_Tab WHERE AD_Window_ID=@AD_Window_ID@
+			setSeqNo (0);
+// @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM AD_Tab WHERE AD_Window_ID=@AD_Window_ID@
 			setTabLevel (0);
         } */
     }
@@ -1088,40 +1113,6 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	public int getTabLevel () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_TabLevel);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Tab getTemplate_Tab() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Template_Tab_ID, org.compiere.model.I_AD_Tab.class);
-	}
-
-	@Override
-	public void setTemplate_Tab(org.compiere.model.I_AD_Tab Template_Tab)
-	{
-		set_ValueFromPO(COLUMNNAME_Template_Tab_ID, org.compiere.model.I_AD_Tab.class, Template_Tab);
-	}
-
-	/** Set Template Tab.
-		@param Template_Tab_ID Template Tab	  */
-	@Override
-	public void setTemplate_Tab_ID (int Template_Tab_ID)
-	{
-		if (Template_Tab_ID < 1) 
-			set_Value (COLUMNNAME_Template_Tab_ID, null);
-		else 
-			set_Value (COLUMNNAME_Template_Tab_ID, Integer.valueOf(Template_Tab_ID));
-	}
-
-	/** Get Template Tab.
-		@return Template Tab	  */
-	@Override
-	public int getTemplate_Tab_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Template_Tab_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

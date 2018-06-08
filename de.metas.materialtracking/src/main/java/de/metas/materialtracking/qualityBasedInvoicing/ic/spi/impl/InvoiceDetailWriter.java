@@ -27,16 +27,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
-import de.metas.pricing.IPricingResult;
 
 /**
  * Takes {@link IQualityInvoiceLine}s and converts them to {@link I_C_Invoice_Detail}s.
@@ -147,7 +147,7 @@ public class InvoiceDetailWriter
 		{
 			priceUOMId = pricingResult.getPrice_UOM_ID();
 			price = pricingResult.getPriceStd();
-			discount = pricingResult.getDiscount().getValueAsBigDecimal();
+			discount = pricingResult.getDiscount();
 		}
 		else
 		{

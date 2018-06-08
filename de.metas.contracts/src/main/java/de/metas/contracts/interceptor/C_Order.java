@@ -11,6 +11,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 
 /*
  * #%L
@@ -37,13 +38,8 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
@@ -75,7 +71,7 @@ public class C_Order
 			{
 				if (icOfOl.isToClear())
 				{
-					throw new AdempiereException(MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P, new Object[] { ol.getLine() });
+					throw new AdempiereException(Env.getAD_Language(ctx), MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P, new Object[] { ol.getLine() });
 				}
 			}
 		}
@@ -119,25 +115,6 @@ public class C_Order
 				X_C_Flatrate_Term.DOCSTATUS_Completed.equals(newSc.getDocStatus()),
 				"{} has DocStatus={}", newSc, newSc.getDocStatus());
 		logger.info("Created and completed {}", newSc);
-
-		extendFlatratetermIfAutoExtension(newSc);
-	}
-
-	private void extendFlatratetermIfAutoExtension(final I_C_Flatrate_Term term)
-	{
-		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
-		final I_C_Flatrate_Transition transition = conditions.getC_Flatrate_Transition();
-		if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(transition.getExtensionType())
-				&& transition.getC_Flatrate_Conditions_Next_ID() > 0)
-		{
-			final ContractExtendingRequest nextContext = ContractExtendingRequest.builder()
-					.contract(term)
-					.forceExtend(true)
-					.forceComplete(true)
-					.nextTermStartDate(null)
-					.build();
-			Services.get(IFlatrateBL.class).extendContract(nextContext);
-		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })

@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +58,7 @@ public class MigratorServiceTests
 
 		final ImmutableMap<String, Collection<ITableRecordReference>> records = ImmutableMap.of(
 				I_C_Payment.Table_Name,
-				ImmutableList.of(TableRecordReference.ofOrNull(paymentDlmAware)));
+				ImmutableList.of(ITableRecordReference.FromModelConverter.convert(paymentDlmAware)));
 
 		final Partition partition = new Partition().withDLM_Partition_ID(1).withRecords(records);
 

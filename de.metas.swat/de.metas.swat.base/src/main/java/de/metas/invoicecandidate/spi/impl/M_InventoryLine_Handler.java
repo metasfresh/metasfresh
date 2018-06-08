@@ -12,15 +12,16 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -34,7 +35,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -44,7 +44,6 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -56,12 +55,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -269,7 +268,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	public static I_M_InventoryLine getM_InventoryLine(final I_C_Invoice_Candidate ic)
 	{
 		final I_M_InventoryLine inventoryLine = getM_InventoryLineOrNull(ic);
-		Check.assumeNotNull(inventoryLine, "Error: no M_InventoryLine found for candidate {}", ic);
+		Check.assumeNotNull(inventoryLine, "Error: no inout line found for candidate {}", ic);
 		return inventoryLine;
 	}
 
@@ -278,10 +277,10 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		return TableRecordCacheLocal.getReferencedValue(ic, I_M_InventoryLine.class);
 	}
 
-	private void setBPartnerData(
-			final I_C_Invoice_Candidate ic,
-			@NonNull final I_M_InventoryLine inventoryLine)
+	private void setBPartnerData(final I_C_Invoice_Candidate ic, final I_M_InventoryLine inventoryLine)
 	{
+		Check.assumeNotNull(inventoryLine, "fromInOutLine not null");
+
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 

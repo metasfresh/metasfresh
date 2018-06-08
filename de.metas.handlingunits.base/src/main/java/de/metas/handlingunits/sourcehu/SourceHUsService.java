@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 
@@ -173,7 +172,7 @@ public class SourceHUsService
 		}
 
 		Services.get(IHUSnapshotDAO.class).restoreHUs()
-				.addModelId(destroyedHU.getM_HU_ID())
+				.addModel(destroyedHU)
 				.setContext(PlainContextAware.newWithThreadInheritedTrx())
 				.setDateTrx(SystemTime.asDate())
 				.setSnapshotId(sourceHuRecord.getPreDestroy_Snapshot_UUID())
@@ -197,9 +196,9 @@ public class SourceHUsService
 		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHuMarkers(query);
 	}
 
-	public Set<Integer> retrieveMatchingSourceHUIds(@NonNull final MatchingSourceHusQuery query)
+	public List<I_M_HU> retrieveMatchingSourceHus(@NonNull final MatchingSourceHusQuery query)
 	{
-		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHUIds(query);
+		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHus(query);
 	}
 
 	public boolean isSourceHu(final int huId)

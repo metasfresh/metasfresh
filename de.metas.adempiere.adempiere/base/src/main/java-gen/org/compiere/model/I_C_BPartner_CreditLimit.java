@@ -313,28 +313,28 @@ public interface I_C_BPartner_CreditLimit
 
 	/**
 	 * Set Freigegeben.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Zeigt an, ob dieser Beleg eine Freigabe braucht
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	public void setIsApproved (boolean IsApproved);
 
 	/**
 	 * Get Freigegeben.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Zeigt an, ob dieser Beleg eine Freigabe braucht
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	public boolean isApproved();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object>(I_C_BPartner_CreditLimit.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+    /** Column definition for IsApproved */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object> COLUMN_IsApproved = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object>(I_C_BPartner_CreditLimit.class, "IsApproved", null);
+    /** Column name IsApproved */
+    public static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
 	 * Get Aktualisiert.

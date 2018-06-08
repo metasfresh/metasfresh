@@ -15,6 +15,7 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
+import org.compiere.model.MPriceList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.ICopyHandlerBL;
@@ -22,7 +23,6 @@ import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
-import de.metas.pricing.service.IPriceListDAO;
 
 public final class InvoiceBL extends AbstractInvoiceBL
 {
@@ -42,7 +42,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 
 		final MInvoice invoice = new MInvoice(inOutPO, dateInvoiced);
 		invoice.setIsSOTrx(inOut.isSOTrx());
-		invoice.setM_PriceList_ID(IPriceListDAO.M_PriceList_ID_None); // US1184
+		invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); // US1184
 
 		invoice.saveEx(trxName);
 
@@ -93,7 +93,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		return invoice;
 	}
 
-	private static final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> defaultDocLineCopyHandler = new DefaultDocLineCopyHandler<>(
+	private static final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> defaultDocLineCopyHandler = new DefaultDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine>(
 			org.compiere.model.I_C_InvoiceLine.class);
 
 	@Override

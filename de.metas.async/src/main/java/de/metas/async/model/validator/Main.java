@@ -49,6 +49,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Log;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.spi.impl.DefaultAsyncBatchListener;
+import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 
 /**
@@ -62,7 +63,7 @@ import de.metas.event.Topic;
  */
 public class Main extends AbstractModuleInterceptor
 {
-
+	
 	private static final String SYSCONFIG_ASYNC_INIT_DELAY_MILLIS = "de.metas.async.Async_InitDelayMillis";
 
 	private static final int THREE_MINUTES = 3 * 60 * 1000;
@@ -92,6 +93,7 @@ public class Main extends AbstractModuleInterceptor
 
 		// Data import (async support)
 		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderSupplier(AsyncImportProcessBuilder.instanceSupplier);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(AsyncImportWorkpackageProcessor.TOPIC_RecordsImported);
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
 	}
 
@@ -150,12 +152,10 @@ public class Main extends AbstractModuleInterceptor
 
 		Services.get(IQueueProcessorExecutorService.class).removeAllQueueProcessors();
 	}
-
+	
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		return ImmutableList.of(
-				Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC,
-				AsyncImportWorkpackageProcessor.USER_NOTIFICATIONS_TOPIC);
+		return ImmutableList.of(Async_Constants.EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS);
 	}
 }

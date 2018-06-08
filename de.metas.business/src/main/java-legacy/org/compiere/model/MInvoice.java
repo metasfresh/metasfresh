@@ -33,6 +33,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -67,7 +69,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.logging.LogManager;
-import de.metas.pricing.service.IPriceListDAO;
+import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -105,7 +107,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		final List<MInvoice> list = new Query(ctx, Table_Name, COLUMNNAME_C_BPartner_ID + "=?", trxName)
 				.setParameters(new Object[] { C_BPartner_ID })
-				.list(MInvoice.class);
+				.list();
 		return list.toArray(new MInvoice[list.size()]);
 	}	// getOfBPartner
 
@@ -601,7 +603,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final List<MInvoiceLine> list = new Query(getCtx(), MInvoiceLine.Table_Name, whereClauseFinal, get_TrxName())
 				.setParameters(new Object[] { getC_Invoice_ID() })
 				.setOrderBy(MInvoiceLine.COLUMNNAME_Line)
-				.list(MInvoiceLine.class);
+				.list();
 		// optimization: link the C_Invoice
 		for (final I_C_InvoiceLine invoiceLine : list)
 		{
@@ -711,7 +713,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final String whereClause = MInvoiceTax.COLUMNNAME_C_Invoice_ID + "=?";
 		final List<MInvoiceTax> list = new Query(getCtx(), MInvoiceTax.Table_Name, whereClause, get_TrxName())
 				.setParameters(new Object[] { get_ID() })
-				.list(MInvoiceTax.class);
+				.list();
 		m_taxes = list.toArray(new MInvoiceTax[list.size()]);
 		return m_taxes;
 	}	// getTaxes
@@ -990,7 +992,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public void setM_PriceList_ID(final int M_PriceList_ID)
 	{
-		final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(M_PriceList_ID);
+		final MPriceList pl = MPriceList.get(getCtx(), M_PriceList_ID, null);
 		if (pl != null)
 		{
 			setC_Currency_ID(pl.getC_Currency_ID());
@@ -1369,18 +1371,17 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		{
 			// task FRESH-152
 			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
-			if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
-			{
-				final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-				final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
 
-				if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true),  getDateInvoiced()))
-				{
-					throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
-							+ stats.getSOCreditUsed()
-							+ ", @SO_CreditLimit@=" + creditLimit);
-				}
+			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
+			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
+			final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+			final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
+
+			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true),  getDateInvoiced()))
+			{
+				throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
+						+ stats.getSOCreditUsed()
+						+ ", @SO_CreditLimit@=" + creditLimit);
 			}
 		}
 
@@ -1613,6 +1614,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			return false;
 		}
 		final MPaymentTerm pt = new MPaymentTerm(getCtx(), getC_PaymentTerm_ID(), null);
+		log.debug(pt.toString());
 		return pt.apply(this);		// calls validate pay schedule
 	}	// createPaySchedule
 
@@ -1646,6 +1648,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	public String completeIt()
 	{
 		final String result = completeIt0();
+		Services.get(IPrepayOrderAllocationBL.class).invoiceAfterCompleteIt(this);
+
 		return result;
 	}
 
@@ -1836,6 +1840,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 			return IDocument.STATUS_Invalid;
 		}
+
+		// FRESH-152 Update BP Statistics
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerId(getC_BPartner_ID())
+						.build());
 
 		// Update Project
 		if (isSOTrx() && getC_Project_ID() != 0)
@@ -2139,6 +2149,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public boolean reverseCorrectIt()
 	{
+		Services.get(IPrepayOrderAllocationBL.class).invoiceBeforeReverseCorrectIt(this);
+
 		log.debug("{}", toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);

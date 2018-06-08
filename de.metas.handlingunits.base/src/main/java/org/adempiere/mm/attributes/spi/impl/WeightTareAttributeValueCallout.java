@@ -102,7 +102,7 @@ public class WeightTareAttributeValueCallout
 					.filter(item -> Objects.equals(handlingUnitsBL.getItemType(item), X_M_HU_Item.ITEMTYPE_PackingMaterial))
 
 					// .. get their M_HU_PackingMaterial and Qty, if they have both
-					.map(item -> handlingUnitsBL.getHUPackingMaterial(item))
+					.map(item -> item.getM_HU_PackingMaterial())
 					.filter(packingmaterial -> packingmaterial != null)
 
 					// multiply their M_HU_PackingMaterial's weight
@@ -113,7 +113,7 @@ public class WeightTareAttributeValueCallout
 		}
 		else
 		{
-			final I_M_HU_PI_Version piVersion = handlingUnitsBL.getPIVersion(hu);
+			final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
 			weightTare = getWeightTare(piVersion);
 		}
 

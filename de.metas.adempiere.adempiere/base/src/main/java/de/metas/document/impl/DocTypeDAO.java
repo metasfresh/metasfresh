@@ -24,7 +24,6 @@ package de.metas.document.impl;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -147,31 +146,20 @@ public class DocTypeDAO implements IDocTypeDAO
 				.adOrgId(adOrgId)
 				.build();
 
-		final Optional<I_C_DocType> docType = retrieveDocType(query);
-		return docType.orElseThrow(() -> new DocTypeNotFoundException(query));
+		final I_C_DocType docType = getDocTypeOrNull(query);
+		if (docType == null)
+		{
+			throw new DocTypeNotFoundException(query);
+		}
+		return docType;
 	}
 
 	@Override
-	public Optional<I_C_DocType> retrieveDocType(@NonNull final DocTypeQuery docTypeQuery)
+	public I_C_DocType getDocTypeOrNull(@NonNull DocTypeQuery query)
 	{
-		final I_C_DocType docTypeOrNull = //
-				createDocTypeByBaseTypeQuery(Env.getCtx(), ITrx.TRXNAME_None, docTypeQuery)
-						.create()
-						.first(I_C_DocType.class);
-
-		return Optional.ofNullable(docTypeOrNull);
-	}
-
-	@Override
-	public boolean queryMatchesDocTypeId(
-			@NonNull final DocTypeQuery docTypeQuery,
-			final int docTypeId)
-	{
-		final boolean queryMatchesDocTypeId = createDocTypeByBaseTypeQuery(Env.getCtx(), ITrx.TRXNAME_None, docTypeQuery)
-				.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, docTypeId)
+		return createDocTypeByBaseTypeQuery(Env.getCtx(), ITrx.TRXNAME_None, query)
 				.create()
-				.match();
-		return queryMatchesDocTypeId;
+				.first(I_C_DocType.class);
 	}
 
 	private IQueryBuilder<I_C_DocType> createDocTypeByBaseTypeQuery(

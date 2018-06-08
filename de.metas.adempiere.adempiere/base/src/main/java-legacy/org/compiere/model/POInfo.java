@@ -31,7 +31,6 @@ import java.util.concurrent.Callable;
 
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -511,6 +510,16 @@ public final class POInfo implements Serializable
 	}
 
 	/**
+	 * Table has single primary key
+	 *
+	 * @return true if table has a single primary key
+	 */
+	public boolean hasKeyColumn()
+	{
+		return m_keyColumnName != null;
+	}	// hasKeyColumn
+
+	/**
 	 * 
 	 * @return single primary key or null
 	 */
@@ -522,15 +531,6 @@ public final class POInfo implements Serializable
 	public boolean isSingleKeyColumnName()
 	{
 		return m_keyColumnName != null;
-	}
-	
-	public String getSingleKeyColumnName()
-	{
-		if (!isSingleKeyColumnName())
-		{
-			throw new AdempiereException("Table " + getTableName() + " does not have a single key column");
-		}
-		return getKeyColumnName();
 	}
 
 	/**

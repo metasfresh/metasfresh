@@ -33,8 +33,6 @@ import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
-import de.metas.pricing.service.IPriceListBL;
-import de.metas.pricing.service.IPriceListDAO;
 
 /**
  *	Requisition Model
@@ -112,7 +110,7 @@ public class MRequisition extends X_M_Requisition implements IDocument
 	 	List <MRequisitionLine> list = new Query(getCtx(), MRequisitionLine.Table_Name, whereClause, get_TrxName())
 			.setParameters(new Object[]{get_ID()})
 			.setOrderBy(MRequisitionLine.COLUMNNAME_Line)
-			.list(MRequisitionLine.class);
+			.list();
 	 	//  red1 - end -
 
 		m_lines = new MRequisitionLine[list.size ()];
@@ -175,6 +173,31 @@ public class MRequisition extends X_M_Requisition implements IDocument
 			return null;
 	//	return re.getPDF(file);
 	}	//	createPDF
+
+	/**
+	 * 	Set default PriceList
+	 */
+	public void setM_PriceList_ID()
+	{
+		MPriceList defaultPL = MPriceList.getDefault(getCtx(), false);
+		if (defaultPL == null)
+			defaultPL = MPriceList.getDefault(getCtx(), true);
+		if (defaultPL != null)
+			setM_PriceList_ID(defaultPL.getM_PriceList_ID());
+	}	//	setM_PriceList_ID()
+	
+	/**
+	 * 	Before Save
+	 *	@param newRecord new
+	 *	@return true
+	 */
+	@Override
+	protected boolean beforeSave (boolean newRecord)
+	{
+		if (getM_PriceList_ID() == 0)
+			setM_PriceList_ID();
+		return true;
+	}	//	beforeSave
 	
 	@Override
 	protected boolean beforeDelete() {
@@ -254,8 +277,8 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), MDocType.DOCBASETYPE_PurchaseRequisition, getAD_Org_ID());
 		
 		//	Add up Amounts
-		int precision = Services.get(IPriceListBL.class).getPricePrecision(getM_PriceList_ID());
-		BigDecimal totalLines = BigDecimal.ZERO;
+		int precision = MPriceList.getStandardPrecision(getCtx(), getM_PriceList_ID());
+		BigDecimal totalLines = Env.ZERO;
 		for (int i = 0; i < lines.length; i++)
 		{
 			MRequisitionLine line = lines[i];
@@ -563,7 +586,7 @@ public class MRequisition extends X_M_Requisition implements IDocument
 	@Override
 	public int getC_Currency_ID()
 	{
-		final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(getM_PriceList_ID());
+		MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID(), get_TrxName());
 		return pl.getC_Currency_ID();
 	}
 

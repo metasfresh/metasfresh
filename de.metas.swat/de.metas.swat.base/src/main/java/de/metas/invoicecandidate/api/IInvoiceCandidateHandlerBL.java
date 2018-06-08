@@ -110,7 +110,5 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 
 	void setBPartnerData(I_C_Invoice_Candidate ic);
 
-	void setInvoiceSchedule(I_C_Invoice_Candidate ic);
-
 	void setLineNetAmt(I_C_Invoice_Candidate ic);
 }

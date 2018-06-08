@@ -2,7 +2,6 @@ package de.metas.vendor.gateway.api.order;
 
 import java.util.Collection;
 
-import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
@@ -29,7 +28,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class PurchaseOrderRequest
 {
 	int orgId;

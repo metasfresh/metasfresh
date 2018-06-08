@@ -14,7 +14,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
-import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.MoreObjects;
@@ -144,7 +143,7 @@ public class ShipmentScheduleQtyOnHandStorage
 				.warehouseIds(warehouseIds)
 				.productId(productId)
 				.bpartnerId(bpartnerId)
-				.date(TimeUtil.asLocalDateTime(date));
+				.date(date);
 
 		// Add query attributes
 		final int asiId = sched.getM_AttributeSetInstance_ID();

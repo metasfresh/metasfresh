@@ -28,9 +28,12 @@ import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.util.Services;
+import org.compiere.util.ValueNamePair;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /* package */class VLookupAutoCompleterValidationRule implements IValidationRule
@@ -72,7 +75,7 @@ import com.google.common.collect.ImmutableSet;
 
 	public List<Object> getParameterValues(final String searchSQL)
 	{
-		final List<Object> params = new ArrayList<>(paramsTemplate);
+		final List<Object> params = new ArrayList<Object>(paramsTemplate);
 		if (immutable)
 		{
 			return params;
@@ -86,5 +89,23 @@ import com.google.common.collect.ImmutableSet;
 			}
 		}
 		return params;
+	}
+
+	@Override
+	public INamePairPredicate getPostQueryFilter()
+	{
+		return INamePairPredicate.NULL;
+	}
+
+	@Override
+	public List<ValueNamePair> getExceptionTableAndColumns()
+	{
+		return ImmutableList.of();
+	}
+
+	@Override
+	public void registerException(final String tableName, final String columnName)
+	{
+		throw new UnsupportedOperationException("There is no implementation for registering esceptions in the VLookupAutoCompleterValidationRule class: " + this);
 	}
 }

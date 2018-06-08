@@ -13,21 +13,19 @@ package org.adempiere.ad.trx.exceptions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
+import org.adempiere.util.Check;
 
 /**
  * Exception thrown when {@link ITrxManager#run(String, ITrxRunConfig, org.compiere.util.TrxRunnable)} methods are encounting an invalid state.
@@ -61,31 +59,32 @@ public class IllegalTrxRunStateException extends TrxException
 	}
 
 	@Override
-	protected ITranslatableString buildMessage()
+	protected String buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final StringBuilder sb = new StringBuilder();
 
-		final ITranslatableString originalMessage = super.buildMessage();
-		if (ImmutableTranslatableString.isBlank(originalMessage))
+		final String message = super.buildMessage();
+		if (Check.isEmpty(message, true))
 		{
-			message.append("Illegal transaction run state");
+			sb.append("Illegal transaction run state");
 		}
 		else
 		{
-			message.append(originalMessage);
+			sb.append(message);
 		}
 
 		if (trxRunConfig != null)
 		{
-			message.append("\nTrxRunConfig: ").appendObj(trxRunConfig);
+			sb.append("\nTrxRunConfig: ").append(trxRunConfig);
 		}
 
 		if (trxNameSet)
 		{
-			message.append("\nTrxName: ").append(trxName);
+			sb.append("\nTrxName: ").append(trxName);
 		}
 
-		return message.build();
+		return sb.toString();
+
 	}
 
 	public IllegalTrxRunStateException setTrxRunConfig(final ITrxRunConfig trxRunConfig)

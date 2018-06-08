@@ -1,4 +1,5 @@
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -29,20 +30,12 @@
 			<artifactId>spring-ws-core</artifactId>
 		</dependency>
 
-		<!-- needed so we know what to implement -->
 		<dependency>
 			<groupId>de.metas.shipper.gateway</groupId>
-			<artifactId>de.metas.shipper.gateway.spi</artifactId>
+			<artifactId>de.metas.shipper.gateway.api</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-
-		<!-- needed for its common business logic -->
-		<dependency>
-			<groupId>de.metas.shipper.gateway</groupId>
-			<artifactId>de.metas.shipper.gateway.commons</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
+		
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>

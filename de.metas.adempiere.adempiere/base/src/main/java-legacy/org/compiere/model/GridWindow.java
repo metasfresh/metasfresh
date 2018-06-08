@@ -29,9 +29,9 @@ import java.util.Set;
 
 import javax.swing.Icon;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.collections.IdentityHashSet;
 import org.apache.ecs.xhtml.a;
 import org.apache.ecs.xhtml.h2;
@@ -44,6 +44,7 @@ import org.apache.ecs.xhtml.table;
 import org.apache.ecs.xhtml.td;
 import org.apache.ecs.xhtml.th;
 import org.apache.ecs.xhtml.tr;
+import org.compiere.plaf.CompiereColor;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.WebDoc;
@@ -51,8 +52,6 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-import de.metas.util.IColorRepository;
-import de.metas.util.MFColor;
 
 /**
  *	Window Model
@@ -123,14 +122,14 @@ public class GridWindow implements Serializable
 	/** use virtual table			*/
 	private boolean m_virtual;
 	/**	Tabs						*/
-	private ArrayList<GridTab>	m_tabs = new ArrayList<>();
+	private ArrayList<GridTab>	m_tabs = new ArrayList<GridTab>();
 	/** Model last updated			*/
 	private Timestamp		m_modelUpdated = null;
 
 	/**
 	 * Set of {@link GridTab}s which were already initialized by {@link #initTab(int)} methods.
 	 */
-	private Set<GridTab> initTabs = new IdentityHashSet<>();
+	private Set<GridTab> initTabs = new IdentityHashSet<GridTab>();
 	
 	/**	Logger			*/
 	private static final Logger log = LogManager.getLogger(GridWindow.class);
@@ -311,10 +310,12 @@ public class GridWindow implements Serializable
 	 *  Get Color
 	 *  @return AdempiereColor or null
 	 */
-	public MFColor getColor()
+	public CompiereColor getColor()
 	{
-		final int adColorId = m_vo.getAD_Color_ID();
-		return adColorId > 0 ? Services.get(IColorRepository.class).getColorById(adColorId) : null;
+		if (m_vo.getAD_Color_ID() <= 0)
+			return null;
+		MColor mc = new MColor(m_vo.getCtx(),  m_vo.getAD_Color_ID(), ITrx.TRXNAME_None);
+		return mc.getAdempiereColor();
 	}   //  getColor
 
 	/**

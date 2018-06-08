@@ -61,9 +61,9 @@ public class UOMConversionBL implements IUOMConversionBL
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
-	public IUOMConversionContext createConversionContext(final int productId)
+	public IUOMConversionContext createConversionContext(final I_M_Product product)
 	{
-		return IUOMConversionContext.of(productId);
+		return IUOMConversionContext.of(product);
 	}
 
 	@Override
@@ -90,9 +90,11 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public BigDecimal convertQty(@NonNull final IUOMConversionContext conversionCtx, final BigDecimal qty, final I_C_UOM uomFrom, final I_C_UOM uomTo)
+	public BigDecimal convertQty(final IUOMConversionContext conversionCtx, final BigDecimal qty, final I_C_UOM uomFrom, final I_C_UOM uomTo)
 	{
-		return convertQty(conversionCtx.getProductId(), qty, uomFrom, uomTo);
+		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
+		final I_M_Product product = conversionCtx.getM_Product();
+		return convertQty(product, qty, uomFrom, uomTo);
 	}
 
 	/**
@@ -147,22 +149,16 @@ public class UOMConversionBL implements IUOMConversionBL
 		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
 
 		// Get Product's stocking UOM
-		final int productId = conversionCtx.getProductId();
-		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(productId);
+		final I_M_Product product = conversionCtx.getM_Product();
+		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(product);
 
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
 	}
-	
-	@Override
-	public Quantity convertToProductUOM(@NonNull final Quantity quantity, final int productId)
-	{
-		final BigDecimal sourceQty = quantity.getQty();
-		final I_C_UOM sourceUOM = quantity.getUOM();
 
-		final IUOMConversionContext conversionCtx = createConversionContext(productId);
-		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(productId);
-		final BigDecimal qty = convertQty(conversionCtx, sourceQty, sourceUOM, uomTo);
-		return new Quantity(qty, uomTo, sourceQty, sourceUOM);
+	@Override
+	public BigDecimal convertToProductUOM(@NonNull final Quantity quantity, @NonNull final I_M_Product product)
+	{
+		return convert(Env.getCtx(), quantity.getUOM(), product.getC_UOM(), quantity.getQty());
 	}
 
 	@Override
@@ -243,7 +239,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			throw new AdempiereException("Failed to convert Qty=" + qty
 					+ " of product=" + (product != null ? product.getValue() : null)
 					+ " from UOM=" + uomFrom.getName()
-					+ " to UOM=" + uomTo.getName());
+					+ " to UOM={}" + uomTo.getName());
 		}
 
 		return result;
@@ -251,9 +247,9 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public BigDecimal convertPrice(final int productId, BigDecimal price, I_C_UOM uomFrom, I_C_UOM uomTo, int pricePrecision)
+	public BigDecimal convertPrice(I_M_Product product, BigDecimal price, I_C_UOM uomFrom, I_C_UOM uomTo, int pricePrecision)
 	{
-		BigDecimal priceConv = convertQty(productId, price, uomFrom, uomTo);
+		BigDecimal priceConv = convertQty(product, price, uomFrom, uomTo);
 		if (priceConv.scale() > pricePrecision)
 		{
 			priceConv = priceConv.setScale(pricePrecision, BigDecimal.ROUND_HALF_UP);

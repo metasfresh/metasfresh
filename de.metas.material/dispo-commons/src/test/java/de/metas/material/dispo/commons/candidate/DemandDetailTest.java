@@ -118,7 +118,7 @@ public class DemandDetailTest
 	{
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
 				.demandCandidateId(5)
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.forecastId(10)
 				.forecastLineId(20)
 				.orderId(30)

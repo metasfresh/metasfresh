@@ -22,12 +22,11 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import de.metas.pricing.service.IPriceListDAO;
 
 /**
  * 	Project Model
@@ -165,7 +164,6 @@ public class MProject extends X_C_Project
 	 *	String Representation
 	 * 	@return info
 	 */
-	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer ("MProject[").append(get_ID())
@@ -194,7 +192,6 @@ public class MProject extends X_C_Project
 	 * 	Set PL Version
 	 *	@param M_PriceList_Version_ID id
 	 */
-	@Override
 	public void setM_PriceList_Version_ID (int M_PriceList_Version_ID)
 	{
 		super.setM_PriceList_Version_ID(M_PriceList_Version_ID);
@@ -208,7 +205,7 @@ public class MProject extends X_C_Project
 	 */
 	public MProjectLine[] getLines()
 	{
-		ArrayList<MProjectLine> list = new ArrayList<>();
+		ArrayList<MProjectLine> list = new ArrayList<MProjectLine>();
 		String sql = "SELECT * FROM C_ProjectLine WHERE C_Project_ID=? ORDER BY Line";
 		PreparedStatement pstmt = null;
 		try
@@ -247,7 +244,7 @@ public class MProject extends X_C_Project
 	 */
 	public MProjectIssue[] getIssues()
 	{
-		ArrayList<MProjectIssue> list = new ArrayList<>();
+		ArrayList<MProjectIssue> list = new ArrayList<MProjectIssue>();
 		String sql = "SELECT * FROM C_ProjectIssue WHERE C_Project_ID=? ORDER BY Line";
 		PreparedStatement pstmt = null;
 		try
@@ -286,7 +283,7 @@ public class MProject extends X_C_Project
 	 */
 	public MProjectPhase[] getPhases()
 	{
-		ArrayList<MProjectPhase> list = new ArrayList<>();
+		ArrayList<MProjectPhase> list = new ArrayList<MProjectPhase>();
 		String sql = "SELECT * FROM C_ProjectPhase WHERE C_Project_ID=? ORDER BY SeqNo";
 		PreparedStatement pstmt = null;
 		try
@@ -468,7 +465,6 @@ public class MProject extends X_C_Project
 	 *	@param newRecord new
 	 *	@return true
 	 */
-	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (getAD_User_ID() == -1)	//	Summary Project in Dimensions
@@ -477,8 +473,8 @@ public class MProject extends X_C_Project
 		//	Set Currency
 		if (is_ValueChanged("M_PriceList_Version_ID") && getM_PriceList_Version_ID() != 0)
 		{
-			final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(getM_PriceList_ID());
-			if (pl != null && pl.getM_PriceList_ID() > 0)
+			MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID(), null);
+			if (pl != null && pl.get_ID() != 0)
 				setC_Currency_ID(pl.getC_Currency_ID());
 		}
 		
@@ -491,7 +487,6 @@ public class MProject extends X_C_Project
 	 *	@param success success
 	 *	@return success
 	 */
-	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (newRecord && success)
@@ -512,7 +507,6 @@ public class MProject extends X_C_Project
 	 * 	Before Delete
 	 *	@return true
 	 */
-	@Override
 	protected boolean beforeDelete ()
 	{
 		return delete_Accounting("C_Project_Acct"); 
@@ -523,7 +517,6 @@ public class MProject extends X_C_Project
 	 *	@param success
 	 *	@return deleted
 	 */
-	@Override
 	protected boolean afterDelete (boolean success)
 	{
 		if (success)

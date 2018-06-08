@@ -1,14 +1,11 @@
 package org.adempiere.bpartner.service;
 
-import static java.math.BigDecimal.ZERO;
-
 import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
-import org.compiere.model.X_C_BPartner_Stats;
-import org.compiere.util.Util;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -38,8 +35,6 @@ public class BPartnerStats
 {
 	int recordId;
 
-	int bpartnerId;
-
 	BigDecimal openItems;
 
 	BigDecimal actualLifeTimeValue;
@@ -51,21 +46,18 @@ public class BPartnerStats
 	@Builder
 	public BPartnerStats(
 			final int recordId,
-			final int bpartnerId,
-			final BigDecimal openItems,
-			final BigDecimal actualLifeTimeValue,
-			final BigDecimal soCreditUsed,
-			final String soCreditStatus)
+			@NonNull final BigDecimal openItems,
+			@NonNull final BigDecimal actualLifeTimeValue,
+			@NonNull final BigDecimal soCreditUsed,
+			@NonNull final String soCreditStatus)
 	{
 		Check.assume(recordId > 0, "Given parameter recordId is > 0");
 		this.recordId = recordId;
-		Check.assume(bpartnerId > 0, "Given parameter bpartnerId is > 0");
-		this.bpartnerId = bpartnerId;
 
-		this.openItems = Util.coalesce(openItems, ZERO);
-		this.actualLifeTimeValue = Util.coalesce(actualLifeTimeValue, ZERO);
-		this.soCreditUsed = Util.coalesce(soCreditUsed, ZERO);
-		this.soCreditStatus = Util.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
+		this.openItems = openItems;
+		this.actualLifeTimeValue = actualLifeTimeValue;
+		this.soCreditUsed = soCreditUsed;
+		this.soCreditStatus = soCreditStatus;
 	}
 
 	public BigDecimal getSOCreditUsed()

@@ -34,6 +34,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
@@ -78,15 +79,11 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
-		{
 			return false;
-		}
 		// After Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
-		{
 			return false;
-		}
 
 		setDocAction(DOCACTION_None);
 
@@ -101,16 +98,12 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 		{
 			final String status = prepareIt();
 			if (!IDocument.STATUS_InProgress.equals(status))
-			{
 				return status;
-			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-		{
 			return IDocument.STATUS_Invalid;
-		}
 
 		// Note:
 		// setting and saving the doc status here, because the model validator will search for invoice existing invoice
@@ -155,6 +148,11 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 		return Msg.getElement(getCtx(), COLUMNNAME_C_Flatrate_Term_ID) + " " + getDocumentNo();
 	} // getDocumentInfo
 
+	@Override
+	public String getDocumentNo()
+	{
+		return Integer.toString(get_ID());
+	}
 
 	@Override
 	public String getProcessMsg()
@@ -187,21 +185,15 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-		{
 			return IDocument.STATUS_Invalid;
-		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-		{
 			return IDocument.STATUS_Invalid;
-		}
 		//
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
-		{
 			setDocAction(DOCACTION_Complete);
-		}
 		return IDocument.STATUS_InProgress;
 	} // prepareIt
 
@@ -219,9 +211,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
-		{
 			return false;
-		}
 
 		setProcessed(false);
 		setDocAction(DOCACTION_Complete);
@@ -229,9 +219,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
-		{
 			return false;
-		}
 
 		return true;
 	} // reActivateIt
@@ -249,16 +237,12 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
-		{
 			return false;
-		}
 
 		// After reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		if (m_processMsg != null)
-		{
 			return false;
-		}
 
 		return true;
 	} // reverseAccrualIt
@@ -270,16 +254,12 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
-		{
 			return false;
-		}
 
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
-		{
 			return false;
-		}
 
 		return true;
 	}

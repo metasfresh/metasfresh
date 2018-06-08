@@ -105,11 +105,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Cached
 	public I_M_HU_PI_Item_Product retrieveVirtualPIMaterialItemProduct(@CacheCtx final Properties ctx)
 	{
-		final I_M_HU_PI_Item_Product piip = retrieveForId(ctx, VIRTUAL_HU_PI_Item_Product_ID);
-
-		return Check.assumeNotNull(piip,
-				"There is always a M_HU_PI_Item_Product record for HU_PI_Item_Product_ID={}",
-				VIRTUAL_HU_PI_Item_Product_ID);
+		return retrieveForId(ctx, VIRTUAL_HU_PI_Item_Product_ID);
 	}
 
 	@Override
@@ -153,10 +149,12 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			final I_M_Product product,
 			final Date date)
 	{
+		final I_M_HU_PI_Item itemDef = huItem.getM_HU_PI_Item();
+
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 		queryVO.setM_Product_ID(product.getM_Product_ID());
 		queryVO.setAllowAnyProduct(true);
-		queryVO.setM_HU_PI_Item_ID(huItem.getM_HU_PI_Item_ID());
+		queryVO.setM_HU_PI_Item_ID(itemDef.getM_HU_PI_Item_ID());
 		queryVO.setDate(date);
 
 		//

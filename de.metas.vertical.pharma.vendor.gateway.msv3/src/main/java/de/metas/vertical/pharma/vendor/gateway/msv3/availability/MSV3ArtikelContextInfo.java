@@ -44,8 +44,8 @@ public class MSV3ArtikelContextInfo
 			final int salesOrderLineId,
 			final int purchaseCandidateId)
 	{
-		this.salesOrderLineId = salesOrderLineId > 0 ? salesOrderLineId : -1;
-		this.purchaseCandidateId = purchaseCandidateId > 0 ? purchaseCandidateId : -1;
+		this.salesOrderLineId = salesOrderLineId;
+		this.purchaseCandidateId = purchaseCandidateId;
 	}
 
 }

@@ -13,14 +13,15 @@ package de.metas.invoicecandidate.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 
@@ -35,7 +37,6 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 @Validator(I_M_InOutLine.class)
@@ -58,12 +59,18 @@ public class M_InOutLine
 	}
 
 	/**
-	 * If an M_InOutLine is deleted, then this method deletes the candidates which directly reference that line via <code>AD_Table_ID</code> and <code>Record_ID</code>.
+	 * IF an M_InOutLine is deleted, then this method deletes the candidates which directly reference that line via <code>AD_Table_ID</code> and <code>Record_ID</code>.
+	 *
+	 * @param inOutLine
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void deleteC_Invoice_Candidates(final I_M_InOutLine inOutLine)
 	{
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(inOutLine);
+		final List<I_C_Invoice_Candidate> referencingICs = Services.get(IInvoiceCandDAO.class).retrieveReferencing(inOutLine);
+		for (final I_C_Invoice_Candidate icToDelete : referencingICs)
+		{
+			InterfaceWrapperHelper.delete(icToDelete);
+		}
 	}
 
 	/**
@@ -126,8 +133,11 @@ public class M_InOutLine
 	 * @param inOutLine
 	 * @task 08451
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
-			I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.COLUMNNAME_C_OrderLine_ID })
+	@ModelChange(
+			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }
+			, ifColumnsChanged = {
+					I_M_InOutLine.COLUMNNAME_M_InOut_ID
+					, I_M_InOutLine.COLUMNNAME_C_OrderLine_ID })
 	public void unsetM_InOut_C_Order_ID(final I_M_InOutLine inOutLine)
 	{
 		if (inOutLine.getC_OrderLine_ID() <= 0)

@@ -34,7 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lang.Percent;
 
 /**
  * Implementors of this class have the job to create and invalidate {@link I_C_Invoice_Candidate} records.
@@ -107,7 +106,8 @@ public interface IInvoiceCandidateHandler
 	/**
 	 * Retrieves all models which are eligible for invoicing but they have no invoice candidates.
 	 *
-	 * @param limit advises how many models shall be retrieved. Note that this is an advise which could be respected or not by current implementations.
+	 * @param limit how many models shall be retrieved. Note that, at this moment, this is a recommendation which could be respected or not by current implementations.
+	 * @return models
 	 */
 	Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit);
 
@@ -234,8 +234,6 @@ public interface IInvoiceCandidateHandler
 	 */
 	void setBPartnerData(I_C_Invoice_Candidate ic);
 
-	void setInvoiceSchedule(I_C_Invoice_Candidate ic);
-
 	/**
 	 * Method sets inherited C_UOM_ID opon IC creation
 	 *
@@ -262,7 +260,7 @@ public interface IInvoiceCandidateHandler
 		BigDecimal priceActual;
 		int priceUOMId;
 
-		Percent discount;
+		BigDecimal discount;
 
 		int taxCategoryId;
 		Boolean taxIncluded;
