@@ -2,6 +2,7 @@ package org.adempiere.location;
 
 import org.adempiere.util.Check;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -27,7 +28,7 @@ import lombok.Value;
  */
 
 @Value
-public class LocationId
+public class LocationId implements RepoIdAware
 {
 	int repoId;
 
