@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -216,7 +215,7 @@ public class DimensionSpec
 		}
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asi, attribute.getM_Attribute_ID(), ITrx.TRXNAME_ThreadInherited);
+		final I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asi, attribute.getM_Attribute_ID());
 		if (attributeInstance == null)
 		{
 			return DimensionConstants.DIM_EMPTY;

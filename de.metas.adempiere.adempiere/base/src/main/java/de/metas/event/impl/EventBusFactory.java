@@ -1,35 +1,12 @@
 package de.metas.event.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
@@ -90,6 +67,8 @@ public class EventBusFactory implements IEventBusFactory
 
 	private final ExecutorService eventBusExecutor;
 
+	private final Set<Topic> availableUserNotificationsTopic = ConcurrentHashMap.newKeySet(10);
+
 	public EventBusFactory()
 	{
 		JMXRegistry.get().registerJMX(new JMXEventBusManager(jmsEndpoint), OnJMXAlreadyExistsPolicy.Replace);
@@ -109,8 +88,8 @@ public class EventBusFactory implements IEventBusFactory
 
 		//
 		// Setup default user notification topics
-		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralNotifications);
-		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralNotificationsLocal);
+		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotifications);
+		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotificationsLocal);
 	}
 
 	@Override
@@ -152,7 +131,7 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	/**
-	 * Creates the event bus. If the remove event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE}, then the event bus is also bould to a JMS
+	 * Creates the event bus. If the remove event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE}, then the event bus is also build to a JMS
 	 * endpoint. Otherwise the event bus will only be local.
 	 *
 	 * @param topic
@@ -214,25 +193,37 @@ public class EventBusFactory implements IEventBusFactory
 		getEventBus(topic).subscribe(listener);
 	}
 
-	private final Set<Topic> availableUserNotificationsTopic = new HashSet<>();
-
 	@Override
-	public void addAvailableUserNotificationsTopic(final Topic topic)
+	public void addAvailableUserNotificationsTopic(@NonNull final Topic topic)
 	{
-		Check.assumeNotNull(topic, "topic not null");
-		synchronized (availableUserNotificationsTopic)
-		{
-			availableUserNotificationsTopic.add(topic);
-		}
+		final boolean added = availableUserNotificationsTopic.add(topic);
+		logger.info("Registered user notifications topic: {} (already registered: {})", topic, !added);
+	}
+
+	/**
+	 * @return list of available topics on which user can subscribe for UI notifications
+	 */
+	private Set<Topic> getAvailableUserNotificationsTopics()
+	{
+		return ImmutableSet.copyOf(availableUserNotificationsTopic);
 	}
 
 	@Override
-	public Set<Topic> getAvailableUserNotificationsTopics()
+	public void registerUserNotificationsListener(@NonNull final IEventListener listener)
 	{
-		synchronized (availableUserNotificationsTopic)
-		{
-			return ImmutableSet.copyOf(availableUserNotificationsTopic);
-		}
+		getAvailableUserNotificationsTopics()
+				.stream()
+				.map(this::getEventBus)
+				.forEach(eventBus -> eventBus.subscribe(listener));
+	}
+
+	@Override
+	public void registerWeakUserNotificationsListener(@NonNull final IEventListener listener)
+	{
+		getAvailableUserNotificationsTopics()
+				.stream()
+				.map(this::getEventBus)
+				.forEach(eventBus -> eventBus.subscribeWeak(listener));
 	}
 
 	@Override

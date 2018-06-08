@@ -16,9 +16,9 @@ public interface I_M_Product_LotNumber_Lock
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 4 - System
+    /** AccessLevel = 3 - Client - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -97,6 +97,29 @@ public interface I_M_Product_LotNumber_Lock
     public static final org.adempiere.model.ModelColumn<I_M_Product_LotNumber_Lock, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Product_LotNumber_Lock, org.compiere.model.I_AD_User>(I_M_Product_LotNumber_Lock.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
+
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_M_Product_LotNumber_Lock, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_Product_LotNumber_Lock, Object>(I_M_Product_LotNumber_Lock.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Aktiv.

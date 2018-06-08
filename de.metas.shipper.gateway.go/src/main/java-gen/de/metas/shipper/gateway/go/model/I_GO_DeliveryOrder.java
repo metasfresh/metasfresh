@@ -2,10 +2,10 @@ package de.metas.shipper.gateway.go.model;
 
 
 /** Generated Interface for GO_DeliveryOrder
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public interface I_GO_DeliveryOrder 
+public interface I_GO_DeliveryOrder
 {
 
     /** TableName=GO_DeliveryOrder */
@@ -35,7 +35,7 @@ public interface I_GO_DeliveryOrder
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_Client>(I_GO_DeliveryOrder.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -64,7 +64,7 @@ public interface I_GO_DeliveryOrder
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_Org>(I_GO_DeliveryOrder.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -79,7 +79,7 @@ public interface I_GO_DeliveryOrder
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -94,7 +94,7 @@ public interface I_GO_DeliveryOrder
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_User>(I_GO_DeliveryOrder.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -117,7 +117,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_AX4Number();
 
     /** Column definition for GO_AX4Number */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_AX4Number = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_AX4Number", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_AX4Number = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_AX4Number", null);
     /** Column name GO_AX4Number */
     public static final String COLUMNNAME_GO_AX4Number = "GO_AX4Number";
 
@@ -140,7 +140,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_CustomerReference();
 
     /** Column definition for GO_CustomerReference */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_CustomerReference = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_CustomerReference", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_CustomerReference = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_CustomerReference", null);
     /** Column name GO_CustomerReference */
     public static final String COLUMNNAME_GO_CustomerReference = "GO_CustomerReference";
 
@@ -167,7 +167,7 @@ public interface I_GO_DeliveryOrder
 	public void setGO_DeliverToBPartner(org.compiere.model.I_C_BPartner GO_DeliverToBPartner);
 
     /** Column definition for GO_DeliverToBPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_BPartner> COLUMN_GO_DeliverToBPartner_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_BPartner>(I_GO_DeliveryOrder.class, "GO_DeliverToBPartner_ID", org.compiere.model.I_C_BPartner.class);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_BPartner> COLUMN_GO_DeliverToBPartner_ID = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToBPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name GO_DeliverToBPartner_ID */
     public static final String COLUMNNAME_GO_DeliverToBPartner_ID = "GO_DeliverToBPartner_ID";
 
@@ -194,7 +194,7 @@ public interface I_GO_DeliveryOrder
 	public void setGO_DeliverToBPLocation(org.compiere.model.I_C_BPartner_Location GO_DeliverToBPLocation);
 
     /** Column definition for GO_DeliverToBPLocation_ID */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_BPartner_Location> COLUMN_GO_DeliverToBPLocation_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_BPartner_Location>(I_GO_DeliveryOrder.class, "GO_DeliverToBPLocation_ID", org.compiere.model.I_C_BPartner_Location.class);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_BPartner_Location> COLUMN_GO_DeliverToBPLocation_ID = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToBPLocation_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name GO_DeliverToBPLocation_ID */
     public static final String COLUMNNAME_GO_DeliverToBPLocation_ID = "GO_DeliverToBPLocation_ID";
 
@@ -217,7 +217,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_DeliverToCompanyName();
 
     /** Column definition for GO_DeliverToCompanyName */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToCompanyName = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_DeliverToCompanyName", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToCompanyName = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToCompanyName", null);
     /** Column name GO_DeliverToCompanyName */
     public static final String COLUMNNAME_GO_DeliverToCompanyName = "GO_DeliverToCompanyName";
 
@@ -240,7 +240,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_DeliverToCompanyName2();
 
     /** Column definition for GO_DeliverToCompanyName2 */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToCompanyName2 = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_DeliverToCompanyName2", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToCompanyName2 = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToCompanyName2", null);
     /** Column name GO_DeliverToCompanyName2 */
     public static final String COLUMNNAME_GO_DeliverToCompanyName2 = "GO_DeliverToCompanyName2";
 
@@ -263,7 +263,7 @@ public interface I_GO_DeliveryOrder
 	public java.sql.Timestamp getGO_DeliverToDate();
 
     /** Column definition for GO_DeliverToDate */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToDate = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_DeliverToDate", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToDate = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToDate", null);
     /** Column name GO_DeliverToDate */
     public static final String COLUMNNAME_GO_DeliverToDate = "GO_DeliverToDate";
 
@@ -286,7 +286,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_DeliverToDepartment();
 
     /** Column definition for GO_DeliverToDepartment */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToDepartment = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_DeliverToDepartment", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToDepartment = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToDepartment", null);
     /** Column name GO_DeliverToDepartment */
     public static final String COLUMNNAME_GO_DeliverToDepartment = "GO_DeliverToDepartment";
 
@@ -313,7 +313,7 @@ public interface I_GO_DeliveryOrder
 	public void setGO_DeliverToLocation(org.compiere.model.I_C_Location GO_DeliverToLocation);
 
     /** Column definition for GO_DeliverToLocation_ID */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_Location> COLUMN_GO_DeliverToLocation_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_Location>(I_GO_DeliveryOrder.class, "GO_DeliverToLocation_ID", org.compiere.model.I_C_Location.class);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_Location> COLUMN_GO_DeliverToLocation_ID = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToLocation_ID", org.compiere.model.I_C_Location.class);
     /** Column name GO_DeliverToLocation_ID */
     public static final String COLUMNNAME_GO_DeliverToLocation_ID = "GO_DeliverToLocation_ID";
 
@@ -336,7 +336,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_DeliverToNote();
 
     /** Column definition for GO_DeliverToNote */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToNote = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_DeliverToNote", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToNote = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToNote", null);
     /** Column name GO_DeliverToNote */
     public static final String COLUMNNAME_GO_DeliverToNote = "GO_DeliverToNote";
 
@@ -359,7 +359,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_DeliverToPhoneNo();
 
     /** Column definition for GO_DeliverToPhoneNo */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToPhoneNo = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_DeliverToPhoneNo", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToPhoneNo = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToPhoneNo", null);
     /** Column name GO_DeliverToPhoneNo */
     public static final String COLUMNNAME_GO_DeliverToPhoneNo = "GO_DeliverToPhoneNo";
 
@@ -382,7 +382,7 @@ public interface I_GO_DeliveryOrder
 	public java.sql.Timestamp getGO_DeliverToTimeFrom();
 
     /** Column definition for GO_DeliverToTimeFrom */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToTimeFrom = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_DeliverToTimeFrom", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToTimeFrom = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToTimeFrom", null);
     /** Column name GO_DeliverToTimeFrom */
     public static final String COLUMNNAME_GO_DeliverToTimeFrom = "GO_DeliverToTimeFrom";
 
@@ -405,7 +405,7 @@ public interface I_GO_DeliveryOrder
 	public java.sql.Timestamp getGO_DeliverToTimeTo();
 
     /** Column definition for GO_DeliverToTimeTo */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToTimeTo = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_DeliverToTimeTo", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliverToTimeTo = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliverToTimeTo", null);
     /** Column name GO_DeliverToTimeTo */
     public static final String COLUMNNAME_GO_DeliverToTimeTo = "GO_DeliverToTimeTo";
 
@@ -428,7 +428,7 @@ public interface I_GO_DeliveryOrder
 	public int getGO_DeliveryOrder_ID();
 
     /** Column definition for GO_DeliveryOrder_ID */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliveryOrder_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_DeliveryOrder_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_DeliveryOrder_ID = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_DeliveryOrder_ID", null);
     /** Column name GO_DeliveryOrder_ID */
     public static final String COLUMNNAME_GO_DeliveryOrder_ID = "GO_DeliveryOrder_ID";
 
@@ -451,7 +451,7 @@ public interface I_GO_DeliveryOrder
 	public int getGO_GrossWeightKg();
 
     /** Column definition for GO_GrossWeightKg */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_GrossWeightKg = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_GrossWeightKg", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_GrossWeightKg = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_GrossWeightKg", null);
     /** Column name GO_GrossWeightKg */
     public static final String COLUMNNAME_GO_GrossWeightKg = "GO_GrossWeightKg";
 
@@ -474,7 +474,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_HWBNumber();
 
     /** Column definition for GO_HWBNumber */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_HWBNumber = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_HWBNumber", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_HWBNumber = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_HWBNumber", null);
     /** Column name GO_HWBNumber */
     public static final String COLUMNNAME_GO_HWBNumber = "GO_HWBNumber";
 
@@ -497,7 +497,7 @@ public interface I_GO_DeliveryOrder
 	public int getGO_NumberOfPackages();
 
     /** Column definition for GO_NumberOfPackages */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_NumberOfPackages = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_NumberOfPackages", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_NumberOfPackages = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_NumberOfPackages", null);
     /** Column name GO_NumberOfPackages */
     public static final String COLUMNNAME_GO_NumberOfPackages = "GO_NumberOfPackages";
 
@@ -520,7 +520,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_OrderStatus();
 
     /** Column definition for GO_OrderStatus */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_OrderStatus = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_OrderStatus", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_OrderStatus = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_OrderStatus", null);
     /** Column name GO_OrderStatus */
     public static final String COLUMNNAME_GO_OrderStatus = "GO_OrderStatus";
 
@@ -543,7 +543,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_PackageContentDescription();
 
     /** Column definition for GO_PackageContentDescription */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PackageContentDescription = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_PackageContentDescription", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PackageContentDescription = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_PackageContentDescription", null);
     /** Column name GO_PackageContentDescription */
     public static final String COLUMNNAME_GO_PackageContentDescription = "GO_PackageContentDescription";
 
@@ -566,7 +566,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_PaidMode();
 
     /** Column definition for GO_PaidMode */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PaidMode = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_PaidMode", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PaidMode = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_PaidMode", null);
     /** Column name GO_PaidMode */
     public static final String COLUMNNAME_GO_PaidMode = "GO_PaidMode";
 
@@ -589,7 +589,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_PickupCompanyName();
 
     /** Column definition for GO_PickupCompanyName */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PickupCompanyName = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_PickupCompanyName", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PickupCompanyName = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_PickupCompanyName", null);
     /** Column name GO_PickupCompanyName */
     public static final String COLUMNNAME_GO_PickupCompanyName = "GO_PickupCompanyName";
 
@@ -612,7 +612,7 @@ public interface I_GO_DeliveryOrder
 	public java.sql.Timestamp getGO_PickupDate();
 
     /** Column definition for GO_PickupDate */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PickupDate = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_PickupDate", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PickupDate = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_PickupDate", null);
     /** Column name GO_PickupDate */
     public static final String COLUMNNAME_GO_PickupDate = "GO_PickupDate";
 
@@ -639,7 +639,7 @@ public interface I_GO_DeliveryOrder
 	public void setGO_PickupLocation(org.compiere.model.I_C_Location GO_PickupLocation);
 
     /** Column definition for GO_PickupLocation_ID */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_Location> COLUMN_GO_PickupLocation_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_Location>(I_GO_DeliveryOrder.class, "GO_PickupLocation_ID", org.compiere.model.I_C_Location.class);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_Location> COLUMN_GO_PickupLocation_ID = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_PickupLocation_ID", org.compiere.model.I_C_Location.class);
     /** Column name GO_PickupLocation_ID */
     public static final String COLUMNNAME_GO_PickupLocation_ID = "GO_PickupLocation_ID";
 
@@ -662,7 +662,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_PickupNote();
 
     /** Column definition for GO_PickupNote */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PickupNote = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_PickupNote", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PickupNote = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_PickupNote", null);
     /** Column name GO_PickupNote */
     public static final String COLUMNNAME_GO_PickupNote = "GO_PickupNote";
 
@@ -685,7 +685,7 @@ public interface I_GO_DeliveryOrder
 	public java.sql.Timestamp getGO_PickupTimeFrom();
 
     /** Column definition for GO_PickupTimeFrom */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PickupTimeFrom = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_PickupTimeFrom", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PickupTimeFrom = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_PickupTimeFrom", null);
     /** Column name GO_PickupTimeFrom */
     public static final String COLUMNNAME_GO_PickupTimeFrom = "GO_PickupTimeFrom";
 
@@ -708,7 +708,7 @@ public interface I_GO_DeliveryOrder
 	public java.sql.Timestamp getGO_PickupTimeTo();
 
     /** Column definition for GO_PickupTimeTo */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PickupTimeTo = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_PickupTimeTo", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_PickupTimeTo = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_PickupTimeTo", null);
     /** Column name GO_PickupTimeTo */
     public static final String COLUMNNAME_GO_PickupTimeTo = "GO_PickupTimeTo";
 
@@ -731,7 +731,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_SelfDelivery();
 
     /** Column definition for GO_SelfDelivery */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_SelfDelivery = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_SelfDelivery", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_SelfDelivery = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_SelfDelivery", null);
     /** Column name GO_SelfDelivery */
     public static final String COLUMNNAME_GO_SelfDelivery = "GO_SelfDelivery";
 
@@ -754,7 +754,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_SelfPickup();
 
     /** Column definition for GO_SelfPickup */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_SelfPickup = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_SelfPickup", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_SelfPickup = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_SelfPickup", null);
     /** Column name GO_SelfPickup */
     public static final String COLUMNNAME_GO_SelfPickup = "GO_SelfPickup";
 
@@ -777,7 +777,7 @@ public interface I_GO_DeliveryOrder
 	public java.lang.String getGO_ServiceType();
 
     /** Column definition for GO_ServiceType */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_ServiceType = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "GO_ServiceType", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_GO_ServiceType = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "GO_ServiceType", null);
     /** Column name GO_ServiceType */
     public static final String COLUMNNAME_GO_ServiceType = "GO_ServiceType";
 
@@ -802,7 +802,7 @@ public interface I_GO_DeliveryOrder
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -831,7 +831,7 @@ public interface I_GO_DeliveryOrder
 	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
 
     /** Column definition for M_Shipper_ID */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_M_Shipper>(I_GO_DeliveryOrder.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
     /** Column name M_Shipper_ID */
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
@@ -854,7 +854,7 @@ public interface I_GO_DeliveryOrder
 	public int getM_ShipperTransportation_ID();
 
     /** Column definition for M_ShipperTransportation_ID */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_M_ShipperTransportation_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "M_ShipperTransportation_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_M_ShipperTransportation_ID = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "M_ShipperTransportation_ID", null);
     /** Column name M_ShipperTransportation_ID */
     public static final String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
 
@@ -879,7 +879,7 @@ public interface I_GO_DeliveryOrder
 	public boolean isProcessed();
 
     /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "Processed", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -894,7 +894,7 @@ public interface I_GO_DeliveryOrder
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -909,7 +909,7 @@ public interface I_GO_DeliveryOrder
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_User>(I_GO_DeliveryOrder.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_GO_DeliveryOrder.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

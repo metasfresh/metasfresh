@@ -195,7 +195,7 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	{
 		return POWrapper.isValueChanged(model, columnNames);
 	}
-	
+
 	@Override
 	public boolean isNull(final Object model, final String columnName)
 	{
@@ -221,10 +221,16 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 		// always strict, else other wrapper helpers will handle it!
 		return POWrapper.getStrictPO(model);
 	}
-	
+
 	@Override
 	public Evaluatee getEvaluatee(final Object model)
 	{
 		return POWrapper.getStrictPO(model);
+	}
+
+	@Override
+	public boolean isCopy(final Object model)
+	{
+		return getDynAttribute(model, PO.DYNATTR_CopyRecordSupport_OldValue) != null;
 	}
 }

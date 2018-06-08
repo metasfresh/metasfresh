@@ -3,11 +3,11 @@ package de.metas.material.planning.impl;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;

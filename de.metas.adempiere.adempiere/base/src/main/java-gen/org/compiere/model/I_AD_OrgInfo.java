@@ -321,6 +321,35 @@ public interface I_AD_OrgInfo
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Liefer-Lager.
+	 * Lager, an das der Lieferant eine Bestellung liefern soll.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_WarehousePO_ID (int M_WarehousePO_ID);
+
+	/**
+	 * Get Liefer-Lager.
+	 * Lager, an das der Lieferant eine Bestellung liefern soll.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_WarehousePO_ID();
+
+	public org.compiere.model.I_M_Warehouse getM_WarehousePO();
+
+	public void setM_WarehousePO(org.compiere.model.I_M_Warehouse M_WarehousePO);
+
+    /** Column definition for M_WarehousePO_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_M_Warehouse> COLUMN_M_WarehousePO_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_M_Warehouse>(I_AD_OrgInfo.class, "M_WarehousePO_ID", org.compiere.model.I_M_Warehouse.class);
+    /** Column name M_WarehousePO_ID */
+    public static final String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
+
+	/**
 	 * Set Übergeordnete Organisation.
 	 * Parent (superior) Organization
 	 *

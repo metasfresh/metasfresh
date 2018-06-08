@@ -6,10 +6,10 @@ import java.math.BigDecimal;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util.ArrayKey;
 

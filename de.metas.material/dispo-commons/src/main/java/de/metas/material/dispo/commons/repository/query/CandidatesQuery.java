@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons.repository.query;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.adempiere.util.Check;
@@ -15,6 +16,7 @@ import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import lombok.experimental.Wither;
 
@@ -85,6 +87,7 @@ public final class CandidatesQuery
 				.matchExactStorageAttributesKey(true)
 				.demandDetail(candidate.getDemandDetail())
 				.distributionDetailsQuery(distributionDetailsQuery)
+				.transactionDetails(candidate.getTransactionDetails())
 				.groupId(candidate.getGroupId())
 				.orgId(candidate.getOrgId())
 				.productionDetailsQuery(productionDetailsQuery)
@@ -158,7 +161,10 @@ public final class CandidatesQuery
 	 */
 	DemandDetail demandDetail;
 
-	TransactionDetail transactionDetail;
+	/**
+	 * If multiple transactionDetails are specified here, then a matching candidate needs to have matching transactionDetails for all of them.
+	 */
+	List<TransactionDetail> transactionDetails;
 
 	@Builder
 	public CandidatesQuery(
@@ -176,7 +182,7 @@ public final class CandidatesQuery
 			final ProductionDetailsQuery productionDetailsQuery,
 			final DistributionDetailsQuery distributionDetailsQuery,
 			final DemandDetail demandDetail,
-			final TransactionDetail transactionDetail)
+			@Singular final List<TransactionDetail> transactionDetails)
 	{
 		this.parentMaterialDescriptorQuery = parentMaterialDescriptorQuery;
 		this.parentDemandDetail = parentDemandDetail;
@@ -194,7 +200,7 @@ public final class CandidatesQuery
 		this.productionDetailsQuery = productionDetailsQuery;
 		this.distributionDetailsQuery = distributionDetailsQuery;
 		this.demandDetail = demandDetail;
-		this.transactionDetail = transactionDetail;
+		this.transactionDetails = transactionDetails;
 	}
 
 	/**

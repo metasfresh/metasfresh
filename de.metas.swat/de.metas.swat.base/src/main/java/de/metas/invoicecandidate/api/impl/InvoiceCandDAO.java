@@ -54,11 +54,11 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
@@ -175,6 +175,23 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final int recordId = InterfaceWrapperHelper.getId(model);
 
 		return fetchInvoiceCandidates(ctx, tableName, recordId, trxName);
+	}
+
+	@Override
+	public int deleteAllReferencingInvoiceCandidates(@NonNull final Object model)
+	{
+		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+
+		final int recordId = InterfaceWrapperHelper.getId(model);
+
+		final int deleteCount = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, tableId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, recordId)
+				.create()
+				.delete();
+		return deleteCount;
 	}
 
 	@Override
@@ -1374,7 +1391,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds);
 
 		invalidateCandsFor(icQueryBuilder);
-		// logger.info("Invalidated {} invoice candidates for C_Invoice_Candidate_IDs={}", new Object[] { count, icIds });
 	}
 
 	@Override

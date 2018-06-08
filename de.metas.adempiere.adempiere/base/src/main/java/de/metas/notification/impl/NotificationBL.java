@@ -1,28 +1,19 @@
 package de.metas.notification.impl;
 
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.user.api.IUserBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_User;
-import org.compiere.util.Env;
 
-import de.metas.email.EMail;
-import de.metas.email.IMailBL;
-import de.metas.email.Mailbox;
-import de.metas.i18n.IADMessageDAO;
-import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
-import de.metas.notification.spi.INotificationCtxProvider;
-import de.metas.notification.spi.impl.CompositePrintingNotificationCtxProvider;
+import de.metas.notification.IRoleNotificationsConfigRepository;
+import de.metas.notification.IUserNotificationsConfigRepository;
+import de.metas.notification.NotificationSenderTemplate;
+import de.metas.notification.RoleNotificationsConfig;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationsConfig;
+import de.metas.notification.spi.IRecordTextProvider;
+import de.metas.notification.spi.impl.CompositeRecordTextProvider;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -48,130 +39,56 @@ import de.metas.notification.spi.impl.CompositePrintingNotificationCtxProvider;
 
 public class NotificationBL implements INotificationBL
 {
-	private final CompositePrintingNotificationCtxProvider ctxProviders = new CompositePrintingNotificationCtxProvider();
+	private final CompositeRecordTextProvider ctxProviders = new CompositeRecordTextProvider();
 
 	@Override
-	public void notifyUser(final I_AD_User recipient,
-			final String adMessage,
-			final String messageText,
-			final ITableRecordReference referencedRecord)
+	public NotificationSenderTemplate newNotificationSender()
 	{
-		// task 09833
-		// Provide more specific information to the user, in case there exists a notification context provider
-		final String specificInfo = ctxProviders.getTextMessageIfApplies(referencedRecord).orNull();
-		final StringBuilder detailedMsgText = new StringBuilder();
-		detailedMsgText.append(messageText);
-		if (specificInfo != null)
-		{
-			if (!messageText.isEmpty())
-			{
-				detailedMsgText.append(" ");
-			}
-			detailedMsgText.append(specificInfo);
-		}
-
-		final String messageToUse = detailedMsgText.toString();
-
-		notifyUser0(recipient, adMessage, messageToUse, referencedRecord, new HashSet<Integer>());
-	}
-
-	private void notifyUser0(final I_AD_User recipient,
-			final String adMessage,
-			final String messageText,
-			final ITableRecordReference referencedRecord,
-			final Set<Integer> userIds)
-	{
-		final IUserBL userBL = Services.get(IUserBL.class);
-
-		if (userBL.isNotifyUserIncharge(recipient))
-		{
-			final I_AD_User userIncharge = InterfaceWrapperHelper.create(recipient, de.metas.adempiere.model.I_AD_User.class)
-					.getAD_User_InCharge();
-			Check.errorUnless(userIds.add(userIncharge.getAD_User_ID()), "Detected a cycle in the AD_User.AD_User_InCharge_IDs. The AD_User_IDs in question are {}", userIds);
-			notifyUser0(userIncharge, adMessage, messageText, referencedRecord, userIds);
-		}
-		if (userBL.isNotificationEMail(recipient))
-		{
-			try
-			{
-				sendMail(recipient, adMessage, messageText, referencedRecord);
-			}
-			catch (Exception e)
-			{
-				final String messageText2 = "An attempt to mail the following text failed with " + e.getClass() + ": " + e.getLocalizedMessage() + ":\n"
-						+ messageText;
-				createNotice(recipient, adMessage, messageText2, referencedRecord);
-			}
-		}
-		if (userBL.isNotificationNote(recipient))
-		{
-			createNotice(recipient, adMessage, messageText, referencedRecord);
-		}
-	}
-
-	private void createNotice(final I_AD_User recipient,
-			final String adMessage,
-			final String messageText,
-			final ITableRecordReference referencedRecord)
-	{
-		final IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
-
-		final int adMessageID = msgDAO.retrieveIdByValue(Env.getCtx(), adMessage);
-
-		final I_AD_Note note = InterfaceWrapperHelper.newInstance(I_AD_Note.class, recipient);
-		note.setAD_User(recipient);
-		note.setAD_Message_ID(adMessageID);
-		note.setAD_Org_ID(recipient.getAD_Org_ID());
-		note.setTextMsg(messageText);
-		note.setAD_Table_ID(referencedRecord.getAD_Table_ID());
-		note.setRecord_ID(referencedRecord.getRecord_ID());
-
-		InterfaceWrapperHelper.save(note);
-	}
-
-	private void sendMail(final I_AD_User recipient,
-			final String adMessage,
-			final String messageText,
-			final ITableRecordReference referencedRecord)
-	{
-		final IMailBL mailBL = Services.get(IMailBL.class);
-		final IClientDAO clientDAO = Services.get(IClientDAO.class);
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(recipient);
-
-		final String subject = msgBL.getMsg(ctx, adMessage);
-
-		// final de.metas.adempiere.model.I_AD_User sender = userDAO.retrieveUser(ctx, Env.getAD_User_ID(ctx));
-		final I_AD_Client adClient = clientDAO.retriveClient(ctx);
-
-		final Mailbox mailBox = mailBL.findMailBox(
-				adClient,
-				recipient.getAD_Org_ID(),
-				0,  // AD_Process_ID
-				null,  // C_DocType - Task FRESH-203 this shall work as before
-				null,  // customType
-				null); // sender
-		Check.assumeNotNull(mailBox, "IMailbox for adClient={}, AD_Org_ID={}", adClient, recipient.getAD_Org_ID());
-
-		final StringBuilder mailBody = new StringBuilder();
-		mailBody.append("\n" + messageText + "\n");
-		mailBody.append(msgBL.parseTranslation(ctx, "@" + referencedRecord.getTableName() + "_ID@: "));
-		mailBody.append(referencedRecord.getRecord_ID());
-
-		final EMail mail = mailBL.createEMail(ctx, mailBox, recipient.getEMail(), subject, mailBody.toString(), false);
-		mailBL.send(mail);
+		final NotificationSenderTemplate sender = new NotificationSenderTemplate();
+		sender.setRecordTextProvider(ctxProviders);
+		return sender;
 	}
 
 	@Override
-	public void addCtxProvider(final INotificationCtxProvider ctxProvider)
+	public void sendAfterCommit(@NonNull final UserNotificationRequest request)
+	{
+		newNotificationSender().sendAfterCommit(request);
+	}
+
+	@Override
+	public void sendAfterCommit(@NonNull final List<UserNotificationRequest> requests)
+	{
+		newNotificationSender().sendAfterCommit(requests);
+	}
+
+	@Override
+	public void send(@NonNull final UserNotificationRequest request)
+	{
+		newNotificationSender().send(request);
+	}
+
+	@Override
+	public void addCtxProvider(final IRecordTextProvider ctxProvider)
 	{
 		ctxProviders.addCtxProvider(ctxProvider);
 	}
-	
+
 	@Override
-	public void setDefaultCtxProvider(final INotificationCtxProvider defaultCtxProvider)
+	public void setDefaultCtxProvider(final IRecordTextProvider defaultCtxProvider)
 	{
 		ctxProviders.setDefaultCtxProvider(defaultCtxProvider);
 	}
+
+	@Override
+	public UserNotificationsConfig getUserNotificationsConfig(final int adUserId)
+	{
+		return Services.get(IUserNotificationsConfigRepository.class).getByUserId(adUserId);
+	}
+
+	@Override
+	public RoleNotificationsConfig getRoleNotificationsConfig(final int adRoleId)
+	{
+		return Services.get(IRoleNotificationsConfigRepository.class).getByRoleId(adRoleId);
+	}
+
 }

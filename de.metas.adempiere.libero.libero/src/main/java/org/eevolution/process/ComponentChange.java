@@ -50,9 +50,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.Query;
 import org.eevolution.model.MPPProductBOMLine;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 
 /**
@@ -121,7 +121,7 @@ public class ComponentChange extends JavaProcess
 			throw new FillMandatoryException("Action");
 		}
 		
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		
 		whereClause.append(MPPProductBOMLine.COLUMNNAME_M_Product_ID+"=?");
@@ -140,7 +140,7 @@ public class ComponentChange extends JavaProcess
 
 		List<MPPProductBOMLine> components = new Query(getCtx(), MPPProductBOMLine.Table_Name, whereClause.toString(), get_TrxName())
 													.setParameters(params)
-													.list();
+													.list(MPPProductBOMLine.class);
 		for(MPPProductBOMLine bomline : components) 
 		{		
 			if (p_Action.equals(ACTION_Add))

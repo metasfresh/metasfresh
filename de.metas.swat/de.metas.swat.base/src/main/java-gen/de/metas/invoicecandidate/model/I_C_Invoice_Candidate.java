@@ -574,7 +574,6 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -584,7 +583,6 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -603,10 +601,8 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID);
 
 	/**
@@ -615,13 +611,12 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
 	public int getC_InvoiceSchedule_ID();
 
 	public org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule();
 
-	@Deprecated
 	public void setC_InvoiceSchedule(org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule);
 
     /** Column definition for C_InvoiceSchedule_ID */
@@ -809,7 +804,7 @@ public interface I_C_Invoice_Candidate
 	 * Set Zahlungsbedingung abw..
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -819,7 +814,7 @@ public interface I_C_Invoice_Candidate
 	 * Get Zahlungsbedingung abw..
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -3044,35 +3039,6 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "Record_ID", null);
     /** Column name Record_ID */
     public static final String COLUMNNAME_Record_ID = "Record_ID";
-
-	/**
-	 * Set Ref_PackingMaterial_InOutLine_ID.
-	 * Reference the inout line from where the packing material input line was generated. Is filled up only if the IC is a packing material line.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setRef_PackingMaterial_InOutLine_ID (int Ref_PackingMaterial_InOutLine_ID);
-
-	/**
-	 * Get Ref_PackingMaterial_InOutLine_ID.
-	 * Reference the inout line from where the packing material input line was generated. Is filled up only if the IC is a packing material line.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getRef_PackingMaterial_InOutLine_ID();
-
-	public org.compiere.model.I_M_InOutLine getRef_PackingMaterial_InOutLine();
-
-	public void setRef_PackingMaterial_InOutLine(org.compiere.model.I_M_InOutLine Ref_PackingMaterial_InOutLine);
-
-    /** Column definition for Ref_PackingMaterial_InOutLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_InOutLine> COLUMN_Ref_PackingMaterial_InOutLine_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_InOutLine>(I_C_Invoice_Candidate.class, "Ref_PackingMaterial_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
-    /** Column name Ref_PackingMaterial_InOutLine_ID */
-    public static final String COLUMNNAME_Ref_PackingMaterial_InOutLine_ID = "Ref_PackingMaterial_InOutLine_ID";
 
 	/**
 	 * Set Status nach Akt..

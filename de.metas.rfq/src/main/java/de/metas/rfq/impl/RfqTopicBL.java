@@ -3,8 +3,8 @@ package de.metas.rfq.impl;
 import java.util.List;
 
 import org.adempiere.util.Services;
-import org.compiere.model.MProductCategory;
 
+import de.metas.product.IProductBL;
 import de.metas.rfq.IRfqTopicBL;
 import de.metas.rfq.IRfqTopicDAO;
 import de.metas.rfq.model.I_C_RfQ_TopicSubscriber;
@@ -58,7 +58,7 @@ public class RfqTopicBL implements IRfqTopicBL
 			}
 			
 			//	Product Category
-			if (MProductCategory.isCategory(restriction.getM_Product_Category_ID(), M_Product_ID))
+			if(Services.get(IProductBL.class).isProductInCategory(M_Product_ID, restriction.getM_Product_Category_ID()))
 			{
 				return true;
 			}

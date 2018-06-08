@@ -8,8 +8,8 @@ import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -116,7 +116,7 @@ public class ShipmentScheduleQtysHelperTest
 		final I_M_ShipmentSchedule sched = ShipmentScheduleTestBase.createShipmentSchedule(qtyOrdered);
 
 		final DeliveryGroupCandidate deliveryGroupCandidate = DeliveryGroupCandidate.builder().bPartnerAddress("bPartnerAddress").groupId(10).shipperId(20).warehouseId(30).build();
-		final DeliveryLineCandidate deliveryLineCandidate = new DeliveryLineCandidate(deliveryGroupCandidate, sched, CompleteStatus.OK);
+		final DeliveryLineCandidate deliveryLineCandidate = deliveryGroupCandidate.addLine(sched, CompleteStatus.OK);
 		deliveryLineCandidate.setQtyToDeliver(BigDecimal.TEN);
 
 		final IShipmentSchedulesDuringUpdate shipmentCandidates = new ShipmentSchedulesDuringUpdate();

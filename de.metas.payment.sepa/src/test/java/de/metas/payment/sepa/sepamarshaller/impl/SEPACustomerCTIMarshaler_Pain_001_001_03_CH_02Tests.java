@@ -5,8 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
@@ -44,39 +42,6 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02Tests
 		chf.setCurSymbol("CHF");
 		chf.setISO_Code("CHF");
 		save(chf);
-	}
-
-	@Test
-	public void test1_REGEXP_STREET_AND_NUMER_SPLIT()
-	{
-		final Pattern pattern = Pattern.compile(SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02.REGEXP_STREET_AND_NUMER_SPLIT);
-		final Matcher matcher = pattern.matcher("Carretera Nueva Jarilla");
-
-		assertThat(matcher.matches()).isTrue();
-		assertThat(matcher.group(1)).isEqualTo("Carretera Nueva Jarilla");
-		assertThat(matcher.group(2)).isNullOrEmpty();
-	}
-
-	@Test
-	public void test2_REGEXP_STREET_AND_NUMER_SPLIT()
-	{
-		final Pattern pattern = Pattern.compile(SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02.REGEXP_STREET_AND_NUMER_SPLIT);
-		final Matcher matcher = pattern.matcher("Laternenstrasse 14");
-
-		assertThat(matcher.matches()).isTrue();
-		assertThat(matcher.group(1).trim()).isEqualTo("Laternenstrasse");
-		assertThat(matcher.group(2)).isEqualTo("14");
-	}
-
-	@Test
-	public void test3_REGEXP_STREET_AND_NUMER_SPLIT()
-	{
-		final Pattern pattern = Pattern.compile(SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02.REGEXP_STREET_AND_NUMER_SPLIT);
-		final Matcher matcher = pattern.matcher("Laternenstrasse 14-26c");
-
-		assertThat(matcher.matches()).isTrue();
-		assertThat(matcher.group(1).trim()).isEqualTo("Laternenstrasse");
-		assertThat(matcher.group(2)).isEqualTo("14-26c");
 	}
 
 	@Test

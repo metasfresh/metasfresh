@@ -3,7 +3,7 @@ package de.metas.material.interceptor;
 import java.util.List;
 
 import org.adempiere.model.GeneralCopyRecordSupport;
-import org.adempiere.model.TableInfoVO;
+import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.PO;
 
@@ -43,7 +43,7 @@ public class MForecastPOCopyRecordSupport extends GeneralCopyRecordSupport
 
 
 	@Override
-	public List<TableInfoVO> getSuggestedChildren(final PO po, final List<TableInfoVO> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
 	{
 		return super.getSuggestedChildren(po, suggestedChildren)
 				.stream()

@@ -19,13 +19,6 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
-import de.metas.logging.LogManager;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -41,6 +34,11 @@ import org.compiere.model.Query;
 import org.compiere.model.X_T_InvoiceGL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * 	Invoice Not realized Gain & Loss.
@@ -226,7 +224,7 @@ public class InvoiceNGL extends JavaProcess
 	 	List <X_T_InvoiceGL> list = new Query(getCtx(), X_T_InvoiceGL.Table_Name, whereClause, get_TrxName())
 			.setParameters(new Object[]{getAD_PInstance_ID()})
 			.setOrderBy("AD_Org_ID")
-			.list();	
+			.list(X_T_InvoiceGL.class);	
 		//FR: [ 2214883 ] Remove SQL code and Replace for Query
 
 		if (list.size() == 0)

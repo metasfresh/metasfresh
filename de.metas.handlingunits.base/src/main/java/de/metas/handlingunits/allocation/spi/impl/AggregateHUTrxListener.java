@@ -164,7 +164,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		if (splitQty.signum() != 0)
 		{
 			// the *actual* newTuQty would not be a natural number, so we need to initiate another split now
-			final I_M_HU_PI_Item splitHUPIItem = item.getM_HU_PI_Item();
+			final I_M_HU_PI_Item splitHUPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(item);
 
 			// create a handling unit item
 			final I_M_HU_Item splitHUParentItem = handlingUnitsDAO.createHUItemIfNotExists(item.getM_HU(), splitHUPIItem).getLeft();

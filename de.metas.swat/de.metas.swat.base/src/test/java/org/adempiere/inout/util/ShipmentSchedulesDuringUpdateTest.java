@@ -68,8 +68,8 @@ public class ShipmentSchedulesDuringUpdateTest
 		shipmentCandidates.addLine(line1);
 		assertThat(shipmentCandidates.getAllLines()).containsExactly(line1);
 
-		final I_M_ShipmentSchedule sched1Reloaded = load(line1.getShipmentSchedule().getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class);
-		final DeliveryLineCandidate line1WithReloadedSched = new DeliveryLineCandidate(group, sched1Reloaded, line1.getCompleteStatus());
+		final I_M_ShipmentSchedule sched1Reloaded = load(line1.getShipmentScheduleId(), I_M_ShipmentSchedule.class);
+		final DeliveryLineCandidate line1WithReloadedSched = group.addLine(sched1Reloaded, line1.getCompleteStatus());
 		line1WithReloadedSched.setQtyToDeliver(line1.getQtyToDeliver());
 		
 		shipmentCandidates.removeLine(line1WithReloadedSched);
@@ -129,8 +129,7 @@ public class ShipmentSchedulesDuringUpdateTest
 		sched.setDeliveryRule(deliveryRule);
 		save(sched);
 
-		final DeliveryLineCandidate line = new DeliveryLineCandidate(group, sched, completeStatus);
-		group.getLines().add(line);
+		final DeliveryLineCandidate line = group.addLine(sched, completeStatus);
 		line.setQtyToDeliver(qty);
 
 		shipmentCandidates.addLine(line);

@@ -129,3 +129,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2018-03-15 16:08:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559564
 ;
+
+
+
+-- 2018-03-19T14:13:23.296
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-03-19 14:13:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540954
+;
+

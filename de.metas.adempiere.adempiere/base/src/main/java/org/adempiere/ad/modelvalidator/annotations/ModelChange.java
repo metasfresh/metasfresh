@@ -93,4 +93,10 @@ public @interface ModelChange
 	 * * any failure will be just logged and will not prevent execution<br>
 	 */
 	boolean afterCommit() default false;
+	
+
+	/**
+	 * Skip calling this interceptor if we are copying (with details)
+	 */
+	boolean skipIfCopying() default false;
 }

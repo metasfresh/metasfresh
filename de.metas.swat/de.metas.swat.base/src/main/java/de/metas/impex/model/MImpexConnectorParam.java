@@ -56,7 +56,7 @@ public class MImpexConnectorParam extends X_Impex_ConnectorParam
 
 		return new Query(connector.getCtx(), Table_Name, whereClause, connector
 				.get_TrxName()).setParameters(parameters).setOrderBy(orderBy)
-				.list();
+				.list(MImpexConnectorParam.class);
 	}
 
 }

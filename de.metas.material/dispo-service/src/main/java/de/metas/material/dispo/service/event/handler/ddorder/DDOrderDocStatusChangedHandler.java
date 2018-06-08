@@ -83,7 +83,7 @@ public class DDOrderDocStatusChangedHandler implements MaterialEventHandler<DDOr
 				.getCandidateStatus(newDocStatusFromEvent);
 
 		final Function<Candidate, BigDecimal> masterialQtyFunktion = //
-				EventUtil.deriveDistributionDetail2QtyProvider(newCandidateStatus);
+				EventUtil.deriveCandiadte2QtyProvider(newCandidateStatus);
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 

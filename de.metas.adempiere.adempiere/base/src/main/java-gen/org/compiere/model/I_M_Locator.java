@@ -99,6 +99,31 @@ public interface I_M_Locator
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Datum der letzten Inventur.
+	 * Datum der letzten Inventur
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDateLastInventory (java.sql.Timestamp DateLastInventory);
+
+	/**
+	 * Get Datum der letzten Inventur.
+	 * Datum der letzten Inventur
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDateLastInventory();
+
+    /** Column definition for DateLastInventory */
+    public static final org.adempiere.model.ModelColumn<I_M_Locator, Object> COLUMN_DateLastInventory = new org.adempiere.model.ModelColumn<I_M_Locator, Object>(I_M_Locator.class, "DateLastInventory", null);
+    /** Column name DateLastInventory */
+    public static final String COLUMNNAME_DateLastInventory = "DateLastInventory";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *

@@ -53,8 +53,10 @@ public class WindowBasedCacheInvalidateRequestInitializer
 		logger.info("Found {} factories to be registered", factories.size());
 
 		factories.forEach(factory -> {
-			registry.register(factory.getChildTableName(), factory);
+			registry.register(factory.getRootTableName(), DirectModelCacheInvalidateRequestFactory.instance);
 			cacheMgt.enableRemoteCacheInvalidationForTableName(factory.getRootTableName());
+
+			registry.register(factory.getChildTableName(), factory);
 			cacheMgt.enableRemoteCacheInvalidationForTableName(factory.getChildTableName());
 		});
 	}

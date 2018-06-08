@@ -123,6 +123,52 @@ public interface I_C_Print_PackageInfo
     public static final String COLUMNNAME_AD_PrinterHW_MediaTray_ID = "AD_PrinterHW_MediaTray_ID";
 
 	/**
+	 * Set Kalibrierung-X.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCalX (int CalX);
+
+	/**
+	 * Get Kalibrierung-X.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCalX();
+
+    /** Column definition for CalX */
+    public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object> COLUMN_CalX = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object>(I_C_Print_PackageInfo.class, "CalX", null);
+    /** Column name CalX */
+    public static final String COLUMNNAME_CalX = "CalX";
+
+	/**
+	 * Set Kalibrierung-Y.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCalY (int CalY);
+
+	/**
+	 * Get Kalibrierung-Y.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCalY();
+
+    /** Column definition for CalY */
+    public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object> COLUMN_CalY = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object>(I_C_Print_PackageInfo.class, "CalY", null);
+    /** Column name CalY */
+    public static final String COLUMNNAME_CalY = "CalY";
+
+	/**
 	 * Set Druckpaket.
 	 *
 	 * <br>Type: Search
@@ -173,52 +219,6 @@ public interface I_C_Print_PackageInfo
     public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object> COLUMN_C_Print_PackageInfo_ID = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object>(I_C_Print_PackageInfo.class, "C_Print_PackageInfo_ID", null);
     /** Column name C_Print_PackageInfo_ID */
     public static final String COLUMNNAME_C_Print_PackageInfo_ID = "C_Print_PackageInfo_ID";
-
-	/**
-	 * Set Kalibrierung-X.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCalX (int CalX);
-
-	/**
-	 * Get Kalibrierung-X.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getCalX();
-
-    /** Column definition for CalX */
-    public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object> COLUMN_CalX = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object>(I_C_Print_PackageInfo.class, "CalX", null);
-    /** Column name CalX */
-    public static final String COLUMNNAME_CalX = "CalX";
-
-	/**
-	 * Set Kalibrierung-Y.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCalY (int CalY);
-
-	/**
-	 * Get Kalibrierung-Y.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getCalY();
-
-    /** Column definition for CalY */
-    public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object> COLUMN_CalY = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object>(I_C_Print_PackageInfo.class, "CalY", null);
-    /** Column name CalY */
-    public static final String COLUMNNAME_CalY = "CalY";
 
 	/**
 	 * Get Erstellt.

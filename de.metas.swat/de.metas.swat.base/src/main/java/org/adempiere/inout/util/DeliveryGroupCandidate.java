@@ -3,6 +3,9 @@ package org.adempiere.inout.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
@@ -61,4 +64,28 @@ public class DeliveryGroupCandidate
 
 	@Default
 	private final List<DeliveryLineCandidate> lines = new ArrayList<>();
+
+	public DeliveryLineCandidate addLine(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final CompleteStatus completeStatus)
+	{
+		final DeliveryLineCandidate line = new DeliveryLineCandidate(this, shipmentSchedule, completeStatus);
+		lines.add(line);
+		return line;
+	}
+	
+	public boolean hasLines()
+	{
+		return !lines.isEmpty();
+	}
+	
+	public Iterable<DeliveryLineCandidate> getLines()
+	{
+		return lines;
+	}
+	
+	public void removeLine(@NonNull final DeliveryLineCandidate line)
+	{
+		lines.remove(line);
+	}
 }

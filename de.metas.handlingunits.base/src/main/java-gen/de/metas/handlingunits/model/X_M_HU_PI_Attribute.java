@@ -14,7 +14,7 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 593846462L;
+	private static final long serialVersionUID = -1396551732L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Attribute (Properties ctx, int M_HU_PI_Attribute_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
         {
 			setHU_TansferStrategy_JavaClass_ID (0);
 			setIsDisplayed (true); // Y
+			setIsOnlyIfInProductAttributeSet (false); // N
 			setIsReadOnly (false); // N
 			setM_Attribute_ID (0);
 			setM_HU_PI_Attribute_ID (0);
@@ -201,6 +202,29 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 	public boolean isMandatory () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsMandatory);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set OnlyIfInProductAttributeSet.
+		@param IsOnlyIfInProductAttributeSet OnlyIfInProductAttributeSet	  */
+	@Override
+	public void setIsOnlyIfInProductAttributeSet (boolean IsOnlyIfInProductAttributeSet)
+	{
+		set_Value (COLUMNNAME_IsOnlyIfInProductAttributeSet, Boolean.valueOf(IsOnlyIfInProductAttributeSet));
+	}
+
+	/** Get OnlyIfInProductAttributeSet.
+		@return OnlyIfInProductAttributeSet	  */
+	@Override
+	public boolean isOnlyIfInProductAttributeSet () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsOnlyIfInProductAttributeSet);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

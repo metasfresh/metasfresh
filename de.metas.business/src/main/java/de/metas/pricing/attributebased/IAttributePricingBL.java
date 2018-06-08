@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.pricing.api.IPricingAttribute;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_ProductPrice;
+
+import de.metas.pricing.IPricingAttribute;
 
 public interface IAttributePricingBL extends ISingletonService
 {
@@ -30,7 +31,7 @@ public interface IAttributePricingBL extends ISingletonService
 	 * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	void addToASI(IAttributeSetInstanceAware asiAware, List<IPricingAttribute> pricingAttributes);
-	
+
 	/**
 	 * Extract {@link IPricingAttribute}s from given product price
 	 * 
@@ -51,6 +52,11 @@ public interface IAttributePricingBL extends ISingletonService
 	 * @task http://dewiki908/mediawiki/index.php/08839_Import_of_Orders_per_Excel-Pricelist_%28100553254746%29
 	 */
 	void setDynAttrProductPriceAttributeAware(IAttributeSetInstanceAware asiAware, Optional<IProductPriceAware> productPriceAware);
+
+	/**
+	 * @see #setDynAttrProductPriceAttributeAware(IAttributeSetInstanceAware, Optional)
+	 */
+	void setDynAttrProductPriceAttributeAware(IAttributeSetInstanceAware asiAware, IProductPriceAware productPriceAware);
 
 	/**
 	 * See {@link #setDynAttrProductPriceAttributeAware(IAttributeSetInstanceAware, Optional)}.

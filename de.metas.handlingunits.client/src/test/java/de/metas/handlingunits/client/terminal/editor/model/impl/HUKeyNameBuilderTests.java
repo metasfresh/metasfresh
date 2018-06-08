@@ -1,7 +1,7 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
+import static de.metas.business.BusinessTestHelper.createProduct;
 import static org.hamcrest.Matchers.is;
-import static de.metas.business.BusinessTestHelper.*;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -40,12 +40,12 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,7 +54,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
 /**
  * Verifies the behavior of {@link HUKeyNameBuilder}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -86,7 +86,7 @@ public class HUKeyNameBuilderTests
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, helper.pmIFCO);
 		}
 
-		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		{
 			helper.createHU_PI_Item_IncludedHU(huDefPalet, huDefIFCO, BigDecimal.TEN);
 			helper.createHU_PI_Item_PackingMaterial(huDefPalet, helper.pmPalet);
@@ -164,10 +164,10 @@ public class HUKeyNameBuilderTests
 				+ "Tomato<br>- 80 x Kg -</center>";
 		assertThat(aggregateHuDisplayName, is(expecteAggregateHUDisplayName));
 	}
-	
-	
+
+
 	/**
-	 * Creates an LU with an just empty aggregate HU <i>stub</i> and verifies that this "stub" is ignored HU-key wise. 
+	 * Creates an LU with an just empty aggregate HU <i>stub</i> and verifies that this "stub" is ignored HU-key wise.
 	 */
 	@Test
 	public void testHUAggregateStub()
@@ -185,8 +185,8 @@ public class HUKeyNameBuilderTests
 		final I_M_HU lu = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet).get(0);
 
 		final HUKey luKey = new HUKey(keyFactory, lu, null);
-		assertThat(luKey.isAggregateHU(), is(false));		
-		
+		assertThat(luKey.isAggregateHU(), is(false));
+
 		final List<IHUKey> children = luKey.getChildren(); // create the children without problems and..
 		assertThat(children.size(), is(1)); // ignore the stub
 		assertThat(HUKey.cast(children.get(0)).isAggregateHU(), is(false));

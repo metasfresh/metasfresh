@@ -114,9 +114,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 *
 	 * NOTE: this set will not accept a HU to be added if there is another one with the same M_HU_ID
 	 */
-	private final Set<I_M_HU> _createdHUs = new TreeSet<I_M_HU>(HUByIdComparator.instance);
+	private final Set<I_M_HU> _createdHUs = new TreeSet<>(HUByIdComparator.instance);
 
-	private final Set<I_M_HU> _createdNonAggregateHUs = new TreeSet<I_M_HU>(HUByIdComparator.instance);
+	private final Set<I_M_HU> _createdNonAggregateHUs = new TreeSet<>(HUByIdComparator.instance);
 
 	/**
 	 * The number of HUs that were not really created as {@link I_M_HU} instances, but are represented within a HU-aggregation item and its VHU.<br>
@@ -215,7 +215,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		ListCursor<I_M_HU> currentHUCursor = productId2currentHU.get(productId);
 		if (currentHUCursor == null)
 		{
-			currentHUCursor = new ListCursor<I_M_HU>();
+			currentHUCursor = new ListCursor<>();
 			productId2currentHU.put(productId, currentHUCursor);
 		}
 		return currentHUCursor;
@@ -513,7 +513,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		// Make sure all created HUs have the thread inerited transaction name
 		InterfaceWrapperHelper.setThreadInheritedTrxName(_createdHUs);
 
-		return Collections.unmodifiableList(new ArrayList<I_M_HU>(_createdHUs));
+		return Collections.unmodifiableList(new ArrayList<>(_createdHUs));
 	}
 
 	@Override
@@ -571,7 +571,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 				// e.g. if the aggregate VHU represents IFCOs with a capacity of 40kg and the request is only about 39kg, then loadHU shall not allocate anything to the aggregate VHU.
 				if (!handlingUnitsBL.isAggregateHU(currentHU))
 				{
-					final I_M_HU_PI_Version currentHU_PI_Version = currentHU.getM_HU_PI_Version();
+					final I_M_HU_PI_Version currentHU_PI_Version = handlingUnitsBL.getPIVersion(currentHU);
 
 					// if we could not allocate to a new not-aggregate HU, so we surely can not allocate to new ones either
 					// throw exception because shall not happen

@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -90,19 +92,20 @@ public interface ITranslatableString
 		}
 	}
 
-	public static ITranslatableString compose(final String joiningString, final List<ITranslatableString> trls)
+	public static ITranslatableString compose(final String joiningString, @NonNull final List<ITranslatableString> trls)
 	{
-		if (trls == null || trls.isEmpty())
+		if (trls.isEmpty())
 		{
-			throw new IllegalArgumentException("trls is null or empty");
+			return empty();
 		}
-
-		if (trls.size() == 1)
+		else if (trls.size() == 1)
 		{
 			return trls.get(0);
 		}
-
-		return new CompositeTranslatableString(trls, joiningString);
+		else
+		{
+			return new CompositeTranslatableString(trls, joiningString);
+		}
 	}
 
 	public static ITranslatableString constant(final String value)
@@ -114,7 +117,7 @@ public interface ITranslatableString
 	{
 		return ImmutableTranslatableString.empty();
 	}
-	
+
 	public static ITranslatableString nullToEmpty(final ITranslatableString trl)
 	{
 		return trl != null ? trl : empty();

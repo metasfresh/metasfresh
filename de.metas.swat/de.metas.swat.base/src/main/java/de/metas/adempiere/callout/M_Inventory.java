@@ -26,9 +26,6 @@ package de.metas.adempiere.callout;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.minventory.api.IInventoryBL;
-import org.adempiere.minventory.api.impl.InventoryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -41,6 +38,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_M_Inventory;
+import de.metas.inventory.IInventoryBL;
 
 /**
  * Callout for {@link I_M_Inventory} table
@@ -48,6 +46,7 @@ import de.metas.adempiere.model.I_M_Inventory;
  * @author tsa
  * 
  */
+//FIXME: adapt to webui
 public class M_Inventory extends CalloutEngine
 {
 	
@@ -144,13 +143,7 @@ public class M_Inventory extends CalloutEngine
 	 */
 	private void addInventoryLine(final I_M_Inventory inventory, final int productId, final BigDecimal qtyPlus)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inventory);
-
-		final int chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId(ctx);
-		if (chargeId <= 0)
-		{
-			throw new AdempiereException("@NotFound@ @AD_SysConfig_ID@: " + InventoryBL.SYSCONFIG_QuickInput_Charge_ID);
-		}
+		final int chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 
 		final I_M_Warehouse warehouse = inventory.getM_Warehouse();
 		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);

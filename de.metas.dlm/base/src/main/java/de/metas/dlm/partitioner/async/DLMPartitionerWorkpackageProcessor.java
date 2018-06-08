@@ -11,6 +11,7 @@ import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 
@@ -135,7 +136,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		}
 		else
 		{
-			tableRefToAttach = ITableRecordReference.FromModelConverter.convert(recordsToAttach.get(0));
+			tableRefToAttach = TableRecordReference.ofOrNull(recordsToAttach.get(0));
 		}
 
 		// note that the partitioner itself only cares about "sync" requests.

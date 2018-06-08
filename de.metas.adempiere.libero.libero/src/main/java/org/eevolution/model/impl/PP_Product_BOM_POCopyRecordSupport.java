@@ -3,7 +3,7 @@ package org.eevolution.model.impl;
 import java.util.List;
 
 import org.adempiere.model.GeneralCopyRecordSupport;
-import org.adempiere.model.TableInfoVO;
+import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.compiere.model.PO;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -40,7 +40,7 @@ import com.google.common.collect.ImmutableList;
 public class PP_Product_BOM_POCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public List<TableInfoVO> getSuggestedChildren(final PO po, final List<TableInfoVO> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
 	{
 		return super.getSuggestedChildren(po, suggestedChildren)
 				.stream()

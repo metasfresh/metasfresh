@@ -26,13 +26,13 @@ package de.metas.materialtracking.test.expectations;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.text.IndentedStringBuilder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
+import de.metas.pricing.IPricingResult;
 
 /**
  * Helper class used to write Java code that creates {@link QualityInvoiceLineGroupExpectations} for given {@link IQualityInvoiceLineGroup}s.

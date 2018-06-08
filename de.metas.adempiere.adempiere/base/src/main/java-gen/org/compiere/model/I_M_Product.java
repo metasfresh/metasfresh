@@ -182,6 +182,29 @@ public interface I_M_Product
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Auszeichnungsname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomerLabelName (java.lang.String CustomerLabelName);
+
+	/**
+	 * Get Auszeichnungsname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCustomerLabelName();
+
+    /** Column definition for CustomerLabelName */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_CustomerLabelName = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "CustomerLabelName", null);
+    /** Column name CustomerLabelName */
+    public static final String COLUMNNAME_CustomerLabelName = "CustomerLabelName";
+
+	/**
 	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
@@ -1143,21 +1166,21 @@ public interface I_M_Product
 	 * Set Package Size.
 	 * Size of a package
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPackageSize (java.math.BigDecimal PackageSize);
+	public void setPackageSize (java.lang.String PackageSize);
 
 	/**
 	 * Get Package Size.
 	 * Size of a package
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPackageSize();
+	public java.lang.String getPackageSize();
 
     /** Column definition for PackageSize */
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_PackageSize = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "PackageSize", null);

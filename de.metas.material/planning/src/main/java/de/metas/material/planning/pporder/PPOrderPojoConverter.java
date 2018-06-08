@@ -10,7 +10,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -50,62 +49,52 @@ public class PPOrderPojoConverter
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
-	public PPOrderLine asPPOrderLinePojo(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
-	{
-		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(ppOrderBOMLine);
-
-		return PPOrderLine.builder()
-				.productBomLineId(ppOrderBOMLine.getPP_Product_BOMLine_ID())
-				.productDescriptor(productDescriptor)
-				.description(ppOrderBOMLine.getDescription())
-				.qtyRequired(ppOrderBOMLine.getQtyRequiered())
-				.build();
-	}
-
 	public PPOrder asPPOrderPojo(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		final PPOrderBuilder ppOrderPojoBuilder = createPPorderPojoBuilder(ppOrderRecord);
 
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
-
 		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrderRecord);
-		for (final I_PP_Order_BOMLine line : orderBOMLines)
+		for (final I_PP_Order_BOMLine ppOrderLineRecord : orderBOMLines)
 		{
-			final boolean receipt = PPOrderUtil.isReceipt(line.getComponentType());
+			final boolean receipt = PPOrderUtil.isReceipt(ppOrderLineRecord.getComponentType());
 
-			ppOrderPojoBuilder.line(PPOrderLine.builder()
-					.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
-					.description(line.getDescription())
-					.ppOrderLineId(line.getPP_Order_BOMLine_ID())
-					.productBomLineId(line.getPP_Product_BOMLine_ID())
-					.qtyRequired(line.getQtyRequiered())
+			final PPOrderLine ppOrderLinePojo = PPOrderLine.builder()
+					.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))
+					.description(ppOrderLineRecord.getDescription())
+					.ppOrderLineId(ppOrderLineRecord.getPP_Order_BOMLine_ID())
+					.productBomLineId(ppOrderLineRecord.getPP_Product_BOMLine_ID())
+					.qtyRequired(ppOrderLineRecord.getQtyRequiered())
+					.qtyDelivered(ppOrderLineRecord.getQtyDelivered())
 					.issueOrReceiveDate(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule())
 					.receipt(receipt)
-					.build());
+					.build();
+
+			ppOrderPojoBuilder.line(ppOrderLinePojo);
 		}
 		return ppOrderPojoBuilder.build();
 	}
 
-	private PPOrderBuilder createPPorderPojoBuilder(@NonNull final I_PP_Order ppOrder)
+	private PPOrderBuilder createPPorderPojoBuilder(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 
-		final int groupIdFromPPOrderRequestedEvent = ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrder, 0);
+		final int groupIdFromPPOrderRequestedEvent = ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrderRecord, 0);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
-				.datePromised(ppOrder.getDatePromised())
-				.dateStartSchedule(ppOrder.getDateStartSchedule())
-				.docStatus(ppOrder.getDocStatus())
-				.orderLineId(ppOrder.getC_OrderLine_ID())
-				.orgId(ppOrder.getAD_Org_ID())
-				.plantId(ppOrder.getS_Resource_ID())
-				.ppOrderId(ppOrder.getPP_Order_ID())
-				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrder))
-				.productPlanningId(ppOrder.getPP_Product_Planning_ID())
-				.quantity(ppOrder.getQtyOrdered())
-				.warehouseId(ppOrder.getM_Warehouse_ID())
-				.bPartnerId(ppOrder.getC_BPartner_ID())
-				.orderLineId(ppOrder.getC_OrderLine_ID())
+				.datePromised(ppOrderRecord.getDatePromised())
+				.dateStartSchedule(ppOrderRecord.getDateStartSchedule())
+				.docStatus(ppOrderRecord.getDocStatus())
+				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
+				.orgId(ppOrderRecord.getAD_Org_ID())
+				.plantId(ppOrderRecord.getS_Resource_ID())
+				.ppOrderId(ppOrderRecord.getPP_Order_ID())
+				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderRecord))
+				.productPlanningId(ppOrderRecord.getPP_Product_Planning_ID())
+				.qtyRequired(ppOrderRecord.getQtyOrdered())
+				.qtyDelivered(ppOrderRecord.getQtyDelivered())
+				.warehouseId(ppOrderRecord.getM_Warehouse_ID())
+				.bPartnerId(ppOrderRecord.getC_BPartner_ID())
+				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
 				.materialDispoGroupId(groupIdFromPPOrderRequestedEvent);
 		return ppOrderPojoBuilder;
 	}

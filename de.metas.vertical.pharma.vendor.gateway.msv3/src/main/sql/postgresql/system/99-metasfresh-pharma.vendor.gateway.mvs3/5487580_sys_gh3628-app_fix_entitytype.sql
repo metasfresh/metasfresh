@@ -63,7 +63,6 @@ UPDATE c_aggregation SET entitytype='de.metas.vertical.pharma.vendor.gateway.msv
 UPDATE c_aggregation_attribute SET entitytype='de.metas.vertical.pharma.vendor.gateway.msv3' where entitytype='de.metas.vertical.pharma.vendor.gateway.mvs3';
 UPDATE c_aggregationitem SET entitytype='de.metas.vertical.pharma.vendor.gateway.msv3' where entitytype='de.metas.vertical.pharma.vendor.gateway.mvs3';
 UPDATE c_ilcandhandler SET entitytype='de.metas.vertical.pharma.vendor.gateway.msv3' where entitytype='de.metas.vertical.pharma.vendor.gateway.mvs3';
-UPDATE c_olcandgenerator SET entitytype='de.metas.vertical.pharma.vendor.gateway.msv3' where entitytype='de.metas.vertical.pharma.vendor.gateway.mvs3';
 UPDATE c_pricingrule SET entitytype='de.metas.vertical.pharma.vendor.gateway.msv3' where entitytype='de.metas.vertical.pharma.vendor.gateway.mvs3';
 UPDATE c_referenceno_type SET entitytype='de.metas.vertical.pharma.vendor.gateway.msv3' where entitytype='de.metas.vertical.pharma.vendor.gateway.mvs3';
 UPDATE c_referenceno_type_table SET entitytype='de.metas.vertical.pharma.vendor.gateway.msv3' where entitytype='de.metas.vertical.pharma.vendor.gateway.mvs3';

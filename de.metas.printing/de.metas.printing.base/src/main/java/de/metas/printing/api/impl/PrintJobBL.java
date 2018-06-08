@@ -116,7 +116,7 @@ public class PrintJobBL implements IPrintJobBL
 		final PrintingQueueProcessingInfo printingQueueProcessingInfo = source.getProcessingInfo();
 
 		int printJobCount = 0;
-		final List<I_C_Print_Job_Instructions> pdfPrintingJobInstructions = new ArrayList<I_C_Print_Job_Instructions>();
+		final List<I_C_Print_Job_Instructions> pdfPrintingJobInstructions = new ArrayList<>();
 
 		try
 		{
@@ -138,7 +138,7 @@ public class PrintJobBL implements IPrintJobBL
 				@SuppressWarnings("resource")
 				final PeekIterator<I_C_Printing_Queue> currentItems = IteratorUtils.asPeekIterator(
 						new IteratorChain<I_C_Printing_Queue>()
-								.addIterator(new SingletonIterator<I_C_Printing_Queue>(item))
+								.addIterator(new SingletonIterator<>(item))
 								.addIterator(relatedItems));
 				try
 				{
@@ -219,16 +219,9 @@ public class PrintJobBL implements IPrintJobBL
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		final Mutable<List<I_C_Print_Job_Instructions>> instrutionsMutable = new Mutable<List<I_C_Print_Job_Instructions>>();
+		final Mutable<List<I_C_Print_Job_Instructions>> instrutionsMutable = new Mutable<>();
 
-		trxManager.run(trxName, new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName)
-			{
-				instrutionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName));
-			}
-		});
+		trxManager.run(trxName, (TrxRunnable)localTrxName -> instrutionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName)));
 
 		if (instrutionsMutable.getValue() == null)
 		{
@@ -517,7 +510,7 @@ public class PrintJobBL implements IPrintJobBL
 				if (printerConfig.getAD_Printer_Config_Shared_ID() > 0)
 				{
 					final I_AD_Printer_Config ad_Printer_Config_Shared = printerConfig.getAD_Printer_Config_Shared();
-					hostKeyToUse = ad_Printer_Config_Shared.getHostKey();
+					hostKeyToUse = ad_Printer_Config_Shared.getConfigHostKey();
 					userToPrintIdToUse = ad_Printer_Config_Shared.getCreatedBy();
 				}
 				else
@@ -558,7 +551,7 @@ public class PrintJobBL implements IPrintJobBL
 		//
 		// Try to create them now
 		logger.info("Print Job Line has no details: {}. Creating them now...", printJobLine);
-		I_C_Printing_Queue item = printJobLine.getC_Printing_Queue();
+		final I_C_Printing_Queue item = printJobLine.getC_Printing_Queue();
 		printJobDetails = createPrintJobDetails(printJobLine, item);
 
 		return printJobDetails;
@@ -573,7 +566,7 @@ public class PrintJobBL implements IPrintJobBL
 			return Collections.emptyList(); // just for the case that we configured Check not to throw an exception
 		}
 
-		final List<I_C_Print_Job_Detail> printJobDetails = new ArrayList<I_C_Print_Job_Detail>(printerRoutings.size());
+		final List<I_C_Print_Job_Detail> printJobDetails = new ArrayList<>(printerRoutings.size());
 		for (final I_AD_PrinterRouting printerRouting : printerRoutings)
 		{
 			Check.assumeNotNull(printerRouting, "AD_PrinterRouting {} found for C_Printing_Queue {}", printerRouting, item);
@@ -587,13 +580,15 @@ public class PrintJobBL implements IPrintJobBL
 		return printJobDetails;
 	}
 
-	private I_C_Print_Job_Detail createPrintJobDetail(final I_C_Print_Job_Line printJobLine, final I_AD_PrinterRouting routing)
+	private I_C_Print_Job_Detail createPrintJobDetail(
+			final I_C_Print_Job_Line printJobLine,
+			final I_AD_PrinterRouting routing)
 	{
 		final I_C_Print_Job_Detail printJobDetail = InterfaceWrapperHelper.newInstance(I_C_Print_Job_Detail.class, printJobLine);
 
 		printJobDetail.setAD_Org_ID(printJobLine.getAD_Org_ID());
 		printJobDetail.setIsActive(true);
-		printJobDetail.setAD_PrinterRouting(routing);
+		printJobDetail.setAD_PrinterRouting_ID(routing.getAD_PrinterRouting_ID());
 		printJobDetail.setC_Print_Job_Line(printJobLine);
 
 		InterfaceWrapperHelper.save(printJobDetail);

@@ -34,6 +34,8 @@ import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.NamePair;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
@@ -44,6 +46,8 @@ import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /**
  * Null implementation. Has no children, not attributes, is never disposed nor virtual.
@@ -122,15 +126,21 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public IAttributeValue getAttributeValue(final I_M_Attribute attribute)
+	public IAttributeValue getAttributeValue(final String attributeKey)
 	{
-		throw new AttributeNotFoundException(attribute, this);
+		throw new AttributeNotFoundException(attributeKey, this);
 	}
 
 	@Override
 	public String getAttributeValueType(final I_M_Attribute attribute)
 	{
 		throw new AttributeNotFoundException(attribute, this);
+	}
+
+	@Override
+	public boolean hasAttribute(final String attributeKey)
+	{
+		return false;
 	}
 
 	@Override
@@ -196,9 +206,9 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public void setValue(final I_M_Attribute attribute, final Object value)
+	public void setValue(final String attributeKey, final Object value)
 	{
-		throw new AttributeNotFoundException(attribute, this);
+		throw new AttributeNotFoundException(attributeKey, this);
 	}
 
 	@Override
@@ -211,45 +221,45 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public Object getValue(final I_M_Attribute attribute)
+	public Object getValue(final String attributeKey)
 	{
-		throw new AttributeNotFoundException(attribute, this);
+		throw new AttributeNotFoundException(attributeKey, this);
 	}
 
 	/**
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public String getValueAsString(final I_M_Attribute attribute)
+	public String getValueAsString(@NonNull final String attributeKey)
 	{
-		throw new AttributeNotFoundException(attribute, this);
+		throw new AttributeNotFoundException(attributeKey, this);
 	}
 
 	/**
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public BigDecimal getValueAsBigDecimal(final I_M_Attribute attribute)
+	public BigDecimal getValueAsBigDecimal(final String attributeKey)
 	{
-		throw new AttributeNotFoundException(attribute, this);
+		throw new AttributeNotFoundException(attributeKey, this);
 	}
 
 	/**
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public int getValueAsInt(final I_M_Attribute attribute)
+	public int getValueAsInt(final String attributeKey)
 	{
-		throw new AttributeNotFoundException(attribute, this);
+		throw new AttributeNotFoundException(attributeKey, this);
 	}
 
 	/**
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public Date getValueAsDate(final I_M_Attribute attribute)
+	public Date getValueAsDate(final String attributeKey)
 	{
-		throw new AttributeNotFoundException(attribute, this);
+		throw new AttributeNotFoundException(attributeKey, this);
 	}
 
 	/**
@@ -304,6 +314,12 @@ public final class NullAttributeStorage implements IAttributeStorage
 	public boolean isReadonlyUI(final IAttributeValueContext ctx, final I_M_Attribute attribute)
 	{
 		throw new AttributeNotFoundException(attribute, this);
+	}
+
+	@Override
+	public boolean isDisplayedUI(final ImmutableSet<ProductId> productIDs, final I_M_Attribute attribute)
+	{
+		return false;
 	}
 
 	@Override

@@ -45,7 +45,7 @@ import de.metas.Profiles;
 	{ "de.metas.report", "de.metas.adempiere.report.jasper" })
 @ServletComponentScan(value =
 	{ "de.metas.adempiere.report.jasper.servlet" })
-@Profile(Profiles.PROFILE_JasperServer)
+@Profile(Profiles.PROFILE_JasperService)
 public class ReportServiceMain
 {
 	@Autowired
@@ -66,7 +66,7 @@ public class ReportServiceMain
 		new SpringApplicationBuilder(ReportServiceMain.class)
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
-				.profiles(Profiles.PROFILE_JasperServer)
+				.profiles(Profiles.PROFILE_JasperService)
 				.run(args);
 	}
 

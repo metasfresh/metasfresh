@@ -224,7 +224,7 @@ public class MAttributeSet extends X_M_AttributeSet
 			List<X_M_AttributeSetExclude> list = new Query(getCtx(), X_M_AttributeSetExclude.Table_Name, whereClause, null)
 				.setParameters(new Object[]{get_ID()})
 				.setOnlyActiveRecords(true)
-				.list();
+				.list(X_M_AttributeSetExclude.class);
 			m_excludes = new X_M_AttributeSetExclude[list.size ()];
 			list.toArray (m_excludes);
 		}
@@ -258,7 +258,7 @@ public class MAttributeSet extends X_M_AttributeSet
 			List<X_M_LotCtlExclude> list = new Query(getCtx(), X_M_LotCtlExclude.Table_Name, whereClause, null)
 			.setParameters(new Object[]{getM_LotCtl_ID()})
 			.setOnlyActiveRecords(true)
-			.list();
+			.list(X_M_LotCtlExclude.class);
 			m_excludeLots = new X_M_LotCtlExclude[list.size ()];
 			list.toArray (m_excludeLots);
 		}
@@ -292,7 +292,7 @@ public class MAttributeSet extends X_M_AttributeSet
 			List<X_M_SerNoCtlExclude> list = new Query(getCtx(), X_M_SerNoCtlExclude.Table_Name, whereClause, null)
 			.setParameters(new Object[]{getM_SerNoCtl_ID()})
 			.setOnlyActiveRecords(true)
-			.list();
+			.list(X_M_SerNoCtlExclude.class);
 			m_excludeSerNos = new X_M_SerNoCtlExclude[list.size ()];
 			list.toArray (m_excludeSerNos);
 		}

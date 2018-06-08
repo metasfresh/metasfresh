@@ -17,7 +17,7 @@ import com.google.common.collect.ImmutableList;
 public class MInvoicePOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public List<TableInfoVO> getSuggestedChildren(final PO po, final List<TableInfoVO> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
 	{
 		return super.getSuggestedChildren(po, suggestedChildren)
 				.stream()

@@ -55,6 +55,7 @@ import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
@@ -115,7 +116,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	@Test
 	public void assertThrowingException_When_terminatingOneSingleContract_which_was_extended()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
+		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(1)
@@ -145,7 +146,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	@Test
 	public void terminateOneSingleContract()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
+		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(1)
 				.contract(contract)

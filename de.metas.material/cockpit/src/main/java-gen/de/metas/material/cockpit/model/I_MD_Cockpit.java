@@ -170,29 +170,6 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Materialcockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMD_Cockpit_ID (int MD_Cockpit_ID);
-
-	/**
-	 * Get Materialcockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getMD_Cockpit_ID();
-
-    /** Column definition for MD_Cockpit_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
-    /** Column name MD_Cockpit_ID */
-    public static final String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
-
-	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -220,6 +197,29 @@ public interface I_MD_Cockpit
     public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product>(I_MD_Cockpit.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Materialcockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMD_Cockpit_ID (int MD_Cockpit_ID);
+
+	/**
+	 * Get Materialcockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getMD_Cockpit_ID();
+
+    /** Column definition for MD_Cockpit_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
+    /** Column name MD_Cockpit_ID */
+    public static final String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
 
 	/**
 	 * Set Zusage Lieferant.

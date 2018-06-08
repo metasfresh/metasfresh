@@ -14,7 +14,7 @@ public class X_C_Print_Package extends org.compiere.model.PO implements I_C_Prin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1665292915L;
+	private static final long serialVersionUID = 1025779941L;
 
     /** Standard Constructor */
     public X_C_Print_Package (Properties ctx, int C_Print_Package_ID, String trxName)
@@ -22,8 +22,8 @@ public class X_C_Print_Package extends org.compiere.model.PO implements I_C_Prin
       super (ctx, C_Print_Package_ID, trxName);
       /** if (C_Print_Package_ID == 0)
         {
-			setC_Print_Package_ID (0);
 			setCopies (0); // 1
+			setC_Print_Package_ID (0);
 			setPageCount (0); // 0
 			setTransactionID (null);
         } */
@@ -100,6 +100,28 @@ public class X_C_Print_Package extends org.compiere.model.PO implements I_C_Prin
 		return (java.lang.String)get_Value(COLUMNNAME_BinaryFormat);
 	}
 
+	/** Set Kopien.
+		@param Copies 
+		Anzahl der zu erstellenden/zu druckenden Exemplare
+	  */
+	@Override
+	public void setCopies (int Copies)
+	{
+		set_Value (COLUMNNAME_Copies, Integer.valueOf(Copies));
+	}
+
+	/** Get Kopien.
+		@return Anzahl der zu erstellenden/zu druckenden Exemplare
+	  */
+	@Override
+	public int getCopies () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public de.metas.printing.model.I_C_Print_Job_Instructions getC_Print_Job_Instructions() throws RuntimeException
 	{
@@ -151,28 +173,6 @@ public class X_C_Print_Package extends org.compiere.model.PO implements I_C_Prin
 	public int getC_Print_Package_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_Package_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Kopien.
-		@param Copies 
-		Anzahl der zu erstellenden/zu druckenden Exemplare
-	  */
-	@Override
-	public void setCopies (int Copies)
-	{
-		set_Value (COLUMNNAME_Copies, Integer.valueOf(Copies));
-	}
-
-	/** Get Kopien.
-		@return Anzahl der zu erstellenden/zu druckenden Exemplare
-	  */
-	@Override
-	public int getCopies () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

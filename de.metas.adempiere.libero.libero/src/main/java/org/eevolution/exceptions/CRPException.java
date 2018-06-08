@@ -3,6 +3,8 @@
  */
 package org.eevolution.exceptions;
 
+import org.adempiere.util.Services;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -31,6 +33,8 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Node;
 
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.planning.pporder.LiberoException;
 
 /**
@@ -79,7 +83,7 @@ public class CRPException extends LiberoException
 	}
 
 	@Override
-	protected String buildMessage()
+	protected ITranslatableString buildMessage()
 	{
 		String msg = super.getMessage();
 		StringBuffer sb = new StringBuffer(msg);
@@ -106,7 +110,7 @@ public class CRPException extends LiberoException
 			sb.append(" @S_Resource_ID@:").append(resource.getValue()).append("_").append(resource.getName());
 		}
 		//
-		return sb.toString();
+		return Services.get(IMsgBL.class).parseTranslatableString(sb.toString());
 	}
 	
 	

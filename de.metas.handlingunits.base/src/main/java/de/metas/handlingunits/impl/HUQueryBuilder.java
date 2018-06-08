@@ -106,6 +106,7 @@ import lombok.NonNull;
 	private final Set<Integer> _onlyInWarehouseIds = new HashSet<>();
 	@ToStringBuilder(skip = true)
 	private final Set<Integer> _onlyInWarehouseIdsRO = Collections.unmodifiableSet(_onlyInWarehouseIds);
+	private final Set<Integer> _onlyInLocatorIds = new HashSet<>();
 	private boolean _excludeAfterPickingLocator = false;
 	/**
 	 * Flag to set determine if the query shall only retrieve the HUs from AfterPicking locators or not
@@ -164,63 +165,69 @@ import lombok.NonNull;
 	private boolean _errorIfNoHUs = false;
 	private String _errorIfNoHUs_ADMessage = null;
 
-	@Override
-	public HUQueryBuilder copy()
+	public HUQueryBuilder()
 	{
-		final HUQueryBuilder copy = new HUQueryBuilder();
+	}
 
-		copy._contextProvider = _contextProvider;
-		copy.huItemParentNull = huItemParentNull;
-		copy.parentHUItemId = parentHUItemId;
-		copy.parentHUId = parentHUId;
-		copy._onlyInWarehouseIds.addAll(_onlyInWarehouseIds);
-		copy._excludeAfterPickingLocator = _excludeAfterPickingLocator;
-		copy._includeAfterPickingLocator = _includeAfterPickingLocator;
-		copy.onlyIfAssignedToBPartner = onlyIfAssignedToBPartner;
+	private HUQueryBuilder(final HUQueryBuilder from)
+	{
+		this._contextProvider = from._contextProvider;
+		this.huItemParentNull = from.huItemParentNull;
+		this.parentHUItemId = from.parentHUItemId;
+		this.parentHUId = from.parentHUId;
+		this._onlyInWarehouseIds.addAll(from._onlyInWarehouseIds);
+		this._onlyInLocatorIds.addAll(from._onlyInLocatorIds);
+		this._excludeAfterPickingLocator = from._excludeAfterPickingLocator;
+		this._includeAfterPickingLocator = from._includeAfterPickingLocator;
+		this.onlyIfAssignedToBPartner = from.onlyIfAssignedToBPartner;
 
-		copy._onlyInBpartnerIds.addAll(_onlyInBpartnerIds);
-		copy._onlyWithBPartnerLocationIds.addAll(_onlyWithBPartnerLocationIds);
-		copy._onlyWithProductIds.addAll(_onlyWithProductIds);
-		copy._emptyStorageOnly = this._emptyStorageOnly;
-		for (final Map.Entry<Integer, HUAttributeQueryFilterVO> e : onlyAttributeId2values.entrySet())
+		this._onlyInBpartnerIds.addAll(from._onlyInBpartnerIds);
+		this._onlyWithBPartnerLocationIds.addAll(from._onlyWithBPartnerLocationIds);
+		this._onlyWithProductIds.addAll(from._onlyWithProductIds);
+		this._emptyStorageOnly = from._emptyStorageOnly;
+		for (final Map.Entry<Integer, HUAttributeQueryFilterVO> e : from.onlyAttributeId2values.entrySet())
 		{
 			final Integer attributeId = e.getKey();
 			final HUAttributeQueryFilterVO attributeFilterVO = e.getValue();
 			final HUAttributeQueryFilterVO attributeFilterVOCopy = attributeFilterVO == null ? null : attributeFilterVO.copy();
-			copy.onlyAttributeId2values.put(attributeId, attributeFilterVOCopy);
+			this.onlyAttributeId2values.put(attributeId, attributeFilterVOCopy);
 		}
 
 		// task 827
 		// copy barcode attributes
-		for (final Map.Entry<Integer, HUAttributeQueryFilterVO> e : _barcodeAttributesIds2Value.entrySet())
+		for (final Map.Entry<Integer, HUAttributeQueryFilterVO> e : from._barcodeAttributesIds2Value.entrySet())
 		{
 			final Integer attributeId = e.getKey();
 			final HUAttributeQueryFilterVO attributeFilterVO = e.getValue();
 			final HUAttributeQueryFilterVO attributeFilterVOCopy = attributeFilterVO == null ? null : attributeFilterVO.copy();
-			copy._barcodeAttributesIds2Value.put(attributeId, attributeFilterVOCopy);
+			this._barcodeAttributesIds2Value.put(attributeId, attributeFilterVOCopy);
 		}
 
-		copy._huStatusesToInclude.addAll(_huStatusesToInclude);
-		copy._huStatusesToExclude.addAll(_huStatusesToExclude);
-		copy.onlyActiveHUs = onlyActiveHUs;
+		this._huStatusesToInclude.addAll(from._huStatusesToInclude);
+		this._huStatusesToExclude.addAll(from._huStatusesToExclude);
+		this.onlyActiveHUs = from.onlyActiveHUs;
 
-		copy._onlyHUIds = _onlyHUIds == null ? null : new HashSet<>(_onlyHUIds);
+		this._onlyHUIds = from._onlyHUIds == null ? null : new HashSet<>(from._onlyHUIds);
 
-		copy._huIdsToExclude.addAll(_huIdsToExclude);
-		copy._huPIVersionIdsToInclude.addAll(_huPIVersionIdsToInclude);
-		copy._excludeHUsOnPickingSlot = _excludeHUsOnPickingSlot;
+		this._huIdsToExclude.addAll(from._huIdsToExclude);
+		this._huPIVersionIdsToInclude.addAll(from._huPIVersionIdsToInclude);
+		this._excludeHUsOnPickingSlot = from._excludeHUsOnPickingSlot;
 
-		copy.huSubQueryFilter = huSubQueryFilter == null ? null : huSubQueryFilter.copy();
+		this.huSubQueryFilter = from.huSubQueryFilter == null ? null : from.huSubQueryFilter.copy();
 
-		copy.otherFilters = otherFilters == null ? null : otherFilters.copy();
+		this.otherFilters = from.otherFilters == null ? null : from.otherFilters.copy();
 
-		copy.barcode = barcode;
-		copy.locked = locked;
+		this.barcode = from.barcode;
+		this.locked = from.locked;
 
-		copy._errorIfNoHUs = _errorIfNoHUs;
-		copy._errorIfNoHUs_ADMessage = _errorIfNoHUs_ADMessage;
+		this._errorIfNoHUs = from._errorIfNoHUs;
+		this._errorIfNoHUs_ADMessage = from._errorIfNoHUs_ADMessage;
+	}
 
-		return copy;
+	@Override
+	public HUQueryBuilder copy()
+	{
+		return new HUQueryBuilder(this);
 	}
 
 	@Override
@@ -232,6 +239,7 @@ import lombok.NonNull;
 				.append(parentHUItemId)
 				.append(parentHUId)
 				.append(_onlyInWarehouseIds)
+				.append(_onlyInLocatorIds)
 				.append(_excludeAfterPickingLocator)
 				.append(_includeAfterPickingLocator)
 				.append(onlyIfAssignedToBPartner)
@@ -276,6 +284,7 @@ import lombok.NonNull;
 				.append(parentHUItemId, other.parentHUItemId)
 				.append(parentHUId, other.parentHUId)
 				.append(_onlyInWarehouseIds, other._onlyInWarehouseIds)
+				.append(_onlyInLocatorIds, other._onlyInLocatorIds)
 				.append(_excludeAfterPickingLocator, other._excludeAfterPickingLocator)
 				.append(onlyIfAssignedToBPartner, other.onlyIfAssignedToBPartner)
 				.append(_onlyInBpartnerIds, other._onlyInBpartnerIds)
@@ -402,6 +411,14 @@ import lombok.NonNull;
 			final IQuery<I_M_Locator> locatorsQuery = locatorsQueryBuilder.create();
 			filters.addInSubQueryFilter(I_M_HU.COLUMN_M_Locator_ID,
 					I_M_Locator.COLUMN_M_Locator_ID, locatorsQuery);
+		}
+
+		//
+		// Filter by Locators
+		final Set<Integer> onlyInLocatorIds = getOnlyInLocatorIds();
+		if (!onlyInLocatorIds.isEmpty())
+		{
+			filters.addInArrayFilter(I_M_HU.COLUMN_M_Locator_ID, onlyInLocatorIds);
 		}
 
 		//
@@ -797,6 +814,19 @@ import lombok.NonNull;
 	public Set<Integer> getOnlyInWarehouseIds()
 	{
 		return _onlyInWarehouseIdsRO;
+	}
+
+	@Override
+	public HUQueryBuilder addOnlyInLocatorId(final int locatorId)
+	{
+		Check.assume(locatorId > 0, "locatorId > 0");
+		_onlyInLocatorIds.add(locatorId);
+		return this;
+	}
+
+	private Set<Integer> getOnlyInLocatorIds()
+	{
+		return _onlyInLocatorIds;
 	}
 
 	@Override

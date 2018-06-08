@@ -31,11 +31,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -182,16 +185,71 @@ public final class Event
 		return recipientUserIds.isEmpty();
 	}
 
+	public int getSingleRecipientUserId()
+	{
+		if (recipientUserIds.isEmpty() || recipientUserIds.size() > 1)
+		{
+			throw new AdempiereException("Event does not have a single recipient: " + this);
+		}
+		return recipientUserIds.asList().get(0);
+	}
+	
+	public int getSuggestedWindowId()
+	{
+		return getPropertyAsInt(PROPERTY_SuggestedWindowId, 0);
+	}
+
 	/**
 	 *
 	 * @param name
-	 * @return tje propertiy with the given name or {@code null}
+	 * @return the property with the given name or {@code null}
 	 */
 	public <T> T getProperty(final String name)
 	{
 		@SuppressWarnings("unchecked")
 		final T value = (T)properties.get(name);
 		return value;
+	}
+
+	public String getPropertyAsString(final String name)
+	{
+		final Object value = getProperty(name);
+		return value != null ? value.toString() : null;
+	}
+
+	public boolean getPropertyAsBoolean(final String name)
+	{
+		final Object value = getProperty(name);
+		return DisplayType.toBoolean(value);
+	}
+
+	public int getPropertyAsInt(final String name, final int defaultValue)
+	{
+		final Object value = getProperty(name);
+		return NumberUtils.asInt(value, defaultValue);
+	}
+
+	public Date getPropertyAsDate(final String name)
+	{
+		final Supplier<Date> defaultValue = null;
+		return getPropertyAsDate(name, defaultValue);
+	}
+
+	public Date getPropertyAsDate(final String name, final Supplier<Date> defaultValue)
+	{
+		final Object value = getProperty(name);
+		if (value == null)
+		{
+			return defaultValue != null ? defaultValue.get() : null;
+		}
+		else if (value instanceof Date)
+		{
+			return (Date)value;
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert " + value + " to " + Date.class);
+		}
 	}
 
 	/**
@@ -328,6 +386,35 @@ public final class Event
 			return this;
 		}
 
+		public Builder setDetailADMessage(final String adMessage, final List<Object> params)
+		{
+			if (params != null && !params.isEmpty())
+			{
+				final int paramsCount = params.size();
+				for (int i = 0; i < paramsCount; i++)
+				{
+					final String parameterName = String.valueOf(i);
+					final Object parameterValue = params.get(i);
+					putPropertyFromObject(parameterName, parameterValue);
+				}
+			}
+
+			detailADMessage = adMessage;
+			return this;
+		}
+		
+		public Builder setDetailADMessage(final String adMessage, final Map<String, Object> params)
+		{
+			if (params != null && !params.isEmpty())
+			{
+				params.forEach(this::putPropertyFromObject);
+			}
+
+			detailADMessage = adMessage;
+			return this;
+		}
+
+
 		private String getDetailADMessage()
 		{
 			return detailADMessage;
@@ -390,6 +477,15 @@ public final class Event
 		public Builder putProperty(final String name, final boolean value)
 		{
 			properties.put(name, value);
+			return this;
+		}
+
+		public Builder putPropertyIfTrue(final String name, final boolean value)
+		{
+			if (value)
+			{
+				properties.put(name, value);
+			}
 			return this;
 		}
 

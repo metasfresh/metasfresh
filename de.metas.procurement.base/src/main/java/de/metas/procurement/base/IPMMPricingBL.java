@@ -1,9 +1,9 @@
 package de.metas.procurement.base;
 
-import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.pricing.rules.IPricingRule;
 
 /*
  * #%L

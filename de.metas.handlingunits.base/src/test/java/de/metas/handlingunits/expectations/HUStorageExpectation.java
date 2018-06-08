@@ -34,6 +34,7 @@ import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
@@ -42,7 +43,7 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 {
 	public static HUStorageExpectation<Object> newExpectation()
 	{
-		return new HUStorageExpectation<Object>(null);
+		return new HUStorageExpectation<>(null);
 	}
 
 	private I_M_Product _product;
@@ -95,7 +96,7 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 		{
 			final I_M_HU luHU = storage.getM_HU();
 			messageToUse = messageToUse.addContextInfo("LU", luHU);
-			assertEquals(messageToUse.expect("HU is Loading Unit"), X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, luHU.getM_HU_PI_Version().getHU_UnitType());
+			assertEquals(messageToUse.expect("HU is Loading Unit"), X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, Services.get(IHandlingUnitsBL.class).getHU_UnitType(luHU));
 
 			final List<I_M_HU> tuHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
 			final I_M_HU tuHU = tuHUs.get(_tuIndex);

@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.order.model.I_C_Order;

@@ -22,7 +22,7 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
-
+@FunctionalInterface
 public interface IQueryUpdater<T>
 {
 	boolean MODEL_UPDATED = true;

@@ -52,8 +52,8 @@ public class PromotionRule {
 
 	public static void applyPromotions(MOrder order) throws Exception {
 		//key = C_OrderLine, value = Qty to distribution
-		Map<Integer, BigDecimal> orderLineQty = new LinkedHashMap<Integer, BigDecimal>();
-		Map<Integer, MOrderLine> orderLineIndex = new HashMap<Integer, MOrderLine>();
+		Map<Integer, BigDecimal> orderLineQty = new LinkedHashMap<>();
+		Map<Integer, MOrderLine> orderLineIndex = new HashMap<>();
 		MOrderLine[] lines = order.getLines();
 		boolean hasDeleteLine = false;
 		for (MOrderLine ol : lines) {
@@ -97,10 +97,10 @@ public class PromotionRule {
 		BigDecimal orderAmount = order.getGrandTotal();
 
 		//key = M_PromotionDistribution_ID, value = C_OrderLine_ID and Qty
-		Map<Integer, DistributionSet> distributions = new LinkedHashMap<Integer, DistributionSet>();
+		Map<Integer, DistributionSet> distributions = new LinkedHashMap<>();
 
 		//<M_PromotionDistribution_ID, DistributionSorting>
-		Map<Integer, String> sortingType = new HashMap<Integer, String>();
+		Map<Integer, String> sortingType = new HashMap<>();
 		OrderLineComparator olComparator = new OrderLineComparator(orderLineIndex);
 		//distribute order lines
 		for (Map.Entry<Integer, List<Integer>> entry : promotions.entrySet()) {
@@ -108,25 +108,25 @@ public class PromotionRule {
 					"M_PromotionDistribution.M_Promotion_ID = ? AND M_PromotionDistribution.IsActive = 'Y'", order.get_TrxName());
 			query.setParameters(new Object[]{entry.getKey()});
 			query.setOrderBy("SeqNo");
-			List<MPromotionDistribution> list = query.<MPromotionDistribution>list();
+			List<MPromotionDistribution> list = query.list(MPromotionDistribution.class);
 
 			Query rewardQuery = new Query(Env.getCtx(), MTable.get(order.getCtx(), I_M_PromotionReward.Table_ID),
 					"M_PromotionReward.M_Promotion_ID = ? AND M_PromotionReward.IsActive = 'Y'", order.get_TrxName());
 			rewardQuery.setParameters(new Object[]{entry.getKey()});
 			rewardQuery.setOrderBy("SeqNo");
-			List<MPromotionReward> rewardList = rewardQuery.<MPromotionReward>list();
+			List<MPromotionReward> rewardList = rewardQuery.list(MPromotionReward.class);
 
-			List<MPromotionLine> promotionLines = new ArrayList<MPromotionLine>();
+			List<MPromotionLine> promotionLines = new ArrayList<>();
 			for (Integer M_PromotionLine_ID : entry.getValue()) {
 				MPromotionLine promotionLine = new MPromotionLine(order.getCtx(), M_PromotionLine_ID, order.get_TrxName());
 				promotionLines.add(promotionLine);
 			}
 			while (true) {
 				boolean hasDistributionSet = false;
-				Set<Integer>promotionLineSet = new HashSet<Integer>();
-				Set<Integer>mandatoryLineSet = new HashSet<Integer>();
+				Set<Integer>promotionLineSet = new HashSet<>();
+				Set<Integer>mandatoryLineSet = new HashSet<>();
 				boolean mandatoryLineNotFound = false;
-				List<Integer> validPromotionLineIDs = new ArrayList<Integer>();
+				List<Integer> validPromotionLineIDs = new ArrayList<>();
 				for (MPromotionLine promotionLine : promotionLines) {
 					if (promotionLine.getM_PromotionGroup_ID() == 0 && promotionLine.getMinimumAmt() != null && promotionLine.getMinimumAmt().signum() >= 0) {
 						if (orderAmount.compareTo(promotionLine.getMinimumAmt()) >= 0) {
@@ -144,7 +144,7 @@ public class PromotionRule {
 				for (MPromotionDistribution pd : list) {
 					if (entry.getValue().contains(pd.getM_PromotionLine_ID())) {
 						//sort available orderline base on distribution sorting type
-						List<Integer> orderLineIdList = new ArrayList<Integer>();
+						List<Integer> orderLineIdList = new ArrayList<>();
 						orderLineIdList.addAll(orderLineQty.keySet());
 						if (pd.getDistributionSorting() != null) {
 							Comparator<Integer> cmp = olComparator;
@@ -230,10 +230,10 @@ public class PromotionRule {
 							if (pr.getDistributionSorting().equals(MPromotionReward.DISTRIBUTIONSORTING_Descending))
 								cmp = Collections.reverseOrder(cmp);
 							Set<Integer> keySet = distributionSet.orderLines.keySet();
-							List<Integer> keyList = new ArrayList<Integer>();
+							List<Integer> keyList = new ArrayList<>();
 							keyList.addAll(keySet);
 							Collections.sort(keyList, cmp);
-							Map<Integer, BigDecimal>sortedMap = new LinkedHashMap<Integer, BigDecimal>();
+							Map<Integer, BigDecimal>sortedMap = new LinkedHashMap<>();
 							for(Integer id : keyList) {
 								sortedMap.put(id, distributionSet.orderLines.get(id));
 							}
@@ -247,7 +247,7 @@ public class PromotionRule {
 							toApply = BigDecimal.valueOf(-1.0);
 
 						BigDecimal totalPrice  = BigDecimal.ZERO;
-						final List<OrderLinePromotionCandidate> orderLineCandidates = new ArrayList<OrderLinePromotionCandidate>(); // metas
+						final List<OrderLinePromotionCandidate> orderLineCandidates = new ArrayList<>(); // metas
 
 						for(Map.Entry<Integer, BigDecimal> olMap : distributionSet.orderLines.entrySet()) {
 							BigDecimal qty = olMap.getValue();
@@ -398,7 +398,7 @@ public class PromotionRule {
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		//Key = M_Promotion_ID, value = List<M_PromotionLine_ID>
-		Map<Integer, List<Integer>> promotions = new LinkedHashMap<Integer, List<Integer>>();
+		Map<Integer, List<Integer>> promotions = new LinkedHashMap<>();
 		try {
 			int pindex = 1;
 			stmt = DB.prepareStatement(sql.toString(), order.get_TrxName());
@@ -453,7 +453,7 @@ public class PromotionRule {
 			+ " AND M_PromotionLine.IsActive = 'Y'";
 
 		DistributionSet distributionSet = new DistributionSet();
-		List<Integer>eligibleOrderLineIDs = new ArrayList<Integer>();
+		List<Integer>eligibleOrderLineIDs = new ArrayList<>();
 		if (distribution.getM_PromotionLine().getM_PromotionGroup_ID() == 0) {
 			if (validPromotionLineIDs.contains(distribution.getM_PromotionLine_ID())) {
 				eligibleOrderLineIDs.addAll(orderLineIdList);
@@ -571,9 +571,9 @@ public class PromotionRule {
 	private static List<Integer> findPromotionLine(int promotion_ID, MOrder order) throws SQLException {
 		Query query = new Query(Env.getCtx(), MTable.get(order.getCtx(), I_M_PromotionLine.Table_ID), " M_PromotionLine.M_Promotion_ID = ? AND M_PromotionLine.IsActive = 'Y'", order.get_TrxName());
 		query.setParameters(new Object[]{promotion_ID});
-		List<MPromotionLine>plist = query.<MPromotionLine>list();
+		List<MPromotionLine>plist = query.list(MPromotionLine.class);
 		//List<M_PromotionLine_ID>
-		List<Integer>applicable = new ArrayList<Integer>();
+		List<Integer>applicable = new ArrayList<>();
 		MOrderLine[] lines = order.getLines();
 		for (MPromotionLine pl : plist) {
 			boolean match = false;
@@ -629,7 +629,7 @@ public class PromotionRule {
 
 	static class DistributionSet {
 		//<C_OrderLine_Id, DistributionQty>
-		Map<Integer, BigDecimal> orderLines = new LinkedHashMap<Integer, BigDecimal>();
+		Map<Integer, BigDecimal> orderLines = new LinkedHashMap<>();
 		BigDecimal setQty = BigDecimal.ZERO;
 	}
 

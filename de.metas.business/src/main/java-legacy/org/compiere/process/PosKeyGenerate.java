@@ -25,8 +25,8 @@ import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 
 public class PosKeyGenerate extends JavaProcess {
@@ -78,7 +78,7 @@ public class PosKeyGenerate extends JavaProcess {
 			.setOnlyActiveRecords(true)
 			.setOrderBy("Value");
 			
-		List<MProduct> products = query.list();
+		List<MProduct> products = query.list(MProduct.class);
 		
 		for (MProduct product : products )
 		{

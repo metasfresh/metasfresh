@@ -14,7 +14,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1315474791L;
+	private static final long serialVersionUID = 711086156L;
 
     /** Standard Constructor */
     public X_C_DocType (Properties ctx, int C_DocType_ID, String trxName)
@@ -55,7 +55,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      final org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
@@ -67,9 +67,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID)
 	{
 		if (AD_BoilerPlate_ID < 1)
+		{
 			set_Value (COLUMNNAME_AD_BoilerPlate_ID, null);
+		}
 		else
+		{
 			set_Value (COLUMNNAME_AD_BoilerPlate_ID, Integer.valueOf(AD_BoilerPlate_ID));
+		}
 	}
 
 	/** Get Emailtext.
@@ -78,9 +82,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getAD_BoilerPlate_ID ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_AD_BoilerPlate_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_BoilerPlate_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -104,9 +110,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public void setAD_PrintFormat_ID (int AD_PrintFormat_ID)
 	{
 		if (AD_PrintFormat_ID < 1)
+		{
 			set_Value (COLUMNNAME_AD_PrintFormat_ID, null);
+		}
 		else
+		{
 			set_Value (COLUMNNAME_AD_PrintFormat_ID, Integer.valueOf(AD_PrintFormat_ID));
+		}
 	}
 
 	/** Get Druck - Format.
@@ -115,9 +125,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getAD_PrintFormat_ID ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintFormat_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintFormat_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -129,9 +141,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public void setC_DocType_ID (int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
+		}
 		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+		}
 	}
 
 	/** Get Belegart.
@@ -140,9 +156,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getC_DocType_ID ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -166,9 +184,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID)
 	{
 		if (C_DocTypeDifference_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, null);
+		}
 		else
+		{
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, Integer.valueOf(C_DocTypeDifference_ID));
+		}
 	}
 
 	/** Get Difference Document.
@@ -177,9 +199,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getC_DocTypeDifference_ID ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeDifference_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeDifference_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -203,9 +227,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID)
 	{
 		if (C_DocTypeInvoice_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, null);
+		}
 		else
+		{
 			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, Integer.valueOf(C_DocTypeInvoice_ID));
+		}
 	}
 
 	/** Get Rechnungs-Belegart.
@@ -214,9 +242,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getC_DocTypeInvoice_ID ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeInvoice_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeInvoice_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -240,9 +270,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public void setC_DocTypeProforma_ID (int C_DocTypeProforma_ID)
 	{
 		if (C_DocTypeProforma_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_DocTypeProforma_ID, null);
+		}
 		else
+		{
 			set_Value (COLUMNNAME_C_DocTypeProforma_ID, Integer.valueOf(C_DocTypeProforma_ID));
+		}
 	}
 
 	/** Get Document Type for ProForma.
@@ -251,9 +285,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getC_DocTypeProforma_ID ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeProforma_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeProforma_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -277,9 +313,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public void setC_DocTypeShipment_ID (int C_DocTypeShipment_ID)
 	{
 		if (C_DocTypeShipment_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_DocTypeShipment_ID, null);
+		}
 		else
+		{
 			set_Value (COLUMNNAME_C_DocTypeShipment_ID, Integer.valueOf(C_DocTypeShipment_ID));
+		}
 	}
 
 	/** Get Document Type for Shipment.
@@ -288,9 +328,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getC_DocTypeShipment_ID ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeShipment_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeShipment_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -312,9 +354,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public void setDefiniteSequence_ID (int DefiniteSequence_ID)
 	{
 		if (DefiniteSequence_ID < 1)
+		{
 			set_Value (COLUMNNAME_DefiniteSequence_ID, null);
+		}
 		else
+		{
 			set_Value (COLUMNNAME_DefiniteSequence_ID, Integer.valueOf(DefiniteSequence_ID));
+		}
 	}
 
 	/** Get Definite Sequence.
@@ -322,9 +368,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getDefiniteSequence_ID ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_DefiniteSequence_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefiniteSequence_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -450,9 +498,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public void setDocNoSequence_ID (int DocNoSequence_ID)
 	{
 		if (DocNoSequence_ID < 1)
+		{
 			set_Value (COLUMNNAME_DocNoSequence_ID, null);
+		}
 		else
+		{
 			set_Value (COLUMNNAME_DocNoSequence_ID, Integer.valueOf(DocNoSequence_ID));
+		}
 	}
 
 	/** Get Nummernfolgen für Belege.
@@ -461,9 +513,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getDocNoSequence_ID ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_DocNoSequence_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DocNoSequence_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -488,8 +542,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_ReturnMaterial = "RM";
 	/** PrepayOrder = PR */
 	public static final String DOCSUBTYPE_PrepayOrder = "PR";
-	/** Auftrag (Vorkasse) zur Disposition = PM */
-	public static final String DOCSUBTYPE_AuftragVorkasseZurDisposition = "PM";
 	/** Provisionskorrektur = CC */
 	public static final String DOCSUBTYPE_Provisionskorrektur = "CC";
 	/** Provisionsberechnung = CA */
@@ -526,8 +578,12 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_DownPayment = "DP";
 	/** Saldokorektur = EC */
 	public static final String DOCSUBTYPE_Saldokorektur = "EC";
-	/** Material Disposal = MD */
-	public static final String DOCSUBTYPE_MaterialDisposal = "MD";
+	/** Internal Use Inventory = IUI */
+	public static final String DOCSUBTYPE_InternalUseInventory = "IUI";
+	/** Rückvergütungsrechnung = RI */
+	public static final String DOCSUBTYPE_Rueckverguetungsrechnung = "RI";
+	/** Rückvergütungsgutschrift = RC */
+	public static final String DOCSUBTYPE_Rueckverguetungsgutschrift = "RC";
 	/** Set Doc Sub Type.
 		@param DocSubType
 		Document Sub Type
@@ -564,9 +620,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getDocumentCopies ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_DocumentCopies);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DocumentCopies);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -634,9 +692,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public void setGL_Category_ID (int GL_Category_ID)
 	{
 		if (GL_Category_ID < 1)
+		{
 			set_Value (COLUMNNAME_GL_Category_ID, null);
+		}
 		else
+		{
 			set_Value (COLUMNNAME_GL_Category_ID, Integer.valueOf(GL_Category_ID));
+		}
 	}
 
 	/** Get Hauptbuch - Kategorie.
@@ -645,9 +707,11 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public int getGL_Category_ID ()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_GL_Category_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_GL_Category_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -667,11 +731,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isHasCharges ()
 	{
-		final Object oo = get_Value(COLUMNNAME_HasCharges);
+		Object oo = get_Value(COLUMNNAME_HasCharges);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -693,11 +759,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isHasProforma ()
 	{
-		final Object oo = get_Value(COLUMNNAME_HasProforma);
+		Object oo = get_Value(COLUMNNAME_HasProforma);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -716,11 +784,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isCopyDescriptionToDocument ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsCopyDescriptionToDocument);
+		Object oo = get_Value(COLUMNNAME_IsCopyDescriptionToDocument);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -742,11 +812,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isCreateCounter ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsCreateCounter);
+		Object oo = get_Value(COLUMNNAME_IsCreateCounter);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -768,11 +840,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isDefault ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsDefault);
+		Object oo = get_Value(COLUMNNAME_IsDefault);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -794,11 +868,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isDefaultCounterDoc ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsDefaultCounterDoc);
+		Object oo = get_Value(COLUMNNAME_IsDefaultCounterDoc);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -820,11 +896,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isDocNoControlled ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsDocNoControlled);
+		Object oo = get_Value(COLUMNNAME_IsDocNoControlled);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -846,11 +924,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isIndexed ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsIndexed);
+		Object oo = get_Value(COLUMNNAME_IsIndexed);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -872,11 +952,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isInTransit ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsInTransit);
+		Object oo = get_Value(COLUMNNAME_IsInTransit);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -895,11 +977,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isOverwriteDateOnComplete ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsOverwriteDateOnComplete);
+		Object oo = get_Value(COLUMNNAME_IsOverwriteDateOnComplete);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -918,11 +1002,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isOverwriteSeqOnComplete ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsOverwriteSeqOnComplete);
+		Object oo = get_Value(COLUMNNAME_IsOverwriteSeqOnComplete);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -944,11 +1030,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isPickQAConfirm ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsPickQAConfirm);
+		Object oo = get_Value(COLUMNNAME_IsPickQAConfirm);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -970,11 +1058,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isShipConfirm ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsShipConfirm);
+		Object oo = get_Value(COLUMNNAME_IsShipConfirm);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -996,11 +1086,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isSOTrx ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsSOTrx);
+		Object oo = get_Value(COLUMNNAME_IsSOTrx);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1022,11 +1114,13 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public boolean isSplitWhenDifference ()
 	{
-		final Object oo = get_Value(COLUMNNAME_IsSplitWhenDifference);
+		Object oo = get_Value(COLUMNNAME_IsSplitWhenDifference);
 		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			{
+				return ((Boolean)oo).booleanValue();
+			}
 			return "Y".equals(oo);
 		}
 		return false;

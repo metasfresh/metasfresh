@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -22,14 +6,15 @@ import java.util.Properties;
 
 /** Generated Model for AD_MailBox
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_MailBox extends PO implements I_AD_MailBox, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_MailBox extends org.compiere.model.PO implements I_AD_MailBox, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20110117L;
+	private static final long serialVersionUID = -1993988422L;
 
     /** Standard Constructor */
     public X_AD_MailBox (Properties ctx, int AD_MailBox_ID, String trxName)
@@ -39,7 +24,10 @@ public class X_AD_MailBox extends PO implements I_AD_MailBox, I_Persistent
         {
 			setAD_MailBox_ID (0);
 			setEMail (null);
+			setIsSmtpAuthorization (false); // N
+			setIsStartTLS (false); // N
 			setSMTPHost (null);
+			setSMTPPort (0); // 25
         } */
     }
 
@@ -49,30 +37,18 @@ public class X_AD_MailBox extends PO implements I_AD_MailBox, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_MailBox[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set Mail Box.
 		@param AD_MailBox_ID Mail Box	  */
+	@Override
 	public void setAD_MailBox_ID (int AD_MailBox_ID)
 	{
 		if (AD_MailBox_ID < 1) 
@@ -83,6 +59,7 @@ public class X_AD_MailBox extends PO implements I_AD_MailBox, I_Persistent
 
 	/** Get Mail Box.
 		@return Mail Box	  */
+	@Override
 	public int getAD_MailBox_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_MailBox_ID);
@@ -91,76 +68,40 @@ public class X_AD_MailBox extends PO implements I_AD_MailBox, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set EMail.
+	/** Set eMail.
 		@param EMail 
 		EMail-Adresse
 	  */
-	public void setEMail (String EMail)
+	@Override
+	public void setEMail (java.lang.String EMail)
 	{
 		set_Value (COLUMNNAME_EMail, EMail);
 	}
 
-	/** Get EMail.
+	/** Get eMail.
 		@return EMail-Adresse
 	  */
-	public String getEMail () 
-	{
-		return (String)get_Value(COLUMNNAME_EMail);
-	}
-
-	/** Set Kennwort.
-		@param Password 
-		Passwort beliebiger Laenge (unterscheided Gross- und Kleinschreibung)
-	  */
-	public void setPassword (String Password)
-	{
-		set_Value (COLUMNNAME_Password, Password);
-	}
-
-	/** Get Kennwort.
-		@return Passwort beliebiger Laenge (unterscheided Gross- und Kleinschreibung)
-	  */
-	public String getPassword () 
-	{
-		return (String)get_Value(COLUMNNAME_Password);
-	}
-
-	/** Set EMail-Server.
-		@param SMTPHost 
-		Hostname oder IP-Adresse des Servers fuer SMTP und IMAP
-	  */
-	public void setSMTPHost (String SMTPHost)
-	{
-		set_Value (COLUMNNAME_SMTPHost, SMTPHost);
-	}
-
-	/** Get EMail-Server.
-		@return Hostname oder IP-Adresse des Servers fuer SMTP und IMAP
-	  */
-	public String getSMTPHost () 
-	{
-		return (String)get_Value(COLUMNNAME_SMTPHost);
-	}
-
-	/** Set Registered EMail.
-		@param UserName 
-		Email of the responsible for the System
-	  */
-	public void setUserName (String UserName)
-	{
-		set_Value (COLUMNNAME_UserName, UserName);
-	}
-
-	/** Get Registered EMail.
-		@return Email of the responsible for the System
-	  */
-	public String getUserName () 
-	{
-		return (String)get_Value(COLUMNNAME_UserName);
-	}
-
 	@Override
-	public boolean isSmtpAuthorization()
+	public java.lang.String getEMail () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EMail);
+	}
+
+	/** Set SMTP-Anmeldung.
+		@param IsSmtpAuthorization 
+		Ihr EMail-Server verlangt eine Anmeldung
+	  */
+	@Override
+	public void setIsSmtpAuthorization (boolean IsSmtpAuthorization)
+	{
+		set_Value (COLUMNNAME_IsSmtpAuthorization, Boolean.valueOf(IsSmtpAuthorization));
+	}
+
+	/** Get SMTP-Anmeldung.
+		@return Ihr EMail-Server verlangt eine Anmeldung
+	  */
+	@Override
+	public boolean isSmtpAuthorization () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSmtpAuthorization);
 		if (oo != null) 
@@ -172,9 +113,99 @@ public class X_AD_MailBox extends PO implements I_AD_MailBox, I_Persistent
 		return false;
 	}
 
+	/** Set Start TLS.
+		@param IsStartTLS Start TLS	  */
 	@Override
-	public void setIsSmtpAuthorization(boolean IsSmtpAuthorization)
+	public void setIsStartTLS (boolean IsStartTLS)
 	{
-		set_Value (COLUMNNAME_IsSmtpAuthorization, Boolean.valueOf(IsSmtpAuthorization));
+		set_Value (COLUMNNAME_IsStartTLS, Boolean.valueOf(IsStartTLS));
+	}
+
+	/** Get Start TLS.
+		@return Start TLS	  */
+	@Override
+	public boolean isStartTLS () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsStartTLS);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Kennwort.
+		@param Password Kennwort	  */
+	@Override
+	public void setPassword (java.lang.String Password)
+	{
+		set_Value (COLUMNNAME_Password, Password);
+	}
+
+	/** Get Kennwort.
+		@return Kennwort	  */
+	@Override
+	public java.lang.String getPassword () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Password);
+	}
+
+	/** Set EMail-Server.
+		@param SMTPHost 
+		Hostname oder IP-Adresse des Servers für SMTP und IMAP
+	  */
+	@Override
+	public void setSMTPHost (java.lang.String SMTPHost)
+	{
+		set_Value (COLUMNNAME_SMTPHost, SMTPHost);
+	}
+
+	/** Get EMail-Server.
+		@return Hostname oder IP-Adresse des Servers für SMTP und IMAP
+	  */
+	@Override
+	public java.lang.String getSMTPHost () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SMTPHost);
+	}
+
+	/** Set SMTP Port.
+		@param SMTPPort SMTP Port	  */
+	@Override
+	public void setSMTPPort (int SMTPPort)
+	{
+		set_Value (COLUMNNAME_SMTPPort, Integer.valueOf(SMTPPort));
+	}
+
+	/** Get SMTP Port.
+		@return SMTP Port	  */
+	@Override
+	public int getSMTPPort () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SMTPPort);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Registered EMail.
+		@param UserName 
+		Email of the responsible for the System
+	  */
+	@Override
+	public void setUserName (java.lang.String UserName)
+	{
+		set_Value (COLUMNNAME_UserName, UserName);
+	}
+
+	/** Get Registered EMail.
+		@return Email of the responsible for the System
+	  */
+	@Override
+	public java.lang.String getUserName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UserName);
 	}
 }

@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.expectations.HUsExpectation;
@@ -102,7 +103,7 @@ public class HUBuilderTests
 		final I_M_HU result = testee.create(piVersion);
 
 		assertThat(result, notNullValue());
-		assertThat(result.getM_HU_PI_Version(), is(piVersion));
+		assertThat(Services.get(IHandlingUnitsBL.class).getPIVersion(result), is(piVersion));
 	}
 
 	/**

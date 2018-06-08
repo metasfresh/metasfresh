@@ -10,12 +10,12 @@ package de.metas.allocation.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,10 +32,10 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
@@ -120,7 +120,7 @@ public class AllocationBL implements IAllocationBL
 			final BigDecimal currentAmt = paymentDAO.getAvailableAmount(payment);
 
 			sumAmt = sumAmt.add(currentAmt);
-			
+
 			dateAcct = TimeUtil.max(dateAcct, payment.getDateAcct());
 			dateTrx = TimeUtil.max(dateTrx, payment.getDateTrx());
 

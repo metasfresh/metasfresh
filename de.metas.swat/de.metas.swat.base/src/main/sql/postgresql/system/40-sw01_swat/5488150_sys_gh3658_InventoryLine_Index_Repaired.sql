@@ -1,0 +1,4 @@
+-- 2018-03-13T14:41:59.171
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Column SET ColumnSQL='COALESCE(M_HU_ID,0)',Updated=TO_TIMESTAMP('2018-03-13 14:41:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Column_ID=540837
+;

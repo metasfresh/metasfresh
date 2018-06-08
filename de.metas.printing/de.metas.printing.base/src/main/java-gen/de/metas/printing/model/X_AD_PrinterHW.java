@@ -14,7 +14,7 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1398789756L;
+	private static final long serialVersionUID = 2120510340L;
 
     /** Standard Constructor */
     public X_AD_PrinterHW (Properties ctx, int AD_PrinterHW_ID, String trxName)
@@ -126,8 +126,8 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	public static final int OUTPUTTYPE_AD_Reference_ID=540632;
 	/** PDF = PDF */
 	public static final String OUTPUTTYPE_PDF = "PDF";
-	/** Set Output Type.
-		@param OutputType Output Type	  */
+	/** Set Ausgabe Art.
+		@param OutputType Ausgabe Art	  */
 	@Override
 	public void setOutputType (java.lang.String OutputType)
 	{
@@ -135,8 +135,8 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 		set_Value (COLUMNNAME_OutputType, OutputType);
 	}
 
-	/** Get Output Type.
-		@return Output Type	  */
+	/** Get Ausgabe Art.
+		@return Ausgabe Art	  */
 	@Override
 	public java.lang.String getOutputType () 
 	{

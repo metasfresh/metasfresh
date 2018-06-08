@@ -40,6 +40,7 @@ import org.adempiere.mm.attributes.listeners.adr.InvoiceLineADRModelAttributeSet
 import org.adempiere.mm.attributes.listeners.adr.OrderADRModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.adr.OrderLineADRModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.adr.OrderLineAllocADRModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.listeners.adr.OrderLineLotNumberModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InOutInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InOutLineInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceInAusLandModelAttributeSetInstanceListener;
@@ -52,7 +53,7 @@ import org.compiere.model.I_AD_Client;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.picking.form.swing.FreshSwingPickingTerminalPanel;
-import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider;
+import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
 import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.picking.terminal.form.swing.PickingTerminal;
@@ -96,6 +97,8 @@ public class Main extends AbstractModuleInterceptor
 
 		modelAttributeSetInstanceListenerService.registerListener(new InvoiceLineADRModelAttributeSetInstanceListener());
 		modelAttributeSetInstanceListenerService.registerListener(new InvoiceADRModelAttributeSetInstanceListener());
+		
+		modelAttributeSetInstanceListenerService.registerListener(new OrderLineLotNumberModelAttributeSetInstanceListener());
 
 		PickingTerminal.setClassName(FreshSwingPickingTerminalPanel.class.getCanonicalName());
 
@@ -109,7 +112,7 @@ public class Main extends AbstractModuleInterceptor
 
 		// task 09833
 		// Register the Printing Info ctx provider for C_Order_MFGWarehouse_Report
-		Services.get(INotificationBL.class).addCtxProvider(C_Order_MFGWarehouse_Report_NotificationCtxProvider.instance);
+		Services.get(INotificationBL.class).addCtxProvider(C_Order_MFGWarehouse_Report_RecordTextProvider.instance);
 	}
 
 	@Override

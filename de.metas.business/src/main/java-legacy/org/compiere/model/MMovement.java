@@ -129,7 +129,7 @@ public class MMovement extends X_M_Movement implements IDocument
 
 		List<MMovementConfirm> list = new Query(getCtx(), MMovementConfirm.Table_Name, "M_Movement_ID=?", get_TrxName())
 										.setParameters(new Object[]{get_ID()})
-										.list();
+										.list(MMovementConfirm.class);
 		m_confirms = list.toArray(new MMovementConfirm[list.size()]);
 		return m_confirms;
 	}	//	getConfirmations

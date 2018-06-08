@@ -3,6 +3,7 @@ package de.metas.material.cockpit.view.eventhandler;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.util.Loggables;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -61,13 +62,19 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 	}
 
 	@Override
-	public void handleEvent(@NonNull final AbstractPPOrderEvent ppOrderAdvisedOrCreatedEvent)
+	public void handleEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
-		// if not "planned", but "done", then *DO NOT, because the old impl doesn't either*:
-		// * "undo" the former change, i.e. subtract on the "supply" side, add on the "demand" side
-		// * update things similar to transactionEvent
+		if (ppOrderEvent instanceof PPOrderCreatedEvent)
+		{
+			final PPOrderCreatedEvent ppOrderCreatedEvent = (PPOrderCreatedEvent)ppOrderEvent;
+			if (ppOrderCreatedEvent.getPpOrder().getMaterialDispoGroupId() > 0)
+			{
+				Loggables.get().addLog("This PPOrderCreatedEvent has a PPOrder with MaterialDispoGroupId > 0, so we already processed its respective PPOrderAdvisedEvent; skipping");
+				return;
+			}
+		}
 
-		final PPOrder ppOrder = ppOrderAdvisedOrCreatedEvent.getPpOrder();
+		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final List<PPOrderLine> lines = ppOrder.getLines();
 
 		final ImmutableList.Builder<UpdateMainDataRequest> requests = ImmutableList.builder();

@@ -127,7 +127,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 	}
 
 	/**	Cache						*/
-	private static CCache<Integer,MPPOrderNode>	s_cache	= new CCache<Integer,MPPOrderNode> (Table_Name, 50);
+	private static CCache<Integer,MPPOrderNode>	s_cache	= new CCache<> (Table_Name, 50);
 	/** MPPOrderWorkflow			*/
 	MPPOrderWorkflow m_order_wf = null;
 	
@@ -266,7 +266,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 		.setParameters(new Object[]{get_ID()})
 		.setOnlyActiveRecords(true)
 		.setOrderBy(MPPOrderNodeNext.COLUMNNAME_SeqNo+","+MPPOrderNodeNext.COLUMNNAME_PP_Order_Node_ID)
-		.list();
+		.list(MPPOrderNodeNext.class);
 		for (MPPOrderNodeNext next : m_next)
 		{
 			next.setFromSplitAnd(splitAnd);
@@ -315,7 +315,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 	 */
 	public MPPOrderNodeNext[] getTransitions(int AD_Client_ID)
 	{
-		ArrayList<MPPOrderNodeNext> list = new ArrayList<MPPOrderNodeNext>();
+		ArrayList<MPPOrderNodeNext> list = new ArrayList<>();
 		for (MPPOrderNodeNext next : getNodeNexts())
 		{
 			if (next.getAD_Client_ID() == 0 || next.getAD_Client_ID() == AD_Client_ID)

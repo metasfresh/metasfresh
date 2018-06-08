@@ -63,6 +63,7 @@ public class MDocType extends X_C_DocType
 	 *	@param DocBaseType base document type
 	 *	@return array of doc types
 	 */
+	@Deprecated
 	static public MDocType[] getOfDocBaseType (Properties ctx, String DocBaseType)
 	{
 		String whereClause  = "AD_Client_ID=? AND DocBaseType=?";
@@ -70,7 +71,7 @@ public class MDocType extends X_C_DocType
 									.setParameters(new Object[]{Env.getAD_Client_ID(ctx), DocBaseType})
 									.setOnlyActiveRecords(true)
 									.setOrderBy("IsDefault DESC, C_DocType_ID")
-									.list();
+									.list(MDocType.class);
 		return list.toArray(new MDocType[list.size()]);
 	}	//	getOfDocBaseType
 
@@ -85,7 +86,7 @@ public class MDocType extends X_C_DocType
 		List<MDocType> list = new Query(ctx, Table_Name, whereClause, null)
 									.setParameters(new Object[]{Env.getAD_Client_ID(ctx)})
 									.setOnlyActiveRecords(true)
-									.list();
+									.list(MDocType.class);
 		return list.toArray(new MDocType[list.size()]);
 	}	//	getOfClient
 

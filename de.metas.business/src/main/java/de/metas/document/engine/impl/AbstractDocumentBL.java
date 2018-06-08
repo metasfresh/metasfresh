@@ -69,8 +69,6 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 {
 	private static final transient Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
-	protected static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
-
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(() -> retrieveDocActionHandlerProvidersIndexedByTableName());
 
 	protected abstract String retrieveString(int adTableId, int recordId, final String columnName);

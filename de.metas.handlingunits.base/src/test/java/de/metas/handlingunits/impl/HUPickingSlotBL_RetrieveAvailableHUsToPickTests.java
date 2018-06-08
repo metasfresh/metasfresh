@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.IContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.Theories;

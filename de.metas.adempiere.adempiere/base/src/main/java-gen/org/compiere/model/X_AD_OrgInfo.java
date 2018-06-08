@@ -14,7 +14,7 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 996988883L;
+	private static final long serialVersionUID = 2092727521L;
 
     /** Standard Constructor */
     public X_AD_OrgInfo (Properties ctx, int AD_OrgInfo_ID, String trxName)
@@ -23,8 +23,7 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
       /** if (AD_OrgInfo_ID == 0)
         {
 			setDUNS (null);
-			setReceiptFooterMsg (null);
-// 1
+			setReceiptFooterMsg (null); // 1
 			setTaxID (null);
         } */
     }
@@ -277,6 +276,43 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	public int getM_Warehouse_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Warehouse getM_WarehousePO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_WarehousePO_ID, org.compiere.model.I_M_Warehouse.class);
+	}
+
+	@Override
+	public void setM_WarehousePO(org.compiere.model.I_M_Warehouse M_WarehousePO)
+	{
+		set_ValueFromPO(COLUMNNAME_M_WarehousePO_ID, org.compiere.model.I_M_Warehouse.class, M_WarehousePO);
+	}
+
+	/** Set Liefer-Lager.
+		@param M_WarehousePO_ID 
+		Lager, an das der Lieferant eine Bestellung liefern soll.
+	  */
+	@Override
+	public void setM_WarehousePO_ID (int M_WarehousePO_ID)
+	{
+		if (M_WarehousePO_ID < 1) 
+			set_Value (COLUMNNAME_M_WarehousePO_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_WarehousePO_ID, Integer.valueOf(M_WarehousePO_ID));
+	}
+
+	/** Get Liefer-Lager.
+		@return Lager, an das der Lieferant eine Bestellung liefern soll.
+	  */
+	@Override
+	public int getM_WarehousePO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_WarehousePO_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

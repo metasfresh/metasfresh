@@ -1,6 +1,5 @@
 package de.metas.material.cockpit.stock.process;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -18,7 +17,7 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_From_HUs_V;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequest;
-import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
+import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.process.JavaProcess;
@@ -108,8 +107,8 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 	private void createAndHandleDataUpdateRequests(
 			@NonNull final List<I_MD_Stock_From_HUs_V> huBasedDataRecords)
 	{
-		final StockDataUpdateRequestHandler dataUpdateRequestHandler = //
-				Adempiere.getBean(StockDataUpdateRequestHandler.class);
+		final StockRepository dataUpdateRequestHandler = //
+				Adempiere.getBean(StockRepository.class);
 
 		for (final I_MD_Stock_From_HUs_V huBasedDataRecord : huBasedDataRecords)
 		{
@@ -124,11 +123,11 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 		final StockDataRecordIdentifier recordIdentifier = createDataRecordIdentifier(huBasedDataRecord);
 
 		final Quantity qtyInStorageUOM = Quantity.of(huBasedDataRecord.getQtyOnHand(), huBasedDataRecord.getC_UOM());
-		final BigDecimal qtyInStockingUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, huBasedDataRecord.getM_Product());
+		final Quantity qtyInStockingUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, huBasedDataRecord.getM_Product_ID());
 
 		final StockDataUpdateRequest dataUpdateRequest = StockDataUpdateRequest.builder()
 				.identifier(recordIdentifier)
-				.onHandQtyChange(qtyInStockingUOM)
+				.onHandQtyChange(qtyInStockingUOM.getQty())
 				.build();
 		return dataUpdateRequest;
 	}
@@ -139,8 +138,7 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 		final ProductDescriptor productDescriptor = ProductDescriptor
 				.forProductAndAttributes(
 						huBasedDataRecord.getM_Product_ID(),
-						AttributesKey.ofString(huBasedDataRecord.getAttributesKey()),
-						0);
+						AttributesKey.ofString(huBasedDataRecord.getAttributesKey()));
 
 		final StockDataRecordIdentifier recordIdentifier = StockDataRecordIdentifier.builder()
 				.productDescriptor(productDescriptor)

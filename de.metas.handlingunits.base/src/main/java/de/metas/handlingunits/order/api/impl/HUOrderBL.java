@@ -48,6 +48,8 @@ import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductDAO;
 import lombok.NonNull;
 
@@ -121,12 +123,12 @@ public class HUOrderBL implements IHUOrderBL
 			ol.setM_HU_PI_Item_Product(pipVirtual);
 
 			// 05825 : Update Prices and set prices
-			orderLineBL.updatePrices(ol);
-			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
-			orderLineBL.setPricesIfNotIgnored(ctx,
-					ol,
-					InterfaceWrapperHelper.isNew(ol),                       // usePriceUOM
-					trxName);
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+					.orderLine(ol)
+					.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
+					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false)
+					.updateLineNetAmt(true)
+					.build());
 		}
 		// If is not null, set all related items
 		else
@@ -151,12 +153,12 @@ public class HUOrderBL implements IHUOrderBL
 				ol.setQtyItemCapacity(qtyCap);
 			}
 			// 05825 : Update Prices and set prices
-			orderLineBL.updatePrices(ol);
-			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
-			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
-			orderLineBL.setPricesIfNotIgnored(ctx, ol,
-					InterfaceWrapperHelper.isNew(ol),                       // usePriceUOM
-					trxName);
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+					.orderLine(ol)
+					.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
+					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false)
+					.updateLineNetAmt(true)
+					.build());
 		}
 	}
 

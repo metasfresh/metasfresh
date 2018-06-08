@@ -1161,6 +1161,11 @@ public final class Env
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Client_ID);
 	}	// getAD_Client_ID
 
+	public static int getAD_Client_ID()
+	{
+		return getAD_Client_ID(getCtx());
+	}
+
 	/**
 	 * Get Login AD_Org_ID
 	 *
@@ -1399,6 +1404,12 @@ public final class Env
 	public static String getAD_Language()
 	{
 		return getAD_Language(getCtx());
+	}
+
+	public static String getADLanguageOrBaseLanguage()
+	{
+		final String adLanguage = getAD_Language();
+		return adLanguage != null ? adLanguage : Language.getBaseAD_Language();
 	}
 
 	/**

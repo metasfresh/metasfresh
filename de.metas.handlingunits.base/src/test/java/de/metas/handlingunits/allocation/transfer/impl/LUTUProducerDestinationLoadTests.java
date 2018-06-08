@@ -237,7 +237,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setLUItemPI(piLU_Item_20_IFCO);
 		lutuProducer.setTUPI(data.piTU_IFCO);
-		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
+		lutuProducer.addCUPerTU(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
 
 		// load the tomatoes into HUs
 		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), data.helper.uomKg);
@@ -424,7 +424,7 @@ public class LUTUProducerDestinationLoadTests
 	 * @param expectedFullLUsCount expected number of LUs that are fully loaded with 5 IFCOs (aggregated) and 200kg of tomatoes
 	 * @param lastExpectation
 	 * @param tuCapacityOverride optional, may be {@code null}.
-	 *            If set, then call {@link LUTUProducerDestination#addTUCapacity(org.compiere.model.I_M_Product, BigDecimal, org.compiere.model.I_C_UOM)} to explicitly set a capacity.
+	 *            If set, then call {@link LUTUProducerDestination#addCUPerTU(org.compiere.model.I_M_Product, BigDecimal, org.compiere.model.I_C_UOM)} to explicitly set a capacity.
 	 *            If not set, then expect the LUTUProducerDestination to get the capacity from the PI.
 	 */
 	private void performTest(final int cuQty,
@@ -440,7 +440,7 @@ public class LUTUProducerDestinationLoadTests
 		// TU capacity
 		if (tuCapacityOverride != null)
 		{
-			lutuProducer.addTUCapacity(data.helper.pTomato, tuCapacityOverride, data.helper.uomKg);
+			lutuProducer.addCUPerTU(data.helper.pTomato, tuCapacityOverride, data.helper.uomKg);
 		}
 
 		// load the tomatoes into HUs

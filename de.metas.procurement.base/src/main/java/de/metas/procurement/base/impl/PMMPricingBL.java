@@ -9,9 +9,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -24,6 +21,9 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMPricingBL;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
@@ -154,7 +154,7 @@ public class PMMPricingBL implements IPMMPricingBL
 			throw new AdempiereException("@Missing@ @" + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "@");
 		}
 
-		final I_M_Product product = pricingAware.getM_Product();
+		final int productId = pricingAware.getProductId();
 		final I_C_UOM uom = pricingAware.getC_UOM();
 
 		final I_C_Flatrate_DataEntry dataEntryForProduct = pricingAware.getC_Flatrate_DataEntry();
@@ -178,7 +178,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		// Convert the price
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final BigDecimal price = uomConversionBL.convertPrice(
-				product,
+				productId,
 				flatrateAmtPerUOM,
 				flatrateTerm.getC_UOM(),  								// this is the flatrateAmt's UOM
 				uom,  													// this is the qtyReportEvent's UOM

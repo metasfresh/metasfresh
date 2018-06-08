@@ -5,9 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
 
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.impl.PricingTestHelper;
-import org.adempiere.pricing.api.impl.ProductPriceBuilder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -15,6 +12,11 @@ import org.compiere.model.I_M_PriceList_Version;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.rules.Discount;
+import de.metas.pricing.rules.PriceListVersion;
+import de.metas.pricing.service.impl.PricingTestHelper;
+import de.metas.pricing.service.impl.ProductPriceBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -52,11 +54,10 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 	@Override
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
-		return ImmutableList.copyOf(new String[] {
-				"de.metas.contracts.pricing.SubscriptionPricingRule"//
-				, "org.adempiere.pricing.spi.impl.rules.PriceListVersion" //
-				, "org.adempiere.pricing.spi.impl.rules.Discount" //
-		});
+		return ImmutableList.of(
+				SubscriptionPricingRule.class.getName(),
+				PriceListVersion.class.getName(),
+				Discount.class.getName());
 	}
 
 	public ProductPriceBuilder newProductPriceBuilder(I_M_PriceList_Version priceListVersion)

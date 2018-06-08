@@ -26,17 +26,17 @@ import java.util.Properties;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -230,7 +230,7 @@ public class MCash extends X_C_Cash implements IDocument
 								.setParameters(new Object[]{getC_Cash_ID()})
 								.setOrderBy(MCashLine.COLUMNNAME_Line)
 								.setOnlyActiveRecords(true)
-								.list();
+								.list(MCashLine.class);
 		
 		m_lines =  list.toArray(new MCashLine[list.size()]);
 		return m_lines;

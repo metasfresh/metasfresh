@@ -13,23 +13,23 @@ package de.metas.document.exceptions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 
 /**
  * Exception thrown when document processing failed.
@@ -55,9 +55,9 @@ public class DocumentProcessingException extends AdempiereException
 		super(buildMsg(message, documentObj, docAction, (Throwable)null));
 	}
 
-	private static final String buildMsg(final String message, final Object documentObj, final String docAction, final Throwable cause)
+	private static final ITranslatableString buildMsg(final String message, final Object documentObj, final String docAction, final Throwable cause)
 	{
-		final StringBuilder msg = new StringBuilder();
+		final TranslatableStringBuilder msg = TranslatableStringBuilder.newInstance();
 		if (Check.isEmpty(message, true))
 		{
 			msg.append("Error Processing Document");
@@ -66,7 +66,7 @@ public class DocumentProcessingException extends AdempiereException
 		{
 			msg.append(message.trim());
 		}
-		
+
 		final String documentInfo;
 		final String processMsg;
 		if (documentObj == null)
@@ -78,7 +78,7 @@ public class DocumentProcessingException extends AdempiereException
 		else
 		{
 			final IDocument document = Services.get(IDocumentBL.class).getDocumentOrNull(documentObj);
-			if(document != null)
+			if (document != null)
 			{
 				documentInfo = document.getDocumentInfo();
 				processMsg = document.getProcessMsg();
@@ -89,31 +89,24 @@ public class DocumentProcessingException extends AdempiereException
 				processMsg = null;
 			}
 		}
-		
-		
-		msg.append("\n@Document@: ").append(documentInfo);
-		msg.append("\n@DocAction@: ").append(docAction);
-		if(!Check.isEmpty(processMsg, true))
+
+		msg.append("\n").appendADElement("Document").append(": ").append(documentInfo);
+		msg.append("\n").appendADElement("DocAction").append(": ").append(docAction);
+		if (!Check.isEmpty(processMsg, true))
 		{
-			msg.append("\n@ProcessMsg@: ").append(processMsg);
+			msg.append("\n").appendADElement("ProcessMsg").append(": ").append(processMsg);
 		}
 
 		if (cause != null)
 		{
-			Throwable rootCause = ExceptionUtils.getRootCause(cause);
-			String rooCauseMessage = ExceptionUtils.getRootCauseMessage(cause);
-			if (rootCause == null)
-			{ 
-				// our version of ExceptionUtils might return null, so we need this if
-				rootCause = cause;
-				rooCauseMessage = cause.getMessage();
-			}
-			
-			msg.append("\n@Cause@: ").append(rooCauseMessage)
+			final Throwable rootCause = AdempiereException.extractCause(cause);
+			ITranslatableString rootCauseMessage = AdempiereException.extractMessageTrl(rootCause);
+
+			msg.append("\n").appendADElement("Cause").append(": ").append(rootCauseMessage)
 					.append(" (")
 					.append(rootCause.getClass().getSimpleName())
 					.append(")");
 		}
-		return msg.toString();
+		return msg.build();
 	}
 }

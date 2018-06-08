@@ -1,0 +1,41 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>[1,10.0.0]</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.util</groupId>
+	<artifactId>de.metas.util.web</artifactId>
+	<packaging>jar</packaging>
+	
+	<properties>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+	</properties>
+	
+	<dependencies>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+	</dependencies>
+
+</project>

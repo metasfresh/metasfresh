@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.payment.api.impl;
 
@@ -13,12 +13,12 @@ package de.metas.payment.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,8 +33,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -52,34 +50,34 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_Payment;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.interfaces.I_C_BP_Group;
+import de.metas.logging.LogManager;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
-import de.metas.prepayorder.service.IPrepayOrderBL;
 
 /**
  * @author cg
- * 
+ *
  */
 public class PaymentBL implements IPaymentBL
 {
 
 	Logger log = LogManager.getLogger(getClass());
-	
+
 	private final transient IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 
 	/**
 	 * Get Invoice Currency
-	 * 
+	 *
 	 * @param payment
 	 * @return
 	 */
@@ -105,29 +103,20 @@ public class PaymentBL implements IPaymentBL
 
 	/**
 	 * Get Open Amount invoice
-	 * 
+	 *
 	 * @param payment
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 * @return
 	 */
 	private BigDecimal fetchOpenAmount(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
-
-		BigDecimal InvoiceOpenAmt = Env.ZERO;
+		BigDecimal InvoiceOpenAmt = BigDecimal.ZERO;
 
 		final int C_Invoice_ID = payment.getC_Invoice_ID();
-		final int C_Order_ID = payment.getC_Order_ID();
 
 		if (C_Invoice_ID > 0)
 		{
 			InvoiceOpenAmt = Services.get(IPaymentDAO.class).getInvoiceOpenAmount(payment, creditMemoAdjusted);
-		}
-		else if (C_Order_ID > 0)
-		{
-			final BigDecimal grandTotal = payment.getC_Order().getGrandTotal();
-			final BigDecimal allocated = Services.get(IPrepayOrderBL.class).retrieveAllocatedAmt(ctx, C_Order_ID, ITrx.TRXNAME_None);
-			InvoiceOpenAmt = grandTotal.subtract(allocated);
 		}
 
 		log.debug("Open=" + InvoiceOpenAmt + ", C_Invoice_ID=" + C_Invoice_ID);
@@ -141,7 +130,7 @@ public class PaymentBL implements IPaymentBL
 		final int AD_Org_ID = payment.getAD_Org_ID();
 
 		// Get Currency Rate
-		BigDecimal CurrencyRate = Env.ONE;
+		BigDecimal CurrencyRate = BigDecimal.ONE;
 		if ((C_Currency_ID > 0 && C_Currency_Invoice_ID > 0 && C_Currency_ID != C_Currency_Invoice_ID))
 		{
 			log.debug("InvCurrency=" + C_Currency_Invoice_ID + ", PayCurrency="
@@ -149,7 +138,7 @@ public class PaymentBL implements IPaymentBL
 					+ C_ConversionType_ID);
 
 			CurrencyRate = Services.get(ICurrencyBL.class).getRate(C_Currency_Invoice_ID, C_Currency_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
-			if (CurrencyRate == null || CurrencyRate.compareTo(Env.ZERO) == 0)
+			if (CurrencyRate == null || CurrencyRate.compareTo(BigDecimal.ZERO) == 0)
 			{
 				if (C_Currency_Invoice_ID == 0)
 				{
@@ -192,15 +181,15 @@ public class PaymentBL implements IPaymentBL
 		{
 			if (payment.getDiscountAmt().signum() != 0)
 			{
-				payment.setDiscountAmt(Env.ZERO);
+				payment.setDiscountAmt(BigDecimal.ZERO);
 			}
 			if (payment.getWriteOffAmt().signum() != 0)
 			{
-				payment.setWriteOffAmt(Env.ZERO);
+				payment.setWriteOffAmt(BigDecimal.ZERO);
 			}
 			if (payment.getOverUnderAmt().signum() != 0)
 			{
-				payment.setOverUnderAmt(Env.ZERO);
+				payment.setOverUnderAmt(BigDecimal.ZERO);
 			}
 		}
 		// Changed Column C_Currency_ID or C_ConversionType_ID
@@ -230,7 +219,7 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public void onIsOverUnderPaymentChange(final I_C_Payment payment, boolean creditMemoAdjusted)
 	{
-		payment.setOverUnderAmt(Env.ZERO);
+		payment.setOverUnderAmt(BigDecimal.ZERO);
 
 		if (X_C_Payment.DOCSTATUS_Drafted.equals(payment.getDocStatus()))
 		{
@@ -241,14 +230,14 @@ public class PaymentBL implements IPaymentBL
 			if (payment.isOverUnderPayment())
 			{
 				final BigDecimal OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
-				payment.setWriteOffAmt(Env.ZERO);
+				payment.setWriteOffAmt(BigDecimal.ZERO);
 				payment.setOverUnderAmt(OverUnderAmt);
 			}
 			else
 			{
 				final BigDecimal WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
 				payment.setWriteOffAmt(WriteOffAmt);
-				payment.setOverUnderAmt(Env.ZERO);
+				payment.setOverUnderAmt(BigDecimal.ZERO);
 			}
 		}
 	}
@@ -268,7 +257,7 @@ public class PaymentBL implements IPaymentBL
 		final int AD_Org_ID = payment.getAD_Org_ID();
 
 		// Get Currency Rate
-		BigDecimal CurrencyRate = Env.ONE;
+		BigDecimal CurrencyRate = BigDecimal.ONE;
 		if ((C_Currency_ID > 0 && C_Currency_Invoice_ID > 0 && C_Currency_ID != C_Currency_Invoice_ID))
 		{
 			log.debug("InvCurrency={}, PayCurrency={}, Date={}, Type={}"
@@ -309,18 +298,18 @@ public class PaymentBL implements IPaymentBL
 		// No Invoice or Order - Set Discount, Witeoff, Under/Over to 0
 		if (C_Invoice_ID <= 0 && C_Order_ID <= 0)
 		{
-			if (Env.ZERO.compareTo(DiscountAmt) != 0)
+			if (BigDecimal.ZERO.compareTo(DiscountAmt) != 0)
 			{
-				payment.setDiscountAmt(Env.ZERO);
+				payment.setDiscountAmt(BigDecimal.ZERO);
 			}
 
-			if (Env.ZERO.compareTo(WriteOffAmt) != 0)
+			if (BigDecimal.ZERO.compareTo(WriteOffAmt) != 0)
 			{
-				payment.setWriteOffAmt(Env.ZERO);
+				payment.setWriteOffAmt(BigDecimal.ZERO);
 			}
-			if (Env.ZERO.compareTo(OverUnderAmt) != 0)
+			if (BigDecimal.ZERO.compareTo(OverUnderAmt) != 0)
 			{
-				payment.setOverUnderAmt(Env.ZERO);
+				payment.setOverUnderAmt(BigDecimal.ZERO);
 			}
 		}
 
@@ -396,7 +385,7 @@ public class PaymentBL implements IPaymentBL
 	public boolean isMatchInvoice(final I_C_Payment payment, final I_C_Invoice invoice)
 	{
 		final List<I_C_AllocationLine> allocations = Services.get(IPaymentDAO.class).retrieveAllocationLines(payment);
-		final List<I_C_Invoice> invoices = new ArrayList<I_C_Invoice>();
+		final List<I_C_Invoice> invoices = new ArrayList<>();
 		for (final I_C_AllocationLine alloc : allocations)
 		{
 			invoices.add(alloc.getC_Invoice());
@@ -421,7 +410,7 @@ public class PaymentBL implements IPaymentBL
 		final boolean hasAllocations = alloc != null; // metas: tsa: 01955
 		if (alloc == null)
 		{
-			alloc = Env.ZERO;
+			alloc = BigDecimal.ZERO;
 		}
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -439,7 +428,9 @@ public class PaymentBL implements IPaymentBL
 		}
 		// metas: tsa: end: 01955
 		if (!payment.isReceipt())
+		{
 			total = total.negate();
+		}
 		boolean test = total.compareTo(alloc) == 0;
 		boolean change = test != payment.isAllocated();
 		if (change)

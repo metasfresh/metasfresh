@@ -7,7 +7,7 @@ import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.shipper.gateway.api.model.PaidMode;
+import de.metas.shipper.gateway.spi.model.PaidMode;
 import lombok.Getter;
 import lombok.NonNull;
 

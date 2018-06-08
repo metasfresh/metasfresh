@@ -99,7 +99,7 @@ public class FIFOAllocationStrategy extends AbstractFIFOStrategy
 		}
 		else
 		{
-			includedHUDef = item.getM_HU_PI_Item().getIncluded_HU_PI();
+			includedHUDef = handlingUnitsBL.getPIItem(item).getIncluded_HU_PI();
 		}
 
 		// we cannot create an instance which has no included handling unit definition

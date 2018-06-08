@@ -39,6 +39,8 @@ import org.compiere.model.I_C_DocType;
  */
 public interface IDocumentBL extends ISingletonService
 {
+	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
 	/**
 	 *
 	 * @param document
@@ -74,6 +76,12 @@ public interface IDocumentBL extends ISingletonService
 	 * @throws AdempiereException if processing fails or document does not have expected DocStatus
 	 */
 	void processEx(Object document, String docAction, String expectedDocStatus);
+
+	default void processEx(final Object document, final String docAction)
+	{
+		final String expectedDocStatus = null;
+		processEx(document, docAction, expectedDocStatus);
+	}
 
 	/**
 	 * Check if a document is completed via it's {@code DocStatus} value.

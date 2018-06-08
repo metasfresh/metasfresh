@@ -37,11 +37,11 @@ public interface HUToReport
 
 	List<HUToReport> getIncludedHUs();
 
-	default Stream<HUToReport> streamRecursivelly()
+	default Stream<HUToReport> streamRecursively()
 	{
 		return getIncludedHUs()
 				.stream()
-				.map(HUToReport::streamRecursivelly)
+				.map(HUToReport::streamRecursively)
 				.reduce(Stream.of(this), Stream::concat);
 	}
 }

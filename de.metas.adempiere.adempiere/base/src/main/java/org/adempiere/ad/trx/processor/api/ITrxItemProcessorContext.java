@@ -26,8 +26,8 @@ package org.adempiere.ad.trx.processor.api;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.IContextAware;
 
 /**
  * Item processing context

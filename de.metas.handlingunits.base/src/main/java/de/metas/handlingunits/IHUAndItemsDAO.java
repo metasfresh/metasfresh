@@ -10,12 +10,12 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,9 +59,7 @@ public interface IHUAndItemsDAO
 	/**
 	 * From the {@link I_M_HU_Item}s that reference the given {@code hu}, retrieve the one that also references the given {@code piItem},<br>
 	 * <b>or</b> (gh #460) if there is no such item and the given {@code piItem} has {@code ItemType='HU'}, then retrieve the {@link I_M_HU_Item} with {@link X_M_HU_Item#ITEMTYPE_HUAggregate}.
-	 * 
-	 * @param hu
-	 * @param piItem
+	 *
 	 * @return the found item type or {@code null}.
 	 */
 	I_M_HU_Item retrieveItem(I_M_HU hu, I_M_HU_PI_Item piItem);
@@ -69,28 +67,22 @@ public interface IHUAndItemsDAO
 	/**
 	 * Creates and saves {@link I_M_HU_Item}
 	 *
-	 * @param hu
-	 * @param piItem
 	 * @return created HU item
-	 * 
+	 *
 	 * @see IHandlingUnitsDAO#createHUItem(I_M_HU, I_M_HU_PI_Item)
 	 */
 	I_M_HU_Item createHUItem(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	/**
-	 * 
-	 * @param hu
-	 * @return
-	 * 
+
 	 * @see IHandlingUnitsDAO#createAggregateHUItem(I_M_HU)
 	 */
 	I_M_HU_Item createAggregateHUItem(I_M_HU hu);
 
+	I_M_HU_Item createChildHUItem(I_M_HU hu);
+
 	/**
 	 * Retrieve the Aggregated Item from an HU in case it has one
-	 * 
-	 * @param hu
-	 * @return
 	 */
 	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu);
 }

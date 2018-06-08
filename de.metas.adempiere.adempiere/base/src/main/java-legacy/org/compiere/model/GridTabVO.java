@@ -117,6 +117,8 @@ public class GridTabVO implements Evaluatee, Serializable
 			vo.AD_Tab_ID = rs.getInt("AD_Tab_ID");
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_AD_Tab_ID, String.valueOf(vo.AD_Tab_ID));
 			
+			vo.templateTabId = rs.getInt(I_AD_Tab.COLUMNNAME_Template_Tab_ID);
+			
 			vo.name = rs.getString("Name");
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_Name, vo.name);
 			//
@@ -423,6 +425,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	/**	Tab	ID			*/
 	private int AD_Tab_ID;
+	private int templateTabId;
 	/** Name			*/
 	private String name = "";
 	private Map<String, String> nameTrls = null;
@@ -529,6 +532,7 @@ public class GridTabVO implements Evaluatee, Serializable
 							.setTabNo(getTabNo())
 							.setAD_Window_ID(getAD_Window_ID())
 							.setAD_Tab_ID(getAD_Tab_ID())
+							.setTemplateTabId(getTemplateTabId())
 							.setTabReadOnly(isReadOnly())
 							.setLoadAllLanguages(loadAllLanguages)
 							.load();
@@ -854,6 +858,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	public int getAD_Tab_ID()
 	{
 		return AD_Tab_ID;
+	}
+	
+	public int getTemplateTabId()
+	{
+		return templateTabId;
 	}
 
 	public int getWindowNo()

@@ -42,9 +42,9 @@ public class MHRConcept extends X_HR_Concept
 	private static final long serialVersionUID = 8736925494645172953L;
 	
 	/** Cache */
-	private static CCache<Integer, MHRConcept> s_cache = new CCache<Integer, MHRConcept>(Table_Name, 100);
+	private static CCache<Integer, MHRConcept> s_cache = new CCache<>(Table_Name, 100);
 	/** Cache by Value */
-	private static CCache<String, MHRConcept> s_cacheValue = new CCache<String, MHRConcept>(Table_Name+"_Value", 100);
+	private static CCache<String, MHRConcept> s_cacheValue = new CCache<>(Table_Name+"_Value", 100);
 	
 	public static MHRConcept get(Properties ctx, int HR_Concept_ID)
 	{
@@ -113,7 +113,7 @@ public class MHRConcept extends X_HR_Concept
 	public static MHRConcept[] getConcepts (int payroll_id, int department_id, int employee_id, String sqlWhere)
 	{
 		Properties ctx = Env.getCtx();
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		
 		whereClause.append("AD_Client_ID in (?,?)");   
@@ -139,7 +139,7 @@ public class MHRConcept extends X_HR_Concept
 										.setParameters(params)
 										.setOnlyActiveRecords(true)
 										.setOrderBy("COALESCE("+COLUMNNAME_SeqNo + ",999999999999) DESC, " + COLUMNNAME_Value)
-										.list();
+										.list(MHRConcept.class);
 		return list.toArray(new MHRConcept[list.size()]);
 	}	//	getConcept	
 

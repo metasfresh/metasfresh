@@ -11,12 +11,12 @@ import javax.jms.ConnectionFactory;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
+import org.adempiere.util.lang.IContextAware;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.feature.Feature;
 import org.apache.cxf.feature.LoggingFeature;

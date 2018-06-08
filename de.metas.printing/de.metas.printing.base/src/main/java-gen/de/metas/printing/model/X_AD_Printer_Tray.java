@@ -14,7 +14,7 @@ public class X_AD_Printer_Tray extends org.compiere.model.PO implements I_AD_Pri
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -818075961L;
+	private static final long serialVersionUID = 1212167399L;
 
     /** Standard Constructor */
     public X_AD_Printer_Tray (Properties ctx, int AD_Printer_Tray_ID, String trxName)
@@ -42,18 +42,6 @@ public class X_AD_Printer_Tray extends org.compiere.model.PO implements I_AD_Pri
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public I_AD_Printer getAD_Printer() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Printer_ID, I_AD_Printer.class);
-	}
-
-	@Override
-	public void setAD_Printer(I_AD_Printer AD_Printer)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Printer_ID, I_AD_Printer.class, AD_Printer);
-	}
 
 	/** Set Logischer Drucker.
 		@param AD_Printer_ID Logischer Drucker	  */

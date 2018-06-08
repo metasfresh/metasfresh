@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -49,13 +51,15 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
@@ -86,6 +90,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
@@ -316,7 +321,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		//
 		// Validate selectedHUs.
-		// Get M_HU_IDs from selectedHUs
+		// Get M_HU_IDs from selectedHUs.
+		final IHUToReceiveValidator huToReceiveValidator = CompositeHUToReceiveValidator.of(Adempiere.getBeansOfType(IHUToReceiveValidator.class));
 		final Set<Integer> selectedHUIds = new HashSet<>(selectedHUs.size());
 		for (final I_M_HU hu : selectedHUs)
 		{
@@ -324,6 +330,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			{
 				throw new HUException("@Invalid@ @HUStatus@: " + hu.getValue());
 			}
+
+			huToReceiveValidator.assertValidForReceiving(hu);
 
 			final int huId = hu.getM_HU_ID();
 			selectedHUIds.add(huId);
@@ -387,7 +395,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		for (final I_M_InOut inout : inouts)
 		{
 			final int vendorBPartnerId = inout.getC_BPartner_ID();
-			
+
 			final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout);
 			for (final I_M_InOutLine inoutLine : inoutLines)
 			{
@@ -407,12 +415,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	/**
-	 *
-	 * @param hu
-	 * @param vendorBPartnerId
 	 * @task https://github.com/metasfresh/metasfresh-webui/issues/209
 	 */
-	private void printReceiptLabel(final HUToReport hu, final int vendorBPartnerId)
+	private void printReceiptLabel(@Nullable final HUToReport hu, final int vendorBPartnerId)
 	{
 		if (hu == null)
 		{
@@ -443,18 +448,16 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final List<HUToReport> husToProcess = huReportService
 				.getHUsToProcess(hu, adProcessId)
 				.stream()
-				.filter(HUToReport::isTopLevel) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
 				.collect(ImmutableList.toImmutableList());
 		if (husToProcess.isEmpty())
 		{
-			logger.debug("hu's type does not match process {}; nothing to do; hu={}", adProcessId, hu);
+			logger.debug("The selected hu does not match process {}; nothing to do; hu={}", adProcessId, hu);
 			return;
 		}
 
 		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount();
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		HUReportExecutor.newInstance(ctx)
+		HUReportExecutor.newInstance(Env.getCtx())
 				.numberOfCopies(copies)
 				.executeHUReportAfterCommit(adProcessId, husToProcess);
 	}

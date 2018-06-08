@@ -34,20 +34,23 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.ProductPrices;
 
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice
@@ -252,6 +255,31 @@ public class C_Invoice
 		for (final I_C_InvoiceLine line : lines)
 		{
 			InterfaceWrapperHelper.delete(line);
+		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
+	{
+		final I_C_Order order = invoice.getC_Order();
+		if (order != null && Services.get(IDocTypeBL.class).isPrepay(order.getC_DocType()) &&  order.getC_Payment_ID() > 0)
+		{
+			final I_C_Payment payment = order.getC_Payment();
+			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+			InterfaceWrapperHelper.save(payment);
+
+			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, payment, true);
+		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
+	{
+		final I_C_Order order = invoice.getC_Order();
+		if (order != null && Services.get(IDocTypeBL.class).isPrepay(order.getC_DocType()) && order.getC_Payment_ID() > 0)
+		{
+			final I_C_Payment payment = order.getC_Payment();
+			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, payment, true);
 		}
 	}
 }

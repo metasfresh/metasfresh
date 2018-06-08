@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_BPartner_Product
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 674564741L;
+	private static final long serialVersionUID = 714307253L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (Properties ctx, int C_BPartner_Product_ID, String trxName)
@@ -26,13 +25,14 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
         {
 			setC_BPartner_ID (0);
 			setC_BPartner_Product_ID (0);
-			setIsCurrentVendor (false);
-// N
-			setIsDropShip (false);
-// N
+			setIsCurrentVendor (false); // N
+			setIsDropShip (false); // N
+			setIsExcludedFromSale (false); // N
 			setM_Product_ID (0);
 			setShelfLifeMinDays (0);
 			setShelfLifeMinPct (0);
+			setUsedForCustomer (false); // N
+			setUsedForVendor (true); // Y
         } */
     }
 
@@ -144,6 +144,22 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return ii.intValue();
 	}
 
+	/** Set Auszeichnungsname.
+		@param CustomerLabelName Auszeichnungsname	  */
+	@Override
+	public void setCustomerLabelName (java.lang.String CustomerLabelName)
+	{
+		set_Value (COLUMNNAME_CustomerLabelName, CustomerLabelName);
+	}
+
+	/** Get Auszeichnungsname.
+		@return Auszeichnungsname	  */
+	@Override
+	public java.lang.String getCustomerLabelName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerLabelName);
+	}
+
 	/** Set Zugesicherte Lieferzeit.
 		@param DeliveryTime_Promised 
 		Zugesicherte Anzahl Tage zwischen Bestellung und Lieferung
@@ -180,6 +196,22 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Exclusion From Sale Reason.
+		@param ExclusionFromSaleReason Exclusion From Sale Reason	  */
+	@Override
+	public void setExclusionFromSaleReason (java.lang.String ExclusionFromSaleReason)
+	{
+		set_Value (COLUMNNAME_ExclusionFromSaleReason, ExclusionFromSaleReason);
+	}
+
+	/** Get Exclusion From Sale Reason.
+		@return Exclusion From Sale Reason	  */
+	@Override
+	public java.lang.String getExclusionFromSaleReason () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExclusionFromSaleReason);
 	}
 
 	/** Set Gegenwärtiger Lieferant.
@@ -234,23 +266,27 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return false;
 	}
 
-	/** Set Hersteller.
-		@param Manufacturer 
-		Manufacturer of the Product
-	  */
+	/** Set Exclusion from sales documents.
+		@param IsExcludedFromSale Exclusion from sales documents	  */
 	@Override
-	public void setManufacturer (java.lang.String Manufacturer)
+	public void setIsExcludedFromSale (boolean IsExcludedFromSale)
 	{
-		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+		set_Value (COLUMNNAME_IsExcludedFromSale, Boolean.valueOf(IsExcludedFromSale));
 	}
 
-	/** Get Hersteller.
-		@return Manufacturer of the Product
-	  */
+	/** Get Exclusion from sales documents.
+		@return Exclusion from sales documents	  */
 	@Override
-	public java.lang.String getManufacturer () 
+	public boolean isExcludedFromSale () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
+		Object oo = get_Value(COLUMNNAME_IsExcludedFromSale);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
@@ -290,6 +326,25 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return ii.intValue();
 	}
 
+	/** Set Hersteller.
+		@param Manufacturer 
+		Manufacturer of the Product
+	  */
+	@Override
+	public void setManufacturer (java.lang.String Manufacturer)
+	{
+		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+	}
+
+	/** Get Hersteller.
+		@return Manufacturer of the Product
+	  */
+	@Override
+	public java.lang.String getManufacturer () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
+	}
+
 	/** Set Mindestbestellmenge.
 		@param Order_Min 
 		Mindestbestellmenge in Mengeneinheit
@@ -308,7 +363,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Min);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -330,8 +385,78 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Pack);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Produktkategorie.
+		@param ProductCategory Produktkategorie	  */
+	@Override
+	public void setProductCategory (java.lang.String ProductCategory)
+	{
+		set_Value (COLUMNNAME_ProductCategory, ProductCategory);
+	}
+
+	/** Get Produktkategorie.
+		@return Produktkategorie	  */
+	@Override
+	public java.lang.String getProductCategory () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductCategory);
+	}
+
+	/** Set Produktbeschreibung.
+		@param ProductDescription 
+		Produktbeschreibung
+	  */
+	@Override
+	public void setProductDescription (java.lang.String ProductDescription)
+	{
+		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
+	}
+
+	/** Get Produktbeschreibung.
+		@return Produktbeschreibung
+	  */
+	@Override
+	public java.lang.String getProductDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
+	}
+
+	/** Set Produktname.
+		@param ProductName 
+		Name des Produktes
+	  */
+	@Override
+	public void setProductName (java.lang.String ProductName)
+	{
+		set_Value (COLUMNNAME_ProductName, ProductName);
+	}
+
+	/** Get Produktname.
+		@return Name des Produktes
+	  */
+	@Override
+	public java.lang.String getProductName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+	}
+
+	/** Set Produktnummer.
+		@param ProductNo Produktnummer	  */
+	@Override
+	public void setProductNo (java.lang.String ProductNo)
+	{
+		set_Value (COLUMNNAME_ProductNo, ProductNo);
+	}
+
+	/** Get Produktnummer.
+		@return Produktnummer	  */
+	@Override
+	public java.lang.String getProductNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductNo);
 	}
 
 	/** Set Qualitäts-Einstufung.
@@ -352,7 +477,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityRating);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -398,6 +523,71 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set UPC/EAN.
+		@param UPC 
+		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	  */
+	@Override
+	public void setUPC (java.lang.String UPC)
+	{
+		set_Value (COLUMNNAME_UPC, UPC);
+	}
+
+	/** Get UPC/EAN.
+		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	  */
+	@Override
+	public java.lang.String getUPC () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+	}
+
+	/** Set Verwendet für Kunden.
+		@param UsedForCustomer Verwendet für Kunden	  */
+	@Override
+	public void setUsedForCustomer (boolean UsedForCustomer)
+	{
+		set_Value (COLUMNNAME_UsedForCustomer, Boolean.valueOf(UsedForCustomer));
+	}
+
+	/** Get Verwendet für Kunden.
+		@return Verwendet für Kunden	  */
+	@Override
+	public boolean isUsedForCustomer () 
+	{
+		Object oo = get_Value(COLUMNNAME_UsedForCustomer);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Verwendet für Lieferant.
+		@param UsedForVendor Verwendet für Lieferant	  */
+	@Override
+	public void setUsedForVendor (boolean UsedForVendor)
+	{
+		set_Value (COLUMNNAME_UsedForVendor, Boolean.valueOf(UsedForVendor));
+	}
+
+	/** Get Verwendet für Lieferant.
+		@return Verwendet für Lieferant	  */
+	@Override
+	public boolean isUsedForVendor () 
+	{
+		Object oo = get_Value(COLUMNNAME_UsedForVendor);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Produkt-Kategorie Geschäftspartner.

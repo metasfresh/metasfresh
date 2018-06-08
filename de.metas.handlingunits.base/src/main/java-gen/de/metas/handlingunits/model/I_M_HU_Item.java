@@ -241,7 +241,7 @@ public interface I_M_HU_Item
 	 */
 	public int getM_HU_PI_Item_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item();
+	//public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item();
 
 	public void setM_HU_PI_Item(de.metas.handlingunits.model.I_M_HU_PI_Item M_HU_PI_Item);
 

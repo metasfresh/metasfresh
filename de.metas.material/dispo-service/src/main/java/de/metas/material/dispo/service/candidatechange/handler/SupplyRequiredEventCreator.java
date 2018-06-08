@@ -89,7 +89,7 @@ public class SupplyRequiredEventCreator
 	{
 		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(candidate.getId())
-				.eventDescriptor(new EventDescriptor(candidate.getClientId(), candidate.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(candidate.getClientId(), candidate.getOrgId()))
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty));
 	}
 

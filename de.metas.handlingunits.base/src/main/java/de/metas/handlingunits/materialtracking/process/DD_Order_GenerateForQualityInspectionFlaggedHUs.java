@@ -6,12 +6,18 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
 
+import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer;
+import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
@@ -32,11 +38,11 @@ import de.metas.process.RunOutOfTrx;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -52,6 +58,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 	// services
 	private final transient IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	//
 	// Parameters
@@ -91,15 +98,24 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
+		//
+		// Organization BPartner & Location
+		final I_AD_Org org = warehouseTo.getAD_Org();
+		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
+		Check.assumeNotNull(orgBPartner, "Org BPartner shall exist for {}", org);
+		final org.compiere.model.I_C_BPartner_Location orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(Env.getCtx(), org.getAD_Org_ID(), ITrx.TRXNAME_None);
+
 		HUs2DDOrderProducer.newProducer()
 				.setContext(getCtx())
 				.setM_Warehouse_To(warehouseTo)
+				.setBpartnerId(orgBPartner.getC_BPartner_ID())
+				.setBpartnerLocationId(orgBPLocation.getC_BPartner_Location_ID())
 				.setHUs(retriveHUs())
 				.process();
 		return MSG_OK;
 	}
 
-	private final Iterator<I_M_HU> retriveHUs()
+	private final Iterator<HUToDistribute> retriveHUs()
 	{
 		return handlingUnitsDAO.createHUQueryBuilder()
 				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
@@ -110,6 +126,8 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 				.addFilter(huDDOrderDAO.getHUsNotAlreadyScheduledToMoveFilter())
 				//
 				.createQuery()
-				.iterate(I_M_HU.class);
+				.stream(I_M_HU.class)
+				.map(HUToDistribute::ofHU)
+				.iterator();
 	}
 }
