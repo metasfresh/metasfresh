@@ -21,6 +21,12 @@
 
 	<dependencies>
 
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	
 		<!-- metasfresh -->
 		<dependency>
 			<groupId>de.metas.util</groupId>
@@ -50,18 +56,6 @@
 			<classifier>tests</classifier>
 		</dependency>
 
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
@@ -72,6 +66,35 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
+					<showWarnings>true</showWarnings>
+					<useIncrementalCompilation>false</useIncrementalCompilation>
+
+					<verbose>true</verbose>
+
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+					</annotationProcessorPaths>
+
+					<fork>true</fork>
+					<compilerArgs>
+						<arg>-XprintRounds</arg>
+						<arg>-XprintProcessorInfo</arg>
+					</compilerArgs>
+
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+
 			<!-- Create tests JAR -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

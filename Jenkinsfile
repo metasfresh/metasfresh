@@ -97,7 +97,8 @@ node('agent && linux')
 				// build and deploy
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+				// about -X: I hope to figure out what's going wrong with lombok in metasfresh-material-commons
+				sh "mvn -X --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 				} // if(params.MF_SKIP_TO_DIST)
 			}
 			stage('Build metasfresh docker image(s)')
