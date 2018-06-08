@@ -70,14 +70,20 @@ Here come the actual release notes:
 
 * metasfresh-dist
   * [#45](https://github.com/metasfresh/metasfresh-dist/issues/45) publish standalone jasper/reporting files
+    * Internal housekeeping improvement for the automatic publishing of standalone Jasper Files.
 
 ## Fixes
 * metasfresh
   * [#4122](https://github.com/metasfresh/metasfresh/issues/4122) Transform action throws error
+    * Fixes an error in certain cases of Handling Unit Transformations.
   * [#4123](https://github.com/metasfresh/metasfresh/issues/4123) Dunning Jasper does not work
+    * Fixes the Jasper Report for Dunning Documents.
   * [#4125](https://github.com/metasfresh/metasfresh/issues/4125) Sometimes I got NPE when posting an allocation
+    * Improvement of the Payment Allocation accounting.
   * [#4147](https://github.com/metasfresh/metasfresh/issues/4147) Error when posting a zero-sum invoice
+    * Fixes the posting of Invoices with 0 Sum.
   * [#4163](https://github.com/metasfresh/metasfresh/issues/4163) "Overlapping term" error when completing subscription order
+    * Fixes an error for the contract creation that occurred when completing a subscription order.
 
 * metasfresh-frontent-webui
   * [#1813](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1813) Cannot set attribute in orderline grid view
