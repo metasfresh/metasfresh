@@ -13,6 +13,8 @@ Here come the actual release notes:
 # metasfresh 5.61 (2018-24)
 ## Features
 * metasfresh
+  * [#4142](https://github.com/metasfresh/metasfresh/issues/4142) WebUI: Translation Window for Document Types
+    * New Window in WebUI that allows to maintain the Document Type Translations.
   * [#4143](https://github.com/metasfresh/metasfresh/issues/4143) WebUI: Translation Window for Messages
     * New Window in WebUI that allows to maintain the message Translations.
   * [#4173](https://github.com/metasfresh/metasfresh/issues/4173) Translations for Purchase Dispo modal Overlay Fields
