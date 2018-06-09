@@ -79,10 +79,10 @@ public class PurchaseCandidate
 	private PurchaseProfitInfo profitInfo;
 
 	@NonNull
-	private LocalDateTime dateRequired;
+	private LocalDateTime purchaseDatePromised;
 
 	@Setter(AccessLevel.NONE)
-	private LocalDateTime dateRequiredInitial;
+	private LocalDateTime purchaseDatePromisedInitial;
 
 	@Getter(AccessLevel.NONE)
 	private final Duration reminderTime;
@@ -116,7 +116,7 @@ public class PurchaseCandidate
 			//
 			@NonNull final Quantity qtyToPurchase,
 			//
-			@NonNull final LocalDateTime dateRequired,
+			@NonNull final LocalDateTime purchaseDatePromised,
 			final Duration reminderTime,
 			//
 			final PurchaseProfitInfo profitInfo,
@@ -145,9 +145,9 @@ public class PurchaseCandidate
 		this.qtyToPurchase = qtyToPurchase;
 		this.qtyToPurchaseInitial = qtyToPurchase;
 
-		this.dateRequired = dateRequired;
+		this.purchaseDatePromised = purchaseDatePromised;
+		this.purchaseDatePromisedInitial = purchaseDatePromised;
 		this.reminderTime = reminderTime;
-		this.dateRequiredInitial = dateRequired;
 
 		this.profitInfo = profitInfo;
 
@@ -172,8 +172,8 @@ public class PurchaseCandidate
 		
 		profitInfo = from.profitInfo;
 
-		dateRequired = from.dateRequired;
-		dateRequiredInitial = from.dateRequiredInitial;
+		purchaseDatePromised = from.purchaseDatePromised;
+		purchaseDatePromisedInitial = from.purchaseDatePromisedInitial;
 		reminderTime = from.reminderTime;
 
 		identifier = from.identifier;
@@ -263,7 +263,7 @@ public class PurchaseCandidate
 		return id == null // never saved
 				|| state.hasChanges()
 				|| qtyToPurchase.compareTo(qtyToPurchaseInitial) != 0
-				|| !Objects.equals(dateRequired, dateRequiredInitial);
+				|| !Objects.equals(purchaseDatePromised, purchaseDatePromisedInitial);
 	}
 
 	public void markSaved(@NonNull final PurchaseCandidateId newId)
@@ -273,7 +273,7 @@ public class PurchaseCandidate
 		state.markSaved();
 
 		qtyToPurchaseInitial = qtyToPurchase;
-		dateRequiredInitial = dateRequired;
+		purchaseDatePromisedInitial = purchaseDatePromised;
 	}
 
 	public static final class ErrorItemBuilder
@@ -415,11 +415,11 @@ public class PurchaseCandidate
 
 	public LocalDateTime getReminderDate()
 	{
-		if (reminderTime == null || dateRequired == null)
+		if (reminderTime == null || purchaseDatePromised == null)
 		{
 			return null;
 		}
 
-		return dateRequired.minus(reminderTime);
+		return purchaseDatePromised.minus(reminderTime);
 	}
 }

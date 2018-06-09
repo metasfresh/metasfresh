@@ -70,7 +70,7 @@ import mockit.Verifications;
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseOrderFromItemFactoryTest
 {
-	private static final LocalDateTime PURCHASE_CANDIDATE_DATE_REQUIRED = SystemTime.asLocalDateTime();
+	private static final LocalDateTime PURCHASE_DATE_PROMISED = SystemTime.asLocalDateTime();
 
 	private I_C_UOM EACH;
 	private Quantity PURCHASE_CANDIDATE_QTY_TO_PURCHASE;
@@ -99,7 +99,7 @@ public class PurchaseOrderFromItemFactoryTest
 	@Test
 	public void deviatingDatePromised()
 	{
-		final LocalDateTime deviatingDatePromised = PURCHASE_CANDIDATE_DATE_REQUIRED.plusDays(1);
+		final LocalDateTime deviatingDatePromised = PURCHASE_DATE_PROMISED.plusDays(1);
 
 		setAndRunMethodUnderTest(deviatingDatePromised, PURCHASE_CANDIDATE_QTY_TO_PURCHASE);
 
@@ -121,7 +121,7 @@ public class PurchaseOrderFromItemFactoryTest
 	{
 		final Quantity deviatingPurchasedQty = PURCHASE_CANDIDATE_QTY_TO_PURCHASE.subtract(BigDecimal.ONE);
 
-		setAndRunMethodUnderTest(PURCHASE_CANDIDATE_DATE_REQUIRED, deviatingPurchasedQty);
+		setAndRunMethodUnderTest(PURCHASE_DATE_PROMISED, deviatingPurchasedQty);
 
 		// @formatter:off
 		new Verifications()
@@ -140,7 +140,7 @@ public class PurchaseOrderFromItemFactoryTest
 	public void deviatingPurchasedQtyAndDatePrmised()
 	{
 		final Quantity deviatingPurchasedQty = PURCHASE_CANDIDATE_QTY_TO_PURCHASE.subtract(BigDecimal.ONE);
-		final LocalDateTime deviatingDatePromised = PURCHASE_CANDIDATE_DATE_REQUIRED.plusDays(1);
+		final LocalDateTime deviatingDatePromised = PURCHASE_DATE_PROMISED.plusDays(1);
 
 		setAndRunMethodUnderTest(deviatingDatePromised, deviatingPurchasedQty);
 
@@ -212,7 +212,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)
-				.dateRequired(PURCHASE_CANDIDATE_DATE_REQUIRED)
+				.purchaseDatePromised(PURCHASE_DATE_PROMISED)
 				.processed(false)
 				.locked(false)
 				.build();

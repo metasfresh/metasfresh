@@ -82,7 +82,7 @@ public class PurchaseCandidateAggregate
 		qtyAlreadyPurchased = Quantity.addNullables(qtyAlreadyPurchased, purchasedQty);
 
 		//
-		datePromised = TimeUtil.min(datePromised, purchaseCandidate.getDateRequired());
+		datePromised = TimeUtil.min(datePromised, purchaseCandidate.getPurchaseDatePromised());
 
 		if (purchaseCandidate.getSalesOrderAndLineId() != null)
 		{

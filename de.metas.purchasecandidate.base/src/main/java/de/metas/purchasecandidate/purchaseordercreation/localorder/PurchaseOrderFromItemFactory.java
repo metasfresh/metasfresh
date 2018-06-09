@@ -147,9 +147,9 @@ import lombok.NonNull;
 		boolean deviatingQuantity = false;
 		for (final PurchaseOrderItem purchaseOrderItem : purchaseItem2OrderLine.keySet())
 		{
-			final LocalDateTime dateRequired = purchaseOrderItem.getDateRequired();
+			final LocalDateTime purchaseDatePromised = purchaseOrderItem.getPurchaseDatePromised();
 
-			if (!Objects.equals(dateRequired, TimeUtil.asLocalDateTime(order.getDatePromised())))
+			if (!Objects.equals(purchaseDatePromised, TimeUtil.asLocalDateTime(order.getDatePromised())))
 			{
 				deviatingDatePromised = true;
 			}

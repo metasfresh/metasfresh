@@ -63,7 +63,7 @@ public class PurchaseCandidatesGroup
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				//
-				.purchaseDatePromised(purchaseCandidate.getDateRequired())
+				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
 				//
 				.profitInfo(purchaseCandidate.getProfitInfo());
 

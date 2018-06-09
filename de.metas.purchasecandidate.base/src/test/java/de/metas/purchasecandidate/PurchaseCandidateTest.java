@@ -124,13 +124,13 @@ public class PurchaseCandidateTest
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
-		final LocalDateTime newDatePromised = candidate.getDateRequired().plusDays(1);
-		candidate.setDateRequired(newDatePromised);
+		final LocalDateTime newDatePromised = candidate.getPurchaseDatePromised().plusDays(1);
+		candidate.setPurchaseDatePromised(newDatePromised);
 
 		assertThat(candidate.hasChanges()).isTrue();
 		assertThat(candidate.copy().hasChanges()).isTrue();
-		assertThat(candidate.getDateRequired()).isEqualTo(newDatePromised);
-		assertThat(candidate.copy().getDateRequired()).isEqualTo(newDatePromised);
+		assertThat(candidate.getPurchaseDatePromised()).isEqualTo(newDatePromised);
+		assertThat(candidate.copy().getPurchaseDatePromised()).isEqualTo(newDatePromised);
 
 		candidate.markSaved(PurchaseCandidateId.ofRepoId(1));
 		assertThat(candidate.hasChanges()).isFalse();

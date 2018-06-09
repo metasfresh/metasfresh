@@ -172,9 +172,9 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getVendorId();
 	}
 
-	public LocalDateTime getDateRequired()
+	public LocalDateTime getPurchaseDatePromised()
 	{
-		return getPurchaseCandidate().getDateRequired();
+		return getPurchaseCandidate().getPurchaseDatePromised();
 	}
 
 	public OrderId getSalesOrderId()

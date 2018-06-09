@@ -237,7 +237,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(ONE)
-				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
 				.locked(false)
 				.build();

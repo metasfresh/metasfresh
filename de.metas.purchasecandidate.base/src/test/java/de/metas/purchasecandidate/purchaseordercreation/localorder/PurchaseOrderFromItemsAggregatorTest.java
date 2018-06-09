@@ -112,7 +112,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(OrgId.ofRepoId(10))
-				.dateRequired(SystemTime.asLocalDateTime())
+				.purchaseDatePromised(SystemTime.asLocalDateTime())
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(vendorProductInfo.getProductId())

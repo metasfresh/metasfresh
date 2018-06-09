@@ -25,7 +25,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -280,7 +279,7 @@ public class PurchaseCandidateRepository
 		record.setC_UOM_ID(qtyToPurchase.getUOMId());
 		record.setQtyToPurchase(qtyToPurchase.getAsBigDecimal());
 
-		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getDateRequired()));
+		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getPurchaseDatePromised()));
 		record.setReminderDate(TimeUtil.asTimestamp(purchaseCandidate.getReminderDate()));
 
 		final BPartnerId vendorId = purchaseCandidate.getVendorId();
@@ -307,43 +306,41 @@ public class PurchaseCandidateRepository
 	/**
 	 * Note to dev: keep in sync with {@link #createOrUpdateRecord(PurchaseCandidate, I_C_PurchaseCandidate)}
 	 */
-	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
+	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate record)
 	{
 		final ILockManager lockManager = Services.get(ILockManager.class);
 
-		final boolean locked = lockManager.isLocked(purchaseCandidateRecord);
+		final boolean locked = lockManager.isLocked(record);
 
-		final LocalDateTime dateRequired = TimeUtil.asLocalDateTime(purchaseCandidateRecord.getDateRequired());
-		final LocalDateTime dateReminder = TimeUtil.asLocalDateTime(purchaseCandidateRecord.getReminderDate());
-		final Duration reminderTime = dateRequired != null && dateReminder != null ? Duration.between(dateRequired, dateReminder) : null;
+		final LocalDateTime purchaseDatePromised = TimeUtil.asLocalDateTime(record.getDateRequired());
+		final LocalDateTime dateReminder = TimeUtil.asLocalDateTime(record.getReminderDate());
+		final Duration reminderTime = purchaseDatePromised != null && dateReminder != null ? Duration.between(purchaseDatePromised, dateReminder) : null;
 
-		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIdsOrNull(purchaseCandidateRecord.getC_OrderSO_ID(), purchaseCandidateRecord.getC_OrderLineSO_ID());
-		final I_C_UOM uom = uomsRepo.getById(purchaseCandidateRecord.getC_UOM_ID());
-		final Quantity qtyToPurchase = Quantity.of(purchaseCandidateRecord.getQtyToPurchase(), uom);
+		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIdsOrNull(record.getC_OrderSO_ID(), record.getC_OrderLineSO_ID());
+		final Quantity qtyToPurchase = Quantity.of(record.getQtyToPurchase(), uomsRepo.getById(record.getC_UOM_ID()));
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.locked(locked)
-				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateRecord.getC_PurchaseCandidate_ID()))
+				.id(PurchaseCandidateId.ofRepoIdOrNull(record.getC_PurchaseCandidate_ID()))
 				.salesOrderAndLineId(salesOrderAndLineId)
-				.processed(purchaseCandidateRecord.isProcessed())
+				.processed(record.isProcessed())
 				//
-				.dateRequired(dateRequired)
+				.purchaseDatePromised(purchaseDatePromised)
 				.reminderTime(reminderTime)
 				//
-				.vendorId(BPartnerId.ofRepoId(purchaseCandidateRecord.getVendor_ID()))
+				.vendorId(BPartnerId.ofRepoId(record.getVendor_ID()))
 				//
-				.orgId(OrgId.ofRepoId(purchaseCandidateRecord.getAD_Org_ID()))
-				.warehouseId(WarehouseId.ofRepoId(purchaseCandidateRecord.getM_WarehousePO_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.warehouseId(WarehouseId.ofRepoId(record.getM_WarehousePO_ID()))
 				//
-				.productId(ProductId.ofRepoId(purchaseCandidateRecord.getM_Product_ID()))
-				// .vendorProductNo(purchaseCandidateRecord.getVendorProductNo()) // TODO
-				.vendorProductNo(productsRepo.retrieveProductValueByProductId(purchaseCandidateRecord.getM_Product_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.vendorProductNo(productsRepo.retrieveProductValueByProductId(record.getM_Product_ID()))
 				//
 				.qtyToPurchase(qtyToPurchase)
 				//
-				.profitInfo(toPurchaseProfitInfo(purchaseCandidateRecord))
+				.profitInfo(toPurchaseProfitInfo(record))
 				//
-				.aggregatePOs(purchaseCandidateRecord.isAggregatePO())
+				.aggregatePOs(record.isAggregatePO())
 				//
 				.build();
 

@@ -17,7 +17,6 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -158,7 +157,7 @@ public class PurchaseDemandWithCandidatesService
 		{
 			qtyToPurchase = Quantity.addNullables(qtyToPurchase, candidate.getQtyToPurchase());
 			purchasedQty = Quantity.addNullables(purchasedQty, candidate.getPurchasedQty());
-			purchaseDatePromised = TimeUtil.min(purchaseDatePromised, candidate.getDateRequired());
+			purchaseDatePromised = TimeUtil.min(purchaseDatePromised, candidate.getPurchaseDatePromised());
 
 			if (candidate.getId() != null)
 			{
@@ -271,6 +270,8 @@ public class PurchaseDemandWithCandidatesService
 		final WarehouseId warehouseId = getPurchaseWarehouseId(demand);
 		final LocalDateTime salesDatePromised = demand.getSalesDatePromised();
 
+		//
+		// PurchaseDatePromised and ReminderTime
 		final BPartnerId vendorId = vendorProductInfo.getVendorId();
 		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(
 				vendorId,
@@ -279,19 +280,24 @@ public class PurchaseDemandWithCandidatesService
 		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule);
 		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
-		final I_C_UOM uom = uomsRepo.getById(demand.getUOMId());
-		final Quantity qtyToPurchase = Quantity.zero(uom);
+		//
+		// QtyToPurchase=0
+		final Quantity qtyToPurchase = Quantity.zero(uomsRepo.getById(demand.getUOMId()));
 
+		//
+		// PurchaseProfitInfo
 		final PurchaseProfitInfo purchaseProfitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest.builder()
 				.salesOrderAndLineIds(demand.getSalesOrderAndLineIds())
 				.qtyToPurchase(qtyToPurchase)
 				.vendorProductInfo(vendorProductInfo)
 				.build());
 
+		//
+		// Assemble the PurchaseCandidate
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.salesOrderAndLineId(demand.getSalesOrderAndLineId())
 				//
-				.dateRequired(purchaseDatePromised)
+				.purchaseDatePromised(purchaseDatePromised)
 				.reminderTime(reminderTime)
 				//
 				.orgId(demand.getOrgId())
@@ -309,6 +315,7 @@ public class PurchaseDemandWithCandidatesService
 				//
 				.build();
 
+		//
 		return PurchaseCandidatesGroup.of(purchaseCandidate, demand.getId(), vendorProductInfo);
 	}
 
