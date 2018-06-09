@@ -91,10 +91,10 @@ public final class PurchaseRow implements IViewRow
 	private final LookupValue vendorBPartner;
 
 	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_CustomerPriceGrossProfit, widgetType = DocumentFieldWidgetType.Amount, seqNo = 23)
-	private BigDecimal salesNetPrice;
+	private Money salesNetPrice;
 
 	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_PurchasePriceActual, widgetType = DocumentFieldWidgetType.Amount, seqNo = 25)
-	private BigDecimal purchaseNetPrice;
+	private Money purchaseNetPrice;
 
 	@ViewColumn(captionKey = "PercentGrossProfit", widgetType = DocumentFieldWidgetType.Amount, seqNo = 25)
 	private BigDecimal profitPercent;
@@ -456,10 +456,8 @@ public final class PurchaseRow implements IViewRow
 	{
 		if (profitInfo != null)
 		{
-			salesNetPrice = profitInfo.getSalesNetPrice()
-					.map(Money::getValue)
-					.orElse(null);
-			purchaseNetPrice = profitInfo.getPurchaseNetPrice().getValue();
+			salesNetPrice = profitInfo.getSalesNetPrice().orElse(null);
+			purchaseNetPrice = profitInfo.getPurchaseNetPrice().orElse(null);
 			profitPercent = profitInfo.getProfitPercent()
 					.map(percent -> percent.roundToHalf(RoundingMode.HALF_UP).getValueAsBigDecimal())
 					.orElse(null);

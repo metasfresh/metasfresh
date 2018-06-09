@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.adempiere.util.Services;
 
@@ -66,23 +67,15 @@ class PurchaseRowsSaver
 
 	public List<PurchaseCandidate> save(final List<PurchaseRow> groupingRows)
 	{
-		final Set<PurchaseDemandId> purchaseDemandIds = groupingRows.stream()
-				.map(PurchaseRow::getPurchaseDemandId)
-				.filter(id -> id != null)
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<PurchaseDemandId> demandIds = extractDemandIds(groupingRows);
+		final Map<PurchaseCandidateId, PurchaseCandidate> existingPurchaseCandidatesById = getExistingPurchaseCandidatesIndexedById(demandIds);
 
-		final Map<PurchaseCandidateId, PurchaseCandidate> existingPurchaseCandidatesById = purchaseCandidatesRepo
-				.getAllByDemandIds(purchaseDemandIds)
-				.values()
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(PurchaseCandidate::getId, Function.identity()));
-
-		final List<PurchaseCandidate> purchaseCandidatesToSave = groupingRows.stream()
-				.flatMap(PurchaseRow::streamPurchaseCandidatesGroup)
+		//
+		// Create/Update purchase candidates
+		final List<PurchaseCandidate> purchaseCandidatesToSave = streamPurchaseCandidatesGroups(groupingRows)
 				.map(candidatesGroup -> updatePurchaseCandidate(candidatesGroup, existingPurchaseCandidatesById))
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
-
 		purchaseCandidatesRepo.saveAll(purchaseCandidatesToSave);
 
 		//
@@ -100,6 +93,28 @@ class PurchaseRowsSaver
 		purchaseCandidatesRepo.deleteByIds(purchaseCandidateIdsToDelete);
 
 		return purchaseCandidatesToSave;
+	}
+
+	private static Stream<PurchaseCandidatesGroup> streamPurchaseCandidatesGroups(final List<PurchaseRow> groupingRows)
+	{
+		return groupingRows.stream().flatMap(PurchaseRow::streamPurchaseCandidatesGroup);
+	}
+
+	private ImmutableMap<PurchaseCandidateId, PurchaseCandidate> getExistingPurchaseCandidatesIndexedById(final Set<PurchaseDemandId> demandIds)
+	{
+		return purchaseCandidatesRepo
+				.getAllByDemandIds(demandIds)
+				.values()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(PurchaseCandidate::getId, Function.identity()));
+	}
+
+	private ImmutableSet<PurchaseDemandId> extractDemandIds(final List<PurchaseRow> groupingRows)
+	{
+		return groupingRows.stream()
+				.map(PurchaseRow::getPurchaseDemandId)
+				.filter(id -> id != null)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private List<PurchaseCandidate> updatePurchaseCandidate(
