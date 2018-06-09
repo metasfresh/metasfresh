@@ -25,6 +25,8 @@ package de.metas.pricing.service.impl;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -73,7 +75,7 @@ public class PriceListBL implements IPriceListBL
 			final int pricingSystemId,
 			final int countryId,
 			final Timestamp date,
-			@NonNull final SOTrx soTrx,
+			@Nullable final SOTrx soTrx,
 			final Boolean processedPLVFiltering)
 	{
 		Check.assumeNotNull(date, "Param 'date' is not null; other params: country={}, soTrx={}, processedPLVFiltering={}", countryId, soTrx, processedPLVFiltering);
@@ -89,7 +91,7 @@ public class PriceListBL implements IPriceListBL
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx.isSales());
+		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx == null ? null : soTrx.isSales());
 		if (!pricelists.hasNext())
 		{
 			return null;
