@@ -12,6 +12,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -41,6 +42,7 @@ import lombok.experimental.Wither;
 
 @Value
 @Builder(toBuilder = true)
+@EqualsAndHashCode(doNotUseGetters = true)
 @Wither
 public class Candidate
 {
