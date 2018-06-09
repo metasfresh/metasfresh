@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.grossprofit;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.bpartner.BPartnerId;
@@ -43,11 +44,11 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -99,32 +100,44 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 		final Percent vendorFlatDiscount = vendorProductInfo.getVendorFlatDiscount();
 		final PricingConditionsBreak vendorPricingConditionsBreak = vendorProductInfo.getPricingConditionsBreakOrNull(qtyToPurchase);
 
-		final PricingConditionsResult vendorPricingConditionsResult = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
-				.forcePricingConditionsBreak(vendorPricingConditionsBreak)
-				.bpartnerFlatDiscount(vendorFlatDiscount)
-				.pricingCtx(createPricingContext(vendorPricingConditionsBreak, vendorId))
-				.build());
-
-		final BigDecimal purchaseBasePrice = vendorPricingConditionsResult.getPriceStdOverride();
-		final CurrencyId currencyId = vendorPricingConditionsResult.getCurrencyId();
-		if (purchaseBasePrice == null || currencyId == null)
+		final Money purchaseBasePrice;
+		final Money purchaseNetPrice;
+		if (vendorPricingConditionsBreak != null)
 		{
-			if (currencyId == null && purchaseBasePrice != null)
-			{
-				logger.warn("Returning null because currency is not set, even though price is set: {}", vendorPricingConditionsResult);
-			}
-			return null;
-		}
+			final PricingConditionsResult vendorPricingConditionsResult = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
+					.forcePricingConditionsBreak(vendorPricingConditionsBreak)
+					.bpartnerFlatDiscount(vendorFlatDiscount)
+					.pricingCtx(createPricingContext(vendorPricingConditionsBreak, vendorId))
+					.build());
 
-		final Currency currency = currencyRepo.getById(currencyId);
-		final BigDecimal purchaseNetPrice = vendorPricingConditionsBreak.getDiscount().subtractFromBase(purchaseBasePrice, 2);
+			final BigDecimal purchaseBasePriceValue = vendorPricingConditionsResult.getPriceStdOverride();
+			final CurrencyId currencyId = vendorPricingConditionsResult.getCurrencyId();
+			if (purchaseBasePriceValue == null || currencyId == null)
+			{
+				if (currencyId == null && purchaseBasePriceValue != null)
+				{
+					logger.warn("Returning null because currency is not set, even though price is set: {}", vendorPricingConditionsResult);
+				}
+				return null;
+			}
+
+			final Currency currency = currencyRepo.getById(currencyId);
+			purchaseBasePrice = Money.of(purchaseBasePriceValue, currency);
+
+			purchaseNetPrice = purchaseBasePrice.subtract(vendorPricingConditionsBreak.getDiscount());
+		}
+		else
+		{
+			purchaseBasePrice = null;
+			purchaseNetPrice = null;
+		}
 
 		// TODO: subtract paymentTerm discount if any
 
 		return PurchaseProfitInfo.builder()
 				.salesNetPrice(grossProfitPriceRepo.getProfitMinBasePrice(salesOrderAndLineIds))
-				.purchaseGrossPrice(Money.of(purchaseBasePrice, currency))
-				.purchaseNetPrice(Money.of(purchaseNetPrice, currency))
+				.purchaseGrossPrice(purchaseBasePrice)
+				.purchaseNetPrice(purchaseNetPrice)
 				.build();
 	}
 
@@ -144,9 +157,14 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 	public PurchaseProfitInfo convertToCurrency(@NonNull final PurchaseProfitInfo profitInfo, @NonNull final Currency currencyTo)
 	{
 		return profitInfo.toBuilder()
-				.salesNetPrice(profitInfo.getSalesNetPrice().map(price -> moneyService.convertMoneyToCurrency(price, currencyTo)))
-				.purchaseNetPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseNetPrice(), currencyTo))
-				.purchaseGrossPrice(moneyService.convertMoneyToCurrency(profitInfo.getPurchaseGrossPrice(), currencyTo))
+				.salesNetPrice(convertToCurrency(profitInfo.getSalesNetPrice(), currencyTo))
+				.purchaseNetPrice(convertToCurrency(profitInfo.getPurchaseNetPrice(), currencyTo))
+				.purchaseGrossPrice(convertToCurrency(profitInfo.getPurchaseGrossPrice(), currencyTo))
 				.build();
+	}
+
+	private final Optional<Money> convertToCurrency(final Optional<Money> optionalPrice, final Currency currencyTo)
+	{
+		return optionalPrice.map(price -> moneyService.convertMoneyToCurrency(price, currencyTo));
 	}
 }

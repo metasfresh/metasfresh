@@ -275,11 +275,11 @@ public class PurchaseCandidateRepository
 		record.setAD_Org_ID(purchaseCandidate.getOrgId().getRepoId());
 		record.setM_WarehousePO_ID(purchaseCandidate.getWarehouseId().getRepoId());
 		record.setM_Product_ID(purchaseCandidate.getProductId().getRepoId());
-		
+
 		final Quantity qtyToPurchase = purchaseCandidate.getQtyToPurchase();
 		record.setC_UOM_ID(qtyToPurchase.getUOMId());
 		record.setQtyToPurchase(qtyToPurchase.getAsBigDecimal());
-		
+
 		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getDateRequired()));
 		record.setReminderDate(TimeUtil.asTimestamp(purchaseCandidate.getReminderDate()));
 
@@ -351,7 +351,7 @@ public class PurchaseCandidateRepository
 
 		return purchaseCandidate;
 	}
-	
+
 	private PurchaseProfitInfo toPurchaseProfitInfo(final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
 		final int currencyId = purchaseCandidateRecord.getC_Currency_ID();
@@ -372,10 +372,10 @@ public class PurchaseCandidateRepository
 	{
 		if (profitInfo != null)
 		{
-			record.setCustomerPriceGrossProfit(profitInfo.getSalesNetPrice().map(Money::getValue).orElse(null));
-			record.setPriceGrossProfit(profitInfo.getPurchaseNetPrice().getValue());
-			record.setPurchasePriceActual(profitInfo.getPurchaseGrossPrice().getValue());
-			record.setC_Currency_ID(profitInfo.getCommonCurrency().getId().getRepoId());
+			record.setCustomerPriceGrossProfit(profitInfo.getSalesNetPriceAsBigDecimalOr(null));
+			record.setPriceGrossProfit(profitInfo.getPurchaseNetPriceAsBigDecimalOr(null));
+			record.setPurchasePriceActual(profitInfo.getPurchaseGrossPriceAsBigDecimalOr(null));
+			record.setC_Currency_ID(profitInfo.getCommonCurrencyRepoIdOr(-1));
 		}
 		else
 		{
