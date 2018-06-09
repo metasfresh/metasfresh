@@ -167,7 +167,7 @@ class PurchaseRowsSaver
 			final Quantity qtyToPurchaseTarget = getQtyToPurchaseTarget(candidate);
 			final Quantity qtyToPurchase = qtyToPurchaseTarget.min(qtyToPurchaseRemaining);
 			candidate.setQtyToPurchase(qtyToPurchase);
-			candidate.setDateRequired(purchaseDatePromised);
+			candidate.setPurchaseDatePromised(purchaseDatePromised);
 			candidate.setProfitInfo(profitInfo);
 
 			candidatesChanged.add(candidate);
@@ -192,7 +192,7 @@ class PurchaseRowsSaver
 		{
 			final PurchaseCandidate lastCandidate = candidatesToUpdate.get(candidatesToUpdate.size() - 1);
 			lastCandidate.setQtyToPurchase(lastCandidate.getQtyToPurchase().add(qtyToPurchaseRemaining));
-			lastCandidate.setDateRequired(purchaseDatePromised);
+			lastCandidate.setPurchaseDatePromised(purchaseDatePromised);
 
 			qtyToPurchaseRemaining = qtyToPurchaseRemaining.toZero();
 		}
@@ -201,9 +201,9 @@ class PurchaseRowsSaver
 		else
 		{
 			final PurchaseCandidate newCandidate = PurchaseCandidate.builder()
-					// .salesOrderAndLineId(candidatesGroup.getSalesOrderAndLineId()) // TODO: which sales order line to pick?!
+					.salesOrderAndLineId(candidatesGroup.getSingleSalesOrderAndLineId())
 					//
-					.dateRequired(purchaseDatePromised)
+					.purchaseDatePromised(purchaseDatePromised)
 					// .reminderTime(reminderTime) // TODO reminder time
 					//
 					.orgId(candidatesGroup.getOrgId())

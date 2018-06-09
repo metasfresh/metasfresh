@@ -131,7 +131,7 @@ public class PurchaseRowFactoryTest
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(vendorProductInfo.getProductId())
 				.qtyToPurchase(ONE)
-				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.profitInfo(profitInfo)
 				.processed(true) // imporant if we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
 				.locked(false)

@@ -235,7 +235,7 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(OrgId.ofRepoId(20))
-				.dateRequired(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
+				.purchaseDatePromised(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.qtyToPurchase(Quantity.of(orderLine.getQtyOrdered(), orderLine.getM_Product().getC_UOM()))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
