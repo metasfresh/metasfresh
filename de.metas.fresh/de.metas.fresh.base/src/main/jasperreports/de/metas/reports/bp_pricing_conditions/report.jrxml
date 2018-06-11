@@ -67,7 +67,7 @@ report.bpartner_pricing_conditions ($P{C_BPartner_ID}, $P{C_BPartner_Location_ID
 	<title>
 		<band height="130" splitType="Stretch">
 			<textField>
-				<reportElement x="30" y="30" width="350" height="24" forecolor="#1C384F" uuid="f986f842-9b0e-4c58-b677-d502bf68e54d"/>
+				<reportElement x="30" y="30" width="350" height="24" forecolor="#000000" uuid="f986f842-9b0e-4c58-b677-d502bf68e54d"/>
 				<textElement>
 					<font size="18" isBold="true"/>
 				</textElement>
