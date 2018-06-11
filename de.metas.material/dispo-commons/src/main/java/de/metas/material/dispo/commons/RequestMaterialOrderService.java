@@ -181,7 +181,10 @@ public class RequestMaterialOrderService
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
-		final DDOrderBuilder ddOrderBuilder = DDOrder.builder();
+		final DDOrderBuilder ddOrderBuilder = DDOrder
+				.builder()
+				.materialDispoGroupId(10);
+
 		final DDOrderLineBuilder ddOrderLineBuilder = DDOrderLine.builder();
 
 		Date startDate = null;
