@@ -194,7 +194,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 			return AD_Process_ID_T_Letter_Spool_Print;
 		}
 
-		final I_AD_BoilerPlate textTemplate = InterfaceWrapperHelper.loadOutOfTrx(request.getBoilerPlateId().getRepoId(), I_AD_BoilerPlate.class);
+		final I_AD_BoilerPlate textTemplate = loadOutOfTrx(request.getBoilerPlateId().getRepoId(), I_AD_BoilerPlate.class);
 		if (textTemplate == null)
 		{
 			return AD_Process_ID_T_Letter_Spool_Print;

@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.location.LocationId;
-import org.adempiere.location.LocationRepository;
 import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
@@ -51,7 +50,6 @@ public class CampaignService
 
 	public CampaignService(@NonNull final ContactPersonRepository contactPersonRepository,
 			@NonNull final CampaignRepository campaignRepository,
-			@NonNull final LocationRepository locationRepository,
 			@NonNull final PlatformRepository platformRepository)
 	{
 		this.contactPersonRepository = contactPersonRepository;
