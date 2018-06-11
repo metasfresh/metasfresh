@@ -3,7 +3,7 @@ describe('Login test', function() {
 
     beforeEach(function(){
       // login before each test
-      cy.loginByForm('kuba', 'kuba1234');
+      cy.loginByForm();
     });
 
     it('redirects to dashboard on success', function() {

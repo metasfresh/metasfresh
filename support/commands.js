@@ -29,12 +29,21 @@ import { goBack, push } from 'react-router-redux';
 
 import { loginSuccess } from '../../src/actions/AppActions';
 import Auth from '../../src/services/Auth';
+import config from '../config';
 
 context('Reusable "login" custom command', function() {
   Cypress.Commands.add('loginByForm', (username, password, redirect) => {
+    let user = username;
+    let pass = password;
+
+    if (!username || !password) {
+      user = config.username;
+      pass = config.password;
+    }
+
     Cypress.log({
       name: 'loginByForm',
-      message: username + ' | ' + password,
+      message: user + ' | ' + pass,
     });
 
     const handleSuccess = function(){
@@ -76,8 +85,8 @@ context('Reusable "login" custom command', function() {
       failOnStatusCode: false,
       followRedirect: false,
       body: {
-        username,
-        password,
+        username: user,
+        password: pass,
       },
     }).then(response => {
       if (!response.isOkStatusCode) {
