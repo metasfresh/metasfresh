@@ -2,13 +2,15 @@ package de.metas.ui.web.quickinput;
 
 import java.util.Objects;
 
+import javax.annotation.concurrent.Immutable;
+
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
-import groovy.transform.Immutable;
+
 
 /*
  * #%L
