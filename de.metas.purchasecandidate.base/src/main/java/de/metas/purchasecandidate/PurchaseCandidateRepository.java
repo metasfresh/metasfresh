@@ -224,8 +224,8 @@ public class PurchaseCandidateRepository
 				final I_C_PurchaseCandidate existingRecord = id != null ? existingRecordsById.get(id) : null;
 				createOrUpdateRecord(purchaseCandidate, existingRecord);
 
-				purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseOrderItems());
-				purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseErrorItems());
+				purchaseItemRepository.saveAll(purchaseCandidate.getPurchaseOrderItems());
+				purchaseItemRepository.saveAll(purchaseCandidate.getPurchaseErrorItems());
 			} ;
 		}
 		finally
@@ -289,6 +289,7 @@ public class PurchaseCandidateRepository
 
 		updateRecordFromPurchaseProfitInfo(record, purchaseCandidate.getProfitInfo());
 
+		record.setIsPrepared(purchaseCandidate.isPrepared());
 		record.setProcessed(purchaseCandidate.isProcessed());
 
 		InterfaceWrapperHelper.save(record);
@@ -344,7 +345,7 @@ public class PurchaseCandidateRepository
 				//
 				.build();
 
-		purchaseItemRepository.retrieveForPurchaseCandidate(purchaseCandidate);
+		purchaseItemRepository.loadPurchaseItems(purchaseCandidate);
 
 		return purchaseCandidate;
 	}

@@ -2,12 +2,13 @@ package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IErrorManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -50,24 +51,27 @@ import lombok.NonNull;
 public class PurchaseItemRepository
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	
-	public void storeRecords(@NonNull final List<? extends PurchaseItem> purchaseItems)
+
+	public void saveAll(@NonNull final List<? extends PurchaseItem> purchaseItems)
 	{
-		purchaseItems.forEach(PurchaseItemRepository::validateAndStore);
+		purchaseItems.forEach(PurchaseItemRepository::save);
 	}
 
-	private static void validateAndStore(@NonNull final PurchaseItem purchaseItem)
+	private static void save(@NonNull final PurchaseItem purchaseItem)
 	{
 		if (purchaseItem instanceof PurchaseOrderItem)
 		{
 			final PurchaseOrderItem purchaseOrderItem = (PurchaseOrderItem)purchaseItem;
-			validate(purchaseOrderItem);
-			store(purchaseOrderItem);
+			savePurchaseOrderItem(purchaseOrderItem);
 		}
-		if (purchaseItem instanceof PurchaseErrorItem)
+		else if (purchaseItem instanceof PurchaseErrorItem)
 		{
 			final PurchaseErrorItem purchaseErrorItem = (PurchaseErrorItem)purchaseItem;
-			store(purchaseErrorItem);
+			savePurchaseErrorItem(purchaseErrorItem);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown PurchaseItem type: " + purchaseItem);
 		}
 	}
 
@@ -85,8 +89,10 @@ public class PurchaseItemRepository
 				purchaseOrderItem);
 	}
 
-	private static void store(@NonNull final PurchaseOrderItem purchaseOrderItem)
+	private static void savePurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
+		validate(purchaseOrderItem);
+
 		final I_C_PurchaseCandidate_Alloc record = createOrLoadRecord(purchaseOrderItem);
 
 		record.setAD_Org_ID(purchaseOrderItem.getOrgId().getRepoId());
@@ -105,10 +111,11 @@ public class PurchaseItemRepository
 			record.setAD_Table_ID(transactionReference.getAD_Table_ID());
 			record.setRecord_ID(transactionReference.getRecord_ID());
 		}
-		save(record);
+
+		saveRecord(record);
 	}
 
-	private static void store(@NonNull final PurchaseErrorItem purchaseErrorItem)
+	private static void savePurchaseErrorItem(@NonNull final PurchaseErrorItem purchaseErrorItem)
 	{
 		final I_C_PurchaseCandidate_Alloc record = createOrLoadRecord(purchaseErrorItem);
 
@@ -124,11 +131,10 @@ public class PurchaseItemRepository
 
 		record.setAD_Table_ID(purchaseErrorItem.getTransactionReference().getAD_Table_ID());
 		record.setRecord_ID(purchaseErrorItem.getTransactionReference().getRecord_ID());
-		save(record);
+		saveRecord(record);
 	}
 
-	private static I_C_PurchaseCandidate_Alloc createOrLoadRecord(
-			@NonNull final PurchaseItem purchaseOrderItem)
+	private static I_C_PurchaseCandidate_Alloc createOrLoadRecord(@NonNull final PurchaseItem purchaseOrderItem)
 	{
 		final I_C_PurchaseCandidate_Alloc record;
 		if (purchaseOrderItem.getPurchaseItemId() != null)
@@ -142,8 +148,7 @@ public class PurchaseItemRepository
 		return record;
 	}
 
-	public void retrieveForPurchaseCandidate(
-			@NonNull final PurchaseCandidate purchaseCandidate)
+	public void loadPurchaseItems(@NonNull final PurchaseCandidate purchaseCandidate)
 	{
 		final PurchaseCandidateId purchaseCandidateId = purchaseCandidate.getId();
 		if (purchaseCandidateId == null)
@@ -151,20 +156,16 @@ public class PurchaseItemRepository
 			return;
 		}
 
-		final List<I_C_PurchaseCandidate_Alloc> purchaseItemRecords = Services.get(IQueryBL.class)
+		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_PurchaseCandidate_ID, purchaseCandidateId.getRepoId())
 				.create()
-				.list();
-
-		for (final I_C_PurchaseCandidate_Alloc purchaseItemRecord : purchaseItemRecords)
-		{
-			createForRecord(purchaseCandidate, purchaseItemRecord);
-		}
+				.list()
+				.forEach(purchaseItemRecord -> loadPurchaseItem(purchaseCandidate, purchaseItemRecord));
 	}
 
-	private void createForRecord(
+	private void loadPurchaseItem(
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final I_C_PurchaseCandidate_Alloc record)
 	{

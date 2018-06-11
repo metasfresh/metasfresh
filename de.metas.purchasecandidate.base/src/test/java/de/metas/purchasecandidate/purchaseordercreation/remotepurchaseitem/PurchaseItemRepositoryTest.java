@@ -97,7 +97,7 @@ public class PurchaseItemRepositoryTest
 		orderItem.setPurchaseOrderLineIdAndMarkProcessed(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()));
 
 		// invoke the method under test
-		new PurchaseItemRepository().storeRecords(purchaseCandidate.getPurchaseOrderItems());
+		new PurchaseItemRepository().saveAll(purchaseCandidate.getPurchaseOrderItems());
 
 		final List<I_C_PurchaseCandidate_Alloc> records = POJOLookupMap.get().getRecords(I_C_PurchaseCandidate_Alloc.class);
 		assertThat(records).hasSize(1);
@@ -122,12 +122,12 @@ public class PurchaseItemRepositoryTest
 
 		// invoke the method under test
 		final PurchaseItemRepository purchaseItemRepository = new PurchaseItemRepository();
-		purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseOrderItems());
+		purchaseItemRepository.saveAll(purchaseCandidate.getPurchaseOrderItems());
 
 		//
 		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(10, ONE);
 		assertThat(newPurchaseCandidate.getPurchaseOrderItems()).isEmpty(); // guard, loading the purchaseOrderItems is what *we* want to do now
-		purchaseItemRepository.retrieveForPurchaseCandidate(newPurchaseCandidate);
+		purchaseItemRepository.loadPurchaseItems(newPurchaseCandidate);
 
 		assertThat(newPurchaseCandidate.getPurchaseOrderItems()).hasSize(1);
 		final PurchaseOrderItem retrievedPurchaseOrderItem = newPurchaseCandidate.getPurchaseOrderItems().get(0);

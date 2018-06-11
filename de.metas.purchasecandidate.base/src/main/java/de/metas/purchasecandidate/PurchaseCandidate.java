@@ -103,6 +103,7 @@ public class PurchaseCandidate
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
 			final OrderAndLineId salesOrderAndLineId,
+			final boolean prepared,
 			final boolean processed,
 			final boolean locked,
 			//
@@ -138,8 +139,9 @@ public class PurchaseCandidate
 				.build();
 
 		state = PurchaseCandidateState.builder()
-				.locked(locked)
+				.prepared(prepared)
 				.processed(processed)
+				.locked(locked)
 				.build();
 
 		this.qtyToPurchase = qtyToPurchase;
@@ -169,7 +171,7 @@ public class PurchaseCandidate
 
 		qtyToPurchase = from.qtyToPurchase;
 		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
-		
+
 		profitInfo = from.profitInfo;
 
 		purchaseDatePromised = from.purchaseDatePromised;
@@ -225,15 +227,15 @@ public class PurchaseCandidate
 		return getIdentifier().isAggregatePOs();
 	}
 
-	// public String getVendorProductNo()
-	// {
-	// return getVendorProductInfo().getVendorProductNo();
-	// }
-	//
-	// public String getVendorProductName()
-	// {
-	// return getVendorProductInfo().getVendorProductName();
-	// }
+	public void setPrepared(final boolean prepared)
+	{
+		state.setPrepared(prepared);
+	}
+
+	public boolean isPrepared()
+	{
+		return state.isPrepared();
+	}
 
 	/**
 	 * Flags this instance as processed, so no more changes can be made.<br>
@@ -241,10 +243,6 @@ public class PurchaseCandidate
 	 */
 	public void markProcessed()
 	{
-		if (state.isProcessed())
-		{
-			return;
-		}
 		state.setProcessed();
 	}
 
