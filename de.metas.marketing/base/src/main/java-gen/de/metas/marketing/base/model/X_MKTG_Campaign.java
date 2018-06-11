@@ -14,7 +14,7 @@ public class X_MKTG_Campaign extends org.compiere.model.PO implements I_MKTG_Cam
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1701604585L;
+	private static final long serialVersionUID = 724096920L;
 
     /** Standard Constructor */
     public X_MKTG_Campaign (Properties ctx, int MKTG_Campaign_ID, String trxName)
@@ -43,6 +43,28 @@ public class X_MKTG_Campaign extends org.compiere.model.PO implements I_MKTG_Cam
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Textbaustein.
+		@param AD_BoilerPlate_ID Textbaustein	  */
+	@Override
+	public void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID)
+	{
+		if (AD_BoilerPlate_ID < 1) 
+			set_Value (COLUMNNAME_AD_BoilerPlate_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_BoilerPlate_ID, Integer.valueOf(AD_BoilerPlate_ID));
+	}
+
+	/** Get Textbaustein.
+		@return Textbaustein	  */
+	@Override
+	public int getAD_BoilerPlate_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_BoilerPlate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */

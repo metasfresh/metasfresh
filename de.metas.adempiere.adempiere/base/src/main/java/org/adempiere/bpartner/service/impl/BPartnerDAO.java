@@ -42,7 +42,9 @@ import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.BPartnerType;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
+import org.adempiere.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.NumberUtils;
@@ -649,5 +651,21 @@ public class BPartnerDAO implements IBPartnerDAO
 			default:
 				return null;
 		}
+	}
+
+	@Override
+	public LocationId getBilltoDefaultLocationIdByUser(@NonNull final User user)
+	{
+		if (user.getBpartnerId() == null)
+		{
+			return null;
+		}
+		return retrieveBPartnerLocations(user.getBpartnerId())
+				.stream()
+				.filter(I_C_BPartner_Location::isBillToDefault)
+				.map(I_C_BPartner_Location::getC_Location_ID)
+				.findFirst()
+				.map(locationId -> LocationId.ofRepoId(locationId))
+				.orElse(null);
 	}
 }
