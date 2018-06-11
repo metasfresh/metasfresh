@@ -2,11 +2,13 @@ package de.metas.marketing.base;
 
 import java.util.stream.Stream;
 
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.location.LocationId;
 import org.adempiere.location.LocationRepository;
 import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import de.metas.marketing.base.model.Campaign;
@@ -45,7 +47,6 @@ public class CampaignService
 {
 	private final ContactPersonRepository contactPersonRepository;
 	private final CampaignRepository campaignRepository;
-	private final LocationRepository locationRepository;
 	private final PlatformRepository platformRepository;
 
 	public CampaignService(@NonNull final ContactPersonRepository contactPersonRepository,
@@ -55,7 +56,6 @@ public class CampaignService
 	{
 		this.contactPersonRepository = contactPersonRepository;
 		this.campaignRepository = campaignRepository;
-		this.locationRepository = locationRepository;
 		this.platformRepository = platformRepository;
 	}
 
@@ -90,7 +90,7 @@ public class CampaignService
 			return;
 		}
 
-		final LocationId billToDefaultLocationId = locationRepository.getBilltoDefaultLocationIdByUser(user);
+		final LocationId billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByUser(user);
 		if (isRequiredLocation && billToDefaultLocationId == null )
 		{
 			Loggables.get().addLog("Skip user because it has no bill to default location or campaign does not requires location; user={}", user);
@@ -110,7 +110,7 @@ public class CampaignService
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
 
-		final LocationId billToDefaultLocationId = locationRepository.getBilltoDefaultLocationIdByUser(user);
+		final LocationId billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByUser(user);
 		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), billToDefaultLocationId);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
