@@ -344,7 +344,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	}
 
 	@Override
-	public final List<Integer> retrieveAllItemIDs(final I_C_Queue_WorkPackage workPackage)
+	public final List<Integer> retrieveAllItemIds(final I_C_Queue_WorkPackage workPackage)
 	{
 		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, false);
 		return queueElements.stream()

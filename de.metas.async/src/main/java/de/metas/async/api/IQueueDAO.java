@@ -145,6 +145,6 @@ public interface IQueueDAO extends ISingletonService
 	 */
 	boolean isWorkpackageProcessorEnabled(Class<? extends IWorkpackageProcessor> packageProcessorClass);
 
-	List<Integer> retrieveAllItemIDs(I_C_Queue_WorkPackage workPackage);
+	List<Integer> retrieveAllItemIds(I_C_Queue_WorkPackage workPackage);
 
 }
