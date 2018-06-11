@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.impl.PlainDocumentLocation;
 import de.metas.i18n.IMsgBL;
+import de.metas.letter.BoilerPlateId;
 import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.model.Letter;
 import de.metas.letters.model.Letters;
@@ -238,7 +239,7 @@ public class LetterRestController
 	{
 		final Letter request = Letter.builder()
 				.adLanguage(userSession.getAD_Language())
-				.boilerPlateId(letter.getTextTemplateId())
+				.boilerPlateId(BoilerPlateId.ofRepoId(letter.getTextTemplateId()))
 				.subject(letter.getSubject())
 				.body(letter.getContent())
 				.adOrgId(letter.getAdOrgId())
