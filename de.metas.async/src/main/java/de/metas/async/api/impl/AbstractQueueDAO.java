@@ -44,6 +44,8 @@ import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
 import de.metas.async.model.I_C_Async_Batch;
@@ -56,6 +58,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public abstract class AbstractQueueDAO implements IQueueDAO
 {
@@ -338,6 +341,24 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 		}
 
 		return result;
+	}
+
+	@Override
+	public final List<Integer> retrieveAllItemIDs(final I_C_Queue_WorkPackage workPackage)
+	{
+		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, false);
+		return queueElements.stream()
+				.peek(this::assertTableId)
+				.map(I_C_Queue_Element::getRecord_ID)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private void assertTableId(@NonNull final I_C_Queue_Element element)
+	{
+		if (element.getAD_Table_ID() <= 0)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Table_ID@ (ID:" + element.getAD_Table_ID() + ")");
+		}
 	}
 
 	@Override

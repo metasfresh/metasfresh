@@ -134,4 +134,13 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	{
 		return Services.get(IQueueDAO.class).retrieveQueueElements(getC_Queue_WorkPackage(), skipAlreadyScheduledItems);
 	}
+
+	/**
+	 * retrieves all active PO's IDs, even the ones that are caught in other packages
+	 * @return
+	 */
+	public final List<Integer> retrieveAllItemIDs()
+	{
+		return Services.get(IQueueDAO.class).retrieveAllItemIDs(getC_Queue_WorkPackage());
+	}
 }
