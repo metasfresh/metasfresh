@@ -52,7 +52,7 @@ public class C_Async_Batch
 	private void runPrintingProcess(final I_C_Async_Batch asyncBatch)
 	{
 		final SearialLetterService serialLetterService = Adempiere.getBean(SearialLetterService.class);
-		serialLetterService.printAutomaticallyLetters(asyncBatch.getC_Async_Batch_ID(),asyncBatch.getAD_PInstance_ID());
+		serialLetterService.printAutomaticallyLetters(asyncBatch);
 		}
 
 }

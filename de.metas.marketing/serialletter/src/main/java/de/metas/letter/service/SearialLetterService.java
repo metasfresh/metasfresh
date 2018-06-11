@@ -10,17 +10,15 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.logging.LogManager;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintJobBL.ContextForAsyncProcessing;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -60,15 +58,17 @@ public class SearialLetterService
 {
 	private final transient Logger log = LogManager.getLogger(getClass());
 
-	public void printAutomaticallyLetters(final int asyncBacthId, final int adPInstanceId)
+	public void printAutomaticallyLetters(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		Check.assume(asyncBacthId > 0, "AsycnBacthId should be > 0");
-
-		final List<IPrintingQueueSource> sources = createPrintingQueueSource(asyncBacthId, adPInstanceId);
+		final List<IPrintingQueueSource> sources = createPrintingQueueSource(asyncBatch);
+		if (sources.isEmpty())
+		{
+			throw new AdempiereException("Nothing selected");
+		}
 		for (final IPrintingQueueSource source : sources)
 		{
-			source.setName("Print letter for C_Async_Batch_ID = " + asyncBacthId);
-			print(source, asyncBacthId, adPInstanceId);
+			source.setName("Print letter for C_Async_Batch_ID = " + asyncBatch.getC_Async_Batch_ID());
+			print(source, asyncBatch);
 		}
 	}
 
@@ -79,16 +79,16 @@ public class SearialLetterService
 	 *
 	 * @return
 	 */
-	private List<IPrintingQueueSource> createPrintingQueueSource(final int asyncBacthId, final int adPInstanceId)
+	private List<IPrintingQueueSource> createPrintingQueueSource(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Printing_Queue.class)
+		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Printing_Queue.class, asyncBatch)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_Async_Batch_ID, asyncBacthId)
+				.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_Async_Batch_ID, asyncBatch.getC_Async_Batch_ID())
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_Processed, false)
 				.create();
 
-		final int selectionLength = query.createSelection(adPInstanceId);
+		final int selectionLength = query.createSelection(asyncBatch.getAD_PInstance_ID());
 
 		if (selectionLength <= 0)
 		{
@@ -99,7 +99,7 @@ public class SearialLetterService
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingQueueQuery printingQuery = printingQueueBL.createPrintingQueueQuery();
 		printingQuery.setIsPrinted(false);
-		printingQuery.setOnlyAD_PInstance_ID(adPInstanceId);
+		printingQuery.setOnlyAD_PInstance_ID(asyncBatch.getAD_PInstance_ID());
 
 		final Properties ctx = Env.getCtx();
 
@@ -109,31 +109,16 @@ public class SearialLetterService
 		return printingQueueBL.createPrintingQueueSources(ctx, printingQuery);
 	}
 
-	private void print(@NonNull final IPrintingQueueSource source, final int asyncBacthId, final int adPInstanceId)
+	private void print(@NonNull final IPrintingQueueSource source, @NonNull final I_C_Async_Batch asyncBatch)
 	{
 
-		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
-			try
-			{
+		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
-				final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
-						.adPInstanceId(adPInstanceId)
-						.parentAsyncBatchId(asyncBacthId)
-						.build();
+		final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
+				.adPInstanceId(asyncBatch.getAD_PInstance_ID())
+				.parentAsyncBatchId(asyncBatch.getC_Async_Batch_ID())
+				.build();
 
-				Services.get(IPrintJobBL.class).createPrintJobs(source, printJobContext);
-			}
-			catch (final Exception ex)
-			{
-				log.error("Failed creating print job for {}", source, ex);
-				Services.get(INotificationBL.class).send(UserNotificationRequest.builder()
-						.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
-						.recipientUserId(Env.getAD_User_ID(Env.getCtx()))
-						.contentPlain(ex.getLocalizedMessage())
-						.build());
-			}
-
-		});
+		Services.get(IPrintJobBL.class).createPrintJobs(source, printJobContext);
 	}
-
 }
