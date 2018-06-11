@@ -9,7 +9,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -28,7 +27,6 @@ import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.process.IADPInstanceDAO;
 import lombok.NonNull;
 
 /*
@@ -62,11 +60,9 @@ public class SearialLetterService
 {
 	private final transient Logger log = LogManager.getLogger(getClass());
 
-	public void printAutomaticallyLetters(final int asyncBacthId)
+	public void printAutomaticallyLetters(final int asyncBacthId, final int adPInstanceId)
 	{
 		Check.assume(asyncBacthId > 0, "AsycnBacthId should be > 0");
-
-		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(Env.getCtx());
 
 		final List<IPrintingQueueSource> sources = createPrintingQueueSource(asyncBacthId, adPInstanceId);
 		for (final IPrintingQueueSource source : sources)
@@ -85,7 +81,7 @@ public class SearialLetterService
 	 */
 	private List<IPrintingQueueSource> createPrintingQueueSource(final int asyncBacthId, final int adPInstanceId)
 	{
-		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Printing_Queue.class, ITrx.TRXNAME_ThreadInherited)
+		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Printing_Queue.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_Async_Batch_ID, asyncBacthId)
