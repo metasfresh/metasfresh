@@ -1,6 +1,7 @@
 package org.adempiere.location;
 
-import org.adempiere.ad.dao.IQueryBL;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Repository;
@@ -33,7 +34,7 @@ import lombok.NonNull;
 @Repository
 public class LocationRepository
 {
-	public Location ofRecord(@NonNull final I_C_Location locationRecord)
+	private Location ofRecord(@NonNull final I_C_Location locationRecord)
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(locationRecord);
 
@@ -45,14 +46,6 @@ public class LocationRepository
 
 	public Location getByLocationId(@NonNull final LocationId locationId)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Location.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Location.COLUMN_C_Location_ID, locationId.getRepoId())
-				.create()
-				.stream()
-				.map(this::ofRecord)
-				.findFirst()
-				.orElse(null);
+		return ofRecord(load(locationId.getRepoId(), I_C_Location.class));
 	}
 }

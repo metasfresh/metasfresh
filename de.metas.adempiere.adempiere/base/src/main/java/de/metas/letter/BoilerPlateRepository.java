@@ -3,8 +3,8 @@
  */
 package de.metas.letter;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import org.springframework.stereotype.Repository;
 
 import de.metas.letters.model.I_AD_BoilerPlate;
@@ -51,14 +51,6 @@ public class BoilerPlateRepository
 
 	public BoilerPlate getByBoilerPlateId(@NonNull final BoilerPlateId boilerPlateId)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_BoilerPlate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID, boilerPlateId.getRepoId())
-				.create()
-				.stream()
-				.map(this::toBoilerPlate)
-				.findFirst()
-				.orElse(null);
+		return toBoilerPlate(load(boilerPlateId.getRepoId(), I_AD_BoilerPlate.class));
 	}
 }

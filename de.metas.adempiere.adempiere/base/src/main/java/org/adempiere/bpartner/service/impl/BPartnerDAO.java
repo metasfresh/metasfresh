@@ -41,9 +41,7 @@ import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.BPartnerType;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
-import org.adempiere.location.Location;
 import org.adempiere.location.LocationId;
-import org.adempiere.location.LocationRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.User;
 import org.adempiere.util.Check;
@@ -51,7 +49,6 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -632,14 +629,12 @@ public class BPartnerDAO implements IBPartnerDAO
 		{
 			return null;
 		}
-		final LocationRepository repo = Adempiere.getBean(LocationRepository.class);
 		return retrieveBPartnerLocations(user.getBpartnerId())
 				.stream()
 				.filter(I_C_BPartner_Location::isBillToDefault)
-				.map(I_C_BPartner_Location::getC_Location)
-				.map(locationRecord -> repo.ofRecord(locationRecord))
+				.map(I_C_BPartner_Location::getC_Location_ID)
 				.findFirst()
-				.map(Location::getId)
+				.map(locationId -> LocationId.ofRepoId(locationId))
 				.orElse(null);
 	}
 }
