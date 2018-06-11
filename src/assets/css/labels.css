@@ -11,7 +11,7 @@
 
         &-label {
             display: inline-block;
-            padding-bottom: 0.125rem;
+            padding: 0 0.5rem;
             background: rgba(0, 0, 0, 0.05);
             margin-right: 0.25em;
             margin-bottom: 0.125rem;
@@ -24,6 +24,7 @@
         &-input {
             display: inline-block;
             min-width: 1px;
+            margin-right: 3px;
         }
 
         &-dropdown {

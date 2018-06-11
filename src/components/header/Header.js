@@ -103,8 +103,16 @@ class Header extends Component {
     this.setState({ isInboxOpen: !!state });
   };
 
+  handleInboxToggle = () => {
+    this.setState({ isInboxOpen: !this.state.isInboxOpen });
+  };
+
   handleUDOpen = state => {
     this.setState({ isUDOpen: !!state });
+  };
+
+  handleUDToggle = () => {
+    this.setState({ isUDOpen: !this.state.isUDOpen });
   };
 
   handleMenuOverlay = (e, nodeId) => {
@@ -280,11 +288,15 @@ class Header extends Component {
     }
   };
 
-  handleSidelistToggle = (id = null, sideListTab) => {
-    this.toggleScrollScope(id !== null);
+  handleSidelistToggle = (id = null) => {
+    const { sideListTab } = this.state;
+
+    const isSideListShow = id !== null && id !== sideListTab;
+
+    this.toggleScrollScope(isSideListShow);
 
     this.setState({
-      isSideListShow: id !== null && id !== sideListTab,
+      isSideListShow,
       sideListTab: id !== sideListTab ? id : null,
     });
   };
@@ -292,20 +304,23 @@ class Header extends Component {
   closeOverlays = (clickedItem, callback) => {
     const { isSubheaderShow } = this.state;
 
-    this.setState(
-      {
-        menuOverlay: null,
-        isMenuOverlayShow: false,
-        isInboxOpen: false,
-        isUDOpen: false,
-        isSideListShow: false,
-        sideListTab: null,
-        isSubheaderShow:
-          clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false,
-        tooltipOpen: '',
-      },
-      callback
-    );
+    const state = {
+      menuOverlay: null,
+      isMenuOverlayShow: false,
+      isInboxOpen: false,
+      isUDOpen: false,
+      isSideListShow: false,
+      tooltipOpen: '',
+    };
+
+    if (clickedItem) {
+      delete state[clickedItem];
+    }
+
+    state.isSubheaderShow =
+      clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false;
+
+    this.setState(state, callback);
 
     if (
       document.getElementsByClassName('js-dropdown-toggler')[0] &&
@@ -611,21 +626,15 @@ class Header extends Component {
           />
         )}
         <GlobalContextShortcuts
-          handleSidelistToggle={id =>
-            showSidelist && this.handleSidelistToggle(id, sideListTab)
-          }
+          handleSidelistToggle={this.handleSidelistToggle}
           handleMenuOverlay={
             isMenuOverlayShow
               ? () => this.handleMenuOverlay('', '')
               : () =>
                   this.closeOverlays('', () => this.handleMenuOverlay('', '0'))
           }
-          handleInboxOpen={
-            isInboxOpen
-              ? () => this.handleInboxOpen(false)
-              : () => this.handleInboxOpen(true)
-          }
-          handleUDOpen={() => this.handleUDOpen(!isUDOpen)}
+          handleInboxToggle={this.handleInboxToggle}
+          handleUDToggle={this.handleUDToggle}
           openModal={
             dataId
               ? () =>

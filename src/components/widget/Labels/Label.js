@@ -1,19 +1,45 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
+const noOp = () => {};
 
 export default class Label extends Component {
+  static propTypes = {
+    label: PropTypes.shape({
+      caption: PropTypes.node,
+    }).isRequired,
+    onClick: PropTypes.func,
+    onRemove: PropTypes.func,
+  };
+
+  static defaultProps = {
+    onClick: noOp,
+    onRemove: noOp,
+  };
+
   handleClick = () => {
-    this.props.onRemove(this.props.label);
+    const { onClick, label } = this.props;
+
+    onClick(label);
+  };
+
+  handleRemove = () => {
+    const { onRemove, label } = this.props;
+
+    onRemove(label);
   };
 
   render() {
+    const { label } = this.props;
+
     return (
-      <div className={this.props.className}>
-        {this.props.label.caption}
-        <span className="labels-label-remove" onClick={this.handleClick}>
+      <span className="labels-label" onClick={this.handleClick}>
+        {label.caption}
+        <span className="labels-label-remove" onClick={this.handleRemove}>
           {' '}
           ✕
         </span>
-      </div>
+      </span>
     );
   }
 }

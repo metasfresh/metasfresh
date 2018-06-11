@@ -8,7 +8,7 @@ import {
   dropdownRequest,
 } from '../../../actions/GenericActions';
 import Label from './Label';
-import Suggestion from './Suggestion';
+import SelectionDropdown from '../SelectionDropdown';
 
 class Labels extends Component {
   static propTypes = {
@@ -26,17 +26,18 @@ class Labels extends Component {
   };
 
   state = {
+    cursor: this.props.selected.length,
     focused: false,
-    values: [],
+    suggestion: null,
     suggestions: [],
-    cursorY: -1,
   };
 
-  childClick = false;
   lastTypeAhead = '';
 
   handleClick = async () => {
     this.input.focus();
+
+    this.setState({ focused: true });
 
     const {
       windowType, // windowId
@@ -58,73 +59,25 @@ class Labels extends Component {
       propertyName: name,
     });
 
-    const { values } = response.data;
+    const suggestions = response.data.values;
 
-    this.setState({ values });
+    this.setState({
+      suggestion: this.firstVisibleSuggestion(suggestions),
+      suggestions,
+    });
   };
 
   handleFocus = () => {
-    if (document.activeElement !== this.input) {
-      return;
-    }
-
-    this.setState({
-      focused: true,
-    });
+    this.input.focus();
   };
 
-  handleBlur = event => {
-    if (this.childClick) {
-      this.childClick = false;
-      this.input.focus();
-
-      return;
-    }
-
-    if (this.wrapper.contains(event.relatedTarget)) {
-      return;
-    }
+  handleBlur = () => {
+    this.clearInput();
 
     this.setState({
       focused: false,
-      cursorY: -1,
+      cursor: this.props.selected.length,
     });
-  };
-
-  handleArrows = event => {
-    let suggestions;
-
-    if (this.state.suggestions.length) {
-      suggestions = this.state.suggestions;
-    } else {
-      suggestions = this.state.values;
-    }
-
-    suggestions = suggestions.filter(this.unusedSuggestions());
-
-    switch (event.key) {
-      case 'ArrowUp': {
-        this.setState(({ cursorY }) => ({
-          cursorY: Math.max(Math.min(cursorY, suggestions.length - 1) - 1, -1),
-        }));
-
-        // Prevent page from scrolling
-        event.preventDefault();
-
-        return;
-      }
-
-      case 'ArrowDown': {
-        this.setState(({ cursorY }) => ({
-          cursorY: Math.min(cursorY + 1, suggestions.length - 1),
-        }));
-
-        // Prevent page from scrolling
-        event.preventDefault();
-
-        return;
-      }
-    }
   };
 
   handleKeyUp = async event => {
@@ -152,67 +105,70 @@ class Labels extends Component {
         query: typeAhead,
       });
 
-      const { values } = response.data;
+      const suggestions = response.data.values;
 
       this.setState({
-        suggestions: values,
+        suggestion: this.firstVisibleSuggestion(suggestions),
+        suggestions,
       });
 
-      this.typeAhead = typeAhead;
+      this.lastTypeAhead = typeAhead;
     }
   };
 
   handleKeyDown = event => {
     const typeAhead = event.target.innerHTML;
-    const { selected } = this.props;
+    const { onChange, selected } = this.props;
+    const { cursor } = this.state;
 
-    if (event.key === 'Enter') {
-      if (typeAhead || this.state.cursorY >= 0) {
-        let suggestions;
+    this.setState({ focused: true });
 
-        if (this.state.suggestions.length) {
-          suggestions = this.state.suggestions;
-        } else {
-          suggestions = this.state.values;
+    switch (event.key) {
+      case 'Backspace': {
+        if (selected.length < 1) {
+          return;
         }
 
-        suggestions = suggestions.filter(this.unusedSuggestions());
+        if (!typeAhead) {
+          if (cursor === 0) {
+            return;
+          }
 
-        this.props.onChange([
-          ...this.props.selected,
-          suggestions[
-            Math.max(0, Math.min(this.state.cursorY, suggestions.length - 1))
-          ],
-        ]);
+          const selectedNew = [...selected];
+          selectedNew.splice(cursor - 1, 1);
 
-        if (typeAhead) {
+          onChange(selectedNew);
+
           this.setState({
-            cursorY: -1,
+            cursor: cursor - 1,
           });
         }
 
-        this.input.innerHTML = '';
-      }
-
-      // Don't break contentEditable container with newline
-      event.preventDefault();
-
-      return;
-    }
-
-    if (event.key === 'Backspace') {
-      if (selected.length < 1) {
         return;
-      } else if (!typeAhead) {
-        this.props.onChange(selected.slice(0, selected.length - 1));
       }
 
-      return;
+      case 'ArrowLeft': {
+        if (typeAhead) {
+          return;
+        }
+
+        this.setState({ cursor: cursor - 1 });
+
+        return;
+      }
+
+      case 'ArrowRight': {
+        if (typeAhead) {
+          return;
+        }
+
+        this.setState({ cursor: cursor + 1 });
+
+        return;
+      }
     }
 
-    if (
-      ['ArrowTop', 'ArrowRight', 'ArrowBottom', 'ArrowLeft'].includes(event.key)
-    ) {
+    if (['Tab', 'ArrowTop', 'ArrowBottom'].includes(event.key)) {
       return;
     }
 
@@ -225,15 +181,42 @@ class Labels extends Component {
     event.preventDefault();
   };
 
-  handleSuggestionAdd = suggestion => {
-    this.childClick = true;
-    this.input.innerHTML = '';
+  handleTemporarySelection = suggestion => {
+    this.setState({ suggestion });
+  };
 
-    this.props.onChange([...this.props.selected, suggestion]);
+  handleSuggestionAdd = suggestion => {
+    const { onChange, selected } = this.props;
+    const { cursor } = this.state;
+
+    this.clearInput();
+
+    if (!suggestion) {
+      return;
+    }
+
+    onChange([...selected, suggestion]);
+
+    this.setState({
+      cursor: cursor + 1,
+      suggestion: null,
+    });
   };
 
   handleLabelRemove = label => {
     this.props.onChange(this.props.selected.filter(item => item !== label));
+  };
+
+  handleLabelClick = label => {
+    this.setState({
+      cursor: this.props.selected.indexOf(label) + 1,
+    });
+  };
+
+  handleCancel = () => {
+    this.clearInput();
+
+    this.setState({ focused: false });
   };
 
   unusedSuggestions = () => {
@@ -242,88 +225,84 @@ class Labels extends Component {
     return suggestion => !selected.has(suggestion.key);
   };
 
+  firstVisibleSuggestion = suggestions => {
+    return suggestions.filter(this.unusedSuggestions())[0];
+  };
+
+  clearInput = () => {
+    this.input.innerHTML = '';
+  };
+
   render() {
-    const { focused } = this.state;
-    let suggestions;
+    const { focused, suggestion, cursor } = this.state;
+    const { className, selected, tabIndex } = this.props;
 
-    if (this.state.suggestions.length) {
-      suggestions = this.state.suggestions;
-    } else {
-      suggestions = this.state.values;
-    }
+    const suggestions = this.state.suggestions.filter(this.unusedSuggestions());
 
-    suggestions = suggestions.filter(this.unusedSuggestions());
+    const labels = selected
+      .sort((a, b) => a.caption.localeCompare(b.caption))
+      .map(item => (
+        <Label
+          key={item.key}
+          label={item}
+          onClick={this.handleLabelClick}
+          onRemove={this.handleLabelRemove}
+        />
+      ));
+
+    labels.splice(
+      cursor % (selected.length + 1),
+      0,
+      <span
+        key="input"
+        className="labels-input"
+        ref={ref => {
+          this.input = ref;
+        }}
+        contentEditable
+        onKeyUp={this.handleKeyUp}
+        onKeyDown={this.handleKeyDown}
+        tabIndex={tabIndex}
+      />
+    );
 
     return (
-      <div
-        ref={ref => {
-          this.wrapper = ref;
-        }}
-        className={`${this.props.className} labels`}
-        onClick={this.handleClick}
-        onFocus={this.handleFocus}
-        onBlur={this.handleBlur}
-        tabIndex={this.props.tabIndex}
-        onKeyDown={this.handleArrows}
+      <TetherComponent
+        attachment="top left"
+        targetAttachment="bottom left"
+        constraints={[
+          {
+            to: 'scrollParent',
+          },
+          {
+            to: 'window',
+            pin: ['bottom'],
+          },
+        ]}
       >
-        <span className="labels-wrap">
-          {this.props.selected.map(item => (
-            <Label
-              className="labels-label"
-              key={item.key}
-              label={item}
-              onRemove={this.handleLabelRemove}
-            />
-          ))}
-          <span
-            className="labels-input"
-            ref={ref => {
-              this.input = ref;
-            }}
-            contentEditable
-            onKeyUp={this.handleKeyUp}
-            onKeyDown={this.handleKeyDown}
-          />
+        <span
+          ref={ref => {
+            this.wrapper = ref;
+          }}
+          className={`${className} labels`}
+          onClick={this.handleClick}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        >
+          <span className="labels-wrap">{labels}</span>
         </span>
         {focused && (
-          <TetherComponent
-            attachment="top left"
-            targetAttachment="bottom left"
-            constraints={[
-              {
-                to: 'scrollParent',
-              },
-              {
-                to: 'window',
-                pin: ['bottom'],
-              },
-            ]}
-          >
-            <span className="dropdown-holder" />
-            <div
-              style={{ width: `calc(${this.wrapper.offsetWidth}px - 10px)` }}
-              className="labels-dropdown"
-            >
-              {suggestions.map((suggestion, index) => {
-                const active =
-                  index === this.state.cursorY ||
-                  (index === suggestions.length - 1 &&
-                    index <= this.state.cursorY);
-
-                return (
-                  <Suggestion
-                    className="labels-suggestion ignore-react-onclickoutside"
-                    key={suggestion.key}
-                    suggestion={suggestion}
-                    onAdd={this.handleSuggestionAdd}
-                    active={active}
-                  />
-                );
-              })}
-            </div>
-          </TetherComponent>
+          <SelectionDropdown
+            options={suggestions}
+            empty="There are no labels available"
+            selected={suggestion}
+            width={this.wrapper.offsetWidth}
+            onChange={this.handleTemporarySelection}
+            onSelect={this.handleSuggestionAdd}
+            onCancel={this.handleCancel}
+          />
         )}
-      </div>
+      </TetherComponent>
     );
   }
 }
