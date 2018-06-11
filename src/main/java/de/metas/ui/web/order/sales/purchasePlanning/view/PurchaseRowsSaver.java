@@ -79,18 +79,21 @@ class PurchaseRowsSaver
 		purchaseCandidatesRepo.saveAll(purchaseCandidatesToSave);
 
 		//
-		// Delete remaining candidates:
+		// Zerofy remaining candidates:
 		final Set<PurchaseCandidateId> purchaseCandidateIdsSaved = purchaseCandidatesToSave.stream()
 				.map(PurchaseCandidate::getId)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
-		final Set<PurchaseCandidateId> purchaseCandidateIdsToDelete = existingPurchaseCandidatesById.values()
+		final List<PurchaseCandidate> purchaseCandidatesToZero = existingPurchaseCandidatesById.values()
 				.stream()
 				.filter(candidate -> !candidate.isProcessedOrLocked()) // don't delete processed/locked candidates
 				.filter(candidate -> !purchaseCandidateIdsSaved.contains(candidate.getId()))
-				.map(candidate -> candidate.getId())
-				.collect(ImmutableSet.toImmutableSet());
-		purchaseCandidatesRepo.deleteByIds(purchaseCandidateIdsToDelete);
+				.peek(candidate -> {
+					candidate.setQtyToPurchase(candidate.getQtyToPurchase().toZero());
+					candidate.setPrepared(false);
+				})
+				.collect(ImmutableList.toImmutableList());
+		purchaseCandidatesRepo.saveAll(purchaseCandidatesToZero);
 
 		return purchaseCandidatesToSave;
 	}
@@ -167,6 +170,7 @@ class PurchaseRowsSaver
 			final Quantity qtyToPurchaseTarget = getQtyToPurchaseTarget(candidate);
 			final Quantity qtyToPurchase = qtyToPurchaseTarget.min(qtyToPurchaseRemaining);
 			candidate.setQtyToPurchase(qtyToPurchase);
+			candidate.setPrepared(qtyToPurchase.signum() != 0);
 			candidate.setPurchaseDatePromised(purchaseDatePromised);
 			candidate.setProfitInfo(profitInfo);
 
@@ -214,6 +218,7 @@ class PurchaseRowsSaver
 					.productId(candidatesGroup.getProductId())
 					//
 					.qtyToPurchase(qtyToPurchaseRemaining)
+					.prepared(true)
 					//
 					.aggregatePOs(candidatesGroup.isAggregatePOs())
 					//
