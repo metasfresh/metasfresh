@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail.PurchaseDetailBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
@@ -80,15 +81,12 @@ public class ReceiptsScheduleUpdatedHandler
 				.build();
 	}
 
+	/** Does nothing */
 	@Override
-	protected int extractPurchaseCandidateRepoId(@NonNull final AbstractReceiptScheduleEvent event)
+	protected PurchaseDetailBuilder updatePurchaseDetailBuilderFromEvent(
+			@NonNull final PurchaseDetailBuilder builder,
+			@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		return 0;
-	}
-
-	@Override
-	protected int extractOrderLineRepoId(@NonNull final AbstractReceiptScheduleEvent event)
-	{
-		return 0;
+		return builder;
 	}
 }

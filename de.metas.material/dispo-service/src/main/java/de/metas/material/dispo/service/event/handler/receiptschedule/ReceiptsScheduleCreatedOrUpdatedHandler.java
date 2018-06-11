@@ -6,6 +6,7 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail.PurchaseDetailBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -58,14 +59,13 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 
 		final CandidateBuilder candidateBuilder = createCandidateBuilder(event);
 
-		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
+		final PurchaseDetailBuilder purchaseDetailBuilder = PurchaseDetail.builder()
 				.plannedQty(event.getMaterialDescriptor().getQuantity())
-				.orderLineRepoId(extractOrderLineRepoId(event))
-				.purchaseCandidateRepoId(extractPurchaseCandidateRepoId(event))
 				.vendorRepoId(event.getMaterialDescriptor().getBPartnerId())
 				.receiptScheduleRepoId(event.getReceiptScheduleId())
-				.advised(Flag.FALSE_DONT_UPDATE)
-				.build();
+				.advised(Flag.FALSE_DONT_UPDATE);
+
+		final PurchaseDetail purchaseDetail = updatePurchaseDetailBuilderFromEvent(purchaseDetailBuilder, event).build();
 
 		final Candidate supplyCandidate = candidateBuilder
 				.materialDescriptor(materialDescriptor)
@@ -103,7 +103,7 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 				.businessCase(CandidateBusinessCase.PURCHASE);
 	}
 
-	protected abstract int extractPurchaseCandidateRepoId(@NonNull final AbstractReceiptScheduleEvent event);
-
-	protected abstract int extractOrderLineRepoId(@NonNull final AbstractReceiptScheduleEvent event);
+	protected abstract PurchaseDetailBuilder updatePurchaseDetailBuilderFromEvent(
+			@NonNull final PurchaseDetailBuilder builder,
+			@NonNull final AbstractReceiptScheduleEvent event);
 }
