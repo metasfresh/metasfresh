@@ -278,7 +278,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
 		// get the distinct aggregation keys
-		final IQuery<I_C_Printing_Queue> query = printingDAO.createQuery(ctx, printingQueueQuery, ITrx.TRXNAME_ThreadInherited);
+		final IQuery<I_C_Printing_Queue> query = printingDAO.createQuery(ctx, printingQueueQuery, ITrx.TRXNAME_None);
 		final List<Map<String, Object>> aggregationKeys = query.listDistinct(I_C_Printing_Queue.COLUMNNAME_PrintingQueueAggregationKey);
 
 		final List<IPrintingQueueSource> sources = new ArrayList<>(aggregationKeys.size());
