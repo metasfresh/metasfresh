@@ -1,6 +1,6 @@
 package de.metas.letter.service.async.spi.impl;
 
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.location.Location;
 import org.adempiere.location.LocationRepository;
@@ -52,7 +52,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 		final BoilerPlateRepository  boilerPlateRepo = Adempiere.getBean(BoilerPlateRepository.class);
 
 
-		final List<Integer> campaignContactPersonsIDs = retrieveAllItemIds();
+		final Set<Integer> campaignContactPersonsIDs = retrieveAllItemIds();
 
 		for (final Integer campaignContactPersonID : campaignContactPersonsIDs)
 		{

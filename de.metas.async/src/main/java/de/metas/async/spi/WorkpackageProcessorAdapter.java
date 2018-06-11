@@ -1,6 +1,7 @@
 package de.metas.async.spi;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 
@@ -139,7 +140,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	 * retrieves all active PO's IDs, even the ones that are caught in other packages
 	 * @return
 	 */
-	public final List<Integer> retrieveAllItemIds()
+	public final Set<Integer> retrieveAllItemIds()
 	{
 		return Services.get(IQueueDAO.class).retrieveAllItemIds(getC_Queue_WorkPackage());
 	}

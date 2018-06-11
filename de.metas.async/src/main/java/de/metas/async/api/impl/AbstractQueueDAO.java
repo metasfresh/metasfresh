@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -44,7 +45,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
@@ -58,7 +59,6 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
-import lombok.NonNull;
 
 public abstract class AbstractQueueDAO implements IQueueDAO
 {
@@ -344,22 +344,14 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	}
 
 	@Override
-	public final List<Integer> retrieveAllItemIds(final I_C_Queue_WorkPackage workPackage)
+	public final Set<Integer> retrieveAllItemIds(final I_C_Queue_WorkPackage workPackage)
 	{
 		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, false);
 		return queueElements.stream()
-				.peek(this::assertTableId)
 				.map(I_C_Queue_Element::getRecord_ID)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private void assertTableId(@NonNull final I_C_Queue_Element element)
-	{
-		if (element.getAD_Table_ID() <= 0)
-		{
-			throw new AdempiereException("@NotFound@ @AD_Table_ID@ (ID:" + element.getAD_Table_ID() + ")");
-		}
-	}
 
 	@Override
 	public IQueryOrderBy getQueueOrderBy()
