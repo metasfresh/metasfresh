@@ -3,29 +3,15 @@
  */
 package de.metas.letter.interceptor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_AD_PInstance;
+import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.X_C_Async_Batch;
 import de.metas.letter.LetterConstants;
-import de.metas.letter.process.C_Letter_PrintAutomatically;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.IADProcessDAO;
-import de.metas.process.ProcessInfo;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.letter.service.SearialLetterService;
 
 /*
  * #%L
@@ -65,31 +51,8 @@ public class C_Async_Batch
 
 	private void runPrintingProcess(final I_C_Async_Batch asyncBatch)
 	{
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final int processId = adProcessDAO.retrieveProcessIdByClass(C_Letter_PrintAutomatically.class);
-		Check.assume(processId > 0, "No process found");
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
-		final ITrx trx = Services.get(ITrxManager.class).getTrx(InterfaceWrapperHelper.getTrxName(asyncBatch));
-		Check.assume(trx != null, "trx not null");
-
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, processId, 0, 0);
-		pinstance.setIsProcessing(true);
-		InterfaceWrapperHelper.save(pinstance);
-
-		final List<ProcessInfoParameter> piParams = new ArrayList<>();
-		piParams.add(ProcessInfoParameter.ofValueObject(X_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID, asyncBatch.getC_Async_Batch_ID()));
-		Services.get(IADPInstanceDAO.class).saveParameterToDB(pinstance.getAD_PInstance_ID(), piParams);
-
-		ProcessInfo.builder()
-				.setCtx(ctx)
-				.setAD_Process_ID(processId)
-				.setAD_PInstance(pinstance)
-				.setAD_User_ID(asyncBatch.getCreatedBy()) // we need this to set in here in order to be user as userToPrint
-				.buildAndPrepareExecution()
-				.onErrorThrowException()
-				.executeSync();
-
-	}
+		final SearialLetterService serialLetterService = Adempiere.getBean(SearialLetterService.class);
+		serialLetterService.printAutomaticallyLetters(asyncBatch.getC_Async_Batch_ID());
+		}
 
 }

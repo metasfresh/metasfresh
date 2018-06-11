@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.letter.process;
+package de.metas.letter.service;
 
 import java.util.Collections;
 import java.util.List;
@@ -11,29 +11,29 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
-import de.metas.async.model.I_C_Async_Batch;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintJobBL.ContextForAsyncProcessing;
-import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
+import de.metas.process.IADPInstanceDAO;
+import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.marketing.serialletter
+ * marketing-serialletter
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -53,62 +53,27 @@ import de.metas.process.Param;
  * #L%
  */
 
-public class C_Letter_PrintAutomatically extends JavaProcess
+/**
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@Service
+public class SearialLetterService
 {
+	private final transient Logger log = LogManager.getLogger(getClass());
 
-	// Services
-	final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-
-	public static final String MSG_C_Letter_PrintAutomatically = "C_Letter_PrintAutomatically";
-
-	@Param(mandatory = true, parameterName = I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID)
-	private int asyncBacthId;
-
-	@Override
-	protected String doIt() throws Exception
+	public void printAutomaticallyLetters(final int asyncBacthId)
 	{
-		if (asyncBacthId > 0)
+		Check.assume(asyncBacthId > 0, "AsycnBacthId should be > 0");
+
+		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(Env.getCtx());
+
+		final List<IPrintingQueueSource> sources = createPrintingQueueSource(asyncBacthId, adPInstanceId);
+		for (final IPrintingQueueSource source : sources)
 		{
-			final I_AD_PInstance pinstance = InterfaceWrapperHelper.load(getAD_PInstance_ID(), I_AD_PInstance.class);
-			pinstance.setAD_User_ID(getProcessInfo().getAD_User_ID());
-			InterfaceWrapperHelper.save(pinstance);
-
-			final List<IPrintingQueueSource> sources = createPrintingQueueSource();
-			for (final IPrintingQueueSource source : sources)
-			{
-				source.setName("Print letter for C_Async_Batch_ID = " + asyncBacthId);
-				print(source);
-			}
-			}
-
-		return "OK";
-	}
-
-	private void print(final IPrintingQueueSource source)
-	{
-
-		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
-			try
-			{
-
-				final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
-						.adPInstanceId(getAD_PInstance_ID())
-						.parentAsyncBatchId(asyncBacthId)
-						.build();
-
-				Services.get(IPrintJobBL.class).createPrintJobs(source, printJobContext);
-			}
-			catch (final Exception ex)
-			{
-				log.error("Failed creating print job for {}", source, ex);
-				Services.get(INotificationBL.class).send(UserNotificationRequest.builder()
-						.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
-						.recipientUserId(Env.getAD_User_ID(getCtx()))
-						.contentPlain(ex.getLocalizedMessage())
-						.build());
-			}
-
-		});
+			source.setName("Print letter for C_Async_Batch_ID = " + asyncBacthId);
+			print(source, asyncBacthId, adPInstanceId);
+		}
 	}
 
 	/**
@@ -116,10 +81,9 @@ public class C_Letter_PrintAutomatically extends JavaProcess
 	 * <ul>
 	 * Contains printing queues for the letters that belong to a specific <code>C_Async_Batch_ID</code>
 	 *
-	 * @param ctxToUse
 	 * @return
 	 */
-	private List<IPrintingQueueSource> createPrintingQueueSource()
+	private List<IPrintingQueueSource> createPrintingQueueSource(final int asyncBacthId, final int adPInstanceId)
 	{
 		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Printing_Queue.class, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
@@ -128,7 +92,7 @@ public class C_Letter_PrintAutomatically extends JavaProcess
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_Processed, false)
 				.create();
 
-		final int selectionLength = query.createSelection(getAD_PInstance_ID());
+		final int selectionLength = query.createSelection(adPInstanceId);
 
 		if (selectionLength <= 0)
 		{
@@ -139,13 +103,41 @@ public class C_Letter_PrintAutomatically extends JavaProcess
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingQueueQuery printingQuery = printingQueueBL.createPrintingQueueQuery();
 		printingQuery.setIsPrinted(false);
-		printingQuery.setOnlyAD_PInstance_ID(getAD_PInstance_ID());
+		printingQuery.setOnlyAD_PInstance_ID(adPInstanceId);
 
-		final Properties ctx = getProcessInfo().getCtx();
+		final Properties ctx = Env.getCtx();
 
 		// we need to make sure exists AD_Session_ID in context; if not, a new session will be created
 		Services.get(ISessionBL.class).getCurrentOrCreateNewSession(ctx);
 
 		return printingQueueBL.createPrintingQueueSources(ctx, printingQuery);
 	}
+
+	private void print(@NonNull final IPrintingQueueSource source, final int asyncBacthId, final int adPInstanceId)
+	{
+
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			try
+			{
+
+				final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
+						.adPInstanceId(adPInstanceId)
+						.parentAsyncBatchId(asyncBacthId)
+						.build();
+
+				Services.get(IPrintJobBL.class).createPrintJobs(source, printJobContext);
+			}
+			catch (final Exception ex)
+			{
+				log.error("Failed creating print job for {}", source, ex);
+				Services.get(INotificationBL.class).send(UserNotificationRequest.builder()
+						.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
+						.recipientUserId(Env.getAD_User_ID(Env.getCtx()))
+						.contentPlain(ex.getLocalizedMessage())
+						.build());
+			}
+
+		});
+	}
+
 }

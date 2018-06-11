@@ -4,21 +4,17 @@ import java.util.List;
 
 import org.adempiere.location.Location;
 import org.adempiere.location.LocationRepository;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.letters.api.ITextTemplateBL;
-import de.metas.letters.model.I_AD_BoilerPlate;
+import de.metas.letter.BoilerPlate;
+import de.metas.letter.BoilerPlateRepository;
 import de.metas.letters.model.Letter;
 import de.metas.letters.model.LetterRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.marketing.base.model.I_MKTG_Campaign;
-import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 
 /*
  * #%L
@@ -50,32 +46,33 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
 		// Services
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final ContactPersonRepository contactRepo = Adempiere.getBean(ContactPersonRepository.class);
 		final LetterRepository letterRepo = Adempiere.getBean(LetterRepository.class);
 		final LocationRepository locationRepo = Adempiere.getBean(LocationRepository.class);
+		final BoilerPlateRepository  boilerPlateRepo = Adempiere.getBean(BoilerPlateRepository.class);
 
 
-		final List<I_MKTG_Campaign_ContactPerson> campaignContactPersons = queueDAO.retrieveAllItems(workPackage, I_MKTG_Campaign_ContactPerson.class);
+		final List<Integer> campaignContactPersonsIDs = retrieveAllItemIDs();
 
-		for (final I_MKTG_Campaign_ContactPerson campaignContactPerson : campaignContactPersons)
+		for (final Integer campaignContactPersonID : campaignContactPersonsIDs)
 		{
-			final ContactPerson contactPerson = contactRepo.asContactPerson(campaignContactPerson.getMKTG_ContactPerson());
+			final ContactPerson contactPerson = contactRepo.getByCampaignContactPersonId(campaignContactPersonID);
 			final Location location = locationRepo.getByLocationId(contactPerson.getLocationId());
 
 			// create letter
-			final I_MKTG_Campaign mktgCampaign = campaignContactPerson.getMKTG_Campaign();
 			String subject = "";
 			String body = "";
-			if (mktgCampaign.getAD_BoilerPlate_ID() > 0)
+			if (contactPerson.getBoilerPlateId() != null)
 			{
-				final I_AD_BoilerPlate boilerPlate = Services.get(ITextTemplateBL.class).getById(mktgCampaign.getAD_BoilerPlate_ID());
-				subject = boilerPlate.getSubject();
-				body = boilerPlate.getTextSnippext();
+				final BoilerPlate boilerPlate = boilerPlateRepo.getByBoilerPlateId(contactPerson.getBoilerPlateId());
+				if (boilerPlate != null)
+				{
+					subject = boilerPlate.getSubject();
+					body = boilerPlate.getTextSnippext();
+				}
 			}
 			Letter letter = Letter.builder()
-					.boilerPlateId(mktgCampaign.getAD_BoilerPlate_ID())
-					.adOrgId(mktgCampaign.getAD_Org_ID())
+					.boilerPlateId(contactPerson.getBoilerPlateId())
 					.bpartnerId(contactPerson.getBPartnerId())
 					.userId(contactPerson.getUserId())
 					.address(location.getAddress())
