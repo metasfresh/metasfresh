@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
+import de.metas.payment.api.IPaymentTermRepository;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -64,6 +66,8 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 	//
 	private final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 
 	public PurchaseProfitInfoServiceImpl(
 			@NonNull final CurrencyRepository currencyRepo,
@@ -100,8 +104,10 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 		final Percent vendorFlatDiscount = vendorProductInfo.getVendorFlatDiscount();
 		final PricingConditionsBreak vendorPricingConditionsBreak = vendorProductInfo.getPricingConditionsBreakOrNull(qtyToPurchase);
 
+		//
+		// Compute price (gross and net) from pricing conditions break
 		final Money purchaseBasePrice;
-		final Money purchaseNetPrice;
+		Money purchaseNetPrice;
 		if (vendorPricingConditionsBreak != null)
 		{
 			final PricingConditionsResult vendorPricingConditionsResult = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
@@ -132,8 +138,18 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 			purchaseNetPrice = null;
 		}
 
-		// TODO: subtract paymentTerm discount if any
+		//
+		// Subtract paymentTerm discount if any
+		if (purchaseNetPrice != null
+				&& purchaseNetPrice.signum() != 0
+				&& vendorPricingConditionsBreak.getPaymentTermId() != null)
+		{
+			final Percent discount = paymentTermRepo.getPaymentTermDiscount(vendorPricingConditionsBreak.getPaymentTermId());
+			purchaseNetPrice = purchaseNetPrice.subtract(discount);
 
+		}
+
+		//
 		return PurchaseProfitInfo.builder()
 				.salesNetPrice(grossProfitPriceRepo.getProfitMinBasePrice(salesOrderAndLineIds))
 				.purchaseGrossPrice(purchaseBasePrice)
@@ -143,11 +159,14 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 
 	private IPricingContext createPricingContext(final PricingConditionsBreak pricingConditionsBreak, final BPartnerId vendorId)
 	{
+		final int countryId = bpartnersRepo.getDefaultShipToLocationCountryId(vendorId);
+
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		final ProductId productId = pricingConditionsBreak.getMatchCriteria().getProductId();
 		pricingCtx.setM_Product_ID(ProductId.toRepoId(productId));
 		pricingCtx.setQty(BigDecimal.ONE);
 		pricingCtx.setBPartnerId(vendorId);
+		pricingCtx.setC_Country_ID(countryId);
 		pricingCtx.setSOTrx(SOTrx.PURCHASE.toBoolean());
 
 		return pricingCtx;
