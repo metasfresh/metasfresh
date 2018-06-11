@@ -39,7 +39,7 @@ import lombok.NonNull;
 @Repository
 public class BoilerPlateRepository
 {
-	public BoilerPlate toBoilerPlate(@NonNull final I_AD_BoilerPlate boilerPlateRecord)
+	private BoilerPlate toBoilerPlate(@NonNull final I_AD_BoilerPlate boilerPlateRecord)
 	{
 		return BoilerPlate.builder()
 				.id(BoilerPlateId.ofRepoId(boilerPlateRecord.getAD_BoilerPlate_ID()))
