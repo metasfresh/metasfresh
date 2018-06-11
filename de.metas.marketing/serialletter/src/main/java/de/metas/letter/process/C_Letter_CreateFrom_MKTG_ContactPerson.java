@@ -13,7 +13,6 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.letter.LetterConstants;
 import de.metas.letter.service.async.spi.impl.C_Letter_CreateFromMKTG_ContactPerson_Async;
-import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.process.JavaProcess;
@@ -58,7 +57,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Set<Integer> campaignContactPersonIds = contactPersonRepo.getIdsByCampaignId(CampaignId.ofRepoId(campaignId));
+		final Set<Integer> campaignContactPersonIds = contactPersonRepo.getIdsByCampaignId(campaignId);
 
 		if (campaignContactPersonIds.isEmpty())
 		{

@@ -193,7 +193,7 @@ public class ContactPersonRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public Set<Integer> getIdsByCampaignId(@NonNull final CampaignId campaignId)
+	public Set<Integer> getIdsByCampaignId(final int campaignId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
