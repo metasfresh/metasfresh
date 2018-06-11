@@ -10,6 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.62 (2018-25)
+## Features
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1774) Cannot stop uploading a file
+    * Extend File Upload Feature, now possible to cancel the upload.
+
 # metasfresh 5.61 (2018-24)
 ## Features
 * metasfresh
