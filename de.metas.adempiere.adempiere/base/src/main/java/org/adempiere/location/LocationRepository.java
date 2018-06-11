@@ -1,13 +1,10 @@
 package org.adempiere.location;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.user.User;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Repository;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.ILocationBL;
 import lombok.NonNull;
 
@@ -44,24 +41,6 @@ public class LocationRepository
 				.id(LocationId.ofRepoId(locationRecord.getC_Location_ID()))
 				.address(address)
 				.build();
-	}
-
-	public LocationId getBilltoDefaultLocationIdByUser(@NonNull final User user)
-	{
-		if (user.getBpartnerId() == null)
-		{
-			return null;
-		}
-
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-		return bpartnersRepo.retrieveBPartnerLocations(user.getBpartnerId())
-				.stream()
-				.filter(I_C_BPartner_Location::isBillToDefault)
-				.map(I_C_BPartner_Location::getC_Location)
-				.map(this::ofRecord)
-				.findFirst()
-				.map(Location::getId)
-				.orElse(null);
 	}
 
 	public Location getByLocationId(@NonNull final LocationId locationId)
