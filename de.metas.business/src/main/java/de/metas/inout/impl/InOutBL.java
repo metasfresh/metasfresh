@@ -51,6 +51,7 @@ import org.compiere.util.CacheMgt;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.lang.SOTrx;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -74,15 +75,15 @@ public class InOutBL implements IInOutBL
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
-		boolean isSOTrx = inOut.isSOTrx();
+		SOTrx soTrx = SOTrx.ofBoolean(inOut.isSOTrx());
 
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(inOutLine.getM_Product_ID(),
 				inOut.getC_BPartner_ID(),
 				inOutLine.getC_UOM_ID(),
 				inOutLine.getQtyEntered(),
-				isSOTrx);
+				soTrx.toBoolean());
 
-		I_M_PricingSystem pricingSystem = getPricingSystemOrNull(inOut, isSOTrx);
+		I_M_PricingSystem pricingSystem = getPricingSystemOrNull(inOut, soTrx);
 
 		if (pricingSystem == null)
 		{
@@ -92,8 +93,8 @@ public class InOutBL implements IInOutBL
 				// in case no pricing system was found for the current IsSOTrx AND we are dealing with leergut inouts
 				// we are allowed to take the pricing system from the other opposite SOTrx, since the boxes have the same prices
 				// either they are bought or sold
-				isSOTrx = !isSOTrx;
-				pricingSystem = getPricingSystemOrNull(inOut, isSOTrx);
+				soTrx = soTrx.invert();
+				pricingSystem = getPricingSystemOrNull(inOut, soTrx);
 			}
 		}
 
@@ -108,11 +109,11 @@ public class InOutBL implements IInOutBL
 
 		Check.assume(pricingSystemId > 0, "No pricing system found for M_InOut_ID={}", inOut.getM_InOut_ID());
 
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, inOut.getC_BPartner_Location(), isSOTrx);
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, inOut.getC_BPartner_Location(), soTrx.isSales());
 
 		Check.errorIf(priceList == null,
-				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.IsSOTrx={}",
-				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), isSOTrx);
+				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
+				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
 
 		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
 		pricingCtx.setM_PriceList_ID(priceList.getM_PriceList_ID());
@@ -145,7 +146,7 @@ public class InOutBL implements IInOutBL
 	@Override
 	public I_M_PricingSystem getPricingSystem(final I_M_InOut inOut, final boolean throwEx)
 	{
-		final I_M_PricingSystem pricingSystem = getPricingSystemOrNull(inOut, inOut.isSOTrx());
+		final I_M_PricingSystem pricingSystem = getPricingSystemOrNull(inOut, SOTrx.ofBoolean(inOut.isSOTrx()));
 
 		if (pricingSystem == null)
 		{
@@ -166,7 +167,7 @@ public class InOutBL implements IInOutBL
 	 * @param isSOTrx
 	 * @return
 	 */
-	private I_M_PricingSystem getPricingSystemOrNull(final I_M_InOut inOut, final boolean isSOTrx)
+	private I_M_PricingSystem getPricingSystemOrNull(final I_M_InOut inOut, final SOTrx soTrx)
 	{
 		if (inOut.getC_Order_ID() > 0 && inOut.getC_Order().getM_PricingSystem_ID() > 0)
 		{
@@ -176,7 +177,7 @@ public class InOutBL implements IInOutBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inOut);
 		final String trxName = InterfaceWrapperHelper.getTrxName(inOut);
 
-		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, inOut.getC_BPartner_ID(), isSOTrx, trxName);
+		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, inOut.getC_BPartner_ID(), soTrx, trxName);
 
 		if (pricingSystemId <= 0)
 		{

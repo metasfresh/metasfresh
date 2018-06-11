@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -58,6 +59,7 @@ public class PurchaseDemandWithCandidatesService
 	private final PurchaseProfitInfoFactory purchaseProfitInfoFactory;
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
 	public PurchaseDemandWithCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
@@ -145,7 +147,7 @@ public class PurchaseDemandWithCandidatesService
 				.collect(ImmutableList.toImmutableList());
 
 		// TODO: don't save them here!
-		purchaseCandidateRepository.saveAll(candidates);
+		// purchaseCandidateRepository.saveAll(candidates);
 
 		return candidates;
 	}
@@ -228,6 +230,8 @@ public class PurchaseDemandWithCandidatesService
 
 	private Collection<VendorProductInfo> retrieveVendorProductInfos(@NonNull final ProductId productId, @NonNull final OrgId orgId)
 	{
+//		bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(adClientId, false);
+		
 		return partnerProductDAO
 				.retrieveAllVendors(productId, orgId)
 				.stream()

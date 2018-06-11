@@ -244,4 +244,10 @@ public class PlainAttributeValue extends AbstractAttributeValue
 	{
 		return valueInitialDate;
 	}
+
+	@Override
+	public boolean isOnlyIfInProductAttributeSet()
+	{
+		return false;
+	}
 }

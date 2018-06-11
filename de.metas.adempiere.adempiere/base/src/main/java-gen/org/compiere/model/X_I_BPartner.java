@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -288425655L;
+	private static final long serialVersionUID = 1362706971L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -34,7 +34,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 			setIsShipTo (false); // N
 			setIsShipToContact_Default (false); // N
 			setIsShipToDefault (false); // N
-			setIsShowDeliveryNote (false); // N
         } */
     }
 
@@ -70,6 +69,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getAD_Language () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_PrintFormat getAD_PrintFormat() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);
+	}
+
+	@Override
+	public void setAD_PrintFormat(org.compiere.model.I_AD_PrintFormat AD_PrintFormat)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class, AD_PrintFormat);
+	}
+
+	/** Set Druck - Format.
+		@param AD_PrintFormat_ID 
+		Data Print Format
+	  */
+	@Override
+	public void setAD_PrintFormat_ID (int AD_PrintFormat_ID)
+	{
+		if (AD_PrintFormat_ID < 1) 
+			set_Value (COLUMNNAME_AD_PrintFormat_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PrintFormat_ID, Integer.valueOf(AD_PrintFormat_ID));
+	}
+
+	/** Get Druck - Format.
+		@return Data Print Format
+	  */
+	@Override
+	public int getAD_PrintFormat_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintFormat_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -817,6 +853,41 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return bd;
 	}
 
+	/** Set Kreditoren-Nr.
+		@param CreditorId Kreditoren-Nr	  */
+	@Override
+	public void setCreditorId (int CreditorId)
+	{
+		set_Value (COLUMNNAME_CreditorId, Integer.valueOf(CreditorId));
+	}
+
+	/** Get Kreditoren-Nr.
+		@return Kreditoren-Nr	  */
+	@Override
+	public int getCreditorId () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CreditorId);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Eigene-Kd. Nr. .
+		@param CustomerNoAtVendor Eigene-Kd. Nr. 	  */
+	@Override
+	public void setCustomerNoAtVendor (java.lang.String CustomerNoAtVendor)
+	{
+		set_Value (COLUMNNAME_CustomerNoAtVendor, CustomerNoAtVendor);
+	}
+
+	/** Get Eigene-Kd. Nr. .
+		@return Eigene-Kd. Nr. 	  */
+	@Override
+	public java.lang.String getCustomerNoAtVendor () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerNoAtVendor);
+	}
+
 	/** Set Debitoren-Nr.
 		@param DebtorId Debitoren-Nr	  */
 	@Override
@@ -1383,29 +1454,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return false;
 	}
 
-	/** Set Show Delivery Note.
-		@param IsShowDeliveryNote Show Delivery Note	  */
-	@Override
-	public void setIsShowDeliveryNote (boolean IsShowDeliveryNote)
-	{
-		set_Value (COLUMNNAME_IsShowDeliveryNote, Boolean.valueOf(IsShowDeliveryNote));
-	}
-
-	/** Get Show Delivery Note.
-		@return Show Delivery Note	  */
-	@Override
-	public boolean isShowDeliveryNote () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsShowDeliveryNote);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Vendor.
 		@param IsVendor 
 		Indicates if this Business Partner is a Vendor
@@ -1462,6 +1510,28 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getLastname () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Lastname);
+	}
+
+	/** Set Lead Time Offset.
+		@param LeadTimeOffset 
+		Optional Lead Time offest before starting production
+	  */
+	@Override
+	public void setLeadTimeOffset (int LeadTimeOffset)
+	{
+		set_Value (COLUMNNAME_LeadTimeOffset, Integer.valueOf(LeadTimeOffset));
+	}
+
+	/** Get Lead Time Offset.
+		@return Optional Lead Time offest before starting production
+	  */
+	@Override
+	public int getLeadTimeOffset () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LeadTimeOffset);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -1898,6 +1968,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Postal_Add);
 	}
 
+	/** Set PrintFormat_Name.
+		@param PrintFormat_Name PrintFormat_Name	  */
+	@Override
+	public void setPrintFormat_Name (java.lang.String PrintFormat_Name)
+	{
+		set_Value (COLUMNNAME_PrintFormat_Name, PrintFormat_Name);
+	}
+
+	/** Get PrintFormat_Name.
+		@return PrintFormat_Name	  */
+	@Override
+	public java.lang.String getPrintFormat_Name () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PrintFormat_Name);
+	}
+
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
@@ -1945,6 +2031,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Qualification .
+		@param Qualification Qualification 	  */
+	@Override
+	public void setQualification (java.lang.String Qualification)
+	{
+		set_Value (COLUMNNAME_Qualification, Qualification);
+	}
+
+	/** Get Qualification .
+		@return Qualification 	  */
+	@Override
+	public java.lang.String getQualification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Qualification);
 	}
 
 	@Override
@@ -2003,23 +2105,11 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_RegionName);
 	}
 
-	/** 
-	 * Salesgroup AD_Reference_ID=540635
-	 * Reference name: C_BPartner_Salesgroup
-	 */
-	public static final int SALESGROUP_AD_Reference_ID=540635;
-	/** Klassischer Detailhandel = 0030 */
-	public static final String SALESGROUP_KlassischerDetailhandel = "0030";
-	/** Discounter = 0010 */
-	public static final String SALESGROUP_Discounter = "0010";
-	/** Gastronomie und Grosshandel = 0020 */
-	public static final String SALESGROUP_GastronomieUndGrosshandel = "0020";
 	/** Set Statistik Gruppe.
 		@param Salesgroup Statistik Gruppe	  */
 	@Override
 	public void setSalesgroup (java.lang.String Salesgroup)
 	{
-
 		set_Value (COLUMNNAME_Salesgroup, Salesgroup);
 	}
 
@@ -2159,5 +2249,24 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
+	}
+
+	/** Set Produkt-Kategorie Geschäftspartner.
+		@param VendorCategory 
+		Produkt-Kategorie des Geschäftspartner
+	  */
+	@Override
+	public void setVendorCategory (java.lang.String VendorCategory)
+	{
+		set_Value (COLUMNNAME_VendorCategory, VendorCategory);
+	}
+
+	/** Get Produkt-Kategorie Geschäftspartner.
+		@return Produkt-Kategorie des Geschäftspartner
+	  */
+	@Override
+	public java.lang.String getVendorCategory () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VendorCategory);
 	}
 }

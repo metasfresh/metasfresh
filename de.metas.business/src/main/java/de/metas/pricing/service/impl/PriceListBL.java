@@ -25,14 +25,18 @@ package de.metas.pricing.service.impl;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.lang.SOTrx;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
+import lombok.NonNull;
 
 public class PriceListBL implements IPriceListBL
 {
@@ -53,10 +57,10 @@ public class PriceListBL implements IPriceListBL
 			final int pricingSystemId,
 			final int countryId,
 			final Timestamp date,
-			final boolean isSOTrx)
+			@NonNull final SOTrx soTrx)
 	{
 		final Boolean processedPLVFiltering = null;
-		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystemId, countryId, date, isSOTrx, processedPLVFiltering);
+		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystemId, countryId, date, soTrx, processedPLVFiltering);
 		if (currentVersion == null)
 		{
 			return null;
@@ -71,10 +75,10 @@ public class PriceListBL implements IPriceListBL
 			final int pricingSystemId,
 			final int countryId,
 			final Timestamp date,
-			final Boolean isSOTrx,
+			@Nullable final SOTrx soTrx,
 			final Boolean processedPLVFiltering)
 	{
-		Check.assumeNotNull(date, "Param 'date' is not null; other params: country={}, isSoTrx={}, processedPLVFiltering={}", countryId, isSOTrx, processedPLVFiltering);
+		Check.assumeNotNull(date, "Param 'date' is not null; other params: country={}, soTrx={}, processedPLVFiltering={}", countryId, soTrx, processedPLVFiltering);
 
 		if (countryId <= 0)
 		{
@@ -87,7 +91,7 @@ public class PriceListBL implements IPriceListBL
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, isSOTrx);
+		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx == null ? null : soTrx.isSales());
 		if (!pricelists.hasNext())
 		{
 			return null;

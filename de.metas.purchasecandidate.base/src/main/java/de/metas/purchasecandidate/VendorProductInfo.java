@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
@@ -13,6 +14,7 @@ import org.compiere.util.Util;
 
 import de.metas.payment.api.IPaymentTermRepository;
 import de.metas.payment.api.PaymentTermId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -59,30 +61,45 @@ public class VendorProductInfo
 
 	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProductRecord)
 	{
-		final BPartnerId bpartnerVendorIdOverride = null;
-		final Boolean aggregatePOsOverride = null; // N/A
-		return fromDataRecord(bpartnerProductRecord, bpartnerVendorIdOverride, aggregatePOsOverride);
+		return builderFromDataRecord()
+				.bpartnerProductRecord(bpartnerProductRecord)
+				.build();
 	}
 
-	public static VendorProductInfo fromDataRecord(
-			@NonNull final I_C_BPartner_Product bpartnerProductRecord,
+	@Builder(builderMethodName = "builderFromDataRecord", builderClassName = "FromDataRecordBuilder")
+	public static VendorProductInfo buildFromDataRecord(
+			final I_C_BPartner_Product bpartnerProductRecord,
+			final ProductId productIdOverride,
 			final BPartnerId bpartnerVendorIdOverride,
 			final Boolean aggregatePOsOverride)
 	{
+		final ProductId productId = Util.coalesceSuppliers(
+				() -> productIdOverride,
+				() -> bpartnerProductRecord != null ? ProductId.ofRepoId(bpartnerProductRecord.getM_Product_ID()) : null);
+		if (productId == null)
+		{
+			throw new AdempiereException("Cannot extract ProductId from bpartnerProductRecord=" + bpartnerProductRecord + ", productIdOverride=" + productIdOverride);
+		}
+
 		final String productNo = Util.coalesceSuppliers(
-				() -> bpartnerProductRecord.getVendorProductNo(),
-				() -> bpartnerProductRecord.getProductNo(),
-				() -> bpartnerProductRecord.getM_Product().getValue());
+				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getVendorProductNo() : null,
+				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductNo() : null,
+				() -> Services.get(IProductBL.class).getProductValue(productId));
 
 		final String productName = Util.coalesceSuppliers(
-				() -> bpartnerProductRecord.getProductName(),
-				() -> bpartnerProductRecord.getM_Product().getName());
+				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductName() : null,
+				() -> Services.get(IProductBL.class).getProductName(productId));
 
 		final BPartnerId vendorId = Util.coalesceSuppliers(
 				() -> bpartnerVendorIdOverride,
-				() -> BPartnerId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_ID()));
+				() -> bpartnerProductRecord != null ? BPartnerId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_ID()) : null);
+		if (vendorId == null)
+		{
+			throw new AdempiereException("Cannot extract ProductId from bpartnerProductRecord=" + bpartnerProductRecord + ", bpartnerVendorIdOverride=" + bpartnerVendorIdOverride);
+		}
 
-		final PaymentTermId paymentTermId = retrievePaymentTermIdOrNull(bpartnerProductRecord.getC_BPartner());
+		final I_C_BPartner vendorBPartnerRecord = Services.get(IBPartnerDAO.class).getById(vendorId);
+		final PaymentTermId paymentTermId = retrievePaymentTermIdOrNull(vendorBPartnerRecord);
 
 		final boolean aggregatePOs;
 		if (aggregatePOsOverride != null)
@@ -96,10 +113,10 @@ public class VendorProductInfo
 		}
 
 		return builder()
-				.id(VendorProductInfoId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_Product_ID()))
+				.id(bpartnerProductRecord != null ? VendorProductInfoId.ofRepoIdOrNull(bpartnerProductRecord.getC_BPartner_Product_ID()) : null)
 				.vendorId(vendorId)
 				.paymentTermId(paymentTermId)
-				.productId(ProductId.ofRepoId(bpartnerProductRecord.getM_Product_ID()))
+				.productId(productId)
 				.productNo(productNo)
 				.productName(productName)
 				.aggregatePOs(aggregatePOs)

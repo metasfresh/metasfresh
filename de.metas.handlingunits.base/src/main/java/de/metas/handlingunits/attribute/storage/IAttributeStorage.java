@@ -35,6 +35,8 @@ import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.NamePair;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -48,6 +50,7 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /**
@@ -192,7 +195,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 */
 	boolean isReadonlyUI(final IAttributeValueContext ctx, I_M_Attribute attribute);
 
-	boolean isDisplayedUI(final I_M_Attribute attribute);
+	boolean isDisplayedUI(final ImmutableSet<ProductId> productIDs, final I_M_Attribute attribute);
 
 	/**
 	 * Set attribute's value with NO propagation.

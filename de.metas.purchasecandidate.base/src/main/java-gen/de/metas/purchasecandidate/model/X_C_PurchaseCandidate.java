@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 996874402L;
+	private static final long serialVersionUID = 54088198L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -316,6 +316,40 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeInstance);
+	}
+
+	/** Set M_AttributeInstance.
+		@param M_AttributeInstance_ID M_AttributeInstance	  */
+	@Override
+	public void setM_AttributeInstance_ID (int M_AttributeInstance_ID)
+	{
+		if (M_AttributeInstance_ID < 1) 
+			set_Value (COLUMNNAME_M_AttributeInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeInstance_ID, Integer.valueOf(M_AttributeInstance_ID));
+	}
+
+	/** Get M_AttributeInstance.
+		@return M_AttributeInstance	  */
+	@Override
+	public int getM_AttributeInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
