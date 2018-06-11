@@ -69,7 +69,7 @@ public class EmailAddress implements ContactAddress
 
 	public static EmailAddress of(
 			@NonNull final String emailAddress,
-			final boolean deactivatedOnRemotePlatform)
+			final Boolean deactivatedOnRemotePlatform)
 	{
 		return new EmailAddress(emailAddress, deactivatedOnRemotePlatform);
 	}

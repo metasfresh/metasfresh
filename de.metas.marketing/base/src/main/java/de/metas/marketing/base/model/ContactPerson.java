@@ -5,9 +5,12 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.location.LocationId;
 import org.adempiere.user.User;
 import org.adempiere.user.UserId;
+import org.adempiere.util.Check;
 
+import de.metas.letter.BoilerPlateId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,15 +41,20 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class ContactPerson implements DataRecord
 {
-	public static ContactPerson newForUserAndPlatform(
+	public static ContactPerson newForUserPlatformAndLocation(
 			@NonNull final User user,
-			@NonNull final PlatformId platformId)
+			@NonNull final PlatformId platformId,
+			@Nullable final LocationId locationId)
 	{
+		final EmailAddress emailaddress = Check.isEmpty(user.getEmailAddress(), true) ? null : EmailAddress.of(user.getEmailAddress());
+
 		return ContactPerson.builder()
 				.platformId(platformId)
 				.name(user.getName())
 				.userId(user.getId())
-				.address(EmailAddress.of(user.getEmailAddress()))
+				.bPartnerId(user.getBpartnerId())
+				.locationId(locationId)
+				.address(emailaddress)
 				.build();
 	}
 
@@ -67,7 +75,7 @@ public class ContactPerson implements DataRecord
 	@Nullable
 	BPartnerId bPartnerId;
 
-	/** Doesn't make sense to be null; a contact person needs to have some means of contacting them. */
+	@Nullable
 	ContactAddress address;
 
 	/** might be null if the contact person was not stored yet */
@@ -80,6 +88,12 @@ public class ContactPerson implements DataRecord
 	@NonNull
 	PlatformId platformId;
 
+	@Nullable
+	LocationId locationId;
+
+	@Nullable
+	BoilerPlateId boilerPlateId;
+
 	public String getEmailAddessStringOrNull()
 	{
 		return EmailAddress.getEmailAddessStringOrNull(getAddress());
@@ -89,5 +103,6 @@ public class ContactPerson implements DataRecord
 	{
 		return EmailAddress.getActiveOnRemotePlatformOrNull(getAddress());
 	}
+
 
 }

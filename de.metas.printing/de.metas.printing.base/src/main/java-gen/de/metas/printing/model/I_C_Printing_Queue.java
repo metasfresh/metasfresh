@@ -2,10 +2,10 @@ package de.metas.printing.model;
 
 
 /** Generated Interface for C_Printing_Queue
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public interface I_C_Printing_Queue 
+public interface I_C_Printing_Queue
 {
 
     /** TableName=C_Printing_Queue */
@@ -47,7 +47,7 @@ public interface I_C_Printing_Queue
 	public void setAD_Archive(org.compiere.model.I_AD_Archive AD_Archive);
 
     /** Column definition for AD_Archive_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Archive> COLUMN_AD_Archive_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Archive>(I_C_Printing_Queue.class, "AD_Archive_ID", org.compiere.model.I_AD_Archive.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Archive> COLUMN_AD_Archive_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "AD_Archive_ID", org.compiere.model.I_AD_Archive.class);
     /** Column name AD_Archive_ID */
     public static final String COLUMNNAME_AD_Archive_ID = "AD_Archive_ID";
 
@@ -64,7 +64,7 @@ public interface I_C_Printing_Queue
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Client>(I_C_Printing_Queue.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -89,7 +89,7 @@ public interface I_C_Printing_Queue
 	public java.lang.String getAD_Language();
 
     /** Column definition for AD_Language */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "AD_Language", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "AD_Language", null);
     /** Column name AD_Language */
     public static final String COLUMNNAME_AD_Language = "AD_Language";
 
@@ -118,7 +118,7 @@ public interface I_C_Printing_Queue
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Org>(I_C_Printing_Queue.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -147,7 +147,7 @@ public interface I_C_Printing_Queue
 	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process);
 
     /** Column definition for AD_Process_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Process>(I_C_Printing_Queue.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
     /** Column name AD_Process_ID */
     public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
@@ -176,7 +176,7 @@ public interface I_C_Printing_Queue
 	public void setAD_Role(org.compiere.model.I_AD_Role AD_Role);
 
     /** Column definition for AD_Role_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Role>(I_C_Printing_Queue.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
     /** Column name AD_Role_ID */
     public static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 
@@ -205,7 +205,7 @@ public interface I_C_Printing_Queue
 	public void setAD_User(org.compiere.model.I_AD_User AD_User);
 
     /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_User>(I_C_Printing_Queue.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_ID */
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
@@ -234,7 +234,7 @@ public interface I_C_Printing_Queue
 	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner);
 
     /** Column definition for Bill_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner> COLUMN_Bill_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner>(I_C_Printing_Queue.class, "Bill_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner> COLUMN_Bill_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "Bill_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name Bill_BPartner_ID */
     public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
@@ -263,7 +263,7 @@ public interface I_C_Printing_Queue
 	public void setBill_Location(org.compiere.model.I_C_BPartner_Location Bill_Location);
 
     /** Column definition for Bill_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner_Location> COLUMN_Bill_Location_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner_Location>(I_C_Printing_Queue.class, "Bill_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner_Location> COLUMN_Bill_Location_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "Bill_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name Bill_Location_ID */
     public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
@@ -286,7 +286,7 @@ public interface I_C_Printing_Queue
 	public int getC_Async_Batch_ID();
 
     /** Column definition for C_Async_Batch_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_C_Async_Batch_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "C_Async_Batch_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_C_Async_Batch_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "C_Async_Batch_ID", null);
     /** Column name C_Async_Batch_ID */
     public static final String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
@@ -315,7 +315,7 @@ public interface I_C_Printing_Queue
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner>(I_C_Printing_Queue.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -344,7 +344,7 @@ public interface I_C_Printing_Queue
 	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
 
     /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner_Location>(I_C_Printing_Queue.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
@@ -373,7 +373,7 @@ public interface I_C_Printing_Queue
 	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
     /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_DocType>(I_C_Printing_Queue.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
@@ -398,7 +398,7 @@ public interface I_C_Printing_Queue
 	public int getCopies();
 
     /** Column definition for Copies */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_Copies = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "Copies", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_Copies = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "Copies", null);
     /** Column name Copies */
     public static final String COLUMNNAME_Copies = "Copies";
 
@@ -421,7 +421,7 @@ public interface I_C_Printing_Queue
 	public int getC_Printing_Queue_ID();
 
     /** Column definition for C_Printing_Queue_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_C_Printing_Queue_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "C_Printing_Queue_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_C_Printing_Queue_ID = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "C_Printing_Queue_ID", null);
     /** Column name C_Printing_Queue_ID */
     public static final String COLUMNNAME_C_Printing_Queue_ID = "C_Printing_Queue_ID";
 
@@ -436,7 +436,7 @@ public interface I_C_Printing_Queue
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -451,7 +451,7 @@ public interface I_C_Printing_Queue
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_User>(I_C_Printing_Queue.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -474,7 +474,7 @@ public interface I_C_Printing_Queue
 	public java.sql.Timestamp getDeliveryDate();
 
     /** Column definition for DeliveryDate */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_DeliveryDate = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "DeliveryDate", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_DeliveryDate = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "DeliveryDate", null);
     /** Column name DeliveryDate */
     public static final String COLUMNNAME_DeliveryDate = "DeliveryDate";
 
@@ -499,7 +499,7 @@ public interface I_C_Printing_Queue
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -524,7 +524,7 @@ public interface I_C_Printing_Queue
 	public boolean isDifferentInvoicingPartner();
 
     /** Column definition for IsDifferentInvoicingPartner */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsDifferentInvoicingPartner = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "IsDifferentInvoicingPartner", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsDifferentInvoicingPartner = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "IsDifferentInvoicingPartner", null);
     /** Column name IsDifferentInvoicingPartner */
     public static final String COLUMNNAME_IsDifferentInvoicingPartner = "IsDifferentInvoicingPartner";
 
@@ -549,7 +549,7 @@ public interface I_C_Printing_Queue
 	public boolean isForeignCustomer();
 
     /** Column definition for IsForeignCustomer */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsForeignCustomer = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "IsForeignCustomer", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsForeignCustomer = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "IsForeignCustomer", null);
     /** Column name IsForeignCustomer */
     public static final String COLUMNNAME_IsForeignCustomer = "IsForeignCustomer";
 
@@ -572,7 +572,7 @@ public interface I_C_Printing_Queue
 	public boolean isPrintoutForOtherUser();
 
     /** Column definition for IsPrintoutForOtherUser */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsPrintoutForOtherUser = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "IsPrintoutForOtherUser", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsPrintoutForOtherUser = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "IsPrintoutForOtherUser", null);
     /** Column name IsPrintoutForOtherUser */
     public static final String COLUMNNAME_IsPrintoutForOtherUser = "IsPrintoutForOtherUser";
 
@@ -595,7 +595,7 @@ public interface I_C_Printing_Queue
 	public java.lang.String getItemName();
 
     /** Column definition for ItemName */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_ItemName = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "ItemName", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_ItemName = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "ItemName", null);
     /** Column name ItemName */
     public static final String COLUMNNAME_ItemName = "ItemName";
 
@@ -618,7 +618,7 @@ public interface I_C_Printing_Queue
 	public java.lang.String getPrintingQueueAggregationKey();
 
     /** Column definition for PrintingQueueAggregationKey */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_PrintingQueueAggregationKey = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "PrintingQueueAggregationKey", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_PrintingQueueAggregationKey = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "PrintingQueueAggregationKey", null);
     /** Column name PrintingQueueAggregationKey */
     public static final String COLUMNNAME_PrintingQueueAggregationKey = "PrintingQueueAggregationKey";
 
@@ -643,7 +643,7 @@ public interface I_C_Printing_Queue
 	public boolean isProcessed();
 
     /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "Processed", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -658,7 +658,7 @@ public interface I_C_Printing_Queue
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -673,7 +673,7 @@ public interface I_C_Printing_Queue
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_User>(I_C_Printing_Queue.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_C_Printing_Queue.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

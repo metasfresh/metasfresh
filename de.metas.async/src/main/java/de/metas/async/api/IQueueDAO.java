@@ -24,6 +24,7 @@ package de.metas.async.api;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -144,5 +145,7 @@ public interface IQueueDAO extends ISingletonService
 	 * @return
 	 */
 	boolean isWorkpackageProcessorEnabled(Class<? extends IWorkpackageProcessor> packageProcessorClass);
+
+	Set<Integer> retrieveAllItemIds(I_C_Queue_WorkPackage workPackage);
 
 }

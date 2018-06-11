@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -43,6 +44,8 @@ import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
@@ -339,6 +342,16 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 
 		return result;
 	}
+
+	@Override
+	public final Set<Integer> retrieveAllItemIds(final I_C_Queue_WorkPackage workPackage)
+	{
+		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, false);
+		return queueElements.stream()
+				.map(I_C_Queue_Element::getRecord_ID)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 
 	@Override
 	public IQueryOrderBy getQueueOrderBy()
