@@ -204,6 +204,15 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner_Location> retrieveBPartnerShipToLocations(I_C_BPartner bpartner);
 
 	/**
+	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).
+	 * 
+	 * @return bp location or null
+	 */
+	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
+
+	int getDefaultShipToLocationCountryId(BPartnerId bpartnerId);
+
+	/**
 	 * Retrieve default/first bill to location.
 	 *
 	 * @param ctx
@@ -231,4 +240,5 @@ public interface IBPartnerDAO extends ISingletonService
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
 
 	Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType bpartnerType);
+
 }

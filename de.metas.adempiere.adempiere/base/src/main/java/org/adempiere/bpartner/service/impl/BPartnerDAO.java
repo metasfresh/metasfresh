@@ -26,6 +26,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -165,6 +166,35 @@ public class BPartnerDAO implements IBPartnerDAO
 		return queryBuilder
 				.create()
 				.listImmutable(I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public I_C_BPartner_Location getDefaultShipToLocation(final BPartnerId bpartnerId)
+	{
+		final List<I_C_BPartner_Location> bpLocations = retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
+		if (bpLocations.isEmpty())
+		{
+			return null;
+		}
+		else if (bpLocations.size() == 1)
+		{
+			return bpLocations.get(0);
+		}
+		else
+		{
+			return bpLocations.stream()
+					.filter(I_C_BPartner_Location::isShipTo)
+					.sorted(Comparator.comparing(bpl -> bpl.isShipToDefault() ? 0 : 1))
+					.findFirst()
+					.orElse(null);
+		}
+	}
+
+	@Override
+	public int getDefaultShipToLocationCountryId(final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner_Location bpl = getDefaultShipToLocation(bpartnerId);
+		return bpl != null ? bpl.getC_Location().getC_Country_ID() : -1;
 	}
 
 	@Override
@@ -589,7 +619,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	public Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final BPartnerType bpartnerType)
 	{
 		final String discountSchemaIdColumnName = getBPartnerDiscountSchemaColumnNameOrNull(bpartnerType);
-		if(discountSchemaIdColumnName == null)
+		if (discountSchemaIdColumnName == null)
 		{
 			return ImmutableMap.of();
 		}
