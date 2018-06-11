@@ -52,7 +52,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 		final BoilerPlateRepository  boilerPlateRepo = Adempiere.getBean(BoilerPlateRepository.class);
 
 
-		final List<Integer> campaignContactPersonsIDs = retrieveAllItemIDs();
+		final List<Integer> campaignContactPersonsIDs = retrieveAllItemIds();
 
 		for (final Integer campaignContactPersonID : campaignContactPersonsIDs)
 		{
