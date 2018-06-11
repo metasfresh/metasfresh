@@ -14,6 +14,7 @@
 const webpackPre = require('@cypress/webpack-preprocessor')
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const config = require('../config');
 
 module.exports = (on) => {
   const options = {
@@ -25,11 +26,7 @@ module.exports = (on) => {
 
   const opts = [ ...options.webpackOptions.plugins,
     new webpack.DefinePlugin({
-      config: JSON.stringify({
-        "API_URL": "http://w101.metasfresh.com:8081/rest/api",
-        "PLUGIN_API_URL": "http://w101.metasfresh.com:9192/",
-        "WS_URL": "http://w101.metasfresh.com:8081/stomp",
-      })
+      config: JSON.stringify(config),
     })
   ];
 
