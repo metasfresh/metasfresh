@@ -1,7 +1,7 @@
 describe('Business partner window widgets test', function() {
   before(function(){
     // login before each test
-    cy.loginByForm('kuba', 'kuba1234');
+    cy.loginByForm();
   });
 
   context('Tabs', function() {

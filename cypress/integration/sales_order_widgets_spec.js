@@ -1,7 +1,7 @@
 describe('Sales order window widgets test', function() {
   before(function(){
     // login before each test
-    cy.loginByForm('kuba', 'kuba1234');
+    cy.loginByForm();
   });
 
   context('Toggle widgets', function() {
