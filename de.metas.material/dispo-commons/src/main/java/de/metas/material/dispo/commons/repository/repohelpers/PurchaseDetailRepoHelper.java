@@ -159,6 +159,11 @@ public final class PurchaseDetailRepoHelper
 			purchaseDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Purchase_Detail.COLUMN_PP_Product_Planning_ID, purchaseDetailsQuery.getProductPlanningRepoId());
 		}
 
+		if(purchaseDetailsQuery.isOrderLineRepoIdMustBeNull())
+		{
+			purchaseDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Purchase_Detail.COLUMN_C_OrderLinePO_ID, null);
+		}
+
 		builder.addInSubQueryFilter(
 				I_MD_Candidate.COLUMN_MD_Candidate_ID,
 				I_MD_Candidate_Purchase_Detail.COLUMN_MD_Candidate_ID,

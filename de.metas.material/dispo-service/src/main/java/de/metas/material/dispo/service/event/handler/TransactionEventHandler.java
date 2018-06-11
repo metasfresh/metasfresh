@@ -273,7 +273,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return result.build();
 	}
 
-	/** uses PurchaseDetails.receiptScheduleRepoId to find out if a canidate already exists */
+	/** uses PurchaseDetails.receiptScheduleRepoId to find out if a candidate already exists */
 	private Candidate createCandidateForReceiptSchedule(
 			@NonNull final AbstractTransactionEvent event,
 			@NonNull final Entry<Integer, BigDecimal> receiptScheduleId2Qty)

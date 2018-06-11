@@ -65,6 +65,7 @@ public class ReceiptsScheduleCreatedHandler
 		handleReceiptScheduleEvent(event);
 	}
 
+	/** creates a query to look for existing records with the events purchase-candidate-repoId. */
 	@Override
 	protected CandidatesQuery createCandidatesQuery(@NonNull final AbstractReceiptScheduleEvent event)
 	{
@@ -76,6 +77,7 @@ public class ReceiptsScheduleCreatedHandler
 
 		final PurchaseDetailsQuery purchaseDetailsQuery = PurchaseDetailsQuery.builder()
 				.purchaseCandidateRepoId(createdEvent.getPurchaseCandidateRepoId())
+				.orderLineRepoIdMustBeNull(true)
 				.build();
 
 		return CandidatesQuery.builder()

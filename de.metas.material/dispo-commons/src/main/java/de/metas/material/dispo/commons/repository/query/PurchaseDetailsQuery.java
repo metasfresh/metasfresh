@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons.repository.query;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
+import org.compiere.util.Util;
 
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import lombok.Builder;
@@ -55,15 +56,21 @@ public class PurchaseDetailsQuery
 	/** a value <= 0 means "unspecified" */
 	int productPlanningRepoId;
 
+	/**	default = false */
+	boolean orderLineRepoIdMustBeNull;
+
 	@Builder
 	private PurchaseDetailsQuery(
 			final int productPlanningRepoId,
 			final int purchaseCandidateRepoId,
-			final int receiptScheduleRepoId)
+			final int receiptScheduleRepoId,
+			final Boolean orderLineRepoIdMustBeNull)
 	{
 		this.productPlanningRepoId = productPlanningRepoId;
 		this.purchaseCandidateRepoId = purchaseCandidateRepoId;
 		this.receiptScheduleRepoId = receiptScheduleRepoId;
+
+		this.orderLineRepoIdMustBeNull = Util.coalesce(orderLineRepoIdMustBeNull, false);
 
 		Check.errorIf(
 				purchaseCandidateRepoId <= 0 && receiptScheduleRepoId <= 0 && productPlanningRepoId <= 0,

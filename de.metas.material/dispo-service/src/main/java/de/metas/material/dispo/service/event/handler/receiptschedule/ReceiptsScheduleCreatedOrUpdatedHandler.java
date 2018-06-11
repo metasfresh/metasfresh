@@ -83,11 +83,8 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 		{
 			return existingCandidteOrNull.toBuilder();
 		}
-		else
-		{
-			// should not happen, but know nows..maybe the candidate was deleted meanwhile
-			return createInitialBuilder(event);
-		}
+
+		return createInitialBuilder(event);
 	}
 
 	protected abstract CandidatesQuery createCandidatesQuery(@NonNull final AbstractReceiptScheduleEvent event);
