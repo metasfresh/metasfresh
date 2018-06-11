@@ -127,6 +127,35 @@ public interface I_MKTG_ContactPerson
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Anschrift.
+	 * Adresse oder Anschrift
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Location_ID (int C_Location_ID);
+
+	/**
+	 * Get Anschrift.
+	 * Adresse oder Anschrift
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Location_ID();
+
+	public org.compiere.model.I_C_Location getC_Location();
+
+	public void setC_Location(org.compiere.model.I_C_Location C_Location);
+
+    /** Column definition for C_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, org.compiere.model.I_C_Location> COLUMN_C_Location_ID = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, org.compiere.model.I_C_Location>(I_MKTG_ContactPerson.class, "C_Location_ID", org.compiere.model.I_C_Location.class);
+    /** Column name C_Location_ID */
+    public static final String COLUMNNAME_C_Location_ID = "C_Location_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -376,7 +405,7 @@ public interface I_MKTG_ContactPerson
 	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setName (java.lang.String Name);
@@ -386,7 +415,7 @@ public interface I_MKTG_ContactPerson
 	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getName();

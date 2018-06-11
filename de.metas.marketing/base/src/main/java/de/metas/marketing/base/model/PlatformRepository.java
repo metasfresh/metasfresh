@@ -35,6 +35,8 @@ public class PlatformRepository
 		return Platform.builder()
 				.name(platformRecord.getName())
 				.platformGatewayId(platformRecord.getMarketingPlatformGatewayId())
+				.requiredLocation(platformRecord.isRequiredLocation())
+				.requiredMailAddress(platformRecord.isRequiredMailAddres())
 				.platformId(PlatformId.ofRepoId(platformRecord.getMKTG_Platform_ID()))
 				.build();
 	}
