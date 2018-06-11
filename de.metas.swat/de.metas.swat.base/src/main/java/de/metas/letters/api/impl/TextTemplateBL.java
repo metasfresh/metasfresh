@@ -1,6 +1,6 @@
 package de.metas.letters.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -342,6 +342,6 @@ public final class TextTemplateBL implements ITextTemplateBL
 	@Override
 	public I_AD_BoilerPlate getById(int boilerPlateId)
 	{
-		return load(boilerPlateId, I_AD_BoilerPlate.class);
+		return loadOutOfTrx(boilerPlateId, I_AD_BoilerPlate.class);
 	}
 }
