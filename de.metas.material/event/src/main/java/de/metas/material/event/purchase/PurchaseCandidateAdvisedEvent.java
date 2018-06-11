@@ -38,7 +38,7 @@ import lombok.Value;
 @Value
 public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 {
-	public static final String TYPE = "PurchaseDemandAdvisedEvent";
+	public static final String TYPE = "PurchaseCandidateAdvisedEvent";
 
 	private EventDescriptor eventDescriptor;
 

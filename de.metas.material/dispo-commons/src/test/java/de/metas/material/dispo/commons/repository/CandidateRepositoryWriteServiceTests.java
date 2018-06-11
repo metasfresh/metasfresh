@@ -39,7 +39,6 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -84,7 +83,7 @@ public class CandidateRepositoryWriteServiceTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService(new PurchaseDetailRepoHelper());
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
 	}
@@ -186,7 +185,7 @@ public class CandidateRepositoryWriteServiceTests
 	@Test
 	public void addOrReplace_update()
 	{
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(new PurchaseDetailRepoHelper());
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 
 		// guard
 		final CandidatesQuery queryForStockUntilDate = repositoryTestHelper.mkQueryForStockUntilDate(NOW);

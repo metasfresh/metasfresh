@@ -42,7 +42,6 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
-import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -89,9 +88,9 @@ public class CandiateRepositoryRetrievalTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(new PurchaseDetailRepoHelper());
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(new PurchaseDetailRepoHelper());
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryCommands);
 	}
 

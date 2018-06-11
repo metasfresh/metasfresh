@@ -68,10 +68,10 @@ public class ReceiptsScheduleUpdatedHandler
 	@Override
 	protected CandidatesQuery createCandidatesQuery(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final ReceiptScheduleUpdatedEvent receiptScheduleCreatedEvent = (ReceiptScheduleUpdatedEvent)event;
+		final ReceiptScheduleUpdatedEvent updatedEvent = ReceiptScheduleUpdatedEvent.cast(event);
 
 		final PurchaseDetailsQuery purchaseDetailsQuery = PurchaseDetailsQuery.builder()
-				.receiptScheduleRepoId(receiptScheduleCreatedEvent.getReceiptScheduleId())
+				.receiptScheduleRepoId(updatedEvent.getReceiptScheduleId())
 				.build();
 
 		return CandidatesQuery.builder()

@@ -276,35 +276,6 @@ public interface I_MD_Candidate_Purchase_Detail
     public static final String COLUMNNAME_MD_Candidate_Purchase_Detail_ID = "MD_Candidate_Purchase_Detail_ID";
 
 	/**
-	 * Set Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_InOutLine_ID (int M_InOutLine_ID);
-
-	/**
-	 * Get Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_InOutLine_ID();
-
-	public org.compiere.model.I_M_InOutLine getM_InOutLine();
-
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
-
-    /** Column definition for M_InOutLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Purchase_Detail, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Purchase_Detail, org.compiere.model.I_M_InOutLine>(I_MD_Candidate_Purchase_Detail.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
-    /** Column name M_InOutLine_ID */
-    public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
-
-	/**
 	 * Set Wareneingangsdisposition.
 	 *
 	 * <br>Type: Search

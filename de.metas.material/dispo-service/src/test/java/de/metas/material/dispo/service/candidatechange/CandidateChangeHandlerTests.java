@@ -47,7 +47,6 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
-import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -112,9 +111,8 @@ public class CandidateChangeHandlerTests
 	{
 		AdempiereTestHelper.get().init();
 
-		final PurchaseDetailRepoHelper purchaseDetailRepoHelper = new PurchaseDetailRepoHelper();
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(purchaseDetailRepoHelper);
-		candidateRepositoryCommands = new CandidateRepositoryWriteService(purchaseDetailRepoHelper);
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
 		stockRepository = new AvailableToPromiseRepository();
 		stockCandidateService = new StockCandidateService(

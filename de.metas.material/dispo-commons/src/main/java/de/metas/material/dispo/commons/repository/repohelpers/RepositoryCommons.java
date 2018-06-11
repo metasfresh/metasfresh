@@ -133,6 +133,8 @@ public class RepositoryCommons
 
 		addDistributionDetailToFilter(query, builder);
 
+		PurchaseDetailRepoHelper.addPurchaseDetailsQueryToFilter(query.getPurchaseDetailsQuery(), builder);
+
 		addTransactionDetailToFilter(query, builder);
 
 		return builder;

@@ -26,7 +26,6 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -95,10 +94,9 @@ public class SupplyProposalEvaluatorTests
 	{
 		AdempiereTestHelper.get().init();
 
-		final PurchaseDetailRepoHelper purchaseDetailRepoHelper = new PurchaseDetailRepoHelper();
-		candidateRepositoryCommands = new CandidateRepositoryWriteService(purchaseDetailRepoHelper);
+		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(purchaseDetailRepoHelper);
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(

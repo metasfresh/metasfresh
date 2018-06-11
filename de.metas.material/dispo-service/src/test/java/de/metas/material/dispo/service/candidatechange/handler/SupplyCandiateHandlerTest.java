@@ -27,7 +27,6 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -71,8 +70,8 @@ public class SupplyCandiateHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(new PurchaseDetailRepoHelper());
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService(new PurchaseDetailRepoHelper());
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,

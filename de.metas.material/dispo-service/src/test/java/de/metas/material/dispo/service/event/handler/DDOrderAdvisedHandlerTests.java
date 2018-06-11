@@ -31,7 +31,6 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -119,8 +118,8 @@ public class DDOrderAdvisedHandlerTests
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(new PurchaseDetailRepoHelper());
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(new PurchaseDetailRepoHelper());
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		availableToPromiseRepository = new AvailableToPromiseRepository();

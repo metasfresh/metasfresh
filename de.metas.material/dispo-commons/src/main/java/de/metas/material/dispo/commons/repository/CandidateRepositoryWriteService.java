@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
@@ -63,13 +64,6 @@ import lombok.NonNull;
 @Service
 public class CandidateRepositoryWriteService
 {
-	private final PurchaseDetailRepoHelper purchaseDetailRepoHelper;
-
-	public CandidateRepositoryWriteService(@NonNull final PurchaseDetailRepoHelper purchaseDetailRepoHelper)
-	{
-		this.purchaseDetailRepoHelper = purchaseDetailRepoHelper;
-	}
-
 	/**
 	 * Stores the given {@code candidate}.
 	 * If there is already an existing candidate in the store, it is loaded, its fields are updated and the result is saved.<br>
@@ -146,7 +140,15 @@ public class CandidateRepositoryWriteService
 
 		addOrReplaceTransactionDetail(candidate, synchedRecord);
 
-		return createNewCandidateWithIdsFromRecord(candidate, synchedRecord).withQuantity(qtyDelta);
+		final Candidate result = createNewCandidateWithIdsFromRecord(candidate, synchedRecord).withQuantity(qtyDelta);
+
+		// add a log message to be shown in the event log
+		final String verb = oldCandidateRecord == null ? "created" : "updated";
+		Loggables.get().addLog(
+				"addOrUpdate - {} candidate={}; singleCandidateOrNullQuery={}; preserveExistingSeqNoAndParentId={}",
+				verb, result, singleCandidateOrNullQuery, preserveExistingSeqNoAndParentId);
+
+		return result;
 	}
 
 	/**
@@ -424,7 +426,7 @@ public class CandidateRepositoryWriteService
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
 		final PurchaseDetail purchaseDetail = PurchaseDetail.castOrNull(candidate.getBusinessCaseDetail());
-		purchaseDetailRepoHelper.save(purchaseDetail, synchedRecord);
+		PurchaseDetailRepoHelper.save(purchaseDetail, synchedRecord);
 	}
 
 	@VisibleForTesting

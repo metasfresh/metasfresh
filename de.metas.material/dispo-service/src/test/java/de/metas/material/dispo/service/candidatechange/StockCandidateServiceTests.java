@@ -31,7 +31,6 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
@@ -77,9 +76,9 @@ public class StockCandidateServiceTests
 
 		parentIdSequence = 1;
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(new PurchaseDetailRepoHelper());
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 
-		candidateRepositoryCommands = new CandidateRepositoryWriteService(new PurchaseDetailRepoHelper());
+		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryCommands);

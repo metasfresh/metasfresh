@@ -13,7 +13,6 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.AttributesKey;
@@ -49,7 +48,7 @@ public class RepositoryTestHelperTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(new PurchaseDetailRepoHelper());
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
 	}
@@ -98,7 +97,7 @@ public class RepositoryTestHelperTest
 	public void constructor_sets_up_candidates_correctly_and_queries_work()
 	{
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper.mkQueryForStockUntilDate(EventTestHelper.NOW);
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(new PurchaseDetailRepoHelper());
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		final Candidate retrievedStockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockCandidatequery);
 		assertThat(retrievedStockCandidate).isNotNull();
 		assertThat(retrievedStockCandidate).isEqualTo(repositoryTestHelper.stockCandidate);

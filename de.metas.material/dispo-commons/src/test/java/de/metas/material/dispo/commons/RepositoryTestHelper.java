@@ -13,13 +13,13 @@ import java.util.Date;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import mockit.Expectations;

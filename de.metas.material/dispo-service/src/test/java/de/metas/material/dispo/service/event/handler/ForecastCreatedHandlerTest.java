@@ -25,7 +25,6 @@ import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
@@ -84,7 +83,7 @@ public class ForecastCreatedHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(new PurchaseDetailRepoHelper());
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		forecastCreatedHandler = new ForecastCreatedHandler(
 				new CandidateChangeService(ImmutableList.of(
 						new StockUpCandiateHandler(

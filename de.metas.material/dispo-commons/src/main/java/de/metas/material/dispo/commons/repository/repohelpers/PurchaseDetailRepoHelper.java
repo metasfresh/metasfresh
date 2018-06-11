@@ -5,12 +5,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import javax.annotation.Nullable;
 
-import org.springframework.stereotype.Service;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
 import lombok.NonNull;
@@ -38,10 +41,13 @@ import lombok.NonNull;
  */
 
 /** Intended to be used only be the "main" repository code */
-@Service
-public class PurchaseDetailRepoHelper
+public final class PurchaseDetailRepoHelper
 {
-	public PurchaseDetail getSingleForCandidateRecordOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private PurchaseDetailRepoHelper()
+	{
+	}
+
+	public static PurchaseDetail getSingleForCandidateRecordOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Purchase_Detail purchaseDetailRecord = RepositoryCommons
 				.createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Purchase_Detail.class)
@@ -59,7 +65,6 @@ public class PurchaseDetailRepoHelper
 		}
 
 		return PurchaseDetail.builder()
-				.inoutLineRepoId(purchaseDetailRecord.getM_InOutLine_ID())
 				.orderLineRepoId(purchaseDetailRecord.getC_OrderLinePO_ID())
 				.orderedQty(purchaseDetailRecord.getQtyOrdered())
 				.plannedQty(purchaseDetailRecord.getPlannedQty())
@@ -71,7 +76,7 @@ public class PurchaseDetailRepoHelper
 				.build();
 	}
 
-	public void save(
+	public static void save(
 			@Nullable final PurchaseDetail purchaseDetail,
 			@NonNull final I_MD_Candidate candidateRecord)
 	{
@@ -97,12 +102,46 @@ public class PurchaseDetailRepoHelper
 		recordToUpdate.setC_BPartner_Vendor_ID(purchaseDetail.getVendorRepoId());
 		recordToUpdate.setC_OrderLinePO_ID(purchaseDetail.getOrderLineRepoId());
 		recordToUpdate.setC_PurchaseCandidate_ID(purchaseDetail.getPurchaseCandidateRepoId());
-		recordToUpdate.setM_InOutLine_ID(purchaseDetail.getInoutLineRepoId());
 		recordToUpdate.setM_ReceiptSchedule_ID(purchaseDetail.getReceiptScheduleRepoId());
 		recordToUpdate.setPlannedQty(purchaseDetail.getPlannedQty());
 		recordToUpdate.setPP_Product_Planning_ID(purchaseDetail.getProductPlanningRepoId());
 		recordToUpdate.setQtyOrdered(purchaseDetail.getOrderedQty());
 
 		saveRecord(recordToUpdate);
+	}
+
+	public static void addPurchaseDetailsQueryToFilter(
+			@Nullable final PurchaseDetailsQuery purchaseDetailsQuery,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
+	{
+		if (purchaseDetailsQuery == null)
+		{
+			return;
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_MD_Candidate_Purchase_Detail> purchaseDetailSubQueryBuilder = queryBL
+				.createQueryBuilder(I_MD_Candidate_Purchase_Detail.class)
+				.addOnlyActiveRecordsFilter();
+
+		// note that at least one of them is > 0.
+		if (purchaseDetailsQuery.getReceiptScheduleRepoId() > 0)
+		{
+			purchaseDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Purchase_Detail.COLUMN_M_ReceiptSchedule_ID, purchaseDetailsQuery.getReceiptScheduleRepoId());
+		}
+		if (purchaseDetailsQuery.getPurchaseCandidateRepoId() > 0)
+		{
+			purchaseDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Purchase_Detail.COLUMN_C_PurchaseCandidate_ID, purchaseDetailsQuery.getPurchaseCandidateRepoId());
+		}
+		if (purchaseDetailsQuery.getProductPlanningRepoId() > 0)
+		{
+			purchaseDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Purchase_Detail.COLUMN_PP_Product_Planning_ID, purchaseDetailsQuery.getProductPlanningRepoId());
+		}
+
+		builder.addInSubQueryFilter(
+				I_MD_Candidate.COLUMN_MD_Candidate_ID,
+				I_MD_Candidate_Purchase_Detail.COLUMN_MD_Candidate_ID,
+				purchaseDetailSubQueryBuilder.create());
 	}
 }

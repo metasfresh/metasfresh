@@ -19,7 +19,6 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -61,7 +60,7 @@ public class CandidateServiceTests
 	public void init()
 	{
 		requestMaterialOrderService = new RequestMaterialOrderService(
-				new CandidateRepositoryRetrieval(new PurchaseDetailRepoHelper()),
+				new CandidateRepositoryRetrieval(),
 				postMaterialEventService);
 	}
 

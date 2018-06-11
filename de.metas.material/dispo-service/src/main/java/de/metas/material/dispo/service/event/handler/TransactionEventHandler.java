@@ -273,6 +273,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return result.build();
 	}
 
+	/** uses PurchaseDetails.receiptScheduleRepoId to find out if a canidate already exists */
 	private Candidate createCandidateForReceiptSchedule(
 			@NonNull final AbstractTransactionEvent event,
 			@NonNull final Entry<Integer, BigDecimal> receiptScheduleId2Qty)
@@ -285,21 +286,23 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
+				.type(CandidateType.SUPPLY) // without it we might get stock candidates which we don't want
 				.purchaseDetailsQuery(purchaseDetailsQuery)
 				.build();
 
-		// prepare the purchase detail with our inoutLineId
-		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
-				.advised(Flag.FALSE_DONT_UPDATE)
-				.plannedQty(receiptScheduleId2Qty.getValue())
-				.receiptScheduleRepoId(receiptScheduleId2Qty.getKey())
-				.inoutLineRepoId(event.getInOutLineId())
-				.build();
 
 		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
+
 		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
 		if (unrelatedNewTransaction)
 		{
+			// prepare the purchase detail with our inoutLineId
+			final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
+					.advised(Flag.FALSE_DONT_UPDATE)
+					.plannedQty(receiptScheduleId2Qty.getValue())
+					.receiptScheduleRepoId(receiptScheduleId2Qty.getKey())
+					.build();
+
 			candidate = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
 					event.getQuantity())
@@ -311,8 +314,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			candidate = createCandidateWithChangedTransactionDetailAndQuantity(
 					existingCandidate,
-					transactionDetailOfEvent)
-							.withBusinessCaseDetail(purchaseDetail);
+					transactionDetailOfEvent);
 		}
 		else
 		{

@@ -70,13 +70,6 @@ import lombok.NonNull;
 @Service
 public class CandidateRepositoryRetrieval
 {
-	private final PurchaseDetailRepoHelper purchaseDetailRepoHelper;
-
-	public CandidateRepositoryRetrieval(@NonNull final PurchaseDetailRepoHelper purchaseDetailRepoHelper)
-	{
-		this.purchaseDetailRepoHelper = purchaseDetailRepoHelper;
-	}
-
 	/**
 	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
 	 *
@@ -139,7 +132,7 @@ public class CandidateRepositoryRetrieval
 
 		final ProductionDetail productionDetailOrNull = createProductionDetailOrNull(candidateRecordOrNull);
 		final DistributionDetail distributionDetailOrNull = createDistributionDetailOrNull(candidateRecordOrNull);
-		final PurchaseDetail purchaseDetailOrNull = purchaseDetailRepoHelper.getSingleForCandidateRecordOrNull(candidateRecordOrNull);
+		final PurchaseDetail purchaseDetailOrNull = PurchaseDetailRepoHelper.getSingleForCandidateRecordOrNull(candidateRecordOrNull);
 
 		final int hasProductionDetail = productionDetailOrNull == null ? 0 : 1;
 		final int hasDistributionDetail = distributionDetailOrNull == null ? 0 : 1;

@@ -60,8 +60,6 @@ public class PurchaseDetail implements BusinessCaseDetail
 
 	int receiptScheduleRepoId;
 
-	int inoutLineRepoId;
-
 	int vendorRepoId;
 
 	int productPlanningRepoId;
@@ -82,7 +80,6 @@ public class PurchaseDetail implements BusinessCaseDetail
 			final int orderLineRepoId,
 			final int purchaseCandidateRepoId,
 			final int receiptScheduleRepoId,
-			final int inoutLineRepoId,
 			final int vendorRepoId,
 			final int productPlanningRepoId)
 	{
@@ -98,7 +95,6 @@ public class PurchaseDetail implements BusinessCaseDetail
 		this.purchaseCandidateRepoId = purchaseCandidateRepoId;
 		this.orderLineRepoId = orderLineRepoId;
 		this.receiptScheduleRepoId = receiptScheduleRepoId;
-		this.inoutLineRepoId = inoutLineRepoId;
 
 		this.advised = advised;
 	}

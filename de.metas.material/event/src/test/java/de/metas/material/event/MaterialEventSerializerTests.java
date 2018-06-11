@@ -151,7 +151,7 @@ public class MaterialEventSerializerTests
 	private DDOrder createDdOrder(final int ddOrderId)
 	{
 		return DDOrder.builder()
-				.datePromised(SystemTime.asDayTimestamp())
+				.datePromised(SystemTime.asDayDate())
 				.ddOrderId(ddOrderId)
 				.docStatus("IP")
 				.materialDispoGroupId(35)
@@ -257,7 +257,7 @@ public class MaterialEventSerializerTests
 		final PPOrderChangedEvent event = PPOrderChangedEvent.builder()
 				.productDescriptor(createProductDescriptor())
 				.newDatePromised(NOW)
-				.oldDatePromised(SystemTime.asTimestamp())
+				.oldDatePromised(SystemTime.asDate())
 				.ppOrderId(10)
 				.oldDocStatus("CO")
 				.newDocStatus("CL")
