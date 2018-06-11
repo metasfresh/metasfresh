@@ -99,13 +99,33 @@ public final class PurchaseDetailRepoHelper
 			recordToUpdate.setIsAdvised(purchaseDetail.getAdvised().toBoolean());
 		}
 
-		recordToUpdate.setC_BPartner_Vendor_ID(purchaseDetail.getVendorRepoId());
-		recordToUpdate.setC_OrderLinePO_ID(purchaseDetail.getOrderLineRepoId());
-		recordToUpdate.setC_PurchaseCandidate_ID(purchaseDetail.getPurchaseCandidateRepoId());
-		recordToUpdate.setM_ReceiptSchedule_ID(purchaseDetail.getReceiptScheduleRepoId());
+		// don't set anything to null just because it's missing in a partial purchase detail instance
+		if (purchaseDetail.getProductPlanningRepoId() > 0)
+		{
+			recordToUpdate.setPP_Product_Planning_ID(purchaseDetail.getProductPlanningRepoId());
+		}
+		if (purchaseDetail.getOrderLineRepoId() > 0)
+		{
+			recordToUpdate.setC_OrderLinePO_ID(purchaseDetail.getOrderLineRepoId());
+		}
+		if (purchaseDetail.getPurchaseCandidateRepoId() > 0)
+		{
+			recordToUpdate.setC_PurchaseCandidate_ID(purchaseDetail.getPurchaseCandidateRepoId());
+		}
+		if (purchaseDetail.getReceiptScheduleRepoId() > 0)
+		{
+			recordToUpdate.setM_ReceiptSchedule_ID(purchaseDetail.getReceiptScheduleRepoId());
+		}
+		if (purchaseDetail.getVendorRepoId() > 0)
+		{
+			recordToUpdate.setC_BPartner_Vendor_ID(purchaseDetail.getVendorRepoId());
+		}
+		if (purchaseDetail.getOrderedQty() != null)
+		{
+			recordToUpdate.setQtyOrdered(purchaseDetail.getOrderedQty());
+		}
+
 		recordToUpdate.setPlannedQty(purchaseDetail.getPlannedQty());
-		recordToUpdate.setPP_Product_Planning_ID(purchaseDetail.getProductPlanningRepoId());
-		recordToUpdate.setQtyOrdered(purchaseDetail.getOrderedQty());
 
 		saveRecord(recordToUpdate);
 	}

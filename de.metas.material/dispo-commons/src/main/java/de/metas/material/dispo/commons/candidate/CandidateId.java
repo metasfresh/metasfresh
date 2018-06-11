@@ -5,6 +5,7 @@ import org.adempiere.util.Check;
 import de.metas.lang.RepoIdAware;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -31,6 +32,7 @@ import lombok.Value;
 
 @Value
 @EqualsAndHashCode(doNotUseGetters = true)
+@ToString(doNotUseGetters = true)
 public class CandidateId implements RepoIdAware
 {
 	private static final int UNSPECIFIED_REPO_ID = Integer.MAX_VALUE - 10;
@@ -69,7 +71,7 @@ public class CandidateId implements RepoIdAware
 	{
 		if (isUnspecified())
 		{
-			Check.fail("This unspecified instance has no repoId");
+			Check.fail("Illegal call of getRepoId() on the unspecified CandidateId instance-");
 		}
 		else if (isNull())
 		{

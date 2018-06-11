@@ -372,7 +372,7 @@ public class M_Transaction_TransactionEventCreatorTest
 	{
 		final AttributesKey attributesKeys = AttributesKey.ofAttributeValueIds(10, 20);
 
-		final ProductDescriptor productDescriptor1 = ProductDescriptor.forProductAndAttributes(product.getM_Product_ID(), attributesKeys);
+		final ProductDescriptor productDescriptor1 = ProductDescriptor.forProductAndAttributes(product.getM_Product_ID(), attributesKeys, 24);
 		final HUDescriptor huDescriptor1 = HUDescriptor.builder()
 				.huId(20)
 				.productDescriptor(productDescriptor1)
@@ -380,7 +380,8 @@ public class M_Transaction_TransactionEventCreatorTest
 				.quantityDelta(SEVEN)
 				.build();
 
-		final ProductDescriptor productDescriptor2 = ProductDescriptor.forProductAndAttributes(product.getM_Product_ID(), attributesKeys);
+		// despite the different ASI-ID we will expect just one result.
+		final ProductDescriptor productDescriptor2 = ProductDescriptor.forProductAndAttributes(product.getM_Product_ID(), attributesKeys, 25);
 		final HUDescriptor huDescriptor2 = HUDescriptor.builder()
 				.huId(20)
 				.productDescriptor(productDescriptor2)
@@ -391,7 +392,6 @@ public class M_Transaction_TransactionEventCreatorTest
 		final I_M_Transaction transaction = createReceiptTransaction();
 		final TransactionDescriptor transactionDescriptor = TransactionDescriptor.ofRecord(transaction);
 
-		//
 		// invoke the method under test
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = M_Transaction_TransactionEventCreator
 				.createMaterialDescriptors(
