@@ -2,6 +2,8 @@ package org.adempiere.user;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.bpartner.BPartnerId;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,6 +37,9 @@ public class User
 	/** can be null for not-yet-saved users */
 	@Nullable
 	UserId id;
+
+	@Nullable
+	BPartnerId bpartnerId;
 
 	@NonNull
 	String name;

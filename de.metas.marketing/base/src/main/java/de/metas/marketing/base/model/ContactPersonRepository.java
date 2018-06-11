@@ -6,19 +6,24 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.location.LocationId;
 import org.adempiere.user.UserId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.letter.BoilerPlateId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
 import lombok.NonNull;
 
@@ -65,6 +70,7 @@ public class ContactPersonRepository
 
 		contactPersonRecord.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
 		contactPersonRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
+		contactPersonRecord.setC_Location_ID(LocationId.toRepoIdOr(contactPerson.getLocationId(), -1));
 
 		contactPersonRecord.setName(contactPerson.getName());
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());
@@ -117,6 +123,12 @@ public class ContactPersonRepository
 					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_RemoteRecordId, contactPerson.getRemoteId())
 					.create()
 					.firstOnly(I_MKTG_ContactPerson.class); // might be null, that's ok
+		}
+
+		final LocationId locationId = contactPerson.getLocationId();
+		if (locationId != null)
+		{
+			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, locationId.getRepoId());
 		}
 
 		final String emailAddress = contactPerson.getEmailAddessStringOrNull();
@@ -177,11 +189,39 @@ public class ContactPersonRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(ContactPersonRepository::asContactPerson)
+				.map(this::asContactPerson)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
+	public Set<Integer> getIdsByCampaignId(final int campaignId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
+				.iterateAndStream()
+				.map(I_MKTG_Campaign_ContactPerson::getMKTG_Campaign_ContactPerson_ID)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public ContactPerson getByCampaignContactPersonId(final int campaignContactPersonID)
+	{
+		final I_MKTG_Campaign_ContactPerson campaignContactPersonRecord = load(campaignContactPersonID, I_MKTG_Campaign_ContactPerson.class);
+		ContactPerson contactPerson = asContactPerson(campaignContactPersonRecord.getMKTG_ContactPerson());
+		final int boilerPlateId = campaignContactPersonRecord.getMKTG_Campaign().getAD_BoilerPlate_ID();
+		if (boilerPlateId > 0)
+		{
+			contactPerson = contactPerson.toBuilder()
+					.boilerPlateId(BoilerPlateId.ofRepoId(boilerPlateId))
+					.build();
+		}
+
+		return contactPerson;
+	}
+
+	private ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
 	{
 		final String emailDeactivated = contactPersonRecord.getDeactivatedOnRemotePlatform();
 
@@ -202,6 +242,7 @@ public class ContactPersonRepository
 				.platformId(PlatformId.ofRepoId(contactPersonRecord.getMKTG_Platform_ID()))
 				.remoteId(contactPersonRecord.getRemoteRecordId())
 				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
+				.locationId(LocationId.ofRepoId(contactPersonRecord.getC_Location_ID()))
 				.build();
 	}
 

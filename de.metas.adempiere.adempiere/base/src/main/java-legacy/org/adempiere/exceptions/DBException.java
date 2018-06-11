@@ -127,7 +127,7 @@ public class DBException extends AdempiereException
 	 */
 	public DBException(final Throwable e)
 	{
-		super(e);
+		super(extractMessage(e), e);
 		if (LogManager.isLevelFinest())
 		{
 			e.printStackTrace();
@@ -283,18 +283,14 @@ public class DBException extends AdempiereException
 
 		if (!Check.isEmpty(m_sql))
 		{
-			if (!message.isEmpty())
-			{
-				message.append(", ");
-			}
-			message.append("\tSQL: ").append(m_sql);
+			message.append("\n\tSQL: ").append(m_sql);
 
 			if (m_params != null && m_params.length > 0)
 			{
 				message.append("\n\tSQL params: ").append(Arrays.toString(m_params));
 			}
 		}
-		
+
 		return message.build();
 	}
 
