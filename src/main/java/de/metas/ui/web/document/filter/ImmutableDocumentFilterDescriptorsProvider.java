@@ -12,10 +12,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
+import javax.annotation.concurrent.Immutable;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
-import groovy.transform.Immutable;
 import lombok.NonNull;
 import lombok.ToString;
 
