@@ -89,7 +89,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 	/* package */ List<I_AD_BoilerPlate> getAvailableLetterTemplates(@CacheCtx Properties ctx)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_BoilerPlate.class)
+				.createQueryBuilderOutOfTrx(I_AD_BoilerPlate.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.orderBy(I_AD_BoilerPlate.COLUMNNAME_Name)
