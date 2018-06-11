@@ -267,7 +267,14 @@ export function enableTutorial(flag = true) {
   };
 }
 
-export function addNotification(title, msg, time, notifType, shortMsg) {
+export function addNotification(
+  title,
+  msg,
+  time,
+  notifType,
+  shortMsg,
+  onCancel
+) {
   return {
     type: types.ADD_NOTIFICATION,
     title: title,
@@ -276,6 +283,7 @@ export function addNotification(title, msg, time, notifType, shortMsg) {
     time: time,
     notifType: notifType,
     id: Date.now(),
+    onCancel,
   };
 }
 
