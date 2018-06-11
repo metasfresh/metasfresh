@@ -15,7 +15,6 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
-import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import lombok.NonNull;
 
@@ -84,14 +83,12 @@ public class ReceiptsScheduleUpdatedHandler
 	@Override
 	protected int extractPurchaseCandidateRepoId(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final ReceiptScheduleCreatedEvent receiptScheduleCreatedEvent = (ReceiptScheduleCreatedEvent)event;
-		return receiptScheduleCreatedEvent.getPurchaseCandidateRepoId();
+		return 0;
 	}
 
 	@Override
 	protected int extractOrderLineRepoId(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final ReceiptScheduleCreatedEvent receiptScheduleCreatedEvent = (ReceiptScheduleCreatedEvent)event;
-		return receiptScheduleCreatedEvent.getOrderLineDescriptor().getOrderLineId();
+		return 0;
 	}
 }

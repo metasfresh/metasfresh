@@ -1,4 +1,4 @@
-package de.metas.material.interceptor;
+package de.metas.purchasecandidate.material.interceptor;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -9,8 +9,9 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -27,6 +28,9 @@ import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
+import de.metas.order.OrderLineId;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import lombok.NonNull;
 
 /*
@@ -52,12 +56,24 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_M_ReceiptSchedule.class)
-public class M_ReceiptSchedule
+@Component
+public class M_ReceiptSchedule_PostEvents
 {
-	static final M_ReceiptSchedule INSTANCE = new M_ReceiptSchedule();
+	private final PostMaterialEventService postMaterialEventService;
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+	private final PurchaseCandidateRepository purchaseCandidateRepository;
 
-	private M_ReceiptSchedule()
+	/**
+	 * @param postMaterialEventService needs to be lazy because of some dependencies with Adempiere.java
+	 */
+	public M_ReceiptSchedule_PostEvents(
+			@NonNull @Lazy final PostMaterialEventService postMaterialEventService,
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
 	{
+		this.postMaterialEventService = postMaterialEventService;
+		this.productDescriptorFactory = productDescriptorFactory;
+		this.purchaseCandidateRepository = purchaseCandidateRepository;
 	}
 
 	@ModelChange(timings = {
@@ -80,8 +96,7 @@ public class M_ReceiptSchedule
 	{
 		final AbstractReceiptScheduleEvent event = createReceiptScheduleEvent(schedule, timing);
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		materialEventService.postEventAfterNextCommit(event);
+		postMaterialEventService.postEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting
@@ -112,11 +127,15 @@ public class M_ReceiptSchedule
 		final OrderLineDescriptor orderLineDescriptor = //
 				createOrderLineDescriptor(receiptSchedule);
 
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(receiptSchedule.getC_OrderLine_ID());
+		final PurchaseCandidateId purchaseCandidateIdOrNull = purchaseCandidateRepository.getIdByPurchaseOrderLineIdOrNull(orderLineId);
+
 		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
 				.orderLineDescriptor(orderLineDescriptor)
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
+				.purchaseCandidateRepoId(PurchaseCandidateId.getRepoIdOr(purchaseCandidateIdOrNull, 0))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.build();
 
@@ -190,7 +209,6 @@ public class M_ReceiptSchedule
 
 		final Timestamp preparationDate = receiptSchedule.getMovementDate();
 
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(receiptSchedule);
 
 		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()

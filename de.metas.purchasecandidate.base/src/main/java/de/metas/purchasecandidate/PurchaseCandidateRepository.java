@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.bpartner.BPartnerId;
@@ -44,9 +46,11 @@ import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -471,5 +475,20 @@ public class PurchaseCandidateRepository
 
 		createOrUpdateRecord(purchaseCandidate, purchaseCandidateRecord);
 		return PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID());
+	}
+
+	public PurchaseCandidateId getIdByPurchaseOrderLineIdOrNull(
+			@Nullable final OrderLineId purchaseOrderLineId)
+	{
+		final Integer purchaseCandidateRepoId = Services.get(IQueryBL.class).createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_OrderLinePO_ID, purchaseOrderLineId)
+				.orderBy(I_C_PurchaseCandidate_Alloc.COLUMN_C_PurchaseCandidate_Alloc_ID) // technically not needed as we have a UC on C_OrderLinePO_ID
+				.create()
+				.first(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_PurchaseCandidate_ID, Integer.class);
+
+		return purchaseCandidateRepoId != null
+				? PurchaseCandidateId.ofRepoId(purchaseCandidateRepoId)
+				: null;
 	}
 }

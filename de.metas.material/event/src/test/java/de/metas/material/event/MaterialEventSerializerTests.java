@@ -103,7 +103,6 @@ public class MaterialEventSerializerTests
 				.dateOrdered(NOW)
 				.ddOrder(createDdOrder(0))
 				.build();
-		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 

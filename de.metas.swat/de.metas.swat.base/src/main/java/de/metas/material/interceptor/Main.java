@@ -34,7 +34,6 @@ public class Main extends AbstractModuleInterceptor
 			final I_AD_Client client)
 	{
 		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
-		engine.addModelValidator(M_ReceiptSchedule.INSTANCE, client);
 		engine.addModelValidator(M_Forecast.INSTANCE, client);
 	}
 }

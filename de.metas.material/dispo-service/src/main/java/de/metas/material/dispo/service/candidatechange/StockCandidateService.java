@@ -76,8 +76,8 @@ public class StockCandidateService
 	{
 		final Candidate previousStockOrNull;
 		{
-			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(candidate, DateOperator.BEFORE_OR_AT);
-			previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockQuery);
+			final CandidatesQuery previousStockQuery = createStockQueryBuilderWithDateOperator(candidate, DateOperator.BEFORE_OR_AT);
+			previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(previousStockQuery);
 		}
 
 		final BigDecimal newQty;
@@ -86,6 +86,7 @@ public class StockCandidateService
 			newQty = candidate.getQuantity();
 		}
 		else if (previousStockOrNull.getDate().before(candidate.getDate())
+				|| candidate.getId().isNull() // our candidate is new
 				|| previousStockOrNull.getSeqNo() < candidate.getSeqNo())
 		{
 			// since we do have an *earlier* stock candidate, we base our new candidate's qty on the former candidate
