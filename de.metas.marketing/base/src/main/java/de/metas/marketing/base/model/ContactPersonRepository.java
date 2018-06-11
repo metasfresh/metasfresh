@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -16,9 +17,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.letter.BoilerPlateId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
@@ -188,6 +191,19 @@ public class ContactPersonRepository
 				.stream()
 				.map(this::asContactPerson)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public Set<Integer> getIdsByCampaignId(@NonNull final CampaignId campaignId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
+				.iterateAndStream()
+				.map(I_MKTG_Campaign_ContactPerson::getMKTG_Campaign_ContactPerson_ID)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public ContactPerson getByCampaignContactPersonId(final int campaignContactPersonID)

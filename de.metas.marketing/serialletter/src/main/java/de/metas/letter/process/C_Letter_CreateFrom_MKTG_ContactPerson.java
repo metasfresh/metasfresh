@@ -2,13 +2,10 @@ package de.metas.letter.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import java.util.List;
+import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
-
-import com.google.common.collect.ImmutableList;
+import org.compiere.Adempiere;
 
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
@@ -16,6 +13,8 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.letter.LetterConstants;
 import de.metas.letter.service.async.spi.impl.C_Letter_CreateFromMKTG_ContactPerson_Async;
+import de.metas.marketing.base.model.CampaignId;
+import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.process.JavaProcess;
 import lombok.NonNull;
@@ -46,6 +45,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 {
 	// Services
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final ContactPersonRepository contactPersonRepo = Adempiere.getBean(ContactPersonRepository.class);
 
 	private int campaignId;
 
@@ -58,15 +58,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final List<Integer> campaignContactPersonIds = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
-				.create()
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
-				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
-				.iterateAndStream()
-				.map(I_MKTG_Campaign_ContactPerson::getMKTG_Campaign_ContactPerson_ID)
-				.collect(ImmutableList.toImmutableList());
+		final Set<Integer> campaignContactPersonIds = contactPersonRepo.getIdsByCampaignId(CampaignId.ofRepoId(campaignId));
 
 		if (campaignContactPersonIds.isEmpty())
 		{
