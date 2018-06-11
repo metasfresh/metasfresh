@@ -9,7 +9,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
@@ -81,7 +81,7 @@ public class SearialLetterService
 	 */
 	private List<IPrintingQueueSource> createPrintingQueueSource(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Printing_Queue.class, asyncBatch)
+		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Printing_Queue.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_Async_Batch_ID, asyncBatch.getC_Async_Batch_ID())
@@ -111,8 +111,6 @@ public class SearialLetterService
 
 	private void print(@NonNull final IPrintingQueueSource source, @NonNull final I_C_Async_Batch asyncBatch)
 	{
-
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
 		final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
 				.adPInstanceId(asyncBatch.getAD_PInstance_ID())
