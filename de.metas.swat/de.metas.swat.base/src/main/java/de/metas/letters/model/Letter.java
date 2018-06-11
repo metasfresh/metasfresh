@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.user.UserId;
 
+import de.metas.letter.BoilerPlateId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -51,7 +52,7 @@ public class Letter
 
 	final String bodyParsed;
 
-	final int boilerPlateId;
+	final BoilerPlateId boilerPlateId;
 
 	final String address;
 

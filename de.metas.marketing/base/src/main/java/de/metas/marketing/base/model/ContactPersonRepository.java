@@ -20,6 +20,7 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.letter.BoilerPlateId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
 import lombok.NonNull;
 
@@ -189,7 +190,22 @@ public class ContactPersonRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
+	public ContactPerson getByCampaignContactPersonId(final int campaignContactPersonID)
+	{
+		final I_MKTG_Campaign_ContactPerson campaignContactPersonRecord = load(campaignContactPersonID, I_MKTG_Campaign_ContactPerson.class);
+		ContactPerson contactPerson = asContactPerson(campaignContactPersonRecord.getMKTG_ContactPerson());
+		final int boilerPlateId = campaignContactPersonRecord.getMKTG_Campaign().getAD_BoilerPlate_ID();
+		if (boilerPlateId > 0)
+		{
+			contactPerson = contactPerson.toBuilder()
+					.boilerPlateId(BoilerPlateId.ofRepoId(boilerPlateId))
+					.build();
+		}
+
+		return contactPerson;
+	}
+
+	private ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
 	{
 		final String emailDeactivated = contactPersonRecord.getDeactivatedOnRemotePlatform();
 

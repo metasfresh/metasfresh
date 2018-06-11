@@ -10,6 +10,7 @@ import org.adempiere.user.User;
 import org.adempiere.user.UserId;
 import org.adempiere.util.Check;
 
+import de.metas.letter.BoilerPlateId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -89,6 +90,9 @@ public class ContactPerson implements DataRecord
 
 	@Nullable
 	LocationId locationId;
+
+	@Nullable
+	BoilerPlateId boilerPlateId;
 
 	public String getEmailAddessStringOrNull()
 	{
