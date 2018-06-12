@@ -2,6 +2,8 @@ package de.metas.letter.service.async.spi.impl;
 
 import java.util.Set;
 
+import org.adempiere.bpartnerlocation.BPartnerLocation;
+import org.adempiere.bpartnerlocation.BPartnerLocationRepository;
 import org.adempiere.location.Location;
 import org.adempiere.location.LocationRepository;
 import org.compiere.Adempiere;
@@ -49,6 +51,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 		final ContactPersonRepository contactRepo = Adempiere.getBean(ContactPersonRepository.class);
 		final LetterRepository letterRepo = Adempiere.getBean(LetterRepository.class);
 		final LocationRepository locationRepo = Adempiere.getBean(LocationRepository.class);
+		final BPartnerLocationRepository bpLocationRepo = Adempiere.getBean(BPartnerLocationRepository.class);
 		final BoilerPlateRepository  boilerPlateRepo = Adempiere.getBean(BoilerPlateRepository.class);
 
 
@@ -57,7 +60,8 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 		for (final Integer campaignContactPersonID : campaignContactPersonsIDs)
 		{
 			final ContactPerson contactPerson = contactRepo.getByCampaignContactPersonId(campaignContactPersonID);
-			final Location location = locationRepo.getByLocationId(contactPerson.getLocationId());
+			final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
+			final Location location = locationRepo.getByLocationId(bpLocation.getLocationId());
 
 			// create letter
 			String subject = "";
@@ -74,6 +78,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 			Letter letter = Letter.builder()
 					.boilerPlateId(contactPerson.getBoilerPlateId())
 					.bpartnerId(contactPerson.getBPartnerId())
+					.bpartnerLocationId(bpLocation.getId())
 					.userId(contactPerson.getUserId())
 					.address(location.getAddress())
 					.adLanguage(Env.getAD_Language())

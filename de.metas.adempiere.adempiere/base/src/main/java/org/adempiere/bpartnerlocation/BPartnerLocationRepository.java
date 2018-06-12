@@ -1,12 +1,12 @@
-package org.adempiere.location;
+package org.adempiere.bpartnerlocation;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_Location;
+import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.location.LocationId;
 import org.springframework.stereotype.Repository;
 
-import de.metas.adempiere.service.ILocationBL;
+import de.metas.adempiere.model.I_C_BPartner_Location;
 import lombok.NonNull;
 
 /*
@@ -32,20 +32,20 @@ import lombok.NonNull;
  */
 
 @Repository
-public class LocationRepository
+public class BPartnerLocationRepository
 {
-	private Location toLocation(@NonNull final I_C_Location locationRecord)
+	private BPartnerLocation toBPartnerLocation(@NonNull final I_C_BPartner_Location bpartnerLocationRecord)
 	{
-		final String address = Services.get(ILocationBL.class).mkAddress(locationRecord);
 
-		return Location.builder()
-				.id(LocationId.ofRepoId(locationRecord.getC_Location_ID()))
-				.address(address)
+		return BPartnerLocation.builder()
+				.id(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID()), bpartnerLocationRecord.getC_BPartner_Location_ID()))
+				.bpartnerId(BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID()))
+				.locationId(LocationId.ofRepoId(bpartnerLocationRecord.getC_Location_ID()))
 				.build();
 	}
 
-	public Location getByLocationId(@NonNull final LocationId locationId)
+	public BPartnerLocation getByBPartnerLocationId(@NonNull final BPartnerLocationId bplocationId)
 	{
-		return toLocation(load(locationId.getRepoId(), I_C_Location.class));
+		return toBPartnerLocation(load(bplocationId.getRepoId(), I_C_BPartner_Location.class));
 	}
 }

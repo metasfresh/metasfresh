@@ -16,7 +16,7 @@
 	</parameter>
 	<parameter name="RECORD_ID" class="java.lang.Integer"/>
 	<parameter name="doctype" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["i"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["lt"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
@@ -52,7 +52,7 @@ WHERE
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="doctype">
-					<subreportParameterExpression><![CDATA[new String("l")]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[new String("lt")]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock.jasper"]]></subreportExpression>
