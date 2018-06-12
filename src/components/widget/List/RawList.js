@@ -238,6 +238,12 @@ class RawList extends PureComponent {
     onBlur();
   };
 
+  updateTypedText = typedText => {
+    this.setState({
+      typedText,
+    });
+  };
+
   render() {
     const {
       rank,
@@ -259,6 +265,7 @@ class RawList extends PureComponent {
       onFocus,
       clearable,
     } = this.props;
+    const { typedText } = this.state;
 
     let value = '';
     let placeholder = '';
@@ -336,7 +343,7 @@ class RawList extends PureComponent {
                 readOnly
                 tabIndex={-1}
                 placeholder={placeholder}
-                value={value}
+                value={typedText || value}
                 disabled={readonly || disabled}
               />
             </div>
@@ -363,6 +370,7 @@ class RawList extends PureComponent {
               selected={this.state.selected}
               width={this.dropdown.offsetWidth}
               onChange={this.handleTemporarySelection}
+              onSearchChange={this.updateTypedText}
               onSelect={this.handleSelect}
               onCancel={this.handleCancel}
             />
