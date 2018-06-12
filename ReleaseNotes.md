@@ -13,6 +13,8 @@ Here come the actual release notes:
 # metasfresh 5.62 (2018-25)
 ## Features
 * metasfresh
+  * [#3028](https://github.com/metasfresh/metasfresh/issues/3028) WebUI: New Window for Import COA
+    * New Window Import Chart of Accounts in WebUI.
   * [#4201](https://github.com/metasfresh/metasfresh/issues/4201) WebUI: Show DeliveryRule in Businesspartner Customer and Sales Order
     * Improvement of Businesspartner and Sales Order Widnow in WebUI. Adding the Field for Delivery Rule.
 
