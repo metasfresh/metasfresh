@@ -11,6 +11,7 @@ import java.util.function.UnaryOperator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.UserId;
 import org.adempiere.util.Services;
@@ -244,7 +245,7 @@ public class LetterRestController
 				.body(letter.getContent())
 				.adOrgId(letter.getAdOrgId())
 				.bpartnerId(BPartnerId.ofRepoId(letter.getBpartnerId()))
-				.bpartnerLocationId(letter.getBpartnerLocationId())
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(letter.getBpartnerLocationId()))
 				.address(letter.getBpartnerAddress())
 				.userId(UserId.ofRepoId(letter.getBpartnerContactId()))
 				.build();
