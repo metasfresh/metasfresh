@@ -59,24 +59,29 @@ public class PurchaseRowIdTest
 	{
 		final PurchaseRowId rowId = PurchaseRowId.lineId(
 				PurchaseDemandId.ofTableAndRecordId("orderLineTable", Integer.parseInt(salesOrderLineId)),
-				BPartnerId.ofRepoId(Integer.parseInt(vendorBPartnerId)));
+				BPartnerId.ofRepoId(Integer.parseInt(vendorBPartnerId)),
+				false // readonly
+		);
 
 		final DocumentId documentId = rowId.toDocumentId();
 		assertThat(documentId.toString())
 				.isEqualTo(PurchaseRowType.LINE.getCode()
 						+ PurchaseRowId.PARTS_SEPARATOR + "orderLineTable"
 						+ PurchaseRowId.PARTS_SEPARATOR + salesOrderLineId
-						+ PurchaseRowId.PARTS_SEPARATOR + vendorBPartnerId);
+						+ PurchaseRowId.PARTS_SEPARATOR + vendorBPartnerId
+						+ PurchaseRowId.PARTS_SEPARATOR + "rw");
 
 		assertThat(rowId.isGroupRowId()).isFalse();
 		assertThat(rowId.isLineRowId()).isTrue();
 		assertThat(rowId.isAvailabilityRowId()).isFalse();
+
+		assertThat(PurchaseRowId.fromDocumentId(documentId)).isEqualTo(rowId);
 	}
 
 	@Test
 	public void withAvailability()
 	{
-		final PurchaseRowId rowId = PurchaseRowId.lineId(PurchaseDemandId.ofTableAndRecordId("table", 10), BPartnerId.ofRepoId(20));
+		final PurchaseRowId rowId = PurchaseRowId.lineId(PurchaseDemandId.ofTableAndRecordId("table", 10), BPartnerId.ofRepoId(20), false);
 		final PurchaseRowId availabilityRowId = rowId.withAvailability(Type.AVAILABLE, "someString");
 
 		assertThat(rowId.toDocumentId()).isNotEqualTo(availabilityRowId.toDocumentId());

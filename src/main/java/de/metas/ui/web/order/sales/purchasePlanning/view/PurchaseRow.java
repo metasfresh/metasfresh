@@ -193,7 +193,8 @@ public final class PurchaseRow implements IViewRow
 		final BPartnerId vendorId = purchaseCandidatesGroup.getVendorId();
 		final ProductId productId = purchaseCandidatesGroup.getProductId();
 
-		rowId = PurchaseRowId.lineId(purchaseCandidatesGroup.getDemandId(), vendorId);
+		readonly = purchaseCandidatesGroup.isReadonly();
+		rowId = PurchaseRowId.lineId(purchaseCandidatesGroup.getDemandId(), vendorId, readonly);
 
 		product = lookups.createProductLookupValue(productId);
 		attributeSetInstance = null;
@@ -202,8 +203,6 @@ public final class PurchaseRow implements IViewRow
 
 		qtyAvailableToPromise = null;
 		qtyToDeliver = null;
-
-		readonly = false;
 
 		// Keep it last (like all setters called from ctor)
 		setPurchaseCandidatesGroup(purchaseCandidatesGroup);

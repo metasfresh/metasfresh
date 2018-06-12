@@ -55,10 +55,11 @@ public final class PurchaseRowId
 
 	public static PurchaseRowId lineId(
 			@NonNull final PurchaseDemandId purchaseDemandId,
-			@NonNull final BPartnerId vendorId)
+			@NonNull final BPartnerId vendorId,
+			final boolean readonly)
 	{
 		final DocumentId documentId = null;
-		return new PurchaseRowId(purchaseDemandId, vendorId, documentId);
+		return new PurchaseRowId(purchaseDemandId, vendorId, readonly, documentId);
 	}
 
 	public static PurchaseRowId availabilityDetailId(
@@ -114,6 +115,8 @@ public final class PurchaseRowId
 	@VisibleForTesting
 	private final BPartnerId vendorId;
 
+	private boolean readonly;
+
 	@Getter
 	private final Type availabilityType;
 
@@ -141,6 +144,7 @@ public final class PurchaseRowId
 	private PurchaseRowId(
 			@NonNull final PurchaseDemandId purchaseDemandId,
 			@NonNull final BPartnerId vendorId,
+			final boolean readonly,
 			final DocumentId documentId)
 	{
 		this.type = PurchaseRowType.LINE;
@@ -148,6 +152,8 @@ public final class PurchaseRowId
 		this._documentId = documentId;
 
 		this.vendorId = vendorId;
+		this.readonly = readonly;
+
 		this.availabilityType = null;
 		this.availabilityDistinguisher = null;
 
@@ -202,6 +208,7 @@ public final class PurchaseRowId
 		else if (type == PurchaseRowType.LINE)
 		{
 			sb.append(PARTS_SEPARATOR).append(vendorId.getRepoId());
+			sb.append(PARTS_SEPARATOR).append(encodeReadonly(readonly));
 		}
 		else if (type == PurchaseRowType.AVAILABILITY_DETAIL)
 		{
@@ -247,7 +254,8 @@ public final class PurchaseRowId
 			final BPartnerId vendorId = BPartnerId.ofRepoId(Integer.parseInt(parts.get(3)));
 			if (type == PurchaseRowType.LINE)
 			{
-				return new PurchaseRowId(purchaseDemandId, vendorId, documentId);
+				final boolean readonly = decodeReadonly(parts.get(4));
+				return new PurchaseRowId(purchaseDemandId, vendorId, readonly, documentId);
 			}
 
 			final Type availabilityType = Type.valueOf(parts.get(4));
@@ -264,6 +272,16 @@ public final class PurchaseRowId
 		{
 			throw new AdempiereException("Cannot convert '" + json + "' to " + PurchaseRowId.class, ex);
 		}
+	}
+
+	private static final boolean decodeReadonly(final String readonlyStr)
+	{
+		return "ro".equals(readonlyStr);
+	}
+
+	private static final String encodeReadonly(final boolean readonly)
+	{
+		return readonly ? "ro" : "rw";
 	}
 
 	public PurchaseRowId toGroupRowId()
@@ -286,7 +304,8 @@ public final class PurchaseRowId
 		}
 		else
 		{
-			return lineId(purchaseDemandId, vendorId);
+			final boolean readonly = false;
+			return lineId(purchaseDemandId, vendorId, readonly);
 		}
 	}
 

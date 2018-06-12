@@ -93,7 +93,6 @@ public class PurchaseCandidates2PurchaseViewFactory extends PurchaseViewFactoryT
 				.productId(aggregate.getProductId())
 				.attributeSetInstanceId(aggregate.getAttributeSetInstanceId())
 				//
-				.qtyToDeliverTotal(aggregate.getQtyToDeliverTotal())
 				.qtyToDeliver(aggregate.getQtyToDeliver())
 				//
 				.salesDatePromised(aggregate.getDatePromised())
