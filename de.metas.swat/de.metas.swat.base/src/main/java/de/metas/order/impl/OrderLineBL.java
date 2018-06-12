@@ -27,6 +27,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -36,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Location;
@@ -123,8 +126,11 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderAndLineId);
-		Check.assumeNotNull(orderLine, "orderLine is not null");
+		return getQtyToDeliver(orderLine);
+	}
 
+	private Quantity getQtyToDeliver(@NonNull final I_C_OrderLine orderLine)
+	{
 		final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
 		final BigDecimal qtyDelivered = orderLine.getQtyDelivered();
 		BigDecimal qtyToDeliver = qtyOrdered.subtract(qtyDelivered);
@@ -132,6 +138,17 @@ public class OrderLineBL implements IOrderLineBL
 		final I_C_UOM uom = getStockingUOM(orderLine);
 
 		return Quantity.of(qtyToDeliver, uom);
+	}
+
+	@Override
+	public Map<OrderAndLineId, Quantity> getQtyToDeliver(@NonNull final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+		return ordersRepo.getOrderLinesByIds(orderAndLineIds)
+				.entrySet()
+				.stream()
+				.map(GuavaCollectors.mapValue(this::getQtyToDeliver))
+				.collect(GuavaCollectors.toImmutableMap());
 	}
 
 	@Override
