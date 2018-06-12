@@ -65,8 +65,9 @@ public class LetterRepository
 		letterRecord.setLetterBody(letter.getBody());
 		letterRecord.setLetterBodyParsed(letter.getBodyParsed());
 		letterRecord.setBPartnerAddress(letter.getAddress());
-		letterRecord.setC_BP_Contact_ID(letter.getUserId().getRepoId());
-		letterRecord.setC_BPartner_ID(letter.getBpartnerId().getRepoId());
+		letterRecord.setC_BP_Contact_ID(letter.getUserId() == null ? -1 : letter.getUserId().getRepoId());
+		letterRecord.setC_BPartner_ID(letter.getBpartnerId() == null ? -1 : letter.getBpartnerId().getRepoId());
+		letterRecord.setC_BPartner_Location_ID(letter.getBpartnerLocationId() == null ? -1 : letter.getBpartnerLocationId().getRepoId());
 
 		saveRecord(letterRecord);
 

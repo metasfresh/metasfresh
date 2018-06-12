@@ -11,12 +11,16 @@ import java.util.Set;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.bpartnerlocation.BPartnerLocation;
+import org.adempiere.bpartnerlocation.BPartnerLocationId;
+import org.adempiere.bpartnerlocation.BPartnerLocationRepository;
 import org.adempiere.location.LocationId;
 import org.adempiere.user.UserId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
@@ -70,7 +74,13 @@ public class ContactPersonRepository
 
 		contactPersonRecord.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
 		contactPersonRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
-		contactPersonRecord.setC_Location_ID(LocationId.toRepoIdOr(contactPerson.getLocationId(), -1));
+
+		if (contactPerson.getBpLocationId() != null)
+		{
+			final BPartnerLocationRepository bpLocationRepo = Adempiere.getBean(BPartnerLocationRepository.class);
+			final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
+			contactPersonRecord.setC_Location_ID(LocationId.toRepoIdOr(bpLocation.getLocationId(), -1));
+		}
 
 		contactPersonRecord.setName(contactPerson.getName());
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());
@@ -125,9 +135,11 @@ public class ContactPersonRepository
 					.firstOnly(I_MKTG_ContactPerson.class); // might be null, that's ok
 		}
 
-		final LocationId locationId = contactPerson.getLocationId();
-		if (locationId != null)
+		if (contactPerson.getBpLocationId() != null)
 		{
+			final BPartnerLocationRepository bpLocationRepo = Adempiere.getBean(BPartnerLocationRepository.class);
+			final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
+			final LocationId locationId = bpLocation.getLocationId();
 			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, locationId.getRepoId());
 		}
 
@@ -235,14 +247,24 @@ public class ContactPersonRepository
 					.address(emailAddress);
 		}
 
+		BPartnerId bpartnerId = null;
+		BPartnerLocationId bpartnerlocationId = null;
+		if (contactPersonRecord.getC_BPartner_ID() > 0 && contactPersonRecord.getC_Location_ID() > 0)
+		{
+			final BPartnerLocationRepository bpLocationRepo = Adempiere.getBean(BPartnerLocationRepository.class);
+			bpartnerId = BPartnerId.ofRepoId(contactPersonRecord.getC_BPartner_ID());
+			final LocationId locationId = LocationId.ofRepoId(contactPersonRecord.getC_Location_ID());
+			bpartnerlocationId = bpLocationRepo.getByBPartnerIdAndLocationId(bpartnerId, locationId);
+		}
+
 		return builder
 				.userId(UserId.ofRepoId(contactPersonRecord.getAD_User_ID()))
-				.bPartnerId(BPartnerId.ofRepoId(contactPersonRecord.getC_BPartner_ID()))
+				.bPartnerId(bpartnerId)
 				.name(contactPersonRecord.getName())
 				.platformId(PlatformId.ofRepoId(contactPersonRecord.getMKTG_Platform_ID()))
 				.remoteId(contactPersonRecord.getRemoteRecordId())
 				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
-				.locationId(LocationId.ofRepoId(contactPersonRecord.getC_Location_ID()))
+				.bpLocationId(bpartnerlocationId)
 				.build();
 	}
 

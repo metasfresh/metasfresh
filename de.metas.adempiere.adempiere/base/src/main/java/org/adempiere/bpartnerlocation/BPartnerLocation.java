@@ -1,12 +1,8 @@
-package de.metas.letters.model;
-
-import javax.annotation.Nullable;
+package org.adempiere.bpartnerlocation;
 
 import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartnerlocation.BPartnerLocationId;
-import org.adempiere.user.UserId;
+import org.adempiere.location.LocationId;
 
-import de.metas.letter.BoilerPlateId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,32 +31,13 @@ import lombok.Value;
 
 @Value
 @Builder(toBuilder = true)
-public class Letter
+public class BPartnerLocation
 {
-	/** can be null for not-yet-saved letters */
-	@Nullable
-	final LetterId id;
+	@NonNull
+	LocationId locationId;
 
-	@Nullable
-	final BPartnerId bpartnerId;
-
-	@Nullable
-	final UserId userId;
-
-	final String subject;
-
-	final String body;
-
-	final String bodyParsed;
-
-	final BoilerPlateId boilerPlateId;
-
-	final String address;
+	BPartnerLocationId id;
 
 	@NonNull
-	final String adLanguage;
-
-	final int adOrgId;
-
-	private final BPartnerLocationId bpartnerLocationId;
+	BPartnerId bpartnerId;
 }

@@ -34,7 +34,7 @@ import lombok.NonNull;
 @Repository
 public class LocationRepository
 {
-	private Location ofRecord(@NonNull final I_C_Location locationRecord)
+	private Location toLocation(@NonNull final I_C_Location locationRecord)
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(locationRecord);
 
@@ -46,6 +46,6 @@ public class LocationRepository
 
 	public Location getByLocationId(@NonNull final LocationId locationId)
 	{
-		return ofRecord(load(locationId.getRepoId(), I_C_Location.class));
+		return toLocation(load(locationId.getRepoId(), I_C_Location.class));
 	}
 }

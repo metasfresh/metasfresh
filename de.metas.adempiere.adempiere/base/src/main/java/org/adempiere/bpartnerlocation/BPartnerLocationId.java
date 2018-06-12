@@ -1,14 +1,8 @@
-package de.metas.letters.model;
+package org.adempiere.bpartnerlocation;
 
-import javax.annotation.Nullable;
+import org.adempiere.util.Check;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartnerlocation.BPartnerLocationId;
-import org.adempiere.user.UserId;
-
-import de.metas.letter.BoilerPlateId;
-import lombok.Builder;
-import lombok.NonNull;
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -34,33 +28,23 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class Letter
+public class BPartnerLocationId implements RepoIdAware
 {
-	/** can be null for not-yet-saved letters */
-	@Nullable
-	final LetterId id;
+	int repoId;
 
-	@Nullable
-	final BPartnerId bpartnerId;
+	public static BPartnerLocationId ofRepoId(final int repoId)
+	{
+		return new BPartnerLocationId(repoId);
+	}
 
-	@Nullable
-	final UserId userId;
+	private BPartnerLocationId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 
-	final String subject;
-
-	final String body;
-
-	final String bodyParsed;
-
-	final BoilerPlateId boilerPlateId;
-
-	final String address;
-
-	@NonNull
-	final String adLanguage;
-
-	final int adOrgId;
-
-	private final BPartnerLocationId bpartnerLocationId;
+	public static int toRepoIdOr(final BPartnerLocationId bpLocationId, final int defaultValue)
+	{
+		return bpLocationId != null ? bpLocationId.getRepoId() : defaultValue;
+	}
 }
+
