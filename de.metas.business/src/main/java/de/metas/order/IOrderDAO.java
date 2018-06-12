@@ -28,6 +28,7 @@ import java.util.Collection;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -47,6 +48,8 @@ public interface IOrderDAO extends ISingletonService
 	I_C_OrderLine getOrderLineById(final int orderLineId);
 
 	I_C_OrderLine getOrderLineById(final OrderLineId orderLineId);
+
+	Map<OrderAndLineId, I_C_OrderLine> getOrderLinesByIds(Collection<OrderAndLineId> orderAndLineIds);
 
 	default I_C_OrderLine getOrderLineById(@NonNull final OrderAndLineId orderAndLineId)
 	{
