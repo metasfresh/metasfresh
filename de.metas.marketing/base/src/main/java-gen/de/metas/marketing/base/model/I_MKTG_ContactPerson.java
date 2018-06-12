@@ -127,6 +127,35 @@ public interface I_MKTG_ContactPerson
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Standort.
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+
+	/**
+	 * Get Standort.
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_Location_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
+
+	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
+
+    /** Column definition for C_BPartner_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_MKTG_ContactPerson, org.compiere.model.I_C_BPartner_Location>(I_MKTG_ContactPerson.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name C_BPartner_Location_ID */
+    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
 	 * Set Anschrift.
 	 * Adresse oder Anschrift
 	 *
