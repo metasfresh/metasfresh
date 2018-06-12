@@ -180,7 +180,11 @@ export default class SelectionDropdown extends Component {
     const { navigate } = this;
     const { selected, onCancel, onSelect, lookupDropdown } = this.props;
 
-    if (event.keyCode > 47 && event.keyCode < 123) {
+    if (
+      event.keyCode > 47 &&
+      event.keyCode < 111 &&
+      !(event.keyCode >= 91 && event.keyCode < 94)
+    ) {
       this.navigateToAlphanumeric(event.key);
     } else {
       switch (event.key) {
