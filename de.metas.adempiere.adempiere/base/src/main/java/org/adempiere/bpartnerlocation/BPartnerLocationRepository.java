@@ -2,10 +2,8 @@ package org.adempiere.bpartnerlocation;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.location.LocationId;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -49,21 +47,5 @@ public class BPartnerLocationRepository
 	public BPartnerLocation getByBPartnerLocationId(@NonNull final BPartnerLocationId bplocationId)
 	{
 		return toBPartnerLocation(load(bplocationId.getRepoId(), I_C_BPartner_Location.class));
-	}
-
-	public BPartnerLocationId getByBPartnerIdAndLocationId(@NonNull final BPartnerId bpartnerId, @NonNull final LocationId locationId)
-	{
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId())
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_Location_ID, locationId.getRepoId())
-				.create()
-				.stream()
-				.map(this::toBPartnerLocation)
-				.map(BPartnerLocation::getId)
-				.findFirst()
-				.orElse(null);
-
 	}
 }

@@ -79,7 +79,8 @@ public class ContactPersonRepository
 		{
 			final BPartnerLocationRepository bpLocationRepo = Adempiere.getBean(BPartnerLocationRepository.class);
 			final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
-			contactPersonRecord.setC_Location_ID(LocationId.toRepoIdOr(bpLocation.getLocationId(), -1));
+			contactPersonRecord.setC_BPartner_Location_ID(bpLocation.getId().getRepoId());
+			contactPersonRecord.setC_Location_ID(bpLocation.getLocationId().getRepoId());
 		}
 
 		contactPersonRecord.setName(contactPerson.getName());
@@ -249,12 +250,11 @@ public class ContactPersonRepository
 
 		BPartnerId bpartnerId = null;
 		BPartnerLocationId bpartnerlocationId = null;
-		if (contactPersonRecord.getC_BPartner_ID() > 0 && contactPersonRecord.getC_Location_ID() > 0)
+		if (contactPersonRecord.getC_BPartner_ID() > 0 && contactPersonRecord.getC_BPartner_Location_ID() > 0)
 		{
-			final BPartnerLocationRepository bpLocationRepo = Adempiere.getBean(BPartnerLocationRepository.class);
 			bpartnerId = BPartnerId.ofRepoId(contactPersonRecord.getC_BPartner_ID());
-			final LocationId locationId = LocationId.ofRepoId(contactPersonRecord.getC_Location_ID());
-			bpartnerlocationId = bpLocationRepo.getByBPartnerIdAndLocationId(bpartnerId, locationId);
+			bpartnerlocationId = BPartnerLocationId.ofRepoId(contactPersonRecord.getC_BPartner_Location_ID());
+
 		}
 
 		return builder
