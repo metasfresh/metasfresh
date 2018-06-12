@@ -27,7 +27,7 @@ public interface ContactAddress
 	/** additional types in future might be twitter handles, postal addresses etc etc */
 	public enum TYPE
 	{
-		EMAIL;
+		EMAIL, POSTAL;
 	}
 
 	TYPE getType();
