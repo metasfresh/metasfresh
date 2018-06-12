@@ -13,7 +13,7 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseDemandId;
@@ -52,11 +52,10 @@ public class PurchaseCandidateAggregate
 	private final PurchaseDemandId purchaseDemandId;
 	private final PurchaseCandidateAggregateKey aggregationKey;
 
-	private final ArrayList<PurchaseCandidate> purchaseCandidates = new ArrayList<>();
-	private Quantity qtyToDeliver;
-	private Quantity qtyAlreadyPurchased;
 	private LocalDateTime datePromised;
-	private final HashSet<OrderLineId> salesOrderLineIds = new HashSet<>();
+	private Quantity qtyToDeliver;
+	private final ArrayList<PurchaseCandidate> purchaseCandidates = new ArrayList<>();
+	private final HashSet<OrderAndLineId> salesOrderAndLineIds = new HashSet<>();
 
 	private PurchaseCandidateAggregate(@NonNull final PurchaseCandidateAggregateKey aggregationKey)
 	{
@@ -75,18 +74,11 @@ public class PurchaseCandidateAggregate
 		purchaseCandidates.add(purchaseCandidate);
 
 		//
-		final Quantity qtyToPurchase = purchaseCandidate.getQtyToPurchase();
-		qtyToDeliver = Quantity.addNullables(qtyToDeliver, qtyToPurchase);
-
-		final Quantity purchasedQty = purchaseCandidate.getPurchasedQty();
-		qtyAlreadyPurchased = Quantity.addNullables(qtyAlreadyPurchased, purchasedQty);
-
-		//
 		datePromised = TimeUtil.min(datePromised, purchaseCandidate.getPurchaseDatePromised());
 
 		if (purchaseCandidate.getSalesOrderAndLineId() != null)
 		{
-			salesOrderLineIds.add(purchaseCandidate.getSalesOrderAndLineId().getOrderLineId());
+			salesOrderAndLineIds.add(purchaseCandidate.getSalesOrderAndLineId());
 		}
 	}
 
@@ -115,14 +107,14 @@ public class PurchaseCandidateAggregate
 		return AttributeSetInstanceId.NONE;
 	}
 
-	public Quantity getQtyToDeliverTotal()
-	{
-		return qtyToDeliver.add(qtyAlreadyPurchased);
-	}
-
 	public Quantity getQtyToDeliver()
 	{
 		return qtyToDeliver;
+	}
+
+	void setQtyToDeliver(final Quantity qtyToDeliver)
+	{
+		this.qtyToDeliver = qtyToDeliver;
 	}
 
 	public LocalDateTime getDatePromised()
@@ -136,8 +128,8 @@ public class PurchaseCandidateAggregate
 		return null;
 	}
 
-	public Set<OrderLineId> getSalesOrderLineIds()
+	public Set<OrderAndLineId> getSalesOrderAndLineIds()
 	{
-		return ImmutableSet.copyOf(salesOrderLineIds);
+		return ImmutableSet.copyOf(salesOrderAndLineIds);
 	}
 }

@@ -65,7 +65,9 @@ public class PurchaseCandidatesGroup
 				//
 				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
 				//
-				.profitInfo(purchaseCandidate.getProfitInfo());
+				.profitInfo(purchaseCandidate.getProfitInfo())
+				//
+				.readonly(purchaseCandidate.isProcessedOrLocked());
 
 		if (purchaseCandidate.getId() != null)
 		{
@@ -108,6 +110,8 @@ public class PurchaseCandidatesGroup
 	@NonNull
 	@Singular
 	ImmutableSet<OrderAndLineId> salesOrderAndLineIds;
+
+	boolean readonly;
 
 	public PurchaseCandidateId getSinglePurchaseCandidateIdOrNull()
 	{

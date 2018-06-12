@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
@@ -25,7 +24,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
 
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
@@ -129,7 +127,9 @@ public class PurchaseDemandWithCandidatesService
 
 	private Stream<Map.Entry<PurchaseDemandId, PurchaseCandidatesGroup>> groupAndStreamPurchaseCandidates(final PurchaseDemand demand, final Collection<PurchaseCandidate> candidates)
 	{
-		final ListMultimap<PurchaseCandidatesGroupKey, PurchaseCandidate> candidatesByKey = Multimaps.index(candidates, this::extractPurchaseCandidatesGroupKey);
+		final ListMultimap<PurchaseCandidatesGroupKey, PurchaseCandidate> candidatesByKey = candidates.stream()
+				.filter(candidate -> !candidate.isProcessedOrLocked())
+				.collect(GuavaCollectors.toImmutableListMultimap(this::extractPurchaseCandidatesGroupKey));
 
 		final List<PurchaseCandidatesGroup> candidatesGroups = candidatesByKey.asMap()
 				.entrySet()
@@ -146,13 +146,11 @@ public class PurchaseDemandWithCandidatesService
 			@NonNull final PurchaseCandidatesGroupKey groupKey,
 			@NonNull final Collection<PurchaseCandidate> candidates)
 	{
-		Check.assumeNotEmpty(candidates, "candidates is not empty");
-
 		Quantity qtyToPurchase = null;
 		Quantity purchasedQty = null;
 		LocalDateTime purchaseDatePromised = null;
 		final Set<PurchaseCandidateId> purchaseCandidateIds = new LinkedHashSet<>();
-		final Set<OrderAndLineId> salesOrderAndLineIds = new LinkedHashSet<>();
+		Set<OrderAndLineId> salesOrderAndLineIds = new LinkedHashSet<>();
 		for (final PurchaseCandidate candidate : candidates)
 		{
 			qtyToPurchase = Quantity.addNullables(qtyToPurchase, candidate.getQtyToPurchase());
@@ -175,7 +173,7 @@ public class PurchaseDemandWithCandidatesService
 		final VendorProductInfo vendorProductInfo = vendorProductInfosRepo.getVendorProductInfo(vendorId, productId, orgId);
 
 		final PurchaseProfitInfo profitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest.builder()
-				.salesOrderAndLineIds(demand.getSalesOrderAndLineIds())
+				.salesOrderAndLineIds(salesOrderAndLineIds)
 				.qtyToPurchase(qtyToPurchase)
 				.vendorProductInfo(vendorProductInfo)
 				.build());
@@ -217,9 +215,7 @@ public class PurchaseDemandWithCandidatesService
 	{
 		OrgId orgId;
 		WarehouseId warehouseId;
-
 		BPartnerId vendorId;
-
 		ProductId productId;
 	}
 
