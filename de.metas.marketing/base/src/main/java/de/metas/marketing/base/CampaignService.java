@@ -88,7 +88,12 @@ public class CampaignService
 			return;
 		}
 
-		final BPartnerLocationId billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByUser(user);
+
+		BPartnerLocationId billToDefaultLocationId = null;
+		if (user.getBpartnerId() != null)
+		{
+			billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByBpartnerId(user.getBpartnerId());
+		}
 		if (isRequiredLocation && billToDefaultLocationId == null )
 		{
 			Loggables.get().addLog("Skip user because it has no bill to default location or campaign does not requires location; user={}", user);
@@ -108,7 +113,11 @@ public class CampaignService
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
 
-		final BPartnerLocationId billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByUser(user);
+		BPartnerLocationId billToDefaultLocationId = null;
+		if (user.getBpartnerId() != null)
+		{
+			billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByBpartnerId(user.getBpartnerId());
+		}
 		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), billToDefaultLocationId);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
