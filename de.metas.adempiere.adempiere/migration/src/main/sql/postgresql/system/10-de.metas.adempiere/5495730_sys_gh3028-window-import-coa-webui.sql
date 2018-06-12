@@ -423,3 +423,154 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=34, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=35, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540901 AND AD_Tree_ID=10
 ;
 
+-- 2018-06-12T09:00:05.901
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,443,540766,TO_TIMESTAMP('2018-06-12 09:00:05','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2018-06-12 09:00:05','YYYY-MM-DD HH24:MI:SS'),100,'main')
+;
+
+-- 2018-06-12T09:00:05.903
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_UI_Section_ID=540766 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2018-06-12T09:00:06.021
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,541006,540766,TO_TIMESTAMP('2018-06-12 09:00:05','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2018-06-12 09:00:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.068
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,541007,540766,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.205
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,541006,541649,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.297
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6006,0,443,541649,552195,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Import von Kontendefinitionen','Y','N','Y','Y','N','Import - Kontendefinition',10,10,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.359
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6024,0,443,541649,552196,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Ist dieser Import verarbeitet worden?','DasSelektionsfeld "Importiert" zeigt an, ob dieser Import verarbeitet worden ist.','Y','N','Y','Y','N','Importiert',20,20,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.417
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6007,0,443,541649,552197,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Kontenart','Account Elements can be natural accounts or user defined values.','Y','N','Y','Y','N','Kontenart',30,30,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.471
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6026,0,443,541649,552198,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Meldungen, die durch den Importprozess generiert wurden','"Import-Fehlermeldung" zeigt alle Fehlermeldungen an, die durch den Importprozess generiert wurden.','Y','N','Y','Y','N','Import-Fehlermeldung',40,40,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.525
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6005,0,443,541649,552199,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','Y','Y','N','Mandant',50,50,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.569
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6015,0,443,541649,552200,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','Y','Y','N','Sektion',60,60,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.623
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6023,0,443,541649,552201,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Name of the Element','Y','N','Y','Y','N','Element Name',70,70,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.673
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6018,0,443,541649,552202,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Accounting Element','The Account Element uniquely identifies an Account Type.  These are commonly known as a Chart of Accounts.','Y','N','Y','Y','N','Element',80,80,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.718
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6021,0,443,541649,552203,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein','A search key allows you a fast method of finding a particular record.
+If you leave the search key empty, the system automatically creates a numeric number.  The document sequence used for this fallback number is defined in the "Maintain Sequence" window with the name "DocumentNo_<TableName>", where TableName is the actual name of the table (e.g. C_Order).','Y','N','Y','Y','N','Suchschlüssel',90,90,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.768
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6008,0,443,541649,552204,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Alphanumeric identifier of the entity','The name of an entity (record) is used as an default search option in addition to the search key. The name is up to 60 characters in length.','Y','N','Y','Y','N','Name',100,100,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.811
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6025,0,443,541649,552205,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Beschreibung',110,110,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.849
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6014,0,443,541649,552206,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Definiert die Kontenart','Gültige Kontenarten sind: A - Anlagevermögen (Asset), E - Betriebsausgaben (Expense), L - Verbindlichkeiten (Liability), O - Kapital (Owner''s Equity), R - Einnahmen (Revenue) and M - Memo. Die Kontenart wird genutzt um zu bestimmen, welche Steuern - wenn überhaupt - anfallen sowie zur Validierung von Verbindlichkeiten und Forderungen gegenüber Geschäftspartnern. Anmerkung: Memokonten-Beträge werden bei der Saldierungsprüfung ignoriert.','Y','N','Y','Y','N','Kontenart',120,120,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.889
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6019,0,443,541649,552207,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Zeigt das natürliche Vorzeichen des Kontos als Soll oder Haben an','Zeigt an, ob der zu erwartende Saldo für dieses Konto Soll oder Haben sein soll. Wenn auf "natürlich" gesetzt, ist das Kontovorzeichen für ein Bestands- oder Aufwandskonto ein Belastungszeichen (d.h. negativ, wenn Habensaldo).','Y','N','Y','Y','N','Konto Vorzeichen',130,130,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.938
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6053,0,443,541649,552208,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Dies ist ein Zusammenfassungseintrag','A summary entity represents a branch in a tree rather than an end-node. Summary entities are used for reporting and do not have own values.','Y','N','Y','Y','N','Zusammenfassungseintrag',140,140,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:06.985
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6054,0,443,541649,552209,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Schlüssel des übergeordneten Kontos','Y','N','Y','Y','N','Schlüssel Übergeordnetes Konto ',150,150,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:07.032
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6052,0,443,541649,552210,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,'Das übergeordnete (zusammenfassende) Konto','Y','N','Y','Y','N','Übergeordnetes Konto',160,160,0,TO_TIMESTAMP('2018-06-12 09:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:07.085
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6017,0,443,541649,552211,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,'Ist-Werte können verbucht werden','"Buchen Ist" zeigt an, ob Ist-Werte auf dieses Kontenelement verbucht werden kann.','Y','N','Y','Y','N','Buchen "Ist"',170,170,0,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:07.122
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6011,0,443,541649,552212,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,'Budget-Werte können verbucht werden','"Buchen Budget" zeigt an, ob Budget-Werte auf dieses Kontenelement verbucht werden kann.','Y','N','Y','Y','N','Buchen "Budget"',180,180,0,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:07.161
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6010,0,443,541649,552213,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,'Sind statistische Buchungen auf diesem Element möglich?','Y','N','Y','Y','N','Buchen "statistisch"',190,190,0,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:07.194
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6004,0,443,541649,552214,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,'"Buchen Reservierung" zeigt an, ob reservierte Beträge auf dieses Kontenelement verbucht werden können.','Y','N','Y','Y','N','Buchen "Reservierung"',200,200,0,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:07.224
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6020,0,443,541649,552215,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,'Gesteuertes Konto - Wenn eine Konto über die Belegart gesteuert wird können Sie nicht manuell darauf buchen.','Y','N','Y','Y','N','Belegartgesteuert',210,210,0,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:07.256
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6013,0,443,541649,552216,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,'Bezeichnung des Standard-Kontos','Y','N','Y','Y','N','Standard Konto',220,220,0,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:07.284
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6022,0,443,541649,552217,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,'Spalte in der Tabelle','Verbindung zur Spalte der Tabelle','Y','N','Y','Y','N','Spalte',230,230,0,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:07.316
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6016,0,443,541649,552218,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,'Grundkonten importieren','Import von Konten und ihrer Hierarchie und optional Aktualisierung der Standardkonten. Aktualisierung der Standardkonten ändert das Grundkontensegment der verwendeten Konten, z.B. wird aus Konto 01-240 das Konto 01-300). Wenn Sie eine neue Kombination anlegen, bleibt das alte Konto (z.B. 01-240) bestehen, sonst ersetzt. Wenn Sie dieses auswählen, stellen Sie sicher, dass Sie nicht mehrere Standardkonten haben, die ein Grundkonto nutzen und ERSTELLEN SIE VORHER EIN BACKUP!! <p>Die Werte sind Standardwerte bei Import mit Nullwerten, sie überschreiben keine Daten.','Y','N','Y','Y','N','Konten importieren',240,240,0,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-12T09:00:07.352
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,6012,0,443,541649,552219,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,'Checkbox sagt aus, ob der Beleg verarbeitet wurde. ','Verarbeitete Belege dürfen in der Regel nich mehr geändert werden.','Y','N','Y','Y','N','Verarbeitet',250,250,0,TO_TIMESTAMP('2018-06-12 09:00:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
