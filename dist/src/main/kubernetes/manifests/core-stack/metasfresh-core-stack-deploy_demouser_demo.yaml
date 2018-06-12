@@ -42,7 +42,7 @@ spec:
         - name: ADMIN_PORT
           value: '9090'
         name: app
-        image: docker.metasfresh.com/metasfresh/metasfresh-app-dev:gh18_dist_LATEST
+        image: docker.metasfresh.com/metasfresh/metasfresh-app-dev:master_LATEST
         imagePullPolicy: Always
         ports:
           - containerPort: 61616 # activemq
@@ -74,7 +74,7 @@ spec:
         - name: ADMIN_PORT
           value: '9090'          
         name: webapi
-        image: docker.metasfresh.com/metasfresh/metasfresh-webui-api-dev:gh18_dist_LATEST
+        image: docker.metasfresh.com/metasfresh/metasfresh-webui-api-dev:master_LATEST
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -89,56 +89,14 @@ spec:
         - mountPath: /etc/timezone
           name: host-timezone
           readOnly: true
-#
-# Elastic search
-      - env:
-        - name: ES_JAVA_OPTS
-          value: -Xms128M -Xmx256m
-# i just buid&pushed this in a very Q&D fashion..          
-        name: search
-        image: docker.metasfresh.com/metasfresh/search:latest
-        imagePullPolicy: Always
-        resources: {}
-        securityContext:
-          capabilities:
-            add:
-            - IPC_LOCK
-        volumeMounts:
-#        - mountPath: /usr/share/elasticsearch/data
-#          name: search-claim0
-        - mountPath: /etc/localtime
-          name: host-localtime
-          readOnly: true
-        - mountPath: /etc/timezone
-          name: host-timezone
-          readOnly: true
-# webui
-      - env:
-        - name: WEBUI_API_HOST
-          value: "demouser-demo.metasfresh.com"
-        - name: WEBUI_API_PORT
-        # our ingress controller is made available via nodeport 32130
-          value: '32130'
-        #  value: '443'         
-        name: webui
-        image: docker.metasfresh.com/metasfresh/metasfresh-webui-dev:gh18_dist_LATEST
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
-        - containerPort: 443
-        resources: {}
-        volumeMounts:
-        - mountPath: /etc/localtime
-          name: host-localtime
-          readOnly: true
-        - mountPath: /etc/timezone
-          name: host-timezone
-          readOnly: true
       restartPolicy: Always
       initContainers:
         - name: init-wait-for-postgres
           image: busybox
           command: ['sh', '-c', 'until nslookup metasfresh-postgresql-demouser-demo; do echo waiting for metasfresh-postgresql-demouser-demo; sleep 2; done;']
+        - name: init-wait-for-elasticsearch
+          image: busybox
+          command: ['sh', '-c', 'until nslookup metasfresh-search-demouser-demo; do echo waiting for metasfresh-search-demouser-demo; sleep 2; done;']
       volumes:
       - name: host-localtime
         hostPath:

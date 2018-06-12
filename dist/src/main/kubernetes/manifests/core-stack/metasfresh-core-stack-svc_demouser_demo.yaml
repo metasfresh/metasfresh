@@ -17,14 +17,6 @@ spec:
     port: 8789
     protocol: TCP
     targetPort: 8789    
-  - name: webui-http
-    port: 80
-    protocol: TCP
-    targetPort: 80
-  - name: webui-https
-    port: 443
-    protocol: TCP
-    targetPort: 443
   - name: activemq
     port: 61616
     protocol: TCP

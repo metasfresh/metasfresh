@@ -71,7 +71,6 @@
 			<artifactId>spring-jdbc</artifactId>
 		</dependency>
 
-
 		<!-- JASPER FONTS Our swing client is currently an uber-jar, and by copying 
 			this stuff into it, we run into trouble as described here: http://community.jaspersoft.com/questions/542314/problem-fonts-input-stream-not-found-netsfjasperreportsfontsfontsxml 
 			==> That is why we don't just add these dependencies to adempiereJasper.commons -->
@@ -107,18 +106,26 @@
 		<!-- Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer. 
 			i.e. a developer wants to use embedded jasper server while working/debugging 
 			in eclipse. scope=provided so it's ONLY considered on the local dev station -->
+
 		<dependency>
 			<groupId>de.metas.report</groupId>
 			<artifactId>report-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
+			<exclusions> <!-- we need this exclusion when running from eclipse -->
+				<exclusion>
+					<groupId>de.codecentric</groupId>
+					<artifactId>spring-boot-admin-starter-client</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		
+
+
 		<dependency>
-            <groupId>de.metas.report</groupId>
-            <artifactId>de.metas.report.jasper.commons</artifactId>
-            <version>${metasfresh.version}</version>
-        </dependency>
+			<groupId>de.metas.report</groupId>
+			<artifactId>de.metas.report.jasper.commons</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 
 		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
 		<!-- we need those classes in the webui-api and swing-UI in order to run the MD_Candidate_Request_PP_Order process -->

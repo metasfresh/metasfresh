@@ -331,7 +331,6 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-
 		<dependency>
 			<groupId>de.metas.marketing</groupId>
 			<artifactId>marketing-cleverreach</artifactId>
@@ -339,7 +338,14 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-		
+		<dependency>
+			<groupId>de.metas.marketing</groupId>
+			<artifactId>marketing-serialletter </artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-cockpit</artifactId>
