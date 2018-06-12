@@ -38,7 +38,7 @@ public class BPartnerLocationRepository
 	{
 
 		return BPartnerLocation.builder()
-				.id(BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_Location_ID()))
+				.id(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID()), bpartnerLocationRecord.getC_BPartner_Location_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID()))
 				.locationId(LocationId.ofRepoId(bpartnerLocationRecord.getC_Location_ID()))
 				.build();
