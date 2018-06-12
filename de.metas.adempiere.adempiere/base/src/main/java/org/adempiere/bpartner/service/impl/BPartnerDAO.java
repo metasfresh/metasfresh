@@ -628,8 +628,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.stream()
 				.filter(I_C_BPartner_Location::isBillToDefault)
 				.findFirst()
-				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-				.map(bpLocationId -> BPartnerLocationId.ofRepoId(bpLocationId))
+				.map(bpLocation -> BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID()))
 				.orElse(null);
 	}
 }

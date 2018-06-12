@@ -253,8 +253,7 @@ public class ContactPersonRepository
 		if (contactPersonRecord.getC_BPartner_ID() > 0 && contactPersonRecord.getC_BPartner_Location_ID() > 0)
 		{
 			bpartnerId = BPartnerId.ofRepoId(contactPersonRecord.getC_BPartner_ID());
-			bpartnerlocationId = BPartnerLocationId.ofRepoId(contactPersonRecord.getC_BPartner_Location_ID());
-
+			bpartnerlocationId = BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(contactPersonRecord.getC_BPartner_ID()), contactPersonRecord.getC_BPartner_Location_ID());
 		}
 
 		return builder

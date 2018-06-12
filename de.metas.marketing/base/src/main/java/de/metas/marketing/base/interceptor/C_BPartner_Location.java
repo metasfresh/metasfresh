@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
@@ -23,7 +24,7 @@ public class C_BPartner_Location
 	{
 		final ContactPersonRepository contactrepo = Adempiere.getBean(ContactPersonRepository.class);
 
-		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_Location_ID());
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID());
 		final Set<ContactPerson> contactPersons = contactrepo.getByBPartnerLocationId(bpLocationId);
 		contactPersons.stream()
 				.forEach(contactPerson -> contactrepo.updateBPartnerLocation(contactPerson, bpLocationId));
