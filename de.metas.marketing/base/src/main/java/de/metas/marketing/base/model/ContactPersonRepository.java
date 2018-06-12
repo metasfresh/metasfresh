@@ -306,4 +306,28 @@ public class ContactPersonRepository
 				.create()
 				.first(I_MKTG_Consent.class);
 	}
+
+	public ContactPerson updateBPartnerLocation(final ContactPerson contactPerson, BPartnerLocationId bpLocationId)
+	{
+		contactPerson.toBuilder()
+				.bpLocationId(bpLocationId)
+				.build();
+
+		save(contactPerson);
+
+		return contactPerson;
+	}
+
+
+	public Set<ContactPerson> getByBPartnerLocationId(@NonNull final BPartnerLocationId bpLocationId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MKTG_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_C_BPartner_Location_ID, bpLocationId.getRepoId())
+				.create()
+				.stream()
+				.map(this::asContactPerson)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }
