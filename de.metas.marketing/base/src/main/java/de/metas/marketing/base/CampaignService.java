@@ -3,7 +3,7 @@ package de.metas.marketing.base;
 import java.util.stream.Stream;
 
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.location.LocationId;
+import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
@@ -88,7 +88,7 @@ public class CampaignService
 			return;
 		}
 
-		final LocationId billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByUser(user);
+		final BPartnerLocationId billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByUser(user);
 		if (isRequiredLocation && billToDefaultLocationId == null )
 		{
 			Loggables.get().addLog("Skip user because it has no bill to default location or campaign does not requires location; user={}", user);
@@ -108,7 +108,7 @@ public class CampaignService
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
 
-		final LocationId billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByUser(user);
+		final BPartnerLocationId billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByUser(user);
 		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), billToDefaultLocationId);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 

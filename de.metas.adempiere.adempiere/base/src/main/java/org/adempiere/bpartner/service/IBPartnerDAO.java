@@ -29,7 +29,7 @@ import java.util.Set;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.BPartnerType;
-import org.adempiere.location.LocationId;
+import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.user.User;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_Relation;
@@ -233,5 +233,5 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType bpartnerType);
 
-	LocationId getBilltoDefaultLocationIdByUser(@NonNull final User user);
+	BPartnerLocationId getBilltoDefaultLocationIdByUser(@NonNull final User user);
 }
