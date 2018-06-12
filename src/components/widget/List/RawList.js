@@ -137,6 +137,7 @@ class RawList extends PureComponent {
       onOpenDropdown();
     } else {
       onCloseDropdown();
+      this.clearTypedText();
     }
   };
 
@@ -161,6 +162,7 @@ class RawList extends PureComponent {
         () => {
           onCloseDropdown();
           onBlur();
+          this.clearTypedText();
         }
       );
     }
@@ -180,6 +182,7 @@ class RawList extends PureComponent {
         onSelect(selected);
       }
       onCloseDropdown();
+      this.clearTypedText();
     });
   };
 
@@ -200,6 +203,7 @@ class RawList extends PureComponent {
     disableAutofocus && disableAutofocus();
     this.handleBlur();
     onCloseDropdown && onCloseDropdown();
+    this.clearTypedText();
   };
 
   handleKeyDown = e => {
@@ -228,6 +232,8 @@ class RawList extends PureComponent {
       } else {
         this.handleBlur();
       }
+
+      this.clearTypedText();
     }
   };
 
@@ -241,6 +247,12 @@ class RawList extends PureComponent {
   updateTypedText = typedText => {
     this.setState({
       typedText,
+    });
+  };
+
+  clearTypedText = () => {
+    this.setState({
+      typedText: '',
     });
   };
 
