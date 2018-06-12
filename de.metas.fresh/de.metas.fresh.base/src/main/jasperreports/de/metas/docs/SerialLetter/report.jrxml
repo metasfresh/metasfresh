@@ -52,7 +52,7 @@ WHERE
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="doctype">
-					<subreportParameterExpression><![CDATA[new String("l")]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[new String("lt")]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock.jasper"]]></subreportExpression>
