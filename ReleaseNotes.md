@@ -10,6 +10,17 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.62 (2018-25)
+## Features
+* metasfresh
+  * [#4201](https://github.com/metasfresh/metasfresh/issues/4201) WebUI: Show DeliveryRule in Businesspartner Customer and Sales Order
+    * Improvement of Businesspartner and Sales Order Widnow in WebUI. Adding the Field for Delivery Rule.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1774) Cannot stop uploading a file
+    * Extend File Upload Feature, now possible to cancel the upload.
+
 # metasfresh 5.61 (2018-24)
 ## Features
 * metasfresh
