@@ -889,3 +889,23 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=50,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=60,Updated=TO_TIMESTAMP('2018-06-12 09:54:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=552200
 ;
 
+-- 2018-06-12T09:58:03.891
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,197,534,TO_TIMESTAMP('2018-06-12 09:58:03','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2018-06-12 09:58:03','YYYY-MM-DD HH24:MI:SS'),100,'N','N')
+;
+
+-- 2018-06-12T10:24:09.077
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET AD_Window_ID=248,Updated=TO_TIMESTAMP('2018-06-12 10:24:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=197 AND AD_Table_ID=534
+;
+
+-- 2018-06-12T10:24:26.200
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_QuickAction='Y', WEBUI_QuickAction_Default='Y',Updated=TO_TIMESTAMP('2018-06-12 10:24:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=197 AND AD_Table_ID=534
+;
+
+-- 2018-06-12T10:25:07.499
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=552218
+;
+
