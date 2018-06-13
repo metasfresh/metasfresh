@@ -2,7 +2,9 @@ package org.adempiere.ad.dao.cache;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import lombok.NonNull;
 
@@ -36,6 +38,9 @@ import lombok.NonNull;
  */
 public interface IModelCacheInvalidationService extends ISingletonService
 {
+	ModelDynAttributeAccessor<Object, TableRecordReference> //
+	ATTR_RootRecordReference = new ModelDynAttributeAccessor<>(IModelCacheInvalidationService.class.getName(), "RootRecordReference", TableRecordReference.class);
+
 	void register(String tableName, ModelCacheInvalidateRequestFactory requestFactory);
 
 	@Nullable
