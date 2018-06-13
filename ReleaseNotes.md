@@ -24,6 +24,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1446](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1446) Tab in purchase order batch entry not working correctly
+    * Fixes the Tab usage in Batch entry after confirming selection with mouse.
   * [#1774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1774) Cannot stop uploading a file
     * Extend File Upload Feature, now possible to cancel the upload.
 
