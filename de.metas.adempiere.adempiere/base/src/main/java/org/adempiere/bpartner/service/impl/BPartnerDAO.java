@@ -42,9 +42,8 @@ import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.BPartnerType;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
-import org.adempiere.location.LocationId;
+import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.NumberUtils;
@@ -654,18 +653,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public LocationId getBilltoDefaultLocationIdByUser(@NonNull final User user)
+	public BPartnerLocationId getBilltoDefaultLocationIdByBpartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		if (user.getBpartnerId() == null)
-		{
-			return null;
-		}
-		return retrieveBPartnerLocations(user.getBpartnerId())
+		return retrieveBPartnerLocations(bpartnerId)
 				.stream()
 				.filter(I_C_BPartner_Location::isBillToDefault)
-				.map(I_C_BPartner_Location::getC_Location_ID)
 				.findFirst()
-				.map(locationId -> LocationId.ofRepoId(locationId))
+				.map(bpLocation -> BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID()))
 				.orElse(null);
 	}
 }
