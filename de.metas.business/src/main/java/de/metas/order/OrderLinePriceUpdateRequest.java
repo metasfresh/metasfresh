@@ -3,6 +3,8 @@ package de.metas.order;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -58,8 +60,8 @@ public class OrderLinePriceUpdateRequest
 
 	//
 	// Pricing context overrides
-	int pricingSystemIdOverride;
-	int priceListIdOverride;
+	PricingSystemId pricingSystemIdOverride;
+	PriceListId priceListIdOverride;
 	Quantity qtyOverride;
 	PricingConditionsBreak pricingConditionsBreakOverride;
 

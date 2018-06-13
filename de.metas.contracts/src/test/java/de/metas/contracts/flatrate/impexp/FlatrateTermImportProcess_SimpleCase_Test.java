@@ -94,9 +94,11 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final int bpartnerId = prepareBPartner();
 
-		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory.productAndPricingNew()
+		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory
+				.productAndPricingNew()
 				.productValue("01")
 				.productName("testProduct")
+				.currency(getCurrency())
 				.country(getCountry())
 				.isTaxInclcuded(false)
 				.validFrom(startDate)
@@ -164,6 +166,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory.productAndPricingNew()
 				.productValue("02")
 				.productName("testProduct")
+				.currency(getCurrency())
 				.country(getCountry())
 				.isTaxInclcuded(true)
 				.validFrom(startDate)
@@ -228,9 +231,11 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final int bpartnerId = prepareBPartner();
 
-		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory.productAndPricingNew()
+		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory
+				.productAndPricingNew()
 				.productValue("01")
 				.productName("testProduct")
+				.currency(getCurrency())
 				.country(getCountry())
 				.isTaxInclcuded(false)
 				.validFrom(startDate)
@@ -254,7 +259,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.dropShipBPartnerId(bpartnerId)
 				.productId(product.getM_Product_ID())
 				.flatrateConditionsId(conditions.getC_Flatrate_Conditions_ID())
-				.price(BigDecimal.valueOf(10))
+				.price(BigDecimal.valueOf(10)) // which currency?!?
 				.qty(BigDecimal.valueOf(1))
 				.startDate(startDate)
 				.endDate(endDate)

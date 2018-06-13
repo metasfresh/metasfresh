@@ -1,6 +1,7 @@
 package de.metas.pricing.conditions.service;
 
 import de.metas.lang.Percent;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
@@ -47,5 +48,5 @@ public class PricingConditionsBreakChangeRequest
 
 	// Discount
 	Percent discount;
-	Integer paymentTermId;
+	PaymentTermId paymentTermId;
 }

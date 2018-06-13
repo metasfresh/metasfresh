@@ -45,6 +45,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import lombok.Builder;
@@ -181,7 +182,7 @@ class OLCandOrderFactory
 		order.setPOReference(candidateOfGroup.getPOReference());
 
 		// pricing-system is not mandatory in 'processor', so we set it either from the processor *or* from the bpartner or BP-GRoup
-		order.setM_PricingSystem_ID(candidateOfGroup.getPricingSystemId());
+		order.setM_PricingSystem_ID(PricingSystemId.getRepoId(candidateOfGroup.getPricingSystemId()));
 
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);

@@ -9,7 +9,7 @@ import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.vendor.gateway.api.availability.TrackingId;
 import lombok.Value;
 
@@ -38,29 +38,30 @@ import lombok.Value;
 @Value
 public class PurchaseCandidatesAvailabilityRequest
 {
-	public static final PurchaseCandidatesAvailabilityRequest of(final Map<TrackingId, PurchaseCandidate> purchaseCandidates)
+	public static final PurchaseCandidatesAvailabilityRequest of(final Map<TrackingId, PurchaseCandidatesGroup> purchaseCandidatesGroups)
 	{
-		return new PurchaseCandidatesAvailabilityRequest(purchaseCandidates);
+		return new PurchaseCandidatesAvailabilityRequest(purchaseCandidatesGroups);
 	}
 
-	public static final PurchaseCandidatesAvailabilityRequest of(final Collection<PurchaseCandidate> purchaseCandidates)
+	// mainly used for testing
+	public static final PurchaseCandidatesAvailabilityRequest of(final Collection<PurchaseCandidatesGroup> purchaseCandidatesGroups)
 	{
-		return new PurchaseCandidatesAvailabilityRequest(purchaseCandidates.stream()
-				.collect(GuavaCollectors.toImmutableMapByKey(purchaseCandidate -> TrackingId.random())));
+		return new PurchaseCandidatesAvailabilityRequest(purchaseCandidatesGroups.stream()
+				.collect(GuavaCollectors.toImmutableMapByKey(purchaseCandidatesGroup -> TrackingId.random())));
 	}
 
-	ImmutableMap<TrackingId, PurchaseCandidate> purchaseCandidates;
+	ImmutableMap<TrackingId, PurchaseCandidatesGroup> purchaseCandidatesGroups;
 
-	private PurchaseCandidatesAvailabilityRequest(final Map<TrackingId, PurchaseCandidate> purchaseCandidates)
+	private PurchaseCandidatesAvailabilityRequest(final Map<TrackingId, PurchaseCandidatesGroup> purchaseCandidatesGroups)
 	{
-		Check.assumeNotEmpty(purchaseCandidates, "purchaseCandidates is not empty");
+		Check.assumeNotEmpty(purchaseCandidatesGroups, "purchaseCandidatesGroups is not empty");
 
-		this.purchaseCandidates = ImmutableMap.copyOf(purchaseCandidates);
+		this.purchaseCandidatesGroups = ImmutableMap.copyOf(purchaseCandidatesGroups);
 	}
 
 	public Set<TrackingId> getTrackingIds()
 	{
-		return purchaseCandidates.keySet();
+		return purchaseCandidatesGroups.keySet();
 	}
 
 }

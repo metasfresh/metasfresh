@@ -12,13 +12,17 @@ import org.compiere.model.X_C_OrderLine;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
@@ -118,7 +122,7 @@ class OrderLinePriceCalculator
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
-		orderLine.setC_Currency_ID(pricingResult.getC_Currency_ID());
+		orderLine.setC_Currency_ID(CurrencyId.toRepoId(pricingResult.getCurrencyId()));
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
 
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
@@ -144,8 +148,8 @@ class OrderLinePriceCalculator
 
 	private void updateOrderLineFromPricingConditionsResult(final I_C_OrderLine orderLine, final PricingConditionsResult pricingConditionsResult)
 	{
-		final int basePricingSystemId;
-		final int paymentTermId;
+		final PricingSystemId basePricingSystemId;
+		final PaymentTermId paymentTermId;
 		final int discountSchemaId;
 		final int discountSchemaBreakId;
 		final boolean tempPricingConditions;
@@ -173,16 +177,16 @@ class OrderLinePriceCalculator
 		}
 		else
 		{
-			basePricingSystemId = -1;
-			paymentTermId = -1;
+			basePricingSystemId = null;
+			paymentTermId = null;
 
 			discountSchemaId = -1;
 			discountSchemaBreakId = -1;
 			tempPricingConditions = false;
 		}
 
-		orderLine.setBase_PricingSystem_ID(basePricingSystemId);
-		orderLine.setC_PaymentTerm_Override_ID(paymentTermId);
+		orderLine.setBase_PricingSystem_ID(PricingSystemId.getRepoId(basePricingSystemId));
+		orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.getRepoId(paymentTermId));
 
 		orderLine.setM_DiscountSchema_ID(discountSchemaId);
 		orderLine.setM_DiscountSchemaBreak_ID(discountSchemaBreakId);
@@ -203,14 +207,14 @@ class OrderLinePriceCalculator
 			return false;
 		}
 
-		final int paymentTermId = pricingConditionsResult.getPaymentTermId();
-		if (paymentTermId > 0 && paymentTermId != orderLine.getC_PaymentTerm_Override_ID())
+		final PaymentTermId paymentTermId = pricingConditionsResult.getPaymentTermId();
+		if (paymentTermId != null && paymentTermId.getRepoId() != orderLine.getC_PaymentTerm_Override_ID())
 		{
 			return false;
 		}
 
-		final int basePricingSystemId = pricingConditionsResult.getBasePricingSystemId();
-		if (basePricingSystemId > 0 && basePricingSystemId != orderLine.getBase_PricingSystem_ID())
+		final PricingSystemId basePricingSystemId = pricingConditionsResult.getBasePricingSystemId();
+		if (basePricingSystemId != null && basePricingSystemId.getRepoId() != orderLine.getBase_PricingSystem_ID())
 		{
 			return false;
 		}
@@ -237,7 +241,7 @@ class OrderLinePriceCalculator
 		if (request.getQtyOverride() != null)
 		{
 			final Quantity qtyOverride = request.getQtyOverride();
-			qtyInPriceUOM = orderLineBL.convertToPriceUOM(qtyOverride, orderLine).getQty();
+			qtyInPriceUOM = orderLineBL.convertToPriceUOM(qtyOverride, orderLine).getAsBigDecimal();
 		}
 		else
 		{
@@ -260,11 +264,11 @@ class OrderLinePriceCalculator
 		//
 		// Pricing System / List / Country
 		{
-			final int pricingSystemId = request.getPricingSystemIdOverride() > 0 ? request.getPricingSystemIdOverride() : pricingCtx.getM_PricingSystem_ID();
-			final int priceListId = request.getPriceListIdOverride() > 0 ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
+			final PricingSystemId pricingSystemId = request.getPricingSystemIdOverride() != null ? request.getPricingSystemIdOverride() : pricingCtx.getPricingSystemId();
+			final PriceListId priceListId = request.getPriceListIdOverride() != null ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
 			final int countryId = getCountryIdOrZero(orderLine);
-			pricingCtx.setM_PricingSystem_ID(pricingSystemId);
-			pricingCtx.setM_PriceList_ID(priceListId);
+			pricingCtx.setPricingSystemId(pricingSystemId);
+			pricingCtx.setPriceListId(priceListId);
 			pricingCtx.setM_PriceList_Version_ID(-1);
 			pricingCtx.setC_Country_ID(countryId);
 		}

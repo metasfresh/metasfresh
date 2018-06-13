@@ -46,7 +46,6 @@ public class PurchaseCandidateAggregateKey
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.productId(purchaseCandidate.getProductId())
-				.uomId(purchaseCandidate.getUomId())
 				.build();
 	}
 
@@ -56,5 +55,4 @@ public class PurchaseCandidateAggregateKey
 	WarehouseId warehouseId;
 	@NonNull
 	ProductId productId;
-	int uomId;
 }

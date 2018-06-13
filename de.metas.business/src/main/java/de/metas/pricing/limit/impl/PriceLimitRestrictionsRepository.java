@@ -10,6 +10,7 @@ import org.compiere.util.CCache;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.limit.IPriceLimitRestrictionsRepository;
 import de.metas.pricing.limit.PriceLimitRestrictions;
 import de.metas.pricing.service.IPriceListDAO;
@@ -60,7 +61,7 @@ public class PriceLimitRestrictionsRepository implements IPriceLimitRestrictions
 		}
 
 		final PriceLimitRestrictions priceLimitRestrictions = PriceLimitRestrictions.builder()
-				.basePricingSystemId(priceLimitRestrictionsRecord.getBase_PricingSystem_ID())
+				.basePricingSystemId(PricingSystemId.ofRepoId(priceLimitRestrictionsRecord.getBase_PricingSystem_ID()))
 				.priceAddAmt(priceLimitRestrictionsRecord.getStd_AddAmt())
 				.discountPercent(priceLimitRestrictionsRecord.getDiscount())
 				.build();

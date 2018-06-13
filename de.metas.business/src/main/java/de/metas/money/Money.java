@@ -119,7 +119,7 @@ public class Money
 
 	public Money multiply(@NonNull final Quantity quantity)
 	{
-		return multiply(quantity.getQty());
+		return multiply(quantity.getAsBigDecimal());
 	}
 
 	public Money add(@NonNull final Money amtToAdd)
@@ -176,6 +176,21 @@ public class Money
 		}
 
 		return new Money(value.subtract(amtToSubtract), currency);
+	}
+
+	public Money subtract(@NonNull final Percent percent)
+	{
+		if (percent.isZero())
+		{
+			return this;
+		}
+
+		if (value.signum() == 0)
+		{
+			return this;
+		}
+
+		return new Money(percent.subtractFromBase(value, currency.getPrecision()), currency);
 	}
 
 	/** example: if this instance is 100CHF and {@code percent} is 80%, then the result is 80CHF */

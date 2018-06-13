@@ -39,6 +39,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.tax.api.ITaxBL;
 
@@ -560,7 +561,7 @@ public class CalloutInvoice extends CalloutEngine
 		// log.warn("amt - init");
 		final int uomToID = invoiceLine.getPrice_UOM_ID(); // 07216 : We convert to the price UOM.
 		final int productID = invoiceLine.getM_Product_ID();
-		final int priceListID = invoice.getM_PriceList_ID();
+		final PriceListId priceListID = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
 		//final int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID"); // task 08908: note that there is no such column in C_Invoice or C_InvoiceLine
 		final int stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListID);
 
@@ -615,7 +616,7 @@ public class CalloutInvoice extends CalloutEngine
 
 				// TODO: PricingBL
 				final MProductPricing pp = new MProductPricing(productID, bPartnerID, qtyInvoiced, isSOTrx);
-				pp.setM_PriceList_ID(priceListID);
+				pp.setPriceListId(priceListID);
 				pp.setReferencedObject(invoiceLine); // task 08908: we need to give the pricing context our referenced object, so it can extract the ASI
 				final Timestamp date = invoiceLine.getC_Invoice().getDateInvoiced(); // task 08908: we do not have a PLV-ID in C_Invoice or C_InvoiceLine, so we need to get the invoice's date to
 				// enable the pricing engine to find the PLV

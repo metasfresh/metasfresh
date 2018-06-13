@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 54088198L;
+	private static final long serialVersionUID = 201642987L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 			setC_UOM_ID (0);
 			setDateRequired (new Timestamp( System.currentTimeMillis() ));
 			setIsAggregatePO (false); // N
+			setIsPrepared (false); // N
 			setM_Product_ID (0);
 			setM_WarehousePO_ID (0);
 			setProcessed (false); // N
@@ -307,6 +308,29 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public boolean isAggregatePO () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAggregatePO);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Prepared.
+		@param IsPrepared Prepared	  */
+	@Override
+	public void setIsPrepared (boolean IsPrepared)
+	{
+		set_Value (COLUMNNAME_IsPrepared, Boolean.valueOf(IsPrepared));
+	}
+
+	/** Get Prepared.
+		@return Prepared	  */
+	@Override
+	public boolean isPrepared () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPrepared);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

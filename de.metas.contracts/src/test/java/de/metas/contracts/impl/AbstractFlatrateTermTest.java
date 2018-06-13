@@ -21,6 +21,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
@@ -42,6 +43,7 @@ import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -80,44 +82,26 @@ public abstract class AbstractFlatrateTermTest
 
 	public FlatrateTermTestHelper helper;
 
+	@Getter
 	private I_C_Calendar calendar;
+
+	@Getter
 	private I_C_AcctSchema acctSchema;
+
+	@Getter
+	private I_C_Currency currency;
+
+	@Getter
 	private I_C_Country country;
 
+	@Getter
 	private I_C_BPartner bpartner;
+
+	@Getter
 	private I_C_BPartner_Location bpLocation;
+
+	@Getter
 	private I_AD_User user;
-
-
-	public I_C_BPartner getBpartner()
-	{
-		return bpartner;
-	}
-
-	public I_C_BPartner_Location getBpLocation()
-	{
-		return bpLocation;
-	}
-
-	public I_AD_User getUser()
-	{
-		return user;
-	}
-
-	public I_C_Calendar getCalendar()
-	{
-		return calendar;
-	}
-
-	public I_C_AcctSchema getAcctSchema()
-	{
-		return acctSchema;
-	}
-
-	public I_C_Country getCountry()
-	{
-		return country;
-	}
 
 	@BeforeClass
 	public final static void staticInit()
@@ -151,8 +135,8 @@ public abstract class AbstractFlatrateTermTest
 		createWarehouse();
 		createDocType();
 		createCountryAndCountryArea();
+		createCurrency();
 	}
-
 
 	public I_C_Flatrate_Term prepareContractForTest(final String extensionType, final Timestamp startDate)
 	{
@@ -172,7 +156,6 @@ public abstract class AbstractFlatrateTermTest
 	{
 		return invoiceCandidateHandlerBL.createMissingCandidatesFor(flatrateTerm);
 	}
-
 
 	private void createCalendar()
 	{
@@ -259,6 +242,14 @@ public abstract class AbstractFlatrateTermTest
 		save(countryArea);
 	}
 
+	private void createCurrency()
+	{
+		currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		save(currency);
+	}
+
 	protected int prepareBPartner()
 	{
 		bpartner = FlatrateTermDataFactory.bpartnerNew()
@@ -284,12 +275,12 @@ public abstract class AbstractFlatrateTermTest
 		return bpartner.getC_BPartner_ID();
 	}
 
-
 	protected ProductAndPricingSystem createProductAndPricingSystem(@NonNull final Timestamp startDate)
 	{
 		return FlatrateTermDataFactory.productAndPricingNew()
 				.productValue("01")
 				.productName("testProduct")
+				.currency(getCurrency())
 				.country(getCountry())
 				.isTaxInclcuded(false)
 				.validFrom(startDate)
@@ -350,14 +341,13 @@ public abstract class AbstractFlatrateTermTest
 		return contract;
 	}
 
-
 	protected I_C_Contract_Change createContractChange(@NonNull final I_C_Flatrate_Conditions flatrateConditions)
 	{
 		final I_C_Contract_Change contractChange = newInstance(I_C_Contract_Change.class);
 		contractChange.setAction(X_C_Contract_Change.ACTION_Statuswechsel);
 		contractChange.setC_Flatrate_Transition(flatrateConditions.getC_Flatrate_Transition());
 		contractChange.setC_Flatrate_Conditions(flatrateConditions);
-		contractChange.setContractStatus( X_C_Contract_Change.CONTRACTSTATUS_Gekuendigt);
+		contractChange.setContractStatus(X_C_Contract_Change.CONTRACTSTATUS_Gekuendigt);
 		contractChange.setDeadLine(1);
 		contractChange.setDeadLineUnit(X_C_Contract_Change.DEADLINEUNIT_MonatE);
 		save(contractChange);
