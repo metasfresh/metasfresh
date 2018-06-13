@@ -1773,6 +1773,29 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
+	 * Set Zusagbar (ATP).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQty_AvailableToPromise (java.math.BigDecimal Qty_AvailableToPromise);
+
+	/**
+	 * Get Zusagbar (ATP).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQty_AvailableToPromise();
+
+    /** Column definition for Qty_AvailableToPromise */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_Qty_AvailableToPromise = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "Qty_AvailableToPromise", null);
+    /** Column name Qty_AvailableToPromise */
+    public static final String COLUMNNAME_Qty_AvailableToPromise = "Qty_AvailableToPromise";
+
+	/**
 	 * Set Gelieferte Menge.
 	 * Delivered Quantity
 	 *
