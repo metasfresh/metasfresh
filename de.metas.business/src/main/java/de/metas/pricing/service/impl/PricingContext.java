@@ -37,7 +37,10 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import lombok.Getter;
 import lombok.ToString;
@@ -45,11 +48,12 @@ import lombok.ToString;
 @ToString
 class PricingContext implements IEditablePricingContext
 {
-	private int pricingSystemId = -1;
-	private int M_Product_ID;
-	private int M_PriceList_ID;
+	private PricingSystemId pricingSystemId;
+	private PriceListId priceListId;
 	private int M_PriceList_Version_ID;
 	private boolean skipCheckingPriceListSOTrxFlag;
+
+	private int M_Product_ID;
 
 	/**
 	 * PriceDate timestamp.
@@ -65,7 +69,7 @@ class PricingContext implements IEditablePricingContext
 	private int C_Country_ID = 0;
 
 	private int C_UOM_ID;
-	private int C_Currency_ID;
+	private CurrencyId currencyId;
 	private BPartnerId bpartnerId;
 	private BigDecimal qty;
 	private boolean isSOTrx;
@@ -91,13 +95,13 @@ class PricingContext implements IEditablePricingContext
 		final PricingContext pricingCtxNew = new PricingContext();
 		pricingCtxNew.M_Product_ID = M_Product_ID;
 		pricingCtxNew.pricingSystemId = pricingSystemId;
-		pricingCtxNew.M_PriceList_ID = M_PriceList_ID;
+		pricingCtxNew.priceListId = priceListId;
 		pricingCtxNew.M_PriceList_Version_ID = M_PriceList_Version_ID;
 		pricingCtxNew._priceListVersion = _priceListVersion;
 		pricingCtxNew.priceDateTS = this.priceDateTS;
 		pricingCtxNew.priceDateNowTS = this.priceDateNowTS;
 		pricingCtxNew.C_UOM_ID = C_UOM_ID;
-		pricingCtxNew.C_Currency_ID = C_Currency_ID;
+		pricingCtxNew.currencyId = currencyId;
 		pricingCtxNew.C_Country_ID = C_Country_ID;
 		pricingCtxNew.bpartnerId = bpartnerId;
 		pricingCtxNew.qty = qty;
@@ -120,13 +124,13 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public int getM_PricingSystem_ID()
+	public PricingSystemId getPricingSystemId()
 	{
 		return pricingSystemId;
 	}
 
 	@Override
-	public IEditablePricingContext setM_PricingSystem_ID(final int pricingSystemId)
+	public IEditablePricingContext setPricingSystemId(final PricingSystemId pricingSystemId)
 	{
 		this.pricingSystemId = pricingSystemId;
 		return this;
@@ -159,15 +163,15 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public int getM_PriceList_ID()
+	public PriceListId getPriceListId()
 	{
-		return M_PriceList_ID;
+		return priceListId;
 	}
 
 	@Override
-	public IEditablePricingContext setM_PriceList_ID(final int M_PriceList_ID)
+	public IEditablePricingContext setPriceListId(final PriceListId priceListId)
 	{
-		this.M_PriceList_ID = M_PriceList_ID;
+		this.priceListId = priceListId;
 		return this;
 	}
 
@@ -235,15 +239,15 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public int getC_Currency_ID()
+	public CurrencyId getCurrencyId()
 	{
-		return C_Currency_ID;
+		return currencyId;
 	}
 
 	@Override
-	public IEditablePricingContext setC_Currency_ID(final int c_Currency_ID)
+	public IEditablePricingContext setCurrencyId(final CurrencyId currencyId)
 	{
-		C_Currency_ID = c_Currency_ID;
+		this.currencyId = currencyId;
 		return this;
 	}
 

@@ -17,6 +17,8 @@ import org.compiere.util.TimeUtil;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.lang.SOTrx;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -54,13 +56,13 @@ public class OrderFactory
 	public static final OrderFactory newPurchaseOrder()
 	{
 		return new OrderFactory()
-				.soTrx(false);
+				.soTrx(SOTrx.PURCHASE);
 	}
 
 	public static final OrderFactory newSalesOrder()
 	{
 		return new OrderFactory()
-				.soTrx(true);
+				.soTrx(SOTrx.SALES);
 	}
 
 	private final I_C_Order order;
@@ -129,16 +131,16 @@ public class OrderFactory
 		return orderLineBuilder;
 	}
 
-	public Optional<OrderLineBuilder> orderLineByProductAndUom(final int productId, final int uomId)
+	public Optional<OrderLineBuilder> orderLineByProductAndUom(final ProductId productId, final int uomId)
 	{
 		return orderLineBuilders.stream()
-				.filter(orderLine -> orderLine.getProductId() == productId && orderLine.getUomId() == uomId)
+				.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))
 				.findFirst();
 	}
-
-	private OrderFactory soTrx(final boolean isSOTrx)
+	
+	private OrderFactory soTrx(@NonNull final SOTrx soTrx)
 	{
-		order.setIsSOTrx(isSOTrx);
+		order.setIsSOTrx(soTrx.toBoolean());
 		return this;
 	}
 

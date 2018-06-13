@@ -26,6 +26,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -67,6 +68,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.pricing.PricingSystemId;
 import lombok.NonNull;
 
 public class BPartnerDAO implements IBPartnerDAO
@@ -168,6 +170,35 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public I_C_BPartner_Location getDefaultShipToLocation(final BPartnerId bpartnerId)
+	{
+		final List<I_C_BPartner_Location> bpLocations = retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
+		if (bpLocations.isEmpty())
+		{
+			return null;
+		}
+		else if (bpLocations.size() == 1)
+		{
+			return bpLocations.get(0);
+		}
+		else
+		{
+			return bpLocations.stream()
+					.filter(I_C_BPartner_Location::isShipTo)
+					.sorted(Comparator.comparing(bpl -> bpl.isShipToDefault() ? 0 : 1))
+					.findFirst()
+					.orElse(null);
+		}
+	}
+
+	@Override
+	public int getDefaultShipToLocationCountryId(final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner_Location bpl = getDefaultShipToLocation(bpartnerId);
+		return bpl != null ? bpl.getC_Location().getC_Country_ID() : -1;
+	}
+
+	@Override
 	@Cached(cacheName = I_AD_User.Table_Name + "#by#" + I_AD_User.COLUMNNAME_C_BPartner_ID)
 	public List<I_AD_User> retrieveContacts(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
 	{
@@ -260,13 +291,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public int retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final SOTrx soTrx)
+	public PricingSystemId retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final SOTrx soTrx)
 	{
 		return retrievePricingSystemId(Env.getCtx(), bPartnerId.getRepoId(), soTrx, ITrx.TRXNAME_None);
 	}
 
 	@Override
-	public int retrievePricingSystemId(
+	public PricingSystemId retrievePricingSystemId(
 			final Properties ctx,
 			final int bPartnerId,
 			final SOTrx soTrx,
@@ -290,7 +321,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (bpPricingSysId != null && bpPricingSysId > 0)
 		{
 			logger.debug("Got M_PricingSystem_ID={} from bPartner={}", bpPricingSysId, bPartner);
-			return bpPricingSysId;
+			return PricingSystemId.ofRepoId(bpPricingSysId);
 		}
 
 		final int bpGroupId = bPartner.getC_BP_Group_ID();
@@ -313,7 +344,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			if (bpGroupPricingSysId != null && bpGroupPricingSysId > 0)
 			{
 				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
-				return bpGroupPricingSysId;
+				return PricingSystemId.ofRepoId(bpGroupPricingSysId);
 			}
 		}
 
@@ -323,12 +354,12 @@ public class BPartnerDAO implements IBPartnerDAO
 			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(MOrgInfo.get(ctx, adOrgId, null), I_AD_OrgInfo.class);
 			if (orgInfo.getM_PricingSystem_ID() > 0)
 			{
-				return orgInfo.getM_PricingSystem_ID();
+				return PricingSystemId.ofRepoId(orgInfo.getM_PricingSystem_ID());
 			}
 		}
 
-		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning 0", bPartner, soTrx);
-		return 0;
+		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning null", bPartner, soTrx);
+		return null;
 	}
 
 	@Override
@@ -589,7 +620,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	public Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final BPartnerType bpartnerType)
 	{
 		final String discountSchemaIdColumnName = getBPartnerDiscountSchemaColumnNameOrNull(bpartnerType);
-		if(discountSchemaIdColumnName == null)
+		if (discountSchemaIdColumnName == null)
 		{
 			return ImmutableMap.of();
 		}

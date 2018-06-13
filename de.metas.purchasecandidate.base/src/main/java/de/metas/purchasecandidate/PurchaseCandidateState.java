@@ -32,24 +32,37 @@ class PurchaseCandidateState
 {
 	private final boolean locked;
 
+	private boolean prepared;
+	@Setter(AccessLevel.NONE)
+	private boolean preparedInitial;
+
 	private boolean processed;
 	@Setter(AccessLevel.NONE)
 	private boolean processedInitial;
 
 	@Builder
 	private PurchaseCandidateState(
+			final boolean prepared,
 			final boolean processed,
 			final boolean locked)
 	{
+		this.prepared = prepared;
+		this.preparedInitial = prepared;
+
 		this.processed = processed;
 		this.processedInitial = processed;
+
 		this.locked = locked;
 	}
 
 	private PurchaseCandidateState(final PurchaseCandidateState from)
 	{
+		this.prepared = from.prepared;
+		this.preparedInitial = from.preparedInitial;
+
 		this.processed = from.processed;
 		this.processedInitial = from.processedInitial;
+
 		this.locked = from.locked;
 	}
 
@@ -65,11 +78,14 @@ class PurchaseCandidateState
 
 	public boolean hasChanges()
 	{
-		return processed != processedInitial;
+		return prepared != preparedInitial
+				|| processed != processedInitial;
+
 	}
 
 	public void markSaved()
 	{
+		preparedInitial = prepared;
 		processedInitial = processed;
 	}
 

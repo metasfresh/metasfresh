@@ -1,15 +1,16 @@
 package de.metas.purchasecandidate.availability;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.quantity.Quantity;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
 import de.metas.vendor.gateway.api.availability.TrackingId;
@@ -42,14 +43,14 @@ import lombok.Value;
 @Value
 public class AvailabilityResult
 {
-	public static AvailabilityResultBuilder prepareBuilderFor(@NonNull final AvailabilityResponseItem responseItem)
+	public static AvailabilityResultBuilder prepareBuilderFor(@NonNull final AvailabilityResponseItem responseItem, final I_C_UOM uom)
 	{
 		return AvailabilityResult.builder()
 				.trackingId(responseItem.getTrackingId())
 				.type(Type.ofAvailabilityResponseItemType(responseItem.getType()))
 				.availabilityText(responseItem.getAvailabilityText())
 				.datePromised(TimeUtil.asLocalDateTime(responseItem.getDatePromised()))
-				.qty(responseItem.getAvailableQuantity());
+				.qty(Quantity.of(responseItem.getAvailableQuantity(), uom));
 	}
 
 	public enum Type
@@ -79,7 +80,7 @@ public class AvailabilityResult
 
 	Type type;
 
-	BigDecimal qty;
+	Quantity qty;
 
 	LocalDateTime datePromised;
 
@@ -91,7 +92,7 @@ public class AvailabilityResult
 	private AvailabilityResult(
 			@Nullable TrackingId trackingId,
 			@NonNull final Type type,
-			@NonNull final BigDecimal qty,
+			@NonNull final Quantity qty,
 			@Nullable final LocalDateTime datePromised,
 			@Nullable final String availabilityText,
 			@Nullable final VendorGatewayService vendorGatewayServicethatWasUsed)

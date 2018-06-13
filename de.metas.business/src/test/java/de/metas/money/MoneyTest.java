@@ -121,4 +121,15 @@ public class MoneyTest
 		assertThatThrownBy(() -> money_1EUR.min(money_2CHF)).isNotNull();
 		assertThatThrownBy(() -> money_1EUR.max(money_2CHF)).isNotNull();
 	}
+
+	@Test
+	public void testSubtactPercentage()
+	{
+		final Money money_100EUR = Money.of(100, EUR);
+		assertThat(money_100EUR.subtract(Percent.of(0))).isSameAs(money_100EUR);
+		assertThat(money_100EUR.subtract(Percent.of(30))).isEqualTo(Money.of(70, EUR));
+
+		final Money money_0EUR = Money.of(0, EUR);
+		assertThat(money_0EUR.subtract(Percent.of(55))).isSameAs(money_0EUR);
+	}
 }

@@ -27,18 +27,6 @@ package de.metas.adempiere.model;
 public interface I_C_BPartner_Location extends
 		org.compiere.model.I_C_BPartner_Location
 {
-	public static String COLUMNNAME_Address = "Address";
-	public String getAddress();
-	public void setAddress(String Address);
-
-	public static String COLUMNNAME_IsBillToDefault = "IsBillToDefault";
-	public boolean isBillToDefault();
-	public void setIsBillToDefault(boolean IsBillToDefault);
-	
-	public static String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
-	public boolean isShipToDefault();
-	public void setIsShipToDefault(boolean IsShipToDefault);
-	
 	public static String COLUMNNAME_IsHandOverLocation = "IsHandOverLocation";
 	public boolean isHandOverLocation();
 	public void setIsHandOverLocation(boolean IsHandOverLocation);

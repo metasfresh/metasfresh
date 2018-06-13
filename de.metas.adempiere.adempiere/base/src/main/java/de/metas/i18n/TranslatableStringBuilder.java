@@ -130,13 +130,18 @@ public class TranslatableStringBuilder
 
 	public TranslatableStringBuilder insertFirst(final ITranslatableString value)
 	{
-		if (value == null)
+		if (ImmutableTranslatableString.isEmpty(value))
 		{
 			return this;
 		}
 
 		parts.add(0, value);
 		return this;
+	}
+
+	public TranslatableStringBuilder insertFirst(final String value)
+	{
+		return insertFirst(ImmutableTranslatableString.constant(value));
 	}
 
 	public TranslatableStringBuilder append(final String value)

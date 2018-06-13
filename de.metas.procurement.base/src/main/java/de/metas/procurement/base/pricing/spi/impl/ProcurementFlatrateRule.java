@@ -126,7 +126,7 @@ public class ProcurementFlatrateRule implements IPricingRule
 
 		// set details in result
 		result.setPriceStd(pricingAware.getPrice());
-		result.setC_Currency_ID(pricingAware.getC_Currency_ID());
+		result.setCurrencyId(pricingAware.getCurrencyId());
 
 		// Mark the result as calculated.
 		// This price will be the final one if there is no superior rule to be applied.

@@ -131,21 +131,18 @@ public class PurchaseCandidateToOrderWorkflow
 	{
 		final ILoggable loggable = Loggables.get();
 
-		loggable.addLog("vendorId={} - now invoking placeRemotePurchaseOrder with purchaseCandidates={}",
-				vendorId, purchaseCandidatesWithVendorId);
+		loggable.addLog("vendorId={} - now invoking placeRemotePurchaseOrder with purchaseCandidates={}", vendorId, purchaseCandidatesWithVendorId);
 
 		final VendorGatewayInvoker vendorGatewayInvoker = vendorGatewayInvokerFactory.createForVendorId(vendorId);
 
-		final List<PurchaseItem> remotePurchaseItems = vendorGatewayInvoker
-				.placeRemotePurchaseOrder(purchaseCandidatesWithVendorId);
-		loggable.addLog("vendorId={} - placeRemotePurchaseOrder returned remotePurchaseItem={}",
-				vendorId, remotePurchaseItems);
+		final List<PurchaseItem> remotePurchaseItems = vendorGatewayInvoker.placeRemotePurchaseOrder(purchaseCandidatesWithVendorId);
+		loggable.addLog("vendorId={} - placeRemotePurchaseOrder returned remotePurchaseItem={}", vendorId, remotePurchaseItems);
 
 		thowExceptionIfEmptyResult(remotePurchaseItems, purchaseCandidatesWithVendorId, vendorId);
 
 		final List<PurchaseOrderItem> purchaseOrderItems = remotePurchaseItems.stream()
-				.filter(item -> item instanceof PurchaseOrderItem)
-				.map(item -> (PurchaseOrderItem)item)
+				.map(PurchaseOrderItem::castOrNull)
+				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 
 		purchaseOrderFromItemsAggregator

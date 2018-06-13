@@ -149,6 +149,10 @@ public final class ImmutableTranslatableString implements ITranslatableString
 		{
 			return true;
 		}
+		else if(trl == ConstantTranslatableString.EMPTY)
+		{
+			return true;
+		}
 		else if (trl instanceof ConstantTranslatableString)
 		{
 			return Check.isEmpty(trl.getDefaultValue(), true);
@@ -158,6 +162,27 @@ public final class ImmutableTranslatableString implements ITranslatableString
 			return false;
 		}
 	}
+	
+	public static boolean isEmpty(final ITranslatableString trl)
+	{
+		if (trl == null)
+		{
+			return true;
+		}
+		else if(trl == ConstantTranslatableString.EMPTY)
+		{
+			return true;
+		}
+		else if (trl instanceof ConstantTranslatableString)
+		{
+			return Check.isEmpty(trl.getDefaultValue(), false);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 
 	private final Map<String, String> trlMap;
 	private final String defaultValue;

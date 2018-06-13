@@ -1,8 +1,5 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,12 +9,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseDemandId;
@@ -56,20 +52,15 @@ public class PurchaseCandidateAggregate
 	private final PurchaseDemandId purchaseDemandId;
 	private final PurchaseCandidateAggregateKey aggregationKey;
 
-	private final ArrayList<PurchaseCandidate> purchaseCandidates = new ArrayList<>();
-	private Quantity qtyToDeliver;
-	private Quantity qtyToDeliverTotal;
 	private LocalDateTime datePromised;
-	private final HashSet<OrderLineId> salesOrderLineIds = new HashSet<>();
+	private Quantity qtyToDeliver;
+	private final ArrayList<PurchaseCandidate> purchaseCandidates = new ArrayList<>();
+	private final HashSet<OrderAndLineId> salesOrderAndLineIds = new HashSet<>();
 
 	private PurchaseCandidateAggregate(@NonNull final PurchaseCandidateAggregateKey aggregationKey)
 	{
 		this.aggregationKey = aggregationKey;
 		purchaseDemandId = PurchaseDemandId.newAggregateId();
-
-		final I_C_UOM uom = loadOutOfTrx(aggregationKey.getUomId(), I_C_UOM.class); // TODO: get rid of this loader!
-		qtyToDeliver = Quantity.zero(uom);
-		qtyToDeliverTotal = Quantity.zero(uom);
 	}
 
 	public void add(@NonNull final PurchaseCandidate purchaseCandidate)
@@ -83,18 +74,11 @@ public class PurchaseCandidateAggregate
 		purchaseCandidates.add(purchaseCandidate);
 
 		//
-		final BigDecimal qtyToPurchase = purchaseCandidate.getQtyToPurchase();
-		final BigDecimal purchasedQty = purchaseCandidate.getPurchasedQty();
-		final BigDecimal qtyToPurchaseTotal = qtyToPurchase.add(purchasedQty);
-		qtyToDeliver = qtyToDeliver.add(qtyToPurchase);
-		qtyToDeliverTotal = qtyToDeliverTotal.add(qtyToPurchaseTotal);
-
-		//
-		datePromised = TimeUtil.min(datePromised, purchaseCandidate.getDateRequired());
+		datePromised = TimeUtil.min(datePromised, purchaseCandidate.getPurchaseDatePromised());
 
 		if (purchaseCandidate.getSalesOrderAndLineId() != null)
 		{
-			salesOrderLineIds.add(purchaseCandidate.getSalesOrderAndLineId().getOrderLineId());
+			salesOrderAndLineIds.add(purchaseCandidate.getSalesOrderAndLineId());
 		}
 	}
 
@@ -123,14 +107,14 @@ public class PurchaseCandidateAggregate
 		return AttributeSetInstanceId.NONE;
 	}
 
-	public Quantity getQtyToDeliverTotal()
-	{
-		return qtyToDeliverTotal;
-	}
-
 	public Quantity getQtyToDeliver()
 	{
 		return qtyToDeliver;
+	}
+
+	void setQtyToDeliver(final Quantity qtyToDeliver)
+	{
+		this.qtyToDeliver = qtyToDeliver;
 	}
 
 	public LocalDateTime getDatePromised()
@@ -144,8 +128,8 @@ public class PurchaseCandidateAggregate
 		return null;
 	}
 
-	public Set<OrderLineId> getSalesOrderLineIds()
+	public Set<OrderAndLineId> getSalesOrderAndLineIds()
 	{
-		return ImmutableSet.copyOf(salesOrderLineIds);
+		return ImmutableSet.copyOf(salesOrderAndLineIds);
 	}
 }

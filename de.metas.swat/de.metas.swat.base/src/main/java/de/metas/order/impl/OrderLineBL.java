@@ -27,6 +27,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -36,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Location;
@@ -56,7 +59,9 @@ import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.PriceAndDiscount;
 import de.metas.pricing.IPricingResult;
@@ -86,7 +91,13 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		// fallback to stocking UOM
-		return Services.get(IProductBL.class).getStockingUOM(orderLine.getM_Product_ID());
+		return getStockingUOM(orderLine);
+	}
+
+	private I_C_UOM getStockingUOM(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		return productBL.getStockingUOM(orderLine.getM_Product_ID());
 	}
 
 	@Override
@@ -95,6 +106,49 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qty = orderLine.getQtyEntered();
 		final I_C_UOM uom = getUOM(orderLine);
 		return Quantity.of(qty, uom);
+	}
+
+	@Override
+	public Quantity getQtyOrdered(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderAndLineId);
+		Check.assumeNotNull(orderLine, "orderLine is not null");
+
+		final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
+		final I_C_UOM uom = getStockingUOM(orderLine);
+
+		return Quantity.of(qtyOrdered, uom);
+	}
+
+	@Override
+	public Quantity getQtyToDeliver(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderAndLineId);
+		return getQtyToDeliver(orderLine);
+	}
+
+	private Quantity getQtyToDeliver(@NonNull final I_C_OrderLine orderLine)
+	{
+		final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
+		final BigDecimal qtyDelivered = orderLine.getQtyDelivered();
+		BigDecimal qtyToDeliver = qtyOrdered.subtract(qtyDelivered);
+
+		final I_C_UOM uom = getStockingUOM(orderLine);
+
+		return Quantity.of(qtyToDeliver, uom);
+	}
+
+	@Override
+	public Map<OrderAndLineId, Quantity> getQtyToDeliver(@NonNull final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+		return ordersRepo.getOrderLinesByIds(orderAndLineIds)
+				.entrySet()
+				.stream()
+				.map(GuavaCollectors.mapValue(this::getQtyToDeliver))
+				.collect(GuavaCollectors.toImmutableMap());
 	}
 
 	@Override

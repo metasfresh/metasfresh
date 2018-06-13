@@ -1,10 +1,16 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_UOM;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +21,7 @@ import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -42,10 +49,33 @@ import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseOrderItemTest
 {
+	private I_C_UOM EACH;
+	private Quantity ONE;
+	private Quantity TEN;
+
+	@Before
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+		
+		this.EACH = createUOM("Ea");
+		this.ONE = Quantity.of(BigDecimal.ONE, EACH);
+		this.TEN = Quantity.of(BigDecimal.TEN, EACH);
+	}
+
+	private I_C_UOM createUOM(final String name)
+	{
+		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
+		uom.setName(name);
+		uom.setUOMSymbol(name);
+		save(uom);
+		return uom;
+	}
+	
 	@Test
 	public void toString_without_StackOverflowError()
 	{
-		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(20);
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(20, ONE);
 
 		final PurchaseOrderItem purchaseOrderItem = purchaseCandidate.createOrderItem()
 				.purchasedQty(TEN)

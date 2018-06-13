@@ -119,6 +119,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
@@ -897,7 +898,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
 					.getCurrentPricelistOrNull(
-							ic.getM_PricingSystem_ID(),
+							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
 							partnerLocation.getC_Location().getC_Country_ID(),
 							date,
 							soTrx);
