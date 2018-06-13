@@ -1,16 +1,9 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import org.compiere.model.I_C_UOM;
-
 import de.metas.money.Currency;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoRequest;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoService;
 
 /*
  * #%L
@@ -34,34 +27,25 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public class PurchaseRowTestTools
+public class DoNothingPurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 {
-	public Currency createCurrency()
+
+	@Override
+	public PurchaseProfitInfo calculate(final PurchaseProfitInfoRequest request)
 	{
-		return Currency
-				.builder()
-				.id(CurrencyId.ofRepoId(30))
-				.precision(2)
-				.build();
-	}
-	
-	public I_C_UOM createUOM(final String name)
-	{
-		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
-		uom.setName(name);
-		uom.setUOMSymbol(name);
-		save(uom);
-		return uom;
+		return null;
 	}
 
-
-	public PurchaseProfitInfo createProfitInfo(@NonNull final Currency currency)
+	@Override
+	public PurchaseProfitInfo calculateNoFail(final PurchaseProfitInfoRequest request)
 	{
-		return PurchaseProfitInfo.builder()
-				.salesNetPrice(Money.of(11, currency))
-				.purchaseNetPrice(Money.of(9, currency))
-				.purchaseGrossPrice(Money.of(10, currency))
-				.build();
+		return null;
 	}
+
+	@Override
+	public PurchaseProfitInfo convertToCurrency(final PurchaseProfitInfo profitInfo, final Currency currencyTo)
+	{
+		throw new UnsupportedOperationException("profitInfo=" + profitInfo + ", currencyTo=" + currencyTo);
+	}
+
 }

@@ -1,7 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -122,7 +122,7 @@ public interface IViewRow
 
 	//
 	// Included documents (children)
-	List<? extends IViewRow> getIncludedRows();
+	Collection<? extends IViewRow> getIncludedRows();
 
 	//
 	// Attributes

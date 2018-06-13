@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
@@ -395,8 +396,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private final int getPriceListVersionId(final LookupDataSourceContext evalCtx)
 	{
-		final int priceListId = param_M_PriceList_ID.getValueAsInteger(evalCtx);
-		if (priceListId <= 0)
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(param_M_PriceList_ID.getValueAsInteger(evalCtx));
+		if (priceListId == null)
 		{
 			return -1;
 		}

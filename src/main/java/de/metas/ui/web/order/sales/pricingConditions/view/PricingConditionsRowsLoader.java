@@ -33,6 +33,7 @@ import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -338,7 +339,7 @@ class PricingConditionsRowsLoader
 		@lombok.Builder.Default
 		Percent discount = Percent.ZERO;
 
-		int paymentTermId;
+		PaymentTermId paymentTermId;
 
 		PricingConditionsBreakId pricingConditionsBreakId;
 	}

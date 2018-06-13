@@ -185,13 +185,7 @@ public final class ViewColumnHelper
 		final String fieldName = !Check.isEmpty(viewColumnAnn.fieldName(), true) ? viewColumnAnn.fieldName().trim() : field.getName();
 		final String captionKey = !Check.isEmpty(viewColumnAnn.captionKey()) ? viewColumnAnn.captionKey() : fieldName;
 
-		final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType = Stream.of(viewColumnAnn.layouts())
-				.map(layoutAnn -> ClassViewColumnLayoutDescriptor.builder()
-						.viewType(layoutAnn.when())
-						.displayed(layoutAnn.displayed())
-						.seqNo(layoutAnn.seqNo())
-						.build())
-				.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
+		final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType = createViewColumnLayoutDescriptors(viewColumnAnn);
 
 		return ClassViewColumnDescriptor.builder()
 				.fieldName(fieldName)
@@ -203,6 +197,36 @@ public final class ViewColumnHelper
 				.layoutsByViewType(layoutsByViewType)
 				.restrictToMediaTypes(ImmutableSet.copyOf(viewColumnAnn.restrictToMediaTypes()))
 				.build();
+	}
+
+	private static ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> createViewColumnLayoutDescriptors(final ViewColumn viewColumnAnn)
+	{
+		final int defaultSeqNo = viewColumnAnn.seqNo();
+
+		if (viewColumnAnn.layouts().length > 0)
+		{
+			return Stream.of(viewColumnAnn.layouts())
+					.map(layoutAnn -> ClassViewColumnLayoutDescriptor.builder()
+							.viewType(layoutAnn.when())
+							.displayed(layoutAnn.displayed())
+							.seqNo(layoutAnn.seqNo() >= 0 ? layoutAnn.seqNo() : defaultSeqNo)
+							.build())
+					.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
+		}
+		else if (defaultSeqNo >= 0)
+		{
+			return Stream.of(JSONViewDataType.values())
+					.map(viewType -> ClassViewColumnLayoutDescriptor.builder()
+							.viewType(viewType)
+							.displayed(true)
+							.seqNo(defaultSeqNo)
+							.build())
+					.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
+		}
+		else
+		{
+			return ImmutableMap.of();
+		}
 	}
 
 	private static DocumentLayoutElementDescriptor.Builder createLayoutElement(final ClassViewColumnDescriptor column)

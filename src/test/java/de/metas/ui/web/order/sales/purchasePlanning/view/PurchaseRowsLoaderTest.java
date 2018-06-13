@@ -1,25 +1,26 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -35,12 +36,13 @@ import de.metas.StartupListener;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
-import de.metas.money.MoneyService;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineRepository;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLine;
@@ -52,6 +54,7 @@ import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.purchasecandidate.availability.PurchaseCandidatesAvailabilityRequest;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowsLoader.PurchaseRowsList;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -79,7 +82,7 @@ import mockit.Mocked;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class })
 public class PurchaseRowsLoaderTest
 {
 	@Mocked
@@ -91,7 +94,7 @@ public class PurchaseRowsLoaderTest
 
 	private I_C_Currency currency;
 
-	private I_C_UOM uom;
+	private Quantity TEN;
 
 	private I_M_Warehouse warehouse;
 
@@ -107,14 +110,20 @@ public class PurchaseRowsLoaderTest
 		org = newInstance(I_AD_Org.class);
 		saveRecord(org);
 
-		uom = newInstance(I_C_UOM.class);
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setUOMSymbol("testUOMSympol");
 		saveRecord(uom);
+
+		this.TEN = Quantity.of(BigDecimal.TEN, uom);
 
 		warehouse = newInstance(I_M_Warehouse.class);
 		saveRecord(warehouse);
 
+		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
+		saveRecord(productCategory);
+
 		product = newInstance(I_M_Product.class);
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		product.setC_UOM(uom);
 		saveRecord(product);
 
@@ -148,50 +157,52 @@ public class PurchaseRowsLoaderTest
 		salesOrderLineRecord.setM_Warehouse(warehouse);
 		salesOrderLineRecord.setC_Order(salesOrderRecord);
 		salesOrderLineRecord.setC_Currency(currency);
-		salesOrderLineRecord.setC_UOM(uom);
-		salesOrderLineRecord.setQtyEntered(TEN);
-		salesOrderLineRecord.setQtyOrdered(TEN);
+		salesOrderLineRecord.setC_UOM_ID(TEN.getUOMId());
+		salesOrderLineRecord.setQtyEntered(TEN.getAsBigDecimal());
+		salesOrderLineRecord.setQtyOrdered(TEN.getAsBigDecimal());
 		salesOrderLineRecord.setDatePromised(SystemTime.asTimestamp());
 		save(salesOrderLineRecord);
 
 		final SalesOrderLineRepository salesOrderLineRepository = new SalesOrderLineRepository(new OrderLineRepository(currencyRepository));
 		final SalesOrderLine salesOrderLine = salesOrderLineRepository.ofRecord(salesOrderLineRecord);
 
-		final I_C_BPartner_Product bPartnerProduct = newInstance(I_C_BPartner_Product.class);
-		bPartnerProduct.setC_BPartner(bPartnerVendor);
-		bPartnerProduct.setM_Product(product);
-		bPartnerProduct.setVendorProductNo("bPartnerProduct.VendorProductNo");
-		bPartnerProduct.setProductName("bPartnerProduct.ProductName");
-		save(bPartnerProduct);
+		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
+				.vendorId(BPartnerId.ofRepoId(bPartnerVendor.getC_BPartner_ID()))
+				.productAndCategoryId(ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
+				.vendorProductNo("bPartnerProduct.VendorProductNo")
+				.vendorProductName("bPartnerProduct.ProductName")
+				.pricingConditions(PricingConditions.builder()
+						.build())
+				.build();
 
 		final PurchaseDemand demand = SalesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
-		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, bPartnerProduct);
-		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(demand, purchaseCandidate);
+		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, vendorProductInfo);
+		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(demand, purchaseCandidate, vendorProductInfo);
 
 		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
 				.purchaseDemandWithCandidatesList(demandWithCandidates)
 				.viewSupplier(() -> null)
 				.purchaseRowFactory(new PurchaseRowFactory(
 						new AvailableToPromiseRepository(),
-						new MoneyService()))
+						new DoNothingPurchaseProfitInfoServiceImpl()))
 				.availabilityCheckService(availabilityCheckService)
 				.build();
 
 		//
 		// invoke the method under test
 		final PurchaseRowsList rowsList = loader.load();
-		
+
 		//
 		// Check result
 		final List<PurchaseRow> topLevelRows = rowsList.getTopLevelRows();
 
 		assertThat(topLevelRows).hasSize(1);
 		final PurchaseRow groupRow = topLevelRows.get(0);
-		assertThat(groupRow.getRowType()).isEqualTo(PurchaseRowType.GROUP);
+		assertThat(groupRow.getType()).isEqualTo(PurchaseRowType.GROUP);
 		assertThat(groupRow.getIncludedRows()).hasSize(1);
 
-		final PurchaseRow purchaseRow = groupRow.getIncludedRows().get(0);
-		assertThat(purchaseRow.getRowType()).isEqualTo(PurchaseRowType.LINE);
+		final PurchaseRow purchaseRow = groupRow.getIncludedRows().iterator().next();
+		assertThat(purchaseRow.getType()).isEqualTo(PurchaseRowType.LINE);
 		assertThat(purchaseRow.getIncludedRows()).isEmpty();
 
 		// @formatter:off
@@ -209,29 +220,28 @@ public class PurchaseRowsLoaderTest
 		loader.createAndAddAvailabilityResultRows(rowsList);
 		assertThat(purchaseRow.getIncludedRows()).hasSize(1);
 
-		final PurchaseRow availabilityRow = purchaseRow.getIncludedRows().get(0);
-		assertThat(availabilityRow.getRowType()).isEqualTo(PurchaseRowType.AVAILABILITY_DETAIL);
+		final PurchaseRow availabilityRow = purchaseRow.getIncludedRows().iterator().next();
+		assertThat(availabilityRow.getType()).isEqualTo(PurchaseRowType.AVAILABILITY_DETAIL);
 		assertThat(availabilityRow.getRowId().toDocumentId()).isNotEqualTo(purchaseRow.getRowId().toDocumentId());
 	}
 
 	private static PurchaseCandidate createPurchaseCandidate(
 			final I_C_OrderLine orderLine,
-			final I_C_BPartner_Product bPartnerProduct)
+			final VendorProductInfo vendorProductInfo)
 	{
-		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(bPartnerProduct);
-
 		final Currency currency = currencyRepository.getById(orderLine.getC_Currency_ID());
 
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currency);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(OrgId.ofRepoId(20))
-				.dateRequired(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
+				.purchaseDatePromised(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.qtyToPurchase(orderLine.getQtyOrdered())
+				.qtyToPurchase(Quantity.of(orderLine.getQtyOrdered(), orderLine.getM_Product().getC_UOM()))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
-				.uomId(orderLine.getM_Product().getC_UOM_ID())
-				.vendorProductInfo(vendorProductInfo)
+				.vendorId(vendorProductInfo.getVendorId())
+				.vendorProductNo(vendorProductInfo.getVendorProductNo())
+				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.warehouseId(WarehouseId.ofRepoId(30))
 				.profitInfo(profitInfo)
 				.build();
@@ -240,11 +250,12 @@ public class PurchaseRowsLoaderTest
 
 	private static ImmutableList<PurchaseDemandWithCandidates> createPurchaseDemandWithCandidates(
 			final PurchaseDemand demand,
-			final PurchaseCandidate purchaseCandidate)
+			final PurchaseCandidate purchaseCandidate,
+			final VendorProductInfo vendorProductInfo)
 	{
 		return ImmutableList.of(PurchaseDemandWithCandidates.builder()
 				.purchaseDemand(demand)
-				.purchaseCandidate(purchaseCandidate)
+				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(purchaseCandidate, demand.getId(), vendorProductInfo))
 				.build());
 	}
 }

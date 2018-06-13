@@ -158,6 +158,11 @@ public class PurchaseView implements IEditableView
 		return rows.getById(rowId);
 	}
 
+	public PurchaseRow getById(final PurchaseRowId rowId) throws EntityNotFoundException
+	{
+		return rows.getById(rowId);
+	}
+
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
@@ -222,12 +227,16 @@ public class PurchaseView implements IEditableView
 			@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
 		final PurchaseRowId rowId = PurchaseRowId.fromDocumentId(ctx.getRowId());
-		rows.patchRow(rowId, fieldChangeRequests);
+		final PurchaseRowChangeRequest rowChangeRequest = PurchaseRowChangeRequest.of(fieldChangeRequests);
+		patchViewRow(rowId, rowChangeRequest);
+	}
+
+	public void patchViewRow(final PurchaseRowId rowId, final PurchaseRowChangeRequest rowChangeRequest)
+	{
+		rows.patchRow(rowId, rowChangeRequest);
 
 		// notify the frontend
-		final DocumentId groupRowDocumentId = PurchaseRowId.fromDocumentId(ctx.getRowId())
-				.toGroupRowId()
-				.toDocumentId();
+		final DocumentId groupRowDocumentId = rowId.toGroupRowId().toDocumentId();
 
 		ViewChangesCollector
 				.getCurrentOrAutoflush()
