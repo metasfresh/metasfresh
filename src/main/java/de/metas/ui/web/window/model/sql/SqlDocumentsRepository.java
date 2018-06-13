@@ -653,7 +653,34 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		po.set_ManualUserAction(document.getWindowNo());
 		InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.setValue(po, true); // allow changing any columns
 
+		//
+		final TableRecordReference rootRecordReference = extractRootRecordReference(document);
+		IModelCacheInvalidationService.ATTR_RootRecordReference.setValue(po, rootRecordReference);
+
 		return po;
+	}
+
+	private static final TableRecordReference extractRootRecordReference(final Document includedDocument)
+	{
+		if (includedDocument.isRootDocument())
+		{
+			return null;
+		}
+
+		final Document rootDocument = includedDocument.getRootDocument();
+		final String rootTableName = rootDocument.getEntityDescriptor().getTableNameOrNull();
+		if (rootTableName == null)
+		{
+			return null;
+		}
+
+		final int rootRecordId = rootDocument.getDocumentId().toIntOr(-1);
+		if (rootRecordId < 0)
+		{
+			return null;
+		}
+
+		return TableRecordReference.of(rootTableName, rootRecordId);
 	}
 
 	private static final IQueryBuilder<Object> toQueryBuilder(final SqlDocumentEntityDataBindingDescriptor dataBinding, final DocumentId documentId)
