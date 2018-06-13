@@ -18,6 +18,10 @@ Here come the actual release notes:
   * [#4201](https://github.com/metasfresh/metasfresh/issues/4201) WebUI: Show DeliveryRule in Businesspartner Customer and Sales Order
     * Improvement of Businesspartner and Sales Order Widnow in WebUI. Adding the Field for Delivery Rule.
 
+* metasfresh-webui-frontend
+  * [#1686](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1686) API login for cypress
+    * New Feature for Testing Framework Cypress, now allowing the API to do a login.
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#1774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1774) Cannot stop uploading a file
