@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -25,6 +26,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
@@ -43,7 +45,6 @@ import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -437,10 +438,24 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		assertThisRepository(document.getEntityDescriptor());
 
-		refresh(document, document.getDocumentId());
+		final RefreshResult result = refresh(document, document.getDocumentId());
+		switch (result)
+		{
+			case MISSING:
+				throw new DocumentNotFoundException(document.getDocumentPath());
+			case OK:
+				return;
+			default:
+				throw new AdempiereException("Unknow refresh result: " + result);
+		}
 	}
 
-	private void refresh(@NonNull final Document document, @NonNull final DocumentId documentId)
+	public static enum RefreshResult
+	{
+		OK, MISSING
+	}
+
+	private RefreshResult refresh(@NonNull final Document document, @NonNull final DocumentId documentId)
 	{
 		logger.debug("Refreshing: {}, using ID={}", document, documentId);
 		if (documentId.isNew())
@@ -474,14 +489,15 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			else
 			{
 				// Document is no longer in our repository
-				final DocumentPath documentPathEffective = document.getDocumentPath().withDocumentId(documentId);
-				throw new DocumentNotFoundException(documentPathEffective);
+				return RefreshResult.MISSING;
 			}
 
 			if (rs.next())
 			{
 				throw new AdempiereException("More than one record found while trying to reload document: " + document);
 			}
+
+			return RefreshResult.OK;
 		}
 		catch (final SQLException e)
 		{
@@ -494,7 +510,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	@Override
-	public void save(final Document document)
+	public SaveResult save(final Document document)
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 		assertThisRepository(document.getEntityDescriptor());
@@ -558,11 +574,16 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		//
 		// Reload the document
+		boolean deleted = false;
 		if (needsRefresh)
 		{
 			final SqlDocumentEntityDataBindingDescriptor dataBinding = document.getEntityDescriptor().getDataBinding(SqlDocumentEntityDataBindingDescriptor.class);
 			final DocumentId idNew = extractDocumentId(po, dataBinding);
-			refresh(document, idNew);
+			final RefreshResult refreshResult = refresh(document, idNew);
+			if (refreshResult == RefreshResult.MISSING)
+			{
+				deleted = true;
+			}
 		}
 
 		//
@@ -571,6 +592,9 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		{
 			document.getParentDocument().onChildSaved(document);
 		}
+
+		//
+		return deleted ? SaveResult.DELETED : SaveResult.SAVED;
 	}
 
 	private DocumentId extractDocumentId(final PO po, SqlDocumentEntityDataBindingDescriptor dataBinding)

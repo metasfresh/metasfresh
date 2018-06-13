@@ -160,11 +160,14 @@ public final class IncludedDocumentsCollectionActions
 						{
 							return DISALLOW_AnotherNewDocumentAlreadyExists;
 						}
-						else if (includedDocument.getSaveStatus().isNotSaved())
+						else if (!includedDocument.getSaveStatus().isSavedOrDeleted())
 						{
 							return DISALLOW_UnsavedRowFound;
 						}
-						return null;
+						else
+						{
+							return null;
+						}
 					})
 					.filter(result -> result != null)
 					.findFirst().orElse(null);

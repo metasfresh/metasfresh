@@ -302,7 +302,7 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 		// FIXME: workaround until https://github.com/metasfresh/metasfresh-webui-api/issues/19 is implemented
 		// Case: an C_OrderLine is deleted and some other order lines are updated because of that.
 		// We need to invalidate them...
-		if(!deletedDocuments.isEmpty())
+		if (!deletedDocuments.isEmpty())
 		{
 			markStaleAll();
 		}
@@ -335,19 +335,25 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	@Override
 	public void saveIfHasChanges()
 	{
-		final Set<DocumentId> savedDocumentIds = new HashSet<>();
+		final Set<DocumentId> savedOrDeletedDocumentIds = new HashSet<>();
+
 		for (final Document document : getChangedDocuments())
 		{
-			document.saveIfHasChanges();
-			if (document.getSaveStatus().isSaved())
+			final DocumentSaveStatus saveStatus = document.saveIfHasChanges();
+			if (saveStatus.isSaved())
 			{
-				savedDocumentIds.add(document.getDocumentId());
+				savedOrDeletedDocumentIds.add(document.getDocumentId());
+			}
+			else if (saveStatus.isDeleted())
+			{
+				document.markAsDeleted();
+				savedOrDeletedDocumentIds.add(document.getDocumentId());
 			}
 		}
 
-		if (!savedDocumentIds.isEmpty())
+		if (!savedOrDeletedDocumentIds.isEmpty())
 		{
-			savedDocumentIds.forEach(this::forgetChangedDocument);
+			savedOrDeletedDocumentIds.forEach(this::forgetChangedDocument);
 		}
 	}
 
@@ -375,7 +381,7 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 		staled = true;
 		parentDocument.getChangesCollector().collectStaleDetailId(parentDocumentPath, detailId);
 	}
-	
+
 	@Override
 	public void markStale(@NonNull final DocumentId rowId)
 	{
