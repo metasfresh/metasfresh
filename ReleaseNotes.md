@@ -22,7 +22,7 @@ Here come the actual release notes:
   * [#1686](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1686) API login for cypress
     * New Feature for Testing Framework Cypress, now allowing the API to do a login.
   * [#1722](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1722) Typing in dropdown fields
-    * Extended Search Feature in Dropdown Lists,
+    * Extended Search Feature in Dropdown Lists.
 
 ## Fixes
 * metasfresh-webui-frontend
