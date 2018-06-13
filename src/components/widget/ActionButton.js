@@ -162,7 +162,10 @@ class ActionButton extends Component {
         {value ? (
           <div className={`tag tag-${status}`}>{value}</div>
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: '&nbsp;' }} />
+          <div
+            className={`tag tag-${status}`}
+            dangerouslySetInnerHTML={{ __html: '&nbsp;' }}
+          />
         )}
         <i className={`meta-icon-chevron-1 meta-icon-${status}`} />
         <ul className="dropdown-status-list">{this.renderStatusList(list)}</ul>
