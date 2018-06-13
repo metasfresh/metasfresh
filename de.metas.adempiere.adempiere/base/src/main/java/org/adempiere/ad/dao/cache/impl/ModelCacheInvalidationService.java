@@ -1,7 +1,9 @@
 package org.adempiere.ad.dao.cache.impl;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
@@ -13,6 +15,7 @@ import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CacheMgt;
 import org.slf4j.Logger;
 
@@ -92,13 +95,39 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 				.stream()
 				.map(requestFactory -> requestFactory.createRequestFromModel(model, timing))
 				.filter(Predicates.notNull())
-				.collect(ImmutableSet.toImmutableSet());
+				.collect(Collectors.toCollection(HashSet::new));
+
+		//
+		final CacheInvalidateRequest request = createChildRecordInvalidateRequestUsingDynAttr(model);
+		if (request != null)
+		{
+			requests.add(request);
+		}
+
+		//
 		if (requests.isEmpty())
 		{
 			return null;
 		}
 
 		return CacheInvalidateMultiRequest.of(requests);
+	}
+
+	private CacheInvalidateRequest createChildRecordInvalidateRequestUsingDynAttr(final Object model)
+	{
+		final TableRecordReference rootRecordReference = ATTR_RootRecordReference.getValue(model);
+		if (rootRecordReference == null)
+		{
+			return null;
+		}
+
+		final String modelTableName = InterfaceWrapperHelper.getModelTableName(model);
+		final int modelRecordId = InterfaceWrapperHelper.getId(model);
+
+		return CacheInvalidateRequest.builder()
+				.rootRecord(rootRecordReference.getTableName(), rootRecordReference.getRecord_ID())
+				.childRecord(modelTableName, modelRecordId)
+				.build();
 	}
 
 	private Set<ModelCacheInvalidateRequestFactory> getRequestFactoriesForModel(final Object model)
