@@ -70,7 +70,7 @@ public class C_OrderLine
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_Product_ID)
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
 	public void updateQtyAvailableToPromise(final I_C_OrderLine ol)
 	{
 		 final AvailableToPromiseRepository stockRepository = Adempiere.getBean(AvailableToPromiseRepository.class);
