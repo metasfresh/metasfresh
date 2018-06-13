@@ -460,6 +460,7 @@ class RawLookup extends Component {
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleBlur}
+              lookupDropdown={true}
             />
           )}
       </TetherComponent>
