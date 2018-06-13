@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -183,7 +182,7 @@ public class PurchaseCandidate
 
 		purchaseOrderItems = from.purchaseOrderItems.stream()
 				.map(item -> item.copy(this))
-				.collect(Collectors.toCollection(ArrayList::new));
+				.collect(toCollection(ArrayList::new));
 		purchaseErrorItems = new ArrayList<>(from.purchaseErrorItems);
 	}
 
