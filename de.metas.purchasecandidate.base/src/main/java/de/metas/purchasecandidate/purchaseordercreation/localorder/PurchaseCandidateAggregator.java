@@ -2,10 +2,15 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
+import org.adempiere.util.Services;
 import org.adempiere.util.collections.MapReduceAggregator;
 
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -32,6 +37,8 @@ import lombok.NonNull;
 
 public final class PurchaseCandidateAggregator extends MapReduceAggregator<PurchaseCandidateAggregate, PurchaseCandidate>
 {
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
 	public static List<PurchaseCandidateAggregate> aggregate(@NonNull final Collection<PurchaseCandidate> candidates)
 	{
 		final PurchaseCandidateAggregator aggregator = new PurchaseCandidateAggregator();
@@ -56,6 +63,8 @@ public final class PurchaseCandidateAggregator extends MapReduceAggregator<Purch
 	@Override
 	protected void closeGroup(final PurchaseCandidateAggregate group)
 	{
+		calculateQtyToDeliver(group.getSalesOrderAndLineIds())
+				.ifPresent(group::setQtyToDeliver);
 	}
 
 	@Override
@@ -64,4 +73,11 @@ public final class PurchaseCandidateAggregator extends MapReduceAggregator<Purch
 		group.add(item);
 	}
 
+	private Optional<Quantity> calculateQtyToDeliver(final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		return orderLineBL.getQtyToDeliver(orderAndLineIds)
+				.values()
+				.stream()
+				.reduce(Quantity::add);
+	}
 }

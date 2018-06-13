@@ -54,7 +54,7 @@ import lombok.Value;
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.vendorId(purchaseCandidate.getVendorId())
-				.datePromised(purchaseCandidate.getDateRequired())
+				.datePromised(purchaseCandidate.getPurchaseDatePromised())
 				.build();
 	}
 

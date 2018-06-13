@@ -82,6 +82,8 @@ public class MSV3PurchaseOrderClientTest
 {
 	private static final BigDecimal CONFIRMED_ORDER_QTY = BigDecimal.TEN;
 	private static final BigDecimal QTY_TO_PURCHASE = new BigDecimal("23");
+	private static final int UOM_ID = 1;
+
 	private MockWebServiceServer mockServer;
 	private MSV3PurchaseOrderClient msv3PurchaseOrderClient;
 
@@ -103,7 +105,7 @@ public class MSV3PurchaseOrderClientTest
 	{
 		final PurchaseOrderRequestItem purchaseOrderRequestItem = PurchaseOrderRequestItem.builder()
 				.purchaseCandidateId(1)
-				.productAndQuantity(ProductAndQuantity.of("10055555", QTY_TO_PURCHASE))
+				.productAndQuantity(ProductAndQuantity.of("10055555", QTY_TO_PURCHASE, UOM_ID))
 				.build();
 		final List<PurchaseOrderRequestItem> purchaseOrderRequestItems = ImmutableList.of(purchaseOrderRequestItem);
 

@@ -10,6 +10,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import lombok.Builder;
 import lombok.Getter;
@@ -41,9 +42,8 @@ public final class OLCand implements IProductPriceAware
 {
 	public static OLCand of(final I_C_OLCand candidate)
 	{
-		final int pricingSystemId = -1;
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return new OLCand(candidate, pricingSystemId, olCandEffectiveValuesBL);
+		return new OLCand(candidate, PricingSystemId.NULL, olCandEffectiveValuesBL);
 	}
 
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL;
@@ -54,7 +54,7 @@ public final class OLCand implements IProductPriceAware
 	private final OLCandBPartnerInfo billBPartnerInfo;
 	private final OLCandBPartnerInfo dropShipBPartnerInfo;
 	private final OLCandBPartnerInfo handOverBPartnerInfo;
-	private final int pricingSystemId;
+	private final PricingSystemId pricingSystemId;
 
 	@Getter
 	private final String externalId;
@@ -62,7 +62,7 @@ public final class OLCand implements IProductPriceAware
 	@Builder
 	private OLCand(
 			@NonNull final I_C_OLCand candidate,
-			final int pricingSystemId,
+			final PricingSystemId pricingSystemId,
 			final IOLCandEffectiveValuesBL olCandEffectiveValuesBL)
 	{
 		this.candidate = candidate;
@@ -145,7 +145,7 @@ public final class OLCand implements IProductPriceAware
 		return handOverBPartnerInfo;
 	}
 
-	public int getPricingSystemId()
+	public PricingSystemId getPricingSystemId()
 	{
 		return pricingSystemId;
 	}

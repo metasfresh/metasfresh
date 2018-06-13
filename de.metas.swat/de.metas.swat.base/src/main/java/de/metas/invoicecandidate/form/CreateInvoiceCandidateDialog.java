@@ -86,6 +86,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.lang.SOTrx;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exception.ProductPriceNotFoundException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.ProductPrices;
@@ -325,12 +326,12 @@ public class CreateInvoiceCandidateDialog
 
 		//
 		// Get pricing system (or dispose window if none was found)
-		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partnerId, soTrx, ITrx.TRXNAME_None);
-		if (pricingSystemId <= 0)
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partnerId, soTrx, ITrx.TRXNAME_None);
+		if (pricingSystemId == null)
 		{
 			missingCollector.add(I_C_Invoice_Candidate.COLUMNNAME_M_PricingSystem_ID);
 		}
-		pricingSystemField.setValue(pricingSystemId);
+		pricingSystemField.setValue(pricingSystemId.getRepoId());
 
 		// do not load UOMs; instead, they shall be loaded when the product is modified
 		// priceUOMField.loadFirstItem();
@@ -407,7 +408,7 @@ public class CreateInvoiceCandidateDialog
 						InterfaceWrapperHelper.getTrxName(product));
 
 				final I_M_PriceList_Version currentVersion = priceListBL.getCurrentPriceListVersionOrNull( //
-						pricingSystem.getM_PricingSystem_ID() //
+						PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()) //
 						, location.getC_Location().getC_Country_ID() // country
 						, SystemTime.asDayTimestamp() // date
 						, soTrx //

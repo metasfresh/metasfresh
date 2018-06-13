@@ -177,8 +177,8 @@ class PharmaPriceLimitRuleInstance
 	{
 		final PriceLimitRestrictions priceLimitRestrictions = getPriceLimitRestrictions();
 		final IEditablePricingContext basePricingContext = context.getPricingContext().copy();
-		basePricingContext.setM_PricingSystem_ID(priceLimitRestrictions.getBasePricingSystemId());
-		basePricingContext.setM_PriceList_ID(-1); // will be recomputed
+		basePricingContext.setPricingSystemId(priceLimitRestrictions.getBasePricingSystemId());
+		basePricingContext.setPriceListId(null); // will be recomputed
 		basePricingContext.setM_PriceList_Version_ID(-1); // will be recomputed
 		basePricingContext.setDisallowDiscount(true);
 

@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.document.engine.IDocument;
+import de.metas.lang.SOTrx;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -37,6 +38,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 
 /*
@@ -247,9 +249,9 @@ import de.metas.pricing.service.IPriceListDAO;
 			final I_M_PricingSystem pricingSystem = getM_PricingSystem();
 			final int countryId = inOutLine.getM_InOut().getC_BPartner_Location().getC_Location().getC_Country_ID();
 			final Iterator<I_M_PriceList> priceLists = priceListDAO.retrievePriceLists(
-					pricingSystem.getM_PricingSystem_ID(),
+					PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
 					countryId,
-					false); // IsSOTrx=false
+					SOTrx.PURCHASE);
 
 			if (!priceLists.hasNext())
 			{

@@ -44,6 +44,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderService;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 
 public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
@@ -141,7 +142,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 
 		final boolean processedPLVFiltering = true; // in the material tracking context, only processed PLVs matter.
 		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(
-				ic.getM_PricingSystem_ID(),
+				PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
 				inOut.getC_BPartner_Location().getC_Location().getC_Country_ID(),
 				inOut.getMovementDate(),
 				SOTrx.ofBoolean(inOut.isSOTrx()),

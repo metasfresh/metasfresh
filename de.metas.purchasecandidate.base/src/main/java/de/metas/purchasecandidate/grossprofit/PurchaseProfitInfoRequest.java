@@ -1,14 +1,9 @@
 package de.metas.purchasecandidate.grossprofit;
 
-import java.time.LocalDateTime;
+import java.util.Set;
 
-import org.adempiere.bpartner.BPartnerId;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.order.OrderLineId;
-import de.metas.payment.api.PaymentTermId;
-import de.metas.product.ProductId;
+import de.metas.order.OrderAndLineId;
+import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,15 +38,11 @@ public class PurchaseProfitInfoRequest
 {
 	@NonNull
 	@Singular
-	ImmutableSet<OrderLineId> salesOrderLineIds;
+	Set<OrderAndLineId> salesOrderAndLineIds;
+
 	@NonNull
-	LocalDateTime datePromised;
+	Quantity qtyToPurchase;
+
 	@NonNull
-	ProductId productId;
-	@NonNull
-	Quantity orderedQty;
-	@NonNull
-	BPartnerId vendorId;
-	@NonNull
-	PaymentTermId paymentTermId;
+	VendorProductInfo vendorProductInfo;
 }

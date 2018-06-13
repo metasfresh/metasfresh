@@ -42,6 +42,7 @@ import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 
 @Callout(I_C_Invoice.class)
@@ -87,8 +88,8 @@ public class C_Invoice
 			return;
 		}
 
-		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partner.getC_BPartner_ID(), soTrx, trxName);
-		if (pricingSystemId <= 0)
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partner.getC_BPartner_ID(), soTrx, trxName);
+		if (pricingSystemId == null)
 		{
 			return;
 		}

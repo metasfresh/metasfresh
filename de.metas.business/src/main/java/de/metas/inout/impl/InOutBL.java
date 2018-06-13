@@ -28,9 +28,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -52,9 +52,12 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
@@ -62,7 +65,7 @@ import de.metas.pricing.service.IPricingBL;
 public class InOutBL implements IInOutBL
 {
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
-	
+
 	private static final String VIEW_M_Shipment_Statistics_V = "M_Shipment_Statistics_V";
 
 	@Override
@@ -105,20 +108,18 @@ public class InOutBL implements IInOutBL
 					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner().getValue());
 		}
 
-		final int pricingSystemId = pricingSystem.getM_PricingSystem_ID();
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
+		Check.assumeNotNull(pricingSystemId, "No pricing system found for M_InOut_ID={}", inOut);
 
-		Check.assume(pricingSystemId > 0, "No pricing system found for M_InOut_ID={}", inOut.getM_InOut_ID());
-
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, inOut.getC_BPartner_Location(), soTrx.isSales());
-
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, inOut.getC_BPartner_Location(), soTrx);
 		Check.errorIf(priceList == null,
 				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
 				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
 
-		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
-		pricingCtx.setM_PriceList_ID(priceList.getM_PriceList_ID());
+		pricingCtx.setPricingSystemId(pricingSystemId);
+		pricingCtx.setPriceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
 		pricingCtx.setPriceDate(inOut.getDateOrdered());
-		pricingCtx.setC_Currency_ID(priceList.getC_Currency_ID());
+		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		// note: the qty was already passed to the pricingCtx upon creation, further up.
 
 		return pricingCtx;
@@ -169,21 +170,20 @@ public class InOutBL implements IInOutBL
 	 */
 	private I_M_PricingSystem getPricingSystemOrNull(final I_M_InOut inOut, final SOTrx soTrx)
 	{
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		if (inOut.getC_Order_ID() > 0 && inOut.getC_Order().getM_PricingSystem_ID() > 0)
 		{
-			return inOut.getC_Order().getM_PricingSystem();
+			final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(inOut.getC_Order().getM_PricingSystem_ID());
+			return priceListsRepo.getPricingSystemById(pricingSystemId);
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inOut);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inOut);
-
-		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, inOut.getC_BPartner_ID(), soTrx, trxName);
-
-		if (pricingSystemId <= 0)
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
+		if (pricingSystemId == null)
 		{
 			return null;
 		}
-		return InterfaceWrapperHelper.create(ctx, pricingSystemId, I_M_PricingSystem.class, trxName);
+
+		return priceListsRepo.getPricingSystemById(pricingSystemId);
 	}
 
 	private boolean isReversal(final int recordId, final int recordReversalId)
@@ -438,20 +438,20 @@ public class InOutBL implements IInOutBL
 			InterfaceWrapperHelper.delete(matchInv);
 		}
 	}
-	
+
 	@Override
 	public void invalidateStatistics(final I_M_InOut inout)
 	{
 		if (inout.isSOTrx())
 		{
 			Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
-			.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inout.getM_InOut_ID())
-			.create()
-			.listIds()
-			.forEach(inoutLineId -> CacheMgt.get().reset(InOutBL.VIEW_M_Shipment_Statistics_V, inoutLineId));
+					.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inout.getM_InOut_ID())
+					.create()
+					.listIds()
+					.forEach(inoutLineId -> CacheMgt.get().reset(InOutBL.VIEW_M_Shipment_Statistics_V, inoutLineId));
 		}
 	}
-	
+
 	@Override
 	public void invalidateStatistics(final I_M_InOutLine inoutLine)
 	{
