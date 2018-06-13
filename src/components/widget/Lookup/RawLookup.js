@@ -185,6 +185,9 @@ class RawLookup extends Component {
 
     handleInputEmptyStatus(false);
 
+    setTimeout(() => {
+      this.inputSearch.focus();
+    }, 0);
     this.handleBlur();
   };
 

@@ -183,6 +183,10 @@ class RawList extends PureComponent {
       }
       onCloseDropdown();
       this.clearTypedText();
+
+      setTimeout(() => {
+        this.dropdown.focus();
+      }, 0);
     });
   };
 

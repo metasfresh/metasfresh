@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { getAvatar } from '../../actions/AppActions';
+import { getAvatar } from '../../api';
 import defaultAvatar from '../../assets/images/default-avatar.png';
 
 class Avatar extends Component {

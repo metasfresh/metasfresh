@@ -24,31 +24,90 @@
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 
+import { List } from 'immutable';
+import { goBack, push } from 'react-router-redux';
+
+import { loginSuccess } from '../../src/actions/AppActions';
+import Auth from '../../src/services/Auth';
+import config from '../config';
+
 context('Reusable "login" custom command', function() {
-  Cypress.Commands.add('loginByForm', (username, password) => {
+  Cypress.Commands.add('loginByForm', (username, password, redirect) => {
+    let user = username;
+    let pass = password;
+
+    if (!username || !password) {
+      user = config.username;
+      pass = config.password;
+    }
+
     Cypress.log({
       name: 'loginByForm',
-      message: username + ' | ' + password,
+      message: user + ' | ' + pass,
     });
+
+    const handleSuccess = function(){
+      if (redirect) {
+        Cypress.reduxStore.dispatch(goBack());
+      } else {
+        Cypress.reduxStore.dispatch(push('/'));
+      }
+    };
+
+    const checkIfAlreadyLogged = function() {
+      const error = new Error('Error when checking if user logged in')
+
+      return cy.request({
+        method: 'GET',
+        url: 'http://w101.metasfresh.com:8081/rest/api/login/isLoggedIn',
+        failOnStatusCode: false,
+        followRedirect: false,
+      }).then(response => {
+        if (!response.body.error) {
+          return Cypress.reduxStore.dispatch(push('/'));
+        }
+
+        return Promise.reject(error);
+      });
+    };
+
+    const auth = new Auth();
+
+    cy.on("emit:reduxStore", store => {
+      Cypress.reduxStore = store;
+    });
+
+    cy.visit('/login');
 
     return cy.request({
       method: 'POST',
       url: 'http://w101.metasfresh.com:8081/rest/api/login/authenticate',
-      // form: true,
+      failOnStatusCode: false,
+      followRedirect: false,
       body: {
-        username: username,
-        password: password,
+        username: user,
+        password: pass,
       },
-    });
+    }).then(response => {
+      if (!response.isOkStatusCode) {
+        return checkIfAlreadyLogged();
+      }
+
+      if (response.body.loginComplete) {
+        return handleSuccess();
+      }
+      const roles = List(response.body.roles);
+
+      return cy.request({
+        method: 'POST',
+        url: 'http://w101.metasfresh.com:8081/rest/api/login/loginComplete',
+        body: { ...roles.get(0) },
+        failOnStatusCode: false,
+      }).then(() => {
+        Cypress.reduxStore.dispatch(loginSuccess(auth));
+        
+        handleSuccess();
+      });
+    })
   });
-
-  // beforeEach(function(){
-  //   // login before each test
-  //   cy.loginByForm('kuba', 'kuba1234');
-  // });
-
-  // it('can visit dashboard', function(){
-  //   cy.url().should('not.include', '/login');
-  //   cy.get('.header-item').should('contain', 'Dashboard');
-  // });
 });
