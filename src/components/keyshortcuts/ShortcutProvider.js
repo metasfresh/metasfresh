@@ -98,6 +98,12 @@ export default class ShortcutProvider extends Component {
     window.removeEventListener('blur', this.handleBlur);
   }
 
+  fireHandlers = (event, handlers) => {
+    handlers.forEach(handler => {
+      handler(event);
+    });
+  };
+
   handleKeyDown = event => {
     const _key = codeToKey[event.keyCode];
     const key = _key && _key.toUpperCase();
@@ -144,16 +150,20 @@ export default class ShortcutProvider extends Component {
     }
 
     const bucket = hotkeys[serializedSequence];
-    const handler = bucket[bucket.length - 1];
+    const validHandlers = bucket.filter(handler => {
+      if (typeof handler === 'function') {
+        return true;
+      }
+      return false;
+    });
 
-    if (typeof handler === 'function') {
-      return handler(event);
+    if (validHandlers.length) {
+      return this.fireHandlers(event, validHandlers);
     }
 
     // eslint-disable-next-line no-console
     console.warn(
-      `Handler defined for key sequence "${serializedSequence}" is not a function.`,
-      handler
+      `Handler defined for key sequence "${serializedSequence}" is not a function.`
     );
   };
 
