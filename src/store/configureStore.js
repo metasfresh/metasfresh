@@ -25,5 +25,9 @@ export default function configureStore(history) {
     });
   }
 
+  if (window.Cypress) {
+    window.Cypress.emit('emit:reduxStore', store);
+  }
+
   return store;
 }
