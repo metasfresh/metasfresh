@@ -180,6 +180,10 @@ class RawList extends PureComponent {
         onSelect(selected);
       }
       onCloseDropdown();
+
+      setTimeout(() => {
+        this.dropdown.focus();
+      }, 0);
     });
   };
 
