@@ -2,7 +2,11 @@
 
 -- DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(numeric, text, numeric, numeric);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(org_id numeric, doctype text, bp_loc_id numeric, record_id numeric)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(
+    org_id numeric,
+    doctype text,
+    bp_loc_id numeric,
+    record_id numeric)
   RETURNS SETOF de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report AS
 $BODY$
 SELECT
@@ -80,3 +84,5 @@ $BODY$
   LANGUAGE sql STABLE
   COST 100
   ROWS 1000;
+ALTER FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(numeric, text, numeric, numeric)
+  OWNER TO metasfresh;

@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.average_product_prices ( IN p_datefrom DATE, IN p_dateto DATE, IN p_issotrx character(1) );
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.average_product_prices ( IN p_datefrom DATE, IN p_dateto DATE, IN p_issotrx character(1) );
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.average_product_prices ( IN p_datefrom DATE, IN p_dateto DATE, IN p_issotrx character(1) )
 RETURNS TABLE 
 (

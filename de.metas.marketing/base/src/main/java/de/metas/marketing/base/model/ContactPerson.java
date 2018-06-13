@@ -5,7 +5,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.location.LocationId;
+import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.user.User;
 import org.adempiere.user.UserId;
 import org.adempiere.util.Check;
@@ -44,7 +44,7 @@ public class ContactPerson implements DataRecord
 	public static ContactPerson newForUserPlatformAndLocation(
 			@NonNull final User user,
 			@NonNull final PlatformId platformId,
-			@Nullable final LocationId locationId)
+			@Nullable final BPartnerLocationId bpLocationId)
 	{
 		final EmailAddress emailaddress = Check.isEmpty(user.getEmailAddress(), true) ? null : EmailAddress.of(user.getEmailAddress());
 
@@ -53,7 +53,7 @@ public class ContactPerson implements DataRecord
 				.name(user.getName())
 				.userId(user.getId())
 				.bPartnerId(user.getBpartnerId())
-				.locationId(locationId)
+				.bpLocationId(bpLocationId)
 				.address(emailaddress)
 				.build();
 	}
@@ -89,7 +89,7 @@ public class ContactPerson implements DataRecord
 	PlatformId platformId;
 
 	@Nullable
-	LocationId locationId;
+	BPartnerLocationId bpLocationId;
 
 	@Nullable
 	BoilerPlateId boilerPlateId;

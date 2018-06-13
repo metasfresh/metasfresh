@@ -1,15 +1,14 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.average_product_prices ( IN p_datefrom DATE, IN p_dateto DATE, IN p_issotrx character(1) );
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.average_product_prices ( IN p_datefrom DATE, IN p_dateto DATE, IN p_issotrx character(1) )
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.average_product_prices_old ( IN p_datefrom DATE, IN p_dateto DATE, IN p_issotrx character(1) );
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.average_product_prices_old ( IN p_datefrom DATE, IN p_dateto DATE, IN p_issotrx character(1) )
 RETURNS TABLE 
 (
 	ProduktNr character varying(40),
 	ProduktName character varying(225),
 	Merkmal text,
 	Menge numeric,
-	Menge_Lieferung numeric,
 	Mengenenheit character varying,
 	Preis numeric,
-	BetragCHF text,
+	BetragCHF numeric,
 	Wahrung character(3),
 	Preisenheit character varying,
 	ProduktKategorie character varying(60),
@@ -31,22 +30,19 @@ SELECT
 		WHERE att.M_AttributeSetInstance_ID = COALESCE(ol.M_AttributeSetInstance_ID, iol.M_AttributeSetInstance_ID, pp.M_AttributeSetInstance_ID)) 
 		AS Merkmal
 	, ic.qtyOrdered AS Menge
-	, iol.MovementQty AS Menge_Lieferung
 	, uom.uomsymbol AS Mengenenheit
 	, ic.PriceActual_Net_Effective AS Preis
-	,COALESCE((CASE WHEN c.iso_code != 'CHF'
-		THEN ROUND(currencyConvert(ic.PriceActual_Net_Effective * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty)
+	,(CASE WHEN c.iso_code != 'CHF'
+		THEN currencyConvert(ic.PriceActual_Net_Effective * ic.qtyOrdered
 			, ic.C_Currency_ID -- p_curfrom_id
 			, (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'CHF') -- p_curto_id
 			, p_dateto -- p_convdate -- date to 
 			, (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P') -- p_conversiontype_id
 			, ic.AD_Client_ID
 			, ic.AD_Org_ID --ad_org_id
-			), 2)::text
-		ELSE ROUND(ic.PriceActual_Net_Effective * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty), 2)::text
-	END ), 'Missing Conversion'::text ) AS BetragCHF
-	
-	
+			)
+		ELSE ic.PriceActual_Net_Effective * ic.qtyOrdered 
+	END ) AS BetragCHF
 	, c.iso_code AS Wahrung 
 	, price_uom.uomsymbol AS Preisenheit
 	, pc.Name as ProductCategory
@@ -79,17 +75,15 @@ INNER JOIN C_UOM price_uom ON ic.Price_UOM_ID = price_uom.C_UOM_ID
 INNER JOIN C_Currency c ON ic.C_Currency_ID = c.C_Currency_ID
 
 LEFT OUTER JOIN C_OrderLine ol ON ic.Record_ID = ol.C_OrderLine_ID AND ic.AD_Table_ID = get_Table_ID('C_OrderLine')
-INNER JOIN C_InvoiceCandidate_InOutLine iciol ON ic.C_Invoice_Candidate_ID = iciol.C_Invoice_Candidate_ID
-INNER JOIN M_InOutLine iol ON iciol.M_InOutLine_ID = iol.M_InOutLine_ID
-INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
+LEFT OUTER JOIN M_InOutLine iol ON ic.Record_ID = iol.M_InOutLine_ID AND ic.AD_Table_ID = get_Table_ID('M_InOutLine')
 LEFT OUTER JOIN PP_Order pp ON ic.Record_ID = pp.PP_Order_ID AND ic.AD_Table_ID = get_Table_ID('PP_Order')
 
 LEFT OUTER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
 
 WHERE 
 	ic.isSOTrx = p_issotrx
-	AND io.MovementDate::date >= p_datefrom -- date from
-	AND io.MovementDate::date <= p_dateto --  date to
+	AND ic.DateOrdered >= p_datefrom -- date from
+	AND ic.DateOrdered <= p_dateto --  date to
 	--
 	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 $$
