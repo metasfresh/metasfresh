@@ -58,11 +58,13 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#4012](https://github.com/metasfresh/metasfresh/issues/4012) Lot No control in Receipt not working
+    * Fixes the Lot No. control in Receipt.
   * [#4168](https://github.com/metasfresh/metasfresh/issues/4168) Error when posting payment allocation with tax correction and multiple taxes
+    * Bugfix for the payment allocation posting, wen having a tx correction with multiple taxes.
   * [#4191](https://github.com/metasfresh/metasfresh/issues/4191) Cannot add a product in order
+    * Bugfix for the product batcentry in webui, not allowing to add a product in minor cases.
   * [#4149](https://github.com/metasfresh/metasfresh/issues/4149) User query: IUserQueryRestriction is not built properly all the time
-    * 
-
+    * Fix for the User Query Restriction.
 
 * metasfresh-webui-frontend
   * [#1266](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1266) Labels widget: tab and shift-tab support
@@ -74,6 +76,7 @@ Here come the actual release notes:
   * [#1808](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1808) Shortcuts for inbox, menu and sidelist
     * Improvement of Shortcuts for inbox, menu and sidelist. Now hiding the menus after 2nd usage of shortcut.
   * [#1820](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1820) Make sure frontend is connecting to view's websocket endpoint BEFORE view data it's fetched
+    * Fix for the connection to the websocket endpoint.
   * [#1828](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1828) Truncate action names with ellipsis
     * Fixes the Layout for Quickaction Buttons with large content.
   * [#1830](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1830) Empty login page after logout
