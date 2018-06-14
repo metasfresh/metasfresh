@@ -123,7 +123,7 @@ public class M_ShipmentScheduleTest
 		final ShipmentScheduleCreatedEvent createdEvent = (ShipmentScheduleCreatedEvent)result;
 		assertThat(createdEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
 
-		assertThat(createdEvent.getMaterialDescriptor().getBPartnerCustomerId()).isEqualTo(45);
+		assertThat(createdEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(45);
 		assertThat(createdEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
 		assertThat(createdEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
 		assertThat(createdEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
@@ -171,7 +171,7 @@ public class M_ShipmentScheduleTest
 
 		final ShipmentScheduleUpdatedEvent updatedEvent = (ShipmentScheduleUpdatedEvent)result;
 		assertThat(updatedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
-		assertThat(updatedEvent.getMaterialDescriptor().getBPartnerCustomerId()).isEqualTo(45);
+		assertThat(updatedEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(45);
 		assertThat(updatedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
 		assertThat(updatedEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
 		assertThat(updatedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
@@ -191,7 +191,7 @@ public class M_ShipmentScheduleTest
 
 		final ShipmentScheduleDeletedEvent deletedEvent = (ShipmentScheduleDeletedEvent)result;
 		assertThat(deletedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
-		assertThat(deletedEvent.getMaterialDescriptor().getBPartnerCustomerId()).isEqualTo(45);
+		assertThat(deletedEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(45);
 		assertThat(deletedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
 		assertThat(deletedEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
 		assertThat(deletedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);

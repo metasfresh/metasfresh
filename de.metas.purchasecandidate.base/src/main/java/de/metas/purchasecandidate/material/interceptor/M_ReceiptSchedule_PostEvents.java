@@ -215,7 +215,7 @@ public class M_ReceiptSchedule_PostEvents
 				.date(preparationDate)
 				.productDescriptor(productDescriptor)
 				.warehouseId(receiptScheduleBL.getM_Warehouse_Effective_ID(receiptSchedule))
-				.bPartnerId(receiptScheduleBL.getC_BPartner_Effective_ID(receiptSchedule))
+				.customerId(receiptScheduleBL.getC_BPartner_Effective_ID(receiptSchedule))
 				.quantity(orderedQuantity)
 				.build();
 		return orderedMaterial;

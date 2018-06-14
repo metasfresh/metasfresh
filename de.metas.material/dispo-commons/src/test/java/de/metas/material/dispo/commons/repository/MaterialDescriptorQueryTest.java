@@ -56,7 +56,7 @@ public class MaterialDescriptorQueryTest
 				.date(NOW)
 				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
-				.bPartnerId(BPARTNER_ID)
+				.customerId(BPARTNER_ID)
 				.warehouseId(WAREHOUSE_ID)
 				.build();
 

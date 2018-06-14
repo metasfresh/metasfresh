@@ -50,7 +50,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	 * and is not available to other customers.
 	 */
 	@Getter
-	int bPartnerCustomerId;
+	int customerId;
 
 	@Getter
 	BigDecimal quantity;
@@ -64,14 +64,14 @@ public class MaterialDescriptor extends ProductDescriptor
 	@Builder
 	private MaterialDescriptor(
 			final int warehouseId,
-			final int bPartnerId,
+			final int customerId,
 			final Date date,
 			final ProductDescriptor productDescriptor,
 			final BigDecimal quantity)
 	{
 		this(
 				warehouseId,
-				bPartnerId,
+				customerId,
 				quantity,
 				date,
 				productDescriptor == null ? 0 : productDescriptor.getProductId(),
@@ -82,7 +82,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	@JsonCreator
 	public MaterialDescriptor(
 			@JsonProperty("warehouseId") final int warehouseId,
-			@JsonProperty("bPartnerCustomerId") final int bPartnerCustomerId,
+			@JsonProperty("customerId") final int customerId,
 			@JsonProperty("quantity") final BigDecimal quantity,
 			@JsonProperty("date") final Date date,
 			@JsonProperty("productId") final int productId,
@@ -92,7 +92,7 @@ public class MaterialDescriptor extends ProductDescriptor
 		super(productId, attributesKey, attributeSetInstanceId);
 
 		this.warehouseId = warehouseId;
-		this.bPartnerCustomerId = bPartnerCustomerId;
+		this.customerId = customerId;
 		this.quantity = quantity;
 
 		this.date = date;
@@ -103,7 +103,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	public MaterialDescriptor asssertMaterialDescriptorComplete()
 	{
 		Preconditions.checkArgument(warehouseId > 0, "warehouseId=%s needs to be >0", warehouseId);
-		Preconditions.checkArgument(bPartnerCustomerId >= 0, "bPartnerCustomerId=%s needs to be >=0", bPartnerCustomerId);
+		Preconditions.checkArgument(customerId >= 0, "customerId=%s needs to be >=0", customerId);
 		Preconditions.checkNotNull(quantity, "quantity needs to be not-null");
 		Preconditions.checkNotNull(date, "date needs to not-null");
 
@@ -117,7 +117,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.date(this.date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
-				.bPartnerId(this.bPartnerCustomerId)
+				.customerId(this.customerId)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
 	}
@@ -128,7 +128,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.date(date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
-				.bPartnerId(this.bPartnerCustomerId)
+				.customerId(this.customerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
@@ -140,7 +140,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.productDescriptor(productDescriptor)
 				.date(this.date)
 				.warehouseId(this.warehouseId)
-				.bPartnerId(this.bPartnerCustomerId)
+				.customerId(this.customerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
@@ -152,19 +152,19 @@ public class MaterialDescriptor extends ProductDescriptor
 				.warehouseId(warehouseId)
 				.date(this.date)
 				.productDescriptor(this)
-				.bPartnerId(this.bPartnerCustomerId)
+				.customerId(this.customerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
 	}
 
-	public MaterialDescriptor withBPartnerId(final int bPartnerId)
+	public MaterialDescriptor withCustomerId(final int customerId)
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.warehouseId(this.warehouseId)
 				.date(this.date)
 				.productDescriptor(this)
-				.bPartnerId(bPartnerId)
+				.customerId(customerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();

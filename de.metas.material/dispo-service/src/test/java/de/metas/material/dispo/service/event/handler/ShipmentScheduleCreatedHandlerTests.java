@@ -138,7 +138,7 @@ public class ShipmentScheduleCreatedHandlerTests
 				.materialDescriptor(MaterialDescriptor.builder()
 						.date(NOW)
 						.productDescriptor(createProductDescriptor())
-						.bPartnerId(BPARTNER_ID)
+						.customerId(BPARTNER_ID)
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())

@@ -203,7 +203,7 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());
 		candidateRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
 
-		candidateRecord.setC_BPartner_Customer_ID(materialDescriptor.getBPartnerCustomerId());
+		candidateRecord.setC_BPartner_Customer_ID(materialDescriptor.getCustomerId());
 
 		candidateRecord.setM_Product_ID(materialDescriptor.getProductId());
 		candidateRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());

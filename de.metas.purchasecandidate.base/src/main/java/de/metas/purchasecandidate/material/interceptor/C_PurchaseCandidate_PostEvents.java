@@ -136,7 +136,7 @@ public class C_PurchaseCandidate_PostEvents
 						purchaseCandidateRecord.getM_Product_ID());
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.bPartnerId(purchaseCandidateRecord.getVendor_ID())
+				.customerId(purchaseCandidateRecord.getVendor_ID())
 				.date(purchaseCandidateRecord.getDateRequired())
 				.productDescriptor(productDescriptor)
 				.quantity(purchaseQty.getQty())

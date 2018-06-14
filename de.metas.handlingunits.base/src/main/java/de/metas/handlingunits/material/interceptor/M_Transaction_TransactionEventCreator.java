@@ -464,7 +464,7 @@ public class M_Transaction_TransactionEventCreator
 					.warehouseId(transaction.getWarehouseId())
 					.date(transaction.getMovementDate())
 					.productDescriptor(entry.getKey())
-					.bPartnerId(bPartnerId)
+					.customerId(bPartnerId)
 					.quantity(quantity)
 					.build();
 

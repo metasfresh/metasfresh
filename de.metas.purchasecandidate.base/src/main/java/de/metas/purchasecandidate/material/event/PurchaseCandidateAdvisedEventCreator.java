@@ -75,7 +75,7 @@ public class PurchaseCandidateAdvisedEventCreator
 
 		final MaterialDescriptor purchaseMaterialDescriptor = supplyRequiredDescriptor
 				.getMaterialDescriptor()
-				.withBPartnerId(defaultVendorProductInfo.get().getVendorId().getRepoId());
+				.withCustomerId(defaultVendorProductInfo.get().getVendorId().getRepoId());
 
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent
 				.builder()

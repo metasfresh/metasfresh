@@ -52,7 +52,7 @@ public class AvailableToPromiseQuery
 				.date(TimeUtil.asLocalDateTime(materialDescriptor.getDate()))
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
-				.bpartnerId(materialDescriptor.getBPartnerCustomerId())
+				.bpartnerId(materialDescriptor.getCustomerId())
 				.build();
 	}
 

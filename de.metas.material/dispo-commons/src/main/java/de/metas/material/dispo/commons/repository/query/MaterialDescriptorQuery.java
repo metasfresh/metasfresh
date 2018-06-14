@@ -54,7 +54,7 @@ public class MaterialDescriptorQuery
 				materialDescriptor.getWarehouseId(),
 				materialDescriptor.getProductId(),
 				materialDescriptor.getStorageAttributesKey(),
-				materialDescriptor.getBPartnerCustomerId(),
+				materialDescriptor.getCustomerId(),
 				materialDescriptor.getDate(),
 				DateOperator.AT);
 	}
@@ -67,7 +67,7 @@ public class MaterialDescriptorQuery
 				materialDescriptor.getWarehouseId(),
 				materialDescriptor.getProductId(),
 				materialDescriptor.getStorageAttributesKey(),
-				materialDescriptor.getBPartnerCustomerId(),
+				materialDescriptor.getCustomerId(),
 				materialDescriptor.getDate(),
 				dateOperator);
 	}

@@ -175,7 +175,7 @@ public class ForecastCreatedHandlerTest
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
-						.bPartnerId(BPARTNER_ID)
+						.customerId(BPARTNER_ID)
 						.quantity(new BigDecimal("8"))
 						.date(NOW)
 						.build())

@@ -205,10 +205,10 @@ public class StockCandidateService
 	{
 		final MaterialDescriptorQueryBuilder builder = MaterialDescriptorQuery.builder();
 
-		if (materialDescriptor.getBPartnerCustomerId() > 0)
+		if (materialDescriptor.getCustomerId() > 0)
 		{
 			// do include the bpartner in the query, because e.g. an increase for a given bpartner does a raised ATP just for that partner, and not for everyone
-			builder.bPartnerCustomerId(materialDescriptor.getBPartnerCustomerId());
+			builder.bPartnerCustomerId(materialDescriptor.getCustomerId());
 		}
 		else
 		{

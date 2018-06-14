@@ -83,7 +83,7 @@ public class M_ForecastEventCreator
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(forecastLine.getDatePromised())
 				.productDescriptor(productDescriptor)
-				.bPartnerId(bPartnerId)
+				.customerId(bPartnerId)
 				.warehouseId(forecastLine.getM_Warehouse_ID())
 				.quantity(forecastLine.getQty())
 				.build();

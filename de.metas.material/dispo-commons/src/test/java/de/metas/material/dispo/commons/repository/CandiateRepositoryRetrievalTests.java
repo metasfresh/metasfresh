@@ -129,7 +129,7 @@ public class CandiateRepositoryRetrievalTests
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		assertThat(materialDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(materialDescriptor.getBPartnerCustomerId()).isEqualTo(BPARTNER_ID);
+		assertThat(materialDescriptor.getCustomerId()).isEqualTo(BPARTNER_ID);
 		assertThat(materialDescriptor.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
 		assertThat(materialDescriptor.getAttributeSetInstanceId()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
 	}

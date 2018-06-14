@@ -40,17 +40,17 @@ public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 {
 	public static final String TYPE = "PurchaseCandidateAdvisedEvent";
 
-	private EventDescriptor eventDescriptor;
+	EventDescriptor eventDescriptor;
 
-	private SupplyRequiredDescriptor supplyRequiredDescriptor;
+	SupplyRequiredDescriptor supplyRequiredDescriptor;
 
 	int productPlanningId;
 
-	private boolean directlyCreatePurchaseCandidate;
+	boolean directlyCreatePurchaseCandidate;
 
 	int vendorId;
 
-	private MaterialDescriptor materialDescriptor;
+	MaterialDescriptor purchaseMaterialDescriptor;
 
 	@Builder
 	@JsonCreator
@@ -66,7 +66,7 @@ public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 		this.productPlanningId = Check.assumeGreaterThanZero(productPlanningId, "productPlanningId");
 		this.vendorId = vendorId;
-		this.materialDescriptor = purchaseMaterialDescriptor;
+		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
 		this.directlyCreatePurchaseCandidate = directlyCreatePurchaseCandidate;
 	}
 }

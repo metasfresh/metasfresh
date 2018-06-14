@@ -88,7 +88,7 @@ public class AvailableToPromiseRepositoryTest
 		createStockRecord(BPARTNER_ID + 10, BEFORE_NOW); // belongs to an unrelated bPartner
 
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
-		assertThat(materialDescriptor.getBPartnerCustomerId()).isEqualTo(BPARTNER_ID); // guard
+		assertThat(materialDescriptor.getCustomerId()).isEqualTo(BPARTNER_ID); // guard
 
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 		assertThat(query.getQueries()).hasSize(2); // guard
@@ -147,7 +147,7 @@ public class AvailableToPromiseRepositoryTest
 		createStockRecord(BPARTNER_ID, BEFORE_NOW);
 		createStockRecord(BPARTNER_ID + 10, BEFORE_NOW); // belongs to an unrelated bPartner
 
-		final MaterialDescriptor materialDescriptor = createMaterialDescriptor().withBPartnerId(0);
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor().withCustomerId(0);
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.of(AvailableToPromiseQuery.forMaterialDescriptor(materialDescriptor));
 
 		final BigDecimal result = new AvailableToPromiseRepository().retrieveAvailableStockQtySum(query);

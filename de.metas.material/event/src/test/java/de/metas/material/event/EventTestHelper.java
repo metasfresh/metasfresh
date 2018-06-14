@@ -89,7 +89,7 @@ public class EventTestHelper
 		return MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptorWithProductId(productId))
 				.warehouseId(WAREHOUSE_ID)
-				.bPartnerId(BPARTNER_ID)
+				.customerId(BPARTNER_ID)
 				.quantity(BigDecimal.TEN)
 				.date(NOW)
 				.build();
