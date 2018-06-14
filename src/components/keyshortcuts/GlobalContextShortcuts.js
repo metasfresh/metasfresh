@@ -8,29 +8,20 @@ const noOp = () => {};
 
 export default class GlobalContextShortcuts extends Component {
   static propTypes = {
-    closeOverlays: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    handleClone: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    handleDelete: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    handleDocStatusToggle: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.func,
-    ]),
-    handleEditModeToggle: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.func,
-    ]),
-    handleEmail: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    handleInboxToggle: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    handleLetter: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    handleMenuOverlay: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    handlePrint: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    handleSidelistToggle: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.func,
-    ]),
-    handleUDToggle: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    openModal: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    redirect: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+    closeOverlays: PropTypes.func,
+    handleClone: PropTypes.func,
+    handleDelete: PropTypes.func,
+    handleDocStatusToggle: PropTypes.func,
+    handleEditModeToggle: PropTypes.func,
+    handleEmail: PropTypes.func,
+    handleInboxToggle: PropTypes.func,
+    handleLetter: PropTypes.func,
+    handleMenuOverlay: PropTypes.func,
+    handlePrint: PropTypes.func,
+    handleSidelistToggle: PropTypes.func,
+    handleUDToggle: PropTypes.func,
+    openModal: PropTypes.func,
+    redirect: PropTypes.func,
   };
 
   static defaultProps = {
