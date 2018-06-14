@@ -63,6 +63,8 @@ public class AvailableToPromiseQuery
 
 	public static final int BPARTNER_ID_ANY = -1;
 	public static final int BPARTNER_ID_NONE = -2;
+
+	/** null means "none" */
 	private final int bpartnerId;
 
 	@Builder(toBuilder = true)
@@ -89,7 +91,7 @@ public class AvailableToPromiseQuery
 		}
 		else // default, including 0; bpartnerId was not specified on build time
 		{
-			this.bpartnerId = BPARTNER_ID_ANY;
+			this.bpartnerId = BPARTNER_ID_NONE;
 		}
 	}
 
@@ -114,7 +116,11 @@ public class AvailableToPromiseQuery
 
 	public static boolean isBPartnerMatching(final int bpartnerId, final int bpartnerIdToMatch)
 	{
-		return bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY
+		final boolean bpartnerIdMatchesEveryBPartnerIdToMatch = bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY;
+		final boolean bpartnerIdToMatchMatchesAnyBPartnerId = bpartnerIdToMatch == AvailableToPromiseQuery.BPARTNER_ID_ANY;
+
+		return bpartnerIdMatchesEveryBPartnerIdToMatch
+				|| bpartnerIdToMatchMatchesAnyBPartnerId
 				|| (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE && bpartnerIdToMatch <= 0)
 				|| (bpartnerId == bpartnerIdToMatch);
 	}

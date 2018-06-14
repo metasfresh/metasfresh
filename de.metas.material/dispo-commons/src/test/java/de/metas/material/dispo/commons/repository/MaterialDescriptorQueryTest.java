@@ -64,7 +64,7 @@ public class MaterialDescriptorQueryTest
 
 		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(result.getBPartnerId()).isEqualTo(BPARTNER_ID);
+		assertThat(result.getBPartnerCustomerId()).isEqualTo(BPARTNER_ID);
 		assertThat(result.getDateOperator()).isEqualTo(DateOperator.AT);
 		assertThat(result.getDate()).isEqualTo(NOW);
 	}
@@ -77,7 +77,7 @@ public class MaterialDescriptorQueryTest
 		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
 		assertThat(result.getStorageAttributesKey())
 				.isSameAs(AttributesKey.ALL);
-		assertThat(result.getBPartnerId()).isSameAs(AvailableToPromiseQuery.BPARTNER_ID_ANY);
+		assertThat(result.getBPartnerCustomerId()).isSameAs(AvailableToPromiseQuery.BPARTNER_ID_ANY);
 	}
 
 }

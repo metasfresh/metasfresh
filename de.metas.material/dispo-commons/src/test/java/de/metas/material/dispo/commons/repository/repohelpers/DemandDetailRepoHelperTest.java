@@ -46,7 +46,7 @@ public class DemandDetailRepoHelperTest
 	public void forDemandDetailRecord()
 	{
 		final I_MD_Candidate demandRecord = newInstance(I_MD_Candidate.class);
-		demandRecord.setC_Order_ID(10);
+		demandRecord.setC_OrderSO_ID(10);
 		demandRecord.setM_Forecast_ID(20);
 		demandRecord.setM_ShipmentSchedule_ID(99); // ignored by the method under test
 		save(demandRecord);

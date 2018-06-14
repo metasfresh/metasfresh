@@ -40,7 +40,7 @@ public class DemandDetailRepoHelper
 				.shipmentScheduleId(demandDetailRecord.getM_ShipmentSchedule_ID())
 				.forecastId(demandRecord.getM_Forecast_ID())
 				.forecastLineId(demandDetailRecord.getM_ForecastLine_ID())
-				.orderId(demandRecord.getC_Order_ID())
+				.orderId(demandRecord.getC_OrderSO_ID())
 				.orderLineId(demandDetailRecord.getC_OrderLine_ID())
 				.subscriptionProgressId(demandDetailRecord.getC_SubscriptionProgress_ID())
 				.plannedQty(demandDetailRecord.getPlannedQty()).build();

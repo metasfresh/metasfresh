@@ -213,7 +213,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 		final int ppOrderId = ppOrderEvent.getPpOrder().getPpOrderId();
 		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOorderId(r, ppOrderId));
-		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
+		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID));
 
 		// verify the production details' isPickDirectlyIfFeasible flag
 		final List<I_MD_Candidate_Prod_Detail> allProductionDetails = Services.get(IQueryBL.class)

@@ -203,7 +203,7 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());
 		candidateRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
 
-		candidateRecord.setC_BPartner_ID(materialDescriptor.getBPartnerCustomerId());
+		candidateRecord.setC_BPartner_Customer_ID(materialDescriptor.getBPartnerCustomerId());
 
 		candidateRecord.setM_Product_ID(materialDescriptor.getProductId());
 		candidateRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());
@@ -259,10 +259,10 @@ public class CandidateRepositoryWriteService
 			return;
 		}
 
-		final boolean demandDetailWouldResetOrderId = demandDetail.getOrderId() == 0 && candidateRecord.getC_Order_ID() > 0;
+		final boolean demandDetailWouldResetOrderId = demandDetail.getOrderId() == 0 && candidateRecord.getC_OrderSO_ID() > 0;
 		if (!demandDetailWouldResetOrderId)
 		{
-			candidateRecord.setC_Order_ID(demandDetail.getOrderId());
+			candidateRecord.setC_OrderSO_ID(demandDetail.getOrderId());
 		}
 
 		final boolean demandDetailWouldResetForecastId = demandDetail.getForecastId() == 0 && candidateRecord.getM_Forecast_ID() > 0;

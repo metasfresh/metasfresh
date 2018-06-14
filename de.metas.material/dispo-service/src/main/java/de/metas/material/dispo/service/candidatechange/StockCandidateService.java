@@ -17,6 +17,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.MaterialDescriptorQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
@@ -176,6 +177,7 @@ public class StockCandidateService
 
 			final BigDecimal delta = stockWithDelta.getQuantity();
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
+
 			candidateRepositoryWriteService.updateCandidateById(candidate
 					.withQuantity(newQty)
 					.withGroupId(stockWithDelta.getGroupId()));
@@ -186,8 +188,8 @@ public class StockCandidateService
 			@NonNull final Candidate candidate,
 			@NonNull final DateOperator dateOperator)
 	{
-		final MaterialDescriptorQuery materialDescriptorQuery = //
-				createMaterialDescriptorQueryWithoutBPartner(candidate.getMaterialDescriptor(), dateOperator);
+		final MaterialDescriptorQuery //
+		materialDescriptorQuery = createMaterialDescriptorQuery(candidate.getMaterialDescriptor(), dateOperator);
 
 		return CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)
@@ -197,10 +199,24 @@ public class StockCandidateService
 				.build();
 	}
 
-	private MaterialDescriptorQuery createMaterialDescriptorQueryWithoutBPartner(final MaterialDescriptor materialDescriptor, final DateOperator dateoperator)
+	private MaterialDescriptorQuery createMaterialDescriptorQuery(
+			@NonNull final MaterialDescriptor materialDescriptor,
+			@NonNull final DateOperator dateoperator)
 	{
-		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
-				// .bPartnerId(bPartnerId) // don't filter by bpartner because ATP changes affect all of them
+		final MaterialDescriptorQueryBuilder builder = MaterialDescriptorQuery.builder();
+
+		if (materialDescriptor.getBPartnerCustomerId() > 0)
+		{
+			// do include the bpartner in the query, because e.g. an increase for a given bpartner does a raised ATP just for that partner, and not for everyone
+			builder.bPartnerCustomerId(materialDescriptor.getBPartnerCustomerId());
+		}
+		else
+		{
+			// ..on the other hand, if materialDescriptor has *no* bpartner, then the respective change in qty is related to everybody
+			builder.bPartnerCustomerId(null);
+		}
+
+		final MaterialDescriptorQuery materialDescriptorQuery = builder
 				.date(materialDescriptor.getDate())
 				.dateOperator(dateoperator)
 				.productId(materialDescriptor.getProductId())

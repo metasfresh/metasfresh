@@ -66,7 +66,7 @@ public class RepositoryCommonsTest
 	{
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(PRODUCT_ID)
-				.bPartnerId(BPARTNER_ID)
+				.bPartnerCustomerId(BPARTNER_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.dateOperator(DateOperator.AT)
 				.date(NOW).build();
@@ -87,27 +87,27 @@ public class RepositoryCommonsTest
 	public void mkQueryBuilder_with_bpartner_id()
 	{
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(BPARTNER_ID);
-		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, BPARTNER_ID);
+		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, BPARTNER_ID);
 	}
 
 	@Test
 	public void mkQueryBuilder_with_any_bpartner_id()
 	{
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(AvailableToPromiseQuery.BPARTNER_ID_ANY);
-		assertThat(compositeFilter).hasNoFilterRegarding(I_MD_Candidate.COLUMN_C_BPartner_ID);
+		assertThat(compositeFilter).hasNoFilterRegarding(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID);
 	}
 
 	@Test
 	public void mkQueryBuilder_with_none_bpartner_id()
 	{
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(AvailableToPromiseQuery.BPARTNER_ID_NONE);
-		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, null);
+		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, null);
 	}
 
 	public ICompositeQueryFilter<I_MD_Candidate> setupAndInvokeWithBPartnerId(final int bpartnerId)
 	{
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
-				.bPartnerId(bpartnerId)
+				.bPartnerCustomerId(bpartnerId)
 				.build();
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)

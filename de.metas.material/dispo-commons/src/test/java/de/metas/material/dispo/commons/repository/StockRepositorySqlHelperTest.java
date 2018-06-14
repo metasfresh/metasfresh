@@ -19,7 +19,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
+import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -77,15 +77,15 @@ public class StockRepositorySqlHelperTest
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.forMaterialDescriptor(materialDescriptor);
 		// MaterialQuery(warehouseIds=[51], date=Thu Nov 30 13:25:21 EET 2017, productIds=[24], storageAttributesKeys=[1§&§2], bpartnerId=-1)
 
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
+		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQueryBuilder(query);
 
-		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, WAREHOUSE_ID);
+		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
+		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID, WAREHOUSE_ID);
 
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();
 
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, PRODUCT_ID);
+		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, PRODUCT_ID);
 		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
 	}
 
@@ -99,16 +99,15 @@ public class StockRepositorySqlHelperTest
 				.date(TimeUtil.asLocalDateTime(NOW))
 				.build();
 
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
+		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQueryBuilder(query);
 
-		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
-		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
-		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, TimeUtil.asTimestamp(NOW));
+		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
+		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID);
 
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();
 
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, 10, 20);
+		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, 10, 20);
 		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
 	}
 
@@ -122,16 +121,15 @@ public class StockRepositorySqlHelperTest
 				.date(TimeUtil.asLocalDateTime(NOW))
 				.build();
 
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
+		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQueryBuilder(query);
 
-		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
-		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
-		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, TimeUtil.asTimestamp(NOW));
+		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
+		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID);
 
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();
 
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, PRODUCT_ID);
+		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, PRODUCT_ID);
 
 		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%3%");
 		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
@@ -149,17 +147,16 @@ public class StockRepositorySqlHelperTest
 				.build();
 
 		// invoke the method under test
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
+		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQueryBuilder(query);
 
-		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
-		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
-		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, TimeUtil.asTimestamp(NOW));
+		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> dbFilter = dbQuery.getCompositeFilter();
+		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID);
 
 		assertThat(dbFilter).hasCompositeOrFilter();
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();
 
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, PRODUCT_ID);
+		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, PRODUCT_ID);
 
 		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%3%");
 		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
@@ -179,23 +176,10 @@ public class StockRepositorySqlHelperTest
 		final List<ICompositeQueryFilter> includedCompositeAndFilters = extractFilters(compositeFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeAndFilters).anySatisfy(filter -> {
 			assertThat(filter).isJoinAnd();
-			assertThat(filter).hasStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression);
+			assertThat(filter).hasStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, likeExpression);
 		});
 
 	}
-
-	// private void assertHasANDFiltersThatAllHaveInArrayForProductIds(
-	// @NonNull final ICompositeQueryFilter compositeFilter,
-	// @NonNull final Collection<?> productIds)
-	// {
-	// assertThat(compositeFilter).hasCompositeAndFilter();
-	//
-	// final List<ICompositeQueryFilter> includedCompositeAndFilters = extractFilters(compositeFilter, ICompositeQueryFilter.class);
-	// assertThat(includedCompositeAndFilters).allSatisfy(filter -> {
-	// assertThat(filter).isJoinAnd();
-	// assertThat(filter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, productIds);
-	// });
-	// }
 
 	private void assertHasOneFilterWithNotLikeExpressions(
 			@NonNull final List<ICompositeQueryFilter> includedCompositeAndFilters)
@@ -208,10 +192,10 @@ public class StockRepositorySqlHelperTest
 			assertThat(notQueryFilters).hasSize(2);
 
 			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
-				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%3%");
+				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%3%");
 			});
 			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
-				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%1%2%");
+				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, "%1%2%");
 			});
 		});
 	}

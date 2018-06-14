@@ -80,7 +80,10 @@ public class MaterialDescriptorQuery
 	int warehouseId;
 	int productId;
 	AttributesKey storageAttributesKey;
-	int bPartnerId;
+
+	/** zero means "none", null means "any" */
+	int bPartnerCustomerId;
+
 	Date date;
 
 	@Builder
@@ -88,7 +91,7 @@ public class MaterialDescriptorQuery
 			final int warehouseId,
 			final int productId,
 			final AttributesKey storageAttributesKey,
-			final Integer bPartnerId,
+			final Integer bPartnerCustomerId,
 			final Date date,
 			final DateOperator dateOperator)
 	{
@@ -99,21 +102,21 @@ public class MaterialDescriptorQuery
 				? storageAttributesKey
 				: AttributesKey.ALL;
 
-		if (bPartnerId == null)
+		if (bPartnerCustomerId == null)
 		{
-			this.bPartnerId = AvailableToPromiseQuery.BPARTNER_ID_ANY;
+			this.bPartnerCustomerId = AvailableToPromiseQuery.BPARTNER_ID_ANY;
 		}
-		else if (bPartnerId == 0)
+		else if (bPartnerCustomerId == 0)
 		{
-			this.bPartnerId = AvailableToPromiseQuery.BPARTNER_ID_NONE;
+			this.bPartnerCustomerId = AvailableToPromiseQuery.BPARTNER_ID_NONE;
 		}
-		else if (bPartnerId > 0 || bPartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY || bPartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
+		else if (bPartnerCustomerId > 0 || bPartnerCustomerId == AvailableToPromiseQuery.BPARTNER_ID_ANY || bPartnerCustomerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
 		{
-			this.bPartnerId = bPartnerId;
+			this.bPartnerCustomerId = bPartnerCustomerId;
 		}
 		else
 		{
-			throw new AdempiereException("Parameter bPartnerId has an invalid value=" + bPartnerId);
+			throw new AdempiereException("Parameter bPartnerCustomerId has an invalid value=" + bPartnerCustomerId);
 		}
 
 		Preconditions.checkArgument(dateOperator == null || date != null,

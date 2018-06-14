@@ -486,16 +486,16 @@ public class PurchaseCandidateRepository
 	}
 
 	private static final CCache<PurchaseDemand, List<PurchaseCandidate>> CACHE_PURCHASE_DEMAND_TO_CANDIDATES = CCache.newCache(
-			I_C_PurchaseCandidate.Table_Name + "#by#"
-					+ I_C_PurchaseCandidate.COLUMN_Processed + "#"
-					+ I_C_PurchaseCandidate.COLUMN_AD_Org_ID + "#"
-					+ I_C_PurchaseCandidate.COLUMN_M_Product_ID + "#"
-					+ I_C_PurchaseCandidate.COLUMN_DateRequired + "#"
-					+ I_C_PurchaseCandidate.COLUMN_C_UOM_ID + "#"
-					+ I_C_PurchaseCandidate.COLUMN_M_WarehousePO_ID + "#"
-					+ I_C_PurchaseCandidate.COLUMN_M_AttributeInstance_ID + "#"
-					+ I_C_PurchaseCandidate.COLUMN_C_Currency_ID + "#"
-					+ I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID + "#",
+			I_C_PurchaseCandidate.Table_Name
+					+ "#by#" + I_C_PurchaseCandidate.COLUMN_Processed
+					+ "#" + I_C_PurchaseCandidate.COLUMN_AD_Org_ID
+					+ "#" + I_C_PurchaseCandidate.COLUMN_M_Product_ID
+					+ "#" + I_C_PurchaseCandidate.COLUMN_DateRequired
+					+ "#" + I_C_PurchaseCandidate.COLUMN_C_UOM_ID
+					+ "#" + I_C_PurchaseCandidate.COLUMN_M_WarehousePO_ID
+					+ "#" + I_C_PurchaseCandidate.COLUMN_M_AttributeInstance_ID
+					+ "#" + I_C_PurchaseCandidate.COLUMN_C_Currency_ID
+					+ "#" + I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID,
 			0,
 			CCache.EXPIREMINUTES_Never);
 

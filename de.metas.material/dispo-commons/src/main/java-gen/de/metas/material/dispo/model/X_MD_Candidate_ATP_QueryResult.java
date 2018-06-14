@@ -5,29 +5,29 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for MD_Candidate_Stock_v
+/** Generated Model for MD_Candidate_ATP_QueryResult
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_MD_Candidate_Stock_v extends org.compiere.model.PO implements I_MD_Candidate_Stock_v, org.compiere.model.I_Persistent 
+public class X_MD_Candidate_ATP_QueryResult extends org.compiere.model.PO implements I_MD_Candidate_ATP_QueryResult, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2083051228L;
+	private static final long serialVersionUID = -940530131L;
 
     /** Standard Constructor */
-    public X_MD_Candidate_Stock_v (Properties ctx, int MD_Candidate_Stock_v_ID, String trxName)
+    public X_MD_Candidate_ATP_QueryResult (Properties ctx, int MD_Candidate_ATP_QueryResult_ID, String trxName)
     {
-      super (ctx, MD_Candidate_Stock_v_ID, trxName);
-      /** if (MD_Candidate_Stock_v_ID == 0)
+      super (ctx, MD_Candidate_ATP_QueryResult_ID, trxName);
+      /** if (MD_Candidate_ATP_QueryResult_ID == 0)
         {
         } */
     }
 
     /** Load Constructor */
-    public X_MD_Candidate_Stock_v (Properties ctx, ResultSet rs, String trxName)
+    public X_MD_Candidate_ATP_QueryResult (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -42,37 +42,34 @@ public class X_MD_Candidate_Stock_v extends org.compiere.model.PO implements I_M
     }
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	public org.compiere.model.I_C_BPartner getC_BPartner_Customer() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class);
 	}
 
 	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	public void setC_BPartner_Customer(org.compiere.model.I_C_BPartner C_BPartner_Customer)
 	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Customer);
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
+	/** Set Kunde.
+		@param C_BPartner_Customer_ID Kunde	  */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID)
 	{
-		if (C_BPartner_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
+		if (C_BPartner_Customer_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Customer_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Customer_ID, Integer.valueOf(C_BPartner_Customer_ID));
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
+	/** Get Kunde.
+		@return Kunde	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_Customer_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Customer_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -164,6 +161,28 @@ public class X_MD_Candidate_Stock_v extends org.compiere.model.PO implements I_M
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_ValueNoCheck (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set StorageAttributesKey (technical).

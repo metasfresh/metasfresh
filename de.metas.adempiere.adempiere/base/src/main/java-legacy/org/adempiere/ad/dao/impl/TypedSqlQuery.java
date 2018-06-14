@@ -162,7 +162,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 *
 	 * @param sqlFrom SQL FROM clause (e.g. Table1 as t1 INNER JOIN Table t2 ON (...) .... )
 	 */
-	TypedSqlQuery<T> setSqlFrom(final String sqlFrom)
+	public TypedSqlQuery<T> setSqlFrom(final String sqlFrom)
 	{
 		this.sqlFrom = sqlFrom;
 		return this;

@@ -163,14 +163,14 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptorQuery.getProductId());
 			atLeastOneFilterAdded = true;
 		}
-		if (materialDescriptorQuery.getBPartnerId() > 0)
+		if (materialDescriptorQuery.getBPartnerCustomerId() > 0)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, materialDescriptorQuery.getBPartnerId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, materialDescriptorQuery.getBPartnerCustomerId());
 			atLeastOneFilterAdded = true;
 		}
-		else if (materialDescriptorQuery.getBPartnerId() == AvailableToPromiseQuery.BPARTNER_ID_NONE)
+		else if (materialDescriptorQuery.getBPartnerCustomerId() == AvailableToPromiseQuery.BPARTNER_ID_NONE)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, null);
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, null);
 			atLeastOneFilterAdded = true;
 		}
 
