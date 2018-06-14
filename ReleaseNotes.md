@@ -19,6 +19,8 @@ Here come the actual release notes:
     * Improvement of Businesspartner and Sales Order Widnow in WebUI. Adding the Field for Delivery Rule.
 
 * metasfresh-webui-frontend
+  * [#1417](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1417) Shortcuts for delete modal window
+    * Improved shortcut Handling in delete record modal overlay.
   * [#1686](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1686) API login for cypress
     * New Feature for Testing Framework Cypress, now allowing the API to do a login.
   * [#1722](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1722) Typing in dropdown fields
@@ -30,6 +32,8 @@ Here come the actual release notes:
     * Fixes the Tab usage in Batch entry after confirming selection with mouse.
   * [#1774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1774) Cannot stop uploading a file
     * Extend File Upload Feature, now possible to cancel the upload.
+  * [#1840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1840) 404 error shall be centered
+    * Fxes the 404 error message. Now centered in WebUI Layout.
 
 # metasfresh 5.61 (2018-24)
 ## Features
