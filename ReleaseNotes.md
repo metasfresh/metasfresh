@@ -35,17 +35,21 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#2539](https://github.com/metasfresh/metasfresh/issues/2539) Translate report_en_US.properties for order, inout, invoice
+    * Improvement of report properties Translations for en_US language
   * [#4107](https://github.com/metasfresh/metasfresh/issues/4107) Customer Revenue Report Excel with Credit Limit
+    * New Customer Revenue Report as Excel Sheet Download.
   * [#4141](https://github.com/metasfresh/metasfresh/issues/4141) WebUI: Translation Window for Currencies
     * New Window in WebUI that allows to maintain the Currency Translations.
   * [#4142](https://github.com/metasfresh/metasfresh/issues/4142) WebUI: Translation Window for Document Types
     * New Window in WebUI that allows to maintain the Document Type Translations.
   * [#4143](https://github.com/metasfresh/metasfresh/issues/4143) WebUI: Translation Window for Messages
     * New Window in WebUI that allows to maintain the message Translations.
-  * [#4149](https://github.com/metasfresh/metasfresh/issues/4149) User query: IUserQueryRestriction is not built properly all the time
   * [#4151](https://github.com/metasfresh/metasfresh/issues/4151) Import: extend process of importing vendors
+    * Improved Vendor importing action, allowing to import a lot of additional infomration for a vendor.
   * [#4167](https://github.com/metasfresh/metasfresh/issues/4167) Process C_Flatrate_Term_Extend shall continue if individual terms fail
+    * Improved Flatrate Term extension Action, now proceeding the process even if individual Terms fail.
   * [#4169](https://github.com/metasfresh/metasfresh/issues/4169) Pricing Conditions Jasper
+    * New Report that shows the recorded Pricing Conditions per Customer/ Vendor.
   * [#4173](https://github.com/metasfresh/metasfresh/issues/4173) Translations for Purchase Dispo modal Overlay Fields
     * Field Translations added for Purchase Dispo modal overlay in Sales Order and Purchase Candidates.
   * [#4178](https://github.com/metasfresh/metasfresh/issues/4178) Pricing Conditions Cockpit Translations in Material Cockpit
@@ -56,6 +60,9 @@ Here come the actual release notes:
   * [#4012](https://github.com/metasfresh/metasfresh/issues/4012) Lot No control in Receipt not working
   * [#4168](https://github.com/metasfresh/metasfresh/issues/4168) Error when posting payment allocation with tax correction and multiple taxes
   * [#4191](https://github.com/metasfresh/metasfresh/issues/4191) Cannot add a product in order
+  * [#4149](https://github.com/metasfresh/metasfresh/issues/4149) User query: IUserQueryRestriction is not built properly all the time
+    * 
+
 
 * metasfresh-webui-frontend
   * [#1266](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1266) Labels widget: tab and shift-tab support
