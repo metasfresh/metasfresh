@@ -1,22 +1,18 @@
 package de.metas.purchasecandidate;
 
 import static java.util.stream.Collectors.toCollection;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -105,7 +101,10 @@ public class PurchaseCandidate
 	@Builder
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
+
+			@NonNull final DemandGroupReference groupReference,
 			@Nullable final OrderAndLineId salesOrderAndLineId,
+
 			final boolean prepared,
 			final boolean processed,
 			final boolean locked,
@@ -132,6 +131,7 @@ public class PurchaseCandidate
 		this.id = id;
 
 		identifier = PurchaseCandidateImmutableFields.builder()
+				.groupReference(groupReference)
 				.salesOrderAndLineId(salesOrderAndLineId)
 				.vendorId(vendorId)
 				.orgId(orgId)
@@ -213,6 +213,11 @@ public class PurchaseCandidate
 	public WarehouseId getWarehouseId()
 	{
 		return getIdentifier().getWarehouseId();
+	}
+
+	public DemandGroupReference getGroupReference()
+	{
+		return getIdentifier().getGroupReference();
 	}
 
 	public OrderAndLineId getSalesOrderAndLineId()

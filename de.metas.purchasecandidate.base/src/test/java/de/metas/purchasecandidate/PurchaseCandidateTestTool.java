@@ -57,6 +57,7 @@ public final class PurchaseCandidateTestTool
 		final ProductId productId = ProductId.ofRepoId(5);
 		return PurchaseCandidate.builder()
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
+				.groupReference(DemandGroupReference.createEmpty())
 				.salesOrderAndLineId(OrderAndLineId.of(OrderId.ofRepoId(1), SALES_ORDER_LINE_ID))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))

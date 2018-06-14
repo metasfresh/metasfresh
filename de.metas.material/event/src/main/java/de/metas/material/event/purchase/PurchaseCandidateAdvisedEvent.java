@@ -48,7 +48,9 @@ public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 
 	private boolean directlyCreatePurchaseCandidate;
 
-	private MaterialDescriptor purchaseMaterialDescriptor;
+	int vendorId;
+
+	private MaterialDescriptor materialDescriptor;
 
 	@Builder
 	@JsonCreator
@@ -57,12 +59,14 @@ public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 			@JsonProperty("supplyRequiredDescriptor") @NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
-			@JsonProperty("directlyCreatePurchaseCandidate") final boolean directlyCreatePurchaseCandidate)
+			@JsonProperty("directlyCreatePurchaseCandidate") final boolean directlyCreatePurchaseCandidate,
+			@JsonProperty("vendorId") final int vendorId)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 		this.productPlanningId = Check.assumeGreaterThanZero(productPlanningId, "productPlanningId");
-		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
+		this.vendorId = vendorId;
+		this.materialDescriptor = purchaseMaterialDescriptor;
 		this.directlyCreatePurchaseCandidate = directlyCreatePurchaseCandidate;
 	}
 }

@@ -1,17 +1,19 @@
-package de.metas.material.planning.purchaseorder;
+package de.metas.purchasecandidate.material.event;
 
-import java.util.List;
+import java.util.Optional;
 
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Loggables;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.product.ProductId;
+import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoService;
 import lombok.NonNull;
 
 /*
@@ -40,27 +42,40 @@ import lombok.NonNull;
 public class PurchaseCandidateAdvisedEventCreator
 {
 	private final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher;
+	private final VendorProductInfoService vendorProductInfoService;
 
 	public PurchaseCandidateAdvisedEventCreator(
-			@NonNull final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher)
+			@NonNull final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher,
+			@NonNull final VendorProductInfoService vendorProductInfoService)
 	{
+		this.vendorProductInfoService = vendorProductInfoService;
 		this.purchaseOrderDemandMatcher = purchaseOrderDemandMatcher;
 	}
 
-	public List<PurchaseCandidateAdvisedEvent> createPurchaseAdvisedEvent(
+	public Optional<PurchaseCandidateAdvisedEvent> createPurchaseAdvisedEvent(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMutableMRPContext mrpContext)
 	{
 		if (!purchaseOrderDemandMatcher.matches(mrpContext))
 		{
-			return ImmutableList.of();
+			return Optional.empty();
+		}
+
+		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getMaterialDescriptor().getProductId());
+		final OrgId orgId = OrgId.ofRepoId(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
+
+		final Optional<VendorProductInfo> defaultVendorProductInfo = vendorProductInfoService.getDefaultVendorProductInfo(productId, orgId);
+		if (!defaultVendorProductInfo.isPresent())
+		{
+			Loggables.get().addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
+			return Optional.empty();
 		}
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
 		final MaterialDescriptor purchaseMaterialDescriptor = supplyRequiredDescriptor
 				.getMaterialDescriptor()
-				.withBPartnerId(0); // currently we don't propose a vendor
+				.withBPartnerId(defaultVendorProductInfo.get().getVendorId().getRepoId());
 
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent
 				.builder()
@@ -72,6 +87,6 @@ public class PurchaseCandidateAdvisedEventCreator
 				.build();
 
 		Loggables.get().addLog("Created PurchaseCandidateAdvisedEvent");
-		return ImmutableList.of(event);
+		return Optional.of(event);
 	}
 }

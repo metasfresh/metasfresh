@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
@@ -10,6 +11,7 @@ import org.adempiere.service.OrgId;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.warehouse.WarehouseId;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.order.OrderAndLineId;
@@ -48,12 +50,13 @@ import lombok.Value;
 public class PurchaseCandidatesGroup
 {
 	public static PurchaseCandidatesGroup of(
+			@NonNull final PurchaseDemandId purchaseDemandId,
 			@NonNull final PurchaseCandidate purchaseCandidate,
-			@NonNull final PurchaseDemandId demandId,
 			@NonNull final VendorProductInfo vendorProductInfo)
 	{
 		final PurchaseCandidatesGroupBuilder builder = builder()
-				.demandId(demandId)
+				.purchaseDemandId(purchaseDemandId)
+				.candidateGroupReferences(ImmutableList.of(purchaseCandidate.getGroupReference()))
 				//
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
@@ -82,10 +85,14 @@ public class PurchaseCandidatesGroup
 	}
 
 	@NonNull
-	PurchaseDemandId demandId;
+	List<DemandGroupReference> candidateGroupReferences;
+
+	@NonNull
+	PurchaseDemandId purchaseDemandId;
 
 	@NonNull
 	OrgId orgId;
+
 	@NonNull
 	WarehouseId warehouseId;
 
@@ -118,12 +125,12 @@ public class PurchaseCandidatesGroup
 		return ListUtils.singleElementOrNull(getPurchaseCandidateIds());
 	}
 
-	public OrderAndLineId getSingleSalesOrderAndLineId()
+	public OrderAndLineId getSingleSalesOrderAndLineIdOrNull()
 	{
 		return ListUtils.singleElementOrNull(getSalesOrderAndLineIds());
 	}
 
-	public PurchaseCandidatesGroup changeProfitInfo(@Nullable final PurchaseProfitInfo newProfitInfo)
+	public PurchaseCandidatesGroup withProfitInfo(@Nullable final PurchaseProfitInfo newProfitInfo)
 	{
 		if (Objects.equals(getProfitInfo(), newProfitInfo))
 		{

@@ -1,4 +1,4 @@
-package de.metas.material.planning.purchaseorder;
+package de.metas.purchasecandidate.material.event;
 
 import org.adempiere.util.Loggables;
 import org.adempiere.util.StringUtils;

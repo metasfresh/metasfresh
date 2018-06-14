@@ -2,6 +2,7 @@ package de.metas.purchasecandidate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -10,11 +11,12 @@ import org.adempiere.bpartner.BPartnerType;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.service.OrgId;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
@@ -39,20 +41,20 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Repository
-public class VendorProductInfoRepository
+@Service
+public class VendorProductInfoService
 {
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -61,11 +63,39 @@ public class VendorProductInfoRepository
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
+	/**
+	 * @return the default instance for the given product and org, or (if there is none) some instance; never returns null;
+	 */
+	public Optional<VendorProductInfo> getDefaultVendorProductInfo(
+			@NonNull final ProductId productId,
+			@NonNull final OrgId orgId)
+	{
+		final List<VendorProductInfo> vendorProductInfos = getVendorProductInfos(
+				productId,
+				orgId);
+
+		if (vendorProductInfos.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final VendorProductInfo defaultOrFirst = vendorProductInfos
+				.stream()
+				.filter(VendorProductInfo::isDefaultVendor)
+				.findFirst()
+				.orElseGet(() -> {
+					Loggables.get().addLog("No vendorProductInfo was flagged as default; return the first one: {}", vendorProductInfos.get(0));
+					return vendorProductInfos.get(0);
+				});
+		return Optional.of(defaultOrFirst);
+	}
+
 	public List<VendorProductInfo> getVendorProductInfos(@NonNull final ProductId productId, @NonNull final OrgId orgId)
 	{
 		final ProductAndCategoryId productAndCategoryId = productsRepo.retrieveProductAndCategoryIdByProductId(productId);
 
 		final Map<BPartnerId, Integer> discountSchemaIds = bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType.VENDOR);
+
 		final Map<BPartnerId, I_C_BPartner_Product> bpartnerProductRecords = partnerProductDAO.retrieveByVendorIds(discountSchemaIds.keySet(), productId, orgId);
 
 		final ImmutableList.Builder<VendorProductInfo> vendorProductInfos = ImmutableList.builder();
@@ -83,7 +113,10 @@ public class VendorProductInfoRepository
 		return vendorProductInfos.build();
 	}
 
-	public VendorProductInfo getVendorProductInfo(@NonNull final BPartnerId vendorId, @NonNull final ProductId productId, @NonNull final OrgId orgId)
+	public VendorProductInfo getVendorProductInfo(
+			@NonNull final BPartnerId vendorId,
+			@NonNull final ProductId productId,
+			@NonNull final OrgId orgId)
 	{
 		final ProductAndCategoryId productAndCategoryId = productsRepo.retrieveProductAndCategoryIdByProductId(productId);
 
@@ -117,8 +150,11 @@ public class VendorProductInfoRepository
 				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductName() : null,
 				() -> productBL.getProductName(productId));
 
+		final boolean defaultVendor = bpartnerProductRecord != null ? bpartnerProductRecord.isCurrentVendor() : false;
+
 		return VendorProductInfo.builder()
 				.vendorId(vendorId)
+				.defaultVendor(defaultVendor)
 				.productAndCategoryId(productAndCategoryId)
 				.vendorProductNo(vendorProductNo)
 				.vendorProductName(vendorProductName)

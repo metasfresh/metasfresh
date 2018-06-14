@@ -56,12 +56,14 @@ public class PurchaseCandidateCreatedEvent extends PurchaseCandidateEvent
 			@JsonProperty("purchaseCandidateRepoId") final int purchaseCandidateRepoId,
 			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
 			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@JsonProperty("supplyCandidateRepoId") final int supplyCandidateRepoId)
+			@JsonProperty("supplyCandidateRepoId") final int supplyCandidateRepoId,
+			@JsonProperty("vendorId") final int vendorId)
 	{
 		super(purchaseMaterialDescriptor,
 				supplyRequiredDescriptor,
 				eventDescriptor,
-				purchaseCandidateRepoId);
+				purchaseCandidateRepoId,
+				vendorId);
 		this.supplyCandidateRepoId = supplyCandidateRepoId;
 	}
 }

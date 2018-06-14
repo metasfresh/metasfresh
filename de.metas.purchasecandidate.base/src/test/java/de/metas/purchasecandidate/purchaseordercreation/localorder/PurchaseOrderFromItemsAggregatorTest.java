@@ -31,6 +31,7 @@ import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -104,6 +105,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.productAndCategoryId(productAndCategoryId)
 				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
+				.defaultVendor(false)
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
 				.pricingConditions(PricingConditions.builder()
@@ -111,6 +113,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+				.groupReference(DemandGroupReference.createEmpty())
 				.orgId(OrgId.ofRepoId(10))
 				.purchaseDatePromised(SystemTime.asLocalDateTime())
 				.vendorId(vendorProductInfo.getVendorId())

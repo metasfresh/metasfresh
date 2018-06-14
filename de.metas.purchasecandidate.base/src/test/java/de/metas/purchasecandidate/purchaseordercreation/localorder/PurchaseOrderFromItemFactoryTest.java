@@ -36,6 +36,7 @@ import de.metas.order.model.I_C_Order;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -196,6 +197,7 @@ public class PurchaseOrderFromItemFactoryTest
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
+				.defaultVendor(true)
 				.productAndCategoryId(ProductAndCategoryId.of(20, 30))
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
@@ -203,6 +205,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.build();
 
 		return PurchaseCandidate.builder()
+				.groupReference(DemandGroupReference.createEmpty())
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))

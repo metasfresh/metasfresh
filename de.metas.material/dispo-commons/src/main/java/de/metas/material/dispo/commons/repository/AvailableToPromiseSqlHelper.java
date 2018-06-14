@@ -79,7 +79,7 @@ import lombok.experimental.UtilityClass;
 		}
 		else
 		{
-			queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_C_BPartner_ID, bpartnerId);
+			queryBuilder.addInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_C_BPartner_ID, bpartnerId, null);
 		}
 
 		//

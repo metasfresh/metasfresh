@@ -51,9 +51,12 @@ public class VendorProductInfo
 	Percent vendorFlatDiscount;
 	private PricingConditions pricingConditions;
 
+	boolean defaultVendor;
+
 	@Builder
 	private VendorProductInfo(
 			@NonNull final BPartnerId vendorId,
+			@NonNull final Boolean defaultVendor,
 			//
 			@NonNull final ProductAndCategoryId productAndCategoryId,
 			@NonNull final String vendorProductNo,
@@ -65,6 +68,7 @@ public class VendorProductInfo
 			@NonNull final PricingConditions pricingConditions)
 	{
 		this.vendorId = vendorId;
+		this.defaultVendor = defaultVendor;
 
 		this.productAndCategoryId = productAndCategoryId;
 		this.vendorProductNo = vendorProductNo;

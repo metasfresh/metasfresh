@@ -93,9 +93,11 @@ public class ReceiptsScheduleCreatedHandler
 			@NonNull final AbstractReceiptScheduleEvent event)
 	{
 		final ReceiptScheduleCreatedEvent createdEvent = ReceiptScheduleCreatedEvent.cast(event);
+
 		builder.orderLineRepoId(createdEvent.getOrderLineDescriptor().getOrderLineId());
 		builder.orderedQty(createdEvent.getMaterialDescriptor().getQuantity());
 		builder.purchaseCandidateRepoId(createdEvent.getPurchaseCandidateRepoId());
+		builder.vendorRepoId(createdEvent.getVendorId());
 
 		return builder;
 	}

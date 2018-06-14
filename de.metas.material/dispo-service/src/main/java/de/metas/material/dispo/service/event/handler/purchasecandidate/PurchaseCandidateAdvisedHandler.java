@@ -88,10 +88,10 @@ public final class PurchaseCandidateAdvisedHandler
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
 
-		final MaterialDescriptor purchaseMaterialDescriptor = event.getPurchaseMaterialDescriptor();
+		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
 		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
-				.plannedQty(purchaseMaterialDescriptor.getQuantity())
-				.vendorRepoId(purchaseMaterialDescriptor.getBPartnerId())
+				.plannedQty(materialDescriptor.getQuantity())
+				.vendorRepoId(event.getVendorId())
 				.purchaseCandidateRepoId(-1)
 				.productPlanningRepoId(event.getProductPlanningId())
 				.advised(Flag.TRUE)
@@ -103,7 +103,7 @@ public final class PurchaseCandidateAdvisedHandler
 				.clientId(event.getEventDescriptor().getClientId())
 				.orgId(event.getEventDescriptor().getOrgId())
 				.status(CandidateStatus.doc_planned)
-				.materialDescriptor(purchaseMaterialDescriptor)
+				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(purchaseDetail)
 				.additionalDemandDetail(demandDetail)
 				.build();

@@ -52,6 +52,8 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 
 	private final int purchaseCandidateRepoId;
 
+	private final int vendorId;
+
 	@Builder
 	@JsonCreator
 	public ReceiptScheduleCreatedEvent(
@@ -60,7 +62,9 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 			@JsonProperty("purchaseCandidateRepoId") final int purchaseCandidateRepoId,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
-			@JsonProperty("receiptScheduleId") int receiptScheduleId)
+			@JsonProperty("receiptScheduleId") int receiptScheduleId,
+			@JsonProperty("vendorId") int vendorId
+			)
 	{
 		super(eventDescriptor,
 				materialDescriptor,
@@ -69,6 +73,7 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 
 		this.purchaseCandidateRepoId = purchaseCandidateRepoId;
 		this.orderLineDescriptor = orderLineDescriptor;
+		this.vendorId = vendorId;
 	}
 
 	@Override

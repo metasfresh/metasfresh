@@ -34,11 +34,11 @@ import de.metas.document.documentNo.IDocumentNoBuilderFactory;
  */
 
 @Service
-public class DemandIdGenerator
+public class ReferenceGenerator
 {
-	public static final String SYSCONFIG_AD_SEQUENCE_ID = "de.metas.purchasecandidate.DemandId_AD_Sequence_ID";
+	public static final String SYSCONFIG_AD_SEQUENCE_ID = "de.metas.purchasecandidate.DemandReference_AD_Sequence_ID";
 
-	public String getNextDemandId()
+	public String getNextDemandReference()
 	{
 		final int adSequenceId = Services.get(ISysConfigBL.class)
 				.getIntValue(SYSCONFIG_AD_SEQUENCE_ID,

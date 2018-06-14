@@ -61,7 +61,6 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 
 		final PurchaseDetailBuilder purchaseDetailBuilder = PurchaseDetail.builder()
 				.plannedQty(event.getMaterialDescriptor().getQuantity())
-				.vendorRepoId(event.getMaterialDescriptor().getBPartnerId())
 				.receiptScheduleRepoId(event.getReceiptScheduleId())
 				.advised(Flag.FALSE_DONT_UPDATE);
 

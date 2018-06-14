@@ -38,7 +38,7 @@ public class SupplyRequiredDescriptor
 
 	MaterialDescriptor materialDescriptor;
 
-	/** the MD_Candidate_ID of the record  which the required supply is about.*/
+	/** the MD_Candidate_ID of the record which the required supply is about. */
 	int demandCandidateId;
 
 	int shipmentScheduleId;
@@ -67,6 +67,8 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
+		this.eventDescriptor = eventDescriptor;
+		this.materialDescriptor = materialDescriptor;
 
 		this.shipmentScheduleId = shipmentScheduleId > 0 ? shipmentScheduleId : -1;
 
@@ -76,9 +78,7 @@ public class SupplyRequiredDescriptor
 		this.orderId = orderId > 0 ? orderId : -1;
 		this.orderLineId = orderLineId > 0 ? orderLineId : -1;
 
-		this.subscriptionProgressId = subscriptionProgressId;
+		this.subscriptionProgressId = subscriptionProgressId > 0 ? subscriptionProgressId : -1;
 
-		this.eventDescriptor = eventDescriptor;
-		this.materialDescriptor = materialDescriptor;
 	}
 }

@@ -1,14 +1,18 @@
-package de.metas.material.planning.purchaseorder;
+package de.metas.purchasecandidate.material.event;
 
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_DiscountSchema;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +25,7 @@ import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.impl.MRPContextFactory;
+import de.metas.purchasecandidate.VendorProductInfoService;
 
 /*
  * #%L
@@ -46,7 +51,6 @@ import de.metas.material.planning.impl.MRPContextFactory;
 
 public class PurchaseCandidateAdvisedEventCreatorTest
 {
-
 	private I_PP_Product_Planning productPlanningRecord;
 
 	@Before
@@ -62,10 +66,24 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 	@Test
 	public void createPurchaseAdvisedEvent()
 	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setM_Product_Category_ID(60);
+		product.setValue("Value");
+		product.setName("Name");
+		save(product);
+
+		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
+		discountSchemaRecord.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
+		save(discountSchemaRecord);
+
+		final I_C_BPartner bPartnerVendorRecord = newInstance(I_C_BPartner.class);
+		bPartnerVendorRecord.setPO_DiscountSchema(discountSchemaRecord); // note that right now we don't need to have an actual price
+		save(bPartnerVendorRecord);
+
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
 				.materialDescriptor(MaterialDescriptor.builder()
-						.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(30))
+						.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(product.getM_Product_ID()))
 						.warehouseId(40)
 						.quantity(TEN)
 						.date(SystemTime.asDate())
@@ -77,15 +95,22 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		final IMutableMRPContext mrpContext = mrpContextFactory.createInitialMRPContext();
 		mrpContext.setProductPlanning(productPlanningRecord);
 
-		final PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator = new PurchaseCandidateAdvisedEventCreator(new PurchaseOrderDemandMatcher());
+		final PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator = new PurchaseCandidateAdvisedEventCreator(
+				new PurchaseOrderDemandMatcher(),
+				new VendorProductInfoService());
 
 		// invoke the method under test
-		final List<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvent = purchaseCandidateAdvisedEventCreator
+		final Optional<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvent = purchaseCandidateAdvisedEventCreator
 				.createPurchaseAdvisedEvent(
 						supplyRequiredDescriptor,
 						mrpContext);
 
-		assertThat(purchaseAdvisedEvent).hasSize(1);
-		assertThat(purchaseAdvisedEvent.get(0).getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
+		assertThat(purchaseAdvisedEvent).isPresent();
+		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
+		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
+
+		final MaterialDescriptor materialDescriptor = purchaseAdvisedEvent.get().getMaterialDescriptor();
+		assertThat(materialDescriptor.getProductId()).isEqualTo(product.getM_Product_ID());
+		assertThat(materialDescriptor.getBPartnerCustomerId()).isNotEqualTo(bPartnerVendorRecord.getC_BPartner_ID()); // the *vendor's* ID may not be entered here
 	}
 }

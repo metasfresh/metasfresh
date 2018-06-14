@@ -1,20 +1,16 @@
-package de.metas.purchasecandidate;
+package org.adempiere.bpartner;
 
-import javax.annotation.Nullable;
+import org.adempiere.util.Check;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.service.OrgId;
-import org.adempiere.warehouse.WarehouseId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-import de.metas.order.OrderAndLineId;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.purchasecandidate.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -35,28 +31,24 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-class PurchaseCandidateImmutableFields
+public class BPGroupId implements RepoIdAware
 {
-	@Nullable
-	OrderAndLineId salesOrderAndLineId;
+	int repoId;
 
-	@NonNull
-	DemandGroupReference groupReference;
+	@JsonCreator
+	public static BPGroupId ofRepoId(final int repoId)
+	{
+		return new BPGroupId(repoId);
+	}
 
-	@NonNull
-	BPartnerId vendorId;
+	private BPGroupId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	WarehouseId warehouseId;
-
-	@NonNull
-	ProductId productId;
-
-	String vendorProductNo;
-
-	boolean aggregatePOs;
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
+	}
 }

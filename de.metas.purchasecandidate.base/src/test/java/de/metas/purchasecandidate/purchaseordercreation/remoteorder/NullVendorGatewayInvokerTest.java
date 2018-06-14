@@ -24,6 +24,7 @@ import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
@@ -60,8 +61,9 @@ public class NullVendorGatewayInvokerTest
 	public void placeRemotePurchaseOrder()
 	{
 		final I_C_UOM EACH = createUOM("Ea");
-		
+
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+				.groupReference(DemandGroupReference.createEmpty())
 				.orgId(OrgId.ofRepoId(10))
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.purchaseDatePromised(SystemTime.asLocalDateTime())
@@ -81,7 +83,7 @@ public class NullVendorGatewayInvokerTest
 		final PurchaseOrderItem purchaseOrderItem = (PurchaseOrderItem)purchaseItems.get(0);
 		assertThat(purchaseOrderItem.getRemotePurchaseOrderId()).isEqualTo(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 	}
-	
+
 	private I_C_UOM createUOM(final String name)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);

@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -49,7 +48,6 @@ public class PurchaseCandidateAggregate
 		return new PurchaseCandidateAggregate(aggregationKey);
 	}
 
-	private final PurchaseDemandId purchaseDemandId;
 	private final PurchaseCandidateAggregateKey aggregationKey;
 
 	private LocalDateTime datePromised;
@@ -60,7 +58,6 @@ public class PurchaseCandidateAggregate
 	private PurchaseCandidateAggregate(@NonNull final PurchaseCandidateAggregateKey aggregationKey)
 	{
 		this.aggregationKey = aggregationKey;
-		purchaseDemandId = PurchaseDemandId.newAggregateId();
 	}
 
 	public void add(@NonNull final PurchaseCandidate purchaseCandidate)
@@ -80,11 +77,6 @@ public class PurchaseCandidateAggregate
 		{
 			salesOrderAndLineIds.add(purchaseCandidate.getSalesOrderAndLineId());
 		}
-	}
-
-	public PurchaseDemandId getPurchaseDemandId()
-	{
-		return purchaseDemandId;
 	}
 
 	public OrgId getOrgId()
@@ -131,5 +123,21 @@ public class PurchaseCandidateAggregate
 	public Set<OrderAndLineId> getSalesOrderAndLineIds()
 	{
 		return ImmutableSet.copyOf(salesOrderAndLineIds);
+	}
+
+	public void calculateAndSetQtyToDeliver()
+	{
+		if (purchaseCandidates.isEmpty())
+		{
+			return;
+		}
+
+		final Quantity qtyToPurchase = purchaseCandidates.get(0).getQtyToPurchase();
+		final Quantity sum = purchaseCandidates
+				.stream()
+				.map(PurchaseCandidate::getQtyToPurchase)
+				.reduce(qtyToPurchase.toZero(), Quantity::add);
+		setQtyToDeliver(sum);
+
 	}
 }

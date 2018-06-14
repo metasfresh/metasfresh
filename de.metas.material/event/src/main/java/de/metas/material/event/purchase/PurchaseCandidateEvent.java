@@ -44,19 +44,23 @@ public abstract class PurchaseCandidateEvent implements MaterialEvent
 
 	private final int purchaseCandidateRepoId;
 
-	private MaterialDescriptor purchaseMaterialDescriptor;
+	private final MaterialDescriptor purchaseMaterialDescriptor;
 
 	private final SupplyRequiredDescriptor supplyRequiredDescriptor;
+
+	private final int vendorId;
 
 	protected PurchaseCandidateEvent(
 			@NonNull final MaterialDescriptor purchaseMaterialDescriptor,
 			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final EventDescriptor eventDescriptor,
-			final int purchaseCandidateRepoId)
+			final int purchaseCandidateRepoId,
+			final int vendorId)
 	{
 		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
 		this.eventDescriptor = eventDescriptor;
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 		this.purchaseCandidateRepoId = Check.assumeGreaterThanZero(purchaseCandidateRepoId, "purchaseCandidateRepoId");
+		this.vendorId = vendorId;
 	}
 }

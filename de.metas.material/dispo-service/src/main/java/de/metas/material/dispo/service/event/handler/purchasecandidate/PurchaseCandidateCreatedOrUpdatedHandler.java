@@ -65,7 +65,7 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
 
-		final MaterialDescriptor purchaseMaterialDescriptor = event.getPurchaseMaterialDescriptor();
+		final MaterialDescriptor materialDescriptor = event.getPurchaseMaterialDescriptor();
 
 		final CandidatesQuery query = createCandidatesQuery(event);
 		final Candidate existingCandidteOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
@@ -86,14 +86,14 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 		}
 
 		final PurchaseDetail purchaseDetail = purchaseDetailBuilder
-				.plannedQty(purchaseMaterialDescriptor.getQuantity())
-				.vendorRepoId(purchaseMaterialDescriptor.getBPartnerId())
+				.plannedQty(materialDescriptor.getQuantity())
+				.vendorRepoId(event.getVendorId())
 				.purchaseCandidateRepoId(event.getPurchaseCandidateRepoId())
 				.advised(Flag.FALSE_DONT_UPDATE)
 				.build();
 
 		final Candidate supplyCandidate = candidateBuilder
-				.materialDescriptor(purchaseMaterialDescriptor)
+				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(purchaseDetail)
 				.additionalDemandDetail(demandDetail)
 				.build();

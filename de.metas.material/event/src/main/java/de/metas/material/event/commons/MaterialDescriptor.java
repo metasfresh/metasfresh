@@ -37,8 +37,7 @@ import lombok.experimental.FieldDefaults;
  * #L%
  */
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-@EqualsAndHashCode(
-		exclude = "quantity", // ignore quantity to avoid trouble comparing e.g. 10 with 10.0 with 1E+1
+@EqualsAndHashCode(exclude = "quantity", // ignore quantity to avoid trouble comparing e.g. 10 with 10.0 with 1E+1
 		callSuper = true)
 @ToString(callSuper = true)
 public class MaterialDescriptor extends ProductDescriptor
@@ -46,8 +45,12 @@ public class MaterialDescriptor extends ProductDescriptor
 	@Getter
 	int warehouseId;
 
+	/**
+	 * Optional, may be <= 0; if set, then the respective candidate allocated to the respective *customer*
+	 * and is not available to other customers.
+	 */
 	@Getter
-	int bPartnerId;
+	int bPartnerCustomerId;
 
 	@Getter
 	BigDecimal quantity;
@@ -79,7 +82,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	@JsonCreator
 	public MaterialDescriptor(
 			@JsonProperty("warehouseId") final int warehouseId,
-			@JsonProperty("bpartnerId") final int bPartnerId,
+			@JsonProperty("bPartnerCustomerId") final int bPartnerCustomerId,
 			@JsonProperty("quantity") final BigDecimal quantity,
 			@JsonProperty("date") final Date date,
 			@JsonProperty("productId") final int productId,
@@ -89,7 +92,7 @@ public class MaterialDescriptor extends ProductDescriptor
 		super(productId, attributesKey, attributeSetInstanceId);
 
 		this.warehouseId = warehouseId;
-		this.bPartnerId = bPartnerId;
+		this.bPartnerCustomerId = bPartnerCustomerId;
 		this.quantity = quantity;
 
 		this.date = date;
@@ -100,7 +103,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	public MaterialDescriptor asssertMaterialDescriptorComplete()
 	{
 		Preconditions.checkArgument(warehouseId > 0, "warehouseId=%s needs to be >0", warehouseId);
-		Preconditions.checkArgument(bPartnerId >= 0, "bPartnerId=%s needs to be >=0", bPartnerId);
+		Preconditions.checkArgument(bPartnerCustomerId >= 0, "bPartnerCustomerId=%s needs to be >=0", bPartnerCustomerId);
 		Preconditions.checkNotNull(quantity, "quantity needs to be not-null");
 		Preconditions.checkNotNull(date, "date needs to not-null");
 
@@ -114,7 +117,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.date(this.date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
-				.bPartnerId(this.bPartnerId)
+				.bPartnerId(this.bPartnerCustomerId)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
 	}
@@ -125,7 +128,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.date(date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
-				.bPartnerId(this.bPartnerId)
+				.bPartnerId(this.bPartnerCustomerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
@@ -137,7 +140,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.productDescriptor(productDescriptor)
 				.date(this.date)
 				.warehouseId(this.warehouseId)
-				.bPartnerId(this.bPartnerId)
+				.bPartnerId(this.bPartnerCustomerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
@@ -149,7 +152,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.warehouseId(warehouseId)
 				.date(this.date)
 				.productDescriptor(this)
-				.bPartnerId(this.bPartnerId)
+				.bPartnerId(this.bPartnerCustomerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();

@@ -1,10 +1,8 @@
-package de.metas.material.planning.event;
+package de.metas.purchasecandidate.material.event;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -23,21 +21,16 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
-import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
-import de.metas.material.planning.pporder.PPOrderAdvisedEventCreator;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -65,20 +58,17 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvent
-public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
+public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
-	private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
-	private final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator;
+	private final PurchaseCandidateAdvisedEventCreator purchaseOrderAdvisedEventCreator;
 
 	private final PostMaterialEventService postMaterialEventService;
 
-	public SupplyRequiredHandler(
-			@NonNull final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator,
-			@NonNull final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator,
+	public PurchaseSupplyRequiredHandler(
+			@NonNull final PurchaseCandidateAdvisedEventCreator purchaseOrderAdvisedEventCreator,
 			@NonNull final PostMaterialEventService fireMaterialEventService)
 	{
-		this.dDOrderAdvisedEventCreator = dDOrderAdvisedEventCreator;
-		this.ppOrderAdvisedEventCreator = ppOrderAdvisedEventCreator;
+		this.purchaseOrderAdvisedEventCreator = purchaseOrderAdvisedEventCreator;
 		this.postMaterialEventService = fireMaterialEventService;
 	}
 
@@ -94,12 +84,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		handleSupplyRequiredEvent(event.getSupplyRequiredDescriptor());
 	}
 
-	/**
-	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as {@link DistributionAdvisedOrCreatedEvent}
-	 *
-	 * @param materialDemandEvent
-	 */
-	public void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
+	private void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
 		final IMutableMRPContext mrpContext = createMRPContextOrNull(descriptor);
 		if (mrpContext == null)
@@ -107,12 +92,9 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 			return; // nothing to do
 		}
 
-		final List<MaterialEvent> events = new ArrayList<>();
-
-		events.addAll(dDOrderAdvisedEventCreator.createDDOrderAdvisedEvents(descriptor, mrpContext));
-		events.addAll(ppOrderAdvisedEventCreator.createPPOrderAdvisedEvents(descriptor, mrpContext));
-
-		events.forEach(postMaterialEventService::postEventNow);
+		purchaseOrderAdvisedEventCreator
+				.createPurchaseAdvisedEvent(descriptor, mrpContext)
+				.ifPresent(postMaterialEventService::postEventNow);
 	}
 
 	private IMutableMRPContext createMRPContextOrNull(@NonNull final SupplyRequiredDescriptor materialDemandEvent)

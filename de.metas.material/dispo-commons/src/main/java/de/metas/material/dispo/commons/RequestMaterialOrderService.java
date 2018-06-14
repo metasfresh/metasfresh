@@ -130,7 +130,7 @@ public class RequestMaterialOrderService
 						.orgId(groupMember.getOrgId())
 						.plantId(prodDetail.getPlantId())
 						.productDescriptor(materialDescriptor)
-						.bPartnerId(materialDescriptor.getBPartnerId())
+						.bPartnerId(materialDescriptor.getBPartnerCustomerId())
 						.qtyRequired(groupMember.getQuantity())
 						.warehouseId(groupMember.getWarehouseId());
 			}
@@ -206,7 +206,7 @@ public class RequestMaterialOrderService
 			final MaterialDescriptor materialDescriptor = groupMember.getMaterialDescriptor();
 			ddOrderLineBuilder
 					.productDescriptor(materialDescriptor)
-					.bPartnerId(materialDescriptor.getBPartnerId())
+					.bPartnerId(materialDescriptor.getBPartnerCustomerId())
 					.qty(groupMember.getQuantity());
 
 			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)

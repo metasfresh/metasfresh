@@ -23,22 +23,22 @@ package org.adempiere.ad.dao.impl;
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.apache.ecs.xhtml.code;
 import org.compiere.util.DB;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.lang.RepoIdAware;
 import lombok.NonNull;
 
 /**
@@ -104,9 +104,8 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 * @param columnName
 	 * @param values
 	 */
-	public InArrayQueryFilter(final String columnName, final Collection<? extends Object> values)
+	public InArrayQueryFilter(@NonNull final String columnName, final Collection<? extends Object> values)
 	{
-		Check.assumeNotNull(columnName, "columnName not null");
 		this.columnName = columnName;
 
 		if (values == null || values.isEmpty())
@@ -115,7 +114,17 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else
 		{
-			this.values = Arrays.asList(values.toArray());
+			this.values = values
+					.stream()
+					.map(value -> {
+						// map RepoIdAwares to their respective repoIds
+						if (value instanceof RepoIdAware)
+						{
+							return ((RepoIdAware)value).getRepoId();
+						}
+						return value;
+					})
+					.collect(Collectors.toCollection(ArrayList::new)); // note that guava's immutableList doesn't allow null values
 		}
 	}
 
@@ -145,14 +154,14 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		this.defaultReturnWhenEmpty = defaultReturnWhenEmpty;
 		return this;
 	}
-	
+
 	public InArrayQueryFilter<T> setEmbedSqlParams(final boolean embedSqlParams)
 	{
-		if(this.embedSqlParams == embedSqlParams)
+		if (this.embedSqlParams == embedSqlParams)
 		{
 			return this;
 		}
-		
+
 		this.embedSqlParams = embedSqlParams;
 		this.sqlBuilt = false;
 		this.sqlWhereClause = null;
@@ -236,7 +245,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 				sqlWhereClause = columnName + " IS NULL";
 				sqlParams = ImmutableList.of();
 			}
-			else if(embedSqlParams)
+			else if (embedSqlParams)
 			{
 				sqlWhereClause = columnName + "=" + DB.TO_SQL(value);
 				sqlParams = ImmutableList.of();
@@ -274,8 +283,8 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 					// First time we are adding a non-NULL value => we are adding "ColumnName IN (" first
 					sqlWhereClauseBuilt.append(columnName).append(" IN (");
 				}
-				
-				if(embedSqlParams)
+
+				if (embedSqlParams)
 				{
 					sqlWhereClauseBuilt.append(DB.TO_SQL(value));
 				}

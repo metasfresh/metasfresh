@@ -1,14 +1,13 @@
 package de.metas.purchasecandidate.material.event;
 
-import java.util.Collection;
-import java.util.Optional;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import org.adempiere.ad.dao.IQueryBL;
+import java.util.Collection;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -25,11 +24,13 @@ import de.metas.order.OrderAndLineId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.VendorProductInfo;
-import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.purchasecandidate.VendorProductInfoService;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -58,20 +59,24 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with PurchaseCandidateRequestedEvent
 public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<PurchaseCandidateRequestedEvent>
 {
+	public static final ThreadLocal<Boolean> INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD = ThreadLocal.withInitial(() -> false);
+
 	private final ProductRepository productRepository;
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final PostMaterialEventService postMaterialEventService;
 
-	public static final ThreadLocal<Boolean> INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD = ThreadLocal.withInitial(() -> false);
+	private final VendorProductInfoService vendorProductInfosRepo;
 
 	public PurchaseCandidateRequestedHandler(
 			@NonNull final ProductRepository productRepository,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
+			@NonNull final VendorProductInfoService vendorProductInfosRepo,
 			@NonNull final PostMaterialEventService postMaterialEventService)
 	{
 		this.productRepository = productRepository;
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		this.postMaterialEventService = postMaterialEventService;
+		this.vendorProductInfosRepo = vendorProductInfosRepo;
 	}
 
 	@Override
@@ -90,61 +95,33 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				event.getSalesOrderLineRepoId());
 
 		final Product product = productRepository.getById(ProductId.ofRepoId(materialDescriptor.getProductId()));
+		final OrgId orgId = OrgId.ofRepoId(event.getEventDescriptor().getOrgId());
 
-		final VendorProductInfo vendorProductInfo = quickAndDirtyCreateVendorProductInfo(event);
+		final VendorProductInfo vendorProductInfos = vendorProductInfosRepo
+				.getDefaultVendorProductInfo(product.getId(), orgId)
+				.orElseThrow(() -> new AdempiereException("Missing vendorProductInfos for productId=" + product.getId() + " and orgId=" + orgId + ";"));
 
-		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidate.builder()
-				.vendorProductInfo(vendorProductInfo)
-				.dateRequired(TimeUtil.asLocalDateTime(materialDescriptor.getDate()))
-				.orgId(OrgId.ofRepoId(event.getEventDescriptor().getOrgId()))
+		final I_C_UOM uomRecord = loadOutOfTrx(product.getUomId().getRepoId(), I_C_UOM.class);
+
+		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidate
+				.builder()
+				.groupReference(DemandGroupReference.createEmpty())
+				.vendorId(vendorProductInfos.getVendorId()) // mandatory
+				.vendorProductNo(vendorProductInfos.getVendorProductNo()) // mandatory
+				.purchaseDatePromised(TimeUtil.asLocalDateTime(materialDescriptor.getDate())) // dateRequired
+
+				.orgId(orgId)
 				.processed(false)
 				.productId(product.getId())
 				// .profitInfo(profitInfo)
 				// .purchaseItem(purchaseItem) purchase items are only returned by the vendor gateway
-				.qtyToPurchase(materialDescriptor.getQuantity())
+				.qtyToPurchase(Quantity.of(materialDescriptor.getQuantity(), uomRecord))
 				.salesOrderAndLineId(orderandLineIdOrNull)
-				// .salesOrderQtyToDeliver() leave it empty..if there is a sales order involved, the value will be set when thge candidate is loaded next time
-				.uomId(product.getUomId().getRepoId())
+
 				.warehouseId(WarehouseId.ofRepoId(materialDescriptor.getWarehouseId()))
 				.build();
 
 		saveCandidateAndPostCreatedEvent(event, newPurchaseCandidate);
-	}
-
-	// TODO remove as vendorProduct is removed from PurchaseCandidate
-	private VendorProductInfo quickAndDirtyCreateVendorProductInfo(@NonNull final PurchaseCandidateRequestedEvent event)
-	{
-		final MaterialDescriptor materialDescriptor = event.getPurchaseMaterialDescriptor();
-
-		final int vendorId;
-		final int productId = materialDescriptor.getProductId();
-
-		if (event.getPurchaseMaterialDescriptor().getBPartnerId() > 0)
-		{
-			vendorId = event.getPurchaseMaterialDescriptor().getBPartnerId();
-		}
-		else
-		{
-			final int orgId = event.getEventDescriptor().getOrgId();
-
-			final Optional<I_C_BPartner_Product> defaultVendor = Services.get(IBPartnerProductDAO.class)
-					.retrieveDefaultVendor(productId, orgId);
-			vendorId = defaultVendor
-					.orElseThrow(() -> new AdempiereException("missing default vendor for productId=" + productId + " and orgId=" + orgId + ";"))
-					.getC_BPartner_ID();
-
-		}
-		final I_C_BPartner_Product bPArtnerProductRecord = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, vendorId)
-				.orderBy().addColumn(I_C_BPartner_Product.COLUMN_C_BPartner_Product_ID).endOrderBy()
-				.create()
-				.first(I_C_BPartner_Product.class);
-
-		final VendorProductInfo vendorProductInfo = VendorProductInfo.builderFromDataRecord().bpartnerProductRecord(bPArtnerProductRecord).build();
-		return vendorProductInfo;
 	}
 
 	private void saveCandidateAndPostCreatedEvent(

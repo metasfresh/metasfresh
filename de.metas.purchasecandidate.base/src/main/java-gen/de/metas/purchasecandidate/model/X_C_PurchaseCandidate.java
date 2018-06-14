@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 201642987L;
+	private static final long serialVersionUID = 190367918L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -51,40 +51,6 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Product getC_BPartner_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Product_ID, org.compiere.model.I_C_BPartner_Product.class);
-	}
-
-	@Override
-	public void setC_BPartner_Product(org.compiere.model.I_C_BPartner_Product C_BPartner_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Product_ID, org.compiere.model.I_C_BPartner_Product.class, C_BPartner_Product);
-	}
-
-	/** Set Geschäftspartner-Produkt.
-		@param C_BPartner_Product_ID Geschäftspartner-Produkt	  */
-	@Override
-	public void setC_BPartner_Product_ID (int C_BPartner_Product_ID)
-	{
-		if (C_BPartner_Product_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_Product_ID, Integer.valueOf(C_BPartner_Product_ID));
-	}
-
-	/** Get Geschäftspartner-Produkt.
-		@return Geschäftspartner-Produkt	  */
-	@Override
-	public int getC_BPartner_Product_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
@@ -256,7 +222,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Kd-Rohertragspreis.
+	/** Set VK Netto.
 		@param CustomerPriceGrossProfit 
 		Effektiver Verkaufspreis minus Skonto und Rückerstattung
 	  */
@@ -266,7 +232,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_CustomerPriceGrossProfit, CustomerPriceGrossProfit);
 	}
 
-	/** Get Kd-Rohertragspreis.
+	/** Get VK Netto.
 		@return Effektiver Verkaufspreis minus Skonto und Rückerstattung
 	  */
 	@Override
@@ -292,6 +258,22 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public java.sql.Timestamp getDateRequired () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateRequired);
+	}
+
+	/** Set Bedarfs-ID.
+		@param DemandReference Bedarfs-ID	  */
+	@Override
+	public void setDemandReference (java.lang.String DemandReference)
+	{
+		set_Value (COLUMNNAME_DemandReference, DemandReference);
+	}
+
+	/** Get Bedarfs-ID.
+		@return Bedarfs-ID	  */
+	@Override
+	public java.lang.String getDemandReference () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DemandReference);
 	}
 
 	/** Set Aggregate Purchase Orders.
@@ -519,22 +501,6 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Bedarfs-ID.
-		@param PurchaseDemandId Bedarfs-ID	  */
-	@Override
-	public void setPurchaseDemandId (java.lang.String PurchaseDemandId)
-	{
-		set_Value (COLUMNNAME_PurchaseDemandId, PurchaseDemandId);
-	}
-
-	/** Get Bedarfs-ID.
-		@return Bedarfs-ID	  */
-	@Override
-	public java.lang.String getPurchaseDemandId () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_PurchaseDemandId);
-	}
-
 	/** Set Bestellte Menge.
 		@param PurchasedQty Bestellte Menge	  */
 	@Override
@@ -554,9 +520,9 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** Set VK Preis netto.
+	/** Set EK Netto.
 		@param PurchasePriceActual 
-		Effektiver Verkaufspreis
+		Effektiver Einkaufspreis
 	  */
 	@Override
 	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual)
@@ -564,8 +530,8 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_PurchasePriceActual, PurchasePriceActual);
 	}
 
-	/** Get VK Preis netto.
-		@return Effektiver Verkaufspreis
+	/** Get EK Netto.
+		@return Effektiver Einkaufspreis
 	  */
 	@Override
 	public java.math.BigDecimal getPurchasePriceActual () 

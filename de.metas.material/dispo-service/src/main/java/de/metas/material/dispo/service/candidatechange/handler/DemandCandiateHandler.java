@@ -165,35 +165,6 @@ public class DemandCandiateHandler implements CandidateHandler
 				type, demandCandidate);
 	}
 
-//	private Candidate retrieveSupplyParentStockWithoutParentIdOrNull(@NonNull final Candidate demandCandidateWithId)
-//	{
-//		final CandidatesQuery queryForExistingSupply = CandidatesQuery.builder()
-//				.type(CandidateType.SUPPLY)
-//				.demandDetail(demandCandidateWithId.getDemandDetail())
-//				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(demandCandidateWithId.getMaterialDescriptor()))
-//				.build();
-//
-//		final Candidate existingSupplyParentStockWithoutOwnParentId;
-//		final Candidate existingSupply = candidateRepository.retrieveLatestMatchOrNull(queryForExistingSupply);
-//		if (existingSupply != null && existingSupply.getParentId() > 0)
-//		{
-//			final Candidate existingSupplyParentStock = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(existingSupply.getParentId()));
-//			if (existingSupplyParentStock.getParentId() > 0)  // we only want to dock with currently "dangling" stock records
-//			{
-//				existingSupplyParentStockWithoutOwnParentId = null;
-//			}
-//			else
-//			{
-//				existingSupplyParentStockWithoutOwnParentId = existingSupplyParentStock;
-//			}
-//		}
-//		else
-//		{
-//			existingSupplyParentStockWithoutOwnParentId = null;
-//		}
-//		return existingSupplyParentStockWithoutOwnParentId;
-//	}
-
 	private void fireSupplyRequiredEventIfQtyBelowZero(@NonNull final Candidate demandCandidateWithId)
 	{
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
