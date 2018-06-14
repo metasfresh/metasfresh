@@ -168,7 +168,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 	}
 
 	@Override
-	public void save(final Document processParameters)
+	public SaveResult save(final Document processParameters)
 	{
 		final int adPInstanceId = processParameters.getDocumentIdAsInt();
 		final List<ProcessInfoParameter> piParams = processParameters.getFieldViews()
@@ -176,6 +176,8 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 				.map(field -> createProcessInfoParameter(field))
 				.collect(GuavaCollectors.toImmutableList());
 		adPInstanceDAO.saveParameterToDB(adPInstanceId, piParams);
+		
+		return SaveResult.SAVED;
 	}
 
 	private static ProcessInfoParameter createProcessInfoParameter(final IDocumentFieldView field)
