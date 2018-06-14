@@ -33,3 +33,15 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Field SET DisplayLogic='@DocStatus@=''DR''',Updated=TO_TIMESTAMP('2018-06-13 15:45:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=564576
 ;
 
+
+-- 2018-06-14T09:17:37.157
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='1=2',Updated=TO_TIMESTAMP('2018-06-14 09:17:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=564576
+;
+
+-- 2018-06-14T09:18:46.757
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Processed@=N',Updated=TO_TIMESTAMP('2018-06-14 09:18:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=564576
+;
+
+
