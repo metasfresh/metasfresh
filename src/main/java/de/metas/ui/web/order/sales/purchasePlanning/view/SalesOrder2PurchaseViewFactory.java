@@ -26,7 +26,6 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseDemand;
-import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidatesService;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
@@ -130,7 +129,6 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 		final Quantity qtyToPurchase = qtyOrdered.subtract(qtyDelivered);
 
 		return PurchaseDemand.builder()
-				.id(PurchaseDemandId.ofOrderAndLineId(salesOrderLine.getId()))
 				//
 				.orgId(salesOrderLine.getOrgId())
 				.warehouseId(salesOrderLine.getWarehouseId())

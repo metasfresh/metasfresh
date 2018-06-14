@@ -68,7 +68,7 @@ public class PurchaseCandidates2PurchaseViewFactory extends PurchaseViewFactoryT
 	}
 
 	@Override
-	protected List<PurchaseDemand> getDemands(final CreateViewRequest request)
+	protected List<PurchaseDemand> getDemands(@NonNull final CreateViewRequest request)
 	{
 		final Set<PurchaseCandidateId> purchaseCandidateIds = PurchaseCandidateId.ofRepoIds(request.getFilterOnlyIds());
 		Check.assumeNotEmpty(purchaseCandidateIds, "purchaseCandidateIds is not empty");
@@ -82,10 +82,9 @@ public class PurchaseCandidates2PurchaseViewFactory extends PurchaseViewFactoryT
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static PurchaseDemand toPurchaseDemand(final PurchaseCandidateAggregate aggregate)
+	private static PurchaseDemand toPurchaseDemand(@NonNull final PurchaseCandidateAggregate aggregate)
 	{
 		return PurchaseDemand.builder()
-				.id(aggregate.getPurchaseDemandId())
 				//
 				.orgId(aggregate.getOrgId())
 				.warehouseId(aggregate.getWarehouseId())

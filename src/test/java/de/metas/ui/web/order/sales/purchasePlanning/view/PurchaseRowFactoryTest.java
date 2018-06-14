@@ -25,13 +25,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.money.Currency;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
@@ -73,11 +73,10 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 public class PurchaseRowFactoryTest
 {
 	@Autowired
-	PurchaseRowFactory purchaseRowFactory;
+	private PurchaseRowFactory purchaseRowFactory;
 
 	private Currency currency;
 
-	private I_C_UOM EACH;
 	private Quantity ONE;
 
 	@Before
@@ -87,8 +86,8 @@ public class PurchaseRowFactoryTest
 
 		currency = PurchaseRowTestTools.createCurrency();
 
-		this.EACH = PurchaseRowTestTools.createUOM("Ea");
-		this.ONE = Quantity.of(BigDecimal.ONE, EACH);
+		final I_C_UOM each = PurchaseRowTestTools.createUOM("Ea");
+		this.ONE = Quantity.of(BigDecimal.ONE, each);
 	}
 
 	@Test
@@ -96,12 +95,10 @@ public class PurchaseRowFactoryTest
 	{
 		final VendorProductInfo vendorProductInfo = createVendorProductInfo();
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(30, vendorProductInfo);
-		final PurchaseDemandId demandId = PurchaseDemandId.ofTableAndRecordId(
-				I_C_OrderLine.Table_Name,
-				purchaseCandidate.getSalesOrderAndLineId().getOrderLineRepoId());
+		final PurchaseDemandId demandId = PurchaseDemandId.ofId(40);
 
 		final PurchaseRow candidateRow = purchaseRowFactory.lineRowBuilder()
-				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(purchaseCandidate, demandId, vendorProductInfo))
+				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(demandId, purchaseCandidate, vendorProductInfo))
 				.convertAmountsToCurrency(currency)
 				.build();
 
@@ -123,6 +120,7 @@ public class PurchaseRowFactoryTest
 
 		return PurchaseCandidate.builder()
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
+				.groupReference(DemandGroupReference.createEmpty())
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(1, 2))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
@@ -133,7 +131,7 @@ public class PurchaseRowFactoryTest
 				.qtyToPurchase(ONE)
 				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.profitInfo(profitInfo)
-				.processed(true) // imporant if we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
+				.processed(true) // important in case we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
 				.locked(false)
 				.build();
 	}
@@ -158,6 +156,7 @@ public class PurchaseRowFactoryTest
 
 		return VendorProductInfo.builder()
 				.vendorId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
+				.defaultVendor(false)
 				.productAndCategoryId(productAndCategoryId)
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")

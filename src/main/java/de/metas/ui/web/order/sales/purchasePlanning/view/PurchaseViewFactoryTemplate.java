@@ -195,7 +195,9 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 		return ImmutableList.of();
 	}
 
-	private final PurchaseRowsSupplier createRowsSupplier(final ViewId viewId, final List<PurchaseDemandWithCandidates> purchaseDemandWithCandidatesList)
+	private final PurchaseRowsSupplier createRowsSupplier(
+			final ViewId viewId,
+			final List<PurchaseDemandWithCandidates> purchaseDemandWithCandidatesList)
 	{
 		final PurchaseRowsSupplier rowsSupplier = PurchaseRowsLoader.builder()
 				.purchaseDemandWithCandidatesList(purchaseDemandWithCandidatesList)

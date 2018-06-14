@@ -41,6 +41,7 @@ import de.metas.order.OrderLineRepository;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
@@ -168,6 +169,7 @@ public class PurchaseRowsLoaderTest
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.vendorId(BPartnerId.ofRepoId(bPartnerVendor.getC_BPartner_ID()))
+				.defaultVendor(false)
 				.productAndCategoryId(ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
 				.vendorProductNo("bPartnerProduct.VendorProductNo")
 				.vendorProductName("bPartnerProduct.ProductName")
@@ -177,7 +179,11 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseDemand demand = SalesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, vendorProductInfo);
-		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(demand, purchaseCandidate, vendorProductInfo);
+
+		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(
+				demand,
+				purchaseCandidate,
+				vendorProductInfo);
 
 		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
 				.purchaseDemandWithCandidatesList(demandWithCandidates)
@@ -234,6 +240,7 @@ public class PurchaseRowsLoaderTest
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currency);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+				.groupReference(DemandGroupReference.createEmpty())
 				.orgId(OrgId.ofRepoId(20))
 				.purchaseDatePromised(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
@@ -255,7 +262,7 @@ public class PurchaseRowsLoaderTest
 	{
 		return ImmutableList.of(PurchaseDemandWithCandidates.builder()
 				.purchaseDemand(demand)
-				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(purchaseCandidate, demand.getId(), vendorProductInfo))
+				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(demand.getId(), purchaseCandidate, vendorProductInfo))
 				.build());
 	}
 }

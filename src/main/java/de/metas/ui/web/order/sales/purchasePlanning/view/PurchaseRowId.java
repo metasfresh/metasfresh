@@ -199,8 +199,7 @@ public final class PurchaseRowId
 		final StringBuilder sb = new StringBuilder();
 		sb.append(type.getCode());
 
-		sb.append(PARTS_SEPARATOR).append(purchaseDemandId.getTableName());
-		sb.append(PARTS_SEPARATOR).append(purchaseDemandId.getRecordId());
+		sb.append(PARTS_SEPARATOR).append(purchaseDemandId.getId());
 
 		if (type == PurchaseRowType.GROUP)
 		{
@@ -233,7 +232,7 @@ public final class PurchaseRowId
 	{
 		final List<String> parts = PARTS_SPLITTER.splitToList(json);
 		final int partsCount = parts.size();
-		if (partsCount < 3)
+		if (partsCount < 2) // we expect at least the type and purchaseDemandId to be encoded in the json string
 		{
 			throw new AdempiereException("Invalid format: " + json);
 		}
@@ -242,24 +241,22 @@ public final class PurchaseRowId
 		{
 			final PurchaseRowType type = PurchaseRowType.ofCode(parts.get(0));
 
-			final String purchaseDemandId_tableName = parts.get(1);
-			final int purchaseDemandId_recordId = Integer.parseInt(parts.get(2));
-			final PurchaseDemandId purchaseDemandId = PurchaseDemandId.ofTableAndRecordId(purchaseDemandId_tableName, purchaseDemandId_recordId);
+			final PurchaseDemandId purchaseDemandId = PurchaseDemandId.ofId(Integer.parseInt(parts.get(1)));
 
 			if (type == PurchaseRowType.GROUP)
 			{
 				return new PurchaseRowId(purchaseDemandId, documentId);
 			}
 
-			final BPartnerId vendorId = BPartnerId.ofRepoId(Integer.parseInt(parts.get(3)));
+			final BPartnerId vendorId = BPartnerId.ofRepoId(Integer.parseInt(parts.get(2)));
 			if (type == PurchaseRowType.LINE)
 			{
-				final boolean readonly = decodeReadonly(parts.get(4));
+				final boolean readonly = decodeReadonly(parts.get(3));
 				return new PurchaseRowId(purchaseDemandId, vendorId, readonly, documentId);
 			}
 
-			final Type availabilityType = Type.valueOf(parts.get(4));
-			final String availabilityDistinguisher = parts.get(5);
+			final Type availabilityType = Type.valueOf(parts.get(3));
+			final String availabilityDistinguisher = parts.get(4);
 			if (type == PurchaseRowType.AVAILABILITY_DETAIL)
 			{
 				return new PurchaseRowId(purchaseDemandId, vendorId, availabilityType, availabilityDistinguisher, documentId);

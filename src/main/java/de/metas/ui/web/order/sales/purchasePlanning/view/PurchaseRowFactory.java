@@ -83,7 +83,7 @@ public class PurchaseRowFactory
 		return PurchaseRow.lineRowBuilder()
 				.purchaseProfitInfoService(purchaseProfitInfoService)
 				.lookups(lookups)
-				.purchaseCandidatesGroup(purchaseCandidatesGroup.changeProfitInfo(profitInfo))
+				.purchaseCandidatesGroup(purchaseCandidatesGroup.withProfitInfo(profitInfo))
 				.build();
 	}
 
