@@ -32,6 +32,8 @@ Here come the actual release notes:
     * Fixes the Tab usage in Batch entry after confirming selection with mouse.
   * [#1774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1774) Cannot stop uploading a file
     * Extend File Upload Feature, now possible to cancel the upload.
+  * [#1840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1840) 404 error shall be centered
+    * Fxes the 404 error message. Now centered in WebUI Layout.
 
 # metasfresh 5.61 (2018-24)
 ## Features
