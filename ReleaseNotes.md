@@ -19,6 +19,8 @@ Here come the actual release notes:
     * Improvement of Businesspartner and Sales Order Widnow in WebUI. Adding the Field for Delivery Rule.
 
 * metasfresh-webui-frontend
+  * [#1417](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1417) Shortcuts for delete modal window
+    * Improved shortcut Handling in delete record modal overlay.
   * [#1686](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1686) API login for cypress
     * New Feature for Testing Framework Cypress, now allowing the API to do a login.
   * [#1722](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1722) Typing in dropdown fields
