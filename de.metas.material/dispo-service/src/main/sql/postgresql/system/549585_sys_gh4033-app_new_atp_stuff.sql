@@ -1,4 +1,7 @@
 
+
+DROP VIEW IF EXISTS md_candidate_stock_v;
+
 -- 2018-06-13T19:57:25.177
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('c_purchasecandidate','M_AttributeInstance_ID','NUMERIC(10)',null,null)
@@ -196,4 +199,3 @@ $BODY$
 COMMENT ON FUNCTION de_metas_material.retrieve_atp_at_date_debug(timestamp with time zone)
   IS 'Like de_metas_material.retrieve_atp_at_date, but returns additional columns that are not part of the index.';
 
-DROP VIEW IF EXISTS md_candidate_stock_v;
