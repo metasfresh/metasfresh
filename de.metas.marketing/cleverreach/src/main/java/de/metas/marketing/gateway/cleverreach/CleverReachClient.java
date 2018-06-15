@@ -208,14 +208,14 @@ public class CleverReachClient implements PlatformClient
 		final Predicate<T> predicate = r -> Objects.equals(r.getPlatformId(), platformId);
 		final String errorMessage = StringUtils.formatMessage("Data record's platformId={} does not match this client's platFormId={}", platformId);
 
-		final Map<Boolean, List<T>> personsWithAndWithoutEmail = partitionByOkAndNotOk(records, predicate);
+		final Map<Boolean, List<T>> okAndNotOkDataRecords = partitionByOkAndNotOk(records, predicate);
 
-		personsWithAndWithoutEmail.get(false)
+		okAndNotOkDataRecords.get(false)
 				.stream()
 				.map(p -> LocalToRemoteSyncResult.error(p, errorMessage))
 				.forEach(resultToAddErrorsTo::add);
 
-		final List<T> personsWithEmail = personsWithAndWithoutEmail.get(true);
+		final List<T> personsWithEmail = okAndNotOkDataRecords.get(true);
 		return personsWithEmail;
 	}
 
@@ -259,20 +259,20 @@ public class CleverReachClient implements PlatformClient
 		return personsWithEmailOrRemoteId;
 	}
 
-	public static <T extends DataRecord> Map<Boolean, List<T>> partitionByOkAndNotOk(
-			final List<T> contactPersonsToPartition,
+	private static <T extends DataRecord> Map<Boolean, List<T>> partitionByOkAndNotOk(
+			final List<T> dataRecordToPartition,
 			final Predicate<T> okPredicate)
 	{
-		final Map<Boolean, List<T>> personsWithAndWithoutEmail = contactPersonsToPartition
+		final Map<Boolean, List<T>> okAndNotOkDataRecords = dataRecordToPartition
 				.stream()
 				.collect(Collectors.partitioningBy(okPredicate));
-		return personsWithAndWithoutEmail;
+		return okAndNotOkDataRecords;
 	}
 
 	@Override
 	public List<LocalToRemoteSyncResult> syncContactPersonsLocalToRemote(
 			@NonNull final Campaign campaign,
-			@NonNull final List<ContactPerson> contactPersonss)
+			@NonNull final List<ContactPerson> contactPersons)
 	{
 		final ImmutableList.Builder<LocalToRemoteSyncResult> syncResults = ImmutableList.builder();
 
@@ -284,7 +284,7 @@ public class CleverReachClient implements PlatformClient
 		// make sure that we only send records that have a syntactically valid email and that have the correct platform-id
 		final List<ContactPerson> personsWithEmail = filterForRecordsWithCorrectPlatformId(
 				filterForPersonsWithEmail(
-						contactPersonss,
+						contactPersons,
 						syncResults),
 				syncResults);
 
@@ -333,7 +333,9 @@ public class CleverReachClient implements PlatformClient
 					final String resultRemoteId = String.valueOf(resultMap.get("id"));
 
 					final ContactPerson person = personsWithEmail.get(i);
-					final ContactPerson updatedPerson = person.toBuilder().remoteId(resultRemoteId).build();
+					final ContactPerson updatedPerson = person.toBuilder()
+							.remoteId(resultRemoteId)
+							.build();
 
 					syncResults.add(LocalToRemoteSyncResult.upserted(updatedPerson));
 				}
@@ -587,8 +589,12 @@ public class CleverReachClient implements PlatformClient
 	{
 		if (Check.isEmpty(campaign.getRemoteId()))
 		{
-			createGroup(campaign);
-			return LocalToRemoteSyncResult.inserted(campaign);
+			final Group createdGroup = createGroup(campaign);
+			final Campaign campaignWithRemoteId = campaign
+					.toBuilder()
+					.remoteId(Integer.toString(createdGroup.getId()))
+					.build();
+			return LocalToRemoteSyncResult.inserted(campaignWithRemoteId);
 		}
 
 		updateGroup(campaign);
