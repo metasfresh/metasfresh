@@ -137,7 +137,6 @@ class RawList extends PureComponent {
       onOpenDropdown();
     } else {
       onCloseDropdown();
-      this.clearTypedText();
     }
   };
 
@@ -162,7 +161,6 @@ class RawList extends PureComponent {
         () => {
           onCloseDropdown();
           onBlur();
-          this.clearTypedText();
         }
       );
     }
@@ -182,7 +180,6 @@ class RawList extends PureComponent {
         onSelect(selected);
       }
       onCloseDropdown();
-      this.clearTypedText();
 
       setTimeout(() => {
         this.dropdown.focus();
@@ -207,7 +204,6 @@ class RawList extends PureComponent {
     disableAutofocus && disableAutofocus();
     this.handleBlur();
     onCloseDropdown && onCloseDropdown();
-    this.clearTypedText();
   };
 
   handleKeyDown = e => {
@@ -236,8 +232,6 @@ class RawList extends PureComponent {
       } else {
         this.handleBlur();
       }
-
-      this.clearTypedText();
     }
   };
 
@@ -246,18 +240,6 @@ class RawList extends PureComponent {
 
     this.dropdown.blur();
     onBlur();
-  };
-
-  updateTypedText = typedText => {
-    this.setState({
-      typedText,
-    });
-  };
-
-  clearTypedText = () => {
-    this.setState({
-      typedText: '',
-    });
   };
 
   render() {
@@ -281,7 +263,6 @@ class RawList extends PureComponent {
       onFocus,
       clearable,
     } = this.props;
-    const { typedText } = this.state;
 
     let value = '';
     let placeholder = '';
@@ -359,7 +340,7 @@ class RawList extends PureComponent {
                 readOnly
                 tabIndex={-1}
                 placeholder={placeholder}
-                value={typedText || value}
+                value={value}
                 disabled={readonly || disabled}
               />
             </div>
@@ -386,7 +367,6 @@ class RawList extends PureComponent {
               selected={this.state.selected}
               width={this.dropdown.offsetWidth}
               onChange={this.handleTemporarySelection}
-              onSearchChange={this.updateTypedText}
               onSelect={this.handleSelect}
               onCancel={this.handleCancel}
             />
