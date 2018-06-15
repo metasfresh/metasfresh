@@ -59,7 +59,6 @@ public class CampaignRepository
 				.stream()
 				.map(CampaignRepository::createFromModel)
 				.collect(ImmutableList.toImmutableList());
-
 	}
 
 	private static Campaign createFromModel(@NonNull final I_MKTG_Campaign campaignRecord)
@@ -69,7 +68,6 @@ public class CampaignRepository
 				campaignRecord.getRemoteRecordId(),
 				PlatformId.ofRepoId(campaignRecord.getMKTG_Platform_ID()),
 				CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
-
 	}
 
 	public void addContactPersonToCampaign(

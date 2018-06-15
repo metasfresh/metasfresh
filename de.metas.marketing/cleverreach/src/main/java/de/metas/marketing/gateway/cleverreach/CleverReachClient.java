@@ -272,7 +272,7 @@ public class CleverReachClient implements PlatformClient
 	@Override
 	public List<LocalToRemoteSyncResult> syncContactPersonsLocalToRemote(
 			@NonNull final Campaign campaign,
-			@NonNull final List<ContactPerson> contactPersonss)
+			@NonNull final List<ContactPerson> contactPersons)
 	{
 		final ImmutableList.Builder<LocalToRemoteSyncResult> syncResults = ImmutableList.builder();
 
@@ -284,7 +284,7 @@ public class CleverReachClient implements PlatformClient
 		// make sure that we only send records that have a syntactically valid email and that have the correct platform-id
 		final List<ContactPerson> personsWithEmail = filterForRecordsWithCorrectPlatformId(
 				filterForPersonsWithEmail(
-						contactPersonss,
+						contactPersons,
 						syncResults),
 				syncResults);
 
@@ -333,7 +333,9 @@ public class CleverReachClient implements PlatformClient
 					final String resultRemoteId = String.valueOf(resultMap.get("id"));
 
 					final ContactPerson person = personsWithEmail.get(i);
-					final ContactPerson updatedPerson = person.toBuilder().remoteId(resultRemoteId).build();
+					final ContactPerson updatedPerson = person.toBuilder()
+							.remoteId(resultRemoteId)
+							.build();
 
 					syncResults.add(LocalToRemoteSyncResult.upserted(updatedPerson));
 				}
