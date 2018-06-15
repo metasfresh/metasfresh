@@ -122,13 +122,17 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 	}
 
 	@VisibleForTesting
-	static PurchaseDemand createDemand(final SalesOrderLine salesOrderLine)
+	PurchaseDemand createDemand(final SalesOrderLine salesOrderLine)
 	{
 		final Quantity qtyOrdered = salesOrderLine.getOrderedQty();
 		final Quantity qtyDelivered = salesOrderLine.getDeliveredQty();
 		final Quantity qtyToPurchase = qtyOrdered.subtract(qtyDelivered);
 
+		final OrderLineId ordeRLineId = salesOrderLine.getId().getOrderLineId();
+		final List<PurchaseCandidateId> existingPurchaseCandidates = purchaseCandidatesRepo.getAllIdsBySalesOrderLineId(ordeRLineId);
+
 		return PurchaseDemand.builder()
+				.existingPurchaseCandidateIds(existingPurchaseCandidates)
 				//
 				.orgId(salesOrderLine.getOrgId())
 				.warehouseId(salesOrderLine.getWarehouseId())
@@ -178,7 +182,7 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 		}
 	}
 
-	private List<PurchaseCandidate> saveRows(final PurchaseView purchaseView)
+	private List<PurchaseCandidate> saveRows(@NonNull final PurchaseView purchaseView)
 	{
 		final List<PurchaseRow> rows = purchaseView.getRows();
 

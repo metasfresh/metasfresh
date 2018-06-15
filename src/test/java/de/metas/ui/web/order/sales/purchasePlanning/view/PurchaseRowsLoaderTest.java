@@ -42,20 +42,27 @@ import de.metas.order.OrderLineRepository;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.BPPurchaseScheduleRepository;
+import de.metas.purchasecandidate.BPPurchaseScheduleService;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
+import de.metas.purchasecandidate.PurchaseDemandWithCandidatesService;
+import de.metas.purchasecandidate.ReferenceGenerator;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.purchasecandidate.availability.AvailabilityCheckService;
 import de.metas.purchasecandidate.availability.AvailabilityMultiResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.purchasecandidate.availability.PurchaseCandidatesAvailabilityRequest;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowsLoader.PurchaseRowsList;
 import mockit.Expectations;
@@ -104,6 +111,8 @@ public class PurchaseRowsLoaderTest
 
 	private static CurrencyRepository currencyRepository;
 
+	private SalesOrder2PurchaseViewFactory salesOrder2PurchaseViewFactory;
+
 	@Before
 	public void init()
 	{
@@ -147,7 +156,33 @@ public class PurchaseRowsLoaderTest
 		currency.setStdPrecision(2);
 		saveRecord(currency);
 
+		// wire together a SalesOrder2PurchaseViewFactory
 		currencyRepository = new CurrencyRepository();
+
+		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
+				new PurchaseItemRepository(),
+				currencyRepository,
+				new ReferenceGenerator());
+
+		final DoNothingPurchaseProfitInfoServiceImpl purchaseProfitInfoService = new DoNothingPurchaseProfitInfoServiceImpl();
+
+		final PurchaseDemandWithCandidatesService purchaseDemandWithCandidatesService = new PurchaseDemandWithCandidatesService(
+				purchaseCandidateRepository,
+				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()),
+				new VendorProductInfoService(),
+				purchaseProfitInfoService);
+
+		final PurchaseRowFactory purchaseRowFactory = new PurchaseRowFactory(
+				new AvailableToPromiseRepository(),
+				purchaseProfitInfoService);
+
+		salesOrder2PurchaseViewFactory = new SalesOrder2PurchaseViewFactory(
+				purchaseDemandWithCandidatesService,
+				availabilityCheckService, // mocked
+				purchaseCandidateRepository,
+				purchaseRowFactory,
+				new SalesOrderLineRepository(new OrderLineRepository(currencyRepository)));
+
 	}
 
 	@Test
@@ -179,7 +214,7 @@ public class PurchaseRowsLoaderTest
 						.build())
 				.build();
 
-		final PurchaseDemand demand = SalesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
+		final PurchaseDemand demand = salesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, vendorProductInfo);
 
 		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(

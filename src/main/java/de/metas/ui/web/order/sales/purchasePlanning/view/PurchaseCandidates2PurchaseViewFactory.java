@@ -85,6 +85,7 @@ public class PurchaseCandidates2PurchaseViewFactory extends PurchaseViewFactoryT
 	private static PurchaseDemand toPurchaseDemand(@NonNull final PurchaseCandidateAggregate aggregate)
 	{
 		return PurchaseDemand.builder()
+				.existingPurchaseCandidateIds(aggregate.getPurchaseCandidateIds())
 				//
 				.orgId(aggregate.getOrgId())
 				.warehouseId(aggregate.getWarehouseId())
