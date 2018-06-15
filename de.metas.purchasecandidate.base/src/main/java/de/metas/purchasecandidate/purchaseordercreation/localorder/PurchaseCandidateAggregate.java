@@ -73,9 +73,10 @@ public class PurchaseCandidateAggregate
 		//
 		datePromised = TimeUtil.min(datePromised, purchaseCandidate.getPurchaseDatePromised());
 
-		if (purchaseCandidate.getSalesOrderAndLineId() != null)
+		final OrderAndLineId orderAndLineId = purchaseCandidate.getSalesOrderAndLineIdOrNull();
+		if (orderAndLineId != null)
 		{
-			salesOrderAndLineIds.add(purchaseCandidate.getSalesOrderAndLineId());
+			salesOrderAndLineIds.add(orderAndLineId);
 		}
 	}
 
@@ -96,7 +97,7 @@ public class PurchaseCandidateAggregate
 
 	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
-		return AttributeSetInstanceId.NONE;
+		return aggregationKey.getAttributeSetInstanceId();
 	}
 
 	public Quantity getQtyToDeliver()

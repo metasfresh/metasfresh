@@ -6,12 +6,14 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
@@ -165,9 +167,9 @@ public class PurchaseDemandWithCandidatesService
 			{
 				purchaseCandidateIds.add(candidate.getId());
 			}
-			if (candidate.getSalesOrderAndLineId() != null)
+			if (candidate.getSalesOrderAndLineIdOrNull() != null)
 			{
-				salesOrderAndLineIds.add(candidate.getSalesOrderAndLineId());
+				salesOrderAndLineIds.add(candidate.getSalesOrderAndLineIdOrNull());
 			}
 
 			groupReferences.add(candidate.getGroupReference());
@@ -267,11 +269,18 @@ public class PurchaseDemandWithCandidatesService
 	}
 
 	private PurchaseCandidatesGroup createNewPurchaseCandidatesGroup(
-			@NonNull final PurchaseDemand demand,
+			@NonNull final PurchaseDemand purchaseDemand,
 			@NonNull final VendorProductInfo vendorProductInfo)
 	{
-		final WarehouseId warehouseId = getPurchaseWarehouseId(demand);
-		final LocalDateTime salesDatePromised = demand.getSalesDatePromised();
+		Check.errorUnless(Objects.equals(purchaseDemand.getProductId(), vendorProductInfo.getProductId()),
+				"The given purchaseDemand and vendorProductInfo have different productIds; purchaseDemand={}; vendorProductInfo={}",
+				purchaseDemand, vendorProductInfo);
+		Check.errorUnless(Objects.equals(purchaseDemand.getAttributeSetInstanceId(), vendorProductInfo.getAttributeSetInstanceId()),
+				"The given purchaseDemand and vendorProductInfo have different attributeSetInstanceIds; purchaseDemand={}; vendorProductInfo={}",
+				purchaseDemand, vendorProductInfo);
+
+		final WarehouseId warehouseId = getPurchaseWarehouseId(purchaseDemand);
+		final LocalDateTime salesDatePromised = purchaseDemand.getSalesDatePromised();
 
 		//
 		// PurchaseDatePromised and ReminderTime
@@ -285,13 +294,13 @@ public class PurchaseDemandWithCandidatesService
 
 		//
 		// QtyToPurchase=0
-		final Quantity qtyToPurchase = Quantity.zero(uomsRepo.getById(demand.getUOMId()));
+		final Quantity qtyToPurchase = Quantity.zero(uomsRepo.getById(purchaseDemand.getUOMId()));
 
 		//
 		// PurchaseProfitInfo
 		final PurchaseProfitInfo purchaseProfitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest
 				.builder()
-				.salesOrderAndLineId(demand.getSalesOrderAndLineId())
+				.salesOrderAndLineId(purchaseDemand.getSalesOrderAndLineIdOrNull()) // the builder works with .salesOrderAndLineId(null)
 				.qtyToPurchase(qtyToPurchase)
 				.vendorProductInfo(vendorProductInfo)
 				.build());
@@ -299,17 +308,18 @@ public class PurchaseDemandWithCandidatesService
 		//
 		// Assemble the PurchaseCandidate
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.salesOrderAndLineId(demand.getSalesOrderAndLineId()) // the builder works fine with .salesOrderAndLineId(null)
+				.salesOrderAndLineIdOrNull(purchaseDemand.getSalesOrderAndLineIdOrNull())
 				//
 				.purchaseDatePromised(purchaseDatePromised)
 				.reminderTime(reminderTime)
 				//
-				.orgId(demand.getOrgId())
+				.orgId(purchaseDemand.getOrgId())
 				.warehouseId(warehouseId)
 				.vendorId(vendorId)
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				//
 				.productId(vendorProductInfo.getProductId())
+				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
 				//
 				.qtyToPurchase(qtyToPurchase)
 				//
@@ -320,7 +330,7 @@ public class PurchaseDemandWithCandidatesService
 				.build();
 
 		//
-		return PurchaseCandidatesGroup.of(demand.getId(), purchaseCandidate, vendorProductInfo);
+		return PurchaseCandidatesGroup.of(purchaseDemand.getId(), purchaseCandidate, vendorProductInfo);
 	}
 
 	private LocalDateTime calculatePurchaseDatePromised(final LocalDateTime salesDatePromised, final BPPurchaseSchedule bpPurchaseSchedule)

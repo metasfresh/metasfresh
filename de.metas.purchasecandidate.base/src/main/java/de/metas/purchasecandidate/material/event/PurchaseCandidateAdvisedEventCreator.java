@@ -7,7 +7,6 @@ import org.adempiere.util.Loggables;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
@@ -73,17 +72,13 @@ public class PurchaseCandidateAdvisedEventCreator
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
-		final MaterialDescriptor purchaseMaterialDescriptor = supplyRequiredDescriptor
-				.getMaterialDescriptor()
-				.withCustomerId(defaultVendorProductInfo.get().getVendorId().getRepoId());
-
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent
 				.builder()
 				.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
-				.purchaseMaterialDescriptor(purchaseMaterialDescriptor)
+				.vendorId(defaultVendorProductInfo.get().getVendorId().getRepoId())
 				.build();
 
 		Loggables.get().addLog("Created PurchaseCandidateAdvisedEvent");

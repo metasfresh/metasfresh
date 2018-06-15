@@ -3,6 +3,7 @@ package de.metas.purchasecandidate;
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -39,7 +40,7 @@ import lombok.Value;
 class PurchaseCandidateImmutableFields
 {
 	@Nullable
-	OrderAndLineId salesOrderAndLineId;
+	OrderAndLineId salesOrderAndLineIdOrNull;
 
 	@NonNull
 	DemandGroupReference groupReference;
@@ -55,6 +56,9 @@ class PurchaseCandidateImmutableFields
 
 	@NonNull
 	ProductId productId;
+
+	@NonNull
+	AttributeSetInstanceId attributeSetInstanceId;
 
 	String vendorProductNo;
 

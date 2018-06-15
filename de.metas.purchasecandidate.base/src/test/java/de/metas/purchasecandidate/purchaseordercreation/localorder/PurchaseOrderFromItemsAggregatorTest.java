@@ -121,7 +121,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.productId(vendorProductInfo.getProductId())
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.qtyToPurchase(TEN)
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();

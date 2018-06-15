@@ -11,6 +11,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -87,7 +88,7 @@ public class PurchaseCandidate
 	private final Duration reminderTime;
 
 	@Getter(AccessLevel.PRIVATE)
-	private final PurchaseCandidateImmutableFields identifier;
+	private final PurchaseCandidateImmutableFields immutableFields;
 
 	@Getter(AccessLevel.NONE)
 	private final PurchaseCandidateState state;
@@ -103,7 +104,7 @@ public class PurchaseCandidate
 			final PurchaseCandidateId id,
 
 			@NonNull final DemandGroupReference groupReference,
-			@Nullable final OrderAndLineId salesOrderAndLineId,
+			@Nullable final OrderAndLineId salesOrderAndLineIdOrNull,
 
 			final boolean prepared,
 			final boolean processed,
@@ -115,6 +116,7 @@ public class PurchaseCandidate
 			@NonNull final WarehouseId warehouseId,
 			//
 			@NonNull final ProductId productId,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final String vendorProductNo,
 			//
 			@NonNull final Quantity qtyToPurchase,
@@ -130,13 +132,14 @@ public class PurchaseCandidate
 	{
 		this.id = id;
 
-		identifier = PurchaseCandidateImmutableFields.builder()
+		immutableFields = PurchaseCandidateImmutableFields.builder()
 				.groupReference(groupReference)
-				.salesOrderAndLineId(salesOrderAndLineId)
+				.salesOrderAndLineIdOrNull(salesOrderAndLineIdOrNull)
 				.vendorId(vendorId)
 				.orgId(orgId)
 				.warehouseId(warehouseId)
 				.productId(productId)
+				.attributeSetInstanceId(attributeSetInstanceId)
 				.vendorProductNo(vendorProductNo)
 				.aggregatePOs(aggregatePOs)
 				.build();
@@ -181,7 +184,7 @@ public class PurchaseCandidate
 		purchaseDatePromisedInitial = from.purchaseDatePromisedInitial;
 		reminderTime = from.reminderTime;
 
-		identifier = from.identifier;
+		immutableFields = from.immutableFields;
 		state = from.state.copy();
 
 		purchaseOrderItems = from.purchaseOrderItems.stream()
@@ -197,42 +200,47 @@ public class PurchaseCandidate
 
 	public OrgId getOrgId()
 	{
-		return getIdentifier().getOrgId();
+		return getImmutableFields().getOrgId();
 	}
 
 	public ProductId getProductId()
 	{
-		return getIdentifier().getProductId();
+		return getImmutableFields().getProductId();
+	}
+
+	public AttributeSetInstanceId getAttributeSetInstanceId()
+	{
+		return getImmutableFields().getAttributeSetInstanceId();
 	}
 
 	public String getVendorProductNo()
 	{
-		return getIdentifier().getVendorProductNo();
+		return getImmutableFields().getVendorProductNo();
 	}
 
 	public WarehouseId getWarehouseId()
 	{
-		return getIdentifier().getWarehouseId();
+		return getImmutableFields().getWarehouseId();
 	}
 
 	public DemandGroupReference getGroupReference()
 	{
-		return getIdentifier().getGroupReference();
+		return getImmutableFields().getGroupReference();
 	}
 
-	public OrderAndLineId getSalesOrderAndLineId()
+	public OrderAndLineId getSalesOrderAndLineIdOrNull()
 	{
-		return getIdentifier().getSalesOrderAndLineId();
+		return getImmutableFields().getSalesOrderAndLineIdOrNull();
 	}
 
 	public BPartnerId getVendorId()
 	{
-		return getIdentifier().getVendorId();
+		return getImmutableFields().getVendorId();
 	}
 
 	public boolean isAggregatePOs()
 	{
-		return getIdentifier().isAggregatePOs();
+		return getImmutableFields().isAggregatePOs();
 	}
 
 	public void setPrepared(final boolean prepared)

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
@@ -56,10 +58,13 @@ public class AvailableToPromiseQuery
 				.build();
 	}
 
-	private final ImmutableSet<Integer> warehouseIds;
-	private final LocalDateTime date;
-	private final ImmutableList<Integer> productIds;
-	private final ImmutableList<AttributesKey> storageAttributesKeys;
+	ImmutableSet<Integer> warehouseIds;
+
+	/** optional; if null, then "now" is used */
+	LocalDateTime date;
+
+	ImmutableList<Integer> productIds;
+	ImmutableList<AttributesKey> storageAttributesKeys;
 
 	public static final int BPARTNER_ID_ANY = -1;
 	public static final int BPARTNER_ID_NONE = -2;
@@ -70,7 +75,7 @@ public class AvailableToPromiseQuery
 	@Builder(toBuilder = true)
 	private AvailableToPromiseQuery(
 			@Singular final Set<Integer> warehouseIds,
-			final LocalDateTime date,
+			@Nullable final LocalDateTime date,
 			@Singular final List<Integer> productIds,
 			@Singular final List<AttributesKey> storageAttributesKeys,
 			final int bpartnerId)

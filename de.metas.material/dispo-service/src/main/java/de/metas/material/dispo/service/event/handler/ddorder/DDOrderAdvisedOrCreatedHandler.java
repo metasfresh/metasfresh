@@ -215,7 +215,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 	{
 		return MaterialDescriptor.builder()
 				.productDescriptor(ddOrderLine.getProductDescriptor())
-				.customerId(ddOrderLine.getBPartnerId())
+				// .customerId(ddOrderLine.getBPartnerId()) // the ddOrder line's bpartner is not the customer, but probably the shipper
 				.quantity(ddOrderLine.getQty());
 	}
 

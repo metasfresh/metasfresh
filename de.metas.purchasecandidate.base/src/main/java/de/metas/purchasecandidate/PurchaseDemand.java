@@ -50,23 +50,29 @@ public class PurchaseDemand
 
 	@NonNull
 	OrgId orgId;
+
+	/** might be needed when creating new purchase candidates. */
+	@NonNull
 	WarehouseId warehouseId;
 
 	@NonNull
 	ProductId productId;
+
+	@NonNull
 	AttributeSetInstanceId attributeSetInstanceId;
 
 	@NonNull
 	Quantity qtyToDeliver;
 
 	@Nullable
-	Currency currency;
+	Currency currencyOrNull;
 
 	@NonNull
 	LocalDateTime salesDatePromised;
-	LocalDateTime preparationDate;
+	LocalDateTime preparationDateOrNull;
 
-	OrderAndLineId salesOrderAndLineId;
+	@Nullable
+	OrderAndLineId salesOrderAndLineIdOrNull;
 
 	public int getUOMId()
 	{

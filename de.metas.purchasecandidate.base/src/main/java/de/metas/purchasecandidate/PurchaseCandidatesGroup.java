@@ -7,7 +7,9 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
+import org.adempiere.util.Check;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -54,6 +56,11 @@ public class PurchaseCandidatesGroup
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final VendorProductInfo vendorProductInfo)
 	{
+		Check.errorUnless(
+				Objects.equals(purchaseCandidate.getProductId(), vendorProductInfo.getProductId()),
+				"The given purchaseCandidate and vendorProductInfo have different productIds; purchaseCandidate={}; vendorProductInfo={}",
+				purchaseCandidate, vendorProductInfo);
+
 		final PurchaseCandidatesGroupBuilder builder = builder()
 				.purchaseDemandId(purchaseDemandId)
 				.candidateGroupReferences(ImmutableList.of(purchaseCandidate.getGroupReference()))
@@ -76,9 +83,9 @@ public class PurchaseCandidatesGroup
 		{
 			builder.purchaseCandidateId(purchaseCandidate.getId());
 		}
-		if (purchaseCandidate.getSalesOrderAndLineId() != null)
+		if (purchaseCandidate.getSalesOrderAndLineIdOrNull() != null)
 		{
-			builder.salesOrderAndLineId(purchaseCandidate.getSalesOrderAndLineId());
+			builder.salesOrderAndLineId(purchaseCandidate.getSalesOrderAndLineIdOrNull());
 		}
 
 		return builder.build();
@@ -101,6 +108,7 @@ public class PurchaseCandidatesGroup
 
 	@NonNull
 	Quantity qtyToPurchase;
+
 	@NonNull
 	Quantity purchasedQty;
 
@@ -153,6 +161,11 @@ public class PurchaseCandidatesGroup
 	public ProductId getProductId()
 	{
 		return getVendorProductInfo().getProductId();
+	}
+
+	public AttributeSetInstanceId getAttributeSetInstanceId()
+	{
+		return getVendorProductInfo().getAttributeSetInstanceId();
 	}
 
 	public boolean isAggregatePOs()

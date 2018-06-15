@@ -114,7 +114,7 @@ public class M_Transaction_TransactionEventCreator
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
 				transaction,
-				costCollector.getPP_Order().getC_BPartner_ID(),
+				0, // don't provide the ppOrder's bPartnerId unless we clarified that it's the customer for which the produced goods are reserved
 				huDescriptors);
 
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
@@ -241,7 +241,7 @@ public class M_Transaction_TransactionEventCreator
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
 				transaction,
-				inOutLine.getM_InOut().getC_BPartner_ID(),
+				inOutLine.getM_InOut().getC_BPartner_ID(), // customerId
 				huDescriptors);
 
 		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
@@ -302,7 +302,7 @@ public class M_Transaction_TransactionEventCreator
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
 				transaction,
-				0, // bpartnerId
+				0, // receipts's bpartner is not a customer
 				huDescriptors);
 
 		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
@@ -353,7 +353,7 @@ public class M_Transaction_TransactionEventCreator
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
 				transaction,
-				movementLine.getM_Movement().getC_BPartner_ID(),
+				0, // the movement's bpartner (if set at all) is not the customer, but probably a shipper
 				huDescriptors);
 
 		final int ddOrderId = movementLine.getDD_OrderLine_ID() > 0
@@ -406,13 +406,12 @@ public class M_Transaction_TransactionEventCreator
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
 				transaction,
-				0, // bpartnerId
+				0, // customerId
 				huDescriptors);
 
 		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
 		for (final Entry<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptor : materialDescriptors.entrySet())
 		{
-
 			final AbstractTransactionEvent event;
 			if (deleted)
 			{
@@ -442,7 +441,7 @@ public class M_Transaction_TransactionEventCreator
 	@VisibleForTesting
 	static Map<MaterialDescriptor, Collection<HUDescriptor>> createMaterialDescriptors(
 			@NonNull final TransactionDescriptor transaction,
-			final int bPartnerId,
+			final int customerId,
 			@NonNull final Collection<HUDescriptor> huDescriptors)
 	{
 		final ImmutableListMultimap<ProductDescriptor, HUDescriptor> productDescriptor2huDescriptor = //
@@ -464,7 +463,7 @@ public class M_Transaction_TransactionEventCreator
 					.warehouseId(transaction.getWarehouseId())
 					.date(transaction.getMovementDate())
 					.productDescriptor(entry.getKey())
-					.customerId(bPartnerId)
+					.customerId(customerId)
 					.quantity(quantity)
 					.build();
 

@@ -231,7 +231,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 		return PurchaseCandidate.builder()
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
 				.groupReference(DemandGroupReference.createEmpty())
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(1, 2))
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(1, 2))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.vendorId(BPartnerId.ofRepoId(vendorId))

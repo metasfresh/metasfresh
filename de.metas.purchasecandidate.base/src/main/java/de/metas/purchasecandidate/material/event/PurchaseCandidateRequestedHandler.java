@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
@@ -113,10 +114,11 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.orgId(orgId)
 				.processed(false)
 				.productId(product.getId())
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescriptor.getAttributeSetInstanceId()))
 				// .profitInfo(profitInfo)
 				// .purchaseItem(purchaseItem) purchase items are only returned by the vendor gateway
 				.qtyToPurchase(Quantity.of(materialDescriptor.getQuantity(), uomRecord))
-				.salesOrderAndLineId(orderandLineIdOrNull)
+				.salesOrderAndLineIdOrNull(orderandLineIdOrNull)
 
 				.warehouseId(WarehouseId.ofRepoId(materialDescriptor.getWarehouseId()))
 				.build();

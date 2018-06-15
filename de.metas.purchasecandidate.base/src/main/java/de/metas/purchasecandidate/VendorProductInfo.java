@@ -3,6 +3,7 @@ package de.metas.purchasecandidate;
 import java.math.BigDecimal;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditions;
@@ -43,6 +44,8 @@ public class VendorProductInfo
 	BPartnerId vendorId;
 
 	ProductAndCategoryId productAndCategoryId;
+	AttributeSetInstanceId attributeSetInstanceId;
+
 	String vendorProductNo;
 	String vendorProductName;
 
@@ -59,6 +62,8 @@ public class VendorProductInfo
 			@NonNull final Boolean defaultVendor,
 			//
 			@NonNull final ProductAndCategoryId productAndCategoryId,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+
 			@NonNull final String vendorProductNo,
 			@NonNull final String vendorProductName,
 			//
@@ -71,6 +76,8 @@ public class VendorProductInfo
 		this.defaultVendor = defaultVendor;
 
 		this.productAndCategoryId = productAndCategoryId;
+		this.attributeSetInstanceId = attributeSetInstanceId;
+
 		this.vendorProductNo = vendorProductNo;
 		this.vendorProductName = vendorProductName;
 

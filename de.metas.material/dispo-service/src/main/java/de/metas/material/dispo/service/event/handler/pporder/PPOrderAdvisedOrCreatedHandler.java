@@ -197,7 +197,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 				.productDescriptor(ppOrder.getProductDescriptor())
 				.quantity(qtyOpen)
 				.warehouseId(ppOrder.getWarehouseId())
-				.customerId(ppOrder.getBPartnerId())
+				//.customerId(ppOrder.getBPartnerId()) not sure if the ppOrder's boartner is the customer this is made for
 				.build();
 		return materialDescriptor;
 	}

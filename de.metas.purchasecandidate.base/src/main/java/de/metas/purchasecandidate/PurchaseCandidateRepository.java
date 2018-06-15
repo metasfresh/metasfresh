@@ -19,6 +19,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMDAO;
@@ -299,7 +300,7 @@ public class PurchaseCandidateRepository
 		}
 		record.setDemandReference(demandReference);
 
-		final OrderAndLineId salesOrderAndLineId = purchaseCandidate.getSalesOrderAndLineId();
+		final OrderAndLineId salesOrderAndLineId = purchaseCandidate.getSalesOrderAndLineIdOrNull();
 		record.setC_OrderSO_ID(OrderAndLineId.getOrderRepoIdOr(salesOrderAndLineId, -1));
 		record.setC_OrderLineSO_ID(OrderAndLineId.getOrderLineRepoIdOr(salesOrderAndLineId, -1));
 
@@ -358,7 +359,7 @@ public class PurchaseCandidateRepository
 				.locked(locked)
 				.id(PurchaseCandidateId.ofRepoIdOrNull(record.getC_PurchaseCandidate_ID()))
 				.groupReference(DemandGroupReference.ofReference(record.getDemandReference()))
-				.salesOrderAndLineId(salesOrderAndLineId)
+				.salesOrderAndLineIdOrNull(salesOrderAndLineId)
 				.processed(record.isProcessed())
 				//
 				.purchaseDatePromised(purchaseDatePromised)
@@ -370,6 +371,7 @@ public class PurchaseCandidateRepository
 				.warehouseId(WarehouseId.ofRepoId(record.getM_WarehousePO_ID()))
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(record.getM_AttributeSetInstance_ID()))
 				.vendorProductNo(productsRepo.retrieveProductValueByProductId(record.getM_Product_ID()))
 				//
 				.qtyToPurchase(qtyToPurchase)
@@ -493,7 +495,7 @@ public class PurchaseCandidateRepository
 					+ "#" + I_C_PurchaseCandidate.COLUMN_DateRequired
 					+ "#" + I_C_PurchaseCandidate.COLUMN_C_UOM_ID
 					+ "#" + I_C_PurchaseCandidate.COLUMN_M_WarehousePO_ID
-					+ "#" + I_C_PurchaseCandidate.COLUMN_M_AttributeInstance_ID
+					+ "#" + I_C_PurchaseCandidate.COLUMN_M_AttributeSetInstance_ID
 					+ "#" + I_C_PurchaseCandidate.COLUMN_C_Currency_ID
 					+ "#" + I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID,
 			0,
@@ -515,21 +517,23 @@ public class PurchaseCandidateRepository
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_DateRequired, purchaseDemand.getSalesDatePromised()) // this is how it currently is
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_UOM_ID, purchaseDemand.getQtyToDeliver().getUOMId());
 
-		if (purchaseDemand.getWarehouseId() != null)
+		final WarehouseId warehouseId = purchaseDemand.getWarehouseId();
+		queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_M_WarehousePO_ID, warehouseId);
+
+		final AttributeSetInstanceId attributeSetInstanceId = purchaseDemand.getAttributeSetInstanceId();
+		if (attributeSetInstanceId.getRepoId() >= 0)
 		{
-			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_M_WarehousePO_ID, purchaseDemand.getWarehouseId());
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_M_AttributeSetInstance_ID, attributeSetInstanceId);
 		}
-		if (purchaseDemand.getAttributeSetInstanceId() != null && purchaseDemand.getAttributeSetInstanceId().getRepoId() > 0)
+		final Currency currency = purchaseDemand.getCurrencyOrNull();
+		if (currency != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_M_AttributeInstance_ID, purchaseDemand.getAttributeSetInstanceId());
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_Currency_ID, currency.getId());
 		}
-		if (purchaseDemand.getCurrency() != null)
+		final OrderAndLineId salesOrderAndLineId = purchaseDemand.getSalesOrderAndLineIdOrNull();
+		if (salesOrderAndLineId != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_Currency_ID, purchaseDemand.getCurrency().getId());
-		}
-		if (purchaseDemand.getSalesOrderAndLineId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, purchaseDemand.getSalesOrderAndLineId().getOrderLineId());
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, salesOrderAndLineId);
 		}
 
 		return queryBuilder

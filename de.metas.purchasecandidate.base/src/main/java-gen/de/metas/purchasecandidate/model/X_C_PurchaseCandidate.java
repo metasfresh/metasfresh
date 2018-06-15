@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 190367918L;
+	private static final long serialVersionUID = 2100927449L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 			setC_PurchaseCandidate_ID (0);
 			setC_UOM_ID (0);
 			setDateRequired (new Timestamp( System.currentTimeMillis() ));
+			setDemandReference (null);
 			setIsAggregatePO (false); // N
 			setIsPrepared (false); // N
 			setM_Product_ID (0);
@@ -260,16 +261,19 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateRequired);
 	}
 
-	/** Set Bedarfs-ID.
-		@param DemandReference Bedarfs-ID	  */
+	/** Set Referenz.
+		@param DemandReference 
+		Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
+	  */
 	@Override
 	public void setDemandReference (java.lang.String DemandReference)
 	{
 		set_Value (COLUMNNAME_DemandReference, DemandReference);
 	}
 
-	/** Get Bedarfs-ID.
-		@return Bedarfs-ID	  */
+	/** Get Referenz.
+		@return Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
+	  */
 	@Override
 	public java.lang.String getDemandReference () 
 	{
@@ -323,34 +327,37 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_M_AttributeInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
 
 	@Override
-	public void setM_AttributeInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeInstance)
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeInstance);
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set M_AttributeInstance.
-		@param M_AttributeInstance_ID M_AttributeInstance	  */
+	/** Set Merkmale.
+		@param M_AttributeSetInstance_ID 
+		Merkmals Ausprägungen zum Produkt
+	  */
 	@Override
-	public void setM_AttributeInstance_ID (int M_AttributeInstance_ID)
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
-		if (M_AttributeInstance_ID < 1) 
-			set_Value (COLUMNNAME_M_AttributeInstance_ID, null);
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeInstance_ID, Integer.valueOf(M_AttributeInstance_ID));
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get M_AttributeInstance.
-		@return M_AttributeInstance	  */
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
+	  */
 	@Override
-	public int getM_AttributeInstance_ID () 
+	public int getM_AttributeSetInstance_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeInstance_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

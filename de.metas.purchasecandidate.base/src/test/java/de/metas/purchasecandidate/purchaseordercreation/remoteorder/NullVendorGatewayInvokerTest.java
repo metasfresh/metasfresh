@@ -71,7 +71,7 @@ public class NullVendorGatewayInvokerTest
 				.productId(ProductId.ofRepoId(20))
 				.vendorProductNo("vendorProductNo_20")
 				.qtyToPurchase(Quantity.of(TEN, EACH))
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(40, 50))
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(40, 50))
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();
 
