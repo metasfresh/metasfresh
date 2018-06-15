@@ -197,7 +197,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 				.productDescriptor(ppOrder.getProductDescriptor())
 				.quantity(qtyOpen)
 				.warehouseId(ppOrder.getWarehouseId())
-				//.customerId(ppOrder.getBPartnerId()) not sure if the ppOrder's boartner is the customer this is made for
+				//.customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
 		return materialDescriptor;
 	}
@@ -224,7 +224,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 				.productDescriptor(ppOrderLine.getProductDescriptor())
 				.quantity(qtyRequired.subtract(qtyDelivered))
 				.warehouseId(ppOrder.getWarehouseId())
-				.customerId(ppOrder.getBPartnerId())
+				//.customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
 		return materialDescriptor;
 	}

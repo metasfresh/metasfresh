@@ -194,7 +194,6 @@ public class DDOrderAdvisedHandlerTests
 		assertThat(allRecords).allSatisfy(r -> {
 			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(ORG_ID);
 			assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(PRODUCT_ID);
-			assertThat(r.getC_BPartner_Customer_ID()).as("all four records shall have the same bPartner").isEqualTo(BPARTNER_ID);
 		});
 
 		// one parent of the supply in toWarehouseId and one child of the demand in fromWarehouseId

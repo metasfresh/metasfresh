@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons.repository.query;
 import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Util;
 
 import com.google.common.base.Preconditions;
 
@@ -47,6 +48,19 @@ public class MaterialDescriptorQuery
 		AFTER
 	}
 
+	/**
+	 * Note: this operator only makes a difference if the given customerId is > 0.
+	 * If it's less than zero, the records with customerId == null (i.e. "none") are selected anyways.
+	 */
+	public enum CustomerIdOperator
+	{
+		/** This is the default; query for records with the given customer id where zero means "none" and null means "any" */
+		GIVEN_ID_ONLY,
+
+		/** Like {@link #GIVEN_ID}, but also include records that have no customerId */
+		GIVEN_ID_OR_NULL
+	}
+
 	public static MaterialDescriptorQuery forDescriptor(
 			@NonNull final MaterialDescriptor materialDescriptor)
 	{
@@ -55,6 +69,7 @@ public class MaterialDescriptorQuery
 				materialDescriptor.getProductId(),
 				materialDescriptor.getStorageAttributesKey(),
 				materialDescriptor.getCustomerId(),
+				CustomerIdOperator.GIVEN_ID_ONLY,
 				materialDescriptor.getDate(),
 				DateOperator.AT);
 	}
@@ -68,6 +83,7 @@ public class MaterialDescriptorQuery
 				materialDescriptor.getProductId(),
 				materialDescriptor.getStorageAttributesKey(),
 				materialDescriptor.getCustomerId(),
+				CustomerIdOperator.GIVEN_ID_ONLY,
 				materialDescriptor.getDate(),
 				dateOperator);
 	}
@@ -82,7 +98,8 @@ public class MaterialDescriptorQuery
 	AttributesKey storageAttributesKey;
 
 	/** zero means "none", null means "any" */
-	int bPartnerCustomerId;
+	int customerId;
+	CustomerIdOperator customerIdOperator;
 
 	Date date;
 
@@ -91,7 +108,8 @@ public class MaterialDescriptorQuery
 			final int warehouseId,
 			final int productId,
 			final AttributesKey storageAttributesKey,
-			final Integer bPartnerCustomerId,
+			final Integer customerId,
+			final CustomerIdOperator customerIdOperator,
 			final Date date,
 			final DateOperator dateOperator)
 	{
@@ -102,21 +120,23 @@ public class MaterialDescriptorQuery
 				? storageAttributesKey
 				: AttributesKey.ALL;
 
-		if (bPartnerCustomerId == null)
+		this.customerIdOperator = Util.coalesce(customerIdOperator, CustomerIdOperator.GIVEN_ID_ONLY);
+
+		if (customerId == null)
 		{
-			this.bPartnerCustomerId = AvailableToPromiseQuery.BPARTNER_ID_ANY;
+			this.customerId = AvailableToPromiseQuery.BPARTNER_ID_ANY;
 		}
-		else if (bPartnerCustomerId == 0)
+		else if (customerId == 0)
 		{
-			this.bPartnerCustomerId = AvailableToPromiseQuery.BPARTNER_ID_NONE;
+			this.customerId = AvailableToPromiseQuery.BPARTNER_ID_NONE;
 		}
-		else if (bPartnerCustomerId > 0 || bPartnerCustomerId == AvailableToPromiseQuery.BPARTNER_ID_ANY || bPartnerCustomerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
+		else if (customerId > 0 || customerId == AvailableToPromiseQuery.BPARTNER_ID_ANY || customerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
 		{
-			this.bPartnerCustomerId = bPartnerCustomerId;
+			this.customerId = customerId;
 		}
 		else
 		{
-			throw new AdempiereException("Parameter bPartnerCustomerId has an invalid value=" + bPartnerCustomerId);
+			throw new AdempiereException("Parameter bPartnerCustomerId has an invalid value=" + customerId);
 		}
 
 		Preconditions.checkArgument(dateOperator == null || date != null,

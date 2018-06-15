@@ -66,7 +66,7 @@ public class RepositoryCommonsTest
 	{
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(PRODUCT_ID)
-				.bPartnerCustomerId(BPARTNER_ID)
+				.customerId(BPARTNER_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.dateOperator(DateOperator.AT)
 				.date(NOW).build();
@@ -107,7 +107,7 @@ public class RepositoryCommonsTest
 	public ICompositeQueryFilter<I_MD_Candidate> setupAndInvokeWithBPartnerId(final int bpartnerId)
 	{
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
-				.bPartnerCustomerId(bpartnerId)
+				.customerId(bpartnerId)
 				.build();
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)

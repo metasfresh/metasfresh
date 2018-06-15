@@ -16,6 +16,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.MaterialDescriptorQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -77,7 +78,9 @@ public class StockCandidateService
 	{
 		final Candidate previousStockOrNull;
 		{
-			final CandidatesQuery previousStockQuery = createStockQueryBuilderWithDateOperator(candidate, DateOperator.BEFORE_OR_AT);
+			final CandidatesQuery previousStockQuery = createStockQueryBuilderWithDateOperator(
+					candidate,
+					DateOperator.BEFORE_OR_AT);
 			previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(previousStockQuery);
 		}
 
@@ -203,17 +206,19 @@ public class StockCandidateService
 			@NonNull final MaterialDescriptor materialDescriptor,
 			@NonNull final DateOperator dateoperator)
 	{
-		final MaterialDescriptorQueryBuilder builder = MaterialDescriptorQuery.builder();
+		final MaterialDescriptorQueryBuilder builder = MaterialDescriptorQuery
+				.builder()
+				.customerIdOperator(CustomerIdOperator.GIVEN_ID_OR_NULL); // want the latest, only excluding records that have a *different* customerId
 
 		if (materialDescriptor.getCustomerId() > 0)
 		{
 			// do include the bpartner in the query, because e.g. an increase for a given bpartner does a raised ATP just for that partner, and not for everyone
-			builder.bPartnerCustomerId(materialDescriptor.getCustomerId());
+			builder.customerId(materialDescriptor.getCustomerId());
 		}
 		else
 		{
 			// ..on the other hand, if materialDescriptor has *no* bpartner, then the respective change in qty is related to everybody
-			builder.bPartnerCustomerId(null);
+			builder.customerId(null);
 		}
 
 		final MaterialDescriptorQuery materialDescriptorQuery = builder
