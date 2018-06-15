@@ -81,7 +81,7 @@ public class PurchaseDemand
 	 * We need to hold their IDs to sync with them later.
 	 */
 	@Singular
-	List<PurchaseCandidate> existingPurchaseCandidates;
+	List<PurchaseCandidateId> existingPurchaseCandidateIds;
 
 	public int getUOMId()
 	{
