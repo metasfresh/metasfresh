@@ -22,6 +22,14 @@ export default class DocumentListContextShortcuts extends Component {
     ADVANCED_EDIT: event => {
       event.preventDefault();
 
+      console.log('handle advanced: ', this.props.handleAdvancedEdit)
+      // {
+      //   'ALT+E': {
+      //     ADVANCED_EDIT:,
+      //     OPEN_ADVANCED_EDIT: ,
+      //   }
+      // }
+
       if (this.props.handleAdvancedEdit) {
         this.props.handleAdvancedEdit();
       }

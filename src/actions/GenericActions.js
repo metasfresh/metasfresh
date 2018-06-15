@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { createAction } from 'redux-actions';
+
+import * as types from '../constants/ActionTypes';
 import { getQueryString } from '../utils';
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
@@ -343,3 +346,6 @@ export function getRequest() {
 
   return axios.get(url);
 }
+
+export const subscribeShortcut = createAction(types.SHORTCUT_SUBSCRIBE);
+export const unSubscribeShortcut = createAction(types.SHORTCUT_UNSUBSCRIBE);

@@ -5,6 +5,7 @@ import listHandler from './listHandler';
 import menuHandler from './menuHandler';
 import windowHandler from './windowHandler';
 import pluginsHandler from './pluginsHandler';
+import shortcutsHandler from './shortcutsHandler';
 
 export default {
   appHandler,
@@ -12,5 +13,6 @@ export default {
   menuHandler,
   windowHandler,
   pluginsHandler,
+  shortcutsHandler,
   routing,
 };
