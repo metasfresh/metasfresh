@@ -1329,6 +1329,7 @@ td.pulse-off input {
     flex-direction: column;
     align-items: center;
     align-self: center;
+    justify-content: center;
 }
 
 .blank-page h1 {
