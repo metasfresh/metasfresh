@@ -123,7 +123,7 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setDebtorId(importRecord.getDebtorId());
 		bpartner.setCreditorId(importRecord.getCreditorId());
 		bpartner.setMemo(importRecord.getMemo());
-		bpartner.setDeliveryRule(importRecord.getDeliveryViaRule());
+		bpartner.setDeliveryViaRule(importRecord.getDeliveryViaRule());
 		bpartner.setM_Shipper_ID(importRecord.getM_Shipper_ID());
 		bpartner.setVendorCategory(importRecord.getVendorCategory());
 		bpartner.setCustomerNoAtVendor(importRecord.getCustomerNoAtVendor());
@@ -238,7 +238,7 @@ import org.compiere.model.ModelValidationEngine;
 
 		if (!Check.isEmpty(importRecord.getDeliveryViaRule(), true))
 		{
-			bpartner.setDeliveryRule(importRecord.getDeliveryViaRule());
+			bpartner.setDeliveryViaRule(importRecord.getDeliveryViaRule());
 		}
 		if (importRecord.getM_Shipper_ID() > 0)
 		{
