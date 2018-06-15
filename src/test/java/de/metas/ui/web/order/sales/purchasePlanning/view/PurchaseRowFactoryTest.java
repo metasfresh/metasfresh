@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
@@ -128,6 +129,7 @@ public class PurchaseRowFactoryTest
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(vendorProductInfo.getProductId())
+				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
 				.qtyToPurchase(ONE)
 				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.profitInfo(profitInfo)
@@ -158,6 +160,7 @@ public class PurchaseRowFactoryTest
 				.vendorId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
 				.defaultVendor(false)
 				.productAndCategoryId(productAndCategoryId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
 				.pricingConditions(PricingConditions.builder()

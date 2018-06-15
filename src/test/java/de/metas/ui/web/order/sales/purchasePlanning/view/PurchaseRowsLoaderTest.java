@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
@@ -171,6 +172,7 @@ public class PurchaseRowsLoaderTest
 				.vendorId(BPartnerId.ofRepoId(bPartnerVendor.getC_BPartner_ID()))
 				.defaultVendor(false)
 				.productAndCategoryId(ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.vendorProductNo("bPartnerProduct.VendorProductNo")
 				.vendorProductName("bPartnerProduct.ProductName")
 				.pricingConditions(PricingConditions.builder()
@@ -244,6 +246,7 @@ public class PurchaseRowsLoaderTest
 				.orgId(OrgId.ofRepoId(20))
 				.purchaseDatePromised(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID()))
 				.qtyToPurchase(Quantity.of(orderLine.getQtyOrdered(), orderLine.getM_Product().getC_UOM()))
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
 				.vendorId(vendorProductInfo.getVendorId())
