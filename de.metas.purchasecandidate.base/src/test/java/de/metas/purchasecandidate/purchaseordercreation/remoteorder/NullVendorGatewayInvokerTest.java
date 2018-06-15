@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
@@ -69,6 +70,7 @@ public class NullVendorGatewayInvokerTest
 				.purchaseDatePromised(SystemTime.asLocalDateTime())
 				.vendorId(BPartnerId.ofRepoId(30))
 				.productId(ProductId.ofRepoId(20))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(21))
 				.vendorProductNo("vendorProductNo_20")
 				.qtyToPurchase(Quantity.of(TEN, EACH))
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(40, 50))

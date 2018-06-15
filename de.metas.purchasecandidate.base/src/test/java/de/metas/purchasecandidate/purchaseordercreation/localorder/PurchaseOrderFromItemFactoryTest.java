@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -199,6 +200,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
 				.defaultVendor(true)
 				.productAndCategoryId(ProductAndCategoryId.of(20, 30))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(40))
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
 				.pricingConditions(createDummyPricingConditions())
@@ -212,6 +214,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(ProductId.ofRepoId(5))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)

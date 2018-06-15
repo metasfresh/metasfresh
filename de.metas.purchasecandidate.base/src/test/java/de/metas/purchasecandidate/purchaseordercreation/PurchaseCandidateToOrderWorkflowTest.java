@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
@@ -236,6 +237,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.vendorId(BPartnerId.ofRepoId(vendorId))
 				.productId(ProductId.ofRepoId(5))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(ONE)

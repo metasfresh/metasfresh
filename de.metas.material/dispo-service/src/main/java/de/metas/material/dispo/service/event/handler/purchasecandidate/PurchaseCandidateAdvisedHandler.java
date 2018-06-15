@@ -88,7 +88,10 @@ public final class PurchaseCandidateAdvisedHandler
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
 
-		final MaterialDescriptor materialDescriptor = event.getPurchaseMaterialDescriptor();
+		final MaterialDescriptor materialDescriptor = event
+				.getSupplyRequiredDescriptor()
+				.getMaterialDescriptor();
+
 		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
 				.plannedQty(materialDescriptor.getQuantity())
 				.vendorRepoId(event.getVendorId())

@@ -44,7 +44,7 @@ import mockit.Mocked;
 public class PurchaseCandidateRepositoryTest
 {
 	@Mocked
-	ReferenceGenerator referenceGenerator;
+	private ReferenceGenerator referenceGenerator;
 
 	@Before
 	public void init()

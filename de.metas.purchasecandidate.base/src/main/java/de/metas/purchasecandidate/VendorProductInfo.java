@@ -1,9 +1,11 @@
 package de.metas.purchasecandidate;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditions;
@@ -96,6 +98,17 @@ public class VendorProductInfo
 	{
 		final PricingConditionsBreakQuery query = createPricingConditionsBreakQuery(qtyToDeliver);
 		return getPricingConditions().pickApplyingBreak(query);
+	}
+
+	public VendorProductInfo assertThatAttributeSetInstanceIdCompatibleWith(@NonNull final AttributeSetInstanceId otherId)
+	{
+		if (AttributeSetInstanceId.NONE.equals(attributeSetInstanceId))
+		{
+			return this;
+		}
+		Check.errorUnless(Objects.equals(otherId, attributeSetInstanceId),
+				"The given atributeSetInstanceId is not compatible with our id; otherId={}; this={}", otherId, this);
+		return this;
 	}
 
 	private PricingConditionsBreakQuery createPricingConditionsBreakQuery(final Quantity qtyToDeliver)

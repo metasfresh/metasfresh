@@ -3,6 +3,7 @@ package de.metas.purchasecandidate;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
@@ -55,6 +56,8 @@ public final class PurchaseCandidateTestTool
 	public static PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId, final Quantity qtyToPurchase)
 	{
 		final ProductId productId = ProductId.ofRepoId(5);
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoId(6);
+
 		return PurchaseCandidate.builder()
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
 				.groupReference(DemandGroupReference.createEmpty())
@@ -62,6 +65,7 @@ public final class PurchaseCandidateTestTool
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(productId)
+				.attributeSetInstanceId(attributeSetInstanceId)
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
 				.profitInfo(createPurchaseProfitInfo())
 				.vendorId(BPartnerId.ofRepoId(7))

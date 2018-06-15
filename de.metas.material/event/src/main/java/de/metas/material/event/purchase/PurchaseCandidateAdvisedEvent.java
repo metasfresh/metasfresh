@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -50,15 +49,12 @@ public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 
 	int vendorId;
 
-	MaterialDescriptor purchaseMaterialDescriptor;
-
 	@Builder
 	@JsonCreator
 	private PurchaseCandidateAdvisedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("supplyRequiredDescriptor") @NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@JsonProperty("productPlanningId") final int productPlanningId,
-			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
 			@JsonProperty("directlyCreatePurchaseCandidate") final boolean directlyCreatePurchaseCandidate,
 			@JsonProperty("vendorId") final int vendorId)
 	{
@@ -66,7 +62,6 @@ public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 		this.productPlanningId = Check.assumeGreaterThanZero(productPlanningId, "productPlanningId");
 		this.vendorId = vendorId;
-		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
 		this.directlyCreatePurchaseCandidate = directlyCreatePurchaseCandidate;
 	}
 }

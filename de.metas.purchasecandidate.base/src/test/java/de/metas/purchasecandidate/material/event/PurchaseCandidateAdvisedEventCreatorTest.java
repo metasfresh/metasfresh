@@ -108,8 +108,6 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		assertThat(purchaseAdvisedEvent).isPresent();
 		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
 		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
-
-		final MaterialDescriptor materialDescriptor = purchaseAdvisedEvent.get().getPurchaseMaterialDescriptor();		assertThat(materialDescriptor.getProductId()).isEqualTo(product.getM_Product_ID());
-		assertThat(materialDescriptor.getCustomerId()).isNotEqualTo(bPartnerVendorRecord.getC_BPartner_ID()); // the *vendor's* ID may not be entered here
+		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}
 }

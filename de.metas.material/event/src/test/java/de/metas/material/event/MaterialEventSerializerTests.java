@@ -338,7 +338,6 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.productPlanningId(10)
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
-				.purchaseMaterialDescriptor(createMaterialDescriptor())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(purchaseAdvisedEvent);

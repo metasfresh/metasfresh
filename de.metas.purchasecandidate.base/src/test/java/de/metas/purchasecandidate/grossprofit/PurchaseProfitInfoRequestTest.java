@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
@@ -54,6 +55,7 @@ public class PurchaseProfitInfoRequestTest
 				.vendorProductName("vendorProductName")
 				.vendorProductNo("vendorProductNo")
 				.productAndCategoryId(ProductAndCategoryId.of(30, 40))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(50))
 				.pricingConditions(PricingConditions.builder().build())
 				.build();
 

@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -104,12 +105,12 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.productAndCategoryId(productAndCategoryId)
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(40))
 				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
 				.defaultVendor(false)
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
-				.pricingConditions(PricingConditions.builder()
-						.build())
+				.pricingConditions(PricingConditions.builder().build())
 				.build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
@@ -119,6 +120,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(vendorProductInfo.getProductId())
+				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.qtyToPurchase(TEN)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))

@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
@@ -178,7 +179,10 @@ public class PurchaseDemandWithCandidatesService
 		final BPartnerId vendorId = groupKey.getVendorId();
 		final ProductId productId = groupKey.getProductId();
 		final OrgId orgId = groupKey.getOrgId();
-		final VendorProductInfo vendorProductInfo = vendorProductInfosRepo.getVendorProductInfo(vendorId, productId, orgId);
+
+		final VendorProductInfo vendorProductInfo = vendorProductInfosRepo
+				.getVendorProductInfo(vendorId, productId, orgId)
+				.assertThatAttributeSetInstanceIdCompatibleWith(demand.getAttributeSetInstanceId());
 
 		final PurchaseProfitInfo profitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest.builder()
 				.salesOrderAndLineIds(salesOrderAndLineIds)
@@ -194,6 +198,7 @@ public class PurchaseDemandWithCandidatesService
 				.warehouseId(groupKey.getWarehouseId())
 				//
 				.vendorProductInfo(vendorProductInfo)
+				.attributeSetInstanceId(demand.getAttributeSetInstanceId())
 				//
 				.qtyToPurchase(qtyToPurchase)
 				.purchasedQty(purchasedQty)
@@ -275,7 +280,10 @@ public class PurchaseDemandWithCandidatesService
 		Check.errorUnless(Objects.equals(purchaseDemand.getProductId(), vendorProductInfo.getProductId()),
 				"The given purchaseDemand and vendorProductInfo have different productIds; purchaseDemand={}; vendorProductInfo={}",
 				purchaseDemand, vendorProductInfo);
-		Check.errorUnless(Objects.equals(purchaseDemand.getAttributeSetInstanceId(), vendorProductInfo.getAttributeSetInstanceId()),
+
+		Check.errorUnless(
+				Objects.equals(vendorProductInfo.getAttributeSetInstanceId(), AttributeSetInstanceId.NONE) // if vendorProductInfo has no ASI, then it's also fine.
+						|| Objects.equals(purchaseDemand.getAttributeSetInstanceId(), vendorProductInfo.getAttributeSetInstanceId()),
 				"The given purchaseDemand and vendorProductInfo have different attributeSetInstanceIds; purchaseDemand={}; vendorProductInfo={}",
 				purchaseDemand, vendorProductInfo);
 
@@ -318,8 +326,8 @@ public class PurchaseDemandWithCandidatesService
 				.vendorId(vendorId)
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				//
-				.productId(vendorProductInfo.getProductId())
-				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
+				.productId(purchaseDemand.getProductId())
+				.attributeSetInstanceId(purchaseDemand.getAttributeSetInstanceId())
 				//
 				.qtyToPurchase(qtyToPurchase)
 				//

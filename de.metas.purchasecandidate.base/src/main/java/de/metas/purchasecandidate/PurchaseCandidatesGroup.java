@@ -61,6 +61,12 @@ public class PurchaseCandidatesGroup
 				"The given purchaseCandidate and vendorProductInfo have different productIds; purchaseCandidate={}; vendorProductInfo={}",
 				purchaseCandidate, vendorProductInfo);
 
+		Check.errorUnless(
+				Objects.equals(vendorProductInfo.getAttributeSetInstanceId(), AttributeSetInstanceId.NONE) // if vendorProductInfo has no ASI, then it's also fine.
+						|| Objects.equals(purchaseCandidate.getAttributeSetInstanceId(), vendorProductInfo.getAttributeSetInstanceId()),
+				"The given purchaseCandidate and vendorProductInfo have different attributeSetInstanceIds; purchaseCandidate={}; vendorProductInfo={}",
+				purchaseCandidate, vendorProductInfo);
+
 		final PurchaseCandidatesGroupBuilder builder = builder()
 				.purchaseDemandId(purchaseDemandId)
 				.candidateGroupReferences(ImmutableList.of(purchaseCandidate.getGroupReference()))
@@ -69,6 +75,7 @@ public class PurchaseCandidatesGroup
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				//
 				.vendorProductInfo(vendorProductInfo)
+				.attributeSetInstanceId(purchaseCandidate.getAttributeSetInstanceId())
 				//
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
@@ -105,6 +112,10 @@ public class PurchaseCandidatesGroup
 
 	@NonNull
 	VendorProductInfo vendorProductInfo;
+
+	/** note that the ASI-ID of {@link #vendorProductInfo} might be "none" */
+	@NonNull
+	AttributeSetInstanceId attributeSetInstanceId;
 
 	@NonNull
 	Quantity qtyToPurchase;
@@ -165,7 +176,7 @@ public class PurchaseCandidatesGroup
 
 	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
-		return getVendorProductInfo().getAttributeSetInstanceId();
+		return attributeSetInstanceId;
 	}
 
 	public boolean isAggregatePOs()

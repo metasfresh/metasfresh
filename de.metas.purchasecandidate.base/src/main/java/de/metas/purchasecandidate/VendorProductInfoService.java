@@ -10,6 +10,7 @@ import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.BPartnerType;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -156,6 +157,7 @@ public class VendorProductInfoService
 				.vendorId(vendorId)
 				.defaultVendor(defaultVendor)
 				.productAndCategoryId(productAndCategoryId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE) // this might change when we incorporate attribute based pricing
 				.vendorProductNo(vendorProductNo)
 				.vendorProductName(vendorProductName)
 				.aggregatePOs(aggregatePOs)
