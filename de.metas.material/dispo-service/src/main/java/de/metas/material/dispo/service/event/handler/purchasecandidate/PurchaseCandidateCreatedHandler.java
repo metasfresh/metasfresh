@@ -8,10 +8,13 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateEvent;
 import lombok.NonNull;
@@ -82,5 +85,17 @@ public final class PurchaseCandidateCreatedHandler
 			return CandidatesQuery.FALSE;
 		}
 		return CandidatesQuery.fromId(CandidateId.ofRepoId(event.getSupplyCandidateRepoId()));
+	}
+
+	@Override
+	protected CandidateBuilder updateBuilderFromEvent(
+			@NonNull final CandidateBuilder candidateBuilder,
+			@NonNull final PurchaseCandidateEvent event)
+	{
+		final PurchaseCandidateCreatedEvent createdEvent = PurchaseCandidateCreatedEvent.cast(event);
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = createdEvent.getSupplyRequiredDescriptor();
+		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
+
+		return candidateBuilder.additionalDemandDetail(demandDetail);
 	}
 }

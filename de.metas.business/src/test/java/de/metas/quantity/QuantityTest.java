@@ -1,4 +1,4 @@
-package org.adempiere.uom.api;
+package de.metas.quantity;
 
 /*
  * #%L
@@ -37,9 +37,6 @@ import org.hamcrest.number.BigDecimalCloseTo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
-import de.metas.quantity.Quantity;
 
 public class QuantityTest
 {
@@ -248,7 +245,6 @@ public class QuantityTest
 	public void compare_same_uom_different_amout()
 	{
 		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
-
 		final BigDecimal qtyAmount = new BigDecimal("123");
 
 		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
@@ -256,5 +252,46 @@ public class QuantityTest
 
 		assertThat(qtyToCompare).isGreaterThan(qty);
 		assertThat(qty).isLessThan(qtyToCompare);
+	}
+
+	@Test
+	public void min()
+	{
+		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
+		final BigDecimal qtyAmount = new BigDecimal("123");
+
+		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
+		final Quantity qtyPlusOne = Quantity.of(qtyAmount.add(ONE), qty_uom);
+
+		assertThat(qty.min(qtyPlusOne)).isSameAs(qty);
+		assertThat(qtyPlusOne.min(qty)).isSameAs(qty);
+	}
+
+	@Test
+	public void max()
+	{
+		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
+		final BigDecimal qtyAmount = new BigDecimal("123");
+
+		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
+		final Quantity qtyPlusOne = Quantity.of(qtyAmount.add(ONE), qty_uom);
+
+		assertThat(qty.max(qtyPlusOne)).isSameAs(qtyPlusOne);
+		assertThat(qtyPlusOne.max(qty)).isSameAs(qtyPlusOne);
+	}
+
+	@Test
+	public void compare()
+	{
+		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
+		final BigDecimal qtyAmount = new BigDecimal("123");
+
+		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
+		final Quantity otherQty = Quantity.of(qtyAmount, qty_uom);
+		final Quantity qtyPlusOne = Quantity.of(qtyAmount.add(ONE), qty_uom);
+
+		assertThat(qty.compareTo(qtyPlusOne)).isLessThan(0);
+		assertThat(qtyPlusOne.compareTo(qty)).isGreaterThan(0);
+		assertThat(otherQty.compareTo(qty)).isEqualTo(0);
 	}
 }

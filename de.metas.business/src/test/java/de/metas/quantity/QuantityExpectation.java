@@ -1,4 +1,4 @@
-package org.adempiere.uom.api;
+package de.metas.quantity;
 
 /*
  * #%L

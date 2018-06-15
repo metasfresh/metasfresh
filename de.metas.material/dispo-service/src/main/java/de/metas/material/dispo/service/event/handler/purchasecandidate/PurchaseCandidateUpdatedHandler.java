@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -89,5 +90,13 @@ public final class PurchaseCandidateUpdatedHandler
 				.build();
 
 		return query;
+	}
+
+	@Override
+	protected CandidateBuilder updateBuilderFromEvent(
+			@NonNull final CandidateBuilder candidateBuilder,
+			@NonNull final PurchaseCandidateEvent event)
+	{
+		return candidateBuilder; // nothing to update
 	}
 }

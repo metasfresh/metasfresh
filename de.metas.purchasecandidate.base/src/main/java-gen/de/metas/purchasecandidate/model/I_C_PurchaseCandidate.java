@@ -519,29 +519,6 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Process Now.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setProcessing (boolean Processing);
-
-	/**
-	 * Get Process Now.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isProcessing();
-
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
-
-	/**
 	 * Set Bestellte Menge.
 	 *
 	 * <br>Type: Quantity

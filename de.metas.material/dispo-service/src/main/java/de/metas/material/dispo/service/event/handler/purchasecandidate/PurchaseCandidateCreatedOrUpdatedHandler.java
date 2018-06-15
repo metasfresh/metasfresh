@@ -5,7 +5,6 @@ import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail.PurchaseDetailBuilder;
@@ -14,7 +13,6 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateEvent;
 import lombok.NonNull;
 
@@ -62,12 +60,10 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 
 	protected final void handlePurchaseCandidateEvent(@NonNull final PurchaseCandidateEvent event)
 	{
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
-		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
-
 		final MaterialDescriptor materialDescriptor = event.getPurchaseMaterialDescriptor();
 
 		final CandidatesQuery query = createCandidatesQuery(event);
+
 		final Candidate existingCandidteOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 
 		final CandidateBuilder candidateBuilder;
@@ -92,14 +88,16 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 				.advised(Flag.FALSE_DONT_UPDATE)
 				.build();
 
-		final Candidate supplyCandidate = candidateBuilder
+		candidateBuilder
 				.materialDescriptor(materialDescriptor)
-				.businessCaseDetail(purchaseDetail)
-				.additionalDemandDetail(demandDetail)
-				.build();
+				.businessCaseDetail(purchaseDetail);
+
+		final Candidate supplyCandidate = updateBuilderFromEvent(candidateBuilder, event).build();
 
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 	}
+
+	protected abstract CandidateBuilder updateBuilderFromEvent(CandidateBuilder candidateBuilder, PurchaseCandidateEvent event);
 
 	protected abstract CandidatesQuery createCandidatesQuery(@NonNull final PurchaseCandidateEvent event);
 

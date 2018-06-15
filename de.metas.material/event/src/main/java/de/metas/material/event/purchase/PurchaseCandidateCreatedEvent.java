@@ -41,6 +41,11 @@ import lombok.ToString;
 @ToString
 public class PurchaseCandidateCreatedEvent extends PurchaseCandidateEvent
 {
+	public static PurchaseCandidateCreatedEvent cast(@NonNull final PurchaseCandidateEvent event)
+	{
+		return (PurchaseCandidateCreatedEvent)event;
+	}
+
 	public static final String TYPE = "PurchaseCandidateCreatedEvent";
 
 	/**
@@ -48,6 +53,8 @@ public class PurchaseCandidateCreatedEvent extends PurchaseCandidateEvent
 	 * Otherwise its value is <= 1.
 	 */
 	private final int supplyCandidateRepoId;
+
+	private final SupplyRequiredDescriptor supplyRequiredDescriptor;
 
 	@JsonCreator
 	@Builder
@@ -60,10 +67,10 @@ public class PurchaseCandidateCreatedEvent extends PurchaseCandidateEvent
 			@JsonProperty("vendorId") final int vendorId)
 	{
 		super(purchaseMaterialDescriptor,
-				supplyRequiredDescriptor,
 				eventDescriptor,
 				purchaseCandidateRepoId,
 				vendorId);
 		this.supplyCandidateRepoId = supplyCandidateRepoId;
+		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 	}
 }

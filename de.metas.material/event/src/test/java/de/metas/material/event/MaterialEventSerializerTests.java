@@ -363,7 +363,6 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.purchaseCandidateRepoId(20)
 				.purchaseMaterialDescriptor(createMaterialDescriptor())
-				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(event);

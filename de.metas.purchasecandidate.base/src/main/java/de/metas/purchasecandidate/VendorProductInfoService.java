@@ -96,7 +96,10 @@ public class VendorProductInfoService
 		final ProductAndCategoryId productAndCategoryId = productsRepo.retrieveProductAndCategoryIdByProductId(productId);
 
 		final Map<BPartnerId, Integer> discountSchemaIds = bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType.VENDOR);
-
+		if (discountSchemaIds.isEmpty())
+		{
+			return ImmutableList.of(); // TODO: fallback to productprice
+		}
 		final Map<BPartnerId, I_C_BPartner_Product> bpartnerProductRecords = partnerProductDAO.retrieveByVendorIds(discountSchemaIds.keySet(), productId, orgId);
 
 		final ImmutableList.Builder<VendorProductInfo> vendorProductInfos = ImmutableList.builder();

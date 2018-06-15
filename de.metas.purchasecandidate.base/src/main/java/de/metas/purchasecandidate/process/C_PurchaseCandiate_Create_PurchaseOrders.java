@@ -1,22 +1,17 @@
 package de.metas.purchasecandidate.process;
 
-import static com.google.common.base.Predicates.not;
-
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
-import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import lombok.NonNull;
 
@@ -42,10 +37,11 @@ import lombok.NonNull;
  * #L%
  */
 
-public class C_PurchaseCandiate_Mark_Processed
+public class C_PurchaseCandiate_Create_PurchaseOrders
 		extends JavaProcess
 		implements IProcessPrecondition
 {
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(
 			@NonNull final IProcessPreconditionsContext context)
@@ -55,8 +51,9 @@ public class C_PurchaseCandiate_Mark_Processed
 			ProcessPreconditionsResolution.reject();
 		}
 
-		final boolean containsEligibleRecords = context.getSelectedModels(I_C_PurchaseCandidate.class).stream()
-					.filter(not(I_C_PurchaseCandidate::isProcessed))
+		final boolean containsEligibleRecords = context.getSelectedModels(I_C_PurchaseCandidate.class)
+				.stream()
+				.filter(I_C_PurchaseCandidate::isPrepared)
 				.findAny().isPresent();
 
 		return ProcessPreconditionsResolution.acceptIf(containsEligibleRecords);
@@ -66,24 +63,18 @@ public class C_PurchaseCandiate_Mark_Processed
 	protected String doIt() throws Exception
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final PurchaseCandidateRepository purchaseCandidateRepository = Adempiere.getBean(PurchaseCandidateRepository.class);
 
 		final ImmutableSet<PurchaseCandidateId> purchaseCandidateIds = queryBL
 				.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.filter(getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false)))
 				.create()
 				.stream()
-				.filter(not(I_C_PurchaseCandidate::isProcessed))
+				.filter(I_C_PurchaseCandidate::isPrepared)
 				.map(I_C_PurchaseCandidate::getC_PurchaseCandidate_ID)
 				.map(PurchaseCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableList<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepository
-				.streamAllByIds(purchaseCandidateIds)
-				.peek(PurchaseCandidate::markProcessed)
-				.collect(ImmutableList.toImmutableList());
-
-		purchaseCandidateRepository.saveAll(purchaseCandidates);
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds);
 
 		return MSG_OK;
 	}

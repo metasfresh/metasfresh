@@ -192,7 +192,7 @@ public class PurchaseDemandWithCandidatesService
 
 		final PurchaseCandidatesGroupBuilder builder = PurchaseCandidatesGroup.builder()
 				.purchaseDemandId(demand.getId())
-				.candidateGroupReferences(ImmutableList.copyOf(groupReferences))
+				.demandGroupReferences(ImmutableList.copyOf(groupReferences))
 				//
 				.orgId(orgId)
 				.warehouseId(groupKey.getWarehouseId())

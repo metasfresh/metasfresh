@@ -1,13 +1,10 @@
 package de.metas.material.event.purchase;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.util.Check;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -46,21 +43,17 @@ public abstract class PurchaseCandidateEvent implements MaterialEvent
 
 	private final MaterialDescriptor purchaseMaterialDescriptor;
 
-	private final SupplyRequiredDescriptor supplyRequiredDescriptor;
-
 	private final int vendorId;
 
 	protected PurchaseCandidateEvent(
 			@NonNull final MaterialDescriptor purchaseMaterialDescriptor,
-			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final EventDescriptor eventDescriptor,
 			final int purchaseCandidateRepoId,
 			final int vendorId)
 	{
 		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
 		this.eventDescriptor = eventDescriptor;
-		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 		this.purchaseCandidateRepoId = Check.assumeGreaterThanZero(purchaseCandidateRepoId, "purchaseCandidateRepoId");
-		this.vendorId = vendorId;
+		this.vendorId = Check.assumeGreaterThanZero(vendorId,"vendorId");
 	}
 }

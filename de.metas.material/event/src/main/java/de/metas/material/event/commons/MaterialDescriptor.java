@@ -105,7 +105,7 @@ public class MaterialDescriptor extends ProductDescriptor
 		Preconditions.checkArgument(warehouseId > 0, "warehouseId=%s needs to be >0", warehouseId);
 		Preconditions.checkArgument(customerId >= 0, "customerId=%s needs to be >=0", customerId);
 		Preconditions.checkNotNull(quantity, "quantity needs to be not-null");
-		Preconditions.checkNotNull(date, "date needs to not-null");
+		Preconditions.checkNotNull(date, "date needs to be not-null");
 
 		return this;
 	}

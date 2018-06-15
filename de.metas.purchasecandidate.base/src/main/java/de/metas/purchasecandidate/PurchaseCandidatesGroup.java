@@ -69,7 +69,7 @@ public class PurchaseCandidatesGroup
 
 		final PurchaseCandidatesGroupBuilder builder = builder()
 				.purchaseDemandId(purchaseDemandId)
-				.candidateGroupReferences(ImmutableList.of(purchaseCandidate.getGroupReference()))
+				.demandGroupReferences(ImmutableList.of(purchaseCandidate.getGroupReference()))
 				//
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
@@ -98,8 +98,9 @@ public class PurchaseCandidatesGroup
 		return builder.build();
 	}
 
+	/** they are needed because when a new purchase candidate is "split" from this group, it needs to inherit a reference. */
 	@NonNull
-	List<DemandGroupReference> candidateGroupReferences;
+	List<DemandGroupReference> demandGroupReferences;
 
 	@NonNull
 	PurchaseDemandId purchaseDemandId;

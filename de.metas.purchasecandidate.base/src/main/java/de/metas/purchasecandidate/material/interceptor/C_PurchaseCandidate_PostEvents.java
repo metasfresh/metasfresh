@@ -10,6 +10,8 @@ import org.compiere.model.ModelValidator;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -115,19 +117,26 @@ public class C_PurchaseCandidate_PostEvents
 			return;
 		}
 
+		final PurchaseCandidateUpdatedEvent purchaseCandidateUpdatedEvent = createUpdatedEvent(purchaseCandidateRecord);
+
+		postMaterialEventService.postEventAfterNextCommit(purchaseCandidateUpdatedEvent);
+	}
+
+	@VisibleForTesting
+	PurchaseCandidateUpdatedEvent createUpdatedEvent(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
+	{
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
 
 		final PurchaseCandidateUpdatedEvent purchaseCandidateUpdatedEvent = PurchaseCandidateUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
+				.vendorId(purchaseCandidateRecord.getVendor_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
 				.build();
-
-		postMaterialEventService.postEventAfterNextCommit(purchaseCandidateUpdatedEvent);
+		return purchaseCandidateUpdatedEvent;
 	}
 
-	private MaterialDescriptor createMaterialDescriptor(
-			@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
+	private MaterialDescriptor createMaterialDescriptor(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(purchaseCandidateRecord);
 
@@ -137,6 +146,7 @@ public class C_PurchaseCandidate_PostEvents
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(purchaseCandidateRecord.getDateRequired())
+				.warehouseId(purchaseCandidateRecord.getM_WarehousePO_ID())
 				.productDescriptor(productDescriptor)
 				// .customerId() we don't have a customer
 				.quantity(purchaseQty.getQty())
