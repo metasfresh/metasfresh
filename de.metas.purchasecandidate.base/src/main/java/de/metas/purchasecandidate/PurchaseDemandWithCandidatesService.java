@@ -64,7 +64,7 @@ public class PurchaseDemandWithCandidatesService
 	// services
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
-	private final VendorProductInfoService vendorProductInfosRepo;
+	private final VendorProductInfoService vendorProductInfoService;
 	private final PurchaseProfitInfoService purchaseProfitInfoService;
 	//
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
@@ -73,12 +73,12 @@ public class PurchaseDemandWithCandidatesService
 	public PurchaseDemandWithCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
 			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
-			@NonNull final VendorProductInfoService vendorProductInfosRepo,
+			@NonNull final VendorProductInfoService vendorProductInfoService,
 			final PurchaseProfitInfoService purchaseProfitInfoService)
 	{
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
-		this.vendorProductInfosRepo = vendorProductInfosRepo;
+		this.vendorProductInfoService = vendorProductInfoService;
 		this.purchaseProfitInfoService = purchaseProfitInfoService;
 	}
 
@@ -123,7 +123,7 @@ public class PurchaseDemandWithCandidatesService
 
 		for (final PurchaseDemand purchaseDemand : demands)
 		{
-			final List<PurchaseCandidate> candidates = purchaseCandidateRepository.getForDemand(purchaseDemand);
+			final List<PurchaseCandidate> candidates = purchaseCandidateRepository.getAllByIds(purchaseDemand.getExistingPurchaseCandidateIds());
 
 			final ListMultimap<PurchaseCandidatesGroupKey, PurchaseCandidate> candidatesByKey = candidates
 					.stream()
@@ -180,7 +180,7 @@ public class PurchaseDemandWithCandidatesService
 		final ProductId productId = groupKey.getProductId();
 		final OrgId orgId = groupKey.getOrgId();
 
-		final VendorProductInfo vendorProductInfo = vendorProductInfosRepo
+		final VendorProductInfo vendorProductInfo = vendorProductInfoService
 				.getVendorProductInfo(vendorId, productId, orgId)
 				.assertThatAttributeSetInstanceIdCompatibleWith(demand.getAttributeSetInstanceId());
 
@@ -256,7 +256,7 @@ public class PurchaseDemandWithCandidatesService
 			@NonNull final PurchaseDemand demand,
 			@NonNull final Set<BPartnerId> vendorIdsToExclude)
 	{
-		final Collection<VendorProductInfo> vendorProductInfos = vendorProductInfosRepo.getVendorProductInfos(demand.getProductId(), demand.getOrgId());
+		final Collection<VendorProductInfo> vendorProductInfos = vendorProductInfoService.getVendorProductInfos(demand.getProductId(), demand.getOrgId());
 
 		final ImmutableList<PurchaseCandidatesGroup> candidatesGroups = vendorProductInfos.stream()
 
@@ -266,9 +266,6 @@ public class PurchaseDemandWithCandidatesService
 				// create and collect them
 				.map(vendorProductInfo -> createNewPurchaseCandidatesGroup(demand, vendorProductInfo))
 				.collect(ImmutableList.toImmutableList());
-
-		// TODO: don't save them here!
-		// purchaseCandidateRepository.saveAll(candidates);
 
 		return candidatesGroups;
 	}
@@ -317,6 +314,7 @@ public class PurchaseDemandWithCandidatesService
 		// Assemble the PurchaseCandidate
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.salesOrderAndLineIdOrNull(purchaseDemand.getSalesOrderAndLineIdOrNull())
+				.groupReference(DemandGroupReference.createEmpty())
 				//
 				.purchaseDatePromised(purchaseDatePromised)
 				.reminderTime(reminderTime)
@@ -363,7 +361,6 @@ public class PurchaseDemandWithCandidatesService
 		{
 			return orgWarehousePOId;
 		}
-
 		return purchaseDemand.getWarehouseId();
 	}
 }

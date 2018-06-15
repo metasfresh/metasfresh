@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -14,6 +15,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -73,6 +75,13 @@ public class PurchaseDemand
 
 	@Nullable
 	OrderAndLineId salesOrderAndLineIdOrNull;
+
+	/**
+	 * A demand instance might be (partially) backed by already existing purchase candidates.
+	 * We need to hold their IDs to sync with them later.
+	 */
+	@Singular
+	List<PurchaseCandidate> existingPurchaseCandidates;
 
 	public int getUOMId()
 	{

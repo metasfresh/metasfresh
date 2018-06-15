@@ -3,6 +3,7 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -11,11 +12,13 @@ import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -119,6 +122,14 @@ public class PurchaseCandidateAggregate
 	{
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public List<PurchaseCandidateId> getPurchaseCandidateIds()
+	{
+		return purchaseCandidates
+				.stream()
+				.map(PurchaseCandidate::getId)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public Set<OrderAndLineId> getSalesOrderAndLineIds()

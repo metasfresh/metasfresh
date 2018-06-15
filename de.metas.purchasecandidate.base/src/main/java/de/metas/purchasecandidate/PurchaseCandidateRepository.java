@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
@@ -29,7 +28,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -132,25 +130,12 @@ public class PurchaseCandidateRepository
 		return result.build();
 	}
 
-	public ImmutableListMultimap<DemandGroupReference, PurchaseCandidate> getAllBySalesOrderLineIds(@NonNull final Collection<Integer> salesOrderLineIds)
+	public List<PurchaseCandidate> getAllByIds(@NonNull final Collection<PurchaseCandidateId> purchaseCandidateIds)
 	{
-		if (salesOrderLineIds.isEmpty())
-		{
-			return ImmutableListMultimap.of();
-		}
-
-		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, salesOrderLineIds)
-				.create()
-				.stream(I_C_PurchaseCandidate.class)
-				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						record -> DemandGroupReference.ofReference(record.getDemandReference()), // keyFunction
-						record -> toPurchaseCandidate(record)));// valueFunction
-
+		return streamAllByIds(purchaseCandidateIds).collect(ImmutableList.toImmutableList());
 	}
 
-	public Stream<PurchaseCandidate> streamAllByIds(final Collection<PurchaseCandidateId> purchaseCandidateIds)
+	public Stream<PurchaseCandidate> streamAllByIds(@NonNull final Collection<PurchaseCandidateId> purchaseCandidateIds)
 	{
 		if (purchaseCandidateIds.isEmpty())
 		{
@@ -162,11 +147,6 @@ public class PurchaseCandidateRepository
 				.create()
 				.stream(I_C_PurchaseCandidate.class)
 				.map(this::toPurchaseCandidate);
-	}
-
-	public List<PurchaseCandidate> getAllByIds(final Collection<PurchaseCandidateId> purchaseCandidateIds)
-	{
-		return streamAllByIds(purchaseCandidateIds).collect(ImmutableList.toImmutableList());
 	}
 
 	public Set<PurchaseCandidateId> retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(@NonNull final OrderId salesOrderId)
@@ -487,59 +467,16 @@ public class PurchaseCandidateRepository
 				: null;
 	}
 
-	private static final CCache<PurchaseDemand, List<PurchaseCandidate>> CACHE_PURCHASE_DEMAND_TO_CANDIDATES = CCache.newCache(
-			I_C_PurchaseCandidate.Table_Name
-					+ "#by#" + I_C_PurchaseCandidate.COLUMN_Processed
-					+ "#" + I_C_PurchaseCandidate.COLUMN_AD_Org_ID
-					+ "#" + I_C_PurchaseCandidate.COLUMN_M_Product_ID
-					+ "#" + I_C_PurchaseCandidate.COLUMN_DateRequired
-					+ "#" + I_C_PurchaseCandidate.COLUMN_C_UOM_ID
-					+ "#" + I_C_PurchaseCandidate.COLUMN_M_WarehousePO_ID
-					+ "#" + I_C_PurchaseCandidate.COLUMN_M_AttributeSetInstance_ID
-					+ "#" + I_C_PurchaseCandidate.COLUMN_C_Currency_ID
-					+ "#" + I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID,
-			0,
-			CCache.EXPIREMINUTES_Never);
-
-	public List<PurchaseCandidate> getForDemand(@NonNull final PurchaseDemand purchaseDemand)
+	public List<PurchaseCandidateId> getAllIdsBySalesOrderLineId(
+			@NonNull final OrderLineId salesOrderLineIds)
 	{
-		return CACHE_PURCHASE_DEMAND_TO_CANDIDATES.getOrLoad(purchaseDemand, () -> getForDemand0(purchaseDemand));
-	}
-
-	private List<PurchaseCandidate> getForDemand0(@NonNull final PurchaseDemand purchaseDemand)
-	{
-		final IQueryBuilder<I_C_PurchaseCandidate> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PurchaseCandidate.class)
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false)
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_AD_Org_ID, purchaseDemand.getOrgId())
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_M_Product_ID, purchaseDemand.getProductId())
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_DateRequired, purchaseDemand.getSalesDatePromised()) // this is how it currently is
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_UOM_ID, purchaseDemand.getQtyToDeliver().getUOMId());
-
-		final WarehouseId warehouseId = purchaseDemand.getWarehouseId();
-		queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_M_WarehousePO_ID, warehouseId);
-
-		final AttributeSetInstanceId attributeSetInstanceId = purchaseDemand.getAttributeSetInstanceId();
-		if (attributeSetInstanceId.getRepoId() >= 0)
-		{
-			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_M_AttributeSetInstance_ID, attributeSetInstanceId);
-		}
-		final Currency currency = purchaseDemand.getCurrencyOrNull();
-		if (currency != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_Currency_ID, currency.getId());
-		}
-		final OrderAndLineId salesOrderAndLineId = purchaseDemand.getSalesOrderAndLineIdOrNull();
-		if (salesOrderAndLineId != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, salesOrderAndLineId);
-		}
-
-		return queryBuilder
+				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, salesOrderLineIds)
 				.create()
+				.listIds()
 				.stream()
-				.map(this::toPurchaseCandidate)
+				.map(PurchaseCandidateId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
 	}
 }
