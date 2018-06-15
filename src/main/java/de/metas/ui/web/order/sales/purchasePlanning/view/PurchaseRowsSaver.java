@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
@@ -217,7 +218,7 @@ class PurchaseRowsSaver
 			final PurchaseCandidate newCandidate = PurchaseCandidate
 					.builder()
 					.groupReference(groupReference)
-					.salesOrderAndLineId(candidatesGroup.getSingleSalesOrderAndLineIdOrNull())
+					.salesOrderAndLineIdOrNull(candidatesGroup.getSingleSalesOrderAndLineIdOrNull())
 					//
 					.purchaseDatePromised(purchaseDatePromised)
 					// .reminderTime(reminderTime) // TODO reminder time
@@ -228,6 +229,7 @@ class PurchaseRowsSaver
 					.vendorProductNo(candidatesGroup.getVendorProductNo())
 					//
 					.productId(candidatesGroup.getProductId())
+					.attributeSetInstanceId(candidatesGroup.getAttributeSetInstanceId())
 					//
 					.qtyToPurchase(qtyToPurchaseRemainingOfGroup)
 					.prepared(true)
@@ -266,9 +268,11 @@ class PurchaseRowsSaver
 
 	private Quantity getQtyToPurchaseTarget(final PurchaseCandidate candidate)
 	{
-		if (candidate.getSalesOrderAndLineId() != null)
+		final OrderAndLineId orderAndLineId = candidate.getSalesOrderAndLineIdOrNull();
+		if (orderAndLineId != null)
 		{
-			return orderLineBL.getQtyToDeliver(candidate.getSalesOrderAndLineId())
+			return orderLineBL
+					.getQtyToDeliver(orderAndLineId)
 					.toZeroIfNegative();
 		}
 		else

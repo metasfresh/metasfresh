@@ -138,12 +138,12 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 				//
 				.qtyToDeliver(qtyToPurchase)
 				//
-				.currency(salesOrderLine.getPriceActual().getCurrency())
+				.currencyOrNull(salesOrderLine.getPriceActual().getCurrency())
 				//
 				.salesDatePromised(salesOrderLine.getDatePromised())
-				.preparationDate(salesOrderLine.getPreparationDate())
+				.preparationDateOrNull(salesOrderLine.getPreparationDate())
 				//
-				.salesOrderAndLineId(salesOrderLine.getId())
+				.salesOrderAndLineIdOrNull(salesOrderLine.getId())
 				//
 				.build();
 	}
@@ -202,7 +202,7 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 		Check.assumeNotEmpty(purchaseCandidates, "purchaseCandidates not empty");
 
 		return purchaseCandidates.stream()
-				.map(PurchaseCandidate::getSalesOrderAndLineId)
+				.map(PurchaseCandidate::getSalesOrderAndLineIdOrNull)
 				.filter(Predicates.notNull())
 				.map(OrderAndLineId::getOrderId)
 				.distinct()

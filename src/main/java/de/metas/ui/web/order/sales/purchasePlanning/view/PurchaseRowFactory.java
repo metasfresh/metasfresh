@@ -122,13 +122,16 @@ public class PurchaseRowFactory
 	private Quantity getQtyAvailableToPromise(final PurchaseDemand demand)
 	{
 		final ProductId productId = demand.getProductId();
-		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository.retrieveAvailableStockQtySum(AvailableToPromiseQuery.builder()
+
+		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(productId.getRepoId())
-				.date(demand.getPreparationDate())
+				.date(demand.getPreparationDateOrNull())
 				.storageAttributesKey(AttributesKeys
 						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId().getRepoId())
 						.orElse(AttributesKey.ALL))
-				.build());
+				.build();
+
+		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
 		final I_C_UOM uom = productsBL.getStockingUOM(productId);
 
