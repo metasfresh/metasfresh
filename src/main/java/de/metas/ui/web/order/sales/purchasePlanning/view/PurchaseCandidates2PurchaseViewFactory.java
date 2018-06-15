@@ -102,8 +102,13 @@ public class PurchaseCandidates2PurchaseViewFactory extends PurchaseViewFactoryT
 	}
 
 	@Override
-	protected void onViewClosedByUser(final PurchaseView purchaseView)
+	protected void onViewClosedByUser(@NonNull final PurchaseView purchaseView)
 	{
-		// TODO Auto-generated method stub
+		final List<PurchaseRow> rows = purchaseView.getRows();
+
+		PurchaseRowsSaver.builder()
+				.purchaseCandidatesRepo(purchaseCandidatesRepo)
+				.build()
+				.save(rows);
 	}
 }

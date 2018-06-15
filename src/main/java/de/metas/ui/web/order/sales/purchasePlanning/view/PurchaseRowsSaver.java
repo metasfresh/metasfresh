@@ -116,8 +116,9 @@ class PurchaseRowsSaver
 	private ImmutableSet<DemandGroupReference> extractDemandIds(@NonNull final List<PurchaseRow> groupingRows)
 	{
 		return groupingRows.stream()
-				.flatMap(row -> row.getCandidateGroupReferences().stream())
-				.filter(id -> id != null)
+				.flatMap(groupingRow -> groupingRow.getIncludedRows().stream())
+				.flatMap(lineRow -> lineRow.getDemandGroupReferences().stream())
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -206,13 +207,13 @@ class PurchaseRowsSaver
 		else
 		{
 			final DemandGroupReference groupReference;
-			if (candidatesGroup.getCandidateGroupReferences().isEmpty())
+			if (candidatesGroup.getDemandGroupReferences().isEmpty())
 			{
 				groupReference = DemandGroupReference.createEmpty();
 			}
 			else
 			{
-				groupReference = candidatesGroup.getCandidateGroupReferences().get(0);
+				groupReference = candidatesGroup.getDemandGroupReferences().get(0);
 			}
 
 			final PurchaseCandidate newCandidate = PurchaseCandidate

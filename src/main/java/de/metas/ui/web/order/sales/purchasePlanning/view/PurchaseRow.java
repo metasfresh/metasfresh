@@ -321,9 +321,10 @@ public final class PurchaseRow implements IViewRow
 		return rowId.toDocumentId();
 	}
 
-	public List<DemandGroupReference> getCandidateGroupReferences()
+	public List<DemandGroupReference> getDemandGroupReferences()
 	{
-		return purchaseCandidatesGroup.getCandidateGroupReferences();
+		Check.assume(PurchaseRowType.LINE.equals(getType()), "only 'line'-type rows have demandGroupReferences; this={}", this);
+		return purchaseCandidatesGroup.getDemandGroupReferences();
 	}
 
 	@Override
