@@ -45,3 +45,7 @@ UPDATE AD_Field SET DisplayLogic='@Processed@=N',Updated=TO_TIMESTAMP('2018-06-1
 ;
 
 
+UPDATE AD_Field SET DisplayLogic='1=1',Updated=TO_TIMESTAMP('2018-06-14 09:17:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=564576
+;
+
+
