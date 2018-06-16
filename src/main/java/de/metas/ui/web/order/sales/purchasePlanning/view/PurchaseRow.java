@@ -22,10 +22,10 @@ import com.google.common.collect.Maps;
 import de.metas.money.Money;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup.PurchaseCandidatesGroupBuilder;
 import de.metas.purchasecandidate.PurchaseDemand;
-import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -126,6 +126,7 @@ public final class PurchaseRow implements IViewRow
 	private ImmutableMap<PurchaseRowId, PurchaseRow> _includedRowsById = ImmutableMap.of();
 
 	private final boolean readonly;
+
 	@Getter(AccessLevel.PRIVATE)
 	private PurchaseCandidatesGroup purchaseCandidatesGroup;
 
@@ -194,7 +195,7 @@ public final class PurchaseRow implements IViewRow
 		final ProductId productId = purchaseCandidatesGroup.getProductId();
 
 		readonly = purchaseCandidatesGroup.isReadonly();
-		rowId = PurchaseRowId.lineId(purchaseCandidatesGroup.getDemandId(), vendorId, readonly);
+		rowId = PurchaseRowId.lineId(purchaseCandidatesGroup.getPurchaseDemandId(), vendorId, readonly);
 
 		product = lookups.createProductLookupValue(productId);
 		attributeSetInstance = null;
@@ -320,9 +321,10 @@ public final class PurchaseRow implements IViewRow
 		return rowId.toDocumentId();
 	}
 
-	public PurchaseDemandId getPurchaseDemandId()
+	public List<DemandGroupReference> getDemandGroupReferences()
 	{
-		return rowId.getPurchaseDemandId();
+		Check.assume(PurchaseRowType.LINE.equals(getType()), "only 'line'-type rows have demandGroupReferences; this={}", this);
+		return purchaseCandidatesGroup.getDemandGroupReferences();
 	}
 
 	@Override

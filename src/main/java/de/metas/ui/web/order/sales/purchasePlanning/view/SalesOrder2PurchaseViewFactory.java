@@ -26,7 +26,6 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseDemand;
-import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidatesService;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
@@ -123,14 +122,17 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 	}
 
 	@VisibleForTesting
-	static PurchaseDemand createDemand(final SalesOrderLine salesOrderLine)
+	PurchaseDemand createDemand(final SalesOrderLine salesOrderLine)
 	{
 		final Quantity qtyOrdered = salesOrderLine.getOrderedQty();
 		final Quantity qtyDelivered = salesOrderLine.getDeliveredQty();
 		final Quantity qtyToPurchase = qtyOrdered.subtract(qtyDelivered);
 
+		final OrderLineId ordeRLineId = salesOrderLine.getId().getOrderLineId();
+		final List<PurchaseCandidateId> existingPurchaseCandidates = purchaseCandidatesRepo.getAllIdsBySalesOrderLineId(ordeRLineId);
+
 		return PurchaseDemand.builder()
-				.id(PurchaseDemandId.ofOrderAndLineId(salesOrderLine.getId()))
+				.existingPurchaseCandidateIds(existingPurchaseCandidates)
 				//
 				.orgId(salesOrderLine.getOrgId())
 				.warehouseId(salesOrderLine.getWarehouseId())
@@ -140,12 +142,12 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 				//
 				.qtyToDeliver(qtyToPurchase)
 				//
-				.currency(salesOrderLine.getPriceActual().getCurrency())
+				.currencyOrNull(salesOrderLine.getPriceActual().getCurrency())
 				//
 				.salesDatePromised(salesOrderLine.getDatePromised())
-				.preparationDate(salesOrderLine.getPreparationDate())
+				.preparationDateOrNull(salesOrderLine.getPreparationDate())
 				//
-				.salesOrderAndLineId(salesOrderLine.getId())
+				.salesOrderAndLineIdOrNull(salesOrderLine.getId())
 				//
 				.build();
 	}
@@ -180,7 +182,7 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 		}
 	}
 
-	private List<PurchaseCandidate> saveRows(final PurchaseView purchaseView)
+	private List<PurchaseCandidate> saveRows(@NonNull final PurchaseView purchaseView)
 	{
 		final List<PurchaseRow> rows = purchaseView.getRows();
 
@@ -204,7 +206,7 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 		Check.assumeNotEmpty(purchaseCandidates, "purchaseCandidates not empty");
 
 		return purchaseCandidates.stream()
-				.map(PurchaseCandidate::getSalesOrderAndLineId)
+				.map(PurchaseCandidate::getSalesOrderAndLineIdOrNull)
 				.filter(Predicates.notNull())
 				.map(OrderAndLineId::getOrderId)
 				.distinct()

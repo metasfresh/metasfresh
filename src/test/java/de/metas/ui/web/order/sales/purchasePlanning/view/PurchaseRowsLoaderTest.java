@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
@@ -41,19 +42,27 @@ import de.metas.order.OrderLineRepository;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.BPPurchaseScheduleRepository;
+import de.metas.purchasecandidate.BPPurchaseScheduleService;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
+import de.metas.purchasecandidate.PurchaseDemandWithCandidatesService;
+import de.metas.purchasecandidate.ReferenceGenerator;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.purchasecandidate.availability.AvailabilityCheckService;
 import de.metas.purchasecandidate.availability.AvailabilityMultiResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.purchasecandidate.availability.PurchaseCandidatesAvailabilityRequest;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowsLoader.PurchaseRowsList;
 import mockit.Expectations;
@@ -102,6 +111,8 @@ public class PurchaseRowsLoaderTest
 
 	private static CurrencyRepository currencyRepository;
 
+	private SalesOrder2PurchaseViewFactory salesOrder2PurchaseViewFactory;
+
 	@Before
 	public void init()
 	{
@@ -145,7 +156,33 @@ public class PurchaseRowsLoaderTest
 		currency.setStdPrecision(2);
 		saveRecord(currency);
 
+		// wire together a SalesOrder2PurchaseViewFactory
 		currencyRepository = new CurrencyRepository();
+
+		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
+				new PurchaseItemRepository(),
+				currencyRepository,
+				new ReferenceGenerator());
+
+		final DoNothingPurchaseProfitInfoServiceImpl purchaseProfitInfoService = new DoNothingPurchaseProfitInfoServiceImpl();
+
+		final PurchaseDemandWithCandidatesService purchaseDemandWithCandidatesService = new PurchaseDemandWithCandidatesService(
+				purchaseCandidateRepository,
+				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()),
+				new VendorProductInfoService(),
+				purchaseProfitInfoService);
+
+		final PurchaseRowFactory purchaseRowFactory = new PurchaseRowFactory(
+				new AvailableToPromiseRepository(),
+				purchaseProfitInfoService);
+
+		salesOrder2PurchaseViewFactory = new SalesOrder2PurchaseViewFactory(
+				purchaseDemandWithCandidatesService,
+				availabilityCheckService, // mocked
+				purchaseCandidateRepository,
+				purchaseRowFactory,
+				new SalesOrderLineRepository(new OrderLineRepository(currencyRepository)));
+
 	}
 
 	@Test
@@ -168,16 +205,22 @@ public class PurchaseRowsLoaderTest
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.vendorId(BPartnerId.ofRepoId(bPartnerVendor.getC_BPartner_ID()))
+				.defaultVendor(false)
 				.productAndCategoryId(ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.vendorProductNo("bPartnerProduct.VendorProductNo")
 				.vendorProductName("bPartnerProduct.ProductName")
 				.pricingConditions(PricingConditions.builder()
 						.build())
 				.build();
 
-		final PurchaseDemand demand = SalesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
+		final PurchaseDemand demand = salesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, vendorProductInfo);
-		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(demand, purchaseCandidate, vendorProductInfo);
+
+		final ImmutableList<PurchaseDemandWithCandidates> demandWithCandidates = createPurchaseDemandWithCandidates(
+				demand,
+				purchaseCandidate,
+				vendorProductInfo);
 
 		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
 				.purchaseDemandWithCandidatesList(demandWithCandidates)
@@ -234,11 +277,13 @@ public class PurchaseRowsLoaderTest
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currency);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+				.groupReference(DemandGroupReference.createEmpty())
 				.orgId(OrgId.ofRepoId(20))
 				.purchaseDatePromised(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID()))
 				.qtyToPurchase(Quantity.of(orderLine.getQtyOrdered(), orderLine.getM_Product().getC_UOM()))
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
 				.vendorId(vendorProductInfo.getVendorId())
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
@@ -255,7 +300,7 @@ public class PurchaseRowsLoaderTest
 	{
 		return ImmutableList.of(PurchaseDemandWithCandidates.builder()
 				.purchaseDemand(demand)
-				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(purchaseCandidate, demand.getId(), vendorProductInfo))
+				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(demand.getId(), purchaseCandidate, vendorProductInfo))
 				.build());
 	}
 }

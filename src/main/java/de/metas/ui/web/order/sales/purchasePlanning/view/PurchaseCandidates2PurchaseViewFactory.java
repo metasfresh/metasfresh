@@ -68,7 +68,7 @@ public class PurchaseCandidates2PurchaseViewFactory extends PurchaseViewFactoryT
 	}
 
 	@Override
-	protected List<PurchaseDemand> getDemands(final CreateViewRequest request)
+	protected List<PurchaseDemand> getDemands(@NonNull final CreateViewRequest request)
 	{
 		final Set<PurchaseCandidateId> purchaseCandidateIds = PurchaseCandidateId.ofRepoIds(request.getFilterOnlyIds());
 		Check.assumeNotEmpty(purchaseCandidateIds, "purchaseCandidateIds is not empty");
@@ -82,10 +82,10 @@ public class PurchaseCandidates2PurchaseViewFactory extends PurchaseViewFactoryT
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static PurchaseDemand toPurchaseDemand(final PurchaseCandidateAggregate aggregate)
+	private static PurchaseDemand toPurchaseDemand(@NonNull final PurchaseCandidateAggregate aggregate)
 	{
 		return PurchaseDemand.builder()
-				.id(aggregate.getPurchaseDemandId())
+				.existingPurchaseCandidateIds(aggregate.getPurchaseCandidateIds())
 				//
 				.orgId(aggregate.getOrgId())
 				.warehouseId(aggregate.getWarehouseId())
@@ -96,14 +96,19 @@ public class PurchaseCandidates2PurchaseViewFactory extends PurchaseViewFactoryT
 				.qtyToDeliver(aggregate.getQtyToDeliver())
 				//
 				.salesDatePromised(aggregate.getDatePromised())
-				.preparationDate(aggregate.getPreparationDate())
+				.preparationDateOrNull(aggregate.getPreparationDate())
 				//
 				.build();
 	}
 
 	@Override
-	protected void onViewClosedByUser(final PurchaseView purchaseView)
+	protected void onViewClosedByUser(@NonNull final PurchaseView purchaseView)
 	{
-		// TODO Auto-generated method stub
+		final List<PurchaseRow> rows = purchaseView.getRows();
+
+		PurchaseRowsSaver.builder()
+				.purchaseCandidatesRepo(purchaseCandidatesRepo)
+				.build()
+				.save(rows);
 	}
 }

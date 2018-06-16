@@ -1,5 +1,7 @@
 package de.metas.ui.web.material.adapter;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -14,8 +16,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
@@ -64,8 +64,8 @@ public class AvailableToPromiseAdapter
 	@NonNull
 	public AvailableToPromiseResultForWebui retrieveAvailableStock(@NonNull final AvailableToPromiseQuery query)
 	{
-		final de.metas.material.dispo.commons.repository.AvailableToPromiseResult commonsAvailableStock = //
-				stockRepository.retrieveAvailableStock(query);
+		final de.metas.material.dispo.commons.repository.AvailableToPromiseResult //
+		commonsAvailableStock = stockRepository.retrieveAvailableStock(query);
 
 		final AvailableToPromiseResultForWebuiBuilder clientResultBuilder = AvailableToPromiseResultForWebui.builder();
 
@@ -159,7 +159,7 @@ public class AvailableToPromiseAdapter
 					.setParameter("storageAttributesKey", attributesKey);
 		}
 	}
-	
+
 	public Set<AttributesKey> getPredefinedStorageAttributeKeys()
 	{
 		return stockRepository.getPredefinedStorageAttributeKeys();
