@@ -27,6 +27,10 @@ Here come the actual release notes:
     * Extended Search Feature in Dropdown Lists.
 
 ## Fixes
+* metasfresh
+  * [#4233](https://github.com/metasfresh/metasfresh/issues/4233) Attributeset as Sysadmin cannot be created
+    * Fixes the recording of Attributeset with System Client.
+
 * metasfresh-webui-frontend
   * [#1446](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1446) Tab in purchase order batch entry not working correctly
     * Fixes the Tab usage in Batch entry after confirming selection with mouse.
