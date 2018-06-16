@@ -1,8 +1,11 @@
 package de.metas.purchasecandidate;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditions;
@@ -43,6 +46,8 @@ public class VendorProductInfo
 	BPartnerId vendorId;
 
 	ProductAndCategoryId productAndCategoryId;
+	AttributeSetInstanceId attributeSetInstanceId;
+
 	String vendorProductNo;
 	String vendorProductName;
 
@@ -51,11 +56,16 @@ public class VendorProductInfo
 	Percent vendorFlatDiscount;
 	private PricingConditions pricingConditions;
 
+	boolean defaultVendor;
+
 	@Builder
 	private VendorProductInfo(
 			@NonNull final BPartnerId vendorId,
+			@NonNull final Boolean defaultVendor,
 			//
 			@NonNull final ProductAndCategoryId productAndCategoryId,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+
 			@NonNull final String vendorProductNo,
 			@NonNull final String vendorProductName,
 			//
@@ -65,8 +75,11 @@ public class VendorProductInfo
 			@NonNull final PricingConditions pricingConditions)
 	{
 		this.vendorId = vendorId;
+		this.defaultVendor = defaultVendor;
 
 		this.productAndCategoryId = productAndCategoryId;
+		this.attributeSetInstanceId = attributeSetInstanceId;
+
 		this.vendorProductNo = vendorProductNo;
 		this.vendorProductName = vendorProductName;
 
@@ -85,6 +98,17 @@ public class VendorProductInfo
 	{
 		final PricingConditionsBreakQuery query = createPricingConditionsBreakQuery(qtyToDeliver);
 		return getPricingConditions().pickApplyingBreak(query);
+	}
+
+	public VendorProductInfo assertThatAttributeSetInstanceIdCompatibleWith(@NonNull final AttributeSetInstanceId otherId)
+	{
+		if (AttributeSetInstanceId.NONE.equals(attributeSetInstanceId))
+		{
+			return this;
+		}
+		Check.errorUnless(Objects.equals(otherId, attributeSetInstanceId),
+				"The given atributeSetInstanceId is not compatible with our id; otherId={}; this={}", otherId, this);
+		return this;
 	}
 
 	private PricingConditionsBreakQuery createPricingConditionsBreakQuery(final Quantity qtyToDeliver)

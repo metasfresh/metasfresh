@@ -19,6 +19,7 @@ import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.pporder.PPOrderAdvisedEventCreator;
 import de.metas.material.planning.pporder.PPOrderDemandMatcher;
 import de.metas.material.planning.pporder.PPOrderPojoSupplier;
 import mockit.Expectations;

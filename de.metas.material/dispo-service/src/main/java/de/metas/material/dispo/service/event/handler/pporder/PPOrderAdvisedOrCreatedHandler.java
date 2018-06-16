@@ -10,10 +10,10 @@ import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
-import de.metas.material.dispo.commons.candidate.ProductionDetail.ProductionDetailBuilder;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail.ProductionDetailBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -197,7 +197,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 				.productDescriptor(ppOrder.getProductDescriptor())
 				.quantity(qtyOpen)
 				.warehouseId(ppOrder.getWarehouseId())
-				.bPartnerId(ppOrder.getBPartnerId())
+				//.customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
 		return materialDescriptor;
 	}
@@ -224,7 +224,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 				.productDescriptor(ppOrderLine.getProductDescriptor())
 				.quantity(qtyRequired.subtract(qtyDelivered))
 				.warehouseId(ppOrder.getWarehouseId())
-				.bPartnerId(ppOrder.getBPartnerId())
+				//.customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
 		return materialDescriptor;
 	}

@@ -60,7 +60,7 @@ public class PurchaseCandidateTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 		this.EACH = createUOM("Ea");
 		this.ONE = Quantity.of(BigDecimal.ONE, EACH);
 		this.TEN = Quantity.of(BigDecimal.TEN, EACH);
@@ -79,7 +79,7 @@ public class PurchaseCandidateTest
 	public void markProcessedAndCheckChanges()
 	{
 		final PurchaseCandidate candidate = PurchaseCandidateTestTool.createPurchaseCandidate(1, ONE);
-		assertThat(candidate.getSalesOrderAndLineId().getOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID); // guard
+		assertThat(candidate.getSalesOrderAndLineIdOrNull().getOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID); // guard
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 		assertThat(candidate.isProcessed()).isFalse();
@@ -90,7 +90,7 @@ public class PurchaseCandidateTest
 		assertThat(candidate.copy().hasChanges()).isTrue();
 		assertThat(candidate.isProcessed()).isTrue();
 		assertThat(candidate.copy().isProcessed()).isTrue();
-		assertThat(candidate.copy().getSalesOrderAndLineId().getOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID);
+		assertThat(candidate.copy().getSalesOrderAndLineIdOrNull().getOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID);
 
 		candidate.markSaved(PurchaseCandidateId.ofRepoId(1));
 		assertThat(candidate.hasChanges()).isFalse();

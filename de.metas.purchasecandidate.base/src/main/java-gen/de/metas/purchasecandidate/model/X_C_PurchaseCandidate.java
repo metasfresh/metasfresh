@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 201642987L;
+	private static final long serialVersionUID = 1429097903L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -23,17 +23,15 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
       super (ctx, C_PurchaseCandidate_ID, trxName);
       /** if (C_PurchaseCandidate_ID == 0)
         {
-			setC_OrderLineSO_ID (0);
-			setC_OrderSO_ID (0);
 			setC_PurchaseCandidate_ID (0);
 			setC_UOM_ID (0);
 			setDateRequired (new Timestamp( System.currentTimeMillis() ));
+			setDemandReference (null);
 			setIsAggregatePO (false); // N
 			setIsPrepared (false); // N
 			setM_Product_ID (0);
 			setM_WarehousePO_ID (0);
 			setProcessed (false); // N
-			setProcessing (false); // N
 			setQtyToPurchase (BigDecimal.ZERO);
 			setVendor_ID (0);
         } */
@@ -53,40 +51,6 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Product getC_BPartner_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Product_ID, org.compiere.model.I_C_BPartner_Product.class);
-	}
-
-	@Override
-	public void setC_BPartner_Product(org.compiere.model.I_C_BPartner_Product C_BPartner_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Product_ID, org.compiere.model.I_C_BPartner_Product.class, C_BPartner_Product);
-	}
-
-	/** Set Geschäftspartner-Produkt.
-		@param C_BPartner_Product_ID Geschäftspartner-Produkt	  */
-	@Override
-	public void setC_BPartner_Product_ID (int C_BPartner_Product_ID)
-	{
-		if (C_BPartner_Product_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_Product_ID, Integer.valueOf(C_BPartner_Product_ID));
-	}
-
-	/** Get Geschäftspartner-Produkt.
-		@return Geschäftspartner-Produkt	  */
-	@Override
-	public int getC_BPartner_Product_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
@@ -258,7 +222,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Kd-Rohertragspreis.
+	/** Set VK Netto.
 		@param CustomerPriceGrossProfit 
 		Effektiver Verkaufspreis minus Skonto und Rückerstattung
 	  */
@@ -268,7 +232,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_CustomerPriceGrossProfit, CustomerPriceGrossProfit);
 	}
 
-	/** Get Kd-Rohertragspreis.
+	/** Get VK Netto.
 		@return Effektiver Verkaufspreis minus Skonto und Rückerstattung
 	  */
 	@Override
@@ -294,6 +258,25 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public java.sql.Timestamp getDateRequired () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateRequired);
+	}
+
+	/** Set Referenz.
+		@param DemandReference 
+		Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
+	  */
+	@Override
+	public void setDemandReference (java.lang.String DemandReference)
+	{
+		set_Value (COLUMNNAME_DemandReference, DemandReference);
+	}
+
+	/** Get Referenz.
+		@return Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
+	  */
+	@Override
+	public java.lang.String getDemandReference () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DemandReference);
 	}
 
 	/** Set Aggregate Purchase Orders.
@@ -343,34 +326,37 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_M_AttributeInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
 
 	@Override
-	public void setM_AttributeInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeInstance)
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeInstance);
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set M_AttributeInstance.
-		@param M_AttributeInstance_ID M_AttributeInstance	  */
+	/** Set Merkmale.
+		@param M_AttributeSetInstance_ID 
+		Merkmals Ausprägungen zum Produkt
+	  */
 	@Override
-	public void setM_AttributeInstance_ID (int M_AttributeInstance_ID)
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
-		if (M_AttributeInstance_ID < 1) 
-			set_Value (COLUMNNAME_M_AttributeInstance_ID, null);
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeInstance_ID, Integer.valueOf(M_AttributeInstance_ID));
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get M_AttributeInstance.
-		@return M_AttributeInstance	  */
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
+	  */
 	@Override
-	public int getM_AttributeInstance_ID () 
+	public int getM_AttributeSetInstance_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeInstance_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -498,29 +484,6 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
-	@Override
-	public void setProcessing (boolean Processing)
-	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
-	}
-
-	/** Get Process Now.
-		@return Process Now	  */
-	@Override
-	public boolean isProcessing () 
-	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Bestellte Menge.
 		@param PurchasedQty Bestellte Menge	  */
 	@Override
@@ -540,9 +503,9 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** Set VK Preis netto.
+	/** Set EK Netto.
 		@param PurchasePriceActual 
-		Effektiver Verkaufspreis
+		Effektiver Einkaufspreis
 	  */
 	@Override
 	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual)
@@ -550,8 +513,8 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_PurchasePriceActual, PurchasePriceActual);
 	}
 
-	/** Get VK Preis netto.
-		@return Effektiver Verkaufspreis
+	/** Get EK Netto.
+		@return Effektiver Einkaufspreis
 	  */
 	@Override
 	public java.math.BigDecimal getPurchasePriceActual () 

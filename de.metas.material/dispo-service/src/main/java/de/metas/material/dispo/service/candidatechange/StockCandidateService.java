@@ -6,17 +6,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Preconditions;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.MaterialDescriptorQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
@@ -76,8 +78,10 @@ public class StockCandidateService
 	{
 		final Candidate previousStockOrNull;
 		{
-			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(candidate, DateOperator.BEFORE_OR_AT);
-			previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockQuery);
+			final CandidatesQuery previousStockQuery = createStockQueryBuilderWithDateOperator(
+					candidate,
+					DateOperator.BEFORE_OR_AT);
+			previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(previousStockQuery);
 		}
 
 		final BigDecimal newQty;
@@ -86,15 +90,11 @@ public class StockCandidateService
 			newQty = candidate.getQuantity();
 		}
 		else if (previousStockOrNull.getDate().before(candidate.getDate())
+				|| candidate.getId().isNull() // our candidate is new
 				|| previousStockOrNull.getSeqNo() < candidate.getSeqNo())
 		{
 			// since we do have an *earlier* stock candidate, we base our new candidate's qty on the former candidate
-			// TODO: i'm pretty sure there is just one, so we might drop this summing..
-			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(previousStockOrNull, DateOperator.AT);
-			final BigDecimal previousQuantity = candidateRepositoryRetrieval
-					.retrieveOrderedByDateAndSeqNo(stockQuery).stream().map(Candidate::getQuantity)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-
+			final BigDecimal previousQuantity = previousStockOrNull.getQuantity();
 			newQty = previousQuantity.add(candidate.getQuantity());
 		}
 		else
@@ -136,11 +136,11 @@ public class StockCandidateService
 	 */
 	public Candidate updateQty(@NonNull final Candidate candidateToUpdate)
 	{
-		Preconditions.checkState(candidateToUpdate.getId() > 0,
-				"Parameter 'candidateToUpdate' needs to have Id > 0; candidateToUpdate=%s",
+		Check.errorIf(candidateToUpdate.getId().isNull(),
+				"Parameter 'candidateToUpdate' needs to have a not-null Id; candidateToUpdate=%s",
 				candidateToUpdate);
 
-		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId(), I_MD_Candidate.class);
+		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId().getRepoId(), I_MD_Candidate.class);
 		final BigDecimal oldQty = candidateRecord.getQty();
 
 		candidateRecord.setQty(candidateToUpdate.getQuantity());
@@ -180,6 +180,7 @@ public class StockCandidateService
 
 			final BigDecimal delta = stockWithDelta.getQuantity();
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
+
 			candidateRepositoryWriteService.updateCandidateById(candidate
 					.withQuantity(newQty)
 					.withGroupId(stockWithDelta.getGroupId()));
@@ -190,21 +191,37 @@ public class StockCandidateService
 			@NonNull final Candidate candidate,
 			@NonNull final DateOperator dateOperator)
 	{
-		final MaterialDescriptorQuery materialDescriptorQuery = //
-				createMaterialDescriptorQueryWithoutBPartner(candidate.getMaterialDescriptor(), dateOperator);
+		final MaterialDescriptorQuery //
+		materialDescriptorQuery = createMaterialDescriptorQuery(candidate.getMaterialDescriptor(), dateOperator);
 
 		return CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.type(CandidateType.STOCK)
 				.matchExactStorageAttributesKey(true)
-				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
+				.parentId(CandidateId.UNSPECIFIED)
 				.build();
 	}
 
-	private MaterialDescriptorQuery createMaterialDescriptorQueryWithoutBPartner(final MaterialDescriptor materialDescriptor, final DateOperator dateoperator)
+	private MaterialDescriptorQuery createMaterialDescriptorQuery(
+			@NonNull final MaterialDescriptor materialDescriptor,
+			@NonNull final DateOperator dateoperator)
 	{
-		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
-				// .bPartnerId(bPartnerId) // don't filter by bpartner because ATP changes affect all of them
+		final MaterialDescriptorQueryBuilder builder = MaterialDescriptorQuery
+				.builder()
+				.customerIdOperator(CustomerIdOperator.GIVEN_ID_OR_NULL); // want the latest, only excluding records that have a *different* customerId
+
+		if (materialDescriptor.getCustomerId() > 0)
+		{
+			// do include the bpartner in the query, because e.g. an increase for a given bpartner does a raised ATP just for that partner, and not for everyone
+			builder.customerId(materialDescriptor.getCustomerId());
+		}
+		else
+		{
+			// ..on the other hand, if materialDescriptor has *no* bpartner, then the respective change in qty is related to everybody
+			builder.customerId(null);
+		}
+
+		final MaterialDescriptorQuery materialDescriptorQuery = builder
 				.date(materialDescriptor.getDate())
 				.dateOperator(dateoperator)
 				.productId(materialDescriptor.getProductId())

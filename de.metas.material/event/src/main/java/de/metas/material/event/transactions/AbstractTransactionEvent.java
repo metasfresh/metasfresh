@@ -49,7 +49,14 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final MaterialDescriptor materialDescriptor;
 
+	/** note: one shipment-inoutLine might be an aggregation of multiple shipment schedules */
 	private final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys;
+
+	private final Map<Integer, BigDecimal> receiptScheduleIds2Qtys;
+
+	private final int inOutId;
+
+	private final int inOutLineId;
 
 	private final int transactionId;
 
@@ -69,6 +76,9 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
 			final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
+			final Map<Integer, BigDecimal> receiptScheduleIds2Qtys,
+			final int inOutId,
+			final int inOutLineId,
 			final int ppOrderId,
 			final int ppOrderLineId,
 			final int ddOrderId,
@@ -85,6 +95,10 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.huOnHandQtyChangeDescriptors = huOnHandQtyChangeDescriptors;
 
 		this.shipmentScheduleIds2Qtys = shipmentScheduleIds2Qtys;
+		this.receiptScheduleIds2Qtys = receiptScheduleIds2Qtys;
+
+		this.inOutId = inOutId;
+		this.inOutLineId = inOutLineId;
 
 		this.ddOrderLineId = ddOrderLineId;
 		this.ddOrderId = ddOrderId;
@@ -96,6 +110,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 	}
 
 	public abstract BigDecimal getQuantity();
+
 	public abstract BigDecimal getQuantityDelta();
 
 	@OverridingMethodsMustInvokeSuper

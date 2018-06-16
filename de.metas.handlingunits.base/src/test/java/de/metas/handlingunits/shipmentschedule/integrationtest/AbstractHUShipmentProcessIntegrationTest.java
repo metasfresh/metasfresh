@@ -423,7 +423,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		afterAggregation_ShipmentScheduleQtyPickedExpectations
 				.assertExpected_ShipmentScheduleWithHUs("after split IShipmentScheduleWithHU candidates", candidatesSorted);
 
-		final InOutGeneratedNotificationChecker notificationsChecker = InOutGeneratedNotificationChecker.createAnSubscribe();
+		final InOutGeneratedNotificationChecker notificationsChecker = InOutGeneratedNotificationChecker.createAndSubscribe();
 		
 		//
 		// Make sure the current user is configured to receive notifications

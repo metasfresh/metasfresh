@@ -35,7 +35,7 @@ public class CandidateTest
 	public void build_withIncompleteMaterialDescriptor_fails()
 	{
 		Candidate.builder()
-				.type(CandidateType.STOCK)
+				.type(CandidateType.SUPPLY)
 				.materialDescriptor(MaterialDescriptor.builder().build())
 				.build();
 	}

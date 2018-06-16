@@ -57,7 +57,7 @@ public class InvoiceCandidateAssignmentService
 		final RefundContractQuery refundContractQuery = RefundContractQuery.of(invoiceCandidate);
 		final Optional<RefundContract> refundContract = refundContractRepository.getByQuery(refundContractQuery);
 
-		if (!refundContract.isPresent())
+		if (!refundContract.isPresent() && invoiceCandidate.isAssigned())
 		{
 			// unassign (which also subtracts the assigned money)
 			final UnassignedPairOfCandidates unassignResult = unassignCandidate(invoiceCandidate);

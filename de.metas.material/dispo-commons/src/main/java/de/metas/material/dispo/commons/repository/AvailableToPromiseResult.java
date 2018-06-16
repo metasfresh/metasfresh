@@ -152,7 +152,7 @@ public class AvailableToPromiseResult
 
 	private final List<ResultGroup> resultGroups;
 
-	@ToString(exclude = "storageAttributesKeyMatcher" /*because it's just gibberish most of the time*/)
+	@ToString(exclude = "storageAttributesKeyMatcher" /* because it's just gibberish most of the time */)
 	@EqualsAndHashCode
 	@Getter
 	public static final class ResultGroup
@@ -269,16 +269,16 @@ public class AvailableToPromiseResult
 			this.warehouseId = warehouseId;
 			this.productId = productId;
 			this.storageAttributesKey = storageAttributesKey;
-			if (bpartnerId > 0 || bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
-			{
-				this.bpartnerId = bpartnerId;
-			}
-			else
-			{
-				// i.e. BPARTNER_ID_ANY shall not be accepted,
-				// because this is actual data and not grouping/aggregation data
-				throw new AdempiereException("Invalid bpartnerId: " + bpartnerId);
-			}
+			// if (bpartnerId > 0 || bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY)
+			// {
+			this.bpartnerId = bpartnerId;
+			// }
+			// else
+			// {
+			// // i.e. BPARTNER_ID_ANY shall not be accepted,
+			// // because this is actual data and not grouping/aggregation data
+			// throw new AdempiereException("Invalid bpartnerId: " + bpartnerId);
+			// }
 			this.qty = qty;
 		}
 	}
@@ -292,17 +292,21 @@ public class AvailableToPromiseResult
 			if (matchers)
 			{
 				group.addQty(request.getQty());
-				added = true;
+				added = true; // don't break; a request might be added to >1 groups
 			}
 		}
 
 		if (!added)
 		{
-			throw new AdempiereException("No matching group found for " + request + " in " + this);
+			throw new AdempiereException("No matching group found for AddToResultGroupRequest")
+					.appendParametersToMessage()
+					.setParameter("request", request)
+					.setParameter("available resultGroups", resultGroups)
+					.setParameter("this", this);
 		}
 	}
 
-	public void addGroup(@NonNull final AddToResultGroupRequest request)
+	public void addToNewGroupGroup(@NonNull final AddToResultGroupRequest request)
 	{
 		final ResultGroup group = ResultGroup.builder()
 				.productId(request.getProductId())

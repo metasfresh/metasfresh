@@ -10,12 +10,12 @@ package org.eevolution.drp.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,11 +30,13 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
@@ -50,9 +52,11 @@ import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageRecord;
 import lombok.NonNull;
 
@@ -152,12 +156,15 @@ import lombok.NonNull;
 
 		//
 		// Retrieve Product Planning
-		productPlanning = productPlanningDAO.find(
-				warehouse.getAD_Org_ID(),
-				warehouse.getM_Warehouse_ID(),
-				warehousePlant == null ? 0 : warehousePlant.getS_Resource_ID(),
-				attributeSetInstanceAware.getM_Product_ID(),
-				attributeSetInstanceAware.getM_AttributeSetInstance_ID());
+		final ProductPlanningQuery query = ProductPlanningQuery
+				.builder()
+				.orgId(warehouse.getAD_Org_ID())
+				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
+				.plantId(warehousePlant == null ? 0 : warehousePlant.getS_Resource_ID())
+				.productId(ProductId.ofRepoId(attributeSetInstanceAware.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceAware.getM_AttributeSetInstance_ID()))
+				.build();
+		productPlanning = productPlanningDAO.find(query);
 		if (productPlanning == null)
 		{
 			notValidReasons.add("@NotFound@ @PP_Product_Planning_ID@");

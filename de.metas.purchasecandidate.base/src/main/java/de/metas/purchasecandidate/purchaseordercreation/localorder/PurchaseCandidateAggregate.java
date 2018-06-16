@@ -3,6 +3,7 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -11,12 +12,13 @@ import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseDemandId;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -49,7 +51,6 @@ public class PurchaseCandidateAggregate
 		return new PurchaseCandidateAggregate(aggregationKey);
 	}
 
-	private final PurchaseDemandId purchaseDemandId;
 	private final PurchaseCandidateAggregateKey aggregationKey;
 
 	private LocalDateTime datePromised;
@@ -60,7 +61,6 @@ public class PurchaseCandidateAggregate
 	private PurchaseCandidateAggregate(@NonNull final PurchaseCandidateAggregateKey aggregationKey)
 	{
 		this.aggregationKey = aggregationKey;
-		purchaseDemandId = PurchaseDemandId.newAggregateId();
 	}
 
 	public void add(@NonNull final PurchaseCandidate purchaseCandidate)
@@ -76,15 +76,11 @@ public class PurchaseCandidateAggregate
 		//
 		datePromised = TimeUtil.min(datePromised, purchaseCandidate.getPurchaseDatePromised());
 
-		if (purchaseCandidate.getSalesOrderAndLineId() != null)
+		final OrderAndLineId orderAndLineId = purchaseCandidate.getSalesOrderAndLineIdOrNull();
+		if (orderAndLineId != null)
 		{
-			salesOrderAndLineIds.add(purchaseCandidate.getSalesOrderAndLineId());
+			salesOrderAndLineIds.add(orderAndLineId);
 		}
-	}
-
-	public PurchaseDemandId getPurchaseDemandId()
-	{
-		return purchaseDemandId;
 	}
 
 	public OrgId getOrgId()
@@ -104,7 +100,7 @@ public class PurchaseCandidateAggregate
 
 	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
-		return AttributeSetInstanceId.NONE;
+		return aggregationKey.getAttributeSetInstanceId();
 	}
 
 	public Quantity getQtyToDeliver()
@@ -128,8 +124,32 @@ public class PurchaseCandidateAggregate
 		return null;
 	}
 
+	public List<PurchaseCandidateId> getPurchaseCandidateIds()
+	{
+		return purchaseCandidates
+				.stream()
+				.map(PurchaseCandidate::getId)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	public Set<OrderAndLineId> getSalesOrderAndLineIds()
 	{
 		return ImmutableSet.copyOf(salesOrderAndLineIds);
+	}
+
+	public void calculateAndSetQtyToDeliver()
+	{
+		if (purchaseCandidates.isEmpty())
+		{
+			return;
+		}
+
+		final Quantity qtyToPurchase = purchaseCandidates.get(0).getQtyToPurchase();
+		final Quantity sum = purchaseCandidates
+				.stream()
+				.map(PurchaseCandidate::getQtyToPurchase)
+				.reduce(qtyToPurchase.toZero(), Quantity::add);
+		setQtyToDeliver(sum);
+
 	}
 }

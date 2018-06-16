@@ -1,5 +1,8 @@
 package de.metas.material.event.forecast;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
@@ -28,20 +31,27 @@ import lombok.Value;
  * #L%
  */
 
-@Value // note that we need AllArgsConstructor. It's used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter value does into which property
+@Value
 public class ForecastCreatedEvent implements MaterialEvent
 {
 	public static final String TYPE = "ForecastCreatedEvent";
 
-	@NonNull
 	Forecast forecast;
 
-	@NonNull
 	EventDescriptor eventDescriptor;
 
 	public void validate()
 	{
 		forecast.validate();
+	}
+
+	@JsonCreator
+	@Builder
+	private ForecastCreatedEvent(
+			@JsonProperty("forecast") @NonNull final Forecast forecast,
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor)
+	{
+		this.forecast = forecast;
+		this.eventDescriptor = eventDescriptor;
 	}
 }
