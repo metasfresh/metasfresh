@@ -10,6 +10,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.cache.CacheBuilder;
@@ -27,10 +28,9 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
-import de.metas.event.jms.ActiveMQJMSEndpoint;
-import de.metas.event.jms.IJMSEndpoint;
 import de.metas.event.jmx.JMXEventBusManager;
 import de.metas.event.log.EventBus2EventLogHandler;
+import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -63,15 +63,17 @@ public class EventBusFactory implements IEventBusFactory
 				}
 			});
 
-	private final IJMSEndpoint jmsEndpoint = new ActiveMQJMSEndpoint();
-
+	private final IEventBusRemoteEndpoint remoteEndpoint;
 	private final ExecutorService eventBusExecutor;
 
 	private final Set<Topic> availableUserNotificationsTopic = ConcurrentHashMap.newKeySet(10);
 
 	public EventBusFactory()
 	{
-		JMXRegistry.get().registerJMX(new JMXEventBusManager(jmsEndpoint), OnJMXAlreadyExistsPolicy.Replace);
+		remoteEndpoint = Adempiere.getBean(IEventBusRemoteEndpoint.class);
+		logger.info("Using remote endpoint: {}", remoteEndpoint);
+
+		JMXRegistry.get().registerJMX(new JMXEventBusManager(remoteEndpoint), OnJMXAlreadyExistsPolicy.Replace);
 
 		// Setup EventBus executor
 		if (EventBusConstants.isEventBusPostEventsAsync())
@@ -93,7 +95,7 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	@Override
-	public IEventBus getEventBus(final Topic topic)
+	public IEventBus getEventBus(@NonNull final Topic topic)
 	{
 		try
 		{
@@ -114,6 +116,12 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	@Override
+	public IEventBus getEventBusIfExists(@NonNull final Topic topic)
+	{
+		return topic2eventBus.getIfPresent(topic);
+	}
+
+	@Override
 	public void initEventBussesWithGlobalListeners()
 	{
 		final ImmutableSet<Topic> topics = ImmutableSet.copyOf(globalEventListeners.keySet());
@@ -131,8 +139,10 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	/**
-	 * Creates the event bus. If the remove event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE}, then the event bus is also build to a JMS
-	 * endpoint. Otherwise the event bus will only be local.
+	 * Creates the event bus.
+	 * If the remote event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE},
+	 * then the event bus is also bound to a remote endpoint.
+	 * Otherwise the event bus will only be local.
 	 *
 	 * @param topic
 	 * @return
@@ -145,7 +155,7 @@ public class EventBusFactory implements IEventBusFactory
 		// whether the event is really stored is determined for each individual event
 		eventBus.subscribe(EventBus2EventLogHandler.INSTANCE);
 
-		// Bind the EventBus to JMS (only if the system is enabled).
+		// Bind the EventBus to remote endpoint (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
 		// because if we would return null or fail here a lot of BLs could fail.
 		if (Type.REMOTE.equals(topic.getType()))
@@ -154,7 +164,7 @@ public class EventBusFactory implements IEventBusFactory
 			{
 				logger.warn("Remote events are disabled via EventBusConstants. Creating local-only eventBus for topic={}", topic);
 			}
-			else if (jmsEndpoint.bindIfNeeded(eventBus))
+			else if (remoteEndpoint.bindIfNeeded(eventBus))
 			{
 				eventBus.setTypeRemote();
 			}
@@ -204,9 +214,9 @@ public class EventBusFactory implements IEventBusFactory
 	 * @return list of available topics on which user can subscribe for UI notifications
 	 */
 	private Set<Topic> getAvailableUserNotificationsTopics()
-	{
+		{
 		return ImmutableSet.copyOf(availableUserNotificationsTopic);
-	}
+		}
 
 	@Override
 	public void registerUserNotificationsListener(@NonNull final IEventListener listener)
@@ -224,12 +234,12 @@ public class EventBusFactory implements IEventBusFactory
 				.stream()
 				.map(this::getEventBus)
 				.forEach(eventBus -> eventBus.subscribeWeak(listener));
-	}
+		}
 
 	@Override
 	public boolean checkRemoteEndpointStatus()
 	{
-		jmsEndpoint.checkConnection();
-		return jmsEndpoint.isConnected();
+		remoteEndpoint.checkConnection();
+		return remoteEndpoint.isConnected();
 	}
 }

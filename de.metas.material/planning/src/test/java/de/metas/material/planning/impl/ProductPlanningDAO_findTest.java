@@ -5,11 +5,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -24,6 +26,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -216,13 +220,15 @@ public class ProductPlanningDAO_findTest
 
 	private I_PP_Product_Planning invokeFindMethodWithASI(final int attributeSetInstanceId)
 	{
-		final I_PP_Product_Planning result = new ProductPlanningDAO().find(
-				warehouse.getAD_Org_ID(),
-				warehouse.getM_Warehouse_ID(),
-				plant.getS_Resource_ID(),
-				product.getM_Product_ID(),
-				attributeSetInstanceId);
+		final ProductPlanningQuery query = ProductPlanningQuery.builder()
+				.orgId(warehouse.getAD_Org_ID())
+				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
+				.plantId(plant.getS_Resource_ID())
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceId))
+				.build();
 
+		final I_PP_Product_Planning result = new ProductPlanningDAO().find(query);
 		return result;
 	}
 }

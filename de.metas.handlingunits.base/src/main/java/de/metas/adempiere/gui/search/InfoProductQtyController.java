@@ -1,30 +1,5 @@
 package de.metas.adempiere.gui.search;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,8 +31,8 @@ public class InfoProductQtyController extends InfoColumnControllerAdapter implem
 {
 	public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
-	private final Map<Integer, BigDecimal> record2qty = new HashMap<Integer, BigDecimal>();
-	private final Map<Integer, Integer> record2productId = new HashMap<Integer, Integer>();
+	private final Map<Integer, BigDecimal> record2qty = new HashMap<>();
+	private final Map<Integer, Integer> record2productId = new HashMap<>();
 
 	private IInfoSimple parent;
 	private Info_Column infoColumn;
@@ -209,14 +184,9 @@ public class InfoProductQtyController extends InfoColumnControllerAdapter implem
 		infoColumnDef = infoColumn;
 
 		checkbox = new JCheckBox(infoColumn.getName());
-		checkbox.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
-			{
-				InfoProductQtyController.this.parent.setIgnoreLoading(checkbox.isSelected());
-				InfoProductQtyController.this.parent.executeQuery();
-			}
+		checkbox.addActionListener(e -> {
+			InfoProductQtyController.this.parent.setIgnoreLoading(checkbox.isSelected());
+			InfoProductQtyController.this.parent.executeQuery();
 		});
 
 		updateDisplay();

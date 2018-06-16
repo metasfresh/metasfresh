@@ -25,28 +25,62 @@ package de.metas.material.planning;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 public interface IProductPlanningDAO extends ISingletonService
 {
+	@Value
+	public static class ProductPlanningQuery
+	{
+		int orgId;
+		WarehouseId warehouseId;
+		int plantId;
+		ProductId productId;
+		AttributeSetInstanceId attributeSetInstanceId;
+
+		/**
+		 * @param orgId may be 0 which means only the * org
+		 * @param warehouseId may be null which means "no warehouse" (not any warehouse!)
+		 * @param plantId may be 0 which means "no plantId"
+		 * @param productId mandatory
+		 * @param attributeSetInstanceId mandatory, but might contain the 0-ASI-Id;
+		 */
+		@Builder
+		private ProductPlanningQuery(
+				int orgId,
+				@Nullable final WarehouseId warehouseId,
+				int plantId, // may be 0
+				@NonNull ProductId productId,
+				@NonNull AttributeSetInstanceId attributeSetInstanceId)
+		{
+			this.orgId = orgId;
+			this.warehouseId = warehouseId;
+			this.plantId = plantId;
+			this.productId = productId;
+			this.attributeSetInstanceId = attributeSetInstanceId;
+		}
+	}
 
 	/**
 	 * Find best matching product planning.
-	 * 
-	 * @param orgId
-	 * @param warehouseId
-	 * @param plantId
-	 * @param productId
-	 * @param attributeSetInstanceId
+	 *
 	 * @return matching product planning or null
 	 */
-	I_PP_Product_Planning find(int orgId, int warehouseId, int plantId, int productId, int attributeSetInstanceId);
+	I_PP_Product_Planning find(ProductPlanningQuery productPlanningQuery);
 
 	/**
 	 * Search product plannings to find out which is the plant({@link I_S_Resource}) for given Org/Warehouse/Product.

@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,10 +48,10 @@ import de.metas.notification.UserNotificationUtils;
  */
 public class InOutGeneratedNotificationChecker implements IEventListener
 {
-	public static final InOutGeneratedNotificationChecker createAnSubscribe()
+	public static final InOutGeneratedNotificationChecker createAndSubscribe()
 	{
 		final InOutGeneratedNotificationChecker notificationsChecker = new InOutGeneratedNotificationChecker();
-		
+
 		Services.get(IEventBusFactory.class)
 				.getEventBus(InOutUserNotificationsProducer.EVENTBUS_TOPIC)
 				.subscribe(notificationsChecker);
@@ -63,7 +63,6 @@ public class InOutGeneratedNotificationChecker implements IEventListener
 
 	private InOutGeneratedNotificationChecker()
 	{
-		super();
 	}
 
 	@Override
@@ -99,6 +98,6 @@ public class InOutGeneratedNotificationChecker implements IEventListener
 			return;
 		}
 
-		Assert.fail("Following inouts were expected to be notified by they were not: " + inoutsNotNotified);
+		Assert.fail("Following inouts were expected to be notified but they were not: " + inoutsNotNotified);
 	}
 }

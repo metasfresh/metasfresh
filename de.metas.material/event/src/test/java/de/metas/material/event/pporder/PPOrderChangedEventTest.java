@@ -38,14 +38,19 @@ import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDes
 public class PPOrderChangedEventTest
 {
 	private static final BigDecimal FIVE = new BigDecimal("5");
+
 	private ChangedPPOrderLineDescriptorBuilder changedPPOrderLineDescriptorBuilder;
 
 	@Before
 	public void init()
 	{
-		changedPPOrderLineDescriptorBuilder = PPOrderChangedEvent.ChangedPPOrderLineDescriptor.builder()
+		changedPPOrderLineDescriptorBuilder = PPOrderChangedEvent
+				.ChangedPPOrderLineDescriptor
+				.builder()
 				.productDescriptor(EventTestHelper.createProductDescriptor())
-				.issueOrReceiveDate(SystemTime.asDate());
+				.issueOrReceiveDate(SystemTime.asDate())
+				.oldPPOrderLineId(10)
+				.newPPOrderLineId(20);
 	}
 
 	/**

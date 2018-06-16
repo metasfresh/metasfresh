@@ -118,7 +118,7 @@ public class M_Transaction_HuDescriptor
 		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 		final IHUStorage storage = huContext.getHUStorageFactory().getStorage(hu);
 
-		// note that we could have the AttributesKey without making an ASI, but we need the ASI-ID for display reasons in the material dispo window.
+		// Important note:  we could have the AttributesKey without making an ASI, but we need the ASI-ID for display reasons in the material dispo window.
 		final IPair<AttributesKey, Integer> attributesKeyAndAsiId = createAttributesKeyAndAsiId(hu);
 
 		final List<IHUProductStorage> productStorages = storage.getProductStorages();

@@ -3,14 +3,14 @@ package de.metas.event.jmx;
 import org.adempiere.util.jmx.IJMXNameAware;
 
 import de.metas.event.EventBusConstants;
-import de.metas.event.jms.IJMSEndpoint;
+import de.metas.event.remote.IEventBusRemoteEndpoint;
 
 public class JMXEventBusManager implements JMXEventBusManagerMBean, IJMXNameAware
 {
 	private final String jmxName;
-	private final IJMSEndpoint remoteEndpoint;
+	private final IEventBusRemoteEndpoint remoteEndpoint;
 
-	public JMXEventBusManager(final IJMSEndpoint remoteEndpoint)
+	public JMXEventBusManager(final IEventBusRemoteEndpoint remoteEndpoint)
 	{
 		super();
 		this.jmxName = EventBusConstants.JMX_BASE_NAME + ":type=EventBusManager";

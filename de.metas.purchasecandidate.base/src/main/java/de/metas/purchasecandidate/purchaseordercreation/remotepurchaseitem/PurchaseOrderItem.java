@@ -179,7 +179,8 @@ public class PurchaseOrderItem implements PurchaseItem
 
 	public OrderId getSalesOrderId()
 	{
-		final OrderAndLineId salesOrderAndLineId = getPurchaseCandidate().getSalesOrderAndLineId();
+		final OrderAndLineId salesOrderAndLineId = getPurchaseCandidate().getSalesOrderAndLineIdOrNull();
+
 		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
 	}
 

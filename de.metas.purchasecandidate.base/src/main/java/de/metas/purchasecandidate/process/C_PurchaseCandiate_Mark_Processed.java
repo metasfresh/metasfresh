@@ -46,7 +46,6 @@ public class C_PurchaseCandiate_Mark_Processed
 		extends JavaProcess
 		implements IProcessPrecondition
 {
-
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(
 			@NonNull final IProcessPreconditionsContext context)
@@ -57,8 +56,7 @@ public class C_PurchaseCandiate_Mark_Processed
 		}
 
 		final boolean containsEligibleRecords = context.getSelectedModels(I_C_PurchaseCandidate.class).stream()
-				.filter(not(I_C_PurchaseCandidate::isProcessing))
-				.filter(not(I_C_PurchaseCandidate::isProcessed))
+					.filter(not(I_C_PurchaseCandidate::isProcessed))
 				.findAny().isPresent();
 
 		return ProcessPreconditionsResolution.acceptIf(containsEligibleRecords);
@@ -75,7 +73,6 @@ public class C_PurchaseCandiate_Mark_Processed
 				.filter(getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false)))
 				.create()
 				.stream()
-				.filter(not(I_C_PurchaseCandidate::isProcessing))
 				.filter(not(I_C_PurchaseCandidate::isProcessed))
 				.map(I_C_PurchaseCandidate::getC_PurchaseCandidate_ID)
 				.map(PurchaseCandidateId::ofRepoId)

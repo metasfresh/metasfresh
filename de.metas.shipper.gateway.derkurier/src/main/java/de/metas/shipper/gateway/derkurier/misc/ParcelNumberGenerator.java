@@ -86,7 +86,7 @@ public class ParcelNumberGenerator
 		return parcelNumberWithoutCheckDigit + checkDigit;
 	}
 
-	private int computeCheckDigit(String parcelNumberWithoutCheckDigit)
+	private int computeCheckDigit(@NonNull final String parcelNumberWithoutCheckDigit)
 	{
 		int sumOdd = 0;
 		int sumEven = 0;

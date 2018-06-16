@@ -27,8 +27,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -38,6 +40,7 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPGroupId;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.BPartnerType;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -50,6 +53,7 @@ import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
@@ -60,6 +64,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_AD_User;
@@ -617,7 +622,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final BPartnerType bpartnerType)
+	public Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(@NonNull final BPartnerType bpartnerType)
 	{
 		final String discountSchemaIdColumnName = getBPartnerDiscountSchemaColumnNameOrNull(bpartnerType);
 		if (discountSchemaIdColumnName == null)
@@ -625,10 +630,49 @@ public class BPartnerDAO implements IBPartnerDAO
 			return ImmutableMap.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_C_BP_Group> bpGroupIdQuery = queryBL
+				.createQueryBuilderOutOfTrx(I_C_BP_Group.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(discountSchemaIdColumnName)
+				.create();
+
+		//
+		// get bpartnerIds that don't have their own discount schema ID, but their C_BP_Group has one
+
+		// first get the respective bpGroups
+		final ImmutableMap<BPGroupId, Integer> groupId2discountId = bpGroupIdQuery
+				.listDistinct(I_C_BP_Group.COLUMNNAME_C_BP_Group_ID, discountSchemaIdColumnName)
+				.stream()
+				.map(row -> GuavaCollectors.entry(
+						BPGroupId.ofRepoId(NumberUtils.asInt(row.get(I_C_BP_Group.COLUMNNAME_C_BP_Group_ID), -1)),
+						NumberUtils.asInt(row.get(discountSchemaIdColumnName), -1)))
+				.collect(GuavaCollectors.toImmutableMap());
+
+		// then get the bpartners that belong to those bpGroups *and* have no discountId of their own
+		final HashMap<BPartnerId, Integer> bPartnerId2DiscountId = queryBL
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
-				// .addEqualsFilter(I_C_BPartner.COLUMN_AD_Client_ID, adClientId)
+				.addInArrayFilter(I_C_BPartner.COLUMN_C_BP_Group_ID, groupId2discountId.keySet())
+				.addEqualsFilter(discountSchemaIdColumnName, null) // they have no own discount schema!
+				.create()
+				.listDistinct(I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_C_BP_Group_ID)
+				.stream()
+				.map(bPartner2GroupRow -> {
+
+					final BPartnerId bPartnerId = BPartnerId.ofRepoId(NumberUtils.asInt(bPartner2GroupRow.get(I_C_BPartner.COLUMNNAME_C_BPartner_ID), -1));
+					final BPGroupId bpGroupId = BPGroupId.ofRepoId(NumberUtils.asInt(bPartner2GroupRow.get(I_C_BPartner.COLUMNNAME_C_BP_Group_ID), -1));
+					final Integer groupDiscountId = groupId2discountId.get(bpGroupId);
+
+					return GuavaCollectors.entry(bPartnerId, groupDiscountId);
+				})
+				.collect(GuavaCollectors.toHashMap());
+
+		// finally get bpartners that have their own discount schema
+		final ImmutableMap<BPartnerId, Integer> partnerIdWithoutGroup2DiscountId = queryBL
+				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
 				.addNotNull(discountSchemaIdColumnName)
 				.create()
 				.listDistinct(I_C_BPartner.COLUMNNAME_C_BPartner_ID, discountSchemaIdColumnName)
@@ -637,6 +681,15 @@ public class BPartnerDAO implements IBPartnerDAO
 						BPartnerId.ofRepoId(NumberUtils.asInt(row.get(I_C_BPartner.COLUMNNAME_C_BPartner_ID), -1)),
 						NumberUtils.asInt(row.get(discountSchemaIdColumnName), -1)))
 				.collect(GuavaCollectors.toImmutableMap());
+
+		// add/override the with the more specific bpartner-result onto the more general bpGroup-result
+		final ImmutableSet<Entry<BPartnerId, Integer>> entrySet = partnerIdWithoutGroup2DiscountId.entrySet();
+		for(final Entry<BPartnerId, Integer> entry: entrySet)
+		{
+			bPartnerId2DiscountId.put(entry.getKey(), entry.getValue());
+		}
+
+		return ImmutableMap.copyOf(bPartnerId2DiscountId);
 	}
 
 	private static final String getBPartnerDiscountSchemaColumnNameOrNull(final BPartnerType bpartnerType)

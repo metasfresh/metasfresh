@@ -5,6 +5,9 @@ import java.util.Date;
 import org.adempiere.util.Check;
 import org.eevolution.model.I_PP_Order;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
@@ -42,19 +45,25 @@ import lombok.Value;
  *
  */
 @Value
-@Builder
 public class PPOrderRequestedEvent implements MaterialEvent
 {
 	public static final String TYPE = "PPOrderRequestedEvent";
 
-	@NonNull
 	EventDescriptor eventDescriptor;
-
-	@NonNull
 	Date dateOrdered;
-
-	@NonNull
 	PPOrder ppOrder;
+
+	@JsonCreator
+	@Builder
+	private PPOrderRequestedEvent(
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("dateOrdered") @NonNull final Date dateOrdered,
+			@JsonProperty("ppOrder") @NonNull final PPOrder ppOrder)
+	{
+		this.eventDescriptor = eventDescriptor;
+		this.dateOrdered = dateOrdered;
+		this.ppOrder = ppOrder;
+	}
 
 	public void validate()
 	{
