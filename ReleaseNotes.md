@@ -17,6 +17,9 @@ Here come the actual release notes:
     * New Window Import Chart of Accounts in WebUI.
   * [#4201](https://github.com/metasfresh/metasfresh/issues/4201) WebUI: Show DeliveryRule in Businesspartner Customer and Sales Order
     * Improvement of Businesspartner and Sales Order Widnow in WebUI. Adding the Field for Delivery Rule.
+  * [#4231](https://github.com/metasfresh/metasfresh/issues/4231) Address swing-client performance problem in rechnungsdispo summary info
+  * [#4230](https://github.com/metasfresh/metasfresh/issues/4230) Filter for POSReference in Invoicecand
+  * [#4153](https://github.com/metasfresh/metasfresh/issues/4153) Serial Letter Feature
 
 * metasfresh-webui-frontend
   * [#1417](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1417) Shortcuts for delete modal window
@@ -28,6 +31,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#4134](https://github.com/metasfresh/metasfresh/issues/4134) updating record to not match tab where clause leads to error when PKs are different
+  * [#4232](https://github.com/metasfresh/metasfresh/issues/4232) CleverReach remote group id not stored when campaign is created
   * [#4233](https://github.com/metasfresh/metasfresh/issues/4233) Attributeset as Sysadmin cannot be created
     * Fixes the recording of Attributeset with System Client.
 
