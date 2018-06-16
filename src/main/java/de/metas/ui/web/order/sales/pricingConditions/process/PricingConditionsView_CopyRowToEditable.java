@@ -1,7 +1,7 @@
 package de.metas.ui.web.order.sales.pricingConditions.process;
 
 import java.math.BigDecimal;
-import java.util.OptionalInt;
+import java.util.Optional;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -9,6 +9,8 @@ import org.adempiere.util.Services;
 
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
+import de.metas.payment.api.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -82,7 +84,7 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 	{
 		final PricingConditionsBreak templatePricingConditionsBreak = templateRow.getPricingConditionsBreak();
 		final Percent discount = templatePricingConditionsBreak.getDiscount();
-		final int paymentTermId = templatePricingConditionsBreak.getPaymentTermId();
+		final PaymentTermId paymentTermId = templatePricingConditionsBreak.getPaymentTermId();
 		PriceOverride price = templatePricingConditionsBreak.getPriceOverride();
 		if (price.isNoPrice())
 		{
@@ -95,15 +97,15 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 		return PricingConditionsRowChangeRequest.builder()
 				.priceChange(CompletePriceChange.of(price))
 				.discount(discount)
-				.paymentTermId(paymentTermId > 0 ? OptionalInt.of(paymentTermId) : OptionalInt.empty())
+				.paymentTermId(Optional.ofNullable(paymentTermId))
 				.sourcePricingConditionsBreakId(templatePricingConditionsBreak.getId())
 				.build();
 	}
 
 	private PriceOverride createBasePricingSystemPrice(final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
-		final int pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
-		if (pricingSystemId <= 0)
+		final PricingSystemId pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
+		if (pricingSystemId == null)
 		{
 			return PriceOverride.none();
 		}

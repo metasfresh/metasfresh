@@ -565,7 +565,7 @@ public final class DefaultView implements IEditableView
 						throw new AdempiereException(validStatus.getReason());
 					}
 					final DocumentSaveStatus saveStatus = document.getSaveStatus();
-					if (saveStatus.isNotSaved())
+					if (!saveStatus.isSavedOrDeleted())
 					{
 						throw new AdempiereException(saveStatus.getReason());
 					}

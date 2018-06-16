@@ -177,7 +177,7 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 		final ViewId viewId = newViewId();
 
 		final List<PurchaseDemand> demands = getDemands(request);
-		final List<PurchaseDemandWithCandidates> purchaseDemandWithCandidatesList = purchaseDemandWithCandidatesService.getOrCreatePurchaseCandidates(demands);
+		final List<PurchaseDemandWithCandidates> purchaseDemandWithCandidatesList = purchaseDemandWithCandidatesService.getOrCreatePurchaseCandidatesGroups(demands);
 
 		final PurchaseRowsSupplier rowsSupplier = createRowsSupplier(viewId, purchaseDemandWithCandidatesList);
 

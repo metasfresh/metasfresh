@@ -21,6 +21,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
@@ -136,7 +137,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 				.productCategoryId(productCategoryId)
 				.priceEntered(orderLine.getPriceEntered())
 				.discount(Percent.of(orderLine.getDiscount()))
-				.paymentTermId(orderLine.getC_PaymentTerm_Override_ID())
+				.paymentTermId(PaymentTermId.ofRepoIdOrNull(orderLine.getC_PaymentTerm_Override_ID()))
 				.pricingConditionsBreakId(PricingConditionsBreakId.ofOrNull(orderLine.getM_DiscountSchema_ID(), orderLine.getM_DiscountSchemaBreak_ID()))
 				.build();
 	}

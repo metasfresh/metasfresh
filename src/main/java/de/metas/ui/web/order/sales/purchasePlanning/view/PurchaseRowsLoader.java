@@ -18,13 +18,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
-import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.availability.AvailabilityCheckService;
 import de.metas.purchasecandidate.availability.AvailabilityException;
 import de.metas.purchasecandidate.availability.AvailabilityMultiResult;
-import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasecandidate.availability.PurchaseCandidatesAvailabilityRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -117,13 +116,10 @@ class PurchaseRowsLoader
 
 			final List<PurchaseRow> purchaseCandidateRows = new ArrayList<>();
 			final List<TrackingId> trackingIds = new ArrayList<>();
-			for (final PurchaseCandidate purchaseCandidate : demandWithCandidates.getPurchaseCandidates())
+			for (final PurchaseCandidatesGroup purchaseCandidatesGroup : demandWithCandidates.getPurchaseCandidatesGroups())
 			{
-				final PurchaseRow purchaseCandidateRow = purchaseRowFactory
-						.rowFromPurchaseCandidateBuilder()
-						.purchaseCandidate(purchaseCandidate)
-						.purchaseDemandId(demand.getId())
-						.datePromised(demand.getDatePromised())
+				final PurchaseRow purchaseCandidateRow = purchaseRowFactory.lineRowBuilder()
+						.purchaseCandidatesGroup(purchaseCandidatesGroup)
 						.convertAmountsToCurrency(demand.getCurrency())
 						.build();
 
@@ -131,7 +127,7 @@ class PurchaseRowsLoader
 
 				final TrackingId trackingId = TrackingId.random();
 				trackingIds.add(trackingId);
-				resultBuilder.purchaseCandidate(trackingId, purchaseCandidate);
+				resultBuilder.purchaseCandidatesGroup(trackingId, purchaseCandidatesGroup);
 				resultBuilder.purchaseCandidateRow(trackingId, purchaseCandidateRow);
 			}
 
@@ -148,7 +144,7 @@ class PurchaseRowsLoader
 	@VisibleForTesting
 	PurchaseCandidatesAvailabilityRequest createAvailabilityRequest(@NonNull final PurchaseRowsList rows)
 	{
-		return PurchaseCandidatesAvailabilityRequest.of(rows.getPurchaseCandidates());
+		return PurchaseCandidatesAvailabilityRequest.of(rows.getPurchaseCandidatesGroups());
 	}
 
 	private boolean isMakeAsynchronousAvailiabilityCheck()
@@ -208,27 +204,23 @@ class PurchaseRowsLoader
 
 		for (final TrackingId trackingId : availabilityResults.getTrackingIds())
 		{
-			final PurchaseRow purchaseRowToAugment = rows.getPurchaseRowByTrackingId(trackingId);
-			if (purchaseRowToAugment == null)
+			final PurchaseRow lineRow = rows.getPurchaseRowByTrackingId(trackingId);
+			if (lineRow == null)
 			{
 				logger.warn("No row found for {}. Skip updating the row with availability results.", trackingId);
 				continue;
 			}
 
-			final ImmutableList.Builder<PurchaseRow> availabilityResultRows = ImmutableList.builder();
+			final ImmutableList<PurchaseRow> availabilityResultRows = availabilityResults.getByTrackingId(trackingId)
+					.stream()
+					.map(availabilityResult -> purchaseRowFactory.availabilityDetailSuccessBuilder()
+							.lineRow(lineRow)
+							.availabilityResult(availabilityResult)
+							.build())
+					.collect(ImmutableList.toImmutableList());
+			lineRow.setAvailabilityInfoRows(availabilityResultRows);
 
-			for (final AvailabilityResult availabilityResult : availabilityResults.getByTrackingId(trackingId))
-			{
-				final PurchaseRow availabilityResultRow = purchaseRowFactory.rowFromAvailabilityResultBuilder()
-						.parentRow(purchaseRowToAugment)
-						.availabilityResult(availabilityResult)
-						.build();
-
-				availabilityResultRows.add(availabilityResultRow);
-			}
-			purchaseRowToAugment.setAvailabilityInfoRows(availabilityResultRows.build());
-
-			changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, purchaseRowToAugment.getId()));
+			changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, lineRow.getId()));
 		}
 
 		notifyViewOfChanges(changedRowIds);
@@ -245,22 +237,21 @@ class PurchaseRowsLoader
 			for (final AvailabilityException.ErrorItem errorItem : availabilityException.getErrorItems())
 			{
 				final TrackingId trackingId = errorItem.getTrackingId();
-				final PurchaseRow purchaseRowToAugment = rows.getPurchaseRowByTrackingId(trackingId);
-				if (purchaseRowToAugment == null)
+				final PurchaseRow lineRow = rows.getPurchaseRowByTrackingId(trackingId);
+				if (lineRow == null)
 				{
-					logger.warn("No row found for {}. Skip updating the row with availability errors: {}", trackingId, errorItem);
+					logger.warn("No line row found for {}. Skip updating the row with availability errors: {}", trackingId, errorItem);
 					continue;
 				}
 
-				final PurchaseRow availabilityResultRow = purchaseRowFactory
-						.rowFromThrowableBuilder()
-						.parentRow(purchaseRowToAugment)
+				final PurchaseRow availabilityResultRow = purchaseRowFactory.availabilityDetailErrorBuilder()
+						.lineRow(lineRow)
 						.throwable(errorItem.getError())
 						.build();
 
-				purchaseRowToAugment.setAvailabilityInfoRow(availabilityResultRow);
-				
-				changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, purchaseRowToAugment.getId()));
+				lineRow.setAvailabilityInfoRow(availabilityResultRow);
+
+				changedRowIds.add(rows.getTopLevelDocumentIdByTrackingId(trackingId, lineRow.getId()));
 			}
 
 			notifyViewOfChanges(changedRowIds);
@@ -268,6 +259,7 @@ class PurchaseRowsLoader
 		else
 		{
 			// TODO: display an error-message in the webui
+			logger.warn("Got unknown exception while doing availability check. Ignored.", throwable);
 		}
 	}
 
@@ -289,19 +281,19 @@ class PurchaseRowsLoader
 		private final ImmutableList<PurchaseRow> topLevelRows;
 		private final ImmutableMap<TrackingId, PurchaseRowId> trackingIdsByTopLevelRowIds;
 		@Getter
-		private final ImmutableMap<TrackingId, PurchaseCandidate> purchaseCandidates;
+		private final ImmutableMap<TrackingId, PurchaseCandidatesGroup> purchaseCandidatesGroups;
 		private final ImmutableMap<TrackingId, PurchaseRow> purchaseCandidateRows;
 
 		@lombok.Builder
 		public PurchaseRowsList(
 				@NonNull @lombok.Singular final ImmutableList<PurchaseRow> topLevelRows,
 				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseRowId> trackingIdsByTopLevelRowIds,
-				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseCandidate> purchaseCandidates,
+				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseCandidatesGroup> purchaseCandidatesGroups,
 				@NonNull @lombok.Singular final ImmutableMap<TrackingId, PurchaseRow> purchaseCandidateRows)
 		{
 			this.topLevelRows = topLevelRows;
 			this.trackingIdsByTopLevelRowIds = trackingIdsByTopLevelRowIds;
-			this.purchaseCandidates = purchaseCandidates;
+			this.purchaseCandidatesGroups = purchaseCandidatesGroups;
 			this.purchaseCandidateRows = purchaseCandidateRows;
 		}
 

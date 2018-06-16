@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 import org.compiere.util.NamePair;
 
+import de.metas.money.Money;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -104,9 +106,15 @@ public final class Values
 		}
 		else if (value instanceof BigDecimal)
 		{
-			// NOTE: because javascript cannot distinguish between "1.00" and "1.0" as number,
-			// we need to provide the BigDecimals as Strings.
-			return value.toString();
+			return bigDecimalToJson((BigDecimal)value);
+		}
+		else if (value instanceof Quantity)
+		{
+			return bigDecimalToJson(((Quantity)value).getAsBigDecimal());
+		}
+		else if (value instanceof Money)
+		{
+			return bigDecimalToJson(((Money)value).getValue());
 		}
 		else if (value instanceof DocumentId)
 		{
@@ -123,6 +131,13 @@ public final class Values
 		{
 			return fallbackMapper.apply(value);
 		}
+	}
+
+	private static final String bigDecimalToJson(final BigDecimal value)
+	{
+		// NOTE: because javascript cannot distinguish between "1.00" and "1.0" as number,
+		// we need to provide the BigDecimals as Strings.
+		return value.toString();
 	}
 
 	public static BigDecimal toBigDecimal(final Object value)

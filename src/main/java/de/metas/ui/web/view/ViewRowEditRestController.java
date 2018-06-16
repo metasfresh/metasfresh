@@ -75,7 +75,8 @@ public class ViewRowEditRestController
 		}
 		else
 		{
-			throw new AdempiereException("View is not editable");
+			throw new AdempiereException("View is not editable")
+					.setParameter("view", view);
 		}
 	}
 

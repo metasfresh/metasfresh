@@ -138,12 +138,11 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 				.productId(salesOrderLine.getProductId())
 				.attributeSetInstanceId(salesOrderLine.getAsiId())
 				//
-				.qtyToDeliverTotal(qtyOrdered)
 				.qtyToDeliver(qtyToPurchase)
 				//
 				.currency(salesOrderLine.getPriceActual().getCurrency())
 				//
-				.datePromised(salesOrderLine.getDatePromised())
+				.salesDatePromised(salesOrderLine.getDatePromised())
 				.preparationDate(salesOrderLine.getPreparationDate())
 				//
 				.salesOrderAndLineId(salesOrderLine.getId())

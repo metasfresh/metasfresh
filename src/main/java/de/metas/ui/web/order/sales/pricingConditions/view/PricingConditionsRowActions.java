@@ -2,9 +2,11 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.Optional;
 
 import de.metas.lang.Percent;
+import de.metas.payment.api.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
@@ -62,8 +64,8 @@ public class PricingConditionsRowActions
 			else if (PricingConditionsRow.FIELDNAME_PaymentTerm.equals(fieldName))
 			{
 				final LookupValue paymentTerm = fieldChangeRequest.getValueAsIntegerLookupValue();
-				final OptionalInt paymentTermId = paymentTerm != null && paymentTerm.getIdAsInt() > 0 ? OptionalInt.of(paymentTerm.getIdAsInt()) : OptionalInt.empty();
-				builder.paymentTermId(paymentTermId);
+				final PaymentTermId paymentTermId = paymentTerm != null ? PaymentTermId.ofRepoIdOrNull(paymentTerm.getIdAsInt()) : null;
+				builder.paymentTermId(Optional.ofNullable(paymentTermId));
 			}
 		}
 
@@ -85,8 +87,8 @@ public class PricingConditionsRowActions
 			else if (PricingConditionsRow.FIELDNAME_BasePricingSystem.equals(fieldName))
 			{
 				final LookupValue pricingSystem = fieldChangeRequest.getValueAsIntegerLookupValue();
-				final OptionalInt pricingSystemId = pricingSystem != null ? OptionalInt.of(pricingSystem.getIdAsInt()) : OptionalInt.empty();
-				builder.basePricingSystemId(pricingSystemId);
+				final PricingSystemId pricingSystemId = pricingSystem != null ? PricingSystemId.ofRepoIdOrNull(pricingSystem.getIdAsInt()) : null;
+				builder.basePricingSystemId(Optional.ofNullable(pricingSystemId));
 			}
 			else if (PricingConditionsRow.FIELDNAME_BasePriceAddAmt.equals(fieldName))
 			{

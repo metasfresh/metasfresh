@@ -1,5 +1,6 @@
 package de.metas.ui.web.view.json;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +103,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		//
 		// Included documents if any
 		{
-			final List<? extends IViewRow> includedDocuments = row.getIncludedRows();
+			final Collection<? extends IViewRow> includedDocuments = row.getIncludedRows();
 			if (!includedDocuments.isEmpty())
 			{
 				jsonRow.includedDocuments = includedDocuments
