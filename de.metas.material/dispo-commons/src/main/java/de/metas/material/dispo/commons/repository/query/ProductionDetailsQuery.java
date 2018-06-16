@@ -6,8 +6,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Services;
 
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail.ProductionDetailBuilder;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail.ProductionDetailBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.Builder;

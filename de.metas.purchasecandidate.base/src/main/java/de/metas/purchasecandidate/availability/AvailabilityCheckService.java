@@ -107,7 +107,7 @@ public class AvailabilityCheckService
 				.trackingId(trackingId)
 				.productAndQuantity(productAndQuantity)
 				.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(purchaseCandidatesGroup.getSinglePurchaseCandidateIdOrNull(), -1))
-				.salesOrderLineId(OrderAndLineId.getOrderLineRepoIdOr(purchaseCandidatesGroup.getSingleSalesOrderAndLineId(), -1))
+				.salesOrderLineId(OrderAndLineId.getOrderLineRepoIdOr(purchaseCandidatesGroup.getSingleSalesOrderAndLineIdOrNull(), -1))
 				.build();
 	}
 

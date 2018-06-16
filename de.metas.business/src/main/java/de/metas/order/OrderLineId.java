@@ -7,6 +7,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -32,7 +33,7 @@ import lombok.Value;
  */
 
 @Value
-public class OrderLineId
+public class OrderLineId implements RepoIdAware
 {
 	public static OrderLineId ofRepoId(final int repoId)
 	{

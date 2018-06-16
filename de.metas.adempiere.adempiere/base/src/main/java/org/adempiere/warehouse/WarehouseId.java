@@ -2,6 +2,7 @@ package org.adempiere.warehouse;
 
 import org.adempiere.util.Check;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -27,7 +28,7 @@ import lombok.Value;
  */
 
 @Value
-public class WarehouseId
+public class WarehouseId implements RepoIdAware
 {
 	int repoId;
 
@@ -41,9 +42,9 @@ public class WarehouseId
 		return repoId > 0 ? new WarehouseId(repoId) : null;
 	}
 
-	public static int toRepoId(final WarehouseId productId)
+	public static int toRepoId(final WarehouseId warehouseId)
 	{
-		return productId != null ? productId.getRepoId() : -1;
+		return warehouseId != null ? warehouseId.getRepoId() : -1;
 	}
 
 	private WarehouseId(final int repoId)

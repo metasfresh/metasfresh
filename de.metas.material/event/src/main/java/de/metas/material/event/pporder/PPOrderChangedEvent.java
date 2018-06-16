@@ -4,6 +4,11 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.util.Check;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -35,76 +40,83 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class PPOrderChangedEvent implements MaterialEvent
 {
 	public static final String TYPE = "PPOrderQtyChangedEvent";
 
-	@NonNull
 	private final EventDescriptor eventDescriptor;
 
-	@NonNull
 	Date newDatePromised;
-
-	@NonNull
 	Date oldDatePromised;
 
-	@NonNull
 	ProductDescriptor productDescriptor;
 
 	int ppOrderId;
 
-	@NonNull
 	BigDecimal oldQtyRequired;
-
-	@NonNull
 	BigDecimal newQtyRequired;
 
-	@NonNull
 	BigDecimal oldQtyDelivered;
-
-	@NonNull
 	BigDecimal newQtyDelivered;
 
-	@NonNull
 	String oldDocStatus;
-
-	@NonNull
 	String newDocStatus;
 
-	@Singular
 	List<ChangedPPOrderLineDescriptor> ppOrderLineChanges;
-
-	@Singular
 	List<DeletedPPOrderLineDescriptor> deletedPPOrderLines;
-
-	@Singular
 	List<PPOrderLine> newPPOrderLines;
 
-	@Value
 	@Builder
+	@JsonCreator
+	private PPOrderChangedEvent(
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("newDatePromised") @NonNull final Date newDatePromised,
+			@JsonProperty("oldDatePromised") @NonNull final Date oldDatePromised,
+			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+			@JsonProperty("ppOrderId") final int ppOrderId,
+			@JsonProperty("oldQtyRequired") @NonNull final BigDecimal oldQtyRequired,
+			@JsonProperty("newQtyRequired") @NonNull final BigDecimal newQtyRequired,
+			@JsonProperty("oldQtyDelivered") @NonNull final BigDecimal oldQtyDelivered,
+			@JsonProperty("newQtyDelivered") @NonNull final BigDecimal newQtyDelivered,
+			@JsonProperty("oldDocStatus") @NonNull final String oldDocStatus,
+			@JsonProperty("newDocStatus") @NonNull final String newDocStatus,
+			@JsonProperty("ppOrderLineChanges") @Singular final List<ChangedPPOrderLineDescriptor> ppOrderLineChanges,
+			@JsonProperty("deletedPPOrderLines") @Singular final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines,
+			@JsonProperty("newPPOrderLines") @Singular final List<PPOrderLine> newPPOrderLines)
+	{
+		this.eventDescriptor = eventDescriptor;
+		this.newDatePromised = newDatePromised;
+		this.oldDatePromised = oldDatePromised;
+		this.productDescriptor = productDescriptor;
+		this.ppOrderId = Check.assumeGreaterThanZero(ppOrderId, "ppOrderId");
+		this.oldQtyRequired = oldQtyRequired;
+		this.newQtyRequired = newQtyRequired;
+		this.oldQtyDelivered = oldQtyDelivered;
+		this.newQtyDelivered = newQtyDelivered;
+		this.oldDocStatus = oldDocStatus;
+		this.newDocStatus = newDocStatus;
+		this.ppOrderLineChanges = ppOrderLineChanges;
+		this.deletedPPOrderLines = deletedPPOrderLines;
+		this.newPPOrderLines = newPPOrderLines;
+	}
+
+	@Value
 	public static class ChangedPPOrderLineDescriptor
 	{
 		int oldPPOrderLineId;
 
 		int newPPOrderLineId;
 
-		@NonNull
 		ProductDescriptor productDescriptor;
 
-		@NonNull
 		Date issueOrReceiveDate;
 
-		@NonNull
 		BigDecimal oldQtyRequired;
 
-		@NonNull
 		BigDecimal newQtyRequired;
 
-		@NonNull
 		BigDecimal oldQtyDelivered;
 
-		@NonNull
 		BigDecimal newQtyDelivered;
 
 		public BigDecimal computeOpenQtyDelta()
@@ -113,6 +125,28 @@ public class PPOrderChangedEvent implements MaterialEvent
 			final BigDecimal newOpenQty = newQtyRequired.subtract(newQtyDelivered);
 
 			return newOpenQty.subtract(oldOpenQty);
+		}
+
+		@Builder
+		@JsonCreator
+		private ChangedPPOrderLineDescriptor(
+				@JsonProperty("oldPPOrderLineId") final int oldPPOrderLineId,
+				@JsonProperty("newPPOrderLineId") final int newPPOrderLineId,
+				@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+				@JsonProperty("issueOrReceiveDate") @NonNull final Date issueOrReceiveDate,
+				@JsonProperty("oldQtyRequired") @NonNull final BigDecimal oldQtyRequired,
+				@JsonProperty("newQtyRequired") @NonNull final BigDecimal newQtyRequired,
+				@JsonProperty("oldQtyDelivered") @NonNull final BigDecimal oldQtyDelivered,
+				@JsonProperty("newQtyDelivered") @NonNull final BigDecimal newQtyDelivered)
+		{
+			this.oldPPOrderLineId = Check.assumeGreaterThanZero(oldPPOrderLineId,"oldPPOrderLineId");
+			this.newPPOrderLineId = Check.assumeGreaterThanZero(newPPOrderLineId,"newPPOrderLineId");
+			this.productDescriptor = productDescriptor;
+			this.issueOrReceiveDate = issueOrReceiveDate;
+			this.oldQtyRequired = oldQtyRequired;
+			this.newQtyRequired = newQtyRequired;
+			this.oldQtyDelivered = oldQtyDelivered;
+			this.newQtyDelivered = newQtyDelivered;
 		}
 	}
 
@@ -134,16 +168,25 @@ public class PPOrderChangedEvent implements MaterialEvent
 
 		int ppOrderLineId;
 
-		@NonNull
 		ProductDescriptor productDescriptor;
-
-		@NonNull
 		Date issueOrReceiveDate;
-
-		@NonNull
 		BigDecimal qtyRequired;
-
-		@NonNull
 		BigDecimal qtyDelivered;
+
+		@JsonCreator
+		private DeletedPPOrderLineDescriptor(
+				@JsonProperty("ppOrderLineId") final int ppOrderLineId,
+				@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+				@JsonProperty("issueOrReceiveDate") @NonNull final Date issueOrReceiveDate,
+				@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
+				@JsonProperty("qtyDelivered") @NonNull final BigDecimal qtyDelivered)
+		{
+			this.ppOrderLineId = Check.assumeGreaterThanZero(ppOrderLineId,"ppOrderLineId");
+			this.productDescriptor = productDescriptor;
+			this.issueOrReceiveDate = issueOrReceiveDate;
+			this.qtyRequired = qtyRequired;
+			this.qtyDelivered = qtyDelivered;
+		}
+
 	}
 }

@@ -4,9 +4,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IClientOrgAware;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import lombok.NonNull;
 import lombok.Value;
@@ -37,9 +37,7 @@ import lombok.Value;
 public class EventDescriptor
 {
 	/**
-	 *
 	 * @param clientOrgAware model which can be made into a {@link IClientOrgAware} via {@link InterfaceWrapperHelper#asColumnReferenceAwareOrNull(Object, Class)}.
-	 * @return
 	 */
 	public static EventDescriptor createNew(final Object clientOrgAware)
 	{
@@ -67,5 +65,10 @@ public class EventDescriptor
 	{
 		this.clientId = clientId;
 		this.orgId = orgId;
+	}
+
+	public EventDescriptor copy()
+	{
+		return new EventDescriptor(clientId, orgId);
 	}
 }

@@ -13,10 +13,11 @@ import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 
 /*
  * #%L
@@ -47,8 +48,8 @@ public class CandidatesQueryTest
 	{
 		final CandidatesQuery result = CandidatesQuery.builder().build();
 		assertThat(result).isNotNull();
-		assertThat(result.getParentId()).isEqualTo(CandidatesQuery.UNSPECIFIED_PARENT_ID);
-		assertThat(result.getId()).isEqualTo(CandidatesQuery.UNSPECIFIED_ID);
+		assertThat(result.getParentId()).isEqualTo(CandidateId.UNSPECIFIED);
+		assertThat(result.getId()).isEqualTo(CandidateId.UNSPECIFIED);
 	}
 
 	@Test
@@ -68,7 +69,7 @@ public class CandidatesQueryTest
 		assertThat(query.getMaterialDescriptorQuery().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 
 		assertThat(query.getType()).isEqualTo(CandidateType.STOCK);
-		assertThat(query.getParentId()).isEqualTo(CandidatesQuery.UNSPECIFIED_PARENT_ID);
+		assertThat(query.getParentId()).isEqualTo(CandidateId.UNSPECIFIED);
 	}
 
 	@Test

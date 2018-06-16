@@ -33,11 +33,11 @@ import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -108,11 +108,11 @@ public class CandidateRepositoryWriteServiceTests
 
 		assertThat(candidateRecord.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		assertThat(candidateRecord.getM_Product_ID()).isEqualTo(PRODUCT_ID);
-		assertThat(candidateRecord.getC_BPartner_ID()).isEqualTo(BPARTNER_ID);
+		assertThat(candidateRecord.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID);
 		assertThat(candidateRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY.getAsString());
 		assertThat(candidateRecord.getM_AttributeSetInstance_ID()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
 		assertThat(candidateRecord.getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleId);
-		assertThat(candidateRecord.getC_Order_ID()).isEqualTo(orderId);
+		assertThat(candidateRecord.getC_OrderSO_ID()).isEqualTo(orderId);
 		assertThat(candidateRecord.getQty()).isEqualTo(BigDecimal.ZERO);
 	}
 
@@ -239,7 +239,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);
-		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
+		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
 		assertThat(record.getMD_Candidate_BusinessCase()).isEqualTo(productionCandidate.getBusinessCase().toString());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 
@@ -268,26 +268,26 @@ public class CandidateRepositoryWriteServiceTests
 
 		final Candidate result1 = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId);
 		// result1 was assigned an id and a groupId
-		assertThat(result1.getId()).isGreaterThan(0);
-		assertThat(result1.getGroupId()).isEqualTo(result1.getId());
+		assertThat(result1.getId().getRepoId()).isGreaterThan(0);
+		assertThat(result1.getGroupId()).isEqualTo(result1.getId().getRepoId());
 
 		final Candidate candidateWithGroupId = candidateWithOutGroupId
-				.withId(0)
+				.withId(null)
 				.withDate(TimeUtil.addMinutes(AFTER_NOW, 2)) // pick a different time from the other candidates
 				.withGroupId(result1.getGroupId());
 
 		final Candidate result2 = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidateWithGroupId);
 		// result2 also has id & groupId, but its ID is unique whereas its groupId is the same as result1's groupId
-		assertThat(result2.getId()).isGreaterThan(0);
-		assertThat(result2.getGroupId()).isNotEqualTo(result2.getId());
+		assertThat(result2.getId()).isNotNull();
+		assertThat(result2.getGroupId()).isNotEqualTo(result2.getId().getRepoId());
 		assertThat(result2.getGroupId()).isEqualTo(result1.getGroupId());
 
-		final I_MD_Candidate result1Record = load(result1.getId(), I_MD_Candidate.class);
-		assertThat(result1Record.getMD_Candidate_ID()).isEqualTo(result1.getId());
+		final I_MD_Candidate result1Record = load(result1.getId().getRepoId(), I_MD_Candidate.class);
+		assertThat(result1Record.getMD_Candidate_ID()).isEqualTo(result1.getId().getRepoId());
 		assertThat(result1Record.getMD_Candidate_GroupId()).isEqualTo(result1.getGroupId());
 
-		final I_MD_Candidate result2Record = load(result2.getId(), I_MD_Candidate.class);
-		assertThat(result2Record.getMD_Candidate_ID()).isEqualTo(result2.getId());
+		final I_MD_Candidate result2Record = load(result2.getId().getRepoId(), I_MD_Candidate.class);
+		assertThat(result2Record.getMD_Candidate_ID()).isEqualTo(result2.getId().getRepoId());
 		assertThat(result2Record.getMD_Candidate_GroupId()).isEqualTo(result2.getGroupId());
 	}
 
@@ -302,11 +302,11 @@ public class CandidateRepositoryWriteServiceTests
 				.withGroupId(-1);
 
 		final Candidate result1 = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId);
-		assertThat(result1.getId()).isGreaterThan(0);
+		assertThat(result1.getId().getRepoId()).isGreaterThan(0);
 		assertThat(result1.getGroupId()).isGreaterThan(0);
 
-		final I_MD_Candidate result1Record = load(result1.getId(), I_MD_Candidate.class);
-		assertThat(result1Record.getMD_Candidate_ID()).isEqualTo(result1.getId());
+		final I_MD_Candidate result1Record = load(result1.getId().getRepoId(), I_MD_Candidate.class);
+		assertThat(result1Record.getMD_Candidate_ID()).isEqualTo(result1.getId().getRepoId());
 		assertThat(result1Record.getMD_Candidate_GroupId()).isEqualTo(result1.getGroupId());
 	}
 
@@ -339,7 +339,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);
-		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
+		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
 		assertThat(record.getMD_Candidate_BusinessCase()).isEqualTo(distributionCandidate.getBusinessCase().toString());
 		assertThat(record.getM_Product_ID()).isEqualTo(distributionCandidate.getMaterialDescriptor().getProductId());
 
@@ -371,7 +371,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);
-		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
+		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
 		assertThat(record.getMD_Candidate_BusinessCase()).isEqualTo(productionCandidate.getBusinessCase().toString());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 		assertThat(record.getM_Forecast_ID()).isEqualTo(71);
@@ -401,7 +401,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);
-		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
+		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
 		assertThat(record.getMD_Candidate_BusinessCase()).isEqualTo(productionCandidate.getBusinessCase().toString());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 		assertThat(record.getM_Forecast_ID()).as("The demandDetail's forecastId shall be set to the MD_Candidate").isEqualTo(62);

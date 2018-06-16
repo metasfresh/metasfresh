@@ -84,7 +84,6 @@ public class PPOrderPojoConverter
 				.datePromised(ppOrderRecord.getDatePromised())
 				.dateStartSchedule(ppOrderRecord.getDateStartSchedule())
 				.docStatus(ppOrderRecord.getDocStatus())
-				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
 				.orgId(ppOrderRecord.getAD_Org_ID())
 				.plantId(ppOrderRecord.getS_Resource_ID())
 				.ppOrderId(ppOrderRecord.getPP_Order_ID())
