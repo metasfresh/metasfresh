@@ -14,7 +14,7 @@ public class X_MKTG_Campaign_ContactPerson extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2093794811L;
+	private static final long serialVersionUID = 870930022L;
 
     /** Standard Constructor */
     public X_MKTG_Campaign_ContactPerson (Properties ctx, int MKTG_Campaign_ContactPerson_ID, String trxName)
@@ -108,6 +108,39 @@ public class X_MKTG_Campaign_ContactPerson extends org.compiere.model.PO impleme
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_Location() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_Location(org.compiere.model.I_C_Location C_Location)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class, C_Location);
+	}
+
+	/** Set Anschrift.
+		@param C_Location_ID 
+		Adresse oder Anschrift
+	  */
+	@Override
+	public void setC_Location_ID (int C_Location_ID)
+	{
+		throw new IllegalArgumentException ("C_Location_ID is virtual column");	}
+
+	/** Get Anschrift.
+		@return Adresse oder Anschrift
+	  */
+	@Override
+	public int getC_Location_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Location_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

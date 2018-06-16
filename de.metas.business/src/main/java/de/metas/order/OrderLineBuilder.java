@@ -3,6 +3,7 @@ package de.metas.order;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -10,6 +11,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -45,10 +48,9 @@ public class OrderLineBuilder
 	private final OrderFactory parent;
 	private boolean built = false;
 
-	private int productId;
+	private ProductId productId;
 	private int asiId = AttributeConstants.M_AttributeSetInstance_ID_None;
-	private BigDecimal qty;
-	private int uomId;
+	private Quantity qty;
 
 	private BigDecimal manualPrice;
 	private BigDecimal manualDiscount;
@@ -65,15 +67,17 @@ public class OrderLineBuilder
 		assertNotBuilt();
 		built = true;
 
+		Check.assumeNotNull(qty, "qty is not null");
+
 		// assume returned order is already saved
 		final I_C_OrderLine orderLine = Services.get(IOrderLineBL.class).createOrderLine(parent.getC_Order());
 
-		orderLine.setM_Product_ID(productId);
+		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setM_AttributeSetInstance_ID(asiId);
 
-		orderLine.setQtyEntered(qty);
-		orderLine.setQtyOrdered(qty);
-		orderLine.setC_UOM_ID(uomId);
+		orderLine.setQtyEntered(qty.getAsBigDecimal());
+		orderLine.setQtyOrdered(qty.getAsBigDecimal());
+		orderLine.setC_UOM_ID(qty.getUOMId());
 
 		if (manualPrice != null)
 		{
@@ -109,14 +113,14 @@ public class OrderLineBuilder
 		return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID());
 	}
 
-	public OrderLineBuilder productId(final int productId)
+	public OrderLineBuilder productId(final ProductId productId)
 	{
 		assertNotBuilt();
 		this.productId = productId;
 		return this;
 	}
 
-	public int getProductId()
+	public ProductId getProductId()
 	{
 		return productId;
 	}
@@ -128,36 +132,26 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public OrderLineBuilder qty(@NonNull final BigDecimal qty, final int uomId)
+	public OrderLineBuilder qty(@NonNull final Quantity qty)
 	{
 		assertNotBuilt();
 
-		Check.assume(uomId > 0, "uomId > 0");
 		this.qty = qty;
-		this.uomId = uomId;
 		return this;
 	}
 
-	public OrderLineBuilder addQty(@NonNull final BigDecimal qtyToAdd, final int uomId)
+	public OrderLineBuilder addQty(@NonNull final Quantity qtyToAdd)
 	{
 		assertNotBuilt();
 
-		Check.assume(uomId > 0, "uomId > 0");
-		if (this.uomId > 0 && this.uomId != uomId)
-		{
-			throw new AdempiereException("UOM does not match");
-		}
-
-		this.qty = this.qty != null ? this.qty.add(qtyToAdd) : qtyToAdd;
-		this.uomId = this.uomId > 0 ? this.uomId : uomId;
-
+		this.qty = Quantity.addNullables(this.qty, qtyToAdd);
 		return this;
 	}
 
-	public int getUomId()
-	{
-		return uomId;
-	}
+	// public int getUomId()
+	// {
+	// return qty.getUOMId();
+	// }
 
 	public OrderLineBuilder manualPrice(final BigDecimal manualPrice)
 	{
@@ -172,4 +166,16 @@ public class OrderLineBuilder
 		this.manualDiscount = manualDiscount;
 		return this;
 	}
+
+	public boolean isProductAndUomMatching(final ProductId productId, final int uomId)
+	{
+		return Objects.equals(getProductId(), productId)
+				&& getUomId() == uomId;
+	}
+
+	private int getUomId()
+	{
+		return qty != null ? qty.getUOMId() : -1;
+	}
+
 }

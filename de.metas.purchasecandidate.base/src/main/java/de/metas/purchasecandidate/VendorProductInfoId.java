@@ -27,6 +27,7 @@ import lombok.Value;
  */
 
 @Value
+// TODO: DELETE ME
 public final class VendorProductInfoId
 {
 	public static VendorProductInfoId ofRepoId(final int repoId)

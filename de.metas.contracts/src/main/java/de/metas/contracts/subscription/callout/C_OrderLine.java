@@ -41,11 +41,15 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
@@ -57,9 +61,9 @@ public class C_OrderLine
 		final int bPartnerId = ol.getC_BPartner_ID();
 
 		final I_C_Order order = ol.getC_Order();
-		final boolean isSOTrx = order.isSOTrx();
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
-		if (productId <= 0 || bPartnerId <= 0 || !isSOTrx)
+		if (productId <= 0 || bPartnerId <= 0 || soTrx.isPurchase())
 		{
 			return;
 		}
@@ -86,7 +90,7 @@ public class C_OrderLine
 			return;
 		}
 
-		updatePrices(ol, isSOTrx);
+		updatePrices(ol, soTrx);
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyEntered })
@@ -94,17 +98,17 @@ public class C_OrderLine
 	{
 
 		final I_C_Order order = ol.getC_Order();
-		final boolean isSOTrx = order.isSOTrx();
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
-		if (!isSOTrx || ol.getC_Flatrate_Conditions_ID() <= 0)
+		if (soTrx.isPurchase() || ol.getC_Flatrate_Conditions_ID() <= 0)
 		{
 			return; // leave this job to the adempiere standard callouts
 		}
 
-		updatePrices(ol, isSOTrx);
+		updatePrices(ol, soTrx);
 	}
 
-	private void updatePrices(final I_C_OrderLine ol, final boolean isSOTrx)
+	private void updatePrices(final I_C_OrderLine ol, @NonNull final SOTrx soTrx)
 	{
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -114,22 +118,22 @@ public class C_OrderLine
 		final I_C_Flatrate_Conditions flatrateConditions = ol.getC_Flatrate_Conditions();
 		final I_C_Order order = ol.getC_Order();
 
-		final int pricingSysytemId;
+		final PricingSystemId pricingSysytemId;
 
 		if (flatrateConditions.getM_PricingSystem_ID() > 0)
 		{
-			pricingSysytemId = flatrateConditions.getM_PricingSystem_ID();
+			pricingSysytemId = PricingSystemId.ofRepoId(flatrateConditions.getM_PricingSystem_ID());
 		}
 		else
 		{
-			pricingSysytemId = order.getM_PricingSystem_ID();
+			pricingSysytemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
 		}
 
 		final I_C_BPartner_Location bpLocation = ol.getC_BPartner_Location();
 
 		final Timestamp date = order.getDateOrdered();
 
-		final I_M_PriceList subscriptionPL = priceListDAO.retrievePriceListByPricingSyst(pricingSysytemId, bpLocation, isSOTrx);
+		final I_M_PriceList subscriptionPL = priceListDAO.retrievePriceListByPricingSyst(pricingSysytemId, bpLocation, soTrx);
 
 		final int numberOfRuns = subscriptionBL.computeNumberOfRuns(flatrateConditions.getC_Flatrate_Transition(), date);
 
@@ -160,14 +164,14 @@ public class C_OrderLine
 
 		// qty ordered needs to be set because it will be used to compute the
 		// line's NetLineAmount in MOrderLine.beforeSave()
-		ol.setQtyOrdered(priceQty.getQty());
+		ol.setQtyOrdered(priceQty.getAsBigDecimal());
 
-		ol.setQtyEnteredInPriceUOM(priceQty.getQty());
+		ol.setQtyEnteredInPriceUOM(priceQty.getAsBigDecimal());
 
 		// now compute the new prices
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(ol)
-				.priceListIdOverride(subscriptionPL.getM_PriceList_ID())
+				.priceListIdOverride(PriceListId.ofRepoId(subscriptionPL.getM_PriceList_ID()))
 				.qtyOverride(priceQty)
 				.resultUOM(ResultUOM.PRICE_UOM)
 				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)

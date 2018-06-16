@@ -30,12 +30,22 @@ import lombok.Value;
 @Value
 public class PaymentTermId implements RepoIdAware
 {
-	int repoId;
-
 	public static PaymentTermId ofRepoId(final int repoId)
 	{
 		return new PaymentTermId(repoId);
 	}
+
+	public static PaymentTermId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static int getRepoId(final PaymentTermId paymentTermId)
+	{
+		return paymentTermId != null ? paymentTermId.getRepoId() : -1;
+	}
+
+	int repoId;
 
 	private PaymentTermId(final int repoId)
 	{

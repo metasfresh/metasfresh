@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.BPartnerType;
+import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -40,6 +41,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.lang.SOTrx;
+import de.metas.pricing.PricingSystemId;
 import lombok.NonNull;
 
 public interface IBPartnerDAO extends ISingletonService
@@ -114,9 +116,9 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @param trxName
 	 * @return M_PricingSystem_ID or 0
 	 */
-	int retrievePricingSystemId(Properties ctx, int bPartnerId, SOTrx soTrx, String trxName);
+	PricingSystemId retrievePricingSystemId(Properties ctx, int bPartnerId, SOTrx soTrx, String trxName);
 
-	int retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
+	PricingSystemId retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
 
 	I_M_Shipper retrieveShipper(int bPartnerId, String trxName);
 
@@ -203,6 +205,15 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner_Location> retrieveBPartnerShipToLocations(I_C_BPartner bpartner);
 
 	/**
+	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).
+	 * 
+	 * @return bp location or null
+	 */
+	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
+
+	int getDefaultShipToLocationCountryId(BPartnerId bpartnerId);
+
+	/**
 	 * Retrieve default/first bill to location.
 	 *
 	 * @param ctx
@@ -230,4 +241,6 @@ public interface IBPartnerDAO extends ISingletonService
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
 
 	Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType bpartnerType);
+
+	BPartnerLocationId getBilltoDefaultLocationIdByBpartnerId(@NonNull final BPartnerId bpartnerId);
 }

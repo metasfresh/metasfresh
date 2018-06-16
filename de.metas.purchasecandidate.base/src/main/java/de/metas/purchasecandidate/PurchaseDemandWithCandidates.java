@@ -37,5 +37,5 @@ public class PurchaseDemandWithCandidates
 	PurchaseDemand purchaseDemand;
 
 	@Singular
-	List<PurchaseCandidate> purchaseCandidates;
+	List<PurchaseCandidatesGroup> purchaseCandidatesGroups;
 }

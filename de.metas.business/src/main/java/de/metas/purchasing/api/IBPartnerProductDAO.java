@@ -26,9 +26,12 @@ package de.metas.purchasing.api;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
@@ -93,5 +96,9 @@ public interface IBPartnerProductDAO extends ISingletonService
 
 	Optional<ProductExclude> getExcludedFromSaleToCustomer(int productId, int partnerId);
 
-	Optional<I_C_BPartner_Product> retrieveDefaultVendor(int productId, int orgId);
+	Optional<I_C_BPartner_Product> retrieveDefaultVendor(ProductId productId, OrgId orgId);
+
+	Map<BPartnerId, I_C_BPartner_Product> retrieveByVendorIds(Set<BPartnerId> vendorIds, ProductId productId, OrgId orgId);
+
+	I_C_BPartner_Product retrieveByVendorId(BPartnerId vendorId, ProductId productId, OrgId orgId);
 }

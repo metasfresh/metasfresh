@@ -16,12 +16,15 @@ import org.compiere.model.I_M_Product;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
+import lombok.Getter;
+import lombok.Setter;
 
 /*
  * #%L
@@ -59,7 +62,9 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 
 	private final I_C_OrderLine orderLine;
 
-	private int currencyId;
+	@Getter
+	@Setter
+	private CurrencyId currencyId;
 
 	private BigDecimal price;
 
@@ -194,24 +199,6 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	{
 		throw new NotImplementedException();
 
-	}
-
-	/**
-	 * Sets a private member variable to the given {@code C_Currency_ID}.
-	 */
-	@Override
-	public void setC_Currency_ID(int C_Currency_ID)
-	{
-		currencyId = C_Currency_ID;
-	}
-
-	/**
-	 * 
-	 * @return the value that was set via {@link #setC_Currency_ID(int)}.
-	 */
-	public int getC_Currency_ID()
-	{
-		return currencyId;
 	}
 
 	/**

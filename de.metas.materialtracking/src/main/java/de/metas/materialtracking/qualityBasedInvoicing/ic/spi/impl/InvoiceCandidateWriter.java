@@ -65,6 +65,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoice
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupByTypeComparator;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 
@@ -420,14 +421,14 @@ public class InvoiceCandidateWriter
 
 		//
 		// Pricing
-		ic.setM_PricingSystem_ID(pricingResult.getM_PricingSystem_ID());
+		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
 		ic.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
 		ic.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID());
 		ic.setPriceEntered(pricingResult.getPriceStd());
 		ic.setPriceActual(pricingResult.getPriceStd());
 		ic.setIsTaxIncluded(pricingResult.isTaxIncluded()); // 08457: Configure new IC from pricing result
 		ic.setDiscount(pricingResult.getDiscount().getValueAsBigDecimal());
-		ic.setC_Currency_ID(pricingResult.getC_Currency_ID());
+		ic.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
 		// InvoiceRule
 		ic.setInvoiceRule(vendorInvoicingInfo.getInvoiceRule());

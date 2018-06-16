@@ -1,5 +1,10 @@
 package de.metas.order;
 
+import java.util.Collection;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
+
 import lombok.NonNull;
 import lombok.Value;
 
@@ -36,7 +41,7 @@ public class OrderAndLineId
 		}
 		return ofRepoIds(orderRepoId, orderLineRepoId);
 	}
-	
+
 	public static OrderAndLineId ofRepoIds(final int orderRepoId, final int orderLineRepoId)
 	{
 		return new OrderAndLineId(OrderId.ofRepoId(orderRepoId), OrderLineId.ofRepoId(orderLineRepoId));
@@ -55,6 +60,11 @@ public class OrderAndLineId
 	public static int getOrderLineRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderLineRepoId() : defaultValue;
+	}
+
+	public static Set<Integer> getOrderLineRepoIds(final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		return orderAndLineIds.stream().map(OrderAndLineId::getOrderLineRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
 	OrderId orderId;

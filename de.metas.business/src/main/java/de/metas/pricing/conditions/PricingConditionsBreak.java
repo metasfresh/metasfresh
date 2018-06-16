@@ -7,6 +7,7 @@ import java.util.Objects;
 import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
+import de.metas.payment.api.PaymentTermId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,7 +46,7 @@ public class PricingConditionsBreak
 	// Discount%
 	boolean bpartnerFlatDiscount;
 	Percent discount;
-	int paymentTermId;
+	PaymentTermId paymentTermId;
 
 	//
 	// Quality
@@ -61,7 +62,7 @@ public class PricingConditionsBreak
 			@NonNull final PriceOverride priceOverride,
 			final boolean bpartnerFlatDiscount,
 			final Percent discount,
-			final int paymentTermId,
+			final PaymentTermId paymentTermId,
 			final BigDecimal qualityDiscountPercentage,
 			final LocalDateTime dateCreated,
 			final boolean hasChanges)
@@ -71,7 +72,7 @@ public class PricingConditionsBreak
 		this.priceOverride = priceOverride;
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount;
 		this.discount = discount != null ? discount : Percent.ZERO;
-		this.paymentTermId = paymentTermId > 0 ? paymentTermId : -1;
+		this.paymentTermId = paymentTermId;
 		this.qualityDiscountPercentage = qualityDiscountPercentage;
 		this.dateCreated = dateCreated;
 		this.hasChanges = hasChanges;

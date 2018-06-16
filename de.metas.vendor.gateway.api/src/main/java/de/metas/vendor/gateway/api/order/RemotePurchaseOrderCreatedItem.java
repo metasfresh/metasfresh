@@ -68,4 +68,8 @@ public class RemotePurchaseOrderCreatedItem
 		}
 	}
 
+	public int getUomId()
+	{
+		return getCorrespondingRequestItem().getProductAndQuantity().getUomId();
+	}
 }

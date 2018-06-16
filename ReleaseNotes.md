@@ -10,21 +10,70 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.62 (2018-25)
+## Features
+* metasfresh
+  * [#3028](https://github.com/metasfresh/metasfresh/issues/3028) WebUI: New Window for Import COA
+    * New Window Import Chart of Accounts in WebUI.
+  * [#4201](https://github.com/metasfresh/metasfresh/issues/4201) WebUI: Show DeliveryRule in Businesspartner Customer and Sales Order
+    * Improvement of Businesspartner and Sales Order Widnow in WebUI. Adding the Field for Delivery Rule.
+
+* metasfresh-webui-frontend
+  * [#1417](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1417) Shortcuts for delete modal window
+    * Improved shortcut Handling in delete record modal overlay.
+  * [#1686](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1686) API login for cypress
+    * New Feature for Testing Framework Cypress, now allowing the API to do a login.
+  * [#1722](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1722) Typing in dropdown fields
+    * Extended Search Feature in Dropdown Lists.
+
+## Fixes
+* metasfresh
+  * [#4233](https://github.com/metasfresh/metasfresh/issues/4233) Attributeset as Sysadmin cannot be created
+    * Fixes the recording of Attributeset with System Client.
+
+* metasfresh-webui-frontend
+  * [#1446](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1446) Tab in purchase order batch entry not working correctly
+    * Fixes the Tab usage in Batch entry after confirming selection with mouse.
+  * [#1774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1774) Cannot stop uploading a file
+    * Extend File Upload Feature, now possible to cancel the upload.
+  * [#1840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1840) 404 error shall be centered
+    * Fxes the 404 error message. Now centered in WebUI Layout.
+
 # metasfresh 5.61 (2018-24)
 ## Features
 * metasfresh
+  * [#2539](https://github.com/metasfresh/metasfresh/issues/2539) Translate report_en_US.properties for order, inout, invoice
+    * Improvement of report properties Translations for en_US language
+  * [#4107](https://github.com/metasfresh/metasfresh/issues/4107) Customer Revenue Report Excel with Credit Limit
+    * New Customer Revenue Report as Excel Sheet Download.
   * [#4141](https://github.com/metasfresh/metasfresh/issues/4141) WebUI: Translation Window for Currencies
     * New Window in WebUI that allows to maintain the Currency Translations.
   * [#4142](https://github.com/metasfresh/metasfresh/issues/4142) WebUI: Translation Window for Document Types
     * New Window in WebUI that allows to maintain the Document Type Translations.
   * [#4143](https://github.com/metasfresh/metasfresh/issues/4143) WebUI: Translation Window for Messages
     * New Window in WebUI that allows to maintain the message Translations.
+  * [#4151](https://github.com/metasfresh/metasfresh/issues/4151) Import: extend process of importing vendors
+    * Improved Vendor importing action, allowing to import a lot of additional infomration for a vendor.
+  * [#4167](https://github.com/metasfresh/metasfresh/issues/4167) Process C_Flatrate_Term_Extend shall continue if individual terms fail
+    * Improved Flatrate Term extension Action, now proceeding the process even if individual Terms fail.
+  * [#4169](https://github.com/metasfresh/metasfresh/issues/4169) Pricing Conditions Jasper
+    * New Report that shows the recorded Pricing Conditions per Customer/ Vendor.
   * [#4173](https://github.com/metasfresh/metasfresh/issues/4173) Translations for Purchase Dispo modal Overlay Fields
     * Field Translations added for Purchase Dispo modal overlay in Sales Order and Purchase Candidates.
   * [#4178](https://github.com/metasfresh/metasfresh/issues/4178) Pricing Conditions Cockpit Translations in Material Cockpit
     * Improving Translations for en_US and de_DE for Pricing Conditions Actions.
 
 ## Fixes
+* metasfresh
+  * [#4012](https://github.com/metasfresh/metasfresh/issues/4012) Lot No control in Receipt not working
+    * Fixes the Lot No. control in Receipt.
+  * [#4168](https://github.com/metasfresh/metasfresh/issues/4168) Error when posting payment allocation with tax correction and multiple taxes
+    * Bugfix for the payment allocation posting, wen having a tx correction with multiple taxes.
+  * [#4191](https://github.com/metasfresh/metasfresh/issues/4191) Cannot add a product in order
+    * Bugfix for the product batcentry in webui, not allowing to add a product in minor cases.
+  * [#4149](https://github.com/metasfresh/metasfresh/issues/4149) User query: IUserQueryRestriction is not built properly all the time
+    * Fix for the User Query Restriction.
+
 * metasfresh-webui-frontend
   * [#1266](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1266) Labels widget: tab and shift-tab support
     * Improves the usage of Tab and shift-tab for Label widgets.
@@ -34,6 +83,8 @@ Here come the actual release notes:
     * Improvement of Tab behavior in label widget when dropdown list is openend. Now closing the Dropdown.
   * [#1808](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1808) Shortcuts for inbox, menu and sidelist
     * Improvement of Shortcuts for inbox, menu and sidelist. Now hiding the menus after 2nd usage of shortcut.
+  * [#1820](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1820) Make sure frontend is connecting to view's websocket endpoint BEFORE view data it's fetched
+    * Fix for the connection to the websocket endpoint.
   * [#1828](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1828) Truncate action names with ellipsis
     * Fixes the Layout for Quickaction Buttons with large content.
   * [#1830](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1830) Empty login page after logout

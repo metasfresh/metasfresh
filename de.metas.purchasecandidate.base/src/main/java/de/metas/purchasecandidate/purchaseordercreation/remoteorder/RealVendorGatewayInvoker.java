@@ -6,8 +6,10 @@ import java.util.Map;
 
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -16,9 +18,12 @@ import com.google.common.collect.Maps;
 
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.quantity.Quantity;
+import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.order.LocalPurchaseOrderForRemoteOrderCreated;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
@@ -76,7 +81,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
 		final ImmutableMap<PurchaseOrderRequestItem, PurchaseCandidate> requestItem2Candidate = //
-				Maps.uniqueIndex(purchaseCandidates, PurchaseCandidate::createPurchaseOrderRequestItem);
+				Maps.uniqueIndex(purchaseCandidates, RealVendorGatewayInvoker::createPurchaseOrderRequestItem);
 
 		final PurchaseOrderRequest purchaseOrderRequest = PurchaseOrderRequest.builder()
 				.orgId(orgId.getRepoId())
@@ -107,25 +112,50 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 		final ImmutableMap.Builder<PurchaseOrderItem, RemotePurchaseOrderCreatedItem> mapBuilder = ImmutableMap.builder();
 
 		final List<RemotePurchaseOrderCreatedItem> purchaseOrderResponseItems = purchaseOrderResponse.getPurchaseOrderResponseItems();
-		for (final RemotePurchaseOrderCreatedItem remotePurchaseOrderCreatedItem : purchaseOrderResponseItems)
+		if (!purchaseOrderResponseItems.isEmpty())
 		{
-			final PurchaseOrderRequestItem correspondingRequestItem = remotePurchaseOrderCreatedItem.getCorrespondingRequestItem();
+			final Map<Integer, I_C_UOM> uomsById = extractUOMsMap(purchaseCandidates);
 
-			final PurchaseCandidate correspondingRequestCandidate = requestItem2Candidate.get(correspondingRequestItem);
+			for (final RemotePurchaseOrderCreatedItem remotePurchaseOrderCreatedItem : purchaseOrderResponseItems)
+			{
+				final PurchaseOrderRequestItem correspondingRequestItem = remotePurchaseOrderCreatedItem.getCorrespondingRequestItem();
 
-			final PurchaseOrderItem purchaseOrderItem = correspondingRequestCandidate.createOrderItem()
-					.datePromised(TimeUtil.asLocalDateTime(remotePurchaseOrderCreatedItem.getConfirmedDeliveryDate()))
-					.purchasedQty(remotePurchaseOrderCreatedItem.getConfirmedOrderQuantity())
-					.remotePurchaseOrderId(remotePurchaseOrderCreatedItem.getRemotePurchaseOrderId())
-					.transactionReference(transactionReference)
-					.buildAndAddToParent();
-			result.add(purchaseOrderItem);
+				final PurchaseCandidate correspondingRequestCandidate = requestItem2Candidate.get(correspondingRequestItem);
 
-			mapBuilder.put(purchaseOrderItem, remotePurchaseOrderCreatedItem);
+				final I_C_UOM uom = uomsById.get(remotePurchaseOrderCreatedItem.getUomId());
+
+				final PurchaseOrderItem purchaseOrderItem = correspondingRequestCandidate.createOrderItem()
+						.datePromised(TimeUtil.asLocalDateTime(remotePurchaseOrderCreatedItem.getConfirmedDeliveryDate()))
+						.purchasedQty(Quantity.of(remotePurchaseOrderCreatedItem.getConfirmedOrderQuantity(), uom))
+						.remotePurchaseOrderId(remotePurchaseOrderCreatedItem.getRemotePurchaseOrderId())
+						.transactionReference(transactionReference)
+						.buildAndAddToParent();
+				result.add(purchaseOrderItem);
+
+				mapBuilder.put(purchaseOrderItem, remotePurchaseOrderCreatedItem);
+			}
 		}
 
 		map = mapBuilder.build();
 		return result.build();
+	}
+
+	private static Map<Integer, I_C_UOM> extractUOMsMap(Collection<PurchaseCandidate> purchaseCandidates)
+	{
+		return purchaseCandidates.stream()
+				.map(PurchaseCandidate::getQtyToPurchase)
+				.map(Quantity::getUOM)
+				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(I_C_UOM::getC_UOM_ID));
+	}
+
+	private static PurchaseOrderRequestItem createPurchaseOrderRequestItem(final PurchaseCandidate purchaseCandidate)
+	{
+		final Quantity qtyToPurchase = purchaseCandidate.getQtyToPurchase();
+		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidate.getVendorProductNo(), qtyToPurchase.getAsBigDecimal(), qtyToPurchase.getUOMId());
+		return PurchaseOrderRequestItem.builder()
+				.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(purchaseCandidate.getId(), -1))
+				.productAndQuantity(productAndQuantity)
+				.build();
 	}
 
 	@Override

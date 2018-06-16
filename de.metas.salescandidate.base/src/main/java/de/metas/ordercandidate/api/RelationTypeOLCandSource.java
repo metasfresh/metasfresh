@@ -14,6 +14,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
+import de.metas.pricing.PricingSystemId;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -89,7 +90,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 
 	private OLCand toOLCand(final I_C_OLCand candidatePO)
 	{
-		final int pricingSystemId = olCandBL.getPricingSystemId(candidatePO, orderDefaults);
+		final PricingSystemId pricingSystemId = olCandBL.getPricingSystemId(candidatePO, orderDefaults);
 		return OLCand.builder()
 				.candidate(candidatePO)
 				.pricingSystemId(pricingSystemId)

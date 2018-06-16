@@ -14,7 +14,7 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -979024680L;
+	private static final long serialVersionUID = -41830456L;
 
     /** Standard Constructor */
     public X_MKTG_ContactPerson (Properties ctx, int MKTG_ContactPerson_ID, String trxName)
@@ -25,7 +25,6 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 			setDeactivatedOnRemotePlatform (null); // Unknown
 			setMKTG_ContactPerson_ID (0);
 			setMKTG_Platform_ID (0);
-			setName (null);
         } */
     }
 
@@ -113,6 +112,80 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
+	}
+
+	/** Set Standort.
+		@param C_BPartner_Location_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+	}
+
+	/** Get Standort.
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BPartner_Location_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_Location() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_Location(org.compiere.model.I_C_Location C_Location)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class, C_Location);
+	}
+
+	/** Set Anschrift.
+		@param C_Location_ID 
+		Adresse oder Anschrift
+	  */
+	@Override
+	public void setC_Location_ID (int C_Location_ID)
+	{
+		if (C_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Location_ID, Integer.valueOf(C_Location_ID));
+	}
+
+	/** Get Anschrift.
+		@return Adresse oder Anschrift
+	  */
+	@Override
+	public int getC_Location_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Location_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
