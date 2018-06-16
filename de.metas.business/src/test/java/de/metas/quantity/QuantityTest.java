@@ -40,7 +40,6 @@ import org.junit.Test;
 
 public class QuantityTest
 {
-	private IContextAware contextProvider;
 	private UOMTestHelper uomHelper;
 
 	@Before
@@ -48,7 +47,7 @@ public class QuantityTest
 	{
 		AdempiereTestHelper.get().init();
 
-		this.contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
 		this.uomHelper = new UOMTestHelper(contextProvider.getCtx());
 	}
 
