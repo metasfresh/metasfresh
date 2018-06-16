@@ -36,10 +36,10 @@ public class PurchaseRowIdTest
 	@Test
 	public void groupId()
 	{
-		final PurchaseRowId rowId = PurchaseRowId.groupId(PurchaseDemandId.ofTableAndRecordId("table", 20));
+		final PurchaseRowId rowId = PurchaseRowId.groupId(PurchaseDemandId.ofId(20));
 
 		final DocumentId documentId = rowId.toDocumentId();
-		assertThat(documentId.toString()).isEqualTo("G-table-20");
+		assertThat(documentId.toString()).isEqualTo("G-20");
 
 		assertThat(rowId.isGroupRowId()).isTrue();
 		assertThat(rowId.isLineRowId()).isFalse();
@@ -49,16 +49,16 @@ public class PurchaseRowIdTest
 	@Test
 	public void lineId()
 	{
-		lineId_performWithParams("30", "40");
-		lineId_performWithParams("30", "40");
+		lineId_performWithParams(30, "40");
+		lineId_performWithParams(30, "40");
 	}
 
 	private void lineId_performWithParams(
-			final String salesOrderLineId,
+			final int demandId,
 			final String vendorBPartnerId)
 	{
 		final PurchaseRowId rowId = PurchaseRowId.lineId(
-				PurchaseDemandId.ofTableAndRecordId("orderLineTable", Integer.parseInt(salesOrderLineId)),
+				PurchaseDemandId.ofId(demandId),
 				BPartnerId.ofRepoId(Integer.parseInt(vendorBPartnerId)),
 				false // readonly
 		);
@@ -66,8 +66,7 @@ public class PurchaseRowIdTest
 		final DocumentId documentId = rowId.toDocumentId();
 		assertThat(documentId.toString())
 				.isEqualTo(PurchaseRowType.LINE.getCode()
-						+ PurchaseRowId.PARTS_SEPARATOR + "orderLineTable"
-						+ PurchaseRowId.PARTS_SEPARATOR + salesOrderLineId
+						+ PurchaseRowId.PARTS_SEPARATOR + demandId
 						+ PurchaseRowId.PARTS_SEPARATOR + vendorBPartnerId
 						+ PurchaseRowId.PARTS_SEPARATOR + "rw");
 
@@ -81,13 +80,15 @@ public class PurchaseRowIdTest
 	@Test
 	public void withAvailability()
 	{
-		final PurchaseRowId rowId = PurchaseRowId.lineId(PurchaseDemandId.ofTableAndRecordId("table", 10), BPartnerId.ofRepoId(20), false);
+		final PurchaseRowId rowId = PurchaseRowId.lineId(
+				PurchaseDemandId.ofId(10),
+				BPartnerId.ofRepoId(20),
+				false);
 		final PurchaseRowId availabilityRowId = rowId.withAvailability(Type.AVAILABLE, "someString");
 
 		assertThat(rowId.toDocumentId()).isNotEqualTo(availabilityRowId.toDocumentId());
 		assertThat(availabilityRowId.toDocumentId().toString())
 				.isEqualTo(PurchaseRowType.AVAILABILITY_DETAIL.getCode()
-						+ PurchaseRowId.PARTS_SEPARATOR + "table"
 						+ PurchaseRowId.PARTS_SEPARATOR + "10"
 						+ PurchaseRowId.PARTS_SEPARATOR + "20"
 						+ PurchaseRowId.PARTS_SEPARATOR + Type.AVAILABLE.toString()
@@ -101,9 +102,9 @@ public class PurchaseRowIdTest
 	@Test
 	public void fromDocumentId_Available()
 	{
-		final DocumentId documentId = DocumentId.ofString("A-table-1000007-2156423-AVAILABLE-11");
+		final DocumentId documentId = DocumentId.ofString("A-1000007-2156423-AVAILABLE-11");
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(documentId);
-		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId("table", 1000007));
+		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofId(1000007));
 		assertThat(purchaseRowId.getVendorId()).isEqualTo(BPartnerId.ofRepoId(2156423));
 		assertThat(purchaseRowId.getAvailabilityType()).isEqualTo(Type.AVAILABLE);
 		assertThat(purchaseRowId.toDocumentId()).isSameAs(documentId);
@@ -112,9 +113,9 @@ public class PurchaseRowIdTest
 	@Test
 	public void fromDocumentId_NotAvailable()
 	{
-		final DocumentId documentId = DocumentId.ofString("A-table-1000007-2156423-NOT_AVAILABLE-11");
+		final DocumentId documentId = DocumentId.ofString("A-1000007-2156423-NOT_AVAILABLE-11");
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(documentId);
-		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofTableAndRecordId("table", 1000007));
+		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(PurchaseDemandId.ofId(1000007));
 		assertThat(purchaseRowId.getVendorId()).isEqualTo(BPartnerId.ofRepoId(2156423));
 		assertThat(purchaseRowId.getAvailabilityType()).isEqualTo(Type.NOT_AVAILABLE);
 		assertThat(purchaseRowId.toDocumentId()).isSameAs(documentId);

@@ -207,6 +207,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			}
 			return explodeRecordsWithStockQuantities(
 					unexplodedLookupValues,
+					param_C_BPartner_ID.getValueAsInteger(evalCtx),
 					stockdateOrNull);
 		}
 		catch (final SQLException ex)
@@ -488,6 +489,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private final LookupValuesList explodeRecordsWithStockQuantities(
 			@NonNull final LookupValuesList productLookupValues,
+			final int bpartnerId,
 			@NonNull final Date dateOrNull)
 	{
 		if (productLookupValues.isEmpty() || !isAvailableStockQueryActivatedInSysConfig())
@@ -499,6 +501,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				.productIds(productLookupValues.getKeysAsInt())
 				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
 				.date(TimeUtil.asLocalDateTime(dateOrNull))
+				.bpartnerId(bpartnerId)
 				.build());
 		final List<Group> availableStockGroups = availableStock.getGroups();
 

@@ -120,7 +120,7 @@ class PurchaseRowsLoader
 			{
 				final PurchaseRow purchaseCandidateRow = purchaseRowFactory.lineRowBuilder()
 						.purchaseCandidatesGroup(purchaseCandidatesGroup)
-						.convertAmountsToCurrency(demand.getCurrency())
+						.convertAmountsToCurrency(demand.getCurrencyOrNull())
 						.build();
 
 				purchaseCandidateRows.add(purchaseCandidateRow);
