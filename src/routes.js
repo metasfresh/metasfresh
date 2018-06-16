@@ -2,14 +2,9 @@ import React from 'react';
 import { IndexRoute, NoMatch, Route } from 'react-router';
 import { push } from 'react-router-redux';
 
-import {
-  clearNotifications,
-  enableTutorial,
-  localLoginRequest,
-  loginSuccess,
-  logoutRequest,
-  logoutSuccess,
-} from './actions/AppActions';
+import { loginSuccess, logoutSuccess } from './actions/AppActions';
+import { localLoginRequest, logoutRequest } from './api';
+import { clearNotifications, enableTutorial } from './actions/AppActions';
 import { createWindow } from './actions/WindowActions';
 import { setBreadcrumb } from './actions/MenuActions';
 import Board from './containers/Board.js';

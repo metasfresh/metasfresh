@@ -2,6 +2,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
+
 class Prompt extends Component {
   constructor(props) {
     super(props);
@@ -53,6 +55,10 @@ class Prompt extends Component {
             </div>
           </div>
         </div>
+        <ModalContextShortcuts
+          apply={this.props.onSubmitClick}
+          cancel={this.props.onCancelClick}
+        />
       </div>
     );
   }
@@ -60,6 +66,9 @@ class Prompt extends Component {
 
 Prompt.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  text: PropTypes.string.isRequired,
+  onCancelClick: PropTypes.func,
+  onSubmitClick: PropTypes.func,
 };
 
 export default connect()(Prompt);

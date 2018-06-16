@@ -64,6 +64,7 @@ export default function appHandler(state = initialState, action) {
             count: state.notifications[action.title]
               ? state.notifications[action.title].count + 1
               : 1,
+            onCancel: action.onCancel || null,
           },
         },
       };

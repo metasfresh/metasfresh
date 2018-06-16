@@ -185,6 +185,9 @@ class RawLookup extends Component {
 
     handleInputEmptyStatus(false);
 
+    setTimeout(() => {
+      this.inputSearch.focus();
+    }, 0);
     this.handleBlur();
   };
 
@@ -457,6 +460,7 @@ class RawLookup extends Component {
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleBlur}
+              lookupDropdown={true}
             />
           )}
       </TetherComponent>

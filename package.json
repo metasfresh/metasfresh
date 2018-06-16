@@ -38,6 +38,7 @@
     "testEnvironment": "jsdom"
   },
   "devDependencies": {
+    "@cypress/webpack-preprocessor": "^2.0.1",
     "@storybook/react": "^3.2.13",
     "autoprefixer": "~8.3.0",
     "axios-mock-adapter": "^1.14.0",
@@ -58,7 +59,7 @@
     "babel-register": "^6.26.0",
     "common-tags": "^1.4.0",
     "css-loader": "~0.28.11",
-    "cypress": "^2.0.4",
+    "cypress": "^3.0.1",
     "enzyme": "^3.3.0",
     "enzyme-adapter-react-16": "^1.1.1",
     "eslint": "^4.9.0",

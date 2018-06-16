@@ -12,8 +12,8 @@ import {
   localLoginRequest,
   loginCompletionRequest,
   loginRequest,
-  loginSuccess,
-} from '../../actions/AppActions';
+} from '../../api';
+import { loginSuccess } from '../../actions/AppActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawList from '../widget/List/RawList';
 

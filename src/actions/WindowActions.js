@@ -791,55 +791,67 @@ function handleUploadProgress(dispatch, notificationTitle, progressEvent) {
 }
 
 export function attachFileAction(windowType, docId, data) {
-  return async dispatch => {
+  return dispatch => {
     const titlePending = counterpart.translate(
       'window.attachment.title.pending'
     );
     const titleDone = counterpart.translate('window.attachment.title.done');
     const titleError = counterpart.translate('window.attachment.title.error');
+    const CancelToken = axios.CancelToken;
+    const source = CancelToken.source();
 
     dispatch(
       addNotification(
         titlePending,
         counterpart.translate('window.attachment.uploading'),
         0,
-        'primary'
+        'primary',
+        null,
+        source
       )
     );
 
     const requestConfig = {
       onUploadProgress: handleUploadProgress.bind(this, dispatch, titlePending),
+      cancelToken: source.token,
     };
 
-    try {
-      try {
-        await axios.post(
-          `${config.API_URL}/window/${windowType}/${docId}/attachments`,
-          data,
-          requestConfig
-        );
-      } finally {
-        dispatch(deleteNotification(titlePending));
-      }
-
-      dispatch(
+    axios
+      .post(
+        `${config.API_URL}/window/${windowType}/${docId}/attachments`,
+        data,
+        requestConfig
+      )
+      .then(() =>
         addNotification(
           titleDone,
           counterpart.translate('window.attachment.upload.success'),
           5000,
           'primary'
         )
-      );
-    } catch (error) {
-      dispatch(
-        addNotification(
-          titleError,
-          counterpart.translate('window.attachment.upload.error'),
-          5000,
-          'error'
-        )
-      );
-    }
+      )
+      .finally(() => dispatch(deleteNotification(titlePending)))
+      .catch(thrown => {
+        if (axios.isCancel(thrown)) {
+          dispatch(
+            addNotification(
+              titleError,
+              'Upload terminated by user',
+              5000,
+              'warning'
+            )
+          );
+        } else {
+          dispatch(
+            addNotification(
+              titleError,
+              counterpart.translate('window.attachment.upload.error'),
+              5000,
+              'error'
+            )
+          );
+        }
+      });
   };
 }
 
