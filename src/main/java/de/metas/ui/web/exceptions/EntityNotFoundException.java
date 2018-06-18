@@ -1,6 +1,5 @@
 package de.metas.ui.web.exceptions;
 
-import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -43,7 +42,7 @@ public class EntityNotFoundException extends AdempiereException
 {
 	public static final EntityNotFoundException wrapIfNeeded(@NonNull final Throwable throwable)
 	{
-		if (throwable instanceof CalloutInitException)
+		if (throwable instanceof EntityNotFoundException)
 		{
 			return (EntityNotFoundException)throwable;
 		}

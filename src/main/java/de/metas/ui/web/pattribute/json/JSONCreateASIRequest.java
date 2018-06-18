@@ -72,14 +72,14 @@ public final class JSONCreateASIRequest implements Serializable
 	{
 		return templateId;
 	}
-	
+
 	public DocumentPath getDocumentPath()
 	{
 		if(source == null)
 		{
-			new IllegalStateException("source is not set for " + this);
+			throw new IllegalStateException("source is not set for " + this);
 		}
-		
+
 		return source.toSingleDocumentPath();
 	}
 }
