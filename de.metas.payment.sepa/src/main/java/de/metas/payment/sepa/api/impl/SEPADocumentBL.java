@@ -46,7 +46,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_BPartner;
 import org.compiere.util.Util;
 
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.sepa.api.ISEPABankAccountBL;

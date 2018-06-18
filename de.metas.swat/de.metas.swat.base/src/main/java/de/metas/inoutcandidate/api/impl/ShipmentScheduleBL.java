@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
@@ -78,6 +77,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
@@ -863,7 +863,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final String adress = bPartnerBL.mkFullAddress(
 				bPartner,
-				InterfaceWrapperHelper.create(location, de.metas.adempiere.model.I_C_BPartner_Location.class),
+				InterfaceWrapperHelper.create(location, de.metas.bpartner.model.I_C_BPartner_Location.class),
 				user,
 				InterfaceWrapperHelper.getTrxName(sched));
 

@@ -47,7 +47,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.inout.model.I_M_InOutLine;

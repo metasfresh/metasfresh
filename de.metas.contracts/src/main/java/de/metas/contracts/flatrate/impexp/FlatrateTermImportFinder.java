@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 
 import com.google.common.collect.Ordering;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.model.I_C_BPartner_Location;
+import de.metas.bpartner.service.IBPartnerDAO;
 import lombok.experimental.UtilityClass;
 
 /*

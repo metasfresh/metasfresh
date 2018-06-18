@@ -32,8 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
@@ -50,6 +48,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;

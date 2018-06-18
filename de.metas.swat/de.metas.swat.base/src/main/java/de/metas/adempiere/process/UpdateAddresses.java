@@ -30,7 +30,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.adempiere.bpartner.service.IBPartnerBL;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,8 +41,9 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.Util;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.model.I_C_BPartner_Location;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;

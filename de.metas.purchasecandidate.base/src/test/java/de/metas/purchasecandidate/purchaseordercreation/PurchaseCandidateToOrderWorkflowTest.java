@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -27,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;

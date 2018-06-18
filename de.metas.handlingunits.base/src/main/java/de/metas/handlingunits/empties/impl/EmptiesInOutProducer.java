@@ -16,7 +16,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;

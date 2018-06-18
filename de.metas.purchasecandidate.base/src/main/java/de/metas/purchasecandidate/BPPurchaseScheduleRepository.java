@@ -15,7 +15,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.generator.Frequency;
@@ -28,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.purchasecandidate.model.I_C_BP_PurchaseSchedule;
 import de.metas.purchasecandidate.model.X_C_BP_PurchaseSchedule;
 import lombok.Builder;

@@ -4,10 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.time.generator.DateSequenceGenerator;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.NonNull;
 
 /*

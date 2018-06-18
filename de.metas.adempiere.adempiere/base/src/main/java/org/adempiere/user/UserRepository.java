@@ -4,10 +4,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.NonNull;
 
 /*

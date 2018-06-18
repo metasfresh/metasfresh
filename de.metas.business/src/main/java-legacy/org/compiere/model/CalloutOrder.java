@@ -25,11 +25,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.BPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
@@ -41,8 +37,12 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
+import de.metas.bpartner.model.I_C_BPartner_Location;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;

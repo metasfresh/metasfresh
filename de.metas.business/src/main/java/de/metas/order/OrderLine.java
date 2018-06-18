@@ -4,11 +4,11 @@ import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.Money;
 import de.metas.payment.api.PaymentTermId;
 import de.metas.product.ProductId;

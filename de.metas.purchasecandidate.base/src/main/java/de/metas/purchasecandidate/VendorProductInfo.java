@@ -3,10 +3,10 @@ package de.metas.purchasecandidate;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.Check;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;

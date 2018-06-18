@@ -3,8 +3,6 @@ package de.metas.i18n.impl;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -14,6 +12,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.ILanguageDAO;

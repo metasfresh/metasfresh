@@ -20,10 +20,6 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import org.adempiere.bpartner.service.BPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -33,6 +29,10 @@ import org.compiere.model.MPayment;
 import org.compiere.model.Query;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;

@@ -3,7 +3,6 @@ package de.metas.handlingunits.report;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -15,6 +14,7 @@ import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.i18n.Language;
 import de.metas.process.ProcessInfo;

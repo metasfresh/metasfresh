@@ -2,10 +2,10 @@ package de.metas.letters.model;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.user.UserId;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.letter.BoilerPlateId;
 import lombok.Builder;
 import lombok.NonNull;
