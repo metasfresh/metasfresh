@@ -9,6 +9,11 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.63 (2018-26)
+## Features
+  * [#4242](https://github.com/metasfresh/metasfresh/issues/4242) WebUI: Window Event Log
+    * New Window event log added to WebUI Menu.
+    
 
 # metasfresh 5.62 (2018-25)
 ## Features
