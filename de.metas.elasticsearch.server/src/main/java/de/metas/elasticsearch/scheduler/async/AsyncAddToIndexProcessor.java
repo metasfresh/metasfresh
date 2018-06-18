@@ -1,8 +1,12 @@
 package de.metas.elasticsearch.scheduler.async;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 
@@ -11,6 +15,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
+import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.elasticsearch.scheduler.impl.ESModelIndexingScheduler;
 
@@ -45,21 +50,45 @@ public class AsyncAddToIndexProcessor extends WorkpackageProcessorAdapter
 	{
 		final ESModelIndexerId modelIndexerId = ESModelIndexerId.fromJson(getParameters().getParameterAsString(PARAMETERNAME_ModelIndexerId));
 
-		final List<Object> modelsToIndex = retrieveItems(Object.class);
-		if (modelsToIndex.isEmpty())
+		final List<Object> allModels = retrieveItems(Object.class);
+		if (allModels.isEmpty())
 		{
 			throw new AdempiereException("No source models found");
 		}
 
+		final List<Object> modelsToAdd = new ArrayList<>();
+		final Set<String> modelIdsToRemove = new HashSet<>();
+		for (final Object model : allModels)
+		{
+			if (InterfaceWrapperHelper.isActive(model))
+			{
+				modelsToAdd.add(model);
+			}
+			else
+			{
+				final int recordId = InterfaceWrapperHelper.getId(model);
+				modelIdsToRemove.add(String.valueOf(recordId));
+			}
+		}
+
 		try
 		{
-			final IESIndexerResult result = Services.get(IESModelIndexersRegistry.class)
-					.getModelIndexerById(modelIndexerId)
-					.addToIndex(modelsToIndex.iterator());
+			final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
+			final IESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
 
-			Loggables.get().addLog(result.getSummary());
+			if (!modelIdsToRemove.isEmpty())
+			{
+				final IESIndexerResult result = modelIndexer.removeFromIndexByIds(modelIdsToRemove);
+				Loggables.get().addLog(result.getSummary());
+				result.throwExceptionIfAnyFailure();
+			}
 
-			result.throwExceceptionIfAnyFailure();
+			if (!modelsToAdd.isEmpty())
+			{
+				final IESIndexerResult result = modelIndexer.addToIndex(modelsToAdd.iterator());
+				Loggables.get().addLog(result.getSummary());
+				result.throwExceptionIfAnyFailure();
+			}
 
 			return Result.SUCCESS;
 		}
@@ -69,5 +98,4 @@ public class AsyncAddToIndexProcessor extends WorkpackageProcessorAdapter
 			throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(e.getLocalizedMessage(), skipTimeoutMillis, e);
 		}
 	}
-
 }
