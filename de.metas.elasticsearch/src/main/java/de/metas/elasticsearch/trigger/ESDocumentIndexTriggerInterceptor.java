@@ -22,6 +22,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.elasticsearch.IESSystem;
+import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -67,7 +68,7 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 	private final String modelTableName;
 	private final String modelParentColumnName;
 	//
-	private final String modelIndexerId;
+	private final ESModelIndexerId modelIndexerId;
 
 	private boolean triggerInstalled = false;
 
@@ -80,7 +81,7 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 			@NonNull final Class<DocumentType> documentClass,
 			final String modelTableName,
 			final String modelParentColumnName,
-			final String modelIndexerId)
+			@NonNull final ESModelIndexerId modelIndexerId)
 	{
 		this.triggeringDocumentClass = documentClass;
 
@@ -98,7 +99,6 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 		Check.assumeNotEmpty(modelParentColumnName, "modelParentColumnName is not empty");
 		this.modelParentColumnName = modelParentColumnName;
 
-		Check.assumeNotEmpty(modelIndexerId, "modelIndexerId is not empty");
 		this.modelIndexerId = modelIndexerId;
 	}
 

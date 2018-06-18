@@ -24,15 +24,21 @@ UPDATE C_PurchaseCandidate SET DemandReference = C_OrderLineSO_ID::text WHERE De
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2018-06-13 13:45:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560251
 ;
 
+commit;
+
 -- 2018-06-13T13:45:29.819
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('c_purchasecandidate','DemandReference','VARCHAR(20)',null,null)
 ;
 
+commit;
+
 -- 2018-06-13T13:45:29.824
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('c_purchasecandidate','DemandReference',null,'NOT NULL',null)
 ;
+
+commit;
 
 -- 2018-06-13T18:24:18.353
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

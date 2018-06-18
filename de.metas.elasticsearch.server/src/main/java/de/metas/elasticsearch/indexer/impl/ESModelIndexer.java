@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
@@ -69,13 +70,7 @@ public final class ESModelIndexer implements IESModelIndexer
 	private final ObjectMapper jsonObjectMapper;
 
 	@Getter
-	private final String id;
-	@Getter
-	private final ESModelIndexerProfile profile;
-	@Getter
-	private final String indexName;
-	@Getter
-	private final String indexType;
+	private final ESModelIndexerId id;
 
 	@Getter
 	private final String modelTableName;
@@ -91,9 +86,6 @@ public final class ESModelIndexer implements IESModelIndexer
 		jsonObjectMapper = builder.getJsonObjectMapper();
 
 		id = builder.getId();
-		profile = builder.getProfile();
-		indexName = builder.getIndexName();
-		indexType = builder.getIndexType();
 		modelTableName = builder.getModelTableName();
 		modelDenormalizer = builder.getModelDenormalizer();
 		triggers = ImmutableList.copyOf(builder.getTriggers());
@@ -105,12 +97,27 @@ public final class ESModelIndexer implements IESModelIndexer
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("id", id)
-				.add("profile", profile)
-				// .add("indexName", indexName)
-				// .add("indexType", indexType)
 				.add("modelTableName", modelTableName)
 				.add("denormalizer", modelDenormalizer)
 				.toString();
+	}
+
+	@Override
+	public String getIndexName()
+	{
+		return getId().getIndexName();
+	}
+
+	@Override
+	public String getIndexType()
+	{
+		return getId().getIndexType();
+	}
+
+	@Override
+	public ESModelIndexerProfile getProfile()
+	{
+		return getId().getProfile();
 	}
 
 	@Override

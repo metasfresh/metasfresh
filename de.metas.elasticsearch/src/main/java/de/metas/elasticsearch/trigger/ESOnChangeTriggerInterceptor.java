@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.IESSystem;
+import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -50,7 +51,7 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 	private static final Logger logger = LogManager.getLogger(ESDocumentIndexTriggerInterceptor.class);
 
 	private final String modelTableName;
-	private final String modelIndexerId;
+	private final ESModelIndexerId modelIndexerId;
 	private final boolean triggerOnNewOrChange;
 	private final boolean triggerOnDelete;
 
@@ -59,12 +60,11 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 	@Builder
 	private ESOnChangeTriggerInterceptor(
 			@NonNull final String modelTableName,
-			@NonNull final String modelIndexerId,
+			@NonNull final ESModelIndexerId modelIndexerId,
 			final boolean triggerOnNewOrChange,
 			final boolean triggerOnDelete)
 	{
 		Check.assumeNotEmpty(modelTableName, "modelTableName is not empty");
-		Check.assumeNotEmpty(modelIndexerId, "modelIndexerId is not empty");
 		Check.assume(triggerOnNewOrChange || triggerOnDelete, "At least one trigger shall be enabled");
 
 		this.modelTableName = modelTableName;

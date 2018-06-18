@@ -7,6 +7,8 @@ import java.util.function.Consumer;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.elasticsearch.trigger.ESDocumentIndexTriggerInterceptor;
 import de.metas.elasticsearch.trigger.ESOnChangeTriggerInterceptor;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
@@ -66,9 +68,13 @@ public class ESModelIndexerConfigBuilder
 		configInstaller.accept(this);
 	}
 
-	public String getId()
+	public ESModelIndexerId getId()
 	{
-		return getIndexName() + "#" + getIndexType() + "#" + getProfile();
+		return ESModelIndexerId.builder()
+				.indexName(getIndexName())
+				.indexType(getIndexType())
+				.profile(getProfile())
+				.build();
 	}
 
 	public ESModelIndexerProfile getProfile()
@@ -76,7 +82,7 @@ public class ESModelIndexerConfigBuilder
 		return profile;
 	}
 
-	public String getIndexName()
+	private String getIndexName()
 	{
 		return indexName;
 	}
@@ -99,7 +105,7 @@ public class ESModelIndexerConfigBuilder
 		return this;
 	}
 
-	public String getIndexType()
+	private String getIndexType()
 	{
 		if (Check.isEmpty(indexType, true))
 		{
@@ -118,7 +124,7 @@ public class ESModelIndexerConfigBuilder
 
 	public List<IESModelIndexerTrigger> getTriggers()
 	{
-		return triggers;
+		return ImmutableList.copyOf(triggers);
 	}
 
 	public <DocumentType, ModelType> ESModelIndexerConfigBuilder triggerOnDocumentChanged(
