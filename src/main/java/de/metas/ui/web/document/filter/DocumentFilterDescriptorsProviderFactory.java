@@ -11,6 +11,8 @@ import org.adempiere.util.Services;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
+import de.metas.elasticsearch.indexer.IESModelIndexer;
+import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -18,6 +20,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.FullTextSearchLookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 
@@ -52,8 +55,13 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 public final class DocumentFilterDescriptorsProviderFactory
 {
 	private static final String FILTER_ID_Default = "default";
+
 	private static final String FILTER_ID_DefaultDate = "default-date";
 	private static final String MSG_DefaultFilterName = "default";
+
+	private static final String MSG_FULL_TEXT_SEARCH_CAPTION = "Search";
+	private static final String FILTER_ID_FullTextSearch = "full-text-search";
+	private static final String PARAM_FullTextSearch = "Search";
 
 	public static final transient DocumentFilterDescriptorsProviderFactory instance = new DocumentFilterDescriptorsProviderFactory();
 
@@ -67,29 +75,15 @@ public final class DocumentFilterDescriptorsProviderFactory
 
 	public DocumentFilterDescriptorsProvider createFiltersProvider(final int adTabId, @Nullable final String tableName, final Collection<DocumentFieldDescriptor> fields)
 	{
-		//
-		// Standard field filters: filters created from document fields which are flagged with AllowFiltering
-		final ImmutableDocumentFilterDescriptorsProvider standardFieldFilters = createFiltersProvider_Defaults(fields);
-
-		//
-		// User query filters: filters created from user queries
-		final DocumentFilterDescriptorsProvider userQueryFilters;
-		if (tableName != null && adTabId > 0)
-		{
-			userQueryFilters = new UserQueryDocumentFilterDescriptorsProvider(adTabId, tableName, fields);
-		}
-		else
-		{
-			userQueryFilters = NullDocumentFilterDescriptorsProvider.instance;
-		}
-
-		//
-		return CompositeDocumentFilterDescriptorsProvider.compose(userQueryFilters, standardFieldFilters);
+		return CompositeDocumentFilterDescriptorsProvider.compose(
+				createUserQueryDocumentFilterDescriptorsProvider(adTabId, tableName, fields),
+				createFiltersProvider_Defaults(fields),
+				createFullTextSeachFilterDescriptorProvider(tableName));
 	}
 
 	/**
 	 * Creates standard filters, i.e. from document fields which are flagged with {@link Characteristic#AllowFiltering}.
-	 * 
+	 *
 	 * @param fields
 	 */
 	private ImmutableDocumentFilterDescriptorsProvider createFiltersProvider_Defaults(final Collection<DocumentFieldDescriptor> fields)
@@ -173,4 +167,49 @@ public final class DocumentFilterDescriptorsProviderFactory
 
 	}
 
+	private static DocumentFilterDescriptorsProvider createUserQueryDocumentFilterDescriptorsProvider(
+			final int adTabId,
+			@Nullable final String tableName,
+			final Collection<DocumentFieldDescriptor> fields)
+	{
+		if (tableName != null && adTabId > 0)
+		{
+			return new UserQueryDocumentFilterDescriptorsProvider(adTabId, tableName, fields);
+		}
+		else
+		{
+			return NullDocumentFilterDescriptorsProvider.instance;
+		}
+	}
+
+	private DocumentFilterDescriptorsProvider createFullTextSeachFilterDescriptorProvider(@Nullable final String modelTableName)
+	{
+		if (modelTableName == null)
+		{
+			return NullDocumentFilterDescriptorsProvider.instance;
+		}
+
+		final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
+		final IESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
+				.orElse(null);
+		if (modelIndexer == null)
+		{
+			return NullDocumentFilterDescriptorsProvider.instance;
+		}
+
+		final ITranslatableString caption = msgBL.getTranslatableMsgText(MSG_FULL_TEXT_SEARCH_CAPTION);
+
+		final DocumentFilterDescriptor filterDescriptor = DocumentFilterDescriptor.builder()
+				.setFilterId(FILTER_ID_FullTextSearch)
+				.setDisplayName(caption)
+				.setFrequentUsed(true)
+				.addParameter(DocumentFilterParamDescriptor.builder()
+						.setFieldName(PARAM_FullTextSearch)
+						.setDisplayName(caption)
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.setLookupDescriptor(new FullTextSearchLookupDescriptor(modelIndexer)))
+				.build();
+
+		return ImmutableDocumentFilterDescriptorsProvider.of(filterDescriptor);
+	}
 }
