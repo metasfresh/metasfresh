@@ -10,12 +10,12 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,9 +62,9 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 
 	/**
 	 * Iterate {@link I_C_Printing_Queue}s which are not processed yet.
-	 * 
+	 *
 	 * IMPORTANT: items are returned in FIFO order (ordered by {@link I_C_Printing_Queue#COLUMNNAME_C_Printing_Queue_ID})
-	 * 
+	 *
 	 */
 	@Override
 	public Iterator<I_C_Printing_Queue> createItemsIterator()
@@ -94,9 +94,9 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 
 		return createPrintingQueueIterator(ctx, queryRelated, ITrx.TRXNAME_None);
 	}
-	
-	private Iterator<I_C_Printing_Queue> createPrintingQueueIterator(final Properties ctx, 
-			final IPrintingQueueQuery queueQuery, 
+
+	private Iterator<I_C_Printing_Queue> createPrintingQueueIterator(final Properties ctx,
+			final IPrintingQueueQuery queueQuery,
 			final String trxName)
 	{
 		final IQuery<I_C_Printing_Queue> query = Services.get(IPrintingDAO.class).createQuery(ctx, queueQuery, trxName);
@@ -107,13 +107,13 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 		final Iterator<I_C_Printing_Queue> it = query.iterate(I_C_Printing_Queue.class);
 		return it;
 	}
-	
+
 	@Override
 	public int countItems()
 	{
 		return Services.get(IPrintingDAO.class).countItems(ctx, printingQueueQuery, ITrx.TRXNAME_None);
 	}
-	
+
 	@Override
 	public String getTrxName()
 	{

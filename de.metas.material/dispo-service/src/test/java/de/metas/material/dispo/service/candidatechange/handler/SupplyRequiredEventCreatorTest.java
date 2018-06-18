@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.commons.EventDescriptor;
@@ -45,7 +46,7 @@ public class SupplyRequiredEventCreatorTest
 	public void createMaterialDemandEvent()
 	{
 		final Candidate demandCandidate = Candidate.builderForEventDescr(EventDescriptor.ofClientAndOrg(20, 30))
-				.id(10)
+				.id(CandidateId.ofRepoId(10))
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.status(CandidateStatus.doc_closed)

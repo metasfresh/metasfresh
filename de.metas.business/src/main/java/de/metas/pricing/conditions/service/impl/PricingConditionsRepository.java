@@ -59,6 +59,8 @@ import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.lang.Percent;
+import de.metas.payment.api.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditions;
@@ -161,7 +163,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				//
 				.bpartnerFlatDiscount(schemaBreakRecord.isBPartnerFlatDiscount())
 				.discount(Percent.of(schemaBreakRecord.getBreakDiscount()))
-				.paymentTermId(schemaBreakRecord.getC_PaymentTerm_ID())
+				.paymentTermId(PaymentTermId.ofRepoIdOrNull(schemaBreakRecord.getC_PaymentTerm_ID()))
 				//
 				.qualityDiscountPercentage(schemaBreakRecord.getQualityIssuePercentage())
 				//
@@ -191,7 +193,9 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 		else if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
 		{
-			return PriceOverride.basePricingSystem(discountSchemaBreakRecord.getBase_PricingSystem_ID(), discountSchemaBreakRecord.getStd_AddAmt());
+			final PricingSystemId basePricingSystemId = PricingSystemId.ofRepoId(discountSchemaBreakRecord.getBase_PricingSystem_ID());
+			final BigDecimal basePriceAddAmt = discountSchemaBreakRecord.getStd_AddAmt();
+			return PriceOverride.basePricingSystem(basePricingSystemId, basePriceAddAmt);
 		}
 		else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
 		{
@@ -334,7 +338,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 		if (request.getPaymentTermId() != null)
 		{
-			schemaBreak.setC_PaymentTerm_ID(request.getPaymentTermId());
+			schemaBreak.setC_PaymentTerm_ID(PaymentTermId.getRepoId(request.getPaymentTermId()));
 		}
 
 		//
@@ -396,7 +400,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		{
 			schemaBreak.setIsPriceOverride(true);
 			schemaBreak.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem);
-			schemaBreak.setBase_PricingSystem_ID(price.getBasePricingSystemId());
+			schemaBreak.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
 			schemaBreak.setStd_AddAmt(price.getBasePriceAddAmt());
 			schemaBreak.setPriceStd(BigDecimal.ZERO);
 		}

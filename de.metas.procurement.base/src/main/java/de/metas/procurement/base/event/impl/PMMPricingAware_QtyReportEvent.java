@@ -13,6 +13,7 @@ import org.compiere.model.I_M_Product;
 import com.google.common.base.MoreObjects;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.money.CurrencyId;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
@@ -150,9 +151,9 @@ public class PMMPricingAware_QtyReportEvent implements IPMMPricingAware
 	}
 
 	@Override
-	public void setC_Currency_ID(final int C_Currency_ID)
+	public void setCurrencyId(final CurrencyId currencyId)
 	{
-		qtyReportEvent.setC_Currency_ID(C_Currency_ID);
+		qtyReportEvent.setC_Currency_ID(CurrencyId.toRepoId(currencyId));
 	}
 
 	@Override

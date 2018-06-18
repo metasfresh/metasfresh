@@ -2,12 +2,12 @@ package de.metas.elasticsearch.denormalizers.impl;
 
 import java.io.IOException;
 
-import org.adempiere.util.Check;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -22,11 +22,11 @@ import de.metas.elasticsearch.types.ESIndexType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,12 +41,9 @@ public final class PassThroughDenormalizer implements IESDenormalizer
 	private final ESDataType dataType;
 	private final ESIndexType indexType;
 
-	private PassThroughDenormalizer(final ESDataType dataType, final ESIndexType indexType)
+	private PassThroughDenormalizer(@NonNull final ESDataType dataType, @NonNull final ESIndexType indexType)
 	{
-		super();
-		Check.assumeNotNull(dataType, "Parameter dataType is not null");
 		this.dataType = dataType;
-		Check.assumeNotNull(indexType, "Parameter indexType is not null");
 		this.indexType = indexType;
 	}
 

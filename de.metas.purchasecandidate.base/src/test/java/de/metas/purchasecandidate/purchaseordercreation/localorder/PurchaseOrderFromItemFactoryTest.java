@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -17,6 +19,7 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,12 +34,15 @@ import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.model.I_C_Order;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
-import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.quantity.Quantity;
 import mockit.Mocked;
 import mockit.Verifications;
 
@@ -66,9 +72,10 @@ import mockit.Verifications;
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseOrderFromItemFactoryTest
 {
-	private static final LocalDateTime PURCHASE_CANDIDATE_DATE_REQUIRED = SystemTime.asLocalDateTime();
+	private static final LocalDateTime PURCHASE_DATE_PROMISED = SystemTime.asLocalDateTime();
 
-	private static final BigDecimal PURCHASE_CANDIDATE_QTY_TO_PURCHASE = BigDecimal.TEN;
+	private I_C_UOM EACH;
+	private Quantity PURCHASE_CANDIDATE_QTY_TO_PURCHASE;
 
 	@Mocked
 	OrderUserNotifications orderUserNotifications;
@@ -77,12 +84,24 @@ public class PurchaseOrderFromItemFactoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		this.EACH = createUOM("Ea");
+		this.PURCHASE_CANDIDATE_QTY_TO_PURCHASE = Quantity.of(BigDecimal.TEN, EACH);
+	}
+
+	private I_C_UOM createUOM(final String name)
+	{
+		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
+		uom.setName(name);
+		uom.setUOMSymbol(name);
+		save(uom);
+		return uom;
 	}
 
 	@Test
 	public void deviatingDatePromised()
 	{
-		final LocalDateTime deviatingDatePromised = PURCHASE_CANDIDATE_DATE_REQUIRED.plusDays(1);
+		final LocalDateTime deviatingDatePromised = PURCHASE_DATE_PROMISED.plusDays(1);
 
 		setAndRunMethodUnderTest(deviatingDatePromised, PURCHASE_CANDIDATE_QTY_TO_PURCHASE);
 
@@ -102,9 +121,9 @@ public class PurchaseOrderFromItemFactoryTest
 	@Test
 	public void deviatingPurchasedQty()
 	{
-		final BigDecimal deviatingPurchasedQty = PURCHASE_CANDIDATE_QTY_TO_PURCHASE.subtract(BigDecimal.ONE);
+		final Quantity deviatingPurchasedQty = PURCHASE_CANDIDATE_QTY_TO_PURCHASE.subtract(BigDecimal.ONE);
 
-		setAndRunMethodUnderTest(PURCHASE_CANDIDATE_DATE_REQUIRED, deviatingPurchasedQty);
+		setAndRunMethodUnderTest(PURCHASE_DATE_PROMISED, deviatingPurchasedQty);
 
 		// @formatter:off
 		new Verifications()
@@ -122,8 +141,8 @@ public class PurchaseOrderFromItemFactoryTest
 	@Test
 	public void deviatingPurchasedQtyAndDatePrmised()
 	{
-		final BigDecimal deviatingPurchasedQty = PURCHASE_CANDIDATE_QTY_TO_PURCHASE.subtract(BigDecimal.ONE);
-		final LocalDateTime deviatingDatePromised = PURCHASE_CANDIDATE_DATE_REQUIRED.plusDays(1);
+		final Quantity deviatingPurchasedQty = PURCHASE_CANDIDATE_QTY_TO_PURCHASE.subtract(BigDecimal.ONE);
+		final LocalDateTime deviatingDatePromised = PURCHASE_DATE_PROMISED.plusDays(1);
 
 		setAndRunMethodUnderTest(deviatingDatePromised, deviatingPurchasedQty);
 
@@ -140,7 +159,7 @@ public class PurchaseOrderFromItemFactoryTest
 		}};	// @formatter:on
 	}
 
-	private void setAndRunMethodUnderTest(final LocalDateTime deviatingDatePromised, final BigDecimal deviatingPurchasedQty)
+	private void setAndRunMethodUnderTest(final LocalDateTime deviatingDatePromised, final Quantity deviatingPurchasedQty)
 	{
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate();
 
@@ -163,7 +182,7 @@ public class PurchaseOrderFromItemFactoryTest
 		});
 	}
 
-	public static PurchaseCandidate createPurchaseCandidate()
+	private PurchaseCandidate createPurchaseCandidate()
 	{
 		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
 		vendor.setName("vendor.name");
@@ -178,24 +197,36 @@ public class PurchaseOrderFromItemFactoryTest
 		save(salesOrderLine);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.id(VendorProductInfoId.ofRepoId(10))
 				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
-				.productId(ProductId.ofRepoId(20))
-				.productName("productName")
-				.productNo("productNo")
+				.defaultVendor(true)
+				.productAndCategoryId(ProductAndCategoryId.of(20, 30))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(40))
+				.vendorProductNo("productNo")
+				.vendorProductName("productName")
+				.pricingConditions(createDummyPricingConditions())
 				.build();
+
 		return PurchaseCandidate.builder()
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
+				.groupReference(DemandGroupReference.createEmpty())
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
+				.vendorId(vendorProductInfo.getVendorId())
+				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(ProductId.ofRepoId(5))
-				.uomId(6)
-				.vendorProductInfo(vendorProductInfo)
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
+				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)
-				.dateRequired(PURCHASE_CANDIDATE_DATE_REQUIRED)
+				.purchaseDatePromised(PURCHASE_DATE_PROMISED)
 				.processed(false)
 				.locked(false)
+				.build();
+	}
+
+	private PricingConditions createDummyPricingConditions()
+	{
+		return PricingConditions.builder()
 				.build();
 	}
 }

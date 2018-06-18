@@ -10,9 +10,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditions;
@@ -54,6 +56,7 @@ import lombok.NonNull;
  */
 /* package */ class CalculatePricingConditionsCommand
 {
+	// services
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
@@ -161,15 +164,17 @@ import lombok.NonNull;
 		}
 		else if (priceOverrideType == PriceOverrideType.BASE_PRICING_SYSTEM)
 		{
-			final int basePricingSystemId = priceOverride.getBasePricingSystemId();
+			final PricingSystemId basePricingSystemId = priceOverride.getBasePricingSystemId();
 
 			final IPricingResult productPrices = computePricesForBasePricingSystem(basePricingSystemId);
+			final CurrencyId currencyId = productPrices.getCurrencyId();
 			final BigDecimal priceStd = productPrices.getPriceStd();
 			final BigDecimal priceList = productPrices.getPriceList();
 			final BigDecimal priceLimit = productPrices.getPriceLimit();
 
 			final BigDecimal priceStdAddAmt = priceOverride.getBasePriceAddAmt();
 
+			result.currencyId(currencyId);
 			result.basePricingSystemId(basePricingSystemId);
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
@@ -177,6 +182,7 @@ import lombok.NonNull;
 		}
 		else if (priceOverrideType == PriceOverrideType.FIXED_PRICE)
 		{
+			// result.currencyId(currencyId); // TODO set currency from pricing conditions break?!
 			result.priceStdOverride(priceOverride.getFixedPrice());
 		}
 		else
@@ -186,7 +192,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private IPricingResult computePricesForBasePricingSystem(final int basePricingSystemId)
+	private IPricingResult computePricesForBasePricingSystem(final PricingSystemId basePricingSystemId)
 	{
 		final IPricingContext pricingCtx = request.getPricingCtx();
 		Check.assumeNotNull(pricingCtx, "pricingCtx shall not be null for {}", request);
@@ -197,13 +203,11 @@ import lombok.NonNull;
 		return pricingResult;
 	}
 
-	private static IPricingContext createBasePricingSystemPricingCtx(final IPricingContext pricingCtx, final int basePricingSystemId)
+	private static IPricingContext createBasePricingSystemPricingCtx(@NonNull final IPricingContext pricingCtx, @NonNull final PricingSystemId basePricingSystemId)
 	{
-		Check.assumeGreaterThanZero(basePricingSystemId, "basePricingSystemId");
-
 		final IEditablePricingContext newPricingCtx = pricingCtx.copy();
-		newPricingCtx.setM_PricingSystem_ID(basePricingSystemId);
-		newPricingCtx.setM_PriceList_ID(-1); // will be recomputed
+		newPricingCtx.setPricingSystemId(basePricingSystemId);
+		newPricingCtx.setPriceListId(null); // will be recomputed
 		newPricingCtx.setM_PriceList_Version_ID(-1); // will be recomputed
 		newPricingCtx.setSkipCheckingPriceListSOTrxFlag(true);
 		newPricingCtx.setDisallowDiscount(true);

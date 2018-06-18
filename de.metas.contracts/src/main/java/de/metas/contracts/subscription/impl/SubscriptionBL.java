@@ -86,11 +86,13 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMonitoringBL;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductPA;
 import de.metas.workflow.api.IWFExecutionFactory;
@@ -403,15 +405,19 @@ public class SubscriptionBL implements ISubscriptionBL
 			newTerm.setM_PricingSystem_ID(olCand.getM_PricingSystem_ID());
 		}
 
-		final IPricingResult pricingResult = olCandBL.computePriceActual(olCand, newTerm.getPlannedQtyPerUnit(), newTerm.getM_PricingSystem_ID(), olCand.getDateCandidate());
+		final IPricingResult pricingResult = olCandBL.computePriceActual(
+				olCand, 
+				newTerm.getPlannedQtyPerUnit(), 
+				PricingSystemId.ofRepoIdOrNull(newTerm.getM_PricingSystem_ID()), 
+				olCand.getDateCandidate());
 
 		newTerm.setPriceActual(pricingResult.getPriceStd());
 		newTerm.setC_UOM_ID(pricingResult.getPrice_UOM_ID());
 
 		// task 03805:
 		// Make sure the currency ID for term is the same as the one from olCand
-		Check.errorIf(pricingResult.getC_Currency_ID() != olCand.getC_Currency_ID(), "Currency of olCand differs from the currency computed by the pricing engine; olCand={}; pricingResult={}", olCand, pricingResult);
-		newTerm.setC_Currency_ID(pricingResult.getC_Currency_ID());
+		Check.errorIf(pricingResult.getCurrencyRepoId() != olCand.getC_Currency_ID(), "Currency of olCand differs from the currency computed by the pricing engine; olCand={}; pricingResult={}", olCand, pricingResult);
+		newTerm.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
 		InterfaceWrapperHelper.save(newTerm);
 
@@ -682,7 +688,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	@Override
 	public BigDecimal computePriceDifference(
 			final Properties ctx,
-			final int mPricingSystemId,
+			final PricingSystemId pricingSystemId,
 			final List<I_C_SubscriptionProgress> deliveries,
 			final String trxName)
 	{
@@ -711,9 +717,9 @@ public class SubscriptionBL implements ISubscriptionBL
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_PriceList pl = InterfaceWrapperHelper.create(
 				priceListDAO.retrievePriceListByPricingSyst(
-						mPricingSystemId,
+						pricingSystemId,
 						ol.getC_BPartner_Location(),
-						true),
+						SOTrx.SALES),
 				I_M_PriceList.class);
 
 		final IProductPA productPA = Services.get(IProductPA.class);

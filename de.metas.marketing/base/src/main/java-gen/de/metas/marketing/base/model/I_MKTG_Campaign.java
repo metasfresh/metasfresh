@@ -23,6 +23,29 @@ public interface I_MKTG_Campaign
     /** Load Meta Data */
 
 	/**
+	 * Set Textbaustein.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
+
+	/**
+	 * Get Textbaustein.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_BoilerPlate_ID();
+
+    /** Column definition for AD_BoilerPlate_ID */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object> COLUMN_AD_BoilerPlate_ID = new org.adempiere.model.ModelColumn<I_MKTG_Campaign, Object>(I_MKTG_Campaign.class, "AD_BoilerPlate_ID", null);
+    /** Column name AD_BoilerPlate_ID */
+    public static final String COLUMNNAME_AD_BoilerPlate_ID = "AD_BoilerPlate_ID";
+
+	/**
 	 * Get Mandant.
 	 * Mandant für diese Installation.
 	 *

@@ -97,13 +97,13 @@ import lombok.NonNull;
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
-						pruchaseOrderItem.getProductId().getRepoId(),
+						pruchaseOrderItem.getProductId(),
 						pruchaseOrderItem.getUomId())
 				.orElseGet(() -> orderFactory
 						.newOrderLine()
-						.productId(pruchaseOrderItem.getProductId().getRepoId()));
+						.productId(pruchaseOrderItem.getProductId()));
 
-		orderLineBuilder.addQty(pruchaseOrderItem.getPurchasedQty(), pruchaseOrderItem.getUomId());
+		orderLineBuilder.addQty(pruchaseOrderItem.getPurchasedQty());
 
 		purchaseItem2OrderLine.put(pruchaseOrderItem, orderLineBuilder);
 	}
@@ -147,9 +147,9 @@ import lombok.NonNull;
 		boolean deviatingQuantity = false;
 		for (final PurchaseOrderItem purchaseOrderItem : purchaseItem2OrderLine.keySet())
 		{
-			final LocalDateTime dateRequired = purchaseOrderItem.getDateRequired();
+			final LocalDateTime purchaseDatePromised = purchaseOrderItem.getPurchaseDatePromised();
 
-			if (!Objects.equals(dateRequired, TimeUtil.asLocalDateTime(order.getDatePromised())))
+			if (!Objects.equals(purchaseDatePromised, TimeUtil.asLocalDateTime(order.getDatePromised())))
 			{
 				deviatingDatePromised = true;
 			}

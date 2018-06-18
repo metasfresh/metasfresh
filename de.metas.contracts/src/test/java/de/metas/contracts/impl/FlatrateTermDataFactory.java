@@ -11,6 +11,7 @@ import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -186,8 +187,13 @@ public class FlatrateTermDataFactory
 
 
 	@Builder(builderMethodName = "productAndPricingNew")
-	public static ProductAndPricingSystem createProductAndPricing(final String productValue, final String productName,
-			@NonNull final I_C_Country country,	@NonNull final Timestamp validFrom, final boolean isTaxInclcuded)
+	public static ProductAndPricingSystem createProductAndPricing(
+			final String productValue,
+			final String productName,
+			@NonNull final I_C_Country country,
+			@NonNull final I_C_Currency currency,
+			@NonNull final Timestamp validFrom,
+			final boolean isTaxInclcuded)
 	{
 		final I_C_TaxCategory taxCategory = createTaxCategory();
 
@@ -205,8 +211,9 @@ public class FlatrateTermDataFactory
 		final I_M_PricingSystem pricingSystem = createPricingSystem();
 
 		final I_M_PriceList priceList = priceListNew()
+				.currency(currency)
 				.country(country)
-				.istaxInclcuded(isTaxInclcuded)
+				.isTaxInclcuded(isTaxInclcuded)
 				.pricingSystem(pricingSystem)
 				.build();
 
@@ -278,14 +285,19 @@ public class FlatrateTermDataFactory
 	}
 
 	@Builder(builderMethodName = "priceListNew")
-	public static I_M_PriceList createPriceList(@NonNull final I_M_PricingSystem pricingSystem, @NonNull final I_C_Country country, final boolean istaxInclcuded)
+	public static I_M_PriceList createPriceList(
+			@NonNull final I_M_PricingSystem pricingSystem,
+			@NonNull final I_C_Country country,
+			@NonNull final I_C_Currency currency,
+			final boolean isTaxInclcuded)
 	{
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
 		priceList.setName(valuePricingSystem);
 		priceList.setM_PricingSystem(pricingSystem);
 		priceList.setIsSOPriceList(true);
-		priceList.setIsTaxIncluded(istaxInclcuded);
+		priceList.setIsTaxIncluded(isTaxInclcuded);
 		priceList.setC_Country(country);
+		priceList.setC_Currency(currency);
 		save(priceList);
 		return priceList;
 	}

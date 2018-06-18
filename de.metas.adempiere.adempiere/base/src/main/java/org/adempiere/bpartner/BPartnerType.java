@@ -26,7 +26,7 @@ import de.metas.lang.SOTrx;
 
 public enum BPartnerType
 {
-	CUSTOMER, VENDOR, EMPLOYER;
+	CUSTOMER, VENDOR, EMPLOYEE;
 
 	public static BPartnerType ofSOTrx(final boolean isSOTrx)
 	{

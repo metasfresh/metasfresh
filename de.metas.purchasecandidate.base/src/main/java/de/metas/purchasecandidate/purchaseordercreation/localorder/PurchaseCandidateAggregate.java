@@ -1,26 +1,24 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseDemandId;
+import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -53,23 +51,16 @@ public class PurchaseCandidateAggregate
 		return new PurchaseCandidateAggregate(aggregationKey);
 	}
 
-	private final PurchaseDemandId purchaseDemandId;
 	private final PurchaseCandidateAggregateKey aggregationKey;
 
-	private final ArrayList<PurchaseCandidate> purchaseCandidates = new ArrayList<>();
+	private LocalDateTime purchaseDatePromised;
 	private Quantity qtyToDeliver;
-	private Quantity qtyToDeliverTotal;
-	private LocalDateTime datePromised;
-	private final HashSet<OrderLineId> salesOrderLineIds = new HashSet<>();
+	private final ArrayList<PurchaseCandidate> purchaseCandidates = new ArrayList<>();
+	private final HashSet<OrderAndLineId> salesOrderAndLineIds = new HashSet<>();
 
 	private PurchaseCandidateAggregate(@NonNull final PurchaseCandidateAggregateKey aggregationKey)
 	{
 		this.aggregationKey = aggregationKey;
-		purchaseDemandId = PurchaseDemandId.newAggregateId();
-
-		final I_C_UOM uom = loadOutOfTrx(aggregationKey.getUomId(), I_C_UOM.class); // TODO: get rid of this loader!
-		qtyToDeliver = Quantity.zero(uom);
-		qtyToDeliverTotal = Quantity.zero(uom);
 	}
 
 	public void add(@NonNull final PurchaseCandidate purchaseCandidate)
@@ -83,24 +74,13 @@ public class PurchaseCandidateAggregate
 		purchaseCandidates.add(purchaseCandidate);
 
 		//
-		final BigDecimal qtyToPurchase = purchaseCandidate.getQtyToPurchase();
-		final BigDecimal purchasedQty = purchaseCandidate.getPurchasedQty();
-		final BigDecimal qtyToPurchaseTotal = qtyToPurchase.add(purchasedQty);
-		qtyToDeliver = qtyToDeliver.add(qtyToPurchase);
-		qtyToDeliverTotal = qtyToDeliverTotal.add(qtyToPurchaseTotal);
+		purchaseDatePromised = TimeUtil.min(purchaseDatePromised, purchaseCandidate.getPurchaseDatePromised());
 
-		//
-		datePromised = TimeUtil.min(datePromised, purchaseCandidate.getDateRequired());
-
-		if (purchaseCandidate.getSalesOrderAndLineId() != null)
+		final OrderAndLineId orderAndLineId = purchaseCandidate.getSalesOrderAndLineIdOrNull();
+		if (orderAndLineId != null)
 		{
-			salesOrderLineIds.add(purchaseCandidate.getSalesOrderAndLineId().getOrderLineId());
+			salesOrderAndLineIds.add(orderAndLineId);
 		}
-	}
-
-	public PurchaseDemandId getPurchaseDemandId()
-	{
-		return purchaseDemandId;
 	}
 
 	public OrgId getOrgId()
@@ -120,12 +100,7 @@ public class PurchaseCandidateAggregate
 
 	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
-		return AttributeSetInstanceId.NONE;
-	}
-
-	public Quantity getQtyToDeliverTotal()
-	{
-		return qtyToDeliverTotal;
+		return aggregationKey.getAttributeSetInstanceId();
 	}
 
 	public Quantity getQtyToDeliver()
@@ -133,19 +108,42 @@ public class PurchaseCandidateAggregate
 		return qtyToDeliver;
 	}
 
+	void setQtyToDeliver(final Quantity qtyToDeliver)
+	{
+		this.qtyToDeliver = qtyToDeliver;
+	}
+
 	public LocalDateTime getDatePromised()
 	{
-		return datePromised;
+		return purchaseDatePromised;
 	}
 
-	public LocalDateTime getPreparationDate()
+	public List<PurchaseCandidateId> getPurchaseCandidateIds()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return purchaseCandidates
+				.stream()
+				.map(PurchaseCandidate::getId)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	public Set<OrderLineId> getSalesOrderLineIds()
+	public Set<OrderAndLineId> getSalesOrderAndLineIds()
 	{
-		return ImmutableSet.copyOf(salesOrderLineIds);
+		return ImmutableSet.copyOf(salesOrderAndLineIds);
+	}
+
+	public void calculateAndSetQtyToDeliver()
+	{
+		if (purchaseCandidates.isEmpty())
+		{
+			return;
+		}
+
+		final Quantity qtyToPurchase = purchaseCandidates.get(0).getQtyToPurchase();
+		final Quantity sum = purchaseCandidates
+				.stream()
+				.map(PurchaseCandidate::getQtyToPurchase)
+				.reduce(qtyToPurchase.toZero(), Quantity::add);
+		setQtyToDeliver(sum);
+
 	}
 }

@@ -75,13 +75,19 @@ public class ManualTest
 	public void createUpdateDeleteCampagin()
 	{
 		final String nameOfCampaignToAdd = appendSystemTime("test-name1");
-		final Campaign campaignToAdd = Campaign.builder().name(nameOfCampaignToAdd).build();
+		final Campaign campaignToAdd = Campaign.builder()
+				.name(nameOfCampaignToAdd)
+				.platformId(PLATFORM_ID)
+				.build();
 
 		final List<LocalToRemoteSyncResult> addedCampaignResults = cleverReachClient.syncCampaignsLocalToRemote(ImmutableList.of(campaignToAdd));
 		assertThat(addedCampaignResults).hasSize(1);
-		assertThat(addedCampaignResults.get(0).getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.INSERTED_ON_REMOTE);
-
-		final Campaign addedCampaign = Campaign.cast(addedCampaignResults.get(0).getSynchedDataRecord());
+		
+		final LocalToRemoteSyncResult localToRemoteSyncResult = addedCampaignResults.get(0);
+		assertThat(localToRemoteSyncResult.getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.INSERTED_ON_REMOTE);
+		assertThat(localToRemoteSyncResult.getSynchedDataRecord()).isInstanceOf(Campaign.class);
+		
+		final Campaign addedCampaign = Campaign.cast(localToRemoteSyncResult.getSynchedDataRecord());
 		assertThat(addedCampaign.getRemoteId()).isNotEmpty();
 		assertThat(addedCampaign.getName()).isEqualTo(nameOfCampaignToAdd);
 
@@ -113,7 +119,7 @@ public class ManualTest
 
 		assertThat(contactPersons).isNotEmpty();
 	}
-
+	
 	@Test
 	@Ignore
 	public void syncContactPersonsLocalToRemote()

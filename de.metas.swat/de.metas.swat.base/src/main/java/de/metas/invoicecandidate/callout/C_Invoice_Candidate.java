@@ -46,6 +46,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.Group;
+import de.metas.pricing.PricingSystemId;
 
 @Callout(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
@@ -136,8 +137,8 @@ public class C_Invoice_Candidate
 	private void setPricingSystem(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-		final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, ic.getBill_BPartner_ID(), SOTrx.ofBoolean(ic.isSOTrx()), ITrx.TRXNAME_None);
-		ic.setM_PricingSystem_ID(pricingSysId);
+		final PricingSystemId pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, ic.getBill_BPartner_ID(), SOTrx.ofBoolean(ic.isSOTrx()), ITrx.TRXNAME_None);
+		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSysId));
 	}
 
 	@CalloutMethod(columnNames = { I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override })

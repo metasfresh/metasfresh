@@ -2,8 +2,6 @@ package de.metas.material.event.receiptschedule;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -13,6 +11,7 @@ import de.metas.material.event.commons.OrderLineDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -42,25 +41,39 @@ import lombok.ToString;
 @Getter
 public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 {
+	public static ReceiptScheduleCreatedEvent cast(@NonNull final AbstractReceiptScheduleEvent event)
+	{
+		return (ReceiptScheduleCreatedEvent)event;
+	}
+
 	public static final String TYPE = "ReceiptScheduleCreatedEvent";
 
 	private final OrderLineDescriptor orderLineDescriptor;
+
+	private final int purchaseCandidateRepoId;
+
+	private final int vendorId;
 
 	@Builder
 	@JsonCreator
 	public ReceiptScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("orderLineDescriptor") final OrderLineDescriptor orderLineDescriptor,
+			@JsonProperty("orderLineDescriptor") @NonNull final OrderLineDescriptor orderLineDescriptor,
+			@JsonProperty("purchaseCandidateRepoId") final int purchaseCandidateRepoId,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
-			@JsonProperty("receiptScheduleId") int receiptScheduleId)
+			@JsonProperty("receiptScheduleId") int receiptScheduleId,
+			@JsonProperty("vendorId") int vendorId
+			)
 	{
 		super(eventDescriptor,
 				materialDescriptor,
 				reservedQuantity,
 				receiptScheduleId);
 
+		this.purchaseCandidateRepoId = purchaseCandidateRepoId;
 		this.orderLineDescriptor = orderLineDescriptor;
+		this.vendorId = vendorId;
 	}
 
 	@Override
@@ -79,7 +92,6 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	public void validate()
 	{
 		super.validate();
-		Check.errorIf(orderLineDescriptor == null, "orderLineDescriptor may not be null");
 		orderLineDescriptor.validate();
 	}
 

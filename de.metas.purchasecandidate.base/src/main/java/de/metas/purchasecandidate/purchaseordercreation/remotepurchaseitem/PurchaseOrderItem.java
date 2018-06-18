@@ -1,6 +1,5 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
@@ -19,6 +18,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
+import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -62,6 +62,11 @@ public class PurchaseOrderItem implements PurchaseItem
 		return (PurchaseOrderItem)purchaseItem;
 	}
 
+	public static PurchaseOrderItem castOrNull(final PurchaseItem purchaseItem)
+	{
+		return (purchaseItem instanceof PurchaseOrderItem) ? cast(purchaseItem) : null;
+	}
+
 	@Getter
 	private final PurchaseItemId purchaseItemId;
 
@@ -75,7 +80,7 @@ public class PurchaseOrderItem implements PurchaseItem
 	private final PurchaseCandidate purchaseCandidate;
 
 	@Getter
-	private final BigDecimal purchasedQty;
+	private final Quantity purchasedQty;
 
 	@Getter
 	private final LocalDateTime datePromised;
@@ -87,7 +92,7 @@ public class PurchaseOrderItem implements PurchaseItem
 	private PurchaseOrderItem(
 			final PurchaseItemId purchaseItemId,
 			@NonNull final PurchaseCandidate purchaseCandidate,
-			@NonNull final BigDecimal purchasedQty,
+			@NonNull final Quantity purchasedQty,
 			@NonNull final LocalDateTime datePromised,
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
@@ -110,6 +115,26 @@ public class PurchaseOrderItem implements PurchaseItem
 		this.transactionReference = transactionReference;
 	}
 
+	private PurchaseOrderItem(final PurchaseOrderItem from, final PurchaseCandidate newPurchaseCandidate)
+	{
+		this.purchaseItemId = from.purchaseItemId;
+
+		this.purchaseCandidate = newPurchaseCandidate;
+
+		this.purchasedQty = from.purchasedQty;
+		this.datePromised = from.datePromised;
+		this.remotePurchaseOrderId = from.remotePurchaseOrderId;
+
+		this.purchaseOrderAndLineId = from.purchaseOrderAndLineId;
+
+		this.transactionReference = from.transactionReference;
+	}
+
+	public PurchaseOrderItem copy(final PurchaseCandidate newPurchaseCandidate)
+	{
+		return new PurchaseOrderItem(this, newPurchaseCandidate);
+	}
+
 	@Override
 	public PurchaseCandidateId getPurchaseCandidateId()
 	{
@@ -123,7 +148,13 @@ public class PurchaseOrderItem implements PurchaseItem
 
 	public int getUomId()
 	{
-		return getPurchaseCandidate().getUomId();
+		final Quantity purchasedQty = getPurchasedQty();
+		if (purchasedQty != null)
+		{
+			return purchasedQty.getUOMId();
+		}
+
+		return getQtyToPurchase().getUOMId();
 	}
 
 	public OrgId getOrgId()
@@ -141,18 +172,19 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getVendorId();
 	}
 
-	public LocalDateTime getDateRequired()
+	public LocalDateTime getPurchaseDatePromised()
 	{
-		return getPurchaseCandidate().getDateRequired();
+		return getPurchaseCandidate().getPurchaseDatePromised();
 	}
 
 	public OrderId getSalesOrderId()
 	{
-		final OrderAndLineId salesOrderAndLineId = getPurchaseCandidate().getSalesOrderAndLineId();
+		final OrderAndLineId salesOrderAndLineId = getPurchaseCandidate().getSalesOrderAndLineIdOrNull();
+
 		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
 	}
 
-	private BigDecimal getQtyToPurchase()
+	private Quantity getQtyToPurchase()
 	{
 		return getPurchaseCandidate().getQtyToPurchase();
 	}

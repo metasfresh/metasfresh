@@ -56,6 +56,8 @@ import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
@@ -290,7 +292,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	public IEditablePricingContext createPricingContext(final I_C_InvoiceLine invoiceLine)
 	{
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		final int priceListId = invoice.getM_PriceList_ID();
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
 
 		final BigDecimal qtyInvoicedInPriceUOM = calculateQtyInvoicedInPriceUOM(invoiceLine);
 
@@ -298,7 +300,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	public IEditablePricingContext createPricingContext(I_C_InvoiceLine invoiceLine,
-			final int priceListId,
+			final PriceListId priceListId,
 			final BigDecimal priceQty)
 	{
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
@@ -322,7 +324,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// 03152: setting the 'ol' to allow the subscription system to compute the right price
 		pricingCtx.setReferencedObject(invoiceLine);
 
-		pricingCtx.setM_PriceList_ID(priceListId);
+		pricingCtx.setPriceListId(priceListId);
 		// PLV is only accurate if PL selected in header
 		// metas: relay on M_PriceList_ID only, don't use M_PriceList_Version_ID
 		// pricingCtx.setM_PriceList_Version_ID(orderLine.getM_PriceList_Version_ID());
@@ -428,7 +430,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 
 		final PricingConditionsResult pricingConditions = pricingResult.getPricingConditions();
-		invoiceLine.setBase_PricingSystem_ID(pricingConditions != null ? pricingConditions.getBasePricingSystemId() : -1);
+		invoiceLine.setBase_PricingSystem_ID(pricingConditions != null ? PricingSystemId.getRepoId(pricingConditions.getBasePricingSystemId()) : -1);
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount

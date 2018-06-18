@@ -12,6 +12,7 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import lombok.NonNull;
@@ -116,7 +117,7 @@ public class JsonConverters
 				.uomId(olCand.getC_UOM_ID())
 				.huPIItemProductId(olCand.getHUPIProductItemId())
 				//
-				.pricingSystemId(olCand.getPricingSystemId())
+				.pricingSystemId(PricingSystemId.getRepoId(olCand.getPricingSystemId()))
 				.price(olCand.getPriceActual())
 				.discount(olCand.getDiscount())
 				//

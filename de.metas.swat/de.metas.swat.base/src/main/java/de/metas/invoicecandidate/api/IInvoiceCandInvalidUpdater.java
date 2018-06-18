@@ -104,17 +104,17 @@ public interface IInvoiceCandInvalidUpdater
 	{
 		//
 		// Pricing System & Currency 
-		if (priceAndTax.getPricingSystemId() > 0)
+		if (priceAndTax.getPricingSystemId() != null)
 		{
-			ic.setM_PricingSystem_ID(priceAndTax.getPricingSystemId());
+			ic.setM_PricingSystem_ID(priceAndTax.getPricingSystemId().getRepoId());
 		}
 		if (priceAndTax.getPriceListVersionId() > 0)
 		{
 			ic.setM_PriceList_Version_ID(priceAndTax.getPriceListVersionId());
 		}
-		if (priceAndTax.getCurrencyId() > 0)
+		if (priceAndTax.getCurrencyId() != null)
 		{
-			ic.setC_Currency_ID(priceAndTax.getCurrencyId());
+			ic.setC_Currency_ID(priceAndTax.getCurrencyId().getRepoId());
 		}
 
 		//

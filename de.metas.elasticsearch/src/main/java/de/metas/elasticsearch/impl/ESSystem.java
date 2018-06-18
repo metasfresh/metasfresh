@@ -15,9 +15,11 @@ import com.google.common.base.Suppliers;
 
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.scheduler.IESModelIndexingScheduler;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -32,11 +34,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -77,11 +79,14 @@ public class ESSystem implements IESSystem
 	}
 
 	@Override
-	public ESModelIndexerConfigBuilder newModelIndexerConfig(final String indexName, final Class<?> modelClass)
+	public ESModelIndexerConfigBuilder newModelIndexerConfig(
+			@NonNull final ESModelIndexerProfile profile,
+			@NonNull final String indexName,
+			@NonNull final Class<?> modelClass)
 	{
 		final Consumer<ESModelIndexerConfigBuilder> configInstaller = this::installConfig;
 		final String modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
-		return new ESModelIndexerConfigBuilder(configInstaller, indexName, modelTableName);
+		return new ESModelIndexerConfigBuilder(configInstaller, profile, indexName, modelTableName);
 	}
 
 	private void installConfig(final ESModelIndexerConfigBuilder config)

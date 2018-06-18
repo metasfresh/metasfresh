@@ -31,12 +31,21 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
+
+import de.metas.lang.SOTrx;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 
 public interface IPriceListDAO extends ISingletonService
 {
-	public static final int M_PricingSystem_ID_None = 100;
-	public static final int M_PriceList_ID_None = 100;
+	public static final int M_PricingSystem_ID_None = PricingSystemId.NONE.getRepoId();
+	public static final int M_PriceList_ID_None = PriceListId.NONE.getRepoId();
+
+	I_M_PricingSystem getPricingSystemById(PricingSystemId pricingSystemId);
+
+	I_M_PriceList getById(PriceListId priceListId);
 
 	I_M_PriceList getById(int priceListId);
 
@@ -55,15 +64,14 @@ public interface IPriceListDAO extends ISingletonService
 	 *
 	 * @param pricingSystem
 	 * @param countryId
-	 * @param isSoTrx true is sales, false if purchase, null to return both
-	 * @return
+	 * @param soTrx sales, purchase or null to return both
 	 */
-	Iterator<I_M_PriceList> retrievePriceLists(int pricingSystemId, int countryId, Boolean isSOPriceList);
+	Iterator<I_M_PriceList> retrievePriceLists(PricingSystemId pricingSystemId, int countryId, SOTrx soTrx);
 
 	/**
 	 * @return the price list for the given pricing system and location or <code>null</code>.
 	 */
-	I_M_PriceList retrievePriceListByPricingSyst(int pricingSystemId, I_C_BPartner_Location bpartnerLocation, boolean isSOPriceList);
+	I_M_PriceList retrievePriceListByPricingSyst(PricingSystemId pricingSystemId, I_C_BPartner_Location bpartnerLocation, SOTrx soTrx);
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>
@@ -82,7 +90,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @param date
 	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
 	 */
-	I_M_PriceList_Version retrievePriceListVersionOrNull(Properties ctx, int priceListId, Date date, Boolean processed);
+	I_M_PriceList_Version retrievePriceListVersionOrNull(Properties ctx, PriceListId priceListId, Date date, Boolean processed);
 
 	/**
 	 * Retrieve the price list version that has <code>Processed='Y'</code> and and was valid before after the the given <code>plv</code>.
@@ -107,9 +115,9 @@ public interface IPriceListDAO extends ISingletonService
 
 	I_M_PriceList_Version retrieveLastCreatedPriceListVersion(int priceListId);
 
-	String getPricingSystemName(final int pricingSystemId);
+	String getPricingSystemName(final PricingSystemId pricingSystemId);
 
-	String getPriceListName(final int priceListId);
+	String getPriceListName(final PriceListId priceListId);
 
-	Set<Integer> retrieveCountryIdsByPricingSystem(final int pricingSystemId);
+	Set<Integer> retrieveCountryIdsByPricingSystem(final PricingSystemId pricingSystemId);
 }

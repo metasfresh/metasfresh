@@ -53,6 +53,34 @@
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
+		<!-- 
+		there are exclusions to avoid dependency version convergence issues
+		(i.e. to satisfy the enforcer plugin)
+		-->
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-starter-client</artifactId>
+			<version>${spring-boot-admin.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-web</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-boot</artifactId>
+					<groupId>org.springframework.boot</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-boot-starter-web</artifactId>
+					<groupId>org.springframework.boot</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 		<!-- metasfresh -->
 		<dependency>
 			<groupId>de.metas.material</groupId>

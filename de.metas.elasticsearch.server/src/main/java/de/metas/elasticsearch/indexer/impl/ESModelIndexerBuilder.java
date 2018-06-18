@@ -7,12 +7,18 @@ import org.adempiere.util.Services;
 import org.elasticsearch.client.Client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
+import de.metas.elasticsearch.config.ESModelIndexerId;
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -27,41 +33,37 @@ import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/final class ESModelIndexerBuilder
+final class ESModelIndexerBuilder
 {
 	private final ESModelIndexersRegistry esModelIndexingService;
 
-	private final String _modelIndexerId;
-	private final String _indexName;
-	private final String _indexType;
-	private final String _modelTableName;
+	@Getter(AccessLevel.PACKAGE)
+	private final ESModelIndexerId id;
+
+	private final String modelTableName;
 
 	private IESModelDenormalizer _modelDenormalizer; // lazy
 
-	private final List<IESModelIndexerTrigger> _triggers;
+	private final ImmutableList<IESModelIndexerTrigger> triggers;
 
-	ESModelIndexerBuilder(final ESModelIndexersRegistry esModelIndexingService, final ESModelIndexerConfigBuilder config)
+	ESModelIndexerBuilder(
+			@NonNull final ESModelIndexersRegistry esModelIndexingService,
+			@NonNull final ESModelIndexerConfigBuilder config)
 	{
-		super();
-
-		Check.assumeNotNull(esModelIndexingService, "Parameter esModelIndexingService is not null");
 		this.esModelIndexingService = esModelIndexingService;
 
-		Check.assumeNotNull(config, "Parameter config is not null");
-		_modelIndexerId = config.getId();
-		_indexName = config.getIndexName();
-		_indexType = config.getIndexType();
-		_modelTableName = config.getModelTableName();
-		_triggers = config.getTriggers();
+		id = config.getId();
+		modelTableName = config.getModelTableName();
+		triggers = ImmutableList.copyOf(config.getTriggers());
 	}
 
 	public IESModelIndexer build()
@@ -79,41 +81,33 @@ import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 		return esModelIndexingService.getJsonObjectMapper();
 	}
 
-	/* package */String getId()
+	public ESModelIndexerProfile getProfile()
 	{
-		return _modelIndexerId;
+		return getId().getProfile();
 	}
 
 	public String getModelTableName()
 	{
 		// note: we assume is not null at this point
-		return _modelTableName;
+		return modelTableName;
 	}
 
 	public IESModelDenormalizer getModelDenormalizer()
 	{
 		if (_modelDenormalizer == null)
 		{
+			final IESDenormalizerFactory esDenormalizerFactory = Services.get(IESDenormalizerFactory.class);
+
+			final ESModelIndexerProfile profile = getProfile();
 			final String modelTableName = getModelTableName();
-			_modelDenormalizer = Services.get(IESDenormalizerFactory.class).getModelDenormalizer(modelTableName);
+			_modelDenormalizer = esDenormalizerFactory.getModelDenormalizer(profile, modelTableName);
 			Check.assumeNotNull(_modelDenormalizer, "model denormalizer shall exist for {}", modelTableName);
 		}
 		return _modelDenormalizer;
 	}
 
-	String getIndexName()
+	List<IESModelIndexerTrigger> getTriggers()
 	{
-		// note: we assume is not null at this point
-		return _indexName;
-	}
-
-	String getIndexType()
-	{
-		return _indexType;
-	}
-
-	/* package */List<IESModelIndexerTrigger> getTriggers()
-	{
-		return _triggers;
+		return triggers;
 	}
 }

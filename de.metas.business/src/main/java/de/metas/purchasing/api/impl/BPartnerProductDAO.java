@@ -28,8 +28,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -38,17 +40,19 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -107,14 +111,40 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	@Override
 	public List<I_C_BPartner_Product> retrieveAllVendors(@NonNull final ProductId productId, @NonNull final OrgId orgId)
 	{
-		return retrieveAllVendorsQuery(productId.getRepoId(), orgId.getRepoId())
+		return retrieveAllVendorsQuery(productId, orgId)
+				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor) // current vendors first
 				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
 				.create()
 				.list(I_C_BPartner_Product.class);
 	}
 
 	@Override
-	public Optional<I_C_BPartner_Product> retrieveDefaultVendor(final int productId, final int orgId)
+	public I_C_BPartner_Product retrieveByVendorId(
+			@NonNull final BPartnerId vendorId,
+			@NonNull final ProductId productId,
+			@NonNull final OrgId orgId)
+	{
+		return retrieveByVendorIds(ImmutableSet.of(vendorId), productId, orgId)
+				.get(vendorId);
+	}
+
+	@Override
+	public Map<BPartnerId, I_C_BPartner_Product> retrieveByVendorIds(
+			@NonNull final Set<BPartnerId> vendorIds,
+			@NonNull final ProductId productId,
+			@NonNull final OrgId orgId)
+	{
+		return retrieveAllVendorsQuery(productId, orgId)
+				.addInArrayFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, vendorIds)
+				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor) // current vendors first
+				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
+				.create()
+				.stream()
+				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(record -> BPartnerId.ofRepoId(record.getC_BPartner_ID())));
+	}
+
+	@Override
+	public Optional<I_C_BPartner_Product> retrieveDefaultVendor(final ProductId productId, final OrgId orgId)
 	{
 		return retrieveAllVendorsQuery(productId, orgId)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_IsCurrentVendor, true)
@@ -124,13 +154,13 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.firstOptional(I_C_BPartner_Product.class);
 	}
 
-	public IQueryBuilder<org.compiere.model.I_C_BPartner_Product> retrieveAllVendorsQuery(final int productId, final int orgId)
+	private IQueryBuilder<I_C_BPartner_Product> retrieveAllVendorsQuery(final ProductId productId, final OrgId orgId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilderOutOfTrx(org.compiere.model.I_C_BPartner_Product.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, Env.CTXVALUE_AD_Org_ID_Any)
+				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId);
 	}

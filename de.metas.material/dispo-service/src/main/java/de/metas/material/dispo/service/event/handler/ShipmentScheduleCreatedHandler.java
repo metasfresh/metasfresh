@@ -11,7 +11,7 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;

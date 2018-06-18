@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
-import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
+import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 
 /*
@@ -59,9 +59,9 @@ public class AvailableToPromiseResultTest
 		AdempiereTestHelper.get().init();
 	}
 
-	private I_MD_Candidate_Stock_v createStockRecord(int warehouseId)
+	private I_MD_Candidate_ATP_QueryResult createStockRecord(int warehouseId)
 	{
-		final I_MD_Candidate_Stock_v viewRecord = newInstance(I_MD_Candidate_Stock_v.class);
+		final I_MD_Candidate_ATP_QueryResult viewRecord = newInstance(I_MD_Candidate_ATP_QueryResult.class);
 		viewRecord.setM_Product_ID(PRODUCT_ID);
 		viewRecord.setM_Warehouse_ID(warehouseId);
 		viewRecord.setDateProjected(new Timestamp(BEFORE_NOW.getTime()));
@@ -224,7 +224,7 @@ public class AvailableToPromiseResultTest
 	@Test
 	public void addQtyToAllMatchingGroups()
 	{
-		final I_MD_Candidate_Stock_v stockRecord = createStockRecord(WAREHOUSE_ID);
+		final I_MD_Candidate_ATP_QueryResult stockRecord = createStockRecord(WAREHOUSE_ID);
 
 		final AvailableToPromiseResult result = new AvailableToPromiseResult(ImmutableList.of(
 				ResultGroup.builder()

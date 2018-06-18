@@ -26,8 +26,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -37,10 +40,12 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.BPGroupId;
 import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.bpartner.BPartnerType;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
+import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -48,6 +53,7 @@ import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
@@ -58,6 +64,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_AD_User;
@@ -66,6 +73,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.pricing.PricingSystemId;
 import lombok.NonNull;
 
 public class BPartnerDAO implements IBPartnerDAO
@@ -167,6 +175,35 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public I_C_BPartner_Location getDefaultShipToLocation(final BPartnerId bpartnerId)
+	{
+		final List<I_C_BPartner_Location> bpLocations = retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
+		if (bpLocations.isEmpty())
+		{
+			return null;
+		}
+		else if (bpLocations.size() == 1)
+		{
+			return bpLocations.get(0);
+		}
+		else
+		{
+			return bpLocations.stream()
+					.filter(I_C_BPartner_Location::isShipTo)
+					.sorted(Comparator.comparing(bpl -> bpl.isShipToDefault() ? 0 : 1))
+					.findFirst()
+					.orElse(null);
+		}
+	}
+
+	@Override
+	public int getDefaultShipToLocationCountryId(final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner_Location bpl = getDefaultShipToLocation(bpartnerId);
+		return bpl != null ? bpl.getC_Location().getC_Country_ID() : -1;
+	}
+
+	@Override
 	@Cached(cacheName = I_AD_User.Table_Name + "#by#" + I_AD_User.COLUMNNAME_C_BPartner_ID)
 	public List<I_AD_User> retrieveContacts(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
 	{
@@ -259,13 +296,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public int retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final SOTrx soTrx)
+	public PricingSystemId retrievePricingSystemId(@NonNull final BPartnerId bPartnerId, final SOTrx soTrx)
 	{
 		return retrievePricingSystemId(Env.getCtx(), bPartnerId.getRepoId(), soTrx, ITrx.TRXNAME_None);
 	}
 
 	@Override
-	public int retrievePricingSystemId(
+	public PricingSystemId retrievePricingSystemId(
 			final Properties ctx,
 			final int bPartnerId,
 			final SOTrx soTrx,
@@ -289,7 +326,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (bpPricingSysId != null && bpPricingSysId > 0)
 		{
 			logger.debug("Got M_PricingSystem_ID={} from bPartner={}", bpPricingSysId, bPartner);
-			return bpPricingSysId;
+			return PricingSystemId.ofRepoId(bpPricingSysId);
 		}
 
 		final int bpGroupId = bPartner.getC_BP_Group_ID();
@@ -312,7 +349,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			if (bpGroupPricingSysId != null && bpGroupPricingSysId > 0)
 			{
 				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
-				return bpGroupPricingSysId;
+				return PricingSystemId.ofRepoId(bpGroupPricingSysId);
 			}
 		}
 
@@ -322,12 +359,12 @@ public class BPartnerDAO implements IBPartnerDAO
 			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(MOrgInfo.get(ctx, adOrgId, null), I_AD_OrgInfo.class);
 			if (orgInfo.getM_PricingSystem_ID() > 0)
 			{
-				return orgInfo.getM_PricingSystem_ID();
+				return PricingSystemId.ofRepoId(orgInfo.getM_PricingSystem_ID());
 			}
 		}
 
-		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning 0", bPartner, soTrx);
-		return 0;
+		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning null", bPartner, soTrx);
+		return null;
 	}
 
 	@Override
@@ -585,18 +622,57 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final BPartnerType bpartnerType)
+	public Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(@NonNull final BPartnerType bpartnerType)
 	{
 		final String discountSchemaIdColumnName = getBPartnerDiscountSchemaColumnNameOrNull(bpartnerType);
-		if(discountSchemaIdColumnName == null)
+		if (discountSchemaIdColumnName == null)
 		{
 			return ImmutableMap.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_C_BP_Group> bpGroupIdQuery = queryBL
+				.createQueryBuilderOutOfTrx(I_C_BP_Group.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(discountSchemaIdColumnName)
+				.create();
+
+		//
+		// get bpartnerIds that don't have their own discount schema ID, but their C_BP_Group has one
+
+		// first get the respective bpGroups
+		final ImmutableMap<BPGroupId, Integer> groupId2discountId = bpGroupIdQuery
+				.listDistinct(I_C_BP_Group.COLUMNNAME_C_BP_Group_ID, discountSchemaIdColumnName)
+				.stream()
+				.map(row -> GuavaCollectors.entry(
+						BPGroupId.ofRepoId(NumberUtils.asInt(row.get(I_C_BP_Group.COLUMNNAME_C_BP_Group_ID), -1)),
+						NumberUtils.asInt(row.get(discountSchemaIdColumnName), -1)))
+				.collect(GuavaCollectors.toImmutableMap());
+
+		// then get the bpartners that belong to those bpGroups *and* have no discountId of their own
+		final HashMap<BPartnerId, Integer> bPartnerId2DiscountId = queryBL
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
-				// .addEqualsFilter(I_C_BPartner.COLUMN_AD_Client_ID, adClientId)
+				.addInArrayFilter(I_C_BPartner.COLUMN_C_BP_Group_ID, groupId2discountId.keySet())
+				.addEqualsFilter(discountSchemaIdColumnName, null) // they have no own discount schema!
+				.create()
+				.listDistinct(I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_C_BP_Group_ID)
+				.stream()
+				.map(bPartner2GroupRow -> {
+
+					final BPartnerId bPartnerId = BPartnerId.ofRepoId(NumberUtils.asInt(bPartner2GroupRow.get(I_C_BPartner.COLUMNNAME_C_BPartner_ID), -1));
+					final BPGroupId bpGroupId = BPGroupId.ofRepoId(NumberUtils.asInt(bPartner2GroupRow.get(I_C_BPartner.COLUMNNAME_C_BP_Group_ID), -1));
+					final Integer groupDiscountId = groupId2discountId.get(bpGroupId);
+
+					return GuavaCollectors.entry(bPartnerId, groupDiscountId);
+				})
+				.collect(GuavaCollectors.toHashMap());
+
+		// finally get bpartners that have their own discount schema
+		final ImmutableMap<BPartnerId, Integer> partnerIdWithoutGroup2DiscountId = queryBL
+				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
 				.addNotNull(discountSchemaIdColumnName)
 				.create()
 				.listDistinct(I_C_BPartner.COLUMNNAME_C_BPartner_ID, discountSchemaIdColumnName)
@@ -605,6 +681,15 @@ public class BPartnerDAO implements IBPartnerDAO
 						BPartnerId.ofRepoId(NumberUtils.asInt(row.get(I_C_BPartner.COLUMNNAME_C_BPartner_ID), -1)),
 						NumberUtils.asInt(row.get(discountSchemaIdColumnName), -1)))
 				.collect(GuavaCollectors.toImmutableMap());
+
+		// add/override the with the more specific bpartner-result onto the more general bpGroup-result
+		final ImmutableSet<Entry<BPartnerId, Integer>> entrySet = partnerIdWithoutGroup2DiscountId.entrySet();
+		for(final Entry<BPartnerId, Integer> entry: entrySet)
+		{
+			bPartnerId2DiscountId.put(entry.getKey(), entry.getValue());
+		}
+
+		return ImmutableMap.copyOf(bPartnerId2DiscountId);
 	}
 
 	private static final String getBPartnerDiscountSchemaColumnNameOrNull(final BPartnerType bpartnerType)
@@ -618,5 +703,16 @@ public class BPartnerDAO implements IBPartnerDAO
 			default:
 				return null;
 		}
+	}
+
+	@Override
+	public BPartnerLocationId getBilltoDefaultLocationIdByBpartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveBPartnerLocations(bpartnerId)
+				.stream()
+				.filter(I_C_BPartner_Location::isBillToDefault)
+				.findFirst()
+				.map(bpLocation -> BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID()))
+				.orElse(null);
 	}
 }

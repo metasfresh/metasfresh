@@ -28,12 +28,22 @@ import lombok.Value;
 @Value
 public class CurrencyId
 {
-	int repoId;
-
 	public static CurrencyId ofRepoId(final int repoId)
 	{
 		return new CurrencyId(repoId);
 	}
+
+	public static CurrencyId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static int toRepoId(final CurrencyId currencyId)
+	{
+		return currencyId != null ? currencyId.getRepoId() : -1;
+	}
+
+	int repoId;
 
 	private CurrencyId(final int repoId)
 	{

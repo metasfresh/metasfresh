@@ -54,8 +54,9 @@ public final class PurchaseCandidateAggregator extends MapReduceAggregator<Purch
 	}
 
 	@Override
-	protected void closeGroup(final PurchaseCandidateAggregate group)
+	protected void closeGroup(@NonNull final PurchaseCandidateAggregate group)
 	{
+		group.calculateAndSetQtyToDeliver();
 	}
 
 	@Override
@@ -63,5 +64,4 @@ public final class PurchaseCandidateAggregator extends MapReduceAggregator<Purch
 	{
 		group.add(item);
 	}
-
 }

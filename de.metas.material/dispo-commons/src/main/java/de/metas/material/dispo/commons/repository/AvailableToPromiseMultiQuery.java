@@ -37,6 +37,10 @@ import lombok.Value;
 @Value
 public class AvailableToPromiseMultiQuery
 {
+	/**
+	 * Creates a multi-query with one query for the given {@code materialDescriptor}
+	 * and  - if that descriptor has a specific partner - another one for ATP stuff that has no specific partner.
+	 */
 	public static AvailableToPromiseMultiQuery forDescriptorAndAllPossibleBPartnerIds(@NonNull final MaterialDescriptor materialDescriptor)
 	{
 		final AvailableToPromiseQuery bPartnerQuery = AvailableToPromiseQuery.forMaterialDescriptor(materialDescriptor);

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/bp_pricing_conditions/report" uuid="8689ea6a-4dae-4888-9e61-2e058c12c020">
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="C_BPartner_Location_ID" class="java.math.BigDecimal"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Date" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[SELECT * FROM 
+report.bpartner_pricing_conditions ($P{C_BPartner_ID}, $P{C_BPartner_Location_ID}, $P{Date}, $P{ad_language});]]>
+	</queryString>
+	<field name="bp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
+	</field>
+	<field name="addressline" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="addressline"/>
+	</field>
+	<field name="p_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="p_value"/>
+	</field>
+	<field name="p_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="p_name"/>
+	</field>
+	<field name="op" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="op"/>
+	</field>
+	<field name="me" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="me"/>
+	</field>
+	<field name="manufacturer" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="manufacturer"/>
+	</field>
+	<field name="base_ps" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="base_ps"/>
+	</field>
+	<field name="breakdiscount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="breakdiscount"/>
+	</field>
+	<field name="fixum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="fixum"/>
+	</field>
+	<field name="discount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="discount"/>
+	</field>
+	<field name="pricestd" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="pricestd"/>
+	</field>
+	<field name="endprice" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="endprice"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="130" splitType="Stretch">
+			<textField>
+				<reportElement x="30" y="30" width="350" height="24" forecolor="#000000" uuid="f986f842-9b0e-4c58-b677-d502bf68e54d"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.YYYY">
+				<reportElement x="514" y="32" width="291" height="20" forecolor="#000000" uuid="968771dd-e5ad-442c-8837-504a578263b4"/>
+				<textElement textAlignment="Right">
+					<font size="14" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="30" y="62" width="350" height="20" forecolor="#000000" uuid="65d30738-c452-4faa-af5b-07fa13f521a5"/>
+				<textElement>
+					<font size="14" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="30" y="82" width="283" height="48" forecolor="#000000" uuid="98564e96-8a8a-446c-885a-1e600d0a412a"/>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{addressline}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="30">
+			<textField>
+				<reportElement x="30" y="16" width="60" height="14" forecolor="#000000" uuid="86f2973d-eff9-424a-95a9-12f4cb23c657"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{p_value}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="94" y="16" width="180" height="14" forecolor="#000000" uuid="ce36ad4d-3b81-411a-9ac3-df406a48a449"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{p_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="274" y="16" width="36" height="14" forecolor="#000000" uuid="1dc8280a-f6cc-4245-a840-fd146e2b87e6"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{op}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="732" y="16" width="70" height="14" forecolor="#000000" uuid="f415880f-ffc8-4db3-b615-ec740fc641ce"/>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{final_price}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="684" y="16" width="48" height="14" forecolor="#000000" uuid="d46814ef-f6d6-470b-983b-1666e0c76785"/>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paymentterm_discount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="310" y="16" width="36" height="14" forecolor="#000000" uuid="e1d06d82-07ff-4df6-be6b-5df57cfdd0b1"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{me}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="348" y="16" width="180" height="14" forecolor="#000000" uuid="00e095e3-7d2e-46f1-b8b1-4580c5336dff"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{manufacturer}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="529" y="16" width="55" height="14" forecolor="#000000" uuid="09718361-8e77-46f0-8b7e-b12b39e15aec"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{base_ps}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="584" y="16" width="50" height="14" forecolor="#000000" uuid="baae87b7-ee15-44ba-b6ef-5ea216b7d8f1"/>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{discount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="634" y="16" width="50" height="14" forecolor="#000000" uuid="ecf2e522-3226-4f81-a6a8-47a92f70e598"/>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{fixed}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="30" y="0" width="60" height="14" uuid="0c9b3dcb-d382-4467-b955-bf93c061c29a"/>
+				<textElement textAlignment="Left">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="94" y="0" width="180" height="14" uuid="76496c4f-6586-43a4-9bdf-b7ca32703c5c"/>
+				<textElement textAlignment="Left">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="274" y="0" width="36" height="14" uuid="37ba6336-b818-4fac-ac41-df85cee80a5a"/>
+				<textElement textAlignment="Left">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{op}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="732" y="0" width="70" height="14" uuid="000afaa3-7c9c-462b-b422-6234665a57b9"/>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{endprice})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="684" y="0" width="48" height="14" uuid="8d5951de-843b-485c-a59b-5131cf5cbaec"/>
+				<textElement textAlignment="Right">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{discount})
++ "%"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="310" y="0" width="36" height="14" uuid="c24f7eea-55e5-4817-81da-c6a64b69afc1"/>
+				<textElement textAlignment="Left">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{me}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="348" y="0" width="180" height="14" uuid="c27b6e6c-ef98-4a1d-abc0-4162c794f0c7"/>
+				<textElement textAlignment="Left">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{manufacturer}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="529" y="0" width="55" height="14" uuid="801b60bd-3fbc-4aa1-b856-72e0cc95fd29"/>
+				<textElement textAlignment="Left">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{base_ps}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="584" y="0" width="50" height="14" uuid="852024f7-a0b8-471c-b243-fc4a2741b20b"/>
+				<textElement textAlignment="Right">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{breakdiscount})
+ + "%"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="634" y="0" width="50" height="14" uuid="42b68139-a4ff-454f-b10d-5356edc7ec08"/>
+				<textElement textAlignment="Right">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{fixum})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="90" splitType="Stretch">
+			<textField evaluationTime="Master">
+				<reportElement x="675" y="50" width="129" height="14" uuid="bd27da1b-01ed-4904-a6fa-ec3d7270531e"/>
+				<textElement textAlignment="Right">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{page} +" " + $V{MASTER_CURRENT_PAGE} +" " + $R{of} +" " +  $V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

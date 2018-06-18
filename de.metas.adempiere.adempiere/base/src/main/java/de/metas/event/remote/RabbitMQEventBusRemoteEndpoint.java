@@ -113,7 +113,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 				return message;
 			});
 
-			logger.debug("AMQP: send event; topicName={}; event={}",topicName, event);
+			logger.debug("Send event; topicName={}; event={}",topicName, event);
 		}
 		catch (final Exception e)
 		{
