@@ -67,17 +67,13 @@ public class ESModelIndexingScheduler implements IESModelIndexingScheduler
 	{
 		final Properties ctx = Env.getCtx();
 
-		//@formatter:off
-		Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, workpackageProcessorClassname)
+		Services.get(IWorkPackageQueueFactory.class)
+				.getQueueForEnqueuing(ctx, workpackageProcessorClassname)
 				.newBlock()
 				.newWorkpackage()
 				.bindToThreadInheritedTrx()
 				.addElements(models)
-				.parameters()
-					.setParameter(PARAMETERNAME_ModelIndexerId, modelIndexerId.toJson())
-					.end()
+				.parameter(PARAMETERNAME_ModelIndexerId, modelIndexerId.toJson())
 				.build();
-		//@formatter:on
-
 	}
 }
