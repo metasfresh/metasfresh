@@ -1,6 +1,5 @@
 package de.metas.jms;
 
-import org.adempiere.util.Services;
 import org.compiere.db.CConnection;
 
 import de.metas.adempiere.addon.IAddOn;
@@ -40,7 +39,6 @@ public class AddOn implements IAddOn
 			return; // nothing to do
 		}
 
-		final IJMSService jmsService = Services.get(IJMSService.class);
-		jmsService.startEmbeddedBroker();
+		EmbeddedActiveMQBrokerService.INSTANCE.startEmbeddedBroker();
 	}
 }
