@@ -70,8 +70,7 @@ public class PurchaseDemand
 	Currency currencyOrNull;
 
 	@NonNull
-	LocalDateTime salesDatePromised;
-	LocalDateTime preparationDateOrNull;
+	LocalDateTime salesPreparationDate;
 
 	@Nullable
 	OrderAndLineId salesOrderAndLineIdOrNull;

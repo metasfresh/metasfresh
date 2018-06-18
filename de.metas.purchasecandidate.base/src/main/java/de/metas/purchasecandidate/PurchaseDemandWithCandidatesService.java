@@ -285,16 +285,16 @@ public class PurchaseDemandWithCandidatesService
 				purchaseDemand, vendorProductInfo);
 
 		final WarehouseId warehouseId = getPurchaseWarehouseId(purchaseDemand);
-		final LocalDateTime salesDatePromised = purchaseDemand.getSalesDatePromised();
+		final LocalDateTime salesPreparationDate = purchaseDemand.getSalesPreparationDate();
 
 		//
 		// PurchaseDatePromised and ReminderTime
 		final BPartnerId vendorId = vendorProductInfo.getVendorId();
 		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(
 				vendorId,
-				salesDatePromised.toLocalDate())
+				salesPreparationDate.toLocalDate())
 				.orElse(null);
-		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule);
+		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesPreparationDate, bpPurchaseSchedule);
 		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
 		//
