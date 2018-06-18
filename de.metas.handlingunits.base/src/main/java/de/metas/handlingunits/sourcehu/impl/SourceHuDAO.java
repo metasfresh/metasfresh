@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -33,12 +34,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -83,7 +84,7 @@ public class SourceHuDAO implements ISourceHuDAO
 
 		return queryBuilder.create().list();
 	}
-	
+
 	@Override
 	public Set<Integer> retrieveActiveSourceHUIds(@NonNull final MatchingSourceHusQuery query)
 	{
@@ -146,7 +147,7 @@ public class SourceHuDAO implements ISourceHuDAO
 				.setOnlyActiveHUs(true)
 				.setAllowEmptyStorage()
 				.addOnlyWithProductIds(query.getProductIds())
-				.addOnlyInWarehouseId(query.getWarehouseId())
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(query.getWarehouseId()))
 				.createQueryFilter();
 		huFilters.addFilter(huFilter);
 

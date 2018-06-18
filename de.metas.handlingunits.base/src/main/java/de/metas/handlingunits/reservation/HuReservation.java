@@ -1,8 +1,14 @@
-package de.metas.lang;
+package de.metas.handlingunits.reservation;
+
+import java.util.Map;
+
+import de.metas.handlingunits.HuId;
+import de.metas.quantity.Quantity;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,7 +28,12 @@ package de.metas.lang;
  * #L%
  */
 
-public interface RepoIdAware
+@Value
+public class HuReservation
 {
-	int getRepoId();
+	HuReservationId id;
+
+	Quantity reservedQtySum;
+
+	Map<HuId, Quantity> vhuId2reservedQty;
 }

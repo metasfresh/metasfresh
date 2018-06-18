@@ -10,12 +10,12 @@ package de.metas.fresh.picking.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -44,9 +45,9 @@ import de.metas.picking.legacy.form.AbstractTableRowSearchSelectionMatcher;
 
 /**
  * Matchers all rows suitable for given HU.
- * 
+ *
  * Mainly, developer needs to implement {@link #createHUQueryBuilder(IHUQueryBuilder)} method.
- * 
+ *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/06821_Kommissionier_Terminal_Extension_%28104171338645%29
  */
@@ -94,7 +95,7 @@ import de.metas.picking.legacy.form.AbstractTableRowSearchSelectionMatcher;
 		final IHUQueryBuilder huQueryBuilderInitial = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
 				.setContext(ctx, ITrx.TRXNAME_None)
 				.setHUStatus(X_M_HU.HUSTATUS_Active)
-				.addOnlyInWarehouseId(warehouseId);
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(warehouseId));
 
 		//
 		// Ask extending classes to customize it
@@ -121,9 +122,9 @@ import de.metas.picking.legacy.form.AbstractTableRowSearchSelectionMatcher;
 
 	/**
 	 * Creates actual {@link IHUQueryBuilder} to be used when fetching the HU.
-	 * 
+	 *
 	 * NOTE: you can even reuse <code>huQueryBuilderInitial</code>, customize it and return it
-	 * 
+	 *
 	 * @param huQueryBuilderInitial
 	 * @return HU query builder to be used when fetching the HU
 	 */
@@ -134,7 +135,7 @@ import de.metas.picking.legacy.form.AbstractTableRowSearchSelectionMatcher;
 	 * <ul>
 	 * <li>Fetch products from given HU
 	 * </ul>
-	 * 
+	 *
 	 * @param hu
 	 */
 	private final void loadFromHU(final I_M_HU hu)
@@ -148,7 +149,7 @@ import de.metas.picking.legacy.form.AbstractTableRowSearchSelectionMatcher;
 
 		//
 		// Fetch products from HU Storage
-		final TreeSet<Integer> productIds = new TreeSet<Integer>();
+		final TreeSet<Integer> productIds = new TreeSet<>();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
 		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx);
 		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();

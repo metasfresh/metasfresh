@@ -265,7 +265,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final ImmutableSetMultimap<Integer, Integer> warehouseIdsByPickingGroupId = queryBL.createQueryBuilder(I_M_Warehouse.class)
+		final ImmutableSetMultimap<Integer, WarehouseId> warehouseIdsByPickingGroupId = queryBL.createQueryBuilder(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_M_Warehouse.COLUMNNAME_M_Warehouse_PickingGroup_ID)
 				.create()
@@ -274,7 +274,7 @@ public class WarehouseDAO implements IWarehouseDAO
 				.map(record -> {
 					final int warehouseId = (int)record.get(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID);
 					final int warehousePickingGroupId = (int)record.get(I_M_Warehouse.COLUMNNAME_M_Warehouse_PickingGroup_ID);
-					return GuavaCollectors.entry(warehousePickingGroupId, warehouseId);
+					return GuavaCollectors.entry(warehousePickingGroupId, WarehouseId.ofRepoId(warehouseId));
 				})
 				.collect(GuavaCollectors.toImmutableSetMultimap());
 
@@ -302,7 +302,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(final int warehouseId)
+	public WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(@NonNull final WarehouseId warehouseId)
 	{
 		return retrieveWarehouseGroups()
 				.stream()

@@ -52,6 +52,7 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
@@ -103,9 +104,12 @@ import lombok.NonNull;
 	private int parentHUItemId = -1;
 	private int parentHUId = -1;
 
-	private final Set<Integer> _onlyInWarehouseIds = new HashSet<>();
+	private final Set<WarehouseId> _onlyInWarehouseIds = new HashSet<>();
+	private boolean _notInAnyWarehouse = true;
+
 	@ToStringBuilder(skip = true)
-	private final Set<Integer> _onlyInWarehouseIdsRO = Collections.unmodifiableSet(_onlyInWarehouseIds);
+	private final Set<WarehouseId> _onlyInWarehouseIdsRO = Collections.unmodifiableSet(_onlyInWarehouseIds);
+
 	private final Set<Integer> _onlyInLocatorIds = new HashSet<>();
 	private boolean _excludeAfterPickingLocator = false;
 	/**
@@ -176,6 +180,7 @@ import lombok.NonNull;
 		this.parentHUItemId = from.parentHUItemId;
 		this.parentHUId = from.parentHUId;
 		this._onlyInWarehouseIds.addAll(from._onlyInWarehouseIds);
+		this._notInAnyWarehouse = from._notInAnyWarehouse;
 		this._onlyInLocatorIds.addAll(from._onlyInLocatorIds);
 		this._excludeAfterPickingLocator = from._excludeAfterPickingLocator;
 		this._includeAfterPickingLocator = from._includeAfterPickingLocator;
@@ -239,6 +244,7 @@ import lombok.NonNull;
 				.append(parentHUItemId)
 				.append(parentHUId)
 				.append(_onlyInWarehouseIds)
+				.append(_notInAnyWarehouse)
 				.append(_onlyInLocatorIds)
 				.append(_excludeAfterPickingLocator)
 				.append(_includeAfterPickingLocator)
@@ -284,6 +290,7 @@ import lombok.NonNull;
 				.append(parentHUItemId, other.parentHUItemId)
 				.append(parentHUId, other.parentHUId)
 				.append(_onlyInWarehouseIds, other._onlyInWarehouseIds)
+				.append(_notInAnyWarehouse, other._notInAnyWarehouse)
 				.append(_onlyInLocatorIds, other._onlyInLocatorIds)
 				.append(_excludeAfterPickingLocator, other._excludeAfterPickingLocator)
 				.append(onlyIfAssignedToBPartner, other.onlyIfAssignedToBPartner)
@@ -307,12 +314,6 @@ import lombok.NonNull;
 				.append(_errorIfNoHUs, other._errorIfNoHUs)
 				.append(_errorIfNoHUs_ADMessage, other._errorIfNoHUs_ADMessage)
 				.isEqual();
-	}
-
-	@Override
-	public HUQueryBuilder clone()
-	{
-		return copy();
 	}
 
 	@Override
@@ -385,8 +386,10 @@ import lombok.NonNull;
 
 		//
 		// Filter by Warehouses
-		final Set<Integer> onlyInWarehouseIds = getOnlyInWarehouseIds();
-		if (!onlyInWarehouseIds.isEmpty() || _excludeAfterPickingLocator || _includeAfterPickingLocator)
+		final Set<WarehouseId> onlyInWarehouseIds = getOnlyInWarehouseIds();
+		if (!onlyInWarehouseIds.isEmpty()
+				|| _excludeAfterPickingLocator
+				|| _includeAfterPickingLocator)
 		{
 			final IQueryBuilder<I_M_Locator> locatorsQueryBuilder = queryBL
 					.createQueryBuilder(I_M_Locator.class, getContextProvider());
@@ -395,7 +398,6 @@ import lombok.NonNull;
 			{
 				locatorsQueryBuilder.addInArrayOrAllFilter(I_M_Locator.COLUMN_M_Warehouse_ID, onlyInWarehouseIds);
 			}
-
 			// Make sure _includeAfterPickingLocator and _excludeAfterPickingLocator are not both selected
 			Check.assume(!(_includeAfterPickingLocator && _excludeAfterPickingLocator), "Cannot both include and exclude AfterPickingLocator");
 
@@ -411,6 +413,11 @@ import lombok.NonNull;
 			final IQuery<I_M_Locator> locatorsQuery = locatorsQueryBuilder.create();
 			filters.addInSubQueryFilter(I_M_HU.COLUMN_M_Locator_ID,
 					I_M_Locator.COLUMN_M_Locator_ID, locatorsQuery);
+		}
+
+		if (_notInAnyWarehouse)
+		{
+			filters.addEqualsFilter(I_M_HU.COLUMN_M_Locator_ID, null);
 		}
 
 		//
@@ -765,27 +772,21 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyInWarehouseIds(final Collection<Integer> warehouseIds)
+	public IHUQueryBuilder addOnlyInWarehouseIds(final Collection<WarehouseId> warehouseIds)
 	{
 		if (warehouseIds != null && !warehouseIds.isEmpty())
 		{
 			_onlyInWarehouseIds.addAll(warehouseIds);
 		}
-		else
-		{
-			// Adding this element just to make sure we are filtering by warehouses
-			// NOTE: decided to do this instead of throwing an exception here because the provided IDs collection is empty
-			_onlyInWarehouseIds.add(-1);
-		}
 
+		_notInAnyWarehouse = _onlyInWarehouseIds.isEmpty();
 		return this;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyInWarehouseId(final int warehouseId)
+	public IHUQueryBuilder addOnlyInWarehouseId(final WarehouseId warehouseId)
 	{
 		_onlyInWarehouseIds.add(warehouseId);
-
 		return this;
 	}
 
@@ -794,24 +795,24 @@ import lombok.NonNull;
 	{
 		if (warehouses == null || warehouses.isEmpty())
 		{
-			return addOnlyInWarehouseIds(Collections.<Integer> emptyList());
+			return addOnlyInWarehouseIds(Collections.<WarehouseId> emptyList());
 		}
 
-		final Set<Integer> warehouseIds = new HashSet<>(warehouses.size());
+		final Set<WarehouseId> warehouseIds = new HashSet<>(warehouses.size());
 		for (final I_M_Warehouse warehouse : warehouses)
 		{
 			if (warehouse == null)
 			{
 				continue;
 			}
-			final int warehouseId = warehouse.getM_Warehouse_ID();
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 			warehouseIds.add(warehouseId);
 		}
 		return addOnlyInWarehouseIds(warehouseIds);
 	}
 
 	@Override
-	public Set<Integer> getOnlyInWarehouseIds()
+	public Set<WarehouseId> getOnlyInWarehouseIds()
 	{
 		return _onlyInWarehouseIdsRO;
 	}

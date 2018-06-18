@@ -1,8 +1,14 @@
-package de.metas.lang;
+package de.metas.handlingunits;
+
+import org.adempiere.util.Check;
+
+import de.metas.lang.RepoIdAware;
+import de.metas.product.ProductId;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,7 +28,23 @@ package de.metas.lang;
  * #L%
  */
 
-public interface RepoIdAware
+@Value
+public class HuId implements RepoIdAware
 {
-	int getRepoId();
+	int repoId;
+
+	public static HuId ofRepoId(final int repoId)
+	{
+		return new HuId(repoId);
+	}
+
+	public static int toRepoId(final ProductId productId)
+	{
+		return productId != null ? productId.getRepoId() : -1;
+	}
+
+	private HuId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 }

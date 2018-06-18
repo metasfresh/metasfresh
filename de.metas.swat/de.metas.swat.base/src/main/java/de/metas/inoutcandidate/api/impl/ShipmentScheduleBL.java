@@ -56,6 +56,7 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
@@ -1025,7 +1026,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
 
 			final WarehousePickingGroup warehouseGroup = Services.get(IWarehouseDAO.class)
-					.getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouse.getM_Warehouse_ID());
+					.getWarehousePickingGroupContainingWarehouseId(WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID()));
 			if (warehouseGroup == null)
 			{
 				warehouses = ImmutableList.of(shipmentScheduleWarehouse);
@@ -1034,7 +1035,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				warehouses = warehouseGroup.getWarehouseIds()
 						.stream()
-						.map(warehouseId -> InterfaceWrapperHelper.loadOutOfTrx(warehouseId, I_M_Warehouse.class))
+						.map(warehouseId -> InterfaceWrapperHelper.loadOutOfTrx(warehouseId.getRepoId(), I_M_Warehouse.class))
 						.collect(ImmutableList.toImmutableList());
 			}
 		}

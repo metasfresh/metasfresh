@@ -1,8 +1,13 @@
-package de.metas.lang;
+package de.metas.handlingunits.reservation;
+
+import org.adempiere.util.Check;
+
+import de.metas.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,7 +27,18 @@ package de.metas.lang;
  * #L%
  */
 
-public interface RepoIdAware
+@Value
+public class HuReservationId implements RepoIdAware
 {
-	int getRepoId();
+	int repoId;
+
+	public static HuReservationId ofRepoId(final int repoId)
+	{
+		return new HuReservationId(repoId);
+	}
+
+	private HuReservationId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 }

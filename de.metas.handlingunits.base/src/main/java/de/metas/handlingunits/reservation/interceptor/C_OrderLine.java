@@ -1,8 +1,16 @@
-package de.metas.lang;
+package de.metas.handlingunits.reservation.interceptor;
+
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
+import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,7 +30,13 @@ package de.metas.lang;
  * #L%
  */
 
-public interface RepoIdAware
+@Component("de.metas.handlingunits.reservation.interceptor.C_OrderLine")
+@Interceptor(I_C_OrderLine.class)
+public class C_OrderLine
 {
-	int getRepoId();
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteReservation(@NonNull final I_C_OrderLine orderLineRecord)
+	{
+		// TODO
+	}
 }

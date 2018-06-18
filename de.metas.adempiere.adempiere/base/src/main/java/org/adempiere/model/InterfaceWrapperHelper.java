@@ -73,6 +73,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
+import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -336,6 +337,11 @@ public class InterfaceWrapperHelper
 		return bean;
 	}
 
+	public static <T> T loadOutOfTrx(@NonNull final RepoIdAware id, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(id.getRepoId(), modelClass);
+	}
+
 	/**
 	 * Loads given model, out of transaction.
 	 * NOTE: to be used, mainly for loading master data models.
@@ -347,6 +353,11 @@ public class InterfaceWrapperHelper
 	public static <T> T loadOutOfTrx(final int id, final Class<T> modelClass)
 	{
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_None);
+	}
+
+	public static <T> T load(final RepoIdAware id, final Class<T> modelClass)
+	{
+		return load(id.getRepoId(), modelClass);
 	}
 
 	/**

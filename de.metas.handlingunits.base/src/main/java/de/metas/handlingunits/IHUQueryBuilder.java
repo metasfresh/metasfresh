@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.ModelColumn;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Warehouse;
@@ -162,7 +163,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * This is only relevant {@link #addOnlyWithProductIds(Collection)} or one of its siblings is used. The default is {@code false}.
-	 * 
+	 *
 	 * @return
 	 */
 	IHUQueryBuilder setAllowEmptyStorage();
@@ -171,11 +172,9 @@ public interface IHUQueryBuilder
 	 * Filter only those HUs which are in any of the given warehouse(s).
 	 *
 	 * NOTE: given warehouse(s) are appended to the list of previously specified ones
-	 *
-	 * @param warehouseIds
 	 * @return this
 	 */
-	IHUQueryBuilder addOnlyInWarehouseIds(final Collection<Integer> warehouseIds);
+	IHUQueryBuilder addOnlyInWarehouseIds(final Collection<WarehouseId> warehouseIds);
 
 	/**
 	 * Filter only those HUs which are in any of the given warehouse(s).
@@ -185,7 +184,7 @@ public interface IHUQueryBuilder
 	 * @param warehouseId
 	 * @return this
 	 */
-	IHUQueryBuilder addOnlyInWarehouseId(final int warehouseId);
+	IHUQueryBuilder addOnlyInWarehouseId(final WarehouseId warehouseId);
 
 	/**
 	 * Filter only those HUs which are in any of the given warehouse(s).
@@ -202,7 +201,7 @@ public interface IHUQueryBuilder
 	 * @return an unmodifiable set containing the <code>M_Warehouse_ID</code>s that were previously specified by invocations of {@link #addOnlyInWarehouseId(int)},
 	 *         {@link #addOnlyInWarehouses(Collection)} and {@link #addOnlyInWarehouseIds(Collection)}.
 	 */
-	Set<Integer> getOnlyInWarehouseIds();
+	Set<WarehouseId> getOnlyInWarehouseIds();
 
 	IHUQueryBuilder addOnlyInLocatorId(int locatorId);
 
@@ -285,7 +284,7 @@ public interface IHUQueryBuilder
 	/**
 	 * If <code>true</code> then only active HUs will be matched (i.e. IsActive='Y').
 	 * By default this is true.
-	 * 
+	 *
 	 * @param onlyActiveHUs
 	 */
 	IHUQueryBuilder setOnlyActiveHUs(boolean onlyActiveHUs);
@@ -311,7 +310,7 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addHUStatusToInclude(String huStatus);
 
 	IHUQueryBuilder addHUStatusesToInclude(Collection<String> huStatuses);
-	
+
 	/**
 	 * Adds an HU Status that shall be excluded. So all HUs which have that status will be excluded.
 	 * <p>
@@ -372,14 +371,14 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Filter only those HUs which have <code>attributeName</code> and it's value is not null.
-	 * 
+	 *
 	 * @param attributeName
 	 */
 	IHUQueryBuilder addOnlyWithAttributeNotNull(String attributeName);
 
 	/**
 	 * Filter only those HUs which does not have <code>attributeName</code> or it's value is null.
-	 * 
+	 *
 	 * @param attributeName
 	 */
 	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);

@@ -35,7 +35,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component
+@Component("de.metas.order.grossprofit.interceptor.C_OrderLine")
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine
 {

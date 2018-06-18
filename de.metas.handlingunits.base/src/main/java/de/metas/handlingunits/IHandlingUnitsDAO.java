@@ -37,6 +37,7 @@ import org.adempiere.util.ISingletonService;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -295,11 +296,11 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU> retrieveVirtualHUs(I_M_HU_Item itemMaterial);
 
-	List<I_M_HU> retrieveHUsForWarehouse(Properties ctx, int warehouseId, String trxName);
+	List<I_M_HU> retrieveHUsForWarehouse(Properties ctx, WarehouseId warehouseId, String trxName);
 
-	List<I_M_HU> retrieveHUsForWarehouses(Properties ctx, Collection<Integer> warehouseIds, String trxName);
+	List<I_M_HU> retrieveHUsForWarehouses(Properties ctx, Collection<WarehouseId> warehouseIds, String trxName);
 
-	List<I_M_HU> retrieveHUsForWarehousesAndProductId(Properties ctx, Collection<Integer> warehouseIds, int productId, String trxName);
+	List<I_M_HU> retrieveHUsForWarehousesAndProductId(Properties ctx, Collection<WarehouseId> warehouseIds, int productId, String trxName);
 
 	IHUQueryBuilder createHUQueryBuilder();
 
