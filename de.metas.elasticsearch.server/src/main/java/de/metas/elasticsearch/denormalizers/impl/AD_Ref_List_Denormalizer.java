@@ -33,7 +33,7 @@ import de.metas.elasticsearch.types.ESIndexType;
  * #L%
  */
 
-public final class AD_Ref_List_Denormalizer implements IESDenormalizer
+final class AD_Ref_List_Denormalizer implements IESDenormalizer
 {
 	public static final AD_Ref_List_Denormalizer of(final int AD_Reference_ID)
 	{

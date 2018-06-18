@@ -31,7 +31,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public final class PassThroughDenormalizer implements IESDenormalizer
+final class PassThroughDenormalizer implements IESDenormalizer
 {
 	public static final PassThroughDenormalizer of(final ESDataType dataType, final ESIndexType indexType)
 	{

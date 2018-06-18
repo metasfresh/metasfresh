@@ -238,7 +238,9 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 	@lombok.Value(staticConstructor = "of")
 	private static final class ESModelDenormalizerKey
 	{
+		@lombok.NonNull
 		final ESModelIndexerProfile profile;
+		@lombok.NonNull
 		final String modelTableName;
 	}
 }

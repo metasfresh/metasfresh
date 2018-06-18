@@ -38,7 +38,7 @@ import de.metas.elasticsearch.types.ESIndexType;
  * #L%
  */
 
-public final class DateDenormalizer implements IESDenormalizer
+final class DateDenormalizer implements IESDenormalizer
 {
 	public static final DateDenormalizer of(final int dateDisplayType, final ESIndexType indexType)
 	{

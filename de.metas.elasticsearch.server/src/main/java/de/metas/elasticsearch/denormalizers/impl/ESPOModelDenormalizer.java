@@ -164,12 +164,12 @@ import lombok.NonNull;
 	}
 
 	@FunctionalInterface
-	private static interface IESValueExtractor
+	private static interface IESModelValueExtractor
 	{
 		Object extractValue(Object model, String columnName);
 	}
 
-	private static final class PORawValueExtractor implements IESValueExtractor
+	private static final class PORawValueExtractor implements IESModelValueExtractor
 	{
 		public static final transient PORawValueExtractor instance = new PORawValueExtractor();
 
@@ -187,7 +187,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private static final class POModelValueExtractor implements IESValueExtractor
+	private static final class POModelValueExtractor implements IESModelValueExtractor
 	{
 		public static final POModelValueExtractor of(final String modelValueTableName)
 		{
@@ -233,7 +233,7 @@ import lombok.NonNull;
 		private final Set<String> columnsToAlwaysInclude = new HashSet<>();
 		private final Set<String> columnsToInclude = new HashSet<>();
 		private final Set<String> columnsToExclude = new HashSet<>();
-		private final Map<String, ESModelDenormalizerColumn> columnDenormalizers = new HashMap<>();
+		private final Map<String, ESModelDenormalizerColumn> columnDenormalizersByColumnName = new HashMap<>();
 		private final Map<String, ESIndexType> columnsIndexType = new HashMap<>();
 
 		private String currentColumnName;
@@ -261,7 +261,7 @@ import lombok.NonNull;
 			//
 			// Add registered denormalizers
 			final Map<String, ESModelDenormalizerColumn> columnDenormalizersEffective = new HashMap<>();
-			for (final Map.Entry<String, ESModelDenormalizerColumn> entry : columnDenormalizers.entrySet())
+			for (final Map.Entry<String, ESModelDenormalizerColumn> entry : columnDenormalizersByColumnName.entrySet())
 			{
 				final String columnName = entry.getKey();
 				if (!isIncludeColumn(columnName))
@@ -410,11 +410,11 @@ import lombok.NonNull;
 			return true;
 		}
 
-		public ESPOModelDenormalizerBuilder includeColumn(final String columnName, final IESValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
+		private ESPOModelDenormalizerBuilder includeColumn(final String columnName, final IESModelValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
 		{
 			final ESModelDenormalizerColumn valueExtractorAndDenormalizer = ESModelDenormalizerColumn.of(valueExtractor, valueDenormalizer);
 			includeColumn(columnName);
-			columnDenormalizers.put(columnName, valueExtractorAndDenormalizer);
+			columnDenormalizersByColumnName.put(columnName, valueExtractorAndDenormalizer);
 			return this;
 		}
 
@@ -457,7 +457,7 @@ import lombok.NonNull;
 
 	private static final class ESModelDenormalizerColumn
 	{
-		public static final ESModelDenormalizerColumn of(final IESValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
+		public static final ESModelDenormalizerColumn of(final IESModelValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
 		{
 			return new ESModelDenormalizerColumn(valueExtractor, valueDenormalizer);
 		}
@@ -465,7 +465,7 @@ import lombok.NonNull;
 		public static final ESModelDenormalizerColumn of(final IESModelDenormalizer valueModelDenormalizer)
 		{
 			final String valueModelTableName = valueModelDenormalizer.getModelTableName();
-			final IESValueExtractor valueExtractor = POModelValueExtractor.of(valueModelTableName);
+			final IESModelValueExtractor valueExtractor = POModelValueExtractor.of(valueModelTableName);
 			return new ESModelDenormalizerColumn(valueExtractor, valueModelDenormalizer);
 		}
 
@@ -480,10 +480,10 @@ import lombok.NonNull;
 			return new ESModelDenormalizerColumn(PORawValueExtractor.instance, valueDenormalizer);
 		}
 
-		private final IESValueExtractor valueExtractor;
+		private final IESModelValueExtractor valueExtractor;
 		private final IESDenormalizer valueDenormalizer;
 
-		private ESModelDenormalizerColumn(final IESValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
+		private ESModelDenormalizerColumn(final IESModelValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
 		{
 			super();
 
