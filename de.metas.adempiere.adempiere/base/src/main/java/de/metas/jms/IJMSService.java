@@ -49,16 +49,8 @@ public interface IJMSService extends ISingletonService
 	String getJmsURL(CConnection cConnection);
 
 	/**
-	 * Start a local JMS broker. Used when a client is run in "embedded-server-mode" or when a metasfresh-server is not accompanied by an ESR server.<br>
-	 * Check if there is already a local JMS broker to which we can connect, and don't attempt creating another one if that is the case.
-	 * <p>
-	 * Note: this method is thread-safe. Only the first invocation will start a broker. Consecutive invocations will have no effect.
-	 */
-	void startEmbeddedBroker();
-
-	/**
 	 * Updates the JMS configuration.
-	 * 
+	 *
 	 * NOTE: this method will just update the configuration and will not start new services. If for example the embedded broker is not start, this method won't start it.
 	 */
 	void updateConfiguration();
