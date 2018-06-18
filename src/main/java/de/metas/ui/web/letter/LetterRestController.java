@@ -10,8 +10,6 @@ import java.util.function.UnaryOperator;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.UserId;
 import org.adempiere.util.Services;
@@ -33,6 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.impl.PlainDocumentLocation;
 import de.metas.i18n.IMsgBL;

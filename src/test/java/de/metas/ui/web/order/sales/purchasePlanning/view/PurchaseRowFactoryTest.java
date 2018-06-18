@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -26,6 +25,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.money.Currency;
 import de.metas.money.Money;
