@@ -29,9 +29,9 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
 
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.bpartner.service.IBPartnerBL;
 
 @Validator(I_C_BPartner_Location.class)

@@ -41,6 +41,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
@@ -53,7 +54,6 @@ import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;

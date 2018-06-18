@@ -14,12 +14,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;

@@ -31,7 +31,6 @@ import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;

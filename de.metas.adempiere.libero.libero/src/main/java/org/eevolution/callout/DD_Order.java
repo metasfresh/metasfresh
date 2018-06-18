@@ -8,12 +8,12 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.CalloutInOut;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_Order;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
