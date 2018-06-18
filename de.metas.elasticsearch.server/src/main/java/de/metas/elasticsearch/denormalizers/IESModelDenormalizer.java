@@ -3,6 +3,8 @@ package de.metas.elasticsearch.denormalizers;
 import java.io.IOException;
 import java.util.Map;
 
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
+
 /*
  * #%L
  * de.metas.business
@@ -32,6 +34,8 @@ public interface IESModelDenormalizer extends IESDenormalizer
 
 	@Override
 	void appendMapping(Object builderObj, String fieldName) throws IOException;
+	
+	ESModelIndexerProfile getProfile();
 
 	/**
 	 * @return model's table name this denormalizer supports

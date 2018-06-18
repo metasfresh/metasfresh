@@ -44,4 +44,6 @@ public interface IESModelIndexersRegistry extends ISingletonService
 	 */
 	Collection<IESModelIndexer> getModelIndexersByTableName(String modelTableName);
 
+	boolean hasFullTextSearchSupport(String modelTableName);
+
 }
