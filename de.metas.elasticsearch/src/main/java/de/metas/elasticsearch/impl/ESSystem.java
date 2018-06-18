@@ -1,6 +1,5 @@
 package de.metas.elasticsearch.impl;
 
-import java.util.Set;
 import java.util.function.Consumer;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -13,7 +12,6 @@ import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Sets;
 
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
@@ -54,8 +52,6 @@ public class ESSystem implements IESSystem
 
 	private static final String SYSCONFIG_Enabled = "de.metas.elasticsearch.PostKpiEvents";
 	private static final boolean SYSCONFIG_Enabled_Default = true;
-
-	private final Set<String> modelTableNamesWithFullTextSearchSupport = Sets.newConcurrentHashSet();
 
 	@Override
 	public boolean isEnabled()
@@ -112,11 +108,6 @@ public class ESSystem implements IESSystem
 			trigger.install();
 			logger.info("Installed trigger: {}", trigger);
 		}
-
-		if (ESModelIndexerProfile.FULL_TEXT_SEARCH.equals(config.getProfile()))
-		{
-			modelTableNamesWithFullTextSearchSupport.add(config.getModelTableName());
-		}
 	}
 
 	private final Supplier<IESServer> serverSupplier = Suppliers.memoize(() -> findESServer());
@@ -154,11 +145,5 @@ public class ESSystem implements IESSystem
 	public IESModelIndexingScheduler scheduler()
 	{
 		return Services.get(IESModelIndexingScheduler.class);
-	}
-
-	@Override
-	public boolean hasFullTextSearchSupport(final String modelTableName)
-	{
-		return modelTableNamesWithFullTextSearchSupport.contains(modelTableName);
 	}
 }

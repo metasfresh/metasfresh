@@ -10,11 +10,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
+import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -39,14 +42,13 @@ import lombok.NonNull;
  * #L%
  */
 
-/* package */final class ESModelIndexerBuilder
+final class ESModelIndexerBuilder
 {
 	private final ESModelIndexersRegistry esModelIndexingService;
 
-	private final String id;
-	private final ESModelIndexerProfile profile;
-	private final String indexName;
-	private final String indexType;
+	@Getter(AccessLevel.PACKAGE)
+	private final ESModelIndexerId id;
+
 	private final String modelTableName;
 
 	private IESModelDenormalizer _modelDenormalizer; // lazy
@@ -60,9 +62,6 @@ import lombok.NonNull;
 		this.esModelIndexingService = esModelIndexingService;
 
 		id = config.getId();
-		profile = config.getProfile();
-		indexName = config.getIndexName();
-		indexType = config.getIndexType();
 		modelTableName = config.getModelTableName();
 		triggers = ImmutableList.copyOf(config.getTriggers());
 	}
@@ -82,14 +81,9 @@ import lombok.NonNull;
 		return esModelIndexingService.getJsonObjectMapper();
 	}
 
-	/* package */String getId()
-	{
-		return id;
-	}
-
 	public ESModelIndexerProfile getProfile()
 	{
-		return profile;
+		return getId().getProfile();
 	}
 
 	public String getModelTableName()
@@ -112,18 +106,7 @@ import lombok.NonNull;
 		return _modelDenormalizer;
 	}
 
-	String getIndexName()
-	{
-		// note: we assume is not null at this point
-		return indexName;
-	}
-
-	String getIndexType()
-	{
-		return indexType;
-	}
-
-	/* package */List<IESModelIndexerTrigger> getTriggers()
+	List<IESModelIndexerTrigger> getTriggers()
 	{
 		return triggers;
 	}

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 
@@ -31,7 +32,7 @@ import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 
 public interface IESModelIndexer
 {
-	String getId();
+	ESModelIndexerId getId();
 
 	ESModelIndexerProfile getProfile();
 

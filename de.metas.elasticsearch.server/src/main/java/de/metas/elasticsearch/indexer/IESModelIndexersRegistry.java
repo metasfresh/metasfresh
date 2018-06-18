@@ -1,10 +1,12 @@
 package de.metas.elasticsearch.indexer;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import org.adempiere.util.ISingletonService;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
+import de.metas.elasticsearch.config.ESModelIndexerId;
 
 /*
  * #%L
@@ -19,11 +21,11 @@ import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,12 +33,12 @@ import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 public interface IESModelIndexersRegistry extends ISingletonService
 {
 	void addModelIndexer(ESModelIndexerConfigBuilder config);
-	
+
 	/**
 	 * @param modelIndexerId
 	 * @return model indexer; never returns null
 	 */
-	IESModelIndexer getModelIndexerById(String modelIndexerId);
+	IESModelIndexer getModelIndexerById(ESModelIndexerId modelIndexerId);
 
 	/**
 	 * @param modelTableName
@@ -44,6 +46,5 @@ public interface IESModelIndexersRegistry extends ISingletonService
 	 */
 	Collection<IESModelIndexer> getModelIndexersByTableName(String modelTableName);
 
-	boolean hasFullTextSearchSupport(String modelTableName);
-
+	Optional<IESModelIndexer> getFullTextSearchModelIndexer(String modelTableName);
 }

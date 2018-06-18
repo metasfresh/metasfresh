@@ -3,13 +3,13 @@ package de.metas.elasticsearch.scheduler.async;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.elasticsearch.scheduler.impl.ESModelIndexingScheduler;
@@ -27,11 +27,11 @@ import de.metas.elasticsearch.scheduler.impl.ESModelIndexingScheduler;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,8 +43,7 @@ public class AsyncAddToIndexProcessor extends WorkpackageProcessorAdapter
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final String modelIndexerId = getParameters().getParameterAsString(PARAMETERNAME_ModelIndexerId);
-		Check.assumeNotEmpty(modelIndexerId, "modelIndexerId is not empty");
+		final ESModelIndexerId modelIndexerId = ESModelIndexerId.fromJson(getParameters().getParameterAsString(PARAMETERNAME_ModelIndexerId));
 
 		final List<Object> modelsToIndex = retrieveItems(Object.class);
 		if (modelsToIndex.isEmpty())
