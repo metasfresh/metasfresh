@@ -65,7 +65,7 @@ public class AsyncRemoveFromIndexProcessor extends WorkpackageProcessorAdapter
 
 			Loggables.get().addLog(result.getSummary());
 
-			result.throwExceceptionIfAnyFailure();
+			result.throwExceptionIfAnyFailure();
 
 			return Result.SUCCESS;
 		}

@@ -127,7 +127,7 @@ import de.metas.elasticsearch.indexer.IESIndexerResult;
 	}
 
 	@Override
-	public void throwExceceptionIfAnyFailure()
+	public void throwExceptionIfAnyFailure()
 	{
 		if (hasFailures())
 		{
