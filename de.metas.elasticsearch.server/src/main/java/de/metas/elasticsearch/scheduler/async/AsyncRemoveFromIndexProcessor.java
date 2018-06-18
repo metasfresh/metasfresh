@@ -12,6 +12,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
+import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.elasticsearch.scheduler.impl.ESModelIndexingScheduler;
 
@@ -59,12 +60,11 @@ public class AsyncRemoveFromIndexProcessor extends WorkpackageProcessorAdapter
 
 		try
 		{
-			final IESIndexerResult result = Services.get(IESModelIndexersRegistry.class)
-					.getModelIndexerById(modelIndexerId)
-					.removeFromIndexByIds(idsToRemove);
+			final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
+			final IESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
 
+			final IESIndexerResult result = modelIndexer.removeFromIndexByIds(idsToRemove);
 			Loggables.get().addLog(result.getSummary());
-
 			result.throwExceptionIfAnyFailure();
 
 			return Result.SUCCESS;
