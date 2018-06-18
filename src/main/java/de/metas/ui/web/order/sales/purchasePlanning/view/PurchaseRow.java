@@ -84,7 +84,9 @@ public final class PurchaseRow implements IViewRow
 	//
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 10)
 	private final LookupValue product;
-	@ViewColumn(captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 15)
+
+	/** TODO: show it if/when it's needed and QAed*/
+	// @ViewColumn(captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 15)
 	private final LookupValue attributeSetInstance;
 
 	@ViewColumn(captionKey = "Vendor_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 20)
@@ -173,7 +175,7 @@ public final class PurchaseRow implements IViewRow
 		purchaseNetPrice = null;
 		profitPercent = null;
 
-		datePromised = demand.getSalesDatePromised();
+		datePromised = demand.getSalesPreparationDate();
 
 		readonly = true;
 

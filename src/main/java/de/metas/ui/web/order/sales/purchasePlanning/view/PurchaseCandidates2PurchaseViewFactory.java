@@ -95,8 +95,7 @@ public class PurchaseCandidates2PurchaseViewFactory extends PurchaseViewFactoryT
 				//
 				.qtyToDeliver(aggregate.getQtyToDeliver())
 				//
-				.salesDatePromised(aggregate.getDatePromised())
-				.preparationDateOrNull(aggregate.getPreparationDate())
+				.salesPreparationDate(aggregate.getDatePromised())
 				//
 				.build();
 	}
