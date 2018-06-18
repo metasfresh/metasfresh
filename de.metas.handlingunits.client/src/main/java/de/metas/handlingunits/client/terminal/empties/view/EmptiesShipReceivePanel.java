@@ -38,7 +38,7 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.ITerminalLookupField;
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.handlingunits.client.terminal.empties.model.EmptiesShipReceiveModel;
 import de.metas.handlingunits.client.terminal.empties.model.EmptiesShipReceiveModel.BPartnerReturnType;
 import de.metas.handlingunits.client.terminal.mmovement.view.impl.AbstractLTCUPanel;

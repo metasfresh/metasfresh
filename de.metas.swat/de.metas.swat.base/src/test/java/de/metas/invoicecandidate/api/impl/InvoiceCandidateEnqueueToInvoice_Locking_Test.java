@@ -25,13 +25,13 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.List;
 
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import org.adempiere.util.Services;
 import org.junit.Before;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**

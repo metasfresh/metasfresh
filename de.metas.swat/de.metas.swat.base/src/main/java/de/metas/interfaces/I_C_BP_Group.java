@@ -24,7 +24,7 @@ package de.metas.interfaces;
 
 
 
-public interface I_C_BP_Group extends de.metas.adempiere.model.I_C_BP_Group
+public interface I_C_BP_Group extends de.metas.bpartner.model.I_C_BP_Group
 {
 	/** PaymentRule AD_Reference_ID=195 */
 	public static final int PAYMENTRULE_AD_Reference_ID=195;

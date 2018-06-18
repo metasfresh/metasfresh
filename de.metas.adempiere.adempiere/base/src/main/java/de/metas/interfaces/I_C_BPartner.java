@@ -6,8 +6,8 @@ package de.metas.interfaces;
 import org.compiere.model.I_M_PricingSystem;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_BP_Group;
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.model.I_C_BP_Group;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 
 public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 {

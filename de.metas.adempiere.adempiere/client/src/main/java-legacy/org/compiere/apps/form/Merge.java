@@ -17,8 +17,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -30,6 +28,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.logging.LogManager;
 
 public class Merge

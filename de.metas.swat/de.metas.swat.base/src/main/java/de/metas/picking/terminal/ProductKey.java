@@ -44,8 +44,8 @@ import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_POSKey;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.terminal.Utils.PackingStates;
 

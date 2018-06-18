@@ -10,13 +10,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Currency;
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;

@@ -43,7 +43,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.i18n.IMsgBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;

@@ -2,7 +2,6 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
@@ -11,6 +10,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;

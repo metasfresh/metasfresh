@@ -34,7 +34,7 @@ import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_BP_Group;
+import de.metas.bpartner.model.I_C_BP_Group;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.model.I_C_Dunning_Candidate;

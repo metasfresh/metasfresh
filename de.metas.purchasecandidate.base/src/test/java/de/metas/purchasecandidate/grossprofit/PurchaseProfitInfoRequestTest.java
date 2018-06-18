@@ -4,13 +4,13 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.purchasecandidate.VendorProductInfo;

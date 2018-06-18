@@ -60,7 +60,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateDAO;

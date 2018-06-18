@@ -26,8 +26,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -39,6 +37,8 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;

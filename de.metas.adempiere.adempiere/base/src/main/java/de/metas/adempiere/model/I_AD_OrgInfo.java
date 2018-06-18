@@ -28,6 +28,8 @@ package de.metas.adempiere.model;
 
 import org.compiere.model.I_M_PricingSystem;
 
+import de.metas.bpartner.model.I_C_BPartner_Location;
+
 /**
  * @author tsa
  * 
