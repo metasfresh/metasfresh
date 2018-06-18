@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
@@ -19,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.Money;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.ProductId;

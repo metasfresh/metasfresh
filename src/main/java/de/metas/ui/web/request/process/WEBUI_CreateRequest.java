@@ -3,7 +3,6 @@ package de.metas.ui.web.request.process;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -12,6 +11,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_Request;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.RunOutOfTrx;

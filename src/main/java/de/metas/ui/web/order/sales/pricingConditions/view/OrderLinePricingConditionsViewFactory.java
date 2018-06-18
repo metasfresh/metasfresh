@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -14,6 +13,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeInstance;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
