@@ -144,8 +144,7 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 				//
 				.currencyOrNull(salesOrderLine.getPriceActual().getCurrency())
 				//
-				.salesDatePromised(salesOrderLine.getDatePromised())
-				.preparationDateOrNull(salesOrderLine.getPreparationDate())
+				.salesPreparationDate(salesOrderLine.getPreparationDate())
 				//
 				.salesOrderAndLineIdOrNull(salesOrderLine.getId())
 				//

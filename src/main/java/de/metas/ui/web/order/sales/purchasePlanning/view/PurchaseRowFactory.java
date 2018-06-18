@@ -125,7 +125,7 @@ public class PurchaseRowFactory
 
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(productId.getRepoId())
-				.date(demand.getPreparationDateOrNull())
+				.date(demand.getSalesPreparationDate())
 				.storageAttributesKey(AttributesKeys
 						.createAttributesKeyFromASIStorageAttributes(demand.getAttributeSetInstanceId().getRepoId())
 						.orElse(AttributesKey.ALL))
