@@ -1,0 +1,92 @@
+package de.metas.elasticsearch.denormalizers.impl;
+
+import java.io.IOException;
+
+import org.adempiere.util.Check;
+import org.compiere.model.PO;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+
+import de.metas.elasticsearch.denormalizers.IESDenormalizer;
+import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
+import de.metas.elasticsearch.types.ESDataType;
+import de.metas.elasticsearch.types.ESIndexType;
+
+/*
+ * #%L
+ * de.metas.elasticsearch.server
+ * %%
+ * Copyright (C) 2018 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+final class ESModelDenormalizerColumn
+{
+	public static final ESModelDenormalizerColumn of(final IESModelValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
+	{
+		return new ESModelDenormalizerColumn(valueExtractor, valueDenormalizer);
+	}
+
+	public static final ESModelDenormalizerColumn of(final IESModelDenormalizer valueModelDenormalizer)
+	{
+		final String valueModelTableName = valueModelDenormalizer.getModelTableName();
+		final IESModelValueExtractor valueExtractor = POModelValueExtractor.of(valueModelTableName);
+		return new ESModelDenormalizerColumn(valueExtractor, valueModelDenormalizer);
+	}
+
+	public static final ESModelDenormalizerColumn passThrough(final ESDataType dataType, final ESIndexType indexType)
+	{
+		final PassThroughDenormalizer valueDenormalizer = PassThroughDenormalizer.of(dataType, indexType);
+		return new ESModelDenormalizerColumn(PORawValueExtractor.instance, valueDenormalizer);
+	}
+
+	public static final ESModelDenormalizerColumn rawValue(final IESDenormalizer valueDenormalizer)
+	{
+		return new ESModelDenormalizerColumn(PORawValueExtractor.instance, valueDenormalizer);
+	}
+
+	private final IESModelValueExtractor valueExtractor;
+	private final IESDenormalizer valueDenormalizer;
+
+	private ESModelDenormalizerColumn(final IESModelValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
+	{
+		super();
+
+		Check.assumeNotNull(valueExtractor, "Parameter valueExtractor is not null");
+		this.valueExtractor = valueExtractor;
+
+		Check.assumeNotNull(valueDenormalizer, "Parameter valueDenormalizer is not null");
+		this.valueDenormalizer = valueDenormalizer;
+	}
+
+	public Object extractValueAndDenormalize(final PO po, final String columnName)
+	{
+		final Object value = valueExtractor.extractValue(po, columnName);
+		if (value == null)
+		{
+			return null;
+		}
+
+		final Object valueDenorm = valueDenormalizer.denormalize(value);
+		return valueDenorm;
+	}
+
+	public void appendMapping(final XContentBuilder builder, final String columnName) throws IOException
+	{
+		valueDenormalizer.appendMapping(builder, columnName);
+	}
+}

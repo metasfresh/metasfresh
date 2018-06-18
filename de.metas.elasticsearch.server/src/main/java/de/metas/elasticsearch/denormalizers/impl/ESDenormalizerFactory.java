@@ -224,13 +224,13 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		valueModelDenormalizers.put(key, valueModelDenormalizer);
 	}
 
-	private ESPOModelDenormalizer.ESPOModelDenormalizerBuilder newModelDenormalizerBuilder(final ESModelIndexerProfile profile, final Class<?> modelClass)
+	private ESPOModelDenormalizerBuilder newModelDenormalizerBuilder(final ESModelIndexerProfile profile, final Class<?> modelClass)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		return newModelDenormalizerBuilder(profile, tableName);
 	}
 
-	private ESPOModelDenormalizer.ESPOModelDenormalizerBuilder newModelDenormalizerBuilder(final ESModelIndexerProfile profile, final String tableName)
+	private ESPOModelDenormalizerBuilder newModelDenormalizerBuilder(final ESModelIndexerProfile profile, final String tableName)
 	{
 		return ESPOModelDenormalizer.builder(this, profile, tableName);
 	}
