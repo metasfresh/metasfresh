@@ -13,7 +13,9 @@ Here come the actual release notes:
 ## Features
   * [#4242](https://github.com/metasfresh/metasfresh/issues/4242) WebUI: Window Event Log
     * New Window event log added to WebUI Menu.
-    
+  * [#4244](https://github.com/metasfresh/metasfresh/issues/4244) Purchase Candidates adjustments
+    * Window Improvements for Purchase Candidates in WebUI.
+
 
 # metasfresh 5.62 (2018-25)
 ## Features
