@@ -14,10 +14,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.BPartnerType;
-import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
@@ -28,6 +24,10 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerType;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;

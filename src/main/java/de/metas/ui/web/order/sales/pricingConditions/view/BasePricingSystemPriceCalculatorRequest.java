@@ -1,7 +1,6 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
-import org.adempiere.bpartner.BPartnerId;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 
 /*

@@ -5,8 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -15,6 +13,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
