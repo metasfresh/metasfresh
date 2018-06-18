@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.ui.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -30,6 +29,7 @@ import java.sql.ResultSet;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
@@ -71,7 +71,7 @@ public class C_Invoice_Candidate_GridTabSummaryInfoProvider implements IGridTabS
 
 	private final InvoiceCandidatesSelectionSummaryInfo getInvoiceCandidatesSelectionSummary(final String icWhereClause)
 	{
-		// NOTE: we chose to do it with hard-coded SQL because the have little time to implement it better and maintain the performance, because this method is called very frequently.
+		// NOTE: we choose to do it with hard-coded SQL because the have little time to implement it better and maintain the performance, because this method is called very frequently.
 		// NOTE2: before changing to a more Java approach, you should check and improve how this method is called
 		// and somehow to tell to API to not call it each time the current grid tab record is navigated up/down
 
@@ -111,29 +111,33 @@ public class C_Invoice_Candidate_GridTabSummaryInfoProvider implements IGridTabS
 		sql.append(" FROM "
 				+ I_C_Invoice_Candidate.Table_Name);
 		sql.append(" WHERE ");
-		sql.append(" 1 = 1 ");
-		if (icWhereClause != null)
+		sql.append("(" + I_C_Invoice_Candidate.COLUMNNAME_Processed + " = 'N')"); // avoid bad perf problems when no filter-whereclause was given
+
+		if (Check.isEmpty(icWhereClause))
+		{
+			// we might have deactivated candidates on individual DBs after support cases/fixes
+			sql.append(" AND (" + I_C_Invoice_Candidate.COLUMNNAME_IsActive + " = 'Y')");
+		}
+		else
 		{
 			sql.append(" AND (").append(icWhereClause).append(")");
 		}
-		
+
 		// FRESH-580
 		// Apply the default filter to the SQL
-		
 		final String sqlDefaultFilter = Services.get(IInvoiceCandDAO.class).getSQLDefaultFilter(Env.getCtx());
-		
-		if(!sqlDefaultFilter.isEmpty())
+
+		if (!sqlDefaultFilter.isEmpty())
 		{
 			sql.append(" AND (").append(sqlDefaultFilter).append(")");
 		}
-		
+
 		sql.append(" GROUP BY "
 				+ I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing
 				+ ", "
 				+ I_C_Currency.COLUMNNAME_CurSymbol
 				+ ", "
-				+ I_C_Invoice_Candidate.COLUMNNAME_IsToRecompute
-				);
+				+ I_C_Invoice_Candidate.COLUMNNAME_IsToRecompute);
 
 		final Builder summaryBuilder = InvoiceCandidatesSelectionSummaryInfo.builder();
 

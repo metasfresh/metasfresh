@@ -60,7 +60,7 @@ public class LetterRepository
 			letterRecord = load(letter.getId().getRepoId(), I_C_Letter.class);
 		}
 
-		letterRecord.setAD_BoilerPlate_ID(letter.getBoilerPlateId().getRepoId());
+		letterRecord.setAD_BoilerPlate_ID(letter.getBoilerPlateId() == null ? -1 : letter.getBoilerPlateId().getRepoId());
 		letterRecord.setLetterSubject(letter.getSubject());
 		letterRecord.setLetterBody(letter.getBody());
 		letterRecord.setLetterBodyParsed(letter.getBodyParsed());

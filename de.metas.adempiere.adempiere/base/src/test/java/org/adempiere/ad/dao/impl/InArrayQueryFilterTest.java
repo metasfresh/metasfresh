@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,6 +32,9 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.lang.RepoIdAware;
+import lombok.Value;
+
 public class InArrayQueryFilterTest
 {
 	private final Properties ctx = null; // Context is not used in InArrayQueryFilter
@@ -42,7 +45,7 @@ public class InArrayQueryFilterTest
 		final String columnName = null;
 
 		// Expect exception:
-		new InArrayQueryFilter<Object>(columnName, Collections.emptyList());
+		new InArrayQueryFilter<>(columnName, Collections.emptyList());
 	}
 
 	@Test
@@ -94,6 +97,28 @@ public class InArrayQueryFilterTest
 				// Expected output
 				"MyColumnName IS NULL",
 				Collections.emptyList());
+
+		assertFilter(
+				// Input
+				"MyColumnName",
+				Arrays.<Object> asList(null, null, null, null),
+				// Expected output
+				"MyColumnName IS NULL",
+				Collections.emptyList());
+
+		assertFilter(
+				// Input
+				"MyColumnName",
+				Arrays.<Object> asList("Value1", new RepoId(30), "Value2", null),
+				// Expected output
+				"(MyColumnName IN (?,?,?) OR MyColumnName IS NULL)",
+				Arrays.<Object> asList("Value1", 30, "Value2"));
+	}
+
+	@Value
+	private static final class RepoId implements RepoIdAware
+	{
+		int repoId;
 	}
 
 	/**
@@ -103,7 +128,7 @@ public class InArrayQueryFilterTest
 	public void test_DefaultReturnWhenEmpty_Is_True()
 	{
 		final String columnName = "MyColumnName";
-		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<Object>(columnName, Collections.emptyList());
+		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<>(columnName, Collections.emptyList());
 
 		Assert.assertEquals("Invalid DefaultReturnWhenEmpty default", true, filter.isDefaultReturnWhenEmpty());
 
@@ -114,7 +139,7 @@ public class InArrayQueryFilterTest
 	{
 		assertDefaultReturnWhenEmpty(true, null);
 		assertDefaultReturnWhenEmpty(true, Collections.emptyList());
-		assertDefaultReturnWhenEmpty(true, new ArrayList<Object>());
+		assertDefaultReturnWhenEmpty(true, new ArrayList<>());
 	}
 
 	@Test
@@ -122,27 +147,28 @@ public class InArrayQueryFilterTest
 	{
 		assertDefaultReturnWhenEmpty(false, null);
 		assertDefaultReturnWhenEmpty(false, Collections.emptyList());
-		assertDefaultReturnWhenEmpty(false, new ArrayList<Object>());
+		assertDefaultReturnWhenEmpty(false, new ArrayList<>());
 	}
-	
+
 	private void assertDefaultReturnWhenEmpty(final boolean defaultReturnWhenEmpty, final List<Object> params)
 	{
 		final String columnName = "MyColumnName";
 		final String sqlExpected = defaultReturnWhenEmpty ? InArrayQueryFilter.SQL_TRUE : InArrayQueryFilter.SQL_FALSE;
 		final List<Object> sqlParamsExpected = Collections.emptyList();
 
-		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<Object>(columnName, params);
+		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<>(columnName, params);
 		filter.setDefaultReturnWhenEmpty(defaultReturnWhenEmpty);
 
 		Assert.assertEquals("Invalid build SQL: " + filter, sqlExpected, filter.getSql());
 		Assert.assertEquals("Invalid build SQL Params: " + filter, sqlParamsExpected, filter.getSqlParams(ctx));
 	}
 
-	private void assertFilter(final String columnName, final List<Object> values,
+	private void assertFilter(final String columnName,
+			final List<Object> values,
 			final String sqlExpected,
 			final List<Object> sqlParamsExpected)
 	{
-		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<Object>(columnName, values);
+		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<>(columnName, values);
 		assertFilter(filter, sqlExpected, sqlParamsExpected);
 	}
 

@@ -72,7 +72,6 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 
 	public MapReduceAggregator()
 	{
-		super();
 		this._configurable = true;
 
 		setGroupsBufferSize(DEFAULT_BufferSize);

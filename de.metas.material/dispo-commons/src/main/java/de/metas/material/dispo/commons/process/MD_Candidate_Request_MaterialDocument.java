@@ -47,12 +47,15 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 {
 	private static final String MSG_MISSING_PRODUCTION_OR_DISTRIBUTRION_RECORDS = "de.metas.material.dispo.MD_Candidate_Request_MaterialDocument_No_Matching_Records_Selected";
 
-	private final Predicate<I_MD_Candidate> subTypeIsProductionOrdistribution = r -> {
+	private final RequestMaterialOrderService service = Adempiere.getBean(RequestMaterialOrderService.class);
+
+	private final Predicate<I_MD_Candidate> hasSupportedBusinessCase = r -> {
 
 		final String businessCase = r.getMD_Candidate_BusinessCase();
 
 		return X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION.equals(businessCase)
-				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION.equals(businessCase);
+				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION.equals(businessCase)
+				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE.equals(businessCase);
 	};
 
 	private final Predicate<I_MD_Candidate> statusIsDocPlanned = r -> {
@@ -66,21 +69,18 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 	protected String doIt() throws Exception
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final RequestMaterialOrderService service = Adempiere.getBean(RequestMaterialOrderService.class);
 
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(getProcessInfo().getQueryFilter())
 				.create().list()
 				.stream()
-				.filter(subTypeIsProductionOrdistribution)
+				.filter(hasSupportedBusinessCase)
 				.filter(statusIsDocPlanned)
 				.map(r -> r.getMD_Candidate_GroupId())
 				.distinct()
 				.peek(groupId -> addLog("Calling {}.requestOrder() for groupId={}", RequestMaterialOrderService.class.getSimpleName(), groupId))
-				.forEach(groupId -> {
-					service.requestMaterialOrder(groupId);
-				});
+				.forEach(service::requestMaterialOrder);
 
 		return MSG_OK;
 	}
@@ -96,7 +96,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 		boolean atLeastOneProperCandidateSelected = false;
 		for (final I_MD_Candidate selectedRecord : context.getSelectedModels(I_MD_Candidate.class))
 		{
-			if (subTypeIsProductionOrdistribution.test(selectedRecord)
+			if (hasSupportedBusinessCase.test(selectedRecord)
 					&& statusIsDocPlanned.test(selectedRecord))
 			{
 				atLeastOneProperCandidateSelected = true;
@@ -109,9 +109,6 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 			final ITranslatableString translatable = msgBL.getTranslatableMsgText(MSG_MISSING_PRODUCTION_OR_DISTRIBUTRION_RECORDS);
 			return ProcessPreconditionsResolution.reject(translatable);
 		}
-
-
-		// todo: also check the candidates' status
 
 		return ProcessPreconditionsResolution.accept();
 	}

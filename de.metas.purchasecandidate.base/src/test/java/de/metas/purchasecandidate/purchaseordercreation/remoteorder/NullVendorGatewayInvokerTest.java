@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
@@ -24,6 +25,7 @@ import de.metas.StartupListener;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
@@ -60,16 +62,18 @@ public class NullVendorGatewayInvokerTest
 	public void placeRemotePurchaseOrder()
 	{
 		final I_C_UOM EACH = createUOM("Ea");
-		
+
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+				.groupReference(DemandGroupReference.createEmpty())
 				.orgId(OrgId.ofRepoId(10))
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.purchaseDatePromised(SystemTime.asLocalDateTime())
 				.vendorId(BPartnerId.ofRepoId(30))
 				.productId(ProductId.ofRepoId(20))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(21))
 				.vendorProductNo("vendorProductNo_20")
 				.qtyToPurchase(Quantity.of(TEN, EACH))
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(40, 50))
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(40, 50))
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();
 
@@ -81,7 +85,7 @@ public class NullVendorGatewayInvokerTest
 		final PurchaseOrderItem purchaseOrderItem = (PurchaseOrderItem)purchaseItems.get(0);
 		assertThat(purchaseOrderItem.getRemotePurchaseOrderId()).isEqualTo(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 	}
-	
+
 	private I_C_UOM createUOM(final String name)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);

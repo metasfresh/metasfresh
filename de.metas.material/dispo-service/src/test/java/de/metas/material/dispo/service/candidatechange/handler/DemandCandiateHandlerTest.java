@@ -26,11 +26,10 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -78,9 +77,6 @@ public class DemandCandiateHandlerTest
 	private DemandCandiateHandler demandCandidateHandler;
 
 	@Mocked
-	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-
-	@Mocked
 	private AvailableToPromiseRepository stockRepository;
 
 	@Before
@@ -88,15 +84,16 @@ public class DemandCandiateHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
-				candidateRepositoryCommands);
+				candidateRepositoryWriteService);
 
 		demandCandidateHandler = new DemandCandiateHandler(
 				candidateRepositoryRetrieval,
-				candidateRepositoryCommands,
+				candidateRepositoryWriteService,
 				postMaterialEventService,
 				stockRepository,
 				stockCandidateService);
@@ -106,7 +103,6 @@ public class DemandCandiateHandlerTest
 	public void onCandidateNewOrChange_no_stock()
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
-		setupRetrieveLatestMatchOrNullAlwaysReturnsNull();
 		setupRepositoryReturnsQuantityForMaterial("-23", candidate.getMaterialDescriptor());
 
 		demandCandidateHandler.onCandidateNewOrChange(candidate);
@@ -130,7 +126,7 @@ public class DemandCandiateHandlerTest
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
 		setupRepositoryReturnsQuantityForMaterial("-13", candidate.getMaterialDescriptor());
-		setupRetrieveLatestMatchOrNullAlwaysReturnsNull();
+		//setupRetrieveLatestMatchOrNullAlwaysReturnsNull();
 
 		demandCandidateHandler.onCandidateNewOrChange(candidate);
 
@@ -150,7 +146,6 @@ public class DemandCandiateHandlerTest
 		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have the smaller value
 	}
 
-
 	private void setupRepositoryReturnsQuantityForMaterial(
 			@NonNull final String quantity,
 			@NonNull final MaterialDescriptor materialDescriptor)
@@ -163,16 +158,6 @@ public class DemandCandiateHandlerTest
 			stockRepository.retrieveAvailableStockQtySum(query);
 			times = 1;
 			result = new BigDecimal(quantity);
-		}}; // @formatter:on
-	}
-
-	private void setupRetrieveLatestMatchOrNullAlwaysReturnsNull()
-	{
-		// @formatter:off
-		new Expectations()
-		{{
-			candidateRepositoryRetrieval.retrieveLatestMatchOrNull((CandidatesQuery)any);
-			result = null;
 		}}; // @formatter:on
 	}
 
@@ -217,7 +202,6 @@ public class DemandCandiateHandlerTest
 	@Test
 	public void decrease_stock()
 	{
-		setupRetrieveLatestMatchOrNullAlwaysReturnsNull();
 		final Candidate candidate = createCandidateWithType(CandidateType.UNRELATED_DECREASE);
 
 		demandCandidateHandler.onCandidateNewOrChange(candidate);

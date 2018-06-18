@@ -16,9 +16,10 @@ import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -150,7 +151,7 @@ public class TransactionCreatedHandlerTests
 
 		final Candidate exisitingCandidate = Candidate.builder()
 				.type(CandidateType.UNRELATED_INCREASE)
-				.id(11)
+				.id(CandidateId.ofRepoId(11))
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
@@ -183,7 +184,7 @@ public class TransactionCreatedHandlerTests
 		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
-		assertThat(candidate.getId()).isEqualTo(11);
+		assertThat(candidate.getId().getRepoId()).isEqualTo(11);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("11");
 		assertThat(candidate.getAdditionalDemandDetail()).isNull();
 		assertThat(candidate.getBusinessCaseDetail()).isNull();
@@ -238,7 +239,7 @@ public class TransactionCreatedHandlerTests
 	public void createCandidate_related_transaction_with_shipmentSchedule()
 	{
 		final Candidate exisitingCandidate = Candidate.builder()
-				.id(11)
+				.id(CandidateId.ofRepoId(11))
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
@@ -280,7 +281,7 @@ public class TransactionCreatedHandlerTests
 				assertDemandDetailQuery(query);
 		}}; // @formatter:on
 
-		assertThat(candidate.getId()).isEqualTo(11);
+		assertThat(candidate.getId().getRepoId()).isEqualTo(11);
 		assertThat(candidate.getType()).isEqualTo(CandidateType.DEMAND);
 		assertThat(candidate.getQuantity())
 				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty that is bigger")

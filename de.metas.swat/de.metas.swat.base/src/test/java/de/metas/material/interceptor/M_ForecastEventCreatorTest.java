@@ -127,12 +127,12 @@ public class M_ForecastEventCreatorTest
 
 		assertThat(forecastLines).anySatisfy(forecastLine -> {
 			verifyEventPojoIsInSyncWithRecord(forecastLine, forecastLine1);
-			assertThat(forecastLine.getMaterialDescriptor().getBPartnerId()).isEqualTo(BPARTNER_ID_OF_FIRST_FORECAST_LINE);
+			assertThat(forecastLine.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID_OF_FIRST_FORECAST_LINE);
 		});
 
 		assertThat(forecastLines).anySatisfy(forecastLine -> {
 			verifyEventPojoIsInSyncWithRecord(forecastLine, forecastLine2);
-			assertThat(forecastLine.getMaterialDescriptor().getBPartnerId())
+			assertThat(forecastLine.getMaterialDescriptor().getCustomerId())
 					.as("The 2nd focrecastLine has no own C_BPartner_ID, the header's ID shall be inherited")
 					.isEqualTo(BPARTNER_ID_OF_FORECAST);
 		});

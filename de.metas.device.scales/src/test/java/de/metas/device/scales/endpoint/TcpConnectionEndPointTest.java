@@ -48,7 +48,7 @@ import de.metas.device.scales.impl.sics.SicsWeighCmdS;
 public class TcpConnectionEndPointTest
 {
 	private static volatile int weight = 100;
-	boolean exitServerSocketThread = false;
+	private volatile boolean exitServerSocketThread = false;
 
 	private static TcpConnectionEndPoint tcpConnectionEndPoint;
 
@@ -197,7 +197,7 @@ public class TcpConnectionEndPointTest
 		exitServerSocketThread = true;
 
 		assertThat(serverSocketThread, notNullValue());
-		serverSocketThread.join(3000); // waiting for just one second, we don't want the whole build to stall
+		serverSocketThread.join(3000); // waiting for just three seconds, we don't want the whole build to stall
 		assertThat("serverSocketThread did not stop within 3 seconds; serverSocketThread=" + serverSocketThread.toString(), serverSocketThread.isAlive(), is(false));
 	}
 }

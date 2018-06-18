@@ -3,6 +3,7 @@ package de.metas.handlingunits.inout.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -21,6 +22,8 @@ import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -32,12 +35,12 @@ import de.metas.material.planning.IProductPlanningDAO;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -73,13 +76,13 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		final int orgId = inOutLine.getAD_Org_ID();
 		final int asiId = inOutLine.getM_AttributeSetInstance_ID();
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
-				orgId //
-				, 0  // M_Warehouse_ID
-				, 0  // S_Resource_ID
-				, productId,//
-				asiId);
-
+		final ProductPlanningQuery query = ProductPlanningQuery.builder()
+				.orgId(orgId)
+				.productId(ProductId.ofRepoId(productId))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(asiId))
+				// no warehouse, no plant
+				.build();
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);
 		Check.errorIf(productPlanning == null, "No Product Planning found for product Id {}", productId);
 
 		final int docTypeId = docTypeDAO
