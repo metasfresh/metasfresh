@@ -332,7 +332,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final int bpGroupId = bPartner.getC_BP_Group_ID();
 		if (bpGroupId > 0)
 		{
-			final de.metas.bpartner.model.I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, bpGroupId, de.metas.bpartner.model.I_C_BP_Group.class, trxName);
+			final I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, bpGroupId, I_C_BP_Group.class, trxName);
 			final Integer bpGroupPricingSysId;
 
 			// metas: Same problem as above: The method always retrieved SO-PricingSys. This caused errors in

@@ -45,6 +45,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
@@ -58,7 +59,6 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
-import de.metas.interfaces.I_C_BP_Group;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
@@ -371,8 +371,7 @@ public class PaymentBL implements IPaymentBL
 		}
 		//
 		// No payment rule in BP. Fallback to group.
-		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(bPartner.getC_BP_Group(), I_C_BP_Group.class);
-
+		final I_C_BP_Group bpGroup = bPartner.getC_BP_Group();
 		if (null != bpGroup)
 		{
 			return bpGroup.getPaymentRule();
