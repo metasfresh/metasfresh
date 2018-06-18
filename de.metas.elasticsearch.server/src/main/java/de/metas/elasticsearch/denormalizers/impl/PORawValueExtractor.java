@@ -32,7 +32,6 @@ final class PORawValueExtractor implements IESModelValueExtractor
 
 	private PORawValueExtractor()
 	{
-		super();
 	}
 
 	@Override
