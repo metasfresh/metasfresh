@@ -3,9 +3,9 @@ package de.metas.vertical.pharma.vendor.gateway.msv3.config;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 import lombok.Builder;
 import lombok.Getter;

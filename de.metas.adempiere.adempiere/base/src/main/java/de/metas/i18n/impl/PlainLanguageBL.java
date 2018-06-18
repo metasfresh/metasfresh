@@ -2,8 +2,7 @@ package de.metas.i18n.impl;
 
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
-
+import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;

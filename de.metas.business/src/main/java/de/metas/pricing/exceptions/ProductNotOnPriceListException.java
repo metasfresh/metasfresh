@@ -2,12 +2,12 @@ package de.metas.pricing.exceptions;
 
 import java.util.Date;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.pricing.IPricingContext;

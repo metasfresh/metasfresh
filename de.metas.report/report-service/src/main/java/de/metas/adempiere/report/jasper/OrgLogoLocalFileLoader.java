@@ -29,7 +29,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;

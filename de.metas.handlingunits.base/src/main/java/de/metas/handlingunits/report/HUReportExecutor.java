@@ -13,7 +13,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -23,6 +22,7 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.Language;
 import de.metas.process.ProcessExecutor;

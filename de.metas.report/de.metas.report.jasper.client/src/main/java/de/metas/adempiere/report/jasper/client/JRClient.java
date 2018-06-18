@@ -25,7 +25,6 @@ package de.metas.adempiere.report.jasper.client;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -41,6 +40,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;

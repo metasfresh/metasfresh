@@ -77,7 +77,7 @@ import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_OrgInfo;
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;

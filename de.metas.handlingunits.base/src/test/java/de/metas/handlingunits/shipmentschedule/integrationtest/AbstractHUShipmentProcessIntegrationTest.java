@@ -53,7 +53,7 @@ import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;

@@ -24,7 +24,7 @@ import org.w3c.dom.Node;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
 import de.metas.handlingunits.HUXmlConverter;

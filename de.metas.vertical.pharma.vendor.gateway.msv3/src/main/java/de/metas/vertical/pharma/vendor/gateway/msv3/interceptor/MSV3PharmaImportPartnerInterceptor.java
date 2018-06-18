@@ -6,7 +6,6 @@ package de.metas.vertical.pharma.vendor.gateway.msv3.interceptor;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.IImportProcess;
@@ -14,6 +13,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfigRepository;

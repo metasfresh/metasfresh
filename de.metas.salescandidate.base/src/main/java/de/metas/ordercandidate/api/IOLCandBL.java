@@ -26,10 +26,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.pricing.IPricingResult;

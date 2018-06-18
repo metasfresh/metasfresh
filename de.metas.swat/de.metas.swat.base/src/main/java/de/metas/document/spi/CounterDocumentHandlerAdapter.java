@@ -1,6 +1,5 @@
 package de.metas.document.spi;
 
-import org.adempiere.bpartner.service.IBPartnerAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
@@ -10,6 +9,7 @@ import org.compiere.model.MDocTypeCounter;
 import org.compiere.model.MOrg;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 

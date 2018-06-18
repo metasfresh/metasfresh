@@ -43,11 +43,11 @@ import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
 import org.junit.Ignore;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 
 /**
  * Base context and helpers for all {@link IModelAttributeSetInstanceListener}s which are about updating the document line's ASI.

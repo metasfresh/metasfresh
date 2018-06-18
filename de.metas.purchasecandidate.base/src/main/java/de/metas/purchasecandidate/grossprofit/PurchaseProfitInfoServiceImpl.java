@@ -4,12 +4,12 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;

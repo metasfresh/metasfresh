@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -14,6 +13,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.Percent;

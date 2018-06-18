@@ -29,12 +29,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 

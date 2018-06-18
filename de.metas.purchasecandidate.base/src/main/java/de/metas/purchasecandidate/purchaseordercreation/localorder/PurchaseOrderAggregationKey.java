@@ -2,10 +2,10 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import java.time.LocalDateTime;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;

@@ -48,7 +48,7 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;

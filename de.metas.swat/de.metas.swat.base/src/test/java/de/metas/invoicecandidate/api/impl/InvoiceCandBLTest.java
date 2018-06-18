@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -49,6 +47,8 @@ import org.compiere.model.I_M_InOutLine;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;

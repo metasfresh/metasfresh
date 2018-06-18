@@ -2,8 +2,7 @@ package org.adempiere.user;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
-
+import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
