@@ -3,6 +3,7 @@ package de.metas.elasticsearch;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.scheduler.IESModelIndexingScheduler;
 
 /*
@@ -37,7 +38,9 @@ public interface IESSystem extends ISingletonService
 {
 	boolean isEnabled();
 
-	ESModelIndexerConfigBuilder newModelIndexerConfig(String indexName, Class<?> modelClass);
+	ESModelIndexerConfigBuilder newModelIndexerConfig(ESModelIndexerProfile profile, String indexName, Class<?> modelClass);
 
 	IESModelIndexingScheduler scheduler();
+	
+	boolean hasFullTextSearchSupport(String modelTableName);
 }

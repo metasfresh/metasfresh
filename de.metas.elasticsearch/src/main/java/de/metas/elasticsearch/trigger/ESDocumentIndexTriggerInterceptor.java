@@ -23,6 +23,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -76,16 +77,11 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 	 * @param modelIdsExtractor function which returns the model IDs for a given document
 	 */
 	public ESDocumentIndexTriggerInterceptor(
-			final Class<DocumentType> documentClass //
-	//
-	, final String modelTableName //
-	, final String modelParentColumnName //
-	//
-	, final String modelIndexerId)
+			@NonNull final Class<DocumentType> documentClass,
+			final String modelTableName,
+			final String modelParentColumnName,
+			final String modelIndexerId)
 	{
-		super();
-
-		Check.assumeNotNull(documentClass, "Parameter documentClass is not null");
 		this.triggeringDocumentClass = documentClass;
 
 		triggeringTableName = InterfaceWrapperHelper.getTableName(triggeringDocumentClass);

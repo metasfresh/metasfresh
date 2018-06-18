@@ -1,6 +1,5 @@
 package de.metas.elasticsearch.trigger;
 
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -12,11 +11,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.IESSystem;
 import de.metas.logging.LogManager;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -31,44 +33,44 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class ESOnDeleteTriggerInterceptor extends AbstractModelInterceptor implements IESModelIndexerTrigger
+@ToString
+@EqualsAndHashCode(callSuper = false)
+public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor implements IESModelIndexerTrigger
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(ESDocumentIndexTriggerInterceptor.class);
 
 	private final String modelTableName;
 	private final String modelIndexerId;
+	private final boolean triggerOnNewOrChange;
+	private final boolean triggerOnDelete;
 
 	private boolean triggerInstalled = false;
 
-	public ESOnDeleteTriggerInterceptor(final String modelTableName, final String modelIndexerId)
+	@Builder
+	private ESOnChangeTriggerInterceptor(
+			@NonNull final String modelTableName,
+			@NonNull final String modelIndexerId,
+			final boolean triggerOnNewOrChange,
+			final boolean triggerOnDelete)
 	{
-		super();
-
 		Check.assumeNotEmpty(modelTableName, "modelTableName is not empty");
-		this.modelTableName = modelTableName;
-
 		Check.assumeNotEmpty(modelIndexerId, "modelIndexerId is not empty");
-		this.modelIndexerId = modelIndexerId;
-	}
+		Check.assume(triggerOnNewOrChange || triggerOnDelete, "At least one trigger shall be enabled");
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("modelTableName", modelTableName)
-				.add("modelIndexerId", modelIndexerId)
-				.add("installed", triggerInstalled)
-				.toString();
+		this.modelTableName = modelTableName;
+		this.modelIndexerId = modelIndexerId;
+		this.triggerOnNewOrChange = triggerOnNewOrChange;
+		this.triggerOnDelete = triggerOnDelete;
 	}
 
 	@Override
@@ -76,7 +78,8 @@ public class ESOnDeleteTriggerInterceptor extends AbstractModelInterceptor imple
 	{
 		if (!triggerInstalled)
 		{
-			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(this);
+			final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
+			modelInterceptorRegistry.addModelInterceptor(this);
 		}
 		triggerInstalled = true;
 	}
@@ -92,21 +95,35 @@ public class ESOnDeleteTriggerInterceptor extends AbstractModelInterceptor imple
 	{
 		try
 		{
-			switch (changeType)
+			if (changeType.isNewOrChange() && changeType.isAfter())
 			{
-				case BEFORE_DELETE:
-					// NOTE: triggering on BEFORE because on AFTER we won't be able to fetch the model IDs
+				if (triggerOnNewOrChange)
+				{
+					addToIndex(model);
+				}
+			}
+			else if (changeType.isBefore() && changeType.isDelete())
+			{
+				// NOTE: triggering on BEFORE because on AFTER we won't be able to fetch the model IDs
+
+				if (triggerOnDelete)
+				{
 					removeFromIndexes(model);
-					break;
-				default:
-					// nothing
-					break;
+				}
 			}
 		}
 		catch (final Exception ex)
 		{
 			logger.warn("Failed indexing: {} ({})", model, changeType, ex);
 		}
+	}
+
+	private final void addToIndex(final Object model)
+	{
+		final int modelId = InterfaceWrapperHelper.getId(model);
+		Services.get(IESSystem.class)
+				.scheduler()
+				.addToIndex(modelIndexerId, modelTableName, ImmutableList.of(modelId));
 	}
 
 	private final void removeFromIndexes(final Object model)
@@ -120,7 +137,7 @@ public class ESOnDeleteTriggerInterceptor extends AbstractModelInterceptor imple
 	@Override
 	public IQueryFilter<Object> getMatchingModelsFilter()
 	{
-		return ConstantQueryFilter.of(false);
+		return null;
 	}
 
 }

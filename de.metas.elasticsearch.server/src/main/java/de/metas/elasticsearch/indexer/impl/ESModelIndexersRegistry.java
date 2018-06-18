@@ -13,9 +13,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,11 +32,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -98,6 +100,11 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 		final IESModelIndexer indexer = new ESModelIndexerBuilder(this, config)
 				.build();
 
+		addModelIndexer(indexer);
+	}
+
+	private void addModelIndexer(@NonNull final IESModelIndexer indexer)
+	{
 		//
 		// Register the indexer
 		{
@@ -135,5 +142,13 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 		{
 			logger.warn("Failed creating/updating index for {}", indexer, ex);
 		}
+	}
+
+	@Override
+	public boolean hasFullTextSearchSupport(final String modelTableName)
+	{
+		return getModelIndexersByTableName(modelTableName)
+				.stream()
+				.anyMatch(indexer -> ESModelIndexerProfile.FULL_TEXT_SEARCH.equals(indexer.getProfile()));
 	}
 }

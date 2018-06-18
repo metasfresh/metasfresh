@@ -20,11 +20,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,40 +42,46 @@ import de.metas.elasticsearch.types.ESIndexType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/class ESPOModelDenormalizer implements IESModelDenormalizer
+/* package */class ESPOModelDenormalizer implements IESModelDenormalizer
 {
-	public static final ESPOModelDenormalizerBuilder builder(final IESDenormalizerFactory factory, final String modelTableName)
+	public static final ESPOModelDenormalizerBuilder builder(
+			final IESDenormalizerFactory factory,
+			final ESModelIndexerProfile profile,
+			final String modelTableName)
 	{
-		return new ESPOModelDenormalizerBuilder(factory, modelTableName);
+		return new ESPOModelDenormalizerBuilder(factory, profile, modelTableName);
 	}
 
+	@Getter
+	private final ESModelIndexerProfile profile;
+	@Getter
 	private final String modelTableName;
 	private final String keyColumnName;
+	@Getter
 	private final ImmutableSet<String> columnNames;
-	private final Map<String, ESModelDenormalizerColumn> columnDenormalizers;
+	private final ImmutableMap<String, ESModelDenormalizerColumn> columnDenormalizers;
 
-	private ESPOModelDenormalizer(final String modelTableName, final String keyColumnName //
-	, final Map<String, ESModelDenormalizerColumn> columnDenormalizers //
-	)
+	private ESPOModelDenormalizer(
+			@NonNull final ESModelIndexerProfile profile,
+			@NonNull final String modelTableName,
+			final String keyColumnName, // null is accepted
+			final Map<String, ESModelDenormalizerColumn> columnDenormalizers)
 	{
-		super();
-
 		Check.assumeNotEmpty(modelTableName, "modelTableName is not empty");
-		this.modelTableName = modelTableName;
-
-		// Check.assumeNotEmpty(keyColumnName, "keyColumnName is not empty"); // null is accepted
-		this.keyColumnName = keyColumnName;
-
 		Check.assumeNotEmpty(columnDenormalizers, "columnDenormalizers is not empty");
+
+		this.profile = profile;
+		this.modelTableName = modelTableName;
+		this.keyColumnName = keyColumnName;
 		this.columnDenormalizers = ImmutableMap.copyOf(columnDenormalizers);
 
 		final ImmutableSet.Builder<String> columnNames = ImmutableSet.builder();
@@ -89,19 +98,9 @@ import de.metas.elasticsearch.types.ESIndexType;
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("profile", profile)
 				.add("modelTableName", modelTableName)
 				.toString();
-	}
-
-	@Override
-	public String getModelTableName()
-	{
-		return modelTableName;
-	}
-
-	public Set<String> getColumnNames()
-	{
-		return columnNames;
 	}
 
 	@Override
@@ -199,7 +198,6 @@ import de.metas.elasticsearch.types.ESIndexType;
 
 		private POModelValueExtractor(final String modelValueTableName)
 		{
-			super();
 			Check.assumeNotEmpty(modelValueTableName, "modelValueTableName is not empty");
 			this.modelValueTableName = modelValueTableName;
 		}
@@ -227,6 +225,7 @@ import de.metas.elasticsearch.types.ESIndexType;
 
 		private final IESDenormalizerFactory factory;
 
+		private final ESModelIndexerProfile profile;
 		private final POInfo poInfo;
 		private final String modelTableName;
 		private final String keyColumnName;
@@ -239,13 +238,15 @@ import de.metas.elasticsearch.types.ESIndexType;
 
 		private String currentColumnName;
 
-		private ESPOModelDenormalizerBuilder(final IESDenormalizerFactory factory, final String modelTableName)
+		private ESPOModelDenormalizerBuilder(
+				@NonNull final IESDenormalizerFactory factory,
+				@NonNull final ESModelIndexerProfile profile,
+				@NonNull final String modelTableName)
 		{
-			super();
-			Check.assumeNotNull(factory, "Parameter factory is not null");
-			this.factory = factory;
-
 			Check.assumeNotEmpty(modelTableName, "modelTableName is not empty");
+
+			this.factory = factory;
+			this.profile = profile;
 			this.modelTableName = modelTableName;
 
 			poInfo = POInfo.getPOInfo(modelTableName);
@@ -301,7 +302,7 @@ import de.metas.elasticsearch.types.ESIndexType;
 				columnDenormalizersEffective.put(columnName, valueExtractorAndDenormalizer);
 			}
 
-			return new ESPOModelDenormalizer(modelTableName, keyColumnName, columnDenormalizersEffective);
+			return new ESPOModelDenormalizer(profile, modelTableName, keyColumnName, columnDenormalizersEffective);
 		}
 
 		private final ESModelDenormalizerColumn generateColumn(final String columnName)
@@ -377,7 +378,7 @@ import de.metas.elasticsearch.types.ESIndexType;
 					return null;
 				}
 
-				final IESModelDenormalizer valueModelDenormalizer = factory.getModelValueDenormalizer(refTableName);
+				final IESModelDenormalizer valueModelDenormalizer = factory.getModelValueDenormalizer(profile, refTableName);
 				if (valueModelDenormalizer == null)
 				{
 					return null;
