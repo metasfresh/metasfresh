@@ -77,7 +77,7 @@ public class ESModelIndexerConfigBuilder
 				.build();
 	}
 
-	public ESModelIndexerProfile getProfile()
+	private ESModelIndexerProfile getProfile()
 	{
 		return profile;
 	}
