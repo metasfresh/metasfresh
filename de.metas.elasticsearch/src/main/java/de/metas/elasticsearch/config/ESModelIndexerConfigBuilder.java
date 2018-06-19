@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.trigger.ESDocumentIndexTriggerInterceptor;
 import de.metas.elasticsearch.trigger.ESOnChangeTriggerInterceptor;
+import de.metas.elasticsearch.trigger.ESOnChangeTriggerInterceptor.ESOnChangeTriggerInterceptorBuilder;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import lombok.NonNull;
 
@@ -46,6 +47,9 @@ public class ESModelIndexerConfigBuilder
 	private final String indexName;
 	private String indexType;
 	private boolean allowChangingIndexType = true;
+
+	private List<ESIncludedModelsConfig> includedModelsConfigs = new ArrayList<>();
+
 	private final List<IESModelIndexerTrigger> triggers = new ArrayList<>();
 
 	public ESModelIndexerConfigBuilder(
@@ -138,9 +142,7 @@ public class ESModelIndexerConfigBuilder
 
 	public ESModelIndexerConfigBuilder triggerOnChangeOrDelete()
 	{
-		return addTrigger(ESOnChangeTriggerInterceptor.builder()
-				.modelTableName(getModelTableName())
-				.modelIndexerId(getId())
+		return addTrigger(prepareOnChangeTriggerInterceptor()
 				.triggerOnNewOrChange(true)
 				.triggerOnDelete(true)
 				.build());
@@ -148,20 +150,24 @@ public class ESModelIndexerConfigBuilder
 
 	public ESModelIndexerConfigBuilder triggerOnChange()
 	{
-		return addTrigger(ESOnChangeTriggerInterceptor.builder()
-				.modelTableName(getModelTableName())
-				.modelIndexerId(getId())
+		return addTrigger(prepareOnChangeTriggerInterceptor()
 				.triggerOnNewOrChange(true)
 				.build());
 	}
 
 	public ESModelIndexerConfigBuilder triggerOnDelete()
 	{
-		return addTrigger(ESOnChangeTriggerInterceptor.builder()
-				.modelTableName(getModelTableName())
-				.modelIndexerId(getId())
+		return addTrigger(prepareOnChangeTriggerInterceptor()
 				.triggerOnDelete(true)
 				.build());
+	}
+
+	private ESOnChangeTriggerInterceptorBuilder prepareOnChangeTriggerInterceptor()
+	{
+		return ESOnChangeTriggerInterceptor.builder()
+				.modelTableName(getModelTableName())
+				.includedModelsConfigs(getIncludedModelsConfigs())
+				.modelIndexerId(getId());
 	}
 
 	private ESModelIndexerConfigBuilder addTrigger(final IESModelIndexerTrigger trigger)
@@ -169,6 +175,17 @@ public class ESModelIndexerConfigBuilder
 		triggers.add(trigger);
 		allowChangingIndexType = false;
 
+		return this;
+	}
+
+	public ImmutableList<ESIncludedModelsConfig> getIncludedModelsConfigs()
+	{
+		return ImmutableList.copyOf(includedModelsConfigs);
+	}
+
+	public ESModelIndexerConfigBuilder includeModel(@NonNull final ESIncludedModelsConfig includedModelConfig)
+	{
+		includedModelsConfigs.add(includedModelConfig);
 		return this;
 	}
 }

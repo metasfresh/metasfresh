@@ -3,12 +3,18 @@ package de.metas.elasticsearch.indexer.impl;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
@@ -18,6 +24,7 @@ import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.slf4j.Logger;
@@ -36,7 +43,10 @@ import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
 import de.metas.logging.LogManager;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -63,11 +73,14 @@ import lombok.Getter;
 @Immutable
 public final class ESModelIndexer implements IESModelIndexer
 {
+	// services
 	private static final transient Logger logger = LogManager.getLogger(ESModelIndexer.class);
-
-	@Getter(AccessLevel.PRIVATE)
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final Client elasticsearchClient;
 	private final ObjectMapper jsonObjectMapper;
+
+	private static final String RESOURCE_IndexDefaultSettings = "/de/metas/elasticsearch/indexer/index_default_settings.json";
+	private static final String ANALYZER_FullTextSearch = "fts_analyzer";
 
 	@Getter
 	private final ESModelIndexerId id;
@@ -80,15 +93,36 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Getter
 	private final ImmutableList<IESModelIndexerTrigger> triggers;
 
-	/* package */ <ModelType> ESModelIndexer(final ESModelIndexerBuilder builder)
-	{
-		elasticsearchClient = builder.getElasticsearchClient();
-		jsonObjectMapper = builder.getJsonObjectMapper();
+	private final ImmutableList<ESModelIndexer> includedModelIndexers;
+	@Getter(AccessLevel.PRIVATE)
+	private final String parentAttributeName;
+	@Getter(AccessLevel.PRIVATE)
+	private final String parentLinkColumnName;
 
-		id = builder.getId();
-		modelTableName = builder.getModelTableName();
-		modelDenormalizer = builder.getModelDenormalizer();
-		triggers = ImmutableList.copyOf(builder.getTriggers());
+	@Builder
+	private ESModelIndexer(
+			@NonNull final Client elasticsearchClient,
+			@NonNull final ObjectMapper jsonObjectMapper,
+			@NonNull final ESModelIndexerId id,
+			@NonNull final String modelTableName,
+			@NonNull final IESModelDenormalizer modelDenormalizer,
+			@NonNull @Singular final ImmutableList<ESModelIndexer> includedModelIndexers,
+			@NonNull @Singular final ImmutableList<IESModelIndexerTrigger> triggers,
+			//
+			@Nullable final String parentAttributeName,
+			@Nullable final String parentLinkColumnName)
+	{
+		this.elasticsearchClient = elasticsearchClient;
+		this.jsonObjectMapper = jsonObjectMapper;
+
+		this.id = id;
+		this.modelTableName = modelTableName;
+		this.modelDenormalizer = modelDenormalizer;
+		this.triggers = triggers;
+
+		this.includedModelIndexers = includedModelIndexers;
+		this.parentAttributeName = parentAttributeName;
+		this.parentLinkColumnName = parentLinkColumnName;
 	}
 
 	@Override
@@ -123,7 +157,7 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public void deleteIndex()
 	{
-		final IndicesAdminClient indices = getElasticsearchClient().admin().indices();
+		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
 
 		//
 		// Create index if does not exist
@@ -150,14 +184,14 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public boolean createUpdateIndex()
 	{
-		final ClusterHealthResponse health = getElasticsearchClient().admin()
+		final ClusterHealthResponse health = elasticsearchClient.admin()
 				.cluster()
 				.prepareHealth()
 				.get();
 		System.out.println("cluster name: " + health.getClusterName());
 		System.out.println("cluster status: " + health.getStatus());
 
-		final IndicesAdminClient indices = getElasticsearchClient().admin().indices();
+		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
 
 		//
 		// Create index if does not exist
@@ -175,6 +209,9 @@ public final class ESModelIndexer implements IESModelIndexer
 		{
 			final boolean acknowledged = indices
 					.prepareCreate(indexName)
+					.setSettings(Settings.builder()
+							.loadFromStream(RESOURCE_IndexDefaultSettings, getClass().getResourceAsStream(RESOURCE_IndexDefaultSettings))
+							.build())
 					.get()
 					.isAcknowledged();
 			if (!acknowledged)
@@ -192,29 +229,18 @@ public final class ESModelIndexer implements IESModelIndexer
 
 	private final void createUpdateIndexTypeMapping()
 	{
+		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
+
 		XContentBuilder indexTypeMappingBuilder = null;
 		String mapping = null;
 		try
 		{
 			indexTypeMappingBuilder = XContentFactory.jsonBuilder();
 
-			//@formatter:off
-			indexTypeMappingBuilder
-				.startObject();
-
-					//
-					// Dynamic template
-					appendDynamicTemplatesMappings(indexTypeMappingBuilder);
-
-					//
-					// properties
-					indexTypeMappingBuilder.startObject("properties");
-					getModelDenormalizer().appendMapping(indexTypeMappingBuilder, null);
-					indexTypeMappingBuilder.endObject(); // properties
-					indexTypeMappingBuilder
-					//
-				.endObject(); // ROOT end
-			//@formatter:on
+			indexTypeMappingBuilder.startObject();
+			appendMapping_DynamicTemplates(indexTypeMappingBuilder);
+			appendMapping_Properties(indexTypeMappingBuilder);
+			indexTypeMappingBuilder.endObject();
 
 			mapping = indexTypeMappingBuilder.string();
 		}
@@ -229,7 +255,6 @@ public final class ESModelIndexer implements IESModelIndexer
 		// Update index type mapping
 		try
 		{
-			final IndicesAdminClient indices = getElasticsearchClient().admin().indices();
 			final PutMappingResponse putMappingResponse = indices.preparePutMapping(getIndexName())
 					.setType(getIndexType())
 					.setSource(mapping)
@@ -245,11 +270,14 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 		catch (final Exception ex)
 		{
-			throw new AdempiereException("Failed updating index type mapping: " + this, ex);
+			throw new AdempiereException("Failed updating index type mapping: " + ex.getLocalizedMessage(), ex)
+					.appendParametersToMessage()
+					.setParameter("indexer", this)
+					.setParameter("mapping", mapping);
 		}
 	}
 
-	/* package */static final void appendDynamicTemplatesMappings(final XContentBuilder builder) throws IOException
+	private static final void appendMapping_DynamicTemplates(final XContentBuilder builder) throws IOException
 	{
 		//@formatter:off
 		builder
@@ -261,7 +289,9 @@ public final class ESModelIndexer implements IESModelIndexer
 						.field("match_mapping_type", ESDataType.String.getEsTypeAsString())
 						.startObject("mapping")
 							.field("type", ESDataType.String.getEsTypeAsString())
-							.field("index", ESIndexType.NotAnalyzed.getEsTypeAsString())
+//							.field("index", ESIndexType.NotAnalyzed.getEsTypeAsString()) // TODO make it configurable
+							.field("index", ESIndexType.Analyzed.getEsTypeAsString())
+							.field("analyzer", ANALYZER_FullTextSearch)
 						.endObject()
 					.endObject()
 					//
@@ -270,7 +300,24 @@ public final class ESModelIndexer implements IESModelIndexer
 		//@formatter:on
 	}
 
-	static final String toStringOrNull(final XContentBuilder builder)
+	private void appendMapping_Properties(XContentBuilder builder) throws IOException
+	{
+		builder.startObject("properties");
+
+		getModelDenormalizer().appendMapping(builder, null);
+
+		for (final ESModelIndexer includedModelIndexer : includedModelIndexers)
+		{
+			final String parentAttributeName = includedModelIndexer.getParentAttributeName();
+			final IESModelDenormalizer includedModelDenormalizer = includedModelIndexer.getModelDenormalizer();
+
+			includedModelDenormalizer.appendMapping(builder, parentAttributeName);
+		}
+
+		builder.endObject();
+	}
+
+	private static final String toStringOrNull(final XContentBuilder builder)
 	{
 		if (builder == null)
 		{
@@ -288,7 +335,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 	}
 
-	private Stream<IndexRequestBuilder> createIndexRequests(final Object model)
+	private Stream<IndexRequestBuilder> createIndexRequestsAndStream(final Object model)
 	{
 		// NOTE: for debugging purposes we are checking it each time
 		// createUpdateIndex();
@@ -296,7 +343,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		//
 		// model (parent) index requests
 		final Stream<IndexRequestBuilder> result = Stream.of(model)
-				.map(indexer -> createIndexRequestForModel(model));
+				.map(this::createIndexRequestForModel);
 
 		return result;
 	}
@@ -306,15 +353,22 @@ public final class ESModelIndexer implements IESModelIndexer
 		final IESModelDenormalizer modelDenormalizer = getModelDenormalizer();
 
 		String esDocumentId = null;
-		Object esDocument = null;
+		Map<String, Object> esDocument = null;
 		String esDocumentJson = null;
 		try
 		{
 			esDocumentId = modelDenormalizer.extractId(model);
+
 			esDocument = modelDenormalizer.denormalize(model);
+			for (final ESModelIndexer includedModelIndexer : includedModelIndexers)
+			{
+				final List<Map<String, Object>> includedDocuments = denormalizeIncludedForParent(model, includedModelIndexer);
+				esDocument.put(includedModelIndexer.getParentAttributeName(), includedDocuments);
+			}
+
 			esDocumentJson = jsonObjectMapper.writeValueAsString(esDocument);
 
-			final IndexRequestBuilder indexRequestBuilder = getElasticsearchClient().prepareIndex(getIndexName(), getIndexType(), esDocumentId);
+			final IndexRequestBuilder indexRequestBuilder = elasticsearchClient.prepareIndex(getIndexName(), getIndexType(), esDocumentId);
 			indexRequestBuilder.setSource(esDocumentJson);
 			return indexRequestBuilder;
 		}
@@ -328,15 +382,34 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 	}
 
+	private List<Map<String, Object>> denormalizeIncludedForParent(final Object parentModel, ESModelIndexer includedModelIndexer)
+	{
+		final int parentId = InterfaceWrapperHelper.getId(parentModel);
+
+		return queryBL.createQueryBuilder(includedModelIndexer.getModelTableName())
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(includedModelIndexer.getParentLinkColumnName(), parentId)
+				.create()
+				.stream()
+				.map(includedModel -> denormalizeIncludedModel(includedModel, includedModelIndexer))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private Map<String, Object> denormalizeIncludedModel(final Object includedModel, ESModelIndexer includedModelIndexer)
+	{
+		final IESModelDenormalizer modelDenormalizer = includedModelIndexer.getModelDenormalizer();
+		return modelDenormalizer.denormalize(includedModel);
+	}
+
 	@Override
 	public IESIndexerResult addToIndex(final Iterator<?> models)
 	{
-		final BulkRequestBuilder bulkRequest = getElasticsearchClient().prepareBulk();
+		final BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
 
 		try
 		{
 			IteratorUtils.stream(models)
-					.flatMap(model -> createIndexRequests(model))
+					.flatMap(this::createIndexRequestsAndStream)
 					.forEach(bulkRequest::add);
 
 			if (bulkRequest.numberOfActions() <= 0)
@@ -366,7 +439,7 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public IESIndexerResult removeFromIndexByIds(final Collection<String> ids)
 	{
-		final BulkRequestBuilder bulkRequest = getElasticsearchClient().prepareBulk();
+		final BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
 
 		try
 		{
@@ -404,7 +477,6 @@ public final class ESModelIndexer implements IESModelIndexer
 
 		//
 		// model (parent) delete requests
-		final Client elasticsearchClient = getElasticsearchClient();
 		final String indexName = getIndexName();
 		final String indexType = getIndexType();
 		final Stream<DeleteRequestBuilder> result = Stream.of(id)

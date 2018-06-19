@@ -100,8 +100,8 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 	@Override
 	public void addModelIndexer(final ESModelIndexerConfigBuilder config)
 	{
-		final IESModelIndexer indexer = new ESModelIndexerBuilder(this, config)
-				.build();
+		final IESModelIndexer indexer = new ESModelIndexerFactory(this, config)
+				.create();
 
 		addModelIndexer(indexer);
 	}

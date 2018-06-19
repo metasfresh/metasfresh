@@ -33,35 +33,41 @@ import lombok.NonNull;
  * #L%
  */
 
-final class ESModelDenormalizerColumn
+final class ESPOModelDenormalizerColumn
 {
-	public static final ESModelDenormalizerColumn of(final IESModelValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
+	public static final ESPOModelDenormalizerColumn of(final IESModelValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
 	{
-		return new ESModelDenormalizerColumn(valueExtractor, valueDenormalizer);
+		return new ESPOModelDenormalizerColumn(valueExtractor, valueDenormalizer);
 	}
 
-	public static final ESModelDenormalizerColumn of(final IESModelDenormalizer valueModelDenormalizer)
+	public static final ESPOModelDenormalizerColumn of(final IESModelDenormalizer valueModelDenormalizer)
 	{
 		final String valueModelTableName = valueModelDenormalizer.getModelTableName();
 		final IESModelValueExtractor valueExtractor = POModelValueExtractor.of(valueModelTableName);
-		return new ESModelDenormalizerColumn(valueExtractor, valueModelDenormalizer);
+		return new ESPOModelDenormalizerColumn(valueExtractor, valueModelDenormalizer);
 	}
 
-	public static final ESModelDenormalizerColumn passThrough(final ESDataType dataType, final ESIndexType indexType)
+	public static final ESPOModelDenormalizerColumn passThrough(final ESDataType dataType, final ESIndexType indexType)
 	{
-		final PassThroughDenormalizer valueDenormalizer = PassThroughDenormalizer.of(dataType, indexType);
-		return new ESModelDenormalizerColumn(PORawValueExtractor.instance, valueDenormalizer);
+		final String analyzer = null;
+		return passThrough(dataType, indexType, analyzer);
 	}
 
-	public static final ESModelDenormalizerColumn rawValue(final IESDenormalizer valueDenormalizer)
+	public static final ESPOModelDenormalizerColumn passThrough(final ESDataType dataType, final ESIndexType indexType, final String analyzer)
 	{
-		return new ESModelDenormalizerColumn(PORawValueExtractor.instance, valueDenormalizer);
+		final PassThroughDenormalizer valueDenormalizer = PassThroughDenormalizer.of(dataType, indexType, analyzer);
+		return new ESPOModelDenormalizerColumn(PORawValueExtractor.instance, valueDenormalizer);
+	}
+
+	public static final ESPOModelDenormalizerColumn rawValue(final IESDenormalizer valueDenormalizer)
+	{
+		return new ESPOModelDenormalizerColumn(PORawValueExtractor.instance, valueDenormalizer);
 	}
 
 	private final IESModelValueExtractor valueExtractor;
 	private final IESDenormalizer valueDenormalizer;
 
-	private ESModelDenormalizerColumn(@NonNull final IESModelValueExtractor valueExtractor, @NonNull final IESDenormalizer valueDenormalizer)
+	private ESPOModelDenormalizerColumn(@NonNull final IESModelValueExtractor valueExtractor, @NonNull final IESDenormalizer valueDenormalizer)
 	{
 		this.valueExtractor = valueExtractor;
 		this.valueDenormalizer = valueDenormalizer;
