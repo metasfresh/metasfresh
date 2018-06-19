@@ -1,6 +1,7 @@
 package de.metas.elasticsearch.config;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -13,6 +14,8 @@ import de.metas.elasticsearch.trigger.ESDocumentIndexTriggerInterceptor;
 import de.metas.elasticsearch.trigger.ESOnChangeTriggerInterceptor;
 import de.metas.elasticsearch.trigger.ESOnChangeTriggerInterceptor.ESOnChangeTriggerInterceptorBuilder;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -41,16 +44,24 @@ public class ESModelIndexerConfigBuilder
 {
 	private final Consumer<ESModelIndexerConfigBuilder> configInstaller;
 
+	@Getter(AccessLevel.PRIVATE)
 	private final ESModelIndexerProfile profile;
 
+	@Getter
 	private final String modelTableName;
+	@Getter(AccessLevel.PRIVATE)
 	private final String indexName;
 	private String indexType;
 	private boolean allowChangingIndexType = true;
 
-	private List<ESIncludedModelsConfig> includedModelsConfigs = new ArrayList<>();
+	private final List<ESIncludedModelsConfig> includedModelsConfigs = new ArrayList<>();
 
 	private final List<IESModelIndexerTrigger> triggers = new ArrayList<>();
+
+	@Getter
+	private String indexSettingsJson;
+	@Getter
+	private String indexStringFullTextSearchAnalyzer;
 
 	public ESModelIndexerConfigBuilder(
 			@NonNull final Consumer<ESModelIndexerConfigBuilder> configInstaller,
@@ -81,16 +92,6 @@ public class ESModelIndexerConfigBuilder
 				.build();
 	}
 
-	private ESModelIndexerProfile getProfile()
-	{
-		return profile;
-	}
-
-	private String getIndexName()
-	{
-		return indexName;
-	}
-
 	/**
 	 * Sets the index type.
 	 *
@@ -119,11 +120,6 @@ public class ESModelIndexerConfigBuilder
 		{
 			return indexType;
 		}
-	}
-
-	public String getModelTableName()
-	{
-		return modelTableName;
 	}
 
 	public List<IESModelIndexerTrigger> getTriggers()
@@ -188,4 +184,23 @@ public class ESModelIndexerConfigBuilder
 		includedModelsConfigs.add(includedModelConfig);
 		return this;
 	}
+
+	public ESModelIndexerConfigBuilder includeModels(@NonNull final Collection<ESIncludedModelsConfig> includedModelConfigs)
+	{
+		includedModelsConfigs.addAll(includedModelConfigs);
+		return this;
+	}
+
+	public ESModelIndexerConfigBuilder indexSettingsJson(final String indexSettingsJson)
+	{
+		this.indexSettingsJson = indexSettingsJson;
+		return this;
+	}
+
+	public ESModelIndexerConfigBuilder indexStringFullTextSearchAnalyzer(final String indexStringFullTextSearchAnalyzer)
+	{
+		this.indexStringFullTextSearchAnalyzer = indexStringFullTextSearchAnalyzer;
+		return this;
+	}
+
 }

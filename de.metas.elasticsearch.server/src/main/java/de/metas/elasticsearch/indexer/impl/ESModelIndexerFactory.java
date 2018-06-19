@@ -56,6 +56,9 @@ final class ESModelIndexerFactory
 
 	private final ImmutableList<IESModelIndexerTrigger> triggers;
 
+	private String indexSettingsJson;
+	private String indexStringFullTextSearchAnalyzer;
+
 	ESModelIndexerFactory(
 			@NonNull final ESModelIndexersRegistry esModelIndexingService,
 			@NonNull final ESModelIndexerConfigBuilder config)
@@ -78,6 +81,8 @@ final class ESModelIndexerFactory
 				.id(id)
 				.triggers(triggers)
 				.includedModelIndexers(includedModelIndexers)
+				.indexSettingsJson(indexSettingsJson)
+				.indexStringFullTextSearchAnalyzer(indexStringFullTextSearchAnalyzer)
 				.build();
 	}
 
@@ -87,6 +92,8 @@ final class ESModelIndexerFactory
 				.id(id.includedModel(includedModelConfig.getAttributeName()))
 				.parentAttributeName(includedModelConfig.getAttributeName())
 				.parentLinkColumnName(includedModelConfig.getChildLinkColumnName())
+				.indexSettingsJson(null) // not needed for included indexers
+				.indexStringFullTextSearchAnalyzer(indexStringFullTextSearchAnalyzer)
 				.build();
 	}
 
@@ -111,5 +118,17 @@ final class ESModelIndexerFactory
 		final IESModelDenormalizer modelDenormalizer = esDenormalizerFactory.getModelDenormalizer(profile, modelTableName);
 		Check.assumeNotNull(modelDenormalizer, "model denormalizer shall exist for {}", modelTableName);
 		return modelDenormalizer;
+	}
+
+	public ESModelIndexerFactory indexSettingsJson(final String indexSettingsJson)
+	{
+		this.indexSettingsJson = indexSettingsJson;
+		return this;
+	}
+
+	public ESModelIndexerFactory indexStringFullTextSearchAnalyzer(final String indexStringFullTextSearchAnalyzer)
+	{
+		this.indexStringFullTextSearchAnalyzer = indexStringFullTextSearchAnalyzer;
+		return this;
 	}
 }

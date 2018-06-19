@@ -3,6 +3,7 @@ package de.metas.elasticsearch.indexer;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
@@ -61,4 +62,6 @@ public interface IESModelIndexer
 	IESIndexerResult addToIndex(Iterator<?> models);
 
 	IESIndexerResult removeFromIndexByIds(Collection<String> ids);
+
+	Set<String> getFullTextSearchFieldNames();
 }

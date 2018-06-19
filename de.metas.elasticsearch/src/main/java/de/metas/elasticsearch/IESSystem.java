@@ -40,5 +40,8 @@ public interface IESSystem extends ISingletonService
 
 	ESModelIndexerConfigBuilder newModelIndexerConfig(ESModelIndexerProfile profile, String indexName, Class<?> modelClass);
 
+	ESModelIndexerConfigBuilder newModelIndexerConfig(ESModelIndexerProfile profile, String indexName, String modelTableName);
+
 	IESModelIndexingScheduler scheduler();
+
 }

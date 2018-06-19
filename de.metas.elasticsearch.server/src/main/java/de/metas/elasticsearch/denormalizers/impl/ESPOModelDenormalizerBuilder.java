@@ -2,6 +2,7 @@ package de.metas.elasticsearch.denormalizers.impl;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +14,6 @@ import org.compiere.util.DisplayType;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
@@ -81,9 +81,11 @@ final class ESPOModelDenormalizerBuilder
 
 	public ESPOModelDenormalizer build()
 	{
+		final Map<String, ESPOModelDenormalizerColumn> columnDenormalizersEffective = new HashMap<>();
+		final Set<String> fullTextSearchFieldNames = new LinkedHashSet<>();
+
 		//
 		// Add registered denormalizers
-		final Map<String, ESPOModelDenormalizerColumn> columnDenormalizersEffective = new HashMap<>();
 		for (final Map.Entry<String, ESPOModelDenormalizerColumn> entry : columnDenormalizersByColumnName.entrySet())
 		{
 			final String columnName = entry.getKey();
@@ -99,6 +101,11 @@ final class ESPOModelDenormalizerBuilder
 			}
 
 			columnDenormalizersEffective.put(columnName, valueExtractorAndDenormalizer);
+
+			if (isFullTextSearchField(columnName))
+			{
+				fullTextSearchFieldNames.add(columnName);
+			}
 		}
 
 		//
@@ -106,26 +113,46 @@ final class ESPOModelDenormalizerBuilder
 		for (int columnIndex = 0, columnsCount = poInfo.getColumnCount(); columnIndex < columnsCount; columnIndex++)
 		{
 			final String columnName = poInfo.getColumnName(columnIndex);
+
+			// skip if it was explicitly banned
 			if (!isIncludeColumn(columnName))
 			{
 				continue;
 			}
 
+			// skip if already considered
 			if (columnDenormalizersEffective.containsKey(columnName))
 			{
 				continue;
 			}
 
+			// skip if not eligible for column auto-generation
+			if (!isEligibleForColumnAutoGeneration(columnName))
+			{
+				continue;
+			}
+
+			// Generate and add
 			final ESPOModelDenormalizerColumn valueExtractorAndDenormalizer = generateColumn(columnName);
 			if (valueExtractorAndDenormalizer == null)
 			{
 				continue;
 			}
-
 			columnDenormalizersEffective.put(columnName, valueExtractorAndDenormalizer);
+
+			if (isFullTextSearchField(columnName))
+			{
+				fullTextSearchFieldNames.add(columnName);
+			}
 		}
 
-		return new ESPOModelDenormalizer(profile, modelTableName, keyColumnName, columnDenormalizersEffective);
+		return new ESPOModelDenormalizer(profile, modelTableName, keyColumnName, columnDenormalizersEffective, fullTextSearchFieldNames);
+	}
+
+	private boolean isFullTextSearchField(String columnName)
+	{
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	private final ESPOModelDenormalizerColumn generateColumn(final String columnName)
@@ -214,6 +241,24 @@ final class ESPOModelDenormalizerBuilder
 		return null;
 	}
 
+	private boolean isEligibleForColumnAutoGeneration(final String columnName)
+	{
+		final int displayType = poInfo.getColumnDisplayType(columnName);
+
+		// ID column
+		if (DisplayType.ID == displayType)
+		{
+			return true;
+		}
+
+		if (profile == ESModelIndexerProfile.FULL_TEXT_SEARCH)
+		{
+			return DisplayType.isText(displayType) || DisplayType.isAnyLookup(displayType);
+		}
+
+		return true;
+	}
+
 	private boolean isIncludeColumn(final String columnName)
 	{
 		if (columnsToAlwaysInclude.contains(columnName))
@@ -232,14 +277,6 @@ final class ESPOModelDenormalizerBuilder
 		}
 
 		return true;
-	}
-
-	private ESPOModelDenormalizerBuilder includeColumn(final String columnName, final IESModelValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
-	{
-		final ESPOModelDenormalizerColumn valueExtractorAndDenormalizer = ESPOModelDenormalizerColumn.of(valueExtractor, valueDenormalizer);
-		includeColumn(columnName);
-		columnDenormalizersByColumnName.put(columnName, valueExtractorAndDenormalizer);
-		return this;
 	}
 
 	public ESPOModelDenormalizerBuilder includeColumn(final String columnName)

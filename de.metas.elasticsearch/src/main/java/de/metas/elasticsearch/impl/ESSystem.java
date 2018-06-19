@@ -89,6 +89,16 @@ public class ESSystem implements IESSystem
 		return new ESModelIndexerConfigBuilder(configInstaller, profile, indexName, modelTableName);
 	}
 
+	@Override
+	public ESModelIndexerConfigBuilder newModelIndexerConfig(
+			@NonNull final ESModelIndexerProfile profile,
+			@NonNull final String indexName,
+			@NonNull final String modelTableName)
+	{
+		final Consumer<ESModelIndexerConfigBuilder> configInstaller = this::installConfig;
+		return new ESModelIndexerConfigBuilder(configInstaller, profile, indexName, modelTableName);
+	}
+
 	private void installConfig(final ESModelIndexerConfigBuilder config)
 	{
 		assertEnabled();
