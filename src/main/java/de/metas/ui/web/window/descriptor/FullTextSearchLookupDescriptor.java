@@ -14,10 +14,12 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.indexer.IESModelIndexer;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -56,6 +58,7 @@ import lombok.Value;
 public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
 	// services
+	private static final Logger logger = LogManager.getLogger(FullTextSearchLookupDescriptor.class);
 	private Client elasticsearchClient;
 
 	private final String modelTableName;
@@ -101,16 +104,28 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 	@Override
 	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
+		logger.trace("Retrieving entries for: {}", evalCtx);
+
+		final QueryBuilder query = createElasticsearchQuery(evalCtx);
+		logger.trace("ES query: {}", query);
+
 		final SearchResponse searchResponse = elasticsearchClient.prepareSearch(esIndexName)
-				.setQuery(createElasticsearchQuery(evalCtx))
+				.setQuery(query)
+				.setExplain(logger.isTraceEnabled())
+				.setSize(evalCtx.getLimit(Integer.MAX_VALUE))
 				.get();
+		logger.trace("ES response: {}", searchResponse);
 
 		final List<Integer> recordIds = Stream.of(searchResponse.getHits().getHits())
 				.map(hit -> extractId(hit))
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
+		logger.trace("Record IDs: {}", recordIds);
 
-		return databaseLookup.findByIds(recordIds);
+		final LookupValuesList lookupValues = databaseLookup.findByIds(recordIds);
+		logger.trace("Lookup values: {}", lookupValues);
+
+		return lookupValues;
 	}
 
 	private int extractId(final SearchHit hit)
