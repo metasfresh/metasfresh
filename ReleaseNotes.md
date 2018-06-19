@@ -13,6 +13,8 @@ Here come the actual release notes:
 ## Features
   * [#4140](https://github.com/metasfresh/metasfresh/issues/4140) WebUI: Translation Window for Country
     * New Window for Country Translation maintenance.
+  * [#4225](https://github.com/metasfresh/metasfresh/issues/4225) Pharma: Move Businesspartner Fields to Customer/ Vendor Tab
+    * Improvement of the Pharma Business Partnmer Window in WebUI, rearranging customer and vendor Fields in their subtabs.
   * [#4240](https://github.com/metasfresh/metasfresh/issues/4240) Translate new Repack Attributes
     * Improved Translation for Repack No. Attributes.
   * [#4242](https://github.com/metasfresh/metasfresh/issues/4242) WebUI: Window Event Log
