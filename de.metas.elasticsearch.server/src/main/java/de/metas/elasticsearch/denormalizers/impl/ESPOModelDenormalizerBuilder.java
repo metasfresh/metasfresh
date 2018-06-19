@@ -152,15 +152,21 @@ final class ESPOModelDenormalizerBuilder
 	private boolean isFullTextSearchField(String columnName)
 	{
 		final int displayType = poInfo.getColumnDisplayType(columnName);
-		
-		// TODO: exclude passwords!
+
+		// Exclude passwords
+		if (DisplayType.isPassword(columnName, displayType))
+		{
+			return false;
+		}
 
 		if (DisplayType.isText(displayType))
 		{
 			return true;
 		}
-
-		return false;
+		else
+		{
+			return false;
+		}
 	}
 
 	private final ESPOModelDenormalizerColumn generateColumn(final String columnName)
