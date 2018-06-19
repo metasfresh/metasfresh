@@ -11,8 +11,8 @@ import org.adempiere.util.NumberUtils;
 import org.compiere.Adempiere;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 
 import com.google.common.collect.ImmutableList;
@@ -61,6 +61,7 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 	private final String modelTableName;
 	private final String esIndexName;
 	private final String esKeyColumnName;
+	private final String[] esSearchFieldNames;
 
 	private final LookupDataSource databaseLookup;
 
@@ -72,6 +73,9 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 
 		esIndexName = modelIndexer.getIndexName();
 		esKeyColumnName = InterfaceWrapperHelper.getKeyColumnName(modelTableName);
+
+		final Set<String> esSearchFieldNames = modelIndexer.getFullTextSearchFieldNames();
+		this.esSearchFieldNames = esSearchFieldNames.toArray(new String[esSearchFieldNames.size()]);
 
 		databaseLookup = LookupDataSourceFactory.instance.searchInTableLookup(modelTableName);
 	}
@@ -115,9 +119,10 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 		return NumberUtils.asInt(source.get(esKeyColumnName), -1);
 	}
 
-	private QueryStringQueryBuilder createElasticsearchQuery(final LookupDataSourceContext evalCtx)
+	private QueryBuilder createElasticsearchQuery(final LookupDataSourceContext evalCtx)
 	{
-		return QueryBuilders.queryStringQuery(evalCtx.getFilter());
+		final String text = evalCtx.getFilter();
+		return QueryBuilders.multiMatchQuery(text, esSearchFieldNames);
 	}
 
 	@Override
