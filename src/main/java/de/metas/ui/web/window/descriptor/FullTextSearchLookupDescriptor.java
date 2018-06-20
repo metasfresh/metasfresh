@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.NumberUtils;
-import org.compiere.Adempiere;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -18,7 +17,6 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -26,9 +24,8 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -68,23 +65,28 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 
 	private final LookupDataSource databaseLookup;
 
-	public FullTextSearchLookupDescriptor(@NonNull final IESModelIndexer modelIndexer)
+	@Builder
+	private FullTextSearchLookupDescriptor(
+			@NonNull final Client elasticsearchClient,
+			@NonNull final String modelTableName,
+			@NonNull final String esIndexName,
+			@NonNull final Set<String> esSearchFieldNames,
+			@NonNull final LookupDataSource databaseLookup)
 	{
-		elasticsearchClient = Adempiere.getBean(Client.class); // TODO
+		this.elasticsearchClient = elasticsearchClient;
 
-		this.modelTableName = modelIndexer.getModelTableName();
+		this.modelTableName = modelTableName;
 
-		esIndexName = modelIndexer.getIndexName();
+		this.esIndexName = esIndexName;
 		esKeyColumnName = InterfaceWrapperHelper.getKeyColumnName(modelTableName);
 
-		final Set<String> esSearchFieldNames = modelIndexer.getFullTextSearchFieldNames();
 		this.esSearchFieldNames = esSearchFieldNames.toArray(new String[esSearchFieldNames.size()]);
 
-		databaseLookup = LookupDataSourceFactory.instance.searchInTableLookup(modelTableName);
+		this.databaseLookup = databaseLookup;
 	}
 
 	@Override
-	public Builder newContextForFetchingById(final Object id)
+	public LookupDataSourceContext.Builder newContextForFetchingById(final Object id)
 	{
 		return LookupDataSourceContext.builder(modelTableName).putFilterById(id);
 	}
@@ -92,11 +94,11 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 	@Override
 	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
 	{
-		throw new UnsupportedOperationException();
+		return databaseLookup.findById(evalCtx.getIdToFilter());
 	}
 
 	@Override
-	public Builder newContextForFetchingList()
+	public LookupDataSourceContext.Builder newContextForFetchingList()
 	{
 		return LookupDataSourceContext.builder(modelTableName);
 	}

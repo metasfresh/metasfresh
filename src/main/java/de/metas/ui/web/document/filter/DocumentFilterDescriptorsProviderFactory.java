@@ -7,6 +7,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
+import org.elasticsearch.client.Client;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
@@ -23,6 +25,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.FullTextSearchLookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 
 /*
  * #%L
@@ -207,9 +210,22 @@ public final class DocumentFilterDescriptorsProviderFactory
 						.setFieldName(PARAM_FullTextSearch)
 						.setDisplayName(caption)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptor(new FullTextSearchLookupDescriptor(modelIndexer)))
+						.setLookupDescriptor(createFullTextSearchLookupDescriptor(modelIndexer)))
 				.build();
 
 		return ImmutableDocumentFilterDescriptorsProvider.of(filterDescriptor);
+	}
+
+	private LookupDescriptor createFullTextSearchLookupDescriptor(final IESModelIndexer modelIndexer)
+	{
+		final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
+
+		return FullTextSearchLookupDescriptor.builder()
+				.elasticsearchClient(elasticsearchClient)
+				.modelTableName(modelIndexer.getModelTableName())
+				.esIndexName(modelIndexer.getIndexName())
+				.esSearchFieldNames(modelIndexer.getFullTextSearchFieldNames())
+				.databaseLookup(LookupDataSourceFactory.instance.searchInTableLookup(modelIndexer.getModelTableName()))
+				.build();
 	}
 }
