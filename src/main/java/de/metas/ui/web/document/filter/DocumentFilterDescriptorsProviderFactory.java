@@ -22,10 +22,10 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.FullTextSearchLookupDescriptor;
+import de.metas.ui.web.window.descriptor.FullTextSearchFilterContext;
+import de.metas.ui.web.window.descriptor.FullTextSearchSqlDocumentFilterConverter;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 
 /*
  * #%L
@@ -63,8 +63,6 @@ public final class DocumentFilterDescriptorsProviderFactory
 	private static final String MSG_DefaultFilterName = "default";
 
 	private static final String MSG_FULL_TEXT_SEARCH_CAPTION = "Search";
-	private static final String FILTER_ID_FullTextSearch = "full-text-search";
-	private static final String PARAM_FullTextSearch = "Search";
 
 	public static final transient DocumentFilterDescriptorsProviderFactory instance = new DocumentFilterDescriptorsProviderFactory();
 
@@ -201,31 +199,31 @@ public final class DocumentFilterDescriptorsProviderFactory
 		}
 
 		final ITranslatableString caption = msgBL.getTranslatableMsgText(MSG_FULL_TEXT_SEARCH_CAPTION);
+		final FullTextSearchFilterContext context = createFullTextSearchFilterContext(modelIndexer);
 
 		final DocumentFilterDescriptor filterDescriptor = DocumentFilterDescriptor.builder()
-				.setFilterId(FILTER_ID_FullTextSearch)
+				.setFilterId(FullTextSearchSqlDocumentFilterConverter.FILTER_ID)
 				.setDisplayName(caption)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(PARAM_FullTextSearch)
+						.setFieldName(FullTextSearchSqlDocumentFilterConverter.PARAM_SearchText)
 						.setDisplayName(caption)
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptor(createFullTextSearchLookupDescriptor(modelIndexer)))
+						.setWidgetType(DocumentFieldWidgetType.Text))
+				.addInternalParameter(DocumentFilterParam.ofNameEqualsValue(FullTextSearchSqlDocumentFilterConverter.PARAM_Context, context))
 				.build();
 
 		return ImmutableDocumentFilterDescriptorsProvider.of(filterDescriptor);
 	}
 
-	private LookupDescriptor createFullTextSearchLookupDescriptor(final IESModelIndexer modelIndexer)
+	private FullTextSearchFilterContext createFullTextSearchFilterContext(final IESModelIndexer modelIndexer)
 	{
 		final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
 
-		return FullTextSearchLookupDescriptor.builder()
+		return FullTextSearchFilterContext.builder()
 				.elasticsearchClient(elasticsearchClient)
 				.modelTableName(modelIndexer.getModelTableName())
 				.esIndexName(modelIndexer.getIndexName())
 				.esSearchFieldNames(modelIndexer.getFullTextSearchFieldNames())
-				.databaseLookup(LookupDataSourceFactory.instance.searchInTableLookup(modelIndexer.getModelTableName()))
 				.build();
 	}
 }
