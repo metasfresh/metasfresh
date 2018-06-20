@@ -31,6 +31,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1837](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1837) Cancel request message disappears too fast
     * Fixes the cancel request message. Now not dissappearing anymore when hovering.
+  * [#1843](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1843) Action button not properly displayed in Transportation Order window
+    * Fixes the Button Look&Feel in Case the Button has no data from API.
 
 
 # metasfresh 5.62 (2018-25)
