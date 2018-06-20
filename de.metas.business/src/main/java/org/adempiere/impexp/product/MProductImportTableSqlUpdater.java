@@ -77,8 +77,6 @@ public class MProductImportTableSqlUpdater
 
 		dbUpdateIProductFromProduct(whereClause);
 
-		dbUpdateIProductFromProductPO(whereClause);
-
 		dbUpdateUOM(whereClause);
 
 		dbUpdatePackageUOM(whereClause);
@@ -151,7 +149,7 @@ public class MProductImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET Manufacturer_ID=(SELECT C_BPartner_ID FROM C_BPartner p")
-				.append(" WHERE i.ProductManufacturer=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
+				.append(" WHERE i.ProductManufacturer ilike '%'||p.companyname||'%' AND i.AD_Client_ID=p.AD_Client_ID) ")
 				.append("WHERE Manufacturer_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -179,16 +177,6 @@ public class MProductImportTableSqlUpdater
 		logger.info("Product Existing UPC={}", no);
 
 		dbUpdateProductsByValue(whereClause);
-
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName + " i ")
-				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product_po p")
-				.append(" WHERE i.C_BPartner_ID=p.C_BPartner_ID")
-				.append(" AND i.VendorProductNo=p.VendorProductNo AND i.AD_Client_ID=p.AD_Client_ID) ")
-				.append("WHERE M_Product_ID IS NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Product Existing Vendor ProductNo={}", no);
 	}
 
 	private void dbUpdateProductsByValue(@NonNull final String whereClause)
@@ -275,52 +263,6 @@ public class MProductImportTableSqlUpdater
 			{
 				logger.debug("{} default from existing Product={}", numField, no);
 			}
-		}
-	}
-
-	private void dbUpdateIProductFromProductPO(@NonNull final String whereClause)
-	{
-		StringBuilder sql;
-		int no;
-
-		// Copy From Product_PO if Import does not have value
-		final String[] strFieldsPO = new String[] { "UPC",
-				"PriceEffective", "VendorProductNo", "VendorCategory", "Manufacturer",
-				"Discontinued", "DiscontinuedBy" };
-		for (final String element : strFieldsPO)
-		{
-			sql = new StringBuilder("UPDATE ")
-					.append(targetTableName + " i SET ")
-					.append(element).append(" = (SELECT ").append(element)
-					.append(" FROM M_Product_PO p"
-							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.C_BPartner_ID=p.C_BPartner_ID AND i.AD_Client_ID=p.AD_Client_ID) "
-							+ "WHERE M_Product_ID IS NOT NULL AND C_BPartner_ID IS NOT NULL"
-							+ " AND ")
-					.append(element).append(" IS NULL"
-							+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-					.append(whereClause);
-			no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-			logger.debug("{} default from existing Product PO={}",element, no);
-		}
-
-		final String[] numFieldsPO = new String[] { "C_UOM_ID", "C_Currency_ID",
-				"PriceList", "PricePO", "RoyaltyAmt",
-				"Order_Min", "Order_Pack", "CostPerOrder", "DeliveryTime_Promised" };
-
-		for (final String element : numFieldsPO)
-		{
-			sql = new StringBuilder("UPDATE ")
-					.append(targetTableName + " i SET ")
-					.append(element).append(" = (SELECT ").append(element)
-					.append(" FROM M_Product_PO p"
-							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.C_BPartner_ID=p.C_BPartner_ID AND i.AD_Client_ID=p.AD_Client_ID) "
-							+ "WHERE M_Product_ID IS NOT NULL AND C_BPartner_ID IS NOT NULL"
-							+ " AND (")
-					.append(element).append(" IS NULL OR ").append(element).append("=0)"
-							+ " AND " + COLUMNNAME_I_IsImported + "='N'")
-					.append(whereClause);
-			no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-			logger.debug("{} default from existing Product PO={}",element, no);
 		}
 	}
 
