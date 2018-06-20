@@ -50,6 +50,7 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactor
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.purchasing.api.IBPartnerProductBL;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
@@ -260,5 +261,11 @@ public class C_OrderLine
 	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
 	{
 		Services.get(IOrderLinePricingConditions.class).updateNoPriceConditionsColor(orderLine);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID, I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	public void checkExcludedProducts(final I_C_OrderLine orderLine)
+	{
+		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(orderLine.getM_Product_ID(), orderLine.getC_BPartner_ID());
 	}
 }
