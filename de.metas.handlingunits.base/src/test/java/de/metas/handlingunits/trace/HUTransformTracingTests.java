@@ -19,17 +19,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.allocation.transfer.HUTransformServiceTests;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor;
 import de.metas.handlingunits.trace.repository.RetrieveDbRecordsUtil;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -41,12 +38,12 @@ import mockit.Mocked;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,8 +53,8 @@ import mockit.Mocked;
 /**
  * Leans on {@link HUTransformTestsBase} and verifies that the correct {@link HUTraceEvent}s were created.
  * To test additional use cases, move the respective testing code from {@link HUTransformServiceTests} to {@link HUTransformTestsBase}.
- * 
- * 
+ *
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -67,18 +64,14 @@ public class HUTransformTracingTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	// private HUTransformServiceTests huTransformServiceTests;
 	private HUTraceRepository huTraceRepository;
 
 	private HUTransformTestsBase testsBase;
 
-	@Mocked
-	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector;
-
 	@Before
 	public void init()
 	{
-		testsBase = new HUTransformTestsBase(noopPackingMaterialsCollector);
+		testsBase = new HUTransformTestsBase();
 
 		// with this, we can avoid having to start the spring context
 		huTraceRepository = new HUTraceRepository();
@@ -127,7 +120,7 @@ public class HUTransformTracingTests
 	/**
 	 * Calls {@link HUTransformServiceTests#testCU_To_NewCU_MaxValueParent()} and then verifies the tracing info.
 	 * There shall be two tracing events; one shall have the old TU as {@code topLevelHuId} the other one the now-standalone CU.
-	 * 
+	 *
 	 */
 	@Test
 	public void testCU_To_NewCU_MaxValueParent()

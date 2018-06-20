@@ -57,7 +57,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -138,9 +137,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IAutoCloseable onCloseCreateMissingScheds = //
 				() -> {
-						postponeMissingSchedsCreationUntilClose.set(false);
-						CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
-					};
+					postponeMissingSchedsCreationUntilClose.set(false);
+					CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
+				};
 
 		return onCloseCreateMissingScheds;
 	}
@@ -942,7 +941,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final I_C_Order order = sched.getC_Order();
 
 		final String docSubType = order.getC_DocType().getDocSubType();
-		final boolean isPrePayOrder =  X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
+		final boolean isPrePayOrder = X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
 		if (isPrePayOrder)
 		{
 			logger.debug("Because '" + order + "' is a prepay order, consolidation into one shipment is not allowed");
@@ -1016,29 +1015,19 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final boolean considerAttributes)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		// Create storage query
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
 
-		final List<I_M_Warehouse> warehouses;
-		{
-			final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
-			Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
+		final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
+		Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
 
-			final WarehousePickingGroup warehouseGroup = Services.get(IWarehouseDAO.class)
-					.getWarehousePickingGroupContainingWarehouseId(WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID()));
-			if (warehouseGroup == null)
-			{
-				warehouses = ImmutableList.of(shipmentScheduleWarehouse);
-			}
-			else
-			{
-				warehouses = warehouseGroup.getWarehouseIds()
-						.stream()
-						.map(warehouseId -> InterfaceWrapperHelper.loadOutOfTrx(warehouseId.getRepoId(), I_M_Warehouse.class))
-						.collect(ImmutableList.toImmutableList());
-			}
-		}
+		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID()));
+		final List<I_M_Warehouse> warehouses = warehouseIds
+				.stream()
+				.map(warehouseId -> InterfaceWrapperHelper.loadOutOfTrx(warehouseId.getRepoId(), I_M_Warehouse.class))
+				.collect(ImmutableList.toImmutableList());
 
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();

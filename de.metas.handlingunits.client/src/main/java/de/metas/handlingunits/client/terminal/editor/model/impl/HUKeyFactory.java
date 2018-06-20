@@ -61,6 +61,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.quantity.Quantity;
 
 public class HUKeyFactory implements IHUKeyFactory
 {
@@ -170,13 +171,13 @@ public class HUKeyFactory implements IHUKeyFactory
 			aggregationKey2key = parent.getProperty("aggregationKey2key");
 			if (aggregationKey2key == null)
 			{
-				aggregationKey2key = new LinkedHashMap<Object, IHUKey>();
+				aggregationKey2key = new LinkedHashMap<>();
 				parent.setProperty("aggregationKey2key", aggregationKey2key);
 			}
 		}
 		else
 		{
-			aggregationKey2key = new LinkedHashMap<Object, IHUKey>();
+			aggregationKey2key = new LinkedHashMap<>();
 		}
 
 		//
@@ -356,7 +357,7 @@ public class HUKeyFactory implements IHUKeyFactory
 			return Collections.emptyList();
 		}
 
-		final List<IHUKey> keys = new ArrayList<IHUKey>(hus.size());
+		final List<IHUKey> keys = new ArrayList<>(hus.size());
 		for (final I_M_HU hu : hus)
 		{
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -427,7 +428,7 @@ public class HUKeyFactory implements IHUKeyFactory
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
-		final IdentityHashSet<IHUDocumentLine> clearedDocumentLines = new IdentityHashSet<IHUDocumentLine>();
+		final IdentityHashSet<IHUDocumentLine> clearedDocumentLines = new IdentityHashSet<>();
 
 		rootKey.iterate(new LUTUKeyVisitorAdapter()
 		{
@@ -493,10 +494,10 @@ public class HUKeyFactory implements IHUKeyFactory
 
 					//
 					// Create new allocation
-					final BigDecimal qtyToAllocate = vhuProductStorage.getQty(uom);
+					final BigDecimal qtyToAllocate = vhuProductStorage.getQty(uom).getQty();
 
 					//
-					huAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, uom, deleteOldTUAllocations);
+					huAllocations.allocate(luHU, tuHU, vhu, Quantity.of(qtyToAllocate, uom), deleteOldTUAllocations);
 					deleteOldTUAllocations = false; // set it to false to not delete what we freshly created
 				}
 			}

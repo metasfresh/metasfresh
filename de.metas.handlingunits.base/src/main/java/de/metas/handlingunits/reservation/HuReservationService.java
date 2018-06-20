@@ -1,15 +1,32 @@
 package de.metas.handlingunits.reservation;
 
-import java.util.List;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.util.List;
+import java.util.function.Supplier;
+
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.apache.commons.lang3.NotImplementedException;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.reservation.HuReservation.HuReservationBuilder;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.order.OrderLineId;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
+import lombok.Setter;
 
 /*
  * #%L
@@ -36,13 +53,55 @@ import de.metas.order.OrderLineId;
 @Service
 public class HuReservationService
 {
+	/** In unit test mode, we need to use {@link HUTransformService#newInstance(de.metas.handlingunits.IMutableHUContext)} to get a new instance. */
+	@Setter
+	private Supplier<HUTransformService> huTransformServiceSupplier = () -> HUTransformService.newInstance();
+
 	/**
 	 * Creates an HU reservation record and creates dedicated reserved VHUs with HU status "reserved".
 	 */
 	// Shall we do something if the reservation is less that requested?
-	public HuReservation makeReservation(HuReservationRequest reservationRequest)
+	public HuReservation makeReservation(@NonNull final HuReservationRequest reservationRequest)
 	{
-		throw new NotImplementedException("HuReservationService.makeReservation");
+		final List<HuId> huIds = Check.assumeNotEmpty(reservationRequest.getHuIds(),
+				"the given request needs to have huIds; request={}", reservationRequest);
+
+		final List<I_M_HU> hus = Services.get(IHandlingUnitsDAO.class).retrieveByIds(huIds);
+
+		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
+				.sourceHUs(hus)
+				.qtyCU(reservationRequest.getQtyToReserve())
+				.keepNewCUsUnderSameParent(true)
+				// TODO: add productId to the request, for fuck's sake
+				.build();
+
+		final List<I_M_HU> newCUs = huTransformServiceSupplier
+				.get()
+				.husToNewCUs(husToNewCUsRequest);
+
+		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class)
+				.getStorageFactory();
+
+		final I_M_Product productRecord = loadOutOfTrx(reservationRequest.getProductId(), I_M_Product.class);
+
+		final HuReservationBuilder reservationBuilder = HuReservation.builder();
+
+		final I_C_UOM uomRecord = reservationRequest.getQtyToReserve().getUOM();
+
+		Quantity reservedQtySum = Quantity.zero(uomRecord);
+		for (final I_M_HU newCU : newCUs)
+		{
+			final Quantity qty = storageFactory
+					.getStorage(newCU)
+					.getQuantity(productRecord, uomRecord);
+
+			reservedQtySum = reservedQtySum.add(qty);
+			reservationBuilder.vhuId2reservedQty(HuId.ofRepoId(newCU.getM_HU_ID()), qty);
+		}
+
+		return reservationBuilder
+				.reservedQtySum(reservedQtySum)
+				.build();
 	}
 
 	/**

@@ -334,8 +334,6 @@ public class HUTestHelper
 	public String trxName;
 	private Timestamp today;
 
-	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> contextPackingMaterialsCollector;
-
 	public final IContextAware contextProvider = new IContextAware()
 	{
 		@Override
@@ -376,11 +374,6 @@ public class HUTestHelper
 	{
 		Check.assume(!initialized, "helper not initialized");
 		this.initAdempiere = initAdempiere;
-	}
-
-	public void setContextPackingMaterialsCollector(final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> contextPackingMaterialsCollector)
-	{
-		this.contextPackingMaterialsCollector = contextPackingMaterialsCollector;
 	}
 
 	/**
@@ -926,19 +919,8 @@ public class HUTestHelper
 		return contextProvider;
 	}
 
-	/**
-	 * Returns this instnce's HU context; <b>Important: </b> if {@link #setContextPackingMaterialsCollector(IHUPackingMaterialsCollector)} was invoked with a non-null value,
-	 * then that value is set to the {@code huContext} before its return
-	 *
-	 * @return
-	 */
 	public IMutableHUContext getHUContext()
 	{
-		if (contextPackingMaterialsCollector != null)
-		{
-			huContext.setHUPackingMaterialsCollector(contextPackingMaterialsCollector);
-		}
-
 		return huContext;
 	}
 

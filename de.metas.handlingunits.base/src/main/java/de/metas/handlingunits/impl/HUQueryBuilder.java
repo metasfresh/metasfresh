@@ -779,7 +779,7 @@ import lombok.NonNull;
 			_onlyInWarehouseIds.addAll(warehouseIds);
 		}
 
-		_notInAnyWarehouse = _onlyInWarehouseIds.isEmpty();
+		updateNotInAnyWarehouseFlag();
 		return this;
 	}
 
@@ -787,7 +787,13 @@ import lombok.NonNull;
 	public IHUQueryBuilder addOnlyInWarehouseId(final WarehouseId warehouseId)
 	{
 		_onlyInWarehouseIds.add(warehouseId);
+		updateNotInAnyWarehouseFlag();
 		return this;
+	}
+
+	private void updateNotInAnyWarehouseFlag()
+	{
+		_notInAnyWarehouse = _onlyInWarehouseIds.isEmpty();
 	}
 
 	@Override

@@ -302,12 +302,19 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(@NonNull final WarehouseId warehouseId)
+	public List<WarehouseId> getWarehouseIdsOfSamePickingGroup(@NonNull final WarehouseId warehouseId)
 	{
-		return retrieveWarehouseGroups()
+		final ImmutableList<WarehouseId> result = retrieveWarehouseGroups()
 				.stream()
 				.filter(warehousePickingGroup -> warehousePickingGroup.containsWarehouseId(warehouseId))
-				.findFirst().orElse(null);
+				.flatMap(group -> group.getWarehouseIds().stream())
+				.collect(ImmutableList.toImmutableList());
+
+		if (result.isEmpty())
+		{
+			return ImmutableList.of(warehouseId);
+		}
+		return result;
 	}
 
 	@Override
@@ -331,7 +338,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_M_Locator.Table_Name + "#By#" + I_M_Locator.COLUMNNAME_M_Warehouse_ID+"#"+I_M_Locator.COLUMNNAME_Value)
+	@Cached(cacheName = I_M_Locator.Table_Name + "#By#" + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "#" + I_M_Locator.COLUMNNAME_Value)
 	public int retrieveLocatorIdByValueAndWarehouseId(@NonNull final String locatorvalue, final int warehouseId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class)

@@ -2,13 +2,19 @@ package de.metas.handlingunits.reservation;
 
 import java.util.List;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.mm.attributes.api.IAttributeSet;
+import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.util.Check;
+
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -54,4 +60,26 @@ public class HuReservationRequest
 	 * The actual reservation is done on VHU level.
 	 */
 	List<HuId> huIds;
+
+	@Builder
+	private HuReservationRequest(
+			@NonNull final Quantity qtyToReserve,
+			@Nullable final BPartnerId customerId,
+			@Nullable final OrderLineId salesOrderLineId,
+			@NonNull final ProductId productId,
+			@Nullable final IAttributeSet attributeSet,
+			@Singular final List<HuId> huIds)
+	{
+		this.qtyToReserve = qtyToReserve;
+		this.customerId = customerId;
+		this.salesOrderLineId = salesOrderLineId;
+		this.productId = productId;
+		this.attributeSet = attributeSet;
+		this.huIds = huIds;
+
+		Check.errorIf(customerId == null && salesOrderLineId == null,
+				"At least one of the given parameters customerId and salesOrderLineId need to be not-null.");
+
+	}
+
 }

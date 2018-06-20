@@ -4,6 +4,9 @@ import java.util.Map;
 
 import de.metas.handlingunits.HuId;
 import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -29,11 +32,15 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class HuReservation
 {
+	/** can be null, if the reservation was not yet persisted */
 	HuReservationId id;
 
+	@NonNull
 	Quantity reservedQtySum;
 
-	Map<HuId, Quantity> vhuId2reservedQty;
+	@Singular
+	Map<HuId, Quantity> vhuId2reservedQtys;
 }

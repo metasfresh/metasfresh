@@ -96,9 +96,8 @@ import lombok.NonNull;
 
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 
-	public HUBuilder(final IHUContext huContext)
+	public HUBuilder(@NonNull final IHUContext huContext)
 	{
-		Check.assumeNotNull(huContext, "huContext not null");
 		setHUContext(huContext);
 
 		registerNodeIterator(I_M_HU.class, new HUNodeIncludedItemBuilder());
@@ -308,7 +307,7 @@ import lombok.NonNull;
 		final AbstractNodeIterator<I_M_HU> huBuilder = getNodeIterator(I_M_HU.class);
 		huBuilder.iterate(hu);
 
-		// Collect the HU (only if physical) in order to be taken from the gebindelager into the current lager
+		// Collect the HU (only if physical and unless the collector is disabled) in order to be taken from the empties warehouse into the current warehouse.
 		if (Services.get(IHandlingUnitsBL.class).isPhysicalHU(hu.getHUStatus()))
 		{
 			huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);

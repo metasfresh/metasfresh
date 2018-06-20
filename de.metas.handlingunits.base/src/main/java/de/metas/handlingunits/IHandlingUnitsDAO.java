@@ -380,5 +380,5 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
 
-	List<I_M_HU> retrieveByIds(Collection<Integer> huIds);
+	List<I_M_HU> retrieveByIds(Collection<HuId> huIds);
 }

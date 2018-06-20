@@ -69,6 +69,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -991,7 +992,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU> retrieveByIds(@NonNull final Collection<Integer> huIds)
+	public List<I_M_HU> retrieveByIds(@NonNull final Collection<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{

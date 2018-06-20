@@ -115,7 +115,7 @@ public interface IWarehouseDAO extends ISingletonService
 	 */
 	List<I_M_Warehouse> retrieveWarehousesForCtx(Properties ctx);
 
-	WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(WarehouseId warehouseId);
+	List<WarehouseId> getWarehouseIdsOfSamePickingGroup(WarehouseId warehouseId);
 
 	WarehousePickingGroup getWarehousePickingGroupById(int warehousePickingGroupId);
 

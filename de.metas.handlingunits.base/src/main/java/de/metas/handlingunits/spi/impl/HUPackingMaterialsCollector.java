@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -75,9 +77,6 @@ import lombok.Value;
 
 /**
  * Class used to collect the packing material products from HUs
- *
- * @author tsa
- *
  */
 public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource>
 {
@@ -128,6 +127,9 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 	private Comparator<HUPackingMaterialDocumentLineCandidate> candidatesSortComparator = null;
 
+	private boolean disabled = false;
+	private boolean errorIfHuIsAdded = false;
+
 	/**
 	 *
 	 * @param huContext may be <code>null</code>.<br>
@@ -135,8 +137,23 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 */
 	public HUPackingMaterialsCollector(final IHUContext huContext)
 	{
-		super();
 		this.huContext = huContext;
+	}
+
+	/** Copy constructor */
+	private HUPackingMaterialsCollector(@NonNull final HUPackingMaterialsCollector other)
+	{
+		this.seenM_HU_IDs_ToAdd = other.seenM_HU_IDs_ToAdd;
+		this.seenM_HU_IDs_ToRemove = other.seenM_HU_IDs_ToRemove;
+		this.countTUs = other.countTUs;
+		this.huContext = other.huContext;
+		this.parent = other.parent;
+		this.collectIfOwnPackingMaterialsOnly = other.collectIfOwnPackingMaterialsOnly;
+		this.isCollectTUNumberPerOrigin = other.isCollectTUNumberPerOrigin;
+		this.isCollectAggregatedHUs = other.isCollectAggregatedHUs;
+		this.candidatesSortComparator = other.candidatesSortComparator;
+		this.disabled = other.disabled;
+		this.errorIfHuIsAdded = other.errorIfHuIsAdded;
 	}
 
 	@Override
@@ -204,6 +221,15 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final String huUnitTypeOverride,
 			final IHUPackingMaterialCollectorSource huPackingMaterialCollectorsource)
 	{
+		if(disabled)
+		{
+			return false;
+		}
+
+		Check.errorIf(errorIfHuIsAdded,
+				"errorIfHuIsAdded=true, so addOrRemoveHU may not be called; parameters: hu={}; huUnitTypeOverride={}; huPackingMaterialCollectorsource={}",
+				hu, huUnitTypeOverride, huPackingMaterialCollectorsource);
+
 		// Make sure we are dealing with an existing handling unit
 		if (hu == null)
 		{
@@ -400,6 +426,15 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 */
 	public void addM_HU_PI(final I_M_HU_PI huPI, final int count, IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
+		if(disabled)
+		{
+			return;
+		}
+
+		Check.errorIf(errorIfHuIsAdded,
+				"errorIfHuIsAdded=true, so addM_HU_PI may not be called; parameters: huPI={}; count={}; huPackingMaterialCollectorSource={}",
+				huPI, count, huPackingMaterialCollectorSource);
+
 		if (count <= 0)
 		{
 			return;
@@ -508,7 +543,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	@Override
 	public void addHURecursively(final Collection<I_M_HU> hus, final IHUPackingMaterialCollectorSource source)
 	{
-		if (hus == null || hus.isEmpty())
+		if (hus == null || hus.isEmpty() || disabled)
 		{
 			return;
 		}
@@ -522,6 +557,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	@Override
 	public void addHURecursively(final IQueryBuilder<I_M_HU_Assignment> huAssignmentsQueryBuilder)
 	{
+		if(disabled)
+		{
+			return; // don't bother making the database query
+		}
+
 		final List<I_M_HU_Assignment> huAssignments = huAssignmentsQueryBuilder
 				// Retrieve only those HUs where the assignment allows to transfer packing materials
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_IsTransferPackingMaterials, true)
@@ -530,8 +570,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 		for (final I_M_HU_Assignment huAssignment : huAssignments)
 		{
-			final I_M_HU hu = huAssignment.getM_HU();
-			if (seenM_HU_IDs_ToAdd.contains(hu.getM_HU_ID()))
+			if (seenM_HU_IDs_ToAdd.contains(huAssignment.getM_HU_ID()))
 			{
 				// don't retrieve again those HUs which were already added
 				continue;
@@ -539,6 +578,8 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 			final Object referencedModel = TableRecordCacheLocal.getReferencedValue(huAssignment, Object.class);
 			final IHUPackingMaterialCollectorSource source = HUPackingMaterialCollectorSourceFactory.fromNullable(referencedModel);
+
+			final I_M_HU hu = huAssignment.getM_HU();
 			if (hu != null)
 			{
 				addHURecursively(hu, source);
@@ -549,9 +590,13 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	@Override
-	public void addTUHUsRecursively(final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery)
+	public void addTUHUsRecursively(@NonNull final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery)
 	{
-		Check.assumeNotNull(tuAssignmentsQuery, "tuAssignmentsQuery not null");
+		if(disabled)
+		{
+			return; // don't bother making the database query
+		}
+
 		final List<I_M_HU_Assignment> tuAssignments = tuAssignmentsQuery
 				// Retrieve only those TUs where the assignment allows to transfer packing materials
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_IsTransferPackingMaterials, true)
@@ -615,15 +660,16 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	/**
 	 * Add or Remove given HU (and recursively its children).
 	 *
-	 * @param hu
+	 * @param hu if null, nothing is done
 	 * @param source
 	 * @param remove In case the boolean value is true, the HU will be removed (decremented qty); otherwise, it will be added (its qty will be incremented)
 	 */
-	private void addOrRemoveHURecursively(final I_M_HU hu,
+	private void addOrRemoveHURecursively(
+			@Nullable final I_M_HU hu,
 			final IHUPackingMaterialCollectorSource source,
 			final boolean remove)
 	{
-		if (hu == null)
+		if (hu == null || disabled)
 		{
 			return;
 		}
@@ -820,6 +866,13 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		collectorTo.seenM_HU_IDs_ToRemove.addAll(collectorFrom.seenM_HU_IDs_ToRemove);
 	}
 
+	@Override
+	public IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> errorIfAnyHuIsAdded()
+	{
+		this.errorIfHuIsAdded = true;
+		return this;
+	}
+
 	@Value
 	public static final class HUpipToHUPackingMaterialCollectorSource
 	{
@@ -830,5 +883,19 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		{
 			return hupip.getM_HU_PI_Item_Product_ID();
 		}
+	}
+
+	@Override
+	public IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> disable()
+	{
+		this.disabled  = true;
+		return this;
+
+	}
+
+	@Override
+	public IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> copy()
+	{
+		return new HUPackingMaterialsCollector(this);
 	}
 }

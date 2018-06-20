@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 
@@ -53,8 +54,7 @@ public interface IHUPackingMaterialsCollector<T>
 	 * @param hu
 	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addHURecursively(I_M_HU hu,
-			T source);
+	void addHURecursively(I_M_HU hu, T source);
 
 	/**
 	 * Recursivelly adds all the HUs from given collection.
@@ -66,8 +66,7 @@ public interface IHUPackingMaterialsCollector<T>
 	 *
 	 * @see #addHURecursively(I_M_HU)
 	 */
-	void addHURecursively(Collection<I_M_HU> hus,
-			T source);
+	void addHURecursively(Collection<I_M_HU> hus, T source);
 
 	/**
 	 * Retrieves suitable HUs from given {@link I_M_HU_Assignment}s query and add them recursively (see {@link #addHURecursively(Collection)}).
@@ -158,4 +157,17 @@ public interface IHUPackingMaterialsCollector<T>
 
 	void setisCollectAggregatedHUs(boolean b);
 
+	IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> copy();
+
+	/**
+	 * If called, then every call to one of the {@code add..()} methods will be ignored.<br>
+	 * To be used if we know that despite e.g. a new M_HU is created, there shall be no packing material movement for it.
+	 */
+	IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> disable();
+
+	/**
+	 * If called, then every call to one of the {@code add..()} methods will throw an exception, unless {@link #disable()} was previously called.
+	 * To be used in unit tests, if you do HU operations that may not result in a packing material movement. Might also be used for assertions in production code.
+	 */
+	public IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> errorIfAnyHuIsAdded();
 }

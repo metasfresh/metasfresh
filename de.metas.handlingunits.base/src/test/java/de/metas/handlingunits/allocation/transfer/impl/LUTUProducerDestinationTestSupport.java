@@ -1,21 +1,35 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.junit.Before;
 
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 
 /*
@@ -186,5 +200,137 @@ public class LUTUProducerDestinationTestSupport
 
 		final List<I_M_HU> hus = lutuProducer.getCreatedHUs();
 		return ListUtils.singleElement(hus);
+	}
+
+	/**
+	 * Makes a stand alone CU with the given quantity and status "active".
+	 */
+	public I_M_HU mkRealStandAloneCuWithCuQty(final String strCuQty)
+	{
+		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+
+		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()
+				.producer(producer)
+				.cuProduct(helper.pTomato)
+				.loadCuQty(new BigDecimal(strCuQty))
+				.loadCuUOM(helper.uomKg)
+				// .huPackingMaterialsCollector(noopPackingMaterialsCollector)
+				.build();
+
+		helper.load(loadRequest);
+
+		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
+		assertThat(createdCUs.size(), is(1));
+
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final I_M_HU cuToSplit = createdCUs.get(0);
+		handlingUnitsBL.setHUStatus(helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
+		save(cuToSplit);
+
+		return cuToSplit;
+	}
+
+	public I_M_HU mkRealCUWithTUandQtyCU(final String strCuQty)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setNoLU();
+		lutuProducer.setTUPI(piTU_IFCO);
+
+		final BigDecimal cuQty = new BigDecimal(strCuQty);
+		helper.load(lutuProducer, helper.pTomato, cuQty, helper.uomKg);
+		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
+		assertThat(createdTUs.size(), is(1));
+
+		final I_M_HU createdTU = createdTUs.get(0);
+		handlingUnitsBL.setHUStatus(helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
+		new M_HU().updateChildren(createdTU);
+		save(createdTU);
+
+		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);
+		assertThat(createdCUs.size(), is(1));
+
+		final I_M_HU cu = createdCUs.get(0);
+		return cu;
+	}
+
+	/**
+	 * Creates an LU with PI {@link LUTUProducerDestinationTestSupport#piLU} and an aggregate TU with PI {@link LUTUProducerDestinationTestSupport#piTU_IFCO}.
+	 *
+	 * @param totalQtyCUStr
+	 * @return
+	 */
+	public I_M_HU mkAggregateHUWithTotalQtyCU(final String totalQtyCUStr)
+	{
+		final int qtyCUsPerTU = -1; // N/A
+		return mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU(totalQtyCUStr, qtyCUsPerTU);
+	}
+
+	/**
+	 * Creates an LU with one aggregate HU. Both the LU's and aggregate HU's status is "active".
+	 */
+	public I_M_HU mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU(final String totalQtyCUStr, final int customQtyCUsPerTU)
+	{
+		final I_M_Product cuProduct = helper.pTomato;
+		final I_C_UOM cuUOM = helper.uomKg;
+		final BigDecimal totalQtyCU = new BigDecimal(totalQtyCUStr);
+
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLUItemPI(piLU_Item_IFCO);
+		lutuProducer.setLUPI(piLU);
+		lutuProducer.setTUPI(piTU_IFCO);
+		lutuProducer.setMaxTUsPerLU(Integer.MAX_VALUE); // allow as many TUs on that one pallet as we want
+
+		// Custom TU capacity (if specified)
+		if (customQtyCUsPerTU > 0)
+		{
+			lutuProducer.addCUPerTU(cuProduct, BigDecimal.valueOf(customQtyCUsPerTU), cuUOM);
+		}
+
+		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()
+				.producer(lutuProducer)
+				.cuProduct(cuProduct)
+				.loadCuQty(totalQtyCU)
+				.loadCuUOM(cuUOM)
+				// .huPackingMaterialsCollector(noopPackingMaterialsCollector)
+				.build();
+
+		helper.load(loadRequest);
+		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
+
+		assertThat(createdLUs.size(), is(1));
+		// data.helper.commitAndDumpHU(createdLUs.get(0));
+
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final I_M_HU createdLU = createdLUs.get(0);
+		final IMutableHUContext huContext = helper.createMutableHUContextOutOfTransaction();
+		handlingUnitsBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
+		assertThat(createdLU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+
+		new M_HU().updateChildren(createdLU);
+		save(createdLU);
+
+		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
+		assertThat(createdAggregateHUs.size(), is(1));
+
+		final I_M_HU cuToSplit = createdAggregateHUs.get(0);
+		assertThat(handlingUnitsBL.isAggregateHU(cuToSplit), is(true));
+		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID(), is(piLU_Item_IFCO.getM_HU_PI_Item_ID()));
+		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+
+		return cuToSplit;
+	}
+
+	public void errorIfAnyHuIsAddedToPackingMaterialsCollector()
+	{
+		helper
+				.getHUContext()
+				.getHUPackingMaterialsCollector()
+				.errorIfAnyHuIsAdded();
 	}
 }
