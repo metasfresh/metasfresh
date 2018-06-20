@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -16,7 +17,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -24,7 +25,6 @@ import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
-import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.slf4j.Logger;
@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
@@ -79,8 +80,8 @@ public final class ESModelIndexer implements IESModelIndexer
 	private final Client elasticsearchClient;
 	private final ObjectMapper jsonObjectMapper;
 
-	private static final String RESOURCE_IndexDefaultSettings = "/de/metas/elasticsearch/indexer/index_default_settings.json";
-	private static final String ANALYZER_FullTextSearch = "fts_analyzer";
+	// private static final String RESOURCE_IndexDefaultSettings = "/de/metas/elasticsearch/indexer/index_default_settings.json";
+	// private static final String ANALYZER_FullTextSearch = "fts_analyzer";
 
 	@Getter
 	private final ESModelIndexerId id;
@@ -99,6 +100,9 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Getter(AccessLevel.PRIVATE)
 	private final String parentLinkColumnName;
 
+	private final String indexSettingsJson;
+	private final String indexStringFullTextSearchAnalyzer;
+
 	@Builder
 	private ESModelIndexer(
 			@NonNull final Client elasticsearchClient,
@@ -110,7 +114,10 @@ public final class ESModelIndexer implements IESModelIndexer
 			@NonNull @Singular final ImmutableList<IESModelIndexerTrigger> triggers,
 			//
 			@Nullable final String parentAttributeName,
-			@Nullable final String parentLinkColumnName)
+			@Nullable final String parentLinkColumnName,
+			//
+			final String indexSettingsJson,
+			final String indexStringFullTextSearchAnalyzer)
 	{
 		this.elasticsearchClient = elasticsearchClient;
 		this.jsonObjectMapper = jsonObjectMapper;
@@ -123,6 +130,9 @@ public final class ESModelIndexer implements IESModelIndexer
 		this.includedModelIndexers = includedModelIndexers;
 		this.parentAttributeName = parentAttributeName;
 		this.parentLinkColumnName = parentLinkColumnName;
+
+		this.indexSettingsJson = indexSettingsJson;
+		this.indexStringFullTextSearchAnalyzer = indexStringFullTextSearchAnalyzer;
 	}
 
 	@Override
@@ -184,13 +194,6 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public boolean createUpdateIndex()
 	{
-		final ClusterHealthResponse health = elasticsearchClient.admin()
-				.cluster()
-				.prepareHealth()
-				.get();
-		System.out.println("cluster name: " + health.getClusterName());
-		System.out.println("cluster status: " + health.getStatus());
-
 		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
 
 		//
@@ -203,21 +206,24 @@ public final class ESModelIndexer implements IESModelIndexer
 		if (indexExists)
 		{
 			// stop here
+			logger.debug("Skip create/update index because index already exists: {}", indexName);
 			return false;
 		}
 		else
 		{
-			final boolean acknowledged = indices
-					.prepareCreate(indexName)
-					.setSettings(Settings.builder()
-							.loadFromStream(RESOURCE_IndexDefaultSettings, getClass().getResourceAsStream(RESOURCE_IndexDefaultSettings))
-							.build())
-					.get()
-					.isAcknowledged();
+			final CreateIndexRequestBuilder requestBuilder = indices.prepareCreate(indexName);
+			if (!Check.isEmpty(indexSettingsJson, true))
+			{
+				requestBuilder.setSettings(indexSettingsJson);
+			}
+
+			final boolean acknowledged = requestBuilder.get().isAcknowledged();
 			if (!acknowledged)
 			{
 				throw new AdempiereException("Cannot create index: " + indexName);
 			}
+
+			logger.debug("Index created: {} \nsettings: {}", indexName, indexSettingsJson);
 		}
 
 		//
@@ -255,14 +261,18 @@ public final class ESModelIndexer implements IESModelIndexer
 		// Update index type mapping
 		try
 		{
-			final PutMappingResponse putMappingResponse = indices.preparePutMapping(getIndexName())
-					.setType(getIndexType())
+			final String indexName = getIndexName();
+			final String indexType = getIndexType();
+			final PutMappingResponse putMappingResponse = indices.preparePutMapping(indexName)
+					.setType(indexType)
 					.setSource(mapping)
 					.get();
 			if (!putMappingResponse.isAcknowledged())
 			{
 				throw new AdempiereException("Put mapping was not acknowledged for " + this);
 			}
+
+			logger.debug("Updated index mapping: {} (type={}) \n {}", indexName, indexType, mapping);
 		}
 		catch (final AdempiereException e)
 		{
@@ -277,8 +287,23 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 	}
 
-	private static final void appendMapping_DynamicTemplates(final XContentBuilder builder) throws IOException
+	private final void appendMapping_DynamicTemplates(final XContentBuilder builder) throws IOException
 	{
+		final ESModelIndexerProfile profile = getProfile();
+		final ESIndexType stringIndexType;
+		final String stringAnalyzer;
+		if (profile == ESModelIndexerProfile.FULL_TEXT_SEARCH)
+		{
+			stringIndexType = ESIndexType.Analyzed;
+			stringAnalyzer = indexStringFullTextSearchAnalyzer;
+		}
+		else
+		{
+			stringIndexType = ESIndexType.NotAnalyzed;
+			stringAnalyzer = null;
+		}
+
+		//
 		//@formatter:off
 		builder
 			.startArray("dynamic_templates")
@@ -289,9 +314,8 @@ public final class ESModelIndexer implements IESModelIndexer
 						.field("match_mapping_type", ESDataType.String.getEsTypeAsString())
 						.startObject("mapping")
 							.field("type", ESDataType.String.getEsTypeAsString())
-//							.field("index", ESIndexType.NotAnalyzed.getEsTypeAsString()) // TODO make it configurable
-							.field("index", ESIndexType.Analyzed.getEsTypeAsString())
-							.field("analyzer", ANALYZER_FullTextSearch)
+							.field("index", stringIndexType)
+							.field("analyzer", stringAnalyzer)
 						.endObject()
 					.endObject()
 					//
@@ -300,7 +324,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		//@formatter:on
 	}
 
-	private void appendMapping_Properties(XContentBuilder builder) throws IOException
+	private void appendMapping_Properties(final XContentBuilder builder) throws IOException
 	{
 		builder.startObject("properties");
 
@@ -382,7 +406,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 	}
 
-	private List<Map<String, Object>> denormalizeIncludedForParent(final Object parentModel, ESModelIndexer includedModelIndexer)
+	private List<Map<String, Object>> denormalizeIncludedForParent(final Object parentModel, final ESModelIndexer includedModelIndexer)
 	{
 		final int parentId = InterfaceWrapperHelper.getId(parentModel);
 
@@ -395,7 +419,7 @@ public final class ESModelIndexer implements IESModelIndexer
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private Map<String, Object> denormalizeIncludedModel(final Object includedModel, ESModelIndexer includedModelIndexer)
+	private Map<String, Object> denormalizeIncludedModel(final Object includedModel, final ESModelIndexer includedModelIndexer)
 	{
 		final IESModelDenormalizer modelDenormalizer = includedModelIndexer.getModelDenormalizer();
 		return modelDenormalizer.denormalize(includedModel);
@@ -483,5 +507,25 @@ public final class ESModelIndexer implements IESModelIndexer
 				.map(currentId -> elasticsearchClient.prepareDelete(indexName, indexType, currentId));
 
 		return result;
+	}
+
+	@Override
+	public Set<String> getFullTextSearchFieldNames()
+	{
+		final Stream<String> thisLevelfieldNames = getModelDenormalizer().getFullTextSearchFieldNames()
+				.stream()
+				.map(this::toFieldNameFQ);
+
+		final Stream<String> includedFieldNames = includedModelIndexers.stream()
+				.flatMap(includedModelIndexer -> includedModelIndexer.getFullTextSearchFieldNames().stream());
+
+		return Stream.concat(thisLevelfieldNames, includedFieldNames)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private final String toFieldNameFQ(final String fieldName)
+	{
+		final String parentAttributeName = getParentAttributeName();
+		return parentAttributeName != null ? parentAttributeName + "." + fieldName : fieldName;
 	}
 }

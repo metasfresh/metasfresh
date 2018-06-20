@@ -11,14 +11,26 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.63 (2018-26)
 ## Features
+* metasfresh
   * [#4140](https://github.com/metasfresh/metasfresh/issues/4140) WebUI: Translation Window for Country
     * New Window for Country Translation maintenance.
+  * [#4225](https://github.com/metasfresh/metasfresh/issues/4225) Pharma: Move Businesspartner Fields to Customer/ Vendor Tab
+    * Improvement of the Pharma Business Partnmer Window in WebUI, rearranging customer and vendor Fields in their subtabs.
   * [#4240](https://github.com/metasfresh/metasfresh/issues/4240) Translate new Repack Attributes
     * Improved Translation for Repack No. Attributes.
   * [#4242](https://github.com/metasfresh/metasfresh/issues/4242) WebUI: Window Event Log
     * New Window event log added to WebUI Menu.
   * [#4244](https://github.com/metasfresh/metasfresh/issues/4244) Purchase Candidates adjustments
     * Window Improvements for Purchase Candidates in WebUI.
+
+## Fixes
+* metasfresh
+  * [#4255](https://github.com/metasfresh/metasfresh/issues/4255) Contract Person in Charge not filtered by Systemuser
+    * Fixed User in Charge Validation,. Now only showing Systemusers/ -contacts in the dropdown selection.
+
+* metasfresh-webui-frontend
+  * [#1837](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1837) Cancel request message disappears too fast
+    * Fixes the cancel request message. Now not dissappearing anymore when hovering.
 
 
 # metasfresh 5.62 (2018-25)
