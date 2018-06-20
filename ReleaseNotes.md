@@ -29,6 +29,8 @@ Here come the actual release notes:
     * Fixed User in Charge Validation,. Now only showing Systemusers/ -contacts in the dropdown selection.
 
 * metasfresh-webui-frontend
+  * [#1811](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1811) Fields are set on null when you press tab too fast
+    * Fix for Tab Hold in Document windows. Now not blurring the Fields content anymore when values are already set.
   * [#1837](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1837) Cancel request message disappears too fast
     * Fixes the cancel request message. Now not dissappearing anymore when hovering.
   * [#1843](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1843) Action button not properly displayed in Transportation Order window
