@@ -849,31 +849,6 @@ public interface I_I_Product
 
 	/**
 	 * Set Hersteller.
-	 * Manufacturer of the Product
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setManufacturer (java.lang.String Manufacturer);
-
-	/**
-	 * Get Hersteller.
-	 * Manufacturer of the Product
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getManufacturer();
-
-    /** Column definition for Manufacturer */
-    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_Manufacturer = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "Manufacturer", null);
-    /** Column name Manufacturer */
-    public static final String COLUMNNAME_Manufacturer = "Manufacturer";
-
-	/**
-	 * Set Hersteller.
 	 * Hersteller des Produktes
 	 *
 	 * <br>Type: Table

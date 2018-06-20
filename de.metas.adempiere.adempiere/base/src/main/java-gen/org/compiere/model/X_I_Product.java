@@ -15,7 +15,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 653931004L;
+	private static final long serialVersionUID = 839891136L;
 
     /** Standard Constructor */
     public X_I_Product (Properties ctx, int I_Product_ID, String trxName)
@@ -755,25 +755,6 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public java.lang.String getM_ProductPlanningSchema_Selector () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
-	}
-
-	/** Set Hersteller.
-		@param Manufacturer 
-		Manufacturer of the Product
-	  */
-	@Override
-	public void setManufacturer (java.lang.String Manufacturer)
-	{
-		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
-	}
-
-	/** Get Hersteller.
-		@return Manufacturer of the Product
-	  */
-	@Override
-	public java.lang.String getManufacturer () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
 	}
 
 	@Override
