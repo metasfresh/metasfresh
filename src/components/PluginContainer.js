@@ -14,24 +14,38 @@ const pluginWrapper = function pluginWrapper(WrappedComponent, ChildComponent) {
 };
 
 class PluginContainer extends Component {
-  render() {
-    const { rawModal, modal, component, dispatch, breadcrumb } = this.props;
+  renderChildren() {
+    const { pluginModal, component, dispatch } = this.props;
     const { store } = this.context;
-    const TagName = component;
     const redirectPush = bindActionCreators(push, dispatch);
 
-    return (
-      <Container {...{ modal, rawModal }} breadcrumb={breadcrumb}>
-        <div className="plugin-container" ref={c => (this.container = c)}>
-          {TagName && (
-            <TagName
-              {...this.props}
-              redirectPush={redirectPush}
-              dispatch={dispatch}
-              store={store}
-            />
-          )}
+    const TagName = component;
+    const renderedTag = (
+      <TagName
+        {...this.props}
+        redirectPush={redirectPush}
+        dispatch={dispatch}
+        store={store}
+      />
+    );
+
+    if (!pluginModal) {
+      return (
+        <div className="plugin-container">
+          {TagName && renderedTag}
         </div>
+      );
+    }
+
+    return renderedTag;
+  }
+
+  render() {
+    const { modal, rawModal, pluginModal, breadcrumb } = this.props;
+ 
+    return (
+      <Container {...{ modal, rawModal, pluginModal }} breadcrumb={breadcrumb}>
+        {this.renderChildren()}
       </Container>
     );
   }
@@ -42,14 +56,16 @@ PluginContainer.contextTypes = { store: propTypes.object };
 function mapStateToProps(state) {
   const { windowHandler, menuHandler } = state;
 
-  const { modal, rawModal } = windowHandler || {
+  const { modal, rawModal, pluginModal } = windowHandler || {
     modal: {},
     rawModal: {},
+    pluginModal: {},
   };
 
   return {
     modal,
     rawModal,
+    pluginModal,
     breadcrumb: menuHandler.breadcrumb,
   };
 }
