@@ -310,7 +310,7 @@ import lombok.NonNull;
 		// Collect the HU (only if physical and unless the collector is disabled) in order to be taken from the empties warehouse into the current warehouse.
 		if (Services.get(IHandlingUnitsBL.class).isPhysicalHU(hu.getHUStatus()))
 		{
-			huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
+			huContext.getHUPackingMaterialsCollector().requirePackingMaterialForHURecursively(hu);
 		}
 		//
 		// If after running everything the status is still running, switch it to finished

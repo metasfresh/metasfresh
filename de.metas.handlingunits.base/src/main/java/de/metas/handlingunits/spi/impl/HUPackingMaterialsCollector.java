@@ -176,14 +176,14 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	@Override
-	public void addTU(final I_M_HU tuHU, final IHUPackingMaterialCollectorSource source)
+	public void releasePackingMaterialForTU(final I_M_HU tuHU, final IHUPackingMaterialCollectorSource source)
 	{
 		final boolean remove = false;
 		addOrRemoveHU(remove, tuHU, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, source);
 	}
 
 	@Override
-	public void removeTU(final I_M_HU tuHU)
+	public void requirePackingMaterialForTU(final I_M_HU tuHU)
 	{
 		final boolean remove = true;
 		final IHUPackingMaterialCollectorSource source = null; // N/A
@@ -191,14 +191,14 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	@Override
-	public void addLU(final I_M_HU luHU, final IHUPackingMaterialCollectorSource source)
+	public void releasePackingMaterialForLU(final I_M_HU luHU, final IHUPackingMaterialCollectorSource source)
 	{
 		final boolean remove = false;
 		addOrRemoveHU(remove, luHU, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, source);
 	}
 
 	@Override
-	public void removeLU(final I_M_HU luHU)
+	public void requirePackingMaterialForLU(final I_M_HU luHU)
 	{
 		final boolean remove = true;
 		final IHUPackingMaterialCollectorSource source = null; // N/A
@@ -541,7 +541,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	@Override
-	public void addHURecursively(final Collection<I_M_HU> hus, final IHUPackingMaterialCollectorSource source)
+	public void releasePackingMaterialForHURecursively(final Collection<I_M_HU> hus, final IHUPackingMaterialCollectorSource source)
 	{
 		if (hus == null || hus.isEmpty() || disabled)
 		{
@@ -550,12 +550,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 		for (final I_M_HU hu : hus)
 		{
-			addHURecursively(hu, source);
+			releasePackingMaterialForHURecursively(hu, source);
 		}
 	}
 
 	@Override
-	public void addHURecursively(final IQueryBuilder<I_M_HU_Assignment> huAssignmentsQueryBuilder)
+	public void releasePackingMaterialForHURecursively(final IQueryBuilder<I_M_HU_Assignment> huAssignmentsQueryBuilder)
 	{
 		if(disabled)
 		{
@@ -582,7 +582,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final I_M_HU hu = huAssignment.getM_HU();
 			if (hu != null)
 			{
-				addHURecursively(hu, source);
+				releasePackingMaterialForHURecursively(hu, source);
 			}
 			addLUIfNotAlreadyAssignedElsewhere(huAssignment, source);
 
@@ -590,7 +590,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	@Override
-	public void addTUHUsRecursively(@NonNull final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery)
+	public void releasePackingMaterialForTUHUsRecursively(@NonNull final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery)
 	{
 		if(disabled)
 		{
@@ -612,7 +612,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final I_M_HU tuHU = tuAssignment.getM_TU_HU();
 			if (tuHU != null)
 			{
-				addHURecursively(tuHU, source);
+				releasePackingMaterialForHURecursively(tuHU, source);
 			}
 
 			addLUIfNotAlreadyAssignedElsewhere(tuAssignment, source);
@@ -640,18 +640,18 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 		// Collect the LU, but don't to it recursively
 		// because we don't want to collect the other TUs which are included in this LU
-		addLU(luHU, source);
+		releasePackingMaterialForLU(luHU, source);
 	}
 
 	@Override
-	public void addHURecursively(final I_M_HU hu, final IHUPackingMaterialCollectorSource source)
+	public void releasePackingMaterialForHURecursively(final I_M_HU hu, final IHUPackingMaterialCollectorSource source)
 	{
 		final boolean remove = false;
 		addOrRemoveHURecursively(hu, source, remove);
 	}
 
 	@Override
-	public void removeHURecursively(final I_M_HU hu)
+	public void requirePackingMaterialForHURecursively(final I_M_HU hu)
 	{
 		final boolean remove = true;
 		addOrRemoveHURecursively(hu, null, remove);

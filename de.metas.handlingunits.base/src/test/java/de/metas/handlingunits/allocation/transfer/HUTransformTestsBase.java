@@ -17,7 +17,6 @@ import java.util.List;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.w3c.dom.Node;
@@ -197,9 +196,16 @@ public class HUTransformTestsBase
 		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU().getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
+		data.disableHUPackingMaterialsCollector("when the new TU is created, the system would want to generate a packing material movement");
+
 		// invoke the method under test
-		final List<I_M_HU> newTUs = HUTransformService.newInstance(data.helper.getHUContext())
-				.cuToNewTUs(cuToSplit, Quantity.of(BigDecimal.ONE, data.helper.uomKg), data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
+		final List<I_M_HU> newTUs = HUTransformService
+				.newInstance(data.helper.getHUContext())
+				.cuToNewTUs(
+						cuToSplit,
+						Quantity.of(BigDecimal.ONE, data.helper.uomKg),
+						data.piTU_Item_Product_Bag_8KgTomatoes,
+						isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
 

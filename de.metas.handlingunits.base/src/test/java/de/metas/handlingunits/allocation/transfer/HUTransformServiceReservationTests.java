@@ -1,6 +1,7 @@
 package de.metas.handlingunits.allocation.transfer;
 
 import static java.math.BigDecimal.ONE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -15,6 +16,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -49,6 +52,7 @@ import de.metas.quantity.Quantity;
 public class HUTransformServiceReservationTests
 {
 
+	private static final BigDecimal TWOHUNDRET = new BigDecimal("200");
 	private IHandlingUnitsBL handlingUnitsBL;
 	private HUTransformTestsBase testsBase;
 
@@ -71,7 +75,6 @@ public class HUTransformServiceReservationTests
 	public void split_within_CU_TU()
 	{
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
-		data.errorIfAnyHuIsAddedToPackingMaterialsCollector();
 
 		// prepare the CU to split
 		final I_M_HU cuToSplit = data.mkRealCUWithTUandQtyCU("40");
@@ -103,7 +106,6 @@ public class HUTransformServiceReservationTests
 	public void husToNewCUs_aggregate_HU_create_standalone_CU()
 	{
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
-		data.errorIfAnyHuIsAddedToPackingMaterialsCollector();
 
 		final I_M_HU cuToSplit = data.mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU("500", 5); // represents 100 TUs with 5 CUs each
 
@@ -134,7 +136,6 @@ public class HUTransformServiceReservationTests
 	public void husToNewCUs_aggregate_HU_keep_CU_below_sourceHU()
 	{
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
-		data.errorIfAnyHuIsAddedToPackingMaterialsCollector();
 
 		final I_M_HU cuToSplit = data.mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU("500", 5); // represents 100 TUs with 5 CUs each
 
@@ -168,7 +169,6 @@ public class HUTransformServiceReservationTests
 	public void husToNewCUs_aggregate_HU_keep_CU_below_sourceHU_2()
 	{
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
-		data.errorIfAnyHuIsAddedToPackingMaterialsCollector();
 
 		final I_M_HU cuToSplit = data.mkAggregateHUWithTotalQtyCU("200");
 
@@ -198,11 +198,48 @@ public class HUTransformServiceReservationTests
 		Assert.assertThat(newCuXML, hasXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("1.000")));
 	}
 
+
+	@Test
+	public void husToNewCUs_aggregate_HU_keep_CU_below_sourceHU_extract_all()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+
+		// 1 LU with 5 TUs of 40kg each
+		final I_M_HU cuToSplit = data.mkAggregateHUWithTotalQtyCU("200");
+
+		final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(cuToSplit);
+
+		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
+				.sourceHU(topLevelParent)
+				.qtyCU(Quantity.of(TWOHUNDRET, data.helper.uomKg))
+				.keepNewCUsUnderSameParent(true)
+				.build();
+
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+		// data.helper.commitAndDumpHU(topLevelParent);
+		// data.helper.commitAndDumpHUs(newCUs);
+
+		assertThat(newCUs).hasSize(5);
+		final ImmutableList<Integer> distinctIds = newCUs.stream().map(I_M_HU::getM_HU_ID).distinct().collect(ImmutableList.toImmutableList());
+		assertThat(distinctIds).hasSize(5);
+
+		final Node existingLUXML = HUXmlConverter.toXml(topLevelParent);
+		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet[@HUStatus='A'])", is("1")));
+
+		// the LU now has an aggregate (ItemType='HA'), representing 99 TUs with 5 CUs each and a "real" (ItemType='HU') TU with 4
+		Assert.assertThat(existingLUXML, hasXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("200.000")));
+		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA'])", is("1")));
+		Assert.assertThat(existingLUXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage/@Qty", is("0.000")));
+		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU'])", is("1")));
+		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("5")));
+		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("5")));
+		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("5")));
+	}
+
 	@Test
 	public void husToNewCUs_real_CU_keep_CU_below_sourceHU()
 	{
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
-		data.errorIfAnyHuIsAddedToPackingMaterialsCollector();
 
 		final I_M_HU cuToSplit = data.mkRealCUWithTUandQtyCU("40");
 

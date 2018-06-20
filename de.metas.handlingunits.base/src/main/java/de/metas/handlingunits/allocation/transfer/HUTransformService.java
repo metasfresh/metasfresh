@@ -1,12 +1,15 @@
 package de.metas.handlingunits.allocation.transfer;
 
+import static java.math.BigDecimal.ZERO;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -29,6 +32,7 @@ import org.compiere.util.Util;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -223,6 +227,9 @@ public class HUTransformService
 		return cuToNewCU0(cuHU, qtyCU, false);
 	}
 
+	/**
+	 * @return the now-standalone CUs
+	 */
 	private List<I_M_HU> cuToNewCU0(
 			@NonNull final I_M_HU cuHU,
 			@NonNull final Quantity qtyCU,
@@ -236,7 +243,7 @@ public class HUTransformService
 			if (cuParentItem == null)
 			{
 				// the caller wants to process the complete cuHU, but there is nothing to do because the cuHU is not attached to a parent.
-				return Collections.emptyList();
+				return ImmutableList.of(cuHU);
 			}
 			else
 			{
@@ -655,7 +662,8 @@ public class HUTransformService
 		if (handlingUnitsBL.isLoadingUnit(sourceHU))
 		{
 			final boolean keepLuAsParent = false; // not only extract the new TUs, but also make them "free" standalone TUs.
-			return luExtractTUs(sourceHU, qtyTU, keepLuAsParent);
+			final HashSet<HuId> alreadyExtractedTUIds = new HashSet<>(); // not really needed because keepLuAsParent=false
+			return luExtractTUs(sourceHU, qtyTU, keepLuAsParent, alreadyExtractedTUIds);
 		}
 		else if (handlingUnitsBL.isTransportUnitOrAggregate(sourceHU))
 		{
@@ -673,24 +681,32 @@ public class HUTransformService
 	 * @param sourceLU LU from where the TUs shall be extracted
 	 * @param qtyTU how many TUs to extract
 	 * @param keepSourceLuAsParent if true, the TUs will be created as necessary, but they will remain children of the given {@code sourceLU}.
+	 * @param alreadyExtractedTUIds needed if {@code keepSourceLuAsParent == true}
 	 *
 	 * @return extracted TUs
 	 */
 	private List<I_M_HU> luExtractTUs(
 			@NonNull final I_M_HU sourceLU,
 			final int qtyTU,
-			final boolean keepSourceLuAsParent)
+			final boolean keepSourceLuAsParent,
+			@NonNull final Set<HuId> alreadyExtractedTUIds)
 	{
 		// how many TUs we still have to extract
 		int qtyTUsRemaining = Check.assumeGreaterThanZero(qtyTU, "qtyTU");
 
 		final ImmutableList.Builder<I_M_HU> extractedTUs = new ImmutableList.Builder<>();
 
-		for (final I_M_HU tu : handlingUnitsDAO.retrieveIncludedHUs(sourceLU))
+		// if keepSourceLuAsParent==true, then includedHUs probably contains TUs we already extracted; that's why we need alreadyExtractedTUIds.
+		final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(sourceLU);
+		for (final I_M_HU tu : includedHUs)
 		{
 			if (qtyTUsRemaining <= 0)
 			{
 				break;
+			}
+			if (alreadyExtractedTUIds.contains(HuId.ofRepoId(tu.getM_HU_ID())))
+			{
+				continue;
 			}
 
 			if (handlingUnitsBL.isAggregateHU(tu))
@@ -743,7 +759,14 @@ public class HUTransformService
 			}
 		} // each TU
 
-		return extractedTUs.build();
+		final ImmutableList<I_M_HU> result = extractedTUs.build();
+
+		result.stream() // add the extracted TUs' IDs to our set
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.forEach(alreadyExtractedTUIds::add);
+
+		return result;
 	}
 
 	/**
@@ -1076,24 +1099,32 @@ public class HUTransformService
 
 		Quantity qtyCUsRemaining = qtyCU; // how many CUs we still have to extract
 
-		final int numberOfIncludedHUs = handlingUnitsDAO.retrieveIncludedHUs(sourceLU).size();
+		// in this number, aggregate HUs count according to the number of TUs that they represent.
+		final int logicalNumberOfIncludedHUs = handlingUnitsDAO
+				.retrieveIncludedHUs(sourceLU)
+				.stream()
+				.map(this::getMaximumQtyTU)
+				.reduce(ZERO, BigDecimal::add)
+				.intValueExact();
 
-		for (int i = 0; i < numberOfIncludedHUs; i++)
+		final Set<HuId> alreadyExtractedTUIds = new HashSet<>();
+
+		for (int i = 0; i < logicalNumberOfIncludedHUs; i++)
 		{
 			if (qtyCUsRemaining.signum() <= 0)
 			{
 				break;
 			}
 
+			final int numberOfTUsToExtract = 1; // we extract only one TU at a time because we don't know how many CUs we will get out of each TU.
 			final boolean keepLuAsParent = true; // we need a "dedicated" TU, but it shall remain with sourceLU.
-			final I_M_HU extractedTU = ListUtils.singleElement(luExtractTUs(sourceLU, 1, keepLuAsParent));
+			final I_M_HU extractedTU = ListUtils.singleElement(luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds));
 
 			final List<I_M_HU> cusFromTU = tuExtractCUs(extractedTU, qtyCUsRemaining, keepNewCUsUnderSameParent);
 
 			extractedCUs.addAll(cusFromTU);
 
 			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCU.getUOM()));
-
 		}
 		return extractedCUs.build();
 	}
@@ -1122,7 +1153,7 @@ public class HUTransformService
 		return extractedCUs.build();
 	}
 
-	private Quantity calculateTotalQtyOfCUs(final List<I_M_HU> cus, final I_C_UOM uom)
+	private Quantity calculateTotalQtyOfCUs(@NonNull final List<I_M_HU> cus, @NonNull final I_C_UOM uom)
 	{
 		Quantity totalQtyCU = Quantity.zero(uom);
 
@@ -1130,7 +1161,7 @@ public class HUTransformService
 		{
 			final Quantity qtyToAdd = getMaximumQtyCU(cu, uom);
 
-			totalQtyCU.add(qtyToAdd);
+			totalQtyCU = totalQtyCU.add(qtyToAdd);
 		}
 		return totalQtyCU;
 	}

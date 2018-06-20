@@ -333,4 +333,12 @@ public class LUTUProducerDestinationTestSupport
 				.getHUPackingMaterialsCollector()
 				.errorIfAnyHuIsAdded();
 	}
+
+	/**
+	 * @param disableReason explains why we want to disable the collector.
+	 */
+	public void disableHUPackingMaterialsCollector(String disableReason)
+	{
+		helper.getHUContext().getHUPackingMaterialsCollector().disable();
+	}
 }

@@ -852,14 +852,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				// collect the "destroyed" HUs in case they were already physical (active)
 				huContext
 						.getHUPackingMaterialsCollector()
-						.addHURecursively(hu, null);
+						.releasePackingMaterialForHURecursively(hu, null);
 			}
 			else
 			{
 				// remove the HUs from the destroying collector (decrement qty) just in case of new HU
 				huContext
 						.getHUPackingMaterialsCollector()
-						.removeHURecursively(hu);
+						.requirePackingMaterialForHURecursively(hu);
 			}
 		}
 		else if (!isExchangeGebindelagerWhenEmpty)
@@ -871,7 +871,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			// remove the HUs from the collector (decrement qty) just in case of new HU (no initial status)
 			if (initialHUStatus == null)
 			{
-				// TODO i can't see why we make this invocation. i results in a material movement from empties warehouse.
+				// TODO i can't see why we make this invocation. it results in a material movement from empties warehouse.
 				// when to we need that?
 				// huContext
 				// .getHUPackingMaterialsCollector()
@@ -882,7 +882,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			{
 				huContext
 						.getHUPackingMaterialsCollector()
-						.addHURecursively(hu, null);
+						.releasePackingMaterialForHURecursively(hu, null);
 			}
 			else
 			{
@@ -890,7 +890,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 				// TODO: evaluate the logic from here and the logic of the method at all
 				// This could be the case when the HUStatus is changed from Planning to Active.
-				// Teoretically we shall "fetch" the packing materials from gebinde lager in this case,
+				// Theoretically we shall "fetch" the packing materials from gebinde lager in this case,
 				// but by coincidence we don't want to do this because mainly this case happens when we are receving new HUs
 				// from Wareneingang POS (and generate the material receipt)
 				// And there we don't want to do this because those packing materials are fetched from Vendor and not from our lager.
@@ -930,7 +930,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				//
 				// Ask the API to get the packing materials needed to the HU which we just activate it
 				// TODO: i think we can remove this part because it's done automatically ?! (NOTE: this one was copied from swing UI, de.metas.handlingunits.client.terminal.pporder.receipt.view.HUPPOrderReceiptHUEditorPanel.onDialogOkBeforeSave(ITerminalDialog))
-				huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
+				huContext.getHUPackingMaterialsCollector().requirePackingMaterialForHURecursively(hu);
 			}
 		});
 
