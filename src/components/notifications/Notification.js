@@ -13,6 +13,7 @@ class Notification extends Component {
     };
 
     this.closing = null;
+    this.allowMouse = false;
   }
 
   componentDidMount() {
@@ -58,15 +59,24 @@ class Notification extends Component {
 
     if (item.onCancel) {
       item.onCancel.cancel('Operation canceled by the user.');
+    } else {
+      this.closing && clearInterval(this.closing);
     }
-
-    this.closing && clearInterval(this.closing);
 
     dispatch(deleteNotification(item.title));
   };
 
   handleClosing = shouldClose => {
     const { item } = this.props;
+
+    // This is to prevent auto-closing when notification pops-up
+    // under user's mouse cursor
+    if (!this.allowMouse) {
+      this.allowMouse = true;
+
+      return;
+    }
+
     if (item && item.time !== 0) {
       shouldClose ? this.setClosing() : clearInterval(this.closing);
 
