@@ -23,7 +23,6 @@ export default class SelectionDropdown extends Component {
     onChange: PropTypes.func.isRequired,
     onSelect: PropTypes.func.isRequired,
     onCancel: PropTypes.func,
-    onSearchChange: PropTypes.func,
   };
 
   /* Those are instance variables since no rendering needs to be done depending on
@@ -34,14 +33,6 @@ export default class SelectionDropdown extends Component {
   ignoreOption = null;
 
   optionToRef = new Map();
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      searchText: '',
-    };
-  }
 
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
@@ -120,40 +111,11 @@ export default class SelectionDropdown extends Component {
     onChange(selectedNew);
   };
 
-  handleBackspace = () => {
-    const { onSearchChange } = this.props;
-    const { searchText } = this.state;
-    const text = searchText.slice(0, -1);
-
-    this.setState({
-      searchText: text,
-    });
-    onSearchChange(text);
-  };
-
   navigateToAlphanumeric = char => {
-    const {
-      selected,
-      options,
-      onChange,
-      lookupDropdown,
-      onSearchChange,
-    } = this.props;
-    const { searchText } = this.state;
-    const text = !lookupDropdown ? searchText + char : char;
-
-    const items = options.filter(item => {
-      const caption = lookupDropdown ? item.caption[0] : item.caption;
-
-      return caption.toUpperCase().indexOf(text.toUpperCase()) > -1;
-    });
-
-    if (!lookupDropdown) {
-      this.setState({
-        searchText: text,
-      });
-      onSearchChange(text);
-    }
+    const { selected, options, onChange } = this.props;
+    const items = options.filter(
+      item => item.caption[0].toUpperCase() === char.toUpperCase()
+    );
 
     const selectedIndex = items.indexOf(selected);
     const itemsSize = items.get ? items.size : items.length;
@@ -178,13 +140,9 @@ export default class SelectionDropdown extends Component {
 
   handleKeyDown = event => {
     const { navigate } = this;
-    const { selected, onCancel, onSelect, lookupDropdown } = this.props;
+    const { selected, onCancel, onSelect } = this.props;
 
-    if (
-      event.keyCode > 47 &&
-      event.keyCode < 111 &&
-      !(event.keyCode >= 91 && event.keyCode < 94)
-    ) {
+    if (event.keyCode > 47 && event.keyCode < 123) {
       this.navigateToAlphanumeric(event.key);
     } else {
       switch (event.key) {
@@ -203,12 +161,6 @@ export default class SelectionDropdown extends Component {
         case 'Enter':
           event.preventDefault();
           onSelect(selected);
-          break;
-        case 'Backspace':
-          if (!lookupDropdown) {
-            event.preventDefault();
-            this.handleBackspace();
-          }
           break;
         default:
           return;
