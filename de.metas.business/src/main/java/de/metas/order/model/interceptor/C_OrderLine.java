@@ -263,7 +263,7 @@ public class C_OrderLine
 		Services.get(IOrderLinePricingConditions.class).updateNoPriceConditionsColor(orderLine);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID, I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	@ModelChange(timings ={ ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID, I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void checkExcludedProducts(final I_C_OrderLine orderLine)
 	{
 		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(orderLine.getM_Product_ID(), orderLine.getC_BPartner_ID());
