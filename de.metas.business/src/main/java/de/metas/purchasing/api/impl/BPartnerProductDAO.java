@@ -3,6 +3,7 @@
  */
 package de.metas.purchasing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -48,6 +49,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_BannedManufacturer;
 import org.compiere.model.I_M_Product;
 
 import com.google.common.collect.ImmutableList;
@@ -59,6 +61,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.purchasing.api.ProductExclude;
+import de.metas.purchasing.api.ProductExclude.ProductExcludeBuilder;
 import lombok.NonNull;
 
 /**
@@ -262,7 +265,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ProductExclude toProductExclude(final I_C_BPartner_Product bpartnerProduct)
+	private static ProductExclude toProductExclude(@NonNull final I_C_BPartner_Product bpartnerProduct)
 	{
 		return ProductExclude.builder()
 				.productId(bpartnerProduct.getM_Product_ID())
@@ -271,10 +274,41 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.build();
 	}
 
+
 	@Override
 	public Optional<ProductExclude> getExcludedFromSaleToCustomer(final int productId, final int partnerId)
 	{
-		final I_C_BPartner_Product bpartnerProduct = Services.get(IQueryBL.class)
+		final Optional<ProductExclude> productExcluded = getExcludedProductFromSaleToCustomer(productId, partnerId);
+		final Optional<ProductExclude> manufacturerExcluded = getBannedManufacturerFromSaleToCustomer(productId, partnerId);
+
+		if (productExcluded.isPresent() || manufacturerExcluded.isPresent())
+		{
+			final ProductExcludeBuilder builder = ProductExclude.builder()
+					.bpartnerId(partnerId)
+					.productId(productId);
+
+			if (productExcluded.isPresent())
+			{
+				builder.reason(productExcluded.get().getReason());
+			}
+
+			if (manufacturerExcluded.isPresent())
+			{
+				builder.reason(manufacturerExcluded.get().getReason());
+			}
+
+			return Optional.of(builder.build());
+		}
+
+		return Optional.empty();
+	}
+
+
+	private Optional<ProductExclude> getExcludedProductFromSaleToCustomer(final int productId, final int partnerId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_C_BPartner_Product bpartnerProduct = queryBL
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
@@ -283,11 +317,50 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partnerId)
 				.create()
 				.firstOnly(I_C_BPartner_Product.class);
-		if (bpartnerProduct == null)
+
+		if (bpartnerProduct == null )
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(toProductExclude(bpartnerProduct));
+		final ProductExclude productExclude = ProductExclude.builder()
+				.productId(bpartnerProduct.getM_Product_ID())
+				.bpartnerId(bpartnerProduct.getC_BPartner_ID())
+				.reason(bpartnerProduct.getExclusionFromSaleReason())
+				.build();
+
+		return Optional.of(productExclude);
+	}
+
+
+	private Optional<ProductExclude> getBannedManufacturerFromSaleToCustomer(final int productId, final int partnerId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+
+		final I_M_Product product = load(productId, I_M_Product.class);
+
+		final I_M_BannedManufacturer bannedManufacturer = queryBL
+				.createQueryBuilderOutOfTrx(I_M_BannedManufacturer.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_C_BPartner_ID, partnerId)
+				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_Manufacturer_ID, product.getManufacturer_ID())
+				.create()
+				.firstOnly(I_M_BannedManufacturer.class);
+
+
+		if (bannedManufacturer == null )
+		{
+			return Optional.empty();
+		}
+
+		final ProductExclude productExclude = ProductExclude.builder()
+				.productId(productId)
+				.bpartnerId(partnerId)
+				.reason(bannedManufacturer.getExclusionFromSaleReason())
+				.build();
+
+		return Optional.of(productExclude);
 	}
 }
