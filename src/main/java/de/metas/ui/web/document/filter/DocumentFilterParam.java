@@ -88,6 +88,13 @@ public class DocumentFilterParam
 		return new DocumentFilterParam(joinAnd, sqlWhereClause, sqlWhereClauseParams);
 	}
 
+	public static final DocumentFilterParam ofNameEqualsValue(
+			@NonNull final String fieldName,
+			@NonNull final Object value)
+	{
+		return ofNameOperatorValue(fieldName, Operator.EQUAL, value);
+	}
+
 	/**
 	 * Shortcut to create an often-used kind of parameters.
 	 */
@@ -301,9 +308,8 @@ public class DocumentFilterParam
 			return this;
 		}
 
-		public Builder setOperator(final Operator operator)
+		public Builder setOperator(@NonNull final Operator operator)
 		{
-			Check.assumeNotNull(operator, "Parameter operator is not null");
 			this.operator = operator;
 			return this;
 		}

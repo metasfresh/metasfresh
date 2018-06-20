@@ -3,7 +3,9 @@ package de.metas.ui.web.document.filter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -12,6 +14,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -80,7 +83,8 @@ public final class DocumentFilter
 
 	private final String filterId;
 	private final ITranslatableString caption;
-	private final List<DocumentFilterParam> parameters;
+	private final ImmutableList<DocumentFilterParam> parameters;
+	private final ImmutableSet<String> internalParameterNames;
 
 	private DocumentFilter(final Builder builder)
 	{
@@ -89,7 +93,8 @@ public final class DocumentFilter
 
 		caption = builder.caption;
 
-		parameters = builder.parameters == null ? ImmutableList.of() : ImmutableList.copyOf(builder.parameters);
+		parameters = builder.parameters != null ? ImmutableList.copyOf(builder.parameters) : ImmutableList.of();
+		internalParameterNames = builder.internalParameterNames != null ? ImmutableSet.copyOf(builder.internalParameterNames) : ImmutableSet.of();
 	}
 
 	@Override
@@ -100,6 +105,7 @@ public final class DocumentFilter
 				.add("filterId", filterId)
 				.add("caption", caption)
 				.add("parameters", parameters.isEmpty() ? null : parameters)
+				.add("internalParameterNames", internalParameterNames.isEmpty() ? null : internalParameterNames)
 				.toString();
 	}
 
@@ -119,6 +125,11 @@ public final class DocumentFilter
 	public List<DocumentFilterParam> getParameters()
 	{
 		return parameters;
+	}
+
+	public boolean isInternalParameter(final String parameterName)
+	{
+		return internalParameterNames.contains(parameterName);
 	}
 
 	public DocumentFilterParam getParameter(@NonNull final String parameterName)
@@ -189,11 +200,31 @@ public final class DocumentFilter
 		return param.getValueAsDate(defaultValue);
 	}
 
+	public <T> T getParameterValueAs(@NonNull final String parameterName)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return null;
+		}
+
+		@SuppressWarnings("unchecked")
+		final T value = (T)param.getValue();
+		return value;
+	}
+
+	//
+	//
+	//
+	//
+	//
+
 	public static final class Builder
 	{
 		private String filterId;
 		private ITranslatableString caption = ImmutableTranslatableString.empty();
 		private List<DocumentFilterParam> parameters;
+		private Set<String> internalParameterNames;
 
 		private Builder()
 		{
@@ -228,7 +259,7 @@ public final class DocumentFilter
 			return this;
 		}
 
-		public Builder addParameter(final DocumentFilterParam parameter)
+		public Builder addParameter(@NonNull final DocumentFilterParam parameter)
 		{
 			if (parameters == null)
 			{
@@ -237,5 +268,22 @@ public final class DocumentFilter
 			parameters.add(parameter);
 			return this;
 		}
+
+		public Builder addInternalParameter(@NonNull final DocumentFilterParam parameter)
+		{
+			addParameter(parameter);
+			addInternalParameterName(parameter.getFieldName());
+			return this;
+		}
+
+		private void addInternalParameterName(final String parameterName)
+		{
+			if (internalParameterNames == null)
+			{
+				internalParameterNames = new HashSet<>();
+			}
+			internalParameterNames.add(parameterName);
+		}
+
 	}
 }
