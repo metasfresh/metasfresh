@@ -33,28 +33,43 @@ import lombok.NonNull;
 
 final class PassThroughDenormalizer implements IESDenormalizer
 {
-	public static final PassThroughDenormalizer of(final ESDataType dataType, final ESIndexType indexType)
+	public static final PassThroughDenormalizer of(
+			final ESDataType dataType,
+			final ESIndexType indexType,
+			final String analyzer)
 	{
-		return new PassThroughDenormalizer(dataType, indexType);
+		return new PassThroughDenormalizer(dataType, indexType, analyzer);
 	}
 
 	private final ESDataType dataType;
 	private final ESIndexType indexType;
+	private final String analyzer;
 
-	private PassThroughDenormalizer(@NonNull final ESDataType dataType, @NonNull final ESIndexType indexType)
+	private PassThroughDenormalizer(
+			@NonNull final ESDataType dataType,
+			@NonNull final ESIndexType indexType,
+			final String analyzer)
 	{
 		this.dataType = dataType;
 		this.indexType = indexType;
+		this.analyzer = analyzer;
 	}
 
 	@Override
 	public void appendMapping(final Object builderObj, final String fieldName) throws IOException
 	{
 		final XContentBuilder builder = ESDenormalizerHelper.extractXContentBuilder(builderObj);
-		builder.startObject(fieldName)
-				.field("type", dataType.getEsTypeAsString())
-				.field("index", indexType.getEsTypeAsString())
-				.endObject();
+		builder.startObject(fieldName);
+
+		builder.field("type", dataType.getEsTypeAsString());
+		builder.field("index", indexType.getEsTypeAsString());
+
+		if (analyzer != null)
+		{
+			builder.field("analyzer", analyzer);
+		}
+
+		builder.endObject();
 	}
 
 	@Override

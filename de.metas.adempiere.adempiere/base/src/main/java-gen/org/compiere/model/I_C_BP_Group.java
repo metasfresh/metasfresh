@@ -488,6 +488,31 @@ public interface I_C_BP_Group
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Zahlungsweise.
+	 * Wie die Rechnung bezahlt wird
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPaymentRule (java.lang.String PaymentRule);
+
+	/**
+	 * Get Zahlungsweise.
+	 * Wie die Rechnung bezahlt wird
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPaymentRule();
+
+    /** Column definition for PaymentRule */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_Group, Object> COLUMN_PaymentRule = new org.adempiere.model.ModelColumn<I_C_BP_Group, Object>(I_C_BP_Group.class, "PaymentRule", null);
+    /** Column name PaymentRule */
+    public static final String COLUMNNAME_PaymentRule = "PaymentRule";
+
+	/**
 	 * Set Einkauf Rabatt Schema.
 	 * Schema to calculate the purchase trade discount percentage
 	 *

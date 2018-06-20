@@ -3,12 +3,12 @@ package de.metas.bpartner.service;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import org.adempiere.location.LocationId;
+import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocation;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import lombok.NonNull;
 
 /*

@@ -38,7 +38,6 @@ import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerOrgBL;

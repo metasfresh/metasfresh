@@ -69,4 +69,10 @@ public class ESModelIndexerId
 	{
 		return Joiner.on(SEPARATOR).join(indexName, indexType, profile.name());
 	}
+
+	public ESModelIndexerId includedModel(final String includedAttributeName)
+	{
+		// FIXME: derive a new ID. for now, it's OK to return this
+		return this;
+	}
 }

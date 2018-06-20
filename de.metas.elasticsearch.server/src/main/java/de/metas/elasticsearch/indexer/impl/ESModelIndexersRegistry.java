@@ -6,7 +6,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
@@ -100,8 +99,10 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 	@Override
 	public void addModelIndexer(final ESModelIndexerConfigBuilder config)
 	{
-		final IESModelIndexer indexer = new ESModelIndexerBuilder(this, config)
-				.build();
+		final IESModelIndexer indexer = new ESModelIndexerFactory(this, config)
+				.indexSettingsJson(config.getIndexSettingsJson())
+				.indexStringFullTextSearchAnalyzer(config.getIndexStringFullTextSearchAnalyzer())
+				.create();
 
 		addModelIndexer(indexer);
 	}
@@ -111,8 +112,6 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 		//
 		// Register the indexer
 		{
-			Check.assumeNotNull(indexer, "Parameter indexer is not null");
-
 			final IESModelIndexer oldIndexer = indexersById.putIfAbsent(indexer.getId(), indexer);
 			if (oldIndexer != null && !oldIndexer.equals(indexer))
 			{

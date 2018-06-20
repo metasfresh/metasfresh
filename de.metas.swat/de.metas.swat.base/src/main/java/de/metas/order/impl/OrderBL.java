@@ -44,6 +44,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -55,7 +56,6 @@ import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
@@ -662,7 +662,7 @@ public class OrderBL implements IOrderBL
 				shipLocations.add(loc);
 			}
 
-			final de.metas.bpartner.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, de.metas.bpartner.model.I_C_BPartner_Location.class);
+			final org.compiere.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, org.compiere.model.I_C_BPartner_Location.class);
 			if (bpLoc.isShipToDefault())
 			{
 				order.setC_BPartner_Location_ID(bpLoc.getC_BPartner_Location_ID());
@@ -721,7 +721,7 @@ public class OrderBL implements IOrderBL
 		// Search in relation and try to find an adequate Bill Partner if the bill location could not be found
 		final I_C_BP_Relation billPartnerRelation = bPartnerDAO.retrieveBillBPartnerRelationFirstEncountered(order,
 				order.getC_BPartner(),
-				InterfaceWrapperHelper.create(order.getC_BPartner_Location(), de.metas.bpartner.model.I_C_BPartner_Location.class));
+				InterfaceWrapperHelper.create(order.getC_BPartner_Location(), org.compiere.model.I_C_BPartner_Location.class));
 
 		if (billPartnerRelation == null)
 		{
@@ -767,10 +767,9 @@ public class OrderBL implements IOrderBL
 					break;
 				}
 
-				final de.metas.bpartner.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, de.metas.bpartner.model.I_C_BPartner_Location.class);
-				if (bpLoc.isBillToDefault())
+				if (loc.isBillToDefault())
 				{
-					billLocationIdToUse = bpLoc.getC_BPartner_Location_ID();
+					billLocationIdToUse = loc.getC_BPartner_Location_ID();
 					foundLoc = true;
 				}
 

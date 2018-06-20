@@ -1,5 +1,8 @@
 package de.metas.elasticsearch.trigger;
 
+import java.util.List;
+import java.util.Set;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -7,13 +10,17 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 
 import de.metas.elasticsearch.IESSystem;
+import de.metas.elasticsearch.config.ESIncludedModelsConfig;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.logging.LogManager;
 import lombok.Builder;
@@ -51,7 +58,10 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 	private static final Logger logger = LogManager.getLogger(ESDocumentIndexTriggerInterceptor.class);
 
 	private final String modelTableName;
+	private final ImmutableListMultimap<String, ESIncludedModelsConfig> includedModelsConfigsByChildTableName;
+
 	private final ESModelIndexerId modelIndexerId;
+
 	private final boolean triggerOnNewOrChange;
 	private final boolean triggerOnDelete;
 
@@ -60,6 +70,7 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 	@Builder
 	private ESOnChangeTriggerInterceptor(
 			@NonNull final String modelTableName,
+			@NonNull final ImmutableList<ESIncludedModelsConfig> includedModelsConfigs,
 			@NonNull final ESModelIndexerId modelIndexerId,
 			final boolean triggerOnNewOrChange,
 			final boolean triggerOnDelete)
@@ -68,7 +79,12 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 		Check.assume(triggerOnNewOrChange || triggerOnDelete, "At least one trigger shall be enabled");
 
 		this.modelTableName = modelTableName;
+		includedModelsConfigsByChildTableName = includedModelsConfigs
+				.stream()
+				.collect(GuavaCollectors.toImmutableListMultimap(ESIncludedModelsConfig::getChildTableName));
+
 		this.modelIndexerId = modelIndexerId;
+
 		this.triggerOnNewOrChange = triggerOnNewOrChange;
 		this.triggerOnDelete = triggerOnDelete;
 	}
@@ -88,6 +104,9 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		engine.addModelChange(modelTableName, this);
+
+		final Set<String> childTableNames = includedModelsConfigsByChildTableName.keySet();
+		childTableNames.forEach(childTableName -> engine.addModelChange(childTableName, this));
 	}
 
 	@Override
@@ -95,21 +114,14 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 	{
 		try
 		{
-			if (changeType.isNewOrChange() && changeType.isAfter())
+			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+			if (modelTableName.equals(tableName))
 			{
-				if (triggerOnNewOrChange)
-				{
-					addToIndex(model);
-				}
+				onParentModelChanged(model, changeType);
 			}
-			else if (changeType.isBefore() && changeType.isDelete())
+			else
 			{
-				// NOTE: triggering on BEFORE because on AFTER we won't be able to fetch the model IDs
-
-				if (triggerOnDelete)
-				{
-					removeFromIndexes(model);
-				}
+				onChildModelChanged(model, tableName);
 			}
 		}
 		catch (final Exception ex)
@@ -118,9 +130,62 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 		}
 	}
 
+	private void onParentModelChanged(final Object model, final ModelChangeType changeType)
+	{
+		if (changeType.isNewOrChange() && changeType.isAfter())
+		{
+			if (triggerOnNewOrChange)
+			{
+				addToIndex(model);
+			}
+		}
+		else if (changeType.isBefore() && changeType.isDelete())
+		{
+			// NOTE: triggering on BEFORE because on AFTER we won't be able to fetch the model IDs
+
+			if (triggerOnDelete)
+			{
+				removeFromIndexes(model);
+			}
+		}
+	}
+
+	private void onChildModelChanged(final Object childModel, final String tableName)
+	{
+		final List<ESIncludedModelsConfig> childModelConfigs = includedModelsConfigsByChildTableName.get(tableName);
+		childModelConfigs.forEach(includedModelConfig -> onChildModelChanged(childModel, includedModelConfig));
+	}
+
+	private void onChildModelChanged(final Object childModel, final ESIncludedModelsConfig includedModelConfig)
+	{
+		// Re-index the parent
+		final int parentId = retrieveParentId(childModel, includedModelConfig);
+		if (parentId >= 0)
+		{
+			addToIndex(parentId);
+		}
+	}
+
+	private int retrieveParentId(final Object childModel, final ESIncludedModelsConfig includedModelConfig)
+	{
+		final Object parentIdObj = InterfaceWrapperHelper.getValue(childModel, includedModelConfig.getChildLinkColumnName())
+				.orNull();
+		if (parentIdObj == null)
+		{
+			return -1;
+		}
+
+		return NumberUtils.asInt(parentIdObj, -1);
+	}
+
 	private final void addToIndex(final Object model)
 	{
 		final int modelId = InterfaceWrapperHelper.getId(model);
+		addToIndex(modelId);
+	}
+
+	private final void addToIndex(final int modelId)
+	{
 		Services.get(IESSystem.class)
 				.scheduler()
 				.addToIndex(modelIndexerId, modelTableName, ImmutableList.of(modelId));

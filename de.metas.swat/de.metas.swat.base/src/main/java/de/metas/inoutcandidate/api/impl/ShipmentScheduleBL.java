@@ -863,7 +863,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final String adress = bPartnerBL.mkFullAddress(
 				bPartner,
-				InterfaceWrapperHelper.create(location, de.metas.bpartner.model.I_C_BPartner_Location.class),
+				location,
 				user,
 				InterfaceWrapperHelper.getTrxName(sched));
 

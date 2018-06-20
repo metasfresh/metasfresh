@@ -2,6 +2,7 @@ package de.metas.elasticsearch.denormalizers.impl;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +14,6 @@ import org.compiere.util.DisplayType;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
@@ -56,7 +56,7 @@ final class ESPOModelDenormalizerBuilder
 	private final Set<String> columnsToAlwaysInclude = new HashSet<>();
 	private final Set<String> columnsToInclude = new HashSet<>();
 	private final Set<String> columnsToExclude = new HashSet<>();
-	private final Map<String, ESModelDenormalizerColumn> columnDenormalizersByColumnName = new HashMap<>();
+	private final Map<String, ESPOModelDenormalizerColumn> columnDenormalizersByColumnName = new HashMap<>();
 	private final Map<String, ESIndexType> columnsIndexType = new HashMap<>();
 
 	private String currentColumnName;
@@ -81,10 +81,12 @@ final class ESPOModelDenormalizerBuilder
 
 	public ESPOModelDenormalizer build()
 	{
+		final Map<String, ESPOModelDenormalizerColumn> columnDenormalizersEffective = new HashMap<>();
+		final Set<String> fullTextSearchFieldNames = new LinkedHashSet<>();
+
 		//
 		// Add registered denormalizers
-		final Map<String, ESModelDenormalizerColumn> columnDenormalizersEffective = new HashMap<>();
-		for (final Map.Entry<String, ESModelDenormalizerColumn> entry : columnDenormalizersByColumnName.entrySet())
+		for (final Map.Entry<String, ESPOModelDenormalizerColumn> entry : columnDenormalizersByColumnName.entrySet())
 		{
 			final String columnName = entry.getKey();
 			if (!isIncludeColumn(columnName))
@@ -92,13 +94,18 @@ final class ESPOModelDenormalizerBuilder
 				continue;
 			}
 
-			final ESModelDenormalizerColumn valueExtractorAndDenormalizer = entry.getValue();
+			final ESPOModelDenormalizerColumn valueExtractorAndDenormalizer = entry.getValue();
 			if (valueExtractorAndDenormalizer == null)
 			{
 				continue;
 			}
 
 			columnDenormalizersEffective.put(columnName, valueExtractorAndDenormalizer);
+
+			if (isFullTextSearchField(columnName))
+			{
+				fullTextSearchFieldNames.add(columnName);
+			}
 		}
 
 		//
@@ -106,38 +113,72 @@ final class ESPOModelDenormalizerBuilder
 		for (int columnIndex = 0, columnsCount = poInfo.getColumnCount(); columnIndex < columnsCount; columnIndex++)
 		{
 			final String columnName = poInfo.getColumnName(columnIndex);
+
+			// skip if it was explicitly banned
 			if (!isIncludeColumn(columnName))
 			{
 				continue;
 			}
 
+			// skip if already considered
 			if (columnDenormalizersEffective.containsKey(columnName))
 			{
 				continue;
 			}
 
-			final ESModelDenormalizerColumn valueExtractorAndDenormalizer = generateColumn(columnName);
-			if (valueExtractorAndDenormalizer == null)
+			// skip if not eligible for column auto-generation
+			if (!isEligibleForColumnAutoGeneration(columnName))
 			{
 				continue;
 			}
 
+			// Generate and add
+			final ESPOModelDenormalizerColumn valueExtractorAndDenormalizer = generateColumn(columnName);
+			if (valueExtractorAndDenormalizer == null)
+			{
+				continue;
+			}
 			columnDenormalizersEffective.put(columnName, valueExtractorAndDenormalizer);
+
+			if (isFullTextSearchField(columnName))
+			{
+				fullTextSearchFieldNames.add(columnName);
+			}
 		}
 
-		return new ESPOModelDenormalizer(profile, modelTableName, keyColumnName, columnDenormalizersEffective);
+		return new ESPOModelDenormalizer(profile, modelTableName, keyColumnName, columnDenormalizersEffective, fullTextSearchFieldNames);
 	}
 
-	private final ESModelDenormalizerColumn generateColumn(final String columnName)
+	private boolean isFullTextSearchField(String columnName)
 	{
-		final ESIndexType indexType = getIndexType(columnName);
 		final int displayType = poInfo.getColumnDisplayType(columnName);
+
+		// Exclude passwords
+		if (DisplayType.isPassword(columnName, displayType))
+		{
+			return false;
+		}
+
+		if (DisplayType.isText(displayType))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	private final ESPOModelDenormalizerColumn generateColumn(final String columnName)
+	{
+		final int displayType = poInfo.getColumnDisplayType(columnName);
+		final ESIndexType indexType = getIndexType(columnName, displayType);
 
 		//
 		// ID column
 		if (DisplayType.ID == displayType)
 		{
-			return ESModelDenormalizerColumn.passThrough(ESDataType.String, indexType);
+			return ESPOModelDenormalizerColumn.passThrough(ESDataType.String, indexType);
 		}
 
 		//
@@ -152,7 +193,8 @@ final class ESPOModelDenormalizerBuilder
 		// Text
 		if (DisplayType.isText(displayType))
 		{
-			return ESModelDenormalizerColumn.passThrough(ESDataType.String, indexType);
+			final String analyzer = getAnalyzer(columnName);
+			return ESPOModelDenormalizerColumn.passThrough(ESDataType.String, indexType, analyzer);
 		}
 
 		//
@@ -160,21 +202,21 @@ final class ESPOModelDenormalizerBuilder
 		if (DisplayType.isNumeric(displayType))
 		{
 			final ESDataType dataType = DisplayType.Integer == displayType ? ESDataType.Integer : ESDataType.Double;
-			return ESModelDenormalizerColumn.passThrough(dataType, indexType);
+			return ESPOModelDenormalizerColumn.passThrough(dataType, indexType);
 		}
 
 		//
 		// Date
 		if (DisplayType.isDate(displayType))
 		{
-			return ESModelDenormalizerColumn.rawValue(DateDenormalizer.of(displayType, indexType));
+			return ESPOModelDenormalizerColumn.rawValue(DateDenormalizer.of(displayType, indexType));
 		}
 
 		//
 		// Boolean
 		if (DisplayType.YesNo == displayType)
 		{
-			return ESModelDenormalizerColumn.passThrough(ESDataType.Boolean, indexType);
+			return ESPOModelDenormalizerColumn.passThrough(ESDataType.Boolean, indexType);
 		}
 
 		//
@@ -186,7 +228,7 @@ final class ESPOModelDenormalizerBuilder
 		}
 		if ((DisplayType.List == displayType || DisplayType.Button == displayType) && AD_Reference_ID > 0)
 		{
-			return ESModelDenormalizerColumn.of(PORawValueExtractor.instance, AD_Ref_List_Denormalizer.of(AD_Reference_ID));
+			return ESPOModelDenormalizerColumn.of(PORawValueExtractor.instance, AD_Ref_List_Denormalizer.of(AD_Reference_ID));
 		}
 
 		//
@@ -207,10 +249,28 @@ final class ESPOModelDenormalizerBuilder
 				return null;
 			}
 
-			return ESModelDenormalizerColumn.of(valueModelDenormalizer);
+			return ESPOModelDenormalizerColumn.of(valueModelDenormalizer);
 		}
 
 		return null;
+	}
+
+	private boolean isEligibleForColumnAutoGeneration(final String columnName)
+	{
+		final int displayType = poInfo.getColumnDisplayType(columnName);
+
+		// ID column
+		if (DisplayType.ID == displayType)
+		{
+			return true;
+		}
+
+		if (profile == ESModelIndexerProfile.FULL_TEXT_SEARCH)
+		{
+			return DisplayType.isText(displayType) || DisplayType.isAnyLookup(displayType);
+		}
+
+		return true;
 	}
 
 	private boolean isIncludeColumn(final String columnName)
@@ -231,14 +291,6 @@ final class ESPOModelDenormalizerBuilder
 		}
 
 		return true;
-	}
-
-	private ESPOModelDenormalizerBuilder includeColumn(final String columnName, final IESModelValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
-	{
-		final ESModelDenormalizerColumn valueExtractorAndDenormalizer = ESModelDenormalizerColumn.of(valueExtractor, valueDenormalizer);
-		includeColumn(columnName);
-		columnDenormalizersByColumnName.put(columnName, valueExtractorAndDenormalizer);
-		return this;
 	}
 
 	public ESPOModelDenormalizerBuilder includeColumn(final String columnName)
@@ -271,9 +323,28 @@ final class ESPOModelDenormalizerBuilder
 		return this;
 	}
 
-	private ESIndexType getIndexType(final String columnName)
+	private ESIndexType getIndexType(final String columnName, final int displayType)
 	{
 		final ESIndexType esIndexType = columnsIndexType.get(columnName);
-		return esIndexType != null ? esIndexType : ESIndexType.NotAnalyzed;
+		return esIndexType != null ? esIndexType : getDefaultIndexType(displayType);
+	}
+
+	private ESIndexType getDefaultIndexType(final int displayType)
+	{
+		if (profile == ESModelIndexerProfile.FULL_TEXT_SEARCH)
+		{
+			if (DisplayType.isText(displayType))
+			{
+				return ESIndexType.Analyzed;
+			}
+		}
+
+		// fallback
+		return ESIndexType.NotAnalyzed;
+	}
+
+	private String getAnalyzer(final String columnName)
+	{
+		return profile.getDefaultAnalyzer();
 	}
 }

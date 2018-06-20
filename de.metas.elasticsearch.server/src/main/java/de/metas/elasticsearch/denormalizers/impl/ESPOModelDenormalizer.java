@@ -3,6 +3,7 @@ package de.metas.elasticsearch.denormalizers.impl;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -59,13 +60,16 @@ import lombok.NonNull;
 	private final String keyColumnName;
 	@Getter
 	private final ImmutableSet<String> columnNames;
-	private final ImmutableMap<String, ESModelDenormalizerColumn> columnDenormalizers;
+	private final ImmutableMap<String, ESPOModelDenormalizerColumn> columnDenormalizers;
+	@Getter
+	private final ImmutableSet<String> fullTextSearchFieldNames;
 
 	ESPOModelDenormalizer(
 			@NonNull final ESModelIndexerProfile profile,
 			@NonNull final String modelTableName,
 			final String keyColumnName, // null is accepted
-			final Map<String, ESModelDenormalizerColumn> columnDenormalizers)
+			final Map<String, ESPOModelDenormalizerColumn> columnDenormalizers,
+			final Set<String> fullTextSearchFieldNames)
 	{
 		Check.assumeNotEmpty(modelTableName, "modelTableName is not empty");
 		Check.assumeNotEmpty(columnDenormalizers, "columnDenormalizers is not empty");
@@ -82,6 +86,8 @@ import lombok.NonNull;
 			columnNames.add(keyColumnName);
 		}
 		this.columnNames = columnNames.build();
+
+		this.fullTextSearchFieldNames = fullTextSearchFieldNames != null ? ImmutableSet.copyOf(fullTextSearchFieldNames) : ImmutableSet.of();
 	}
 
 	@Override
@@ -107,10 +113,10 @@ import lombok.NonNull;
 			builder.startObject("properties");
 		}
 
-		for (final Map.Entry<String, ESModelDenormalizerColumn> entry : columnDenormalizers.entrySet())
+		for (final Map.Entry<String, ESPOModelDenormalizerColumn> entry : columnDenormalizers.entrySet())
 		{
 			final String columnName = entry.getKey();
-			final ESModelDenormalizerColumn columnDenorm = entry.getValue();
+			final ESPOModelDenormalizerColumn columnDenorm = entry.getValue();
 			columnDenorm.appendMapping(builder, columnName);
 		}
 
@@ -126,11 +132,11 @@ import lombok.NonNull;
 	{
 		final Map<String, Object> result = new LinkedHashMap<>();
 		final PO po = InterfaceWrapperHelper.getPO(model);
-		for (final Map.Entry<String, ESModelDenormalizerColumn> columnNameAndDenorm : columnDenormalizers.entrySet())
+		for (final Map.Entry<String, ESPOModelDenormalizerColumn> columnNameAndDenorm : columnDenormalizers.entrySet())
 		{
 			final String columnName = columnNameAndDenorm.getKey();
 
-			final ESModelDenormalizerColumn columnValueExtractorAndDenormalizer = columnNameAndDenorm.getValue();
+			final ESPOModelDenormalizerColumn columnValueExtractorAndDenormalizer = columnNameAndDenorm.getValue();
 			final Object valueDenorm = columnValueExtractorAndDenormalizer.extractValueAndDenormalize(po, columnName);
 			if (valueDenorm == null)
 			{

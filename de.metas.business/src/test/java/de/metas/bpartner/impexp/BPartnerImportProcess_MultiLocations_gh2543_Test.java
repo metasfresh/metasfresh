@@ -11,13 +11,13 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.bpartner.impexp.BPartnerImportProcess;
 import de.metas.bpartner.service.IBPartnerDAO;
 
 /*
@@ -92,8 +92,8 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 			// check location - is similar with the one from first partner, but should have different id
 			final I_C_BPartner firstBpartner = ibpartners.get(0).getC_BPartner();
 			final I_C_BPartner secondBPartner = ibpartners.get(2).getC_BPartner();
-			final List<de.metas.bpartner.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBpartner);
-			final List<de.metas.bpartner.model.I_C_BPartner_Location> sbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
+			final List<org.compiere.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBpartner);
+			final List<org.compiere.model.I_C_BPartner_Location> sbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
 			assertThat(fbplocations.get(0).getC_Location_ID()).isNotEqualTo(sbplocations.get(0).getC_Location_ID());
 		}
 
@@ -119,7 +119,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		});
 		//
 		// check bplocation
-		final List<de.metas.bpartner.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBPartner);
+		final List<org.compiere.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBPartner);
 		Assert.assertTrue(!fbplocations.isEmpty());
 		assertThat(fbplocations).hasSize(1);
 		fbplocations.forEach(bplocation -> {
@@ -145,7 +145,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		});
 		//
 		// check bplocation
-		final List<de.metas.bpartner.model.I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
+		final List<org.compiere.model.I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
 		Assert.assertTrue(!bplocations.isEmpty());
 		assertThat(bplocations).hasSize(1);
 		bplocations.forEach(bplocation -> {
@@ -171,7 +171,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		});
 		//
 		// check bplocation
-		final List<de.metas.bpartner.model.I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(thirdBPartner);
+		final List<I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(thirdBPartner);
 		assertThat(bplocations).isNotEmpty();
 		assertThat(bplocations).hasSize(1);
 		bplocations.forEach(bplocation -> {

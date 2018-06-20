@@ -31,12 +31,12 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
@@ -82,7 +82,7 @@ public class C_Invoice
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
-		final I_C_BPartner_Location location = InterfaceWrapperHelper.create(invoice.getC_BPartner_Location(), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location location = invoice.getC_BPartner_Location();
 		if (location == null)
 		{
 			return;

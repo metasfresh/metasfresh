@@ -39,6 +39,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -47,7 +48,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.inout.model.I_M_InOutLine;
@@ -488,8 +488,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 		//
 		// Iterate receipt schedules and try to allocate on them as much as possible
-		final List<I_M_ReceiptSchedule_Alloc> allocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
-		final List<Integer> orderLineIds = new ArrayList<Integer>();
+		final List<I_M_ReceiptSchedule_Alloc> allocs = new ArrayList<>();
+		final List<Integer> orderLineIds = new ArrayList<>();
 		I_M_ReceiptSchedule lastReceiptSchedule = null;
 		for (final I_M_ReceiptSchedule rs : receiptSchedules)
 		{

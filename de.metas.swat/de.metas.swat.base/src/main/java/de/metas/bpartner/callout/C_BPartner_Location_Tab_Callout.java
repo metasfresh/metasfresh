@@ -27,8 +27,8 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
 
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.bpartner.service.IBPartnerDAO;
 
 // TODO: consider removing it; it's used only in Cockpit window (which is deprecated!)

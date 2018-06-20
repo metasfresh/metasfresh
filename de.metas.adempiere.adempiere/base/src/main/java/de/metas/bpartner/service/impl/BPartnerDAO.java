@@ -50,6 +50,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
@@ -68,7 +69,6 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
-import de.metas.bpartner.model.I_C_BPartner_Location;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.lang.SOTrx;
@@ -332,7 +332,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final int bpGroupId = bPartner.getC_BP_Group_ID();
 		if (bpGroupId > 0)
 		{
-			final de.metas.bpartner.model.I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, bpGroupId, de.metas.bpartner.model.I_C_BP_Group.class, trxName);
+			final I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, bpGroupId, I_C_BP_Group.class, trxName);
 			final Integer bpGroupPricingSysId;
 
 			// metas: Same problem as above: The method always retrieved SO-PricingSys. This caused errors in

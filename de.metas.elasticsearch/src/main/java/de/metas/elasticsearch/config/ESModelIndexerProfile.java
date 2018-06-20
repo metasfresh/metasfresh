@@ -1,5 +1,7 @@
 package de.metas.elasticsearch.config;
 
+import lombok.Getter;
+
 /*
  * #%L
  * de.metas.elasticsearch
@@ -10,12 +12,12 @@ package de.metas.elasticsearch.config;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,5 +26,14 @@ package de.metas.elasticsearch.config;
 
 public enum ESModelIndexerProfile
 {
-	KPI, FULL_TEXT_SEARCH;
+	KPI(null), //
+	FULL_TEXT_SEARCH("fts_analyzer");
+
+	@Getter
+	private final String defaultAnalyzer;
+
+	private ESModelIndexerProfile(final String defaultAnalyzer)
+	{
+		this.defaultAnalyzer = defaultAnalyzer;
+	}
 }
