@@ -28,7 +28,6 @@ import com.google.common.base.MoreObjects;
  * #L%
  */
 
-
 final class POModelValueExtractor implements IESModelValueExtractor
 {
 	public static final POModelValueExtractor of(final String modelValueTableName)
