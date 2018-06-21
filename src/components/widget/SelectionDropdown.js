@@ -114,7 +114,10 @@ export default class SelectionDropdown extends Component {
   navigateToAlphanumeric = char => {
     const { selected, options, onChange } = this.props;
     const items = options.filter(
-      item => item.caption[0].toUpperCase() === char.toUpperCase()
+      item =>
+        item.caption &&
+        item.caption.length &&
+        item.caption[0].toUpperCase() === char.toUpperCase()
     );
 
     const selectedIndex = items.indexOf(selected);
