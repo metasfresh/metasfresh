@@ -23,7 +23,6 @@ import java.awt.Event;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -84,7 +83,6 @@ import org.compiere.wf.api.IADWorkflowBL;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_AD_Form;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
@@ -114,8 +112,7 @@ public final class AMenu extends CFrame
 	 */
 	public AMenu()
 	{
-		super();
-		Splash splash = Splash.getSplash();
+		final Splash splash = Splash.getSplash();
 		//
 		m_WindowNo = Env.createWindowNo(this);
 		// Login
@@ -127,7 +124,7 @@ public final class AMenu extends CFrame
 		//
 		if (!Adempiere.startupEnvironment(true))       // Load Environment
 		{
-			System.exit(1);
+			AEnv.exit(1);
 		}
 		Services.get(ISessionBL.class).getCurrentOrCreateNewSession(m_ctx);		// Start Session
 
@@ -193,7 +190,6 @@ public final class AMenu extends CFrame
 		//
 		// Hide slash
 		splash.dispose();
-		splash = null;
 	}	// AMenu
 
 	/**
@@ -309,44 +305,7 @@ public final class AMenu extends CFrame
 		// Default Image
 		this.setIconImage(Adempiere.getProductIconSmall());
 
-		// Focus Traversal
-		KeyboardFocusManager.setCurrentKeyboardFocusManager(AKeyboardFocusManager.get());
-		// FocusManager.getCurrentManager().setDefaultFocusTraversalPolicy(AFocusTraversalPolicy.get());
-		// this.setFocusTraversalPolicy(AFocusTraversalPolicy.get());
-
-		// Register Swing ClientUI service
-		Services.registerService(IClientUI.class, new SwingClientUI());
-
 		ReportCtl.setDefaultReportEngineReportViewerProvider(SwingViewerProvider.instance);
-
-		/**
-		 * Show Login Screen - if not successful - exit
-		 */
-		log.trace("Login");
-
-		final ALogin login = new ALogin(splash, m_ctx);
-		if (!login.initLogin())      		// no automatic login
-		{
-			// Center the window
-			try
-			{
-				AEnv.showCenterScreen(login);	// HTML load errors
-			}
-			catch (Exception ex)
-			{
-				log.error(ex.toString());
-			}
-			if (!login.isConnected() || !login.isOKpressed())
-				AEnv.exit(1);
-		}
-
-		// Check Build
-		// we already check the server version via ClientUpdateValidator and that's enough
-		// if (!DB.isBuildOK(m_ctx))
-		// AEnv.exit(1);
-
-		// Check DB (AppsServer Version checked in Login)
-		// DB.isDatabaseOK(m_ctx); // we already check the server version via ClientUpdateValidator and that's enough
 	}	// initSystem
 
 	// UI

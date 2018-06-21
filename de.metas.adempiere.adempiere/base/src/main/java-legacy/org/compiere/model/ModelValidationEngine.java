@@ -110,8 +110,12 @@ public class ModelValidationEngine implements IModelValidationEngine
 			// NOTE: we need to instantiate and assign it to static variable immediatelly
 			// else, in init() method, this get() is called indirectly which leads us to have 2 ModelValidationEngine instances
 			s_engine = new ModelValidationEngine();
-
-			s_engine.init(); // metas
+		}
+		if (State.ENABLED.equals(state))
+		{
+			state = State.INITIALIZING;
+			s_engine.init();
+			state = State.INITIALIZED;
 		}
 		return s_engine;
 	}	// get
@@ -167,7 +171,6 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 */
 	private ModelValidationEngine()
 	{
-		super();
 		// metas: tsa: begin: break this in 2 parts because if the get() method is called during initialization we will end with multiple instances of ModelVaidationEngine
 	}
 
@@ -220,7 +223,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			// Load from Spring context
 			for (final Object modelInterceptor : getSpringInterceptors())
 			{
-				addModelValidator(modelInterceptor, /*client*/null);
+				addModelValidator(modelInterceptor, /* client */null);
 			}
 		}
 		catch (Exception e)
@@ -253,18 +256,18 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 		// metas: 02504: end
 	}	// ModelValidatorEngine
-	
+
 	private static Collection<Object> getSpringInterceptors()
 	{
 		final ApplicationContext context = Adempiere.getSpringApplicationContext();
 		// NOTE: atm it returns null only when started from our tools (like the "model generator")
 		// but it's not preventing the tool execution because this is the last thing we do here and also because usually it's configured to not fail on init error.
 		// so we can leave with the NPE here
-		
+
 		final LinkedHashMap<String, Object> interceptorsByName = new LinkedHashMap<>();
 		interceptorsByName.putAll(context.getBeansWithAnnotation(org.adempiere.ad.modelvalidator.annotations.Interceptor.class));
 		interceptorsByName.putAll(context.getBeansOfType(IModelInterceptor.class));
-		
+
 		return interceptorsByName.values();
 	}
 
@@ -1469,5 +1472,30 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @FIXME [12:09:52] Teo metas: use org.adempiere.ad.persistence.ModelDynAttributeAccessor<ModelType, AttributeType> to define the dynamic attribute
 	 */
 	public static final String DYNATTR_DO_NOT_INVOKE_ON_MODEL_CHANGE = "DO_NOT_INVOKE_ON_MODEL_CHANGE";
+
+	private enum State
+	{
+		/** In this state, {@link #get()} does not attempt to initialize this model validator and basically returns a "no-op" instance. */
+		DISABLED,
+
+		/** In this state, the next invocation of {@link #get()} will to initialize the model validator before returning an instance. */
+		ENABLED,
+
+		INITIALIZING,
+
+		INITIALIZED
+	}
+
+	private static State state = State.ENABLED;
+
+	public static void disable()
+	{
+		state = State.DISABLED;
+	}
+
+	public static void enable()
+	{
+		state = State.ENABLED;
+	}
 
 }	// ModelValidatorEngine

@@ -24,12 +24,6 @@ import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IStatusService;
 import de.metas.session.jaxrs.StatusServiceResult;
 
-/**
- * Adempiere Status Bean
- *
- * @author Jorg Janke
- * @version $Id: StatusBean.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
- */
 
 public class StatusService implements IStatusService
 {
@@ -84,6 +78,13 @@ public class StatusService implements IStatusService
 			r.setDbUid(connection.getDbUid());
 			r.setDbPwd(getDbPwdInternal(connection));
 		}
+
+		final RabbitmqPropertiesProvider rabbitmqPropertiesProvider = Adempiere.getBean(RabbitmqPropertiesProvider.class);
+		r.setRabbitmqHost(rabbitmqPropertiesProvider.getRabbitmqHost());
+		r.setRabbitmqPort(rabbitmqPropertiesProvider.getRabbitmqPort());
+		r.setRabbitmqUsername(rabbitmqPropertiesProvider.getRabbitmqUsername());
+		r.setRabbitmqPassword(rabbitmqPropertiesProvider.getRabbitmqPassword());
+
 		r.setVersionCount(m_versionCount);
 		r.setDataBaseCount(m_databaseCount);
 		r.setStatus(getStatusSummary());

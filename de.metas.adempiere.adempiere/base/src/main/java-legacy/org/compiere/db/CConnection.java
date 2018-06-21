@@ -176,7 +176,6 @@ public final class CConnection implements Serializable, Cloneable
 
 	private CConnection()
 	{
-		super();
 	} 	// CConnection
 
 	/** Connection attributes */
@@ -652,7 +651,7 @@ public final class CConnection implements Serializable, Cloneable
 	} // supportsBLOB
 
 	/**
-	 * 
+	 *
 	 * Is PostgreSQL DB
 	 *
 	 * @return true if PostgreSQL
@@ -1272,9 +1271,70 @@ public final class CConnection implements Serializable, Cloneable
 		setDbUid(status.getDbUid());
 		setDbPwd(status.getDbPwd());
 
+		setRabbitmqHost(status.getRabbitmqHost());
+		setRabbitmqPort(status.getRabbitmqPort());
+		setRabbitmqUsername(status.getRabbitmqUsername());
+		setRabbitmqPassword(status.getRabbitmqPassword());
+
 		m_version = status.getDateVersion();
 		log.debug("Server=" + getDbHost() + ", DB=" + getDbName());
 	} 	// update Info
+
+	private void setRabbitmqHost(String rabbitmqHost)
+	{
+		if (Objects.equals(rabbitmqHost, attrs.getRabbitmqHost()))
+		{
+			return;
+		}
+		attrs.setRabbitmqHost(rabbitmqHost);
+	}
+
+	public String getRabbitmqHost()
+	{
+		return attrs.getRabbitmqHost();
+	}
+
+	private void setRabbitmqPort(String rabbitmqPort)
+	{
+		if (Objects.equals(rabbitmqPort, attrs.getRabbitmqPort()))
+		{
+			return;
+		}
+		attrs.setRabbitmqPort(rabbitmqPort);
+	}
+
+	public String getRabbitmqPort()
+	{
+		return attrs.getRabbitmqPort();
+	}
+
+	private void setRabbitmqUsername(String rabbitmqUsername)
+	{
+		if (Objects.equals(rabbitmqUsername, attrs.getRabbitmqUsername()))
+		{
+			return;
+		}
+		attrs.setRabbitmqUsername(rabbitmqUsername);
+	}
+
+	public String getRabbitmqUsername()
+	{
+		return attrs.getRabbitmqUsername();
+	}
+
+	private void setRabbitmqPassword(String rabbitmqPassword)
+	{
+		if (Objects.equals(rabbitmqPassword, attrs.getRabbitmqPassword()))
+		{
+			return;
+		}
+		attrs.setRabbitmqPassword(rabbitmqPassword);
+	}
+
+	public String getRabbitmqPassword()
+	{
+		return attrs.getRabbitmqPassword();
+	}
 
 	/**
 	 * Get Status Info

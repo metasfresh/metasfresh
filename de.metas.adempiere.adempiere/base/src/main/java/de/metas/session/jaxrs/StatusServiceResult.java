@@ -1,5 +1,8 @@
 package de.metas.session.jaxrs;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -42,9 +45,23 @@ public class StatusServiceResult
 	private int dataBaseCount;
 	private String status;
 
+	@Getter
+	@Setter
+	private String rabbitmqHost;
+	@Getter
+	@Setter
+	private String rabbitmqPort;
+	@Getter
+	@Setter
+	private String rabbitmqUsername;
+	@Getter
+	@Setter
+	private String rabbitmqPassword;
+
 	/**
-	 * 	Get Version (Date)
-	 *  @return version e.g. 2002-09-02
+	 * Get Version (Date)
+	 *
+	 * @return version e.g. 2002-09-02
 	 */
 	public String getDateVersion()
 	{
@@ -52,8 +69,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 * 	Get Main Version
-	 *  @return main version - e.g. Version 2.4.3b
+	 * Get Main Version
+	 *
+	 * @return main version
 	 */
 	public String getMainVersion()
 	{
@@ -61,8 +79,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 *  Get Database Type
-	 *  @return Database Type
+	 * Get Database Type
+	 *
+	 * @return Database Type
 	 */
 	public String getDbType()
 	{
@@ -70,8 +89,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 *  Get Database Host
-	 *  @return Database Host Name
+	 * Get Database Host
+	 *
+	 * @return Database Host Name
 	 */
 	public String getDbHost()
 	{
@@ -79,8 +99,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 *  Get Database Port
-	 *  @return Database Port
+	 * Get Database Port
+	 *
+	 * @return Database Port
 	 */
 	public int getDbPort()
 	{
@@ -88,8 +109,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 *  Get Database SID
-	 *  @return Database SID
+	 * Get Database SID
+	 *
+	 * @return Database SID
 	 */
 	public String getDbName()
 	{
@@ -97,8 +119,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 *  Get Database URL
-	 *  @return Database URL
+	 * Get Database URL
+	 *
+	 * @return Database URL
 	 */
 	public String getConnectionURL()
 	{
@@ -106,8 +129,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 *  Get Database UID
-	 *  @return Database User Name
+	 * Get Database UID
+	 *
+	 * @return Database User Name
 	 */
 	public String getDbUid()
 	{
@@ -115,8 +139,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 *  Get Database PWD
-	 *  @return Database User Password
+	 * Get Database PWD
+	 *
+	 * @return Database User Password
 	 */
 	public String getDbPwd()
 	{
@@ -124,8 +149,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 * 	Get Version Count
-	 * 	@return number of version inquiries
+	 * Get Version Count
+	 *
+	 * @return number of version inquiries
 	 */
 	public int getVersionCount()
 	{
@@ -133,8 +159,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 * 	Get Database Count
-	 * 	@return number of database inquiries
+	 * Get Database Count
+	 *
+	 * @return number of database inquiries
 	 */
 	public int getDataBaseCount()
 	{
@@ -142,8 +169,9 @@ public class StatusServiceResult
 	}
 
 	/**
-	 * 	Describes the instance and its content for debugging purpose
-	 * 	@return Debugging information about the instance and its content
+	 * Describes the instance and its content for debugging purpose
+	 *
+	 * @return Debugging information about the instance and its content
 	 */
 	public String getStatus()
 	{

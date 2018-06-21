@@ -242,7 +242,7 @@ public final class Env
 	 * Application Context
 	 */
 	/** WindowNo for Main */
-	public static final int WINDOW_MAIN = 0;
+	public static final int WINDOW_MAIN = 1; // note: 0 is the ALogin window that's shown in the swing client on startup
 	/** WindowNo for Find */
 	public static final int WINDOW_FIND = 1110;
 	/** WindowNo for PrintCustomize */

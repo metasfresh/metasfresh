@@ -88,9 +88,6 @@ import de.metas.logging.LogManager;
 public final class ALogin extends CDialog
 		implements ActionListener, ChangeListener
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 7789299589024390163L;
 
 	// services
@@ -109,7 +106,6 @@ public final class ALogin extends CDialog
 		this.ctx = ctx;
 		this.m_WindowNo = Env.createWindowNo(this);
 
-		//
 		try
 		{
 			jbInit();
@@ -129,7 +125,7 @@ public final class ALogin extends CDialog
 
 	/** Logger */
 	private static final Logger log = LogManager.getLogger(ALogin.class);
-	
+
 	private static final int TABINDEX_UserPassword = 0;
 	private static final int TABINDEX_Defaults = 1;
 
@@ -237,31 +233,31 @@ public final class ALogin extends CDialog
 		passwordLabel.setRequestFocusEnabled(false);
 		passwordLabel.setLabelFor(passwordField);
 		languageLabel.setLabelFor(languageCombo);
-		
+
 		final CLabel copy0Label = new CLabel();
 		copy0Label.setFont(UIManager.getFont(MetasFreshTheme.KEY_Logo_TextFontSmall));
 		copy0Label.setForeground(UIManager.getColor(MetasFreshTheme.KEY_Logo_TextColor));
 		copy0Label.setRequestFocusEnabled(false);
-		
+
 		final CLabel copy1Label = new CLabel();
 		copy1Label.setRequestFocusEnabled(false);
-		
+
 		roleLabel.setRequestFocusEnabled(false);
 		roleLabel.setLabelFor(roleCombo);
 		clientLabel.setRequestFocusEnabled(false);
 		orgLabel.setRequestFocusEnabled(false);
 		dateLabel.setRequestFocusEnabled(false);
 		warehouseLabel.setRequestFocusEnabled(false);
-		
+
 		final CLabel compileDate = new CLabel();
 		compileDate.setHorizontalAlignment(SwingConstants.RIGHT);
 		compileDate.setHorizontalTextPosition(SwingConstants.RIGHT);
 		compileDate.setText(Adempiere.getDateVersion());
 		compileDate.setToolTipText(Adempiere.getImplementationVendor());
-		
+
 		final CPanel southPanel = new CPanel();
 		southPanel.setLayout(new BorderLayout());
-		
+
 		loginTabPane.addChangeListener(this);
 
 		// ConnectionTab
@@ -370,7 +366,7 @@ public final class ALogin extends CDialog
 				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
 
 		loginTabPane.add(defaultPanel, res.getString("Defaults"));
-		
+
 		final CPanel mainPanel = new CPanel(new BorderLayout());
 		this.getContentPane().add(mainPanel);
 		mainPanel.add(loginTabPane, BorderLayout.CENTER);
@@ -532,7 +528,7 @@ public final class ALogin extends CDialog
 				{
 					languagePreviouslySelected = languageVNP;
 				}
-				
+
 				if(availableLanguages.isBaseLanguage(languageVNP))
 				{
 					baseLanguage = languageVNP;
@@ -733,7 +729,7 @@ public final class ALogin extends CDialog
 		{
 			m_connectionOK = false;
 		}
-		
+
 		//
 		if (m_connectionOK)
 		{
@@ -744,7 +740,7 @@ public final class ALogin extends CDialog
 			statusBar.setStatusLine(txt_NotConnected, true);
 			loginTabPane.setSelectedIndex(TABINDEX_UserPassword);
 		}
-		
+
 		confirmPanel.getOKButton().requestFocus();
 	}	// loginTabPane
 
@@ -791,7 +787,7 @@ public final class ALogin extends CDialog
 		{
 			this.dispose();
 		}
-		
+
 		return m_connectionOK;
 	}	// defaultsOK
 
@@ -869,12 +865,12 @@ public final class ALogin extends CDialog
 			this.setTitle(hostField.getDisplay());
 			statusBar.setStatusLine(txt_LoggedIn);
 		});
-		
+
 		roleComboChanged();
 
 		return true;
 	}	// tryConnection
-	
+
 	private void changeCombo(final Runnable runnable)
 	{
 		if(_comboActive)
@@ -891,14 +887,14 @@ public final class ALogin extends CDialog
 			_comboActive = false;
 		}
 	}
-	
+
 	private static final KeyNamePair findDefaultRole(final Set<KeyNamePair> roles)
 	{
 		if(Check.isEmpty(roles))
 		{
 			return null;
 		}
-		
+
 		final String iniDefaultRoleName = Ini.getProperty(Ini.P_ROLE);
 		if(!Check.isEmpty(iniDefaultRoleName))
 		{
@@ -910,7 +906,7 @@ public final class ALogin extends CDialog
 				}
 			}
 		}
-		
+
 		return roles.iterator().next();
 	}
 
@@ -946,18 +942,18 @@ public final class ALogin extends CDialog
 				clientCombo.setSelectedItem(defaultClient);
 			}
 		});
-		
+
 		//
 		clientComboChanged();
 	}
-	
+
 	private static final KeyNamePair findDefaultClient(final Set<KeyNamePair> clients)
 	{
 		if(Check.isEmpty(clients))
 		{
 			return null;
 		}
-		
+
 		final String iniDefaultClientName = Ini.getProperty(Ini.P_CLIENT);
 		if(!Check.isEmpty(iniDefaultClientName))
 		{
@@ -985,9 +981,9 @@ public final class ALogin extends CDialog
 				return;
 			}
 			log.trace("client changed: {}", client);
-			
+
 			showHideDateField();
-			
+
 			//
 			final Set<KeyNamePair> orgs = m_login.setClientAndGetOrgs(client);
 			orgCombo.setModel(ListComboBoxModel.ofNullable(orgs));
@@ -997,24 +993,24 @@ public final class ALogin extends CDialog
 				statusBar.setStatusLine(txt_RoleError, true);
 				return;
 			}
-			
+
 			final KeyNamePair defaultOrg = findDefaultOrg(orgs);
 			if (defaultOrg != null)
 			{
 				orgCombo.setSelectedItem(defaultOrg);
 			}
 		});
-		
+
 		orgComboChanged();
 	}
-	
+
 	private static final KeyNamePair findDefaultOrg(final Set<KeyNamePair> orgs)
 	{
 		if(Check.isEmpty(orgs))
 		{
 			return null;
 		}
-		
+
 		final String iniDefaultOrgName = Ini.getProperty(Ini.P_ORG);
 		if(!Check.isEmpty(iniDefaultOrgName))
 		{
@@ -1031,19 +1027,19 @@ public final class ALogin extends CDialog
 					orgValue2 = org;	// first non-0 org
 				}
 			}
-			
+
 			// Non-0 Org exists and last login was with 0
 			if (orgValue2 != null && orgValue != null && orgValue.getKey() == 0)
 			{
 				orgValue = orgValue2;
 			}
-			
+
 			if(orgValue != null)
 			{
 				return orgValue;
 			}
 		}
-		
+
 		return orgs.iterator().next();
 	}
 
@@ -1058,12 +1054,12 @@ public final class ALogin extends CDialog
 			{
 				return;
 			}
-			
+
 			log.trace("org changed: {}", org);
-			
+
 			final Set<KeyNamePair> warehouses = m_login.getWarehouses(org);
 			warehouseCombo.setModel(ListComboBoxModel.ofNullable(warehouses));
-	
+
 			final KeyNamePair defaultWarehouse = findDefaultWarehouse(warehouses);
 			if(defaultWarehouse != null)
 			{
@@ -1071,14 +1067,14 @@ public final class ALogin extends CDialog
 			}
 		});
 	}
-	
+
 	private static final KeyNamePair findDefaultWarehouse(final Set<KeyNamePair> warehouses)
 	{
 		if (Check.isEmpty(warehouses))
 		{
 			return null;
 		}
-		
+
 		final String iniDefaultName = Ini.getProperty(Ini.P_WAREHOUSE);
 		if(!Check.isEmpty(iniDefaultName))
 		{
@@ -1090,10 +1086,10 @@ public final class ALogin extends CDialog
 				}
 			}
 		}
-		
+
 		return warehouses.iterator().next();
 	}
-	
+
 
 	// @formatter:off
 //	/**
