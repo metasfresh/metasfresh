@@ -6,6 +6,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.NumberUtils;
 import org.elasticsearch.action.search.SearchResponse;
@@ -22,6 +26,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.descriptor.sql.ISqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
@@ -52,7 +57,7 @@ import lombok.Value;
  */
 
 @Value
-public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
+public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, LookupDataSourceFetcher
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(FullTextSearchLookupDescriptor.class);
@@ -63,6 +68,7 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 	private final String esKeyColumnName;
 	private final String[] esSearchFieldNames;
 
+	private final ISqlLookupDescriptor sqlLookupDescriptor;
 	private final LookupDataSource databaseLookup;
 
 	@Builder
@@ -71,6 +77,7 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 			@NonNull final String modelTableName,
 			@NonNull final String esIndexName,
 			@NonNull final Set<String> esSearchFieldNames,
+			@Nullable final ISqlLookupDescriptor sqlLookupDescriptor,
 			@NonNull final LookupDataSource databaseLookup)
 	{
 		this.elasticsearchClient = elasticsearchClient;
@@ -82,6 +89,7 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 
 		this.esSearchFieldNames = esSearchFieldNames.toArray(new String[esSearchFieldNames.size()]);
 
+		this.sqlLookupDescriptor = sqlLookupDescriptor;
 		this.databaseLookup = databaseLookup;
 	}
 
@@ -215,5 +223,11 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 	public Optional<WindowId> getZoomIntoWindowId()
 	{
 		return Optional.empty();
+	}
+
+	@Override
+	public IStringExpression getSqlForFetchingDisplayNameByIdExpression(final String sqlKeyColumn)
+	{
+		return sqlLookupDescriptor != null ? sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression(sqlKeyColumn) : NullStringExpression.instance;
 	}
 }
