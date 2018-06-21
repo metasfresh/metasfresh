@@ -1,13 +1,32 @@
 package de.metas;
 
+import java.awt.KeyboardFocusManager;
+import java.util.Properties;
+
+import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.Adempiere.RunMode;
+import org.compiere.apps.AEnv;
+import org.compiere.apps.AKeyboardFocusManager;
+import org.compiere.apps.ALogin;
+import org.compiere.apps.AMenu;
+import org.compiere.db.CConnection;
+import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
+import org.compiere.util.Splash;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
+
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.form.swing.SwingClientUI;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -22,11 +41,11 @@ import org.springframework.context.annotation.Profile;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,6 +62,8 @@ import org.springframework.context.annotation.Profile;
 @Profile(SwingUIApplication.PROFILE)
 public class SwingUIApplication
 {
+	private static final Logger logger = LogManager.getLogger(SwingUIApplication.class);
+
 	public static final String PROFILE = "metasfresh-swingui";
 
 	@Autowired
@@ -50,6 +71,10 @@ public class SwingUIApplication
 
 	public static void main(String[] args)
 	{
+		basicStartup();
+
+		showLoginDialog();
+
 		new SpringApplicationBuilder(SwingUIApplication.class)
 				.headless(false)
 				// actually we would like to it to start actuator endpoints and register with the spring-boot admin server, BUT
@@ -58,20 +83,60 @@ public class SwingUIApplication
 				// at any rate, we have not yet a solution as to how to configure them
 				.web(false)
 				.profiles(PROFILE)
+				.properties(CConnection.get().createRabbitmqSpringProperties())
 				.run(args);
 	}
 
-	/**
-	 * Starts the metasfresh swing client. This needs to be decomposed to make it return during startup.<br>
-	 * Otherwise, the whole spring thing doesn't work properly.
-	 *
-	 * @return
-	 */
+	private static void showLoginDialog()
+	{
+		final Splash splash = Splash.getSplash();
+		final Properties ctx = Env.getCtx();
+		final ALogin login = new ALogin(splash, ctx);
+		if (login.initLogin())
+		{
+			return; // automatic login, nothing more to do
+		}
+
+		// Center the window
+		try
+		{
+			ModelValidationEngine.disable();
+			AEnv.showCenterScreen(login);	// HTML load errors
+		}
+		catch (Exception ex)
+		{
+			logger.error(ex.toString());
+		}
+		finally
+		{
+			ModelValidationEngine.enable();
+		}
+
+		if (!(login.isConnected() && login.isOKpressed()))
+		{
+			AEnv.exit(1);
+		}
+	}
+
+	private static void basicStartup()
+	{
+		Adempiere.instance.startup(RunMode.SWING_CLIENT);
+
+		// Focus Traversal
+		KeyboardFocusManager.setCurrentKeyboardFocusManager(AKeyboardFocusManager.get());
+		Services.registerService(IClientUI.class, new SwingClientUI());
+	}
+
 	@Bean(Adempiere.BEAN_NAME)
 	public Adempiere adempiere()
 	{
-		Adempiere.main(applicationContext);
 		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		return adempiere;
+	}
+
+	@EventListener(ApplicationReadyEvent.class)
+	public void showSwingUIMainWindow()
+	{
+		new AMenu();
 	}
 }
