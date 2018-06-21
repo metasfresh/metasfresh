@@ -195,7 +195,7 @@ public class HuReservationServiceTest
 				.productId(ProductId.ofRepoId(data.helper.pTomato.getM_Product_ID()))
 				.build();
 		final HuReservation secondResult = huReservationService.makeReservation(secondRequest);
-		assertThat(firstResult.getReservedQtySum().isZero()).isTrue();
+		assertThat(secondResult.getReservedQtySum().isZero()).isTrue();
 
 		// data.helper.commitAndDumpHU(hu);
 	}
