@@ -20,12 +20,14 @@ import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_SalesRegion;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.CCache;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.types.ESIndexType;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -51,8 +53,9 @@ import de.metas.elasticsearch.types.ESIndexType;
 
 public class ESDenormalizerFactory implements IESDenormalizerFactory
 {
-	private final CCache<ESModelDenormalizerKey, IESModelDenormalizer> tableDenormalizers = new CCache<>(ESDenormalizerFactory.class.getSimpleName() + "#TableDenormalizers", 20);
+	private static final Logger logger = LogManager.getLogger(ESDenormalizerFactory.class);
 
+	private final CCache<ESModelDenormalizerKey, IESModelDenormalizer> tableDenormalizers = new CCache<>(ESDenormalizerFactory.class.getSimpleName() + "#TableDenormalizers", 20);
 	private final ConcurrentHashMap<ESModelDenormalizerKey, IESModelDenormalizer> valueModelDenormalizers = new ConcurrentHashMap<>();
 
 	private ESDenormalizerFactory()
@@ -68,19 +71,8 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 				.includeColumn(I_C_Country.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
 				.includeColumn(I_C_Country.COLUMNNAME_CountryCode).index(ESIndexType.NotAnalyzed)
 				.build());
-		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_C_Location.class)
-				.includeColumn(I_C_Location.COLUMNNAME_Address1).index(ESIndexType.Analyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_Address2).index(ESIndexType.Analyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_Address3).index(ESIndexType.Analyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_Address4).index(ESIndexType.Analyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_Postal).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_Postal_Add).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_CareOf).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_POBox).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_City).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_C_Country_ID)
-				.excludeStandardColumns()
-				.build());
+		registerModelValueDenormalizer(createLocationDenormalizer(ESModelIndexerProfile.KPI));
+		registerModelValueDenormalizer(createLocationDenormalizer(ESModelIndexerProfile.FULL_TEXT_SEARCH));
 
 		//
 		// BPartner related
@@ -196,6 +188,23 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 				.build());
 	}
 
+	private ESPOModelDenormalizer createLocationDenormalizer(ESModelIndexerProfile profile)
+	{
+		return newModelDenormalizerBuilder(profile, I_C_Location.class)
+				.includeColumn(I_C_Location.COLUMNNAME_Address1).index(ESIndexType.Analyzed)
+				.includeColumn(I_C_Location.COLUMNNAME_Address2).index(ESIndexType.Analyzed)
+				.includeColumn(I_C_Location.COLUMNNAME_Address3).index(ESIndexType.Analyzed)
+				.includeColumn(I_C_Location.COLUMNNAME_Address4).index(ESIndexType.Analyzed)
+				.includeColumn(I_C_Location.COLUMNNAME_Postal).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Location.COLUMNNAME_Postal_Add).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Location.COLUMNNAME_CareOf).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Location.COLUMNNAME_POBox).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Location.COLUMNNAME_City).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Location.COLUMNNAME_C_Country_ID)
+				.excludeStandardColumns()
+				.build();
+	}
+
 	@Override
 	public IESModelDenormalizer getModelDenormalizer(final ESModelIndexerProfile profile, final String tableName)
 	{
@@ -205,9 +214,11 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 
 	private IESModelDenormalizer createDefaultModelDenormalizer(final ESModelDenormalizerKey key)
 	{
-		return newModelDenormalizerBuilder(key.getProfile(), key.getModelTableName())
+		final ESPOModelDenormalizer denormalizer = newModelDenormalizerBuilder(key.getProfile(), key.getModelTableName())
 				.excludeStandardColumns()
 				.build();
+		logger.debug("Generated denormalizer for {}: {}", key, denormalizer);
+		return denormalizer;
 	}
 
 	@Override
@@ -222,6 +233,8 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		Check.assumeNotNull(valueModelDenormalizer, "Parameter valueModelDenormalizer is not null");
 		ESModelDenormalizerKey key = ESModelDenormalizerKey.of(valueModelDenormalizer.getProfile(), valueModelDenormalizer.getModelTableName());
 		valueModelDenormalizers.put(key, valueModelDenormalizer);
+
+		logger.info("Registered value denormalizer {}: {}", key, valueModelDenormalizer);
 	}
 
 	private ESPOModelDenormalizerBuilder newModelDenormalizerBuilder(final ESModelIndexerProfile profile, final Class<?> modelClass)
