@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.naming.CommunicationException;
@@ -1407,6 +1408,37 @@ public final class CConnection implements Serializable, Cloneable
 				m_statusServiceEndpointProvider);
 
 		m_statusServiceEndpointProvider = provider;
+	}
+
+	public Properties createRabbitmqSpringProperties()
+	{
+		final Properties rabbitMqProperties = new Properties();
+
+		final String rabbitmqHost = CConnection.get().getRabbitmqHost();
+		if (!Check.isEmpty(rabbitmqHost, true))
+		{
+			rabbitMqProperties.setProperty("spring.rabbitmq.host", rabbitmqHost);
+		}
+
+		final String rabbitmqPort = CConnection.get().getRabbitmqPort();
+		if (!Check.isEmpty(rabbitmqPort, true))
+		{
+			rabbitMqProperties.setProperty("spring.rabbitmq.port", rabbitmqPort);
+		}
+
+		final String rabbitmqUsername = CConnection.get().getRabbitmqUsername();
+		if (!Check.isEmpty(rabbitmqUsername, true))
+		{
+			rabbitMqProperties.setProperty("spring.rabbitmq.username", rabbitmqUsername);
+		}
+
+		final String rabbitmqPassword = CConnection.get().getRabbitmqPassword();
+		if (!Check.isEmpty(rabbitmqPassword, true))
+		{
+			rabbitMqProperties.setProperty("spring.rabbitmq.password", rabbitmqPassword);
+		}
+
+		return rabbitMqProperties;
 	}
 
 }	// CConnection
