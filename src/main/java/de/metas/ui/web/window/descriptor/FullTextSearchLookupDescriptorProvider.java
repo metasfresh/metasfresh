@@ -8,6 +8,7 @@ import org.elasticsearch.client.Client;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.window.descriptor.sql.ISqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.Builder;
@@ -82,6 +83,7 @@ public class FullTextSearchLookupDescriptorProvider implements LookupDescriptorP
 				.modelTableName(modelTableName)
 				.esIndexName(esIndexName)
 				.esSearchFieldNames(esSearchFieldNames)
+				.sqlLookupDescriptor(databaseLookupDescriptor.castOrNull(ISqlLookupDescriptor.class))
 				.databaseLookup(databaseLookup)
 				.build();
 	}

@@ -49,7 +49,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.sql.DocActionValidationRule;
 
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -73,7 +72,7 @@ import de.metas.ui.web.window.model.sql.DocActionValidationRule;
  */
 
 @Immutable
-public final class SqlLookupDescriptor implements LookupDescriptor
+public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 {
 	public static final Builder builder()
 	{
@@ -247,6 +246,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return sqlForFetchingDisplayNameByIdExpression;
 	}
 
+	@Override
 	public IStringExpression getSqlForFetchingDisplayNameByIdExpression(final String sqlKeyColumn)
 	{
 		return sqlForFetchingDisplayNameByIdExpression.resolvePartial(Evaluatees.mapBuilder()
