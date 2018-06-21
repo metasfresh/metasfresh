@@ -25,7 +25,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.ui.web.order.sales.hu.reservation.HUsToReserveViewFactory;
 import lombok.NonNull;
 
 /*
@@ -101,6 +101,10 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		final List<Integer> availableHUIdsToPick = retrieveAvailableHuIdsForCurrentSalesOrderLine();
 
 		createHUEditorView(availableHUIdsToPick);
+		
+		
+		final String viewId = null; // TODO
+		getResult().setWebuiIncludedViewIdToOpen(viewId);
 
 		return MSG_OK;
 	}
@@ -131,15 +135,15 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 
 	private void createHUEditorView(@NonNull final List<Integer> availableHUIdsToPick)
 	{
-		final ImmutableList<TableRecordReference> collect = availableHUIdsToPick
+		final ImmutableList<TableRecordReference> hus = availableHUIdsToPick
 				.stream()
 				.map(huId -> TableRecordReference.of(I_M_HU.Table_Name, huId))
 				.collect(ImmutableList.toImmutableList());
 
 		getResult()
 				.setRecordsToOpen(
-						collect,
-						WEBUI_HU_Constants.WEBUI_HU_Window_ID_String);
+						hus,
+						HUsToReserveViewFactory.WINDOW_ID_STRING);
 	}
 
 }
