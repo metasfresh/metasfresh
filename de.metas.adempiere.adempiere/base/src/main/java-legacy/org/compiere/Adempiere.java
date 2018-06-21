@@ -768,14 +768,6 @@ public class Adempiere
 
 	private boolean startupEnvironment(final RunMode runMode)
 	{
-		// commenting this out, it makes the startup procedure too complicated
-		// startup(runMode); // returns if already initiated
-		if (!DB.isConnected())
-		{
-			logger.error("No Database");
-			return false;
-		}
-
 		final I_AD_System system = Services.get(ISystemBL.class).get(Env.getCtx());	// Initializes Base Context too
 
 		if (system == null)

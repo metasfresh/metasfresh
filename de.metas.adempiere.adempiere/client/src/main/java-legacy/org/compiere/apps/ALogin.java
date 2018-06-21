@@ -166,9 +166,9 @@ public final class ALogin extends CDialog
 	/** Combo Active */
 	private boolean _comboActive = false;
 	/** Combo Active */
-	private boolean m_okPressed = false;
+	private volatile boolean m_okPressed = false;
 	/** Connection OK */
-	private boolean m_connectionOK = false;
+	private volatile boolean m_connectionOK = false;
 	/** Window No */
 	private final int m_WindowNo;
 	private final Properties ctx;
@@ -437,6 +437,8 @@ public final class ALogin extends CDialog
 		{
 			connectionOK();
 			defaultsOK();
+			validateConnection();
+
 			if (m_connectionOK)		// simulate
 				m_okPressed = true;
 			return m_connectionOK;

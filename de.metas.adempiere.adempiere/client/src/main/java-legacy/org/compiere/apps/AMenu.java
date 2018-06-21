@@ -82,7 +82,6 @@ import org.compiere.util.Splash;
 import org.compiere.wf.api.IADWorkflowBL;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Form;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
@@ -173,7 +172,7 @@ public final class AMenu extends CFrame
 			mainWindow = startForm(roleFormId);
 			if (mainWindow == null)
 			{
-				logout();
+				AEnv.exit(0);
 				return;
 			}
 		}
@@ -426,7 +425,6 @@ public final class AMenu extends CFrame
 		// File
 		JMenu mFile = AEnv.getMenu("File");
 		menuBar.add(mFile);
-		AEnv.addMenuItem("Logout", null, KeyStroke.getKeyStroke(KeyEvent.VK_L, Event.SHIFT_MASK + Event.ALT_MASK), mFile, this);
 		AEnv.addMenuItem("Exit", null, KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.SHIFT_MASK + Event.ALT_MASK), mFile, this);
 
 		// View
@@ -522,21 +520,6 @@ public final class AMenu extends CFrame
 		SwingEventNotifierService.getInstance().stop();
 
 		mainWindow = null;
-	}
-
-	public void logout()
-	{
-		try
-		{
-			windowManager.close();
-			preDispose();
-			super.dispose();
-			AEnv.logout();
-		}
-		catch (Exception ex)
-		{
-			Services.get(IClientUI.class).error(m_WindowNo, ex);
-		}
 	}
 
 	/**

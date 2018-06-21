@@ -54,6 +54,8 @@ public final class CConnection implements Serializable, Cloneable
 {
 	private static final String MSG_APPSERVER_CONNECTION_PROBLEM = "CConnection.AppserverConnectionProblem";
 
+	private static final String MSG_RABBITMQ_CONNECTION_PROBLEM = "CConnection.RabbitmqConnectionProblem";
+
 	/**
 	 *
 	 */
@@ -1290,11 +1292,6 @@ public final class CConnection implements Serializable, Cloneable
 		attrs.setRabbitmqHost(rabbitmqHost);
 	}
 
-	public String getRabbitmqHost()
-	{
-		return attrs.getRabbitmqHost();
-	}
-
 	private void setRabbitmqPort(String rabbitmqPort)
 	{
 		if (Objects.equals(rabbitmqPort, attrs.getRabbitmqPort()))
@@ -1302,11 +1299,6 @@ public final class CConnection implements Serializable, Cloneable
 			return;
 		}
 		attrs.setRabbitmqPort(rabbitmqPort);
-	}
-
-	public String getRabbitmqPort()
-	{
-		return attrs.getRabbitmqPort();
 	}
 
 	private void setRabbitmqUsername(String rabbitmqUsername)
@@ -1318,11 +1310,6 @@ public final class CConnection implements Serializable, Cloneable
 		attrs.setRabbitmqUsername(rabbitmqUsername);
 	}
 
-	public String getRabbitmqUsername()
-	{
-		return attrs.getRabbitmqUsername();
-	}
-
 	private void setRabbitmqPassword(String rabbitmqPassword)
 	{
 		if (Objects.equals(rabbitmqPassword, attrs.getRabbitmqPassword()))
@@ -1330,11 +1317,6 @@ public final class CConnection implements Serializable, Cloneable
 			return;
 		}
 		attrs.setRabbitmqPassword(rabbitmqPassword);
-	}
-
-	public String getRabbitmqPassword()
-	{
-		return attrs.getRabbitmqPassword();
 	}
 
 	/**
@@ -1414,29 +1396,21 @@ public final class CConnection implements Serializable, Cloneable
 	{
 		final Properties rabbitMqProperties = new Properties();
 
-		final String rabbitmqHost = CConnection.get().getRabbitmqHost();
-		if (!Check.isEmpty(rabbitmqHost, true))
+		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
 		{
-			rabbitMqProperties.setProperty("spring.rabbitmq.host", rabbitmqHost);
+			queryAppsServerInfo();
 		}
 
-		final String rabbitmqPort = CConnection.get().getRabbitmqPort();
-		if (!Check.isEmpty(rabbitmqPort, true))
+		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
 		{
-			rabbitMqProperties.setProperty("spring.rabbitmq.port", rabbitmqPort);
+			Services.get(IClientUI.class).error(0, MSG_RABBITMQ_CONNECTION_PROBLEM);
+			return rabbitMqProperties;
 		}
 
-		final String rabbitmqUsername = CConnection.get().getRabbitmqUsername();
-		if (!Check.isEmpty(rabbitmqUsername, true))
-		{
-			rabbitMqProperties.setProperty("spring.rabbitmq.username", rabbitmqUsername);
-		}
-
-		final String rabbitmqPassword = CConnection.get().getRabbitmqPassword();
-		if (!Check.isEmpty(rabbitmqPassword, true))
-		{
-			rabbitMqProperties.setProperty("spring.rabbitmq.password", rabbitmqPassword);
-		}
+		rabbitMqProperties.setProperty("spring.rabbitmq.host", attrs.getRabbitmqHost());
+		rabbitMqProperties.setProperty("spring.rabbitmq.port", attrs.getRabbitmqPort());
+		rabbitMqProperties.setProperty("spring.rabbitmq.username", attrs.getRabbitmqUsername());
+		rabbitMqProperties.setProperty("spring.rabbitmq.password", attrs.getRabbitmqPassword());
 
 		return rabbitMqProperties;
 	}
