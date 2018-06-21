@@ -25,7 +25,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.MCommission;
 import org.compiere.model.MCommissionAmt;
@@ -38,6 +37,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.Language;
 import de.metas.process.JavaProcess;

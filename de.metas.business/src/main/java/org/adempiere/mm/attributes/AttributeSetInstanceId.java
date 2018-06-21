@@ -3,6 +3,7 @@ package org.adempiere.mm.attributes;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Check;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -28,7 +29,7 @@ import lombok.Value;
  */
 
 @Value
-public class AttributeSetInstanceId
+public class AttributeSetInstanceId implements RepoIdAware
 {
 	int repoId;
 

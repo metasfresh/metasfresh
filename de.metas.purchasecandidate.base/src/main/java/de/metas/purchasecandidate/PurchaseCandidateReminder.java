@@ -2,10 +2,11 @@ package de.metas.purchasecandidate;
 
 import java.time.LocalDateTime;
 
-import org.adempiere.bpartner.BPartnerId;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
+import de.metas.bpartner.BPartnerId;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

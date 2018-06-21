@@ -58,6 +58,8 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 {
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
+	private final StockRepository dataUpdateRequestHandler = Adempiere.getBean(StockRepository.class);
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
@@ -107,9 +109,6 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 	private void createAndHandleDataUpdateRequests(
 			@NonNull final List<I_MD_Stock_From_HUs_V> huBasedDataRecords)
 	{
-		final StockRepository dataUpdateRequestHandler = //
-				Adempiere.getBean(StockRepository.class);
-
 		for (final I_MD_Stock_From_HUs_V huBasedDataRecord : huBasedDataRecords)
 		{
 			final StockDataUpdateRequest dataUpdateRequest = createDataUpdatedRequest(huBasedDataRecord);

@@ -70,7 +70,7 @@ public class PPOrderUtilTest
 
 		final List<Candidate> result = PPOrderUtil.retrieveCandidatesForPPOrderId(new CandidateRepositoryRetrieval(), 23);
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getId()).isEqualTo(relatedProductionDetail.getMD_Candidate_ID());
+		assertThat(result.get(0).getId().getRepoId()).isEqualTo(relatedProductionDetail.getMD_Candidate_ID());
 	}
 
 	private I_MD_Candidate createCandidateRecord(@NonNull final Timestamp dateProjected)

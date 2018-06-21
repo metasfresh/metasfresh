@@ -26,11 +26,8 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -40,18 +37,21 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.AbstractPropertiesPanelModel;
 import de.metas.adempiere.form.terminal.IPropertiesPanelModel;
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.lookup.SimpleTableLookup;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.HUAndItemsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 
 /**
  * Implementation of {@link IPropertiesPanelModel} which allows user to edit some HU fields.
@@ -69,7 +69,7 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 
 	private final List<String> propertyNames = new ArrayList<>();
 	private final List<String> propertyNamesRO = Collections.unmodifiableList(propertyNames);
-	private final List<IHUProperty> properties = new ArrayList<IHUProperty>();
+	private final List<IHUProperty> properties = new ArrayList<>();
 
 	private boolean editable;
 
@@ -231,11 +231,11 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 				}
 
 				final int bpartnerId = getPropertyValueAsInt(I_M_HU.COLUMNNAME_C_BPartner_ID);
-				final List<de.metas.adempiere.model.I_C_BPartner_Location> bpLocations = bpartnerDAO.retrieveBPartnerLocations(
+				final List<I_C_BPartner_Location> bpLocations = bpartnerDAO.retrieveBPartnerLocations(
 						terminalContext.getCtx(),
 						bpartnerId,
 						ITrx.TRXNAME_None);
-				final List<KeyNamePair> result = new ArrayList<KeyNamePair>(bpLocations.size());
+				final List<KeyNamePair> result = new ArrayList<>(bpLocations.size());
 				result.add(KeyNamePair.EMPTY);
 				for (final I_C_BPartner_Location bpLocation : bpLocations)
 				{

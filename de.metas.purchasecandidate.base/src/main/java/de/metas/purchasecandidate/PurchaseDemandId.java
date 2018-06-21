@@ -2,16 +2,12 @@ package de.metas.purchasecandidate;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.adempiere.util.Check;
-import org.compiere.model.I_C_OrderLine;
-
-import de.metas.order.OrderAndLineId;
-import lombok.NonNull;
+import lombok.Getter;
 import lombok.Value;
 
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.purchasecandidate.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -31,52 +27,30 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Just like {@link PurchaseDemand} itself, this ID is not stored;
+ * it's just there to support the grouping of {@link PurchaseCandidatesGroup}s that belong to the same {@link PurchaseDemand}.
+ */
 @Value
 public class PurchaseDemandId
 {
-	public static PurchaseDemandId ofTableAndRecordId(final String tableName, final int recordId)
+	public static PurchaseDemandId createNew()
 	{
-		return new PurchaseDemandId(tableName, recordId);
+		return new PurchaseDemandId(nextAggregateId.incrementAndGet());
 	}
 
-	public static PurchaseDemandId ofOrderAndLineId(@NonNull final OrderAndLineId orderAndLineId)
+	public static PurchaseDemandId ofId(final int id)
 	{
-		return ofOrderLineRepoId(orderAndLineId.getOrderLineRepoId());
+		return new PurchaseDemandId(id);
 	}
 
-	public static PurchaseDemandId ofOrderLineRepoId(final int orderLineRepoId)
-	{
-		return ofTableAndRecordId(I_C_OrderLine.Table_Name, orderLineRepoId);
-	}
-
-	/** @return in memory ad-hoc aggregate ID */
-	public static PurchaseDemandId newAggregateId()
-	{
-		return ofTableAndRecordId(TABLENAME_AGGREGATE, nextAggregateId.getAndIncrement());
-	}
-
-	private static final String TABLENAME_AGGREGATE = "$aggregate$";
 	private static final AtomicInteger nextAggregateId = new AtomicInteger(1);
 
-	String tableName;
-	int recordId;
+	@Getter
+	private final int id;
 
-	public PurchaseDemandId(final String tableName, final int recordId)
+	private PurchaseDemandId(final int id)
 	{
-		Check.assumeNotEmpty(tableName, "tableName is not empty");
-		Check.assumeGreaterThanZero(recordId, "recordId");
-
-		this.tableName = tableName;
-		this.recordId = recordId;
-	}
-
-	public boolean isAggregate()
-	{
-		return TABLENAME_AGGREGATE.equals(tableName);
-	}
-
-	public boolean isTable()
-	{
-		return !isAggregate();
+		this.id = id;
 	}
 }

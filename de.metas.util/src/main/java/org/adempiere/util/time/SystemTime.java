@@ -86,8 +86,6 @@ public final class SystemTime
 
 	/**
 	 * Same as {@link #asTimestamp()} but the returned date will be truncated to DAY.
-	 *
-	 * @return
 	 */
 	public static Timestamp asDayTimestamp()
 	{
@@ -97,6 +95,20 @@ public final class SystemTime
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return new Timestamp(cal.getTimeInMillis());
+	}
+
+	/**
+	 * "Why not go with {@link #asDayTimestamp()}" you ask?
+	 * See https://stackoverflow.com/questions/8929242/compare-date-object-with-a-timestamp-in-java
+	 */
+	public static Date asDayDate()
+	{
+		final GregorianCalendar cal = asGregorianCalendar();
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return new Date(cal.getTimeInMillis());
 	}
 
 	private static TimeSource getTimeSource()

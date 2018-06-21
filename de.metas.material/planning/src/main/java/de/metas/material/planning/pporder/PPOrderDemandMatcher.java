@@ -1,9 +1,9 @@
 package de.metas.material.planning.pporder;
 
 import org.adempiere.util.Loggables;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.planning.IMaterialDemandMatcher;
@@ -40,31 +40,21 @@ import de.metas.material.planning.IMaterialPlanningContext;
 @Service
 public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 {
-	/**
-	 *
-	 */
 	@Override
 	public boolean matches(final IMaterialPlanningContext mrpContext)
 	{
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
-		if (productPlanning == null)
+
+		if (StringUtils.toBoolean(productPlanning.getIsManufactured()))
 		{
-			Loggables.get().addLog(
-					"Given MRP context has no PP_Product_Planning; PPOrderDemandMatcher returns false; mrpContext={}",
-					mrpContext);
-			return false;
+			return true;
 		}
 
 		final I_M_Product product = mrpContext.getM_Product();
-		final boolean isManufactured = X_PP_Product_Planning.ISMANUFACTURED_Yes.equals(productPlanning.getIsManufactured());
-		if (!isManufactured)
-		{
-			Loggables.get().addLog(
-					"Product {}_{} is not set to be manufactured; PPOrderDemandMatcher returns false; productPlanning={}; product={}",
-					product.getValue(), product.getName(), productPlanning, product);
-			return false;
-		}
+		Loggables.get().addLog(
+				"Product {}_{} is not set to be manufactured; PPOrderDemandMatcher returns false; productPlanning={}; product={}",
+				product.getValue(), product.getName(), productPlanning, product);
+		return false;
 
-		return true;
 	}
 }

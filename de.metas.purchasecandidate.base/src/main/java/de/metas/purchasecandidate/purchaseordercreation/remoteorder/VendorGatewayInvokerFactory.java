@@ -3,13 +3,13 @@ package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import lombok.NonNull;

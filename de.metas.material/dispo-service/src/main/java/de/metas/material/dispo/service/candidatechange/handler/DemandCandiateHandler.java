@@ -15,8 +15,6 @@ import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -109,24 +107,24 @@ public class DemandCandiateHandler implements CandidateHandler
 		else
 		{
 			// check if there is a supply record with the same demand detail and material descriptor
-			final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateDeltaWithId);
-			if (existingSupplyParentStockWithoutParentId != null)
-			{
-				//
-				final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutParentId
-						.withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateDeltaWithId.getQuantity()))
-						.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
-
-				childStockWithDemandDelta = stockCandidateService.updateQty(existingSupplyParentStockWithUpdatedQty);
-				childStockWithDemand = existingSupplyParentStockWithUpdatedQty;
-			}
-			else
-			{
-				final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(demandCandidateDeltaWithId.withNegatedQuantity());
-				childStockWithDemandDelta = candidateRepositoryWriteService
-						.addOrUpdatePreserveExistingSeqNo(newDemandCandidateChild);
-				childStockWithDemand = childStockWithDemandDelta.withQuantity(newDemandCandidateChild.getQuantity());
-			}
+			// final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateDeltaWithId);
+			// if (existingSupplyParentStockWithoutParentId != null)
+			// {
+			// //
+			// final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutParentId
+			// .withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateDeltaWithId.getQuantity()))
+			// .withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
+			//
+			// childStockWithDemandDelta = stockCandidateService.updateQty(existingSupplyParentStockWithUpdatedQty);
+			// childStockWithDemand = existingSupplyParentStockWithUpdatedQty;
+			// }
+			// else
+			// {
+			final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(demandCandidateDeltaWithId.withNegatedQuantity());
+			childStockWithDemandDelta = candidateRepositoryWriteService
+					.addOrUpdatePreserveExistingSeqNo(newDemandCandidateChild);
+			childStockWithDemand = childStockWithDemandDelta.withQuantity(newDemandCandidateChild.getQuantity());
+			// }
 		}
 
 		candidateRepositoryWriteService
@@ -165,35 +163,6 @@ public class DemandCandiateHandler implements CandidateHandler
 				type == CandidateType.DEMAND || type == CandidateType.UNRELATED_DECREASE,
 				"Given parameter 'demandCandidate' has type=%s; demandCandidate=%s",
 				type, demandCandidate);
-	}
-
-	private Candidate retrieveSupplyParentStockWithoutParentIdOrNull(@NonNull final Candidate demandCandidateWithId)
-	{
-		final CandidatesQuery queryForExistingSupply = CandidatesQuery.builder()
-				.type(CandidateType.SUPPLY)
-				.demandDetail(demandCandidateWithId.getDemandDetail())
-				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(demandCandidateWithId.getMaterialDescriptor()))
-				.build();
-
-		final Candidate existingSupplyParentStockWithoutOwnParentId;
-		final Candidate existingSupply = candidateRepository.retrieveLatestMatchOrNull(queryForExistingSupply);
-		if (existingSupply != null && existingSupply.getParentId() > 0)
-		{
-			final Candidate existingSupplyParentStock = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(existingSupply.getParentId()));
-			if (existingSupplyParentStock.getParentId() > 0)  // we only want to dock with currently "dangling" stock records
-			{
-				existingSupplyParentStockWithoutOwnParentId = null;
-			}
-			else
-			{
-				existingSupplyParentStockWithoutOwnParentId = existingSupplyParentStock;
-			}
-		}
-		else
-		{
-			existingSupplyParentStockWithoutOwnParentId = null;
-		}
-		return existingSupplyParentStockWithoutOwnParentId;
 	}
 
 	private void fireSupplyRequiredEventIfQtyBelowZero(@NonNull final Candidate demandCandidateWithId)

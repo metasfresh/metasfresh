@@ -2,12 +2,12 @@ package de.metas.elasticsearch.denormalizers.impl;
 
 import java.io.IOException;
 
-import org.adempiere.util.Check;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -22,42 +22,54 @@ import de.metas.elasticsearch.types.ESIndexType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public final class PassThroughDenormalizer implements IESDenormalizer
+final class PassThroughDenormalizer implements IESDenormalizer
 {
-	public static final PassThroughDenormalizer of(final ESDataType dataType, final ESIndexType indexType)
+	public static final PassThroughDenormalizer of(
+			final ESDataType dataType,
+			final ESIndexType indexType,
+			final String analyzer)
 	{
-		return new PassThroughDenormalizer(dataType, indexType);
+		return new PassThroughDenormalizer(dataType, indexType, analyzer);
 	}
 
 	private final ESDataType dataType;
 	private final ESIndexType indexType;
+	private final String analyzer;
 
-	private PassThroughDenormalizer(final ESDataType dataType, final ESIndexType indexType)
+	private PassThroughDenormalizer(
+			@NonNull final ESDataType dataType,
+			@NonNull final ESIndexType indexType,
+			final String analyzer)
 	{
-		super();
-		Check.assumeNotNull(dataType, "Parameter dataType is not null");
 		this.dataType = dataType;
-		Check.assumeNotNull(indexType, "Parameter indexType is not null");
 		this.indexType = indexType;
+		this.analyzer = analyzer;
 	}
 
 	@Override
 	public void appendMapping(final Object builderObj, final String fieldName) throws IOException
 	{
 		final XContentBuilder builder = ESDenormalizerHelper.extractXContentBuilder(builderObj);
-		builder.startObject(fieldName)
-				.field("type", dataType.getEsTypeAsString())
-				.field("index", indexType.getEsTypeAsString())
-				.endObject();
+		builder.startObject(fieldName);
+
+		builder.field("type", dataType.getEsTypeAsString());
+		builder.field("index", indexType.getEsTypeAsString());
+
+		if (analyzer != null)
+		{
+			builder.field("analyzer", analyzer);
+		}
+
+		builder.endObject();
 	}
 
 	@Override

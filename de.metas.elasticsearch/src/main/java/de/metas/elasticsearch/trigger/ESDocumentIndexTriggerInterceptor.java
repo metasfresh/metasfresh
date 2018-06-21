@@ -22,7 +22,9 @@ import com.google.common.base.MoreObjects;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.elasticsearch.IESSystem;
+import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -66,7 +68,7 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 	private final String modelTableName;
 	private final String modelParentColumnName;
 	//
-	private final String modelIndexerId;
+	private final ESModelIndexerId modelIndexerId;
 
 	private boolean triggerInstalled = false;
 
@@ -76,16 +78,11 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 	 * @param modelIdsExtractor function which returns the model IDs for a given document
 	 */
 	public ESDocumentIndexTriggerInterceptor(
-			final Class<DocumentType> documentClass //
-	//
-	, final String modelTableName //
-	, final String modelParentColumnName //
-	//
-	, final String modelIndexerId)
+			@NonNull final Class<DocumentType> documentClass,
+			final String modelTableName,
+			final String modelParentColumnName,
+			@NonNull final ESModelIndexerId modelIndexerId)
 	{
-		super();
-
-		Check.assumeNotNull(documentClass, "Parameter documentClass is not null");
 		this.triggeringDocumentClass = documentClass;
 
 		triggeringTableName = InterfaceWrapperHelper.getTableName(triggeringDocumentClass);
@@ -102,7 +99,6 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 		Check.assumeNotEmpty(modelParentColumnName, "modelParentColumnName is not empty");
 		this.modelParentColumnName = modelParentColumnName;
 
-		Check.assumeNotEmpty(modelIndexerId, "modelIndexerId is not empty");
 		this.modelIndexerId = modelIndexerId;
 	}
 

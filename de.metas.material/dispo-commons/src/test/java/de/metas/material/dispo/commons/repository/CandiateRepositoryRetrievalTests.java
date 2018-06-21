@@ -30,19 +30,23 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.commons.RepositoryTestHelper;
-import de.metas.material.dispo.commons.candidate.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -108,7 +112,7 @@ public class CandiateRepositoryRetrievalTests
 		candidateRecord.setDateProjected(dateProjected);
 		candidateRecord.setM_Warehouse_ID(WAREHOUSE_ID);
 		candidateRecord.setM_Product_ID(PRODUCT_ID);
-		candidateRecord.setC_BPartner_ID(BPARTNER_ID);
+		candidateRecord.setC_BPartner_Customer_ID(BPARTNER_ID);
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
 		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		candidateRecord.setQty(BigDecimal.TEN);
@@ -119,13 +123,13 @@ public class CandiateRepositoryRetrievalTests
 
 		assertThat(result.isPresent());
 		final Candidate candidate = result.get();
-		assertThat(candidate.getParentId()).isEqualTo(0);
+		assertThat(candidate.getParentId().isNull()).isTrue();
 		assertThat(candidate.getDate()).isEqualTo(dateProjected);
 
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		assertThat(materialDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(materialDescriptor.getBPartnerId()).isEqualTo(BPARTNER_ID);
+		assertThat(materialDescriptor.getCustomerId()).isEqualTo(BPARTNER_ID);
 		assertThat(materialDescriptor.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
 		assertThat(materialDescriptor.getAttributeSetInstanceId()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
 	}
@@ -156,7 +160,7 @@ public class CandiateRepositoryRetrievalTests
 
 		assertThat(result.isPresent());
 		final Candidate candidate = result.get();
-		assertThat(candidate.getParentId()).isEqualTo(0);
+		assertThat(candidate.getParentId().isNull()).isTrue();
 		assertThat(candidate.getDate()).isEqualTo(dateProjected);
 		assertThat(candidate.getTransactionDetails()).hasSize(2);
 
@@ -181,7 +185,7 @@ public class CandiateRepositoryRetrievalTests
 	{
 		final I_MD_Candidate_Prod_Detail productionDetailRecord = createProdDetailRecord(101, 111);
 
-		final CandidatesQuery query = CandidatesQuery.fromId(productionDetailRecord.getMD_Candidate().getMD_Candidate_ID());
+		final CandidatesQuery query = CandidatesQuery.fromId(CandidateId.ofRepoId(productionDetailRecord.getMD_Candidate().getMD_Candidate_ID()));
 
 		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 		assertThat(cand).isNotNull();
@@ -245,15 +249,15 @@ public class CandiateRepositoryRetrievalTests
 		final Candidate expectedRecordWithProdDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(cand, false));
 		assertThat(expectedRecordWithProdDetails).isNotNull();
-		assertThat(expectedRecordWithProdDetails.getId()).isEqualTo(record.getMD_Candidate_ID());
+		assertThat(expectedRecordWithProdDetails.getId().getRepoId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final CandidatesQuery querqWithoutProdDetails = CandidatesQuery
-				.fromCandidate(cand.withId(0), false)
+				.fromCandidate(cand.withId(null), false)
 				.withProductionDetailsQuery(ProductionDetailsQuery.NO_PRODUCTION_DETAIL);
 		final Candidate expectedRecordWithoutProdDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(querqWithoutProdDetails);
 		assertThat(expectedRecordWithoutProdDetails).isNotNull();
-		assertThat(expectedRecordWithoutProdDetails.getId()).isEqualTo(otherRecord.getMD_Candidate_ID());
+		assertThat(expectedRecordWithoutProdDetails.getId().getRepoId()).isEqualTo(otherRecord.getMD_Candidate_ID());
 	}
 
 	@Test
@@ -272,7 +276,7 @@ public class CandiateRepositoryRetrievalTests
 
 		final List<Candidate> retrievedCandidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
 		assertThat(retrievedCandidates).hasSize(1);
-		assertThat(retrievedCandidates.get(0).getId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
+		assertThat(retrievedCandidates.get(0).getId().getRepoId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
 	}
 
 	@Test
@@ -290,51 +294,13 @@ public class CandiateRepositoryRetrievalTests
 
 		final List<Candidate> retrievedCandidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
 		assertThat(retrievedCandidates).hasSize(1);
-		assertThat(retrievedCandidates.get(0).getId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
+		assertThat(retrievedCandidates.get(0).getId().getRepoId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
 	}
 
 	@Test
 	public void retrieve_with_DistributionDetail()
 	{
 		perform_retrieve_with_DistributionDetail();
-	}
-
-	private IPair<Candidate, I_MD_Candidate> perform_retrieve_with_DistributionDetail()
-	{
-		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
-		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
-		record.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION);
-		save(record);
-
-		final I_MD_Candidate_Dist_Detail distributionDetailRecord = newInstance(I_MD_Candidate_Dist_Detail.class);
-		distributionDetailRecord.setDD_NetworkDistributionLine_ID(71);
-		distributionDetailRecord.setPP_Product_Planning_ID(81);
-		distributionDetailRecord.setMD_Candidate(record);
-		distributionDetailRecord.setDD_Order_ID(101);
-		distributionDetailRecord.setDD_OrderLine_ID(111);
-		distributionDetailRecord.setDD_Order_DocStatus("ddOrderDocStatus1");
-		distributionDetailRecord.setM_Shipper_ID(121);
-		save(distributionDetailRecord);
-
-		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
-		assertThat(cand).isNotNull();
-		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
-
-		final BusinessCaseDetail businessCaseDetail = cand.getBusinessCaseDetail();
-		assertThat(ProductionDetail.castOrNull(businessCaseDetail)).isNull();
-
-		final DistributionDetail distributionDetail = DistributionDetail.castOrNull(businessCaseDetail);
-		assertThat(distributionDetail).isNotNull();
-		assertThat(distributionDetail.getNetworkDistributionLineId()).isEqualTo(71);
-		assertThat(distributionDetail.getProductPlanningId()).isEqualTo(81);
-		assertThat(distributionDetail.getDdOrderId()).isEqualTo(101);
-		assertThat(distributionDetail.getDdOrderLineId()).isEqualTo(111);
-		assertThat(distributionDetail.getShipperId()).isEqualTo(121);
-		assertThat(distributionDetail.getDdOrderDocStatus()).isEqualTo("ddOrderDocStatus1");
-
-		return ImmutablePair.of(cand, record);
 	}
 
 	/**
@@ -361,17 +327,82 @@ public class CandiateRepositoryRetrievalTests
 				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(candidateWithDistributionDetail, false));
 		assertThat(expectedResultWithDistDetails).isNotNull();
 		assertThat(distrDetailOrNull(expectedResultWithDistDetails)).isNotNull();
-		assertThat(expectedResultWithDistDetails.getId()).isEqualTo(record.getMD_Candidate_ID());
+		assertThat(expectedResultWithDistDetails.getId().getRepoId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final CandidatesQuery withoutdistDetailsQuery = CandidatesQuery
-				.fromCandidate(candidateWithDistributionDetail.withId(0), false)
+				.fromCandidate(candidateWithDistributionDetail.withId(null), false)
 				.withDistributionDetailsQuery(DistributionDetailsQuery.NO_DISTRIBUTION_DETAIL);
 		final Candidate expectedRecordWithoutDistDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(withoutdistDetailsQuery);
 
 		assertThat(expectedRecordWithoutDistDetails).isNotNull();
 		assertThat(distrDetailOrNull(expectedRecordWithoutDistDetails)).isNull();
-		assertThat(expectedRecordWithoutDistDetails.getId()).isEqualTo(otherRecord.getMD_Candidate_ID());
+		assertThat(expectedRecordWithoutDistDetails.getId().getRepoId()).isEqualTo(otherRecord.getMD_Candidate_ID());
+	}
+
+	private IPair<Candidate, I_MD_Candidate> perform_retrieve_with_DistributionDetail()
+	{
+		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
+		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
+		record.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION);
+		save(record);
+
+		final I_MD_Candidate_Dist_Detail distributionDetailRecord = newInstance(I_MD_Candidate_Dist_Detail.class);
+		distributionDetailRecord.setDD_NetworkDistributionLine_ID(71);
+		distributionDetailRecord.setPP_Product_Planning_ID(81);
+		distributionDetailRecord.setMD_Candidate(record);
+		distributionDetailRecord.setDD_Order_ID(101);
+		distributionDetailRecord.setDD_OrderLine_ID(111);
+		distributionDetailRecord.setDD_Order_DocStatus("ddOrderDocStatus1");
+		distributionDetailRecord.setM_Shipper_ID(121);
+		save(distributionDetailRecord);
+
+		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(CandidateId.ofRepoId(record.getMD_Candidate_ID())));
+		assertThat(cand).isNotNull();
+		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
+
+		final BusinessCaseDetail businessCaseDetail = cand.getBusinessCaseDetail();
+		assertThat(ProductionDetail.castOrNull(businessCaseDetail)).isNull();
+
+		final DistributionDetail distributionDetail = DistributionDetail.castOrNull(businessCaseDetail);
+		assertThat(distributionDetail).isNotNull();
+		assertThat(distributionDetail.getNetworkDistributionLineId()).isEqualTo(71);
+		assertThat(distributionDetail.getProductPlanningId()).isEqualTo(81);
+		assertThat(distributionDetail.getDdOrderId()).isEqualTo(101);
+		assertThat(distributionDetail.getDdOrderLineId()).isEqualTo(111);
+		assertThat(distributionDetail.getShipperId()).isEqualTo(121);
+		assertThat(distributionDetail.getDdOrderDocStatus()).isEqualTo("ddOrderDocStatus1");
+
+		return ImmutablePair.of(cand, record);
+	}
+
+	@Test
+	public void retrieve_with_PurchaseDetail()
+	{
+		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
+		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_SUPPLY);
+		record.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE);
+		save(record);
+
+		final I_MD_Candidate_Purchase_Detail distributionDetailRecord = newInstance(I_MD_Candidate_Purchase_Detail.class);
+		distributionDetailRecord.setMD_Candidate(record);
+		save(distributionDetailRecord);
+
+		// invoke the method under test
+		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(CandidateId.ofRepoId(record.getMD_Candidate_ID())));
+
+		assertThat(cand).isNotNull();
+		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
+
+		final BusinessCaseDetail businessCaseDetail = cand.getBusinessCaseDetail();
+		assertThat(ProductionDetail.castOrNull(businessCaseDetail)).isNull();
+
+		final PurchaseDetail distributionDetail = PurchaseDetail.castOrNull(businessCaseDetail);
+		assertThat(distributionDetail).isNotNull();
 	}
 
 	private DistributionDetail distrDetailOrNull(final Candidate candidateWithDistributionDetail)
@@ -400,7 +431,7 @@ public class CandiateRepositoryRetrievalTests
 		final List<Candidate> expectedCandidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 		assertThat(expectedCandidates).hasSize(1);
 		final Candidate expectedCandidate = expectedCandidates.get(0);
-		assertThat(expectedCandidate.getId()).isEqualTo(record.getMD_Candidate_ID());
+		assertThat(expectedCandidate.getId().getRepoId()).isEqualTo(record.getMD_Candidate_ID());
 		assertThat(expectedCandidate.getTransactionDetails()).hasSize(1);
 		assertThat(expectedCandidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		assertThat(expectedCandidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("10");
@@ -437,17 +468,17 @@ public class CandiateRepositoryRetrievalTests
 
 		final Candidate expectedRecordWithDemandDetails = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(cand, false));
 		assertThat(expectedRecordWithDemandDetails).isNotNull();
-		assertThat(expectedRecordWithDemandDetails.getId()).isEqualTo(record.getMD_Candidate_ID());
+		assertThat(expectedRecordWithDemandDetails.getId().getRepoId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final Candidate expectedRecordWithoutDemandDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(
 						cand
-								.withId(0)
+								.withId(null)
 								.withBusinessCaseDetail(DemandDetail.forForecastLineId(74, 84, TEN)),
 						false));
 
 		assertThat(expectedRecordWithoutDemandDetails).isNotNull();
-		assertThat(expectedRecordWithoutDemandDetails.getId()).isEqualTo(otherRecord.getMD_Candidate_ID());
+		assertThat(expectedRecordWithoutDemandDetails.getId().getRepoId()).isEqualTo(otherRecord.getMD_Candidate_ID());
 	}
 
 	private IPair<Candidate, I_MD_Candidate> perform_retrieve_with_id_and_demandDetail()
@@ -463,9 +494,9 @@ public class CandiateRepositoryRetrievalTests
 		demandDetailRecord.setM_ForecastLine_ID(72); // in production it doesn't make sense to set both, but here we get two for the price of one
 		save(demandDetailRecord);
 
-		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
+		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(CandidateId.ofRepoId(record.getMD_Candidate_ID())));
 		assertThat(cand).isNotNull();
-		assertThat(cand.getId()).isEqualTo(record.getMD_Candidate_ID());
+		assertThat(cand.getId().getRepoId()).isEqualTo(record.getMD_Candidate_ID());
 		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
@@ -546,7 +577,7 @@ public class CandiateRepositoryRetrievalTests
 
 		assertThat(result).hasSize(1);
 		final Candidate resultCandidate = result.get(0);
-		assertThat(resultCandidate.getId()).isEqualTo(candidateRecord.getMD_Candidate_ID());
+		assertThat(resultCandidate.getId().getRepoId()).isEqualTo(candidateRecord.getMD_Candidate_ID());
 		assertThat(resultCandidate.getWarehouseId()).isEqualTo(warehouseId);
 	}
 
@@ -563,7 +594,7 @@ public class CandiateRepositoryRetrievalTests
 
 		assertThat(result).hasSize(1);
 		final Candidate resultCandidate = result.get(0);
-		assertThat(resultCandidate.getId()).isEqualTo(candidateRecord.getMD_Candidate_ID());
+		assertThat(resultCandidate.getId().getRepoId()).isEqualTo(candidateRecord.getMD_Candidate_ID());
 		assertThat(resultCandidate.getDemandDetail()).isNotNull();
 		assertThat(resultCandidate.getDemandDetail().getShipmentScheduleId()).isEqualTo(25);
 	}
@@ -591,7 +622,7 @@ public class CandiateRepositoryRetrievalTests
 
 		assertThat(result).hasSize(1);
 		final Candidate resultCandidate = result.get(0);
-		assertThat(resultCandidate.getId()).isEqualTo(candidateRecord.getMD_Candidate_ID());
+		assertThat(resultCandidate.getId().getRepoId()).isEqualTo(candidateRecord.getMD_Candidate_ID());
 		assertThat(resultCandidate.getDemandDetail()).isNotNull();
 		assertThat(resultCandidate.getDemandDetail().getForecastLineId()).isEqualTo(25);
 

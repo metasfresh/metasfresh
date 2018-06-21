@@ -114,18 +114,17 @@ public class ES_IndexTable extends JavaProcess
 
 	private void indexModelsFor(final IESModelIndexer modelIndexer)
 	{
-		if(p_DeleteIndex)
+		if (p_DeleteIndex)
 		{
 			modelIndexer.deleteIndex();
 			addLog("{} - Index deleted", modelIndexer.getId());
 		}
-		
+
 		// Make sure the index exists and has the right config & mappings
 		if (modelIndexer.createUpdateIndex())
 		{
 			addLog("{} - Index created now", modelIndexer.getId());
 		}
-		
 
 		final Iterator<Object> modelsToIndex = retrieveModelsToIndex(modelIndexer);
 
@@ -148,10 +147,16 @@ public class ES_IndexTable extends JavaProcess
 		}
 
 		final ICompositeQueryFilter<Object> triggerFilters = queryBL.createCompositeQueryFilter(modelTableName)
+				.setDefaultAccept(true)
 				.setJoinOr();
 		for (final IESModelIndexerTrigger trigger : triggers)
 		{
 			final IQueryFilter<Object> filter = trigger.getMatchingModelsFilter();
+			if (filter == null)
+			{
+				continue;
+			}
+
 			triggerFilters.addFilter(filter);
 		}
 

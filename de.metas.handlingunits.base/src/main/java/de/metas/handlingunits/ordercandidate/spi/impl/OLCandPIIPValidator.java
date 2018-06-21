@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
@@ -35,6 +34,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.lang.SOTrx;

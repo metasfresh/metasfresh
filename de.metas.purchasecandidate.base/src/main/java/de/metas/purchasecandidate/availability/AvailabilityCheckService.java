@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.GuavaCollectors;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +11,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
@@ -107,7 +107,7 @@ public class AvailabilityCheckService
 				.trackingId(trackingId)
 				.productAndQuantity(productAndQuantity)
 				.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(purchaseCandidatesGroup.getSinglePurchaseCandidateIdOrNull(), -1))
-				.salesOrderLineId(OrderAndLineId.getOrderLineRepoIdOr(purchaseCandidatesGroup.getSingleSalesOrderAndLineId(), -1))
+				.salesOrderLineId(OrderAndLineId.getOrderLineRepoIdOr(purchaseCandidatesGroup.getSingleSalesOrderAndLineIdOrNull(), -1))
 				.build();
 	}
 

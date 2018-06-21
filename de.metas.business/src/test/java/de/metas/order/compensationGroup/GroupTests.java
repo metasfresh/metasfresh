@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
 

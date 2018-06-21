@@ -3,6 +3,8 @@
  */
 package de.metas.adempiere.model;
 
+import org.compiere.model.I_C_BPartner_Location;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

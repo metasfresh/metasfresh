@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -27,10 +27,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -103,22 +105,25 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.productAndCategoryId(productAndCategoryId)
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(40))
 				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
+				.defaultVendor(false)
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
-				.pricingConditions(PricingConditions.builder()
-						.build())
+				.pricingConditions(PricingConditions.builder().build())
 				.build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+				.groupReference(DemandGroupReference.createEmpty())
 				.orgId(OrgId.ofRepoId(10))
 				.purchaseDatePromised(SystemTime.asLocalDateTime())
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(vendorProductInfo.getProductId())
+				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.qtyToPurchase(TEN)
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();

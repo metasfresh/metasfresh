@@ -36,7 +36,7 @@ import lombok.experimental.FieldDefaults;
  */
 
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = "attributeSetInstanceId")
 @ToString
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
@@ -55,7 +55,7 @@ public class ProductDescriptor
 	{
 		return new ProductDescriptor(productId, attributesKey, attributeSetInstanceId);
 	}
-	
+
 	public static final ProductDescriptor forProductAndAttributes(
 			final int productId,
 			@NonNull final AttributesKey attributesKey)
@@ -63,7 +63,6 @@ public class ProductDescriptor
 		final int attributeSetInstanceId = 0;
 		return new ProductDescriptor(productId, attributesKey, attributeSetInstanceId);
 	}
-
 
 	@Getter
 	int productId;
@@ -73,6 +72,7 @@ public class ProductDescriptor
 
 	/**
 	 * This ID is only here so that the candidate row's attributes can be displayed properly in the UI.
+	 * It may not cause otherwise equal ProductDescriptors to seem as unequal.
 	 */
 	@Getter
 	int attributeSetInstanceId;

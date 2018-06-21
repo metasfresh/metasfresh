@@ -9,6 +9,33 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.63 (2018-26)
+## Features
+* metasfresh
+  * [#4140](https://github.com/metasfresh/metasfresh/issues/4140) WebUI: Translation Window for Country
+    * New Window for Country Translation maintenance.
+  * [#4225](https://github.com/metasfresh/metasfresh/issues/4225) Pharma: Move Businesspartner Fields to Customer/ Vendor Tab
+    * Improvement of the Pharma Business Partnmer Window in WebUI, rearranging customer and vendor Fields in their subtabs.
+  * [#4240](https://github.com/metasfresh/metasfresh/issues/4240) Translate new Repack Attributes
+    * Improved Translation for Repack No. Attributes.
+  * [#4242](https://github.com/metasfresh/metasfresh/issues/4242) WebUI: Window Event Log
+    * New Window event log added to WebUI Menu.
+  * [#4244](https://github.com/metasfresh/metasfresh/issues/4244) Purchase Candidates adjustments
+    * Window Improvements for Purchase Candidates in WebUI.
+
+## Fixes
+* metasfresh
+  * [#4255](https://github.com/metasfresh/metasfresh/issues/4255) Contract Person in Charge not filtered by Systemuser
+    * Fixed User in Charge Validation,. Now only showing Systemusers/ -contacts in the dropdown selection.
+
+* metasfresh-webui-frontend
+  * [#1811](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1811) Fields are set on null when you press tab too fast
+    * Fix for Tab Hold in Document windows. Now not blurring the Fields content anymore when values are already set.
+  * [#1837](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1837) Cancel request message disappears too fast
+    * Fixes the cancel request message. Now not dissappearing anymore when hovering.
+  * [#1843](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1843) Action button not properly displayed in Transportation Order window
+    * Fixes the Button Look&Feel in Case the Button has no data from API.
+
 
 # metasfresh 5.62 (2018-25)
 ## Features
@@ -17,16 +44,23 @@ Here come the actual release notes:
     * New Window Import Chart of Accounts in WebUI.
   * [#4201](https://github.com/metasfresh/metasfresh/issues/4201) WebUI: Show DeliveryRule in Businesspartner Customer and Sales Order
     * Improvement of Businesspartner and Sales Order Widnow in WebUI. Adding the Field for Delivery Rule.
+  * [#4231](https://github.com/metasfresh/metasfresh/issues/4231) Address swing-client performance problem in rechnungsdispo summary info
+  * [#4230](https://github.com/metasfresh/metasfresh/issues/4230) Filter for POSReference in Invoicecand
+  * [#4153](https://github.com/metasfresh/metasfresh/issues/4153) Serial Letter Feature
 
 * metasfresh-webui-frontend
   * [#1417](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1417) Shortcuts for delete modal window
     * Improved shortcut Handling in delete record modal overlay.
   * [#1686](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1686) API login for cypress
     * New Feature for Testing Framework Cypress, now allowing the API to do a login.
-  * [#1722](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1722) Typing in dropdown fields
-    * Extended Search Feature in Dropdown Lists.
 
 ## Fixes
+* metasfresh
+  * [#4134](https://github.com/metasfresh/metasfresh/issues/4134) updating record to not match tab where clause leads to error when PKs are different
+  * [#4232](https://github.com/metasfresh/metasfresh/issues/4232) CleverReach remote group id not stored when campaign is created
+  * [#4233](https://github.com/metasfresh/metasfresh/issues/4233) Attributeset as Sysadmin cannot be created
+    * Fixes the recording of Attributeset with System Client.
+
 * metasfresh-webui-frontend
   * [#1446](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1446) Tab in purchase order batch entry not working correctly
     * Fixes the Tab usage in Batch entry after confirming selection with mouse.

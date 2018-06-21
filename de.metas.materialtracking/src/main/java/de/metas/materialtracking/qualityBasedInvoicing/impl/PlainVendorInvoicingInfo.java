@@ -1,7 +1,5 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import org.adempiere.bpartner.BPartnerId;
-
 /*
  * #%L
  * de.metas.materialtracking
@@ -26,6 +24,7 @@ import org.adempiere.bpartner.BPartnerId;
 
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.pricing.PricingSystemId;

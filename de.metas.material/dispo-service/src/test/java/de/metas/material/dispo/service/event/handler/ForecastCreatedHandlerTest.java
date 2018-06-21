@@ -128,7 +128,7 @@ public class ForecastCreatedHandlerTest
 		final I_MD_Candidate demandCandidate = result.get(0);
 		assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(demandCandidate.getQty()).isEqualByComparingTo("8");
-		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
+		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID));
 	}
 
 	/**
@@ -165,7 +165,7 @@ public class ForecastCreatedHandlerTest
 
 		assertThat(result.get(0).getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(result.get(0).getQty()).isEqualByComparingTo("8");
-		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
+		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID));
 	}
 
 	private ForecastCreatedEvent createForecastWithQtyOfEight()
@@ -175,7 +175,7 @@ public class ForecastCreatedHandlerTest
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
-						.bPartnerId(BPARTNER_ID)
+						.customerId(BPARTNER_ID)
 						.quantity(new BigDecimal("8"))
 						.date(NOW)
 						.build())

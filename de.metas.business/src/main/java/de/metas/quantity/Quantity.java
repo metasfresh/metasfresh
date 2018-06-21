@@ -553,11 +553,25 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 *
-	 * @param qtyToCompare
 	 * @return minimum of <code>this</code> and <code>qtyToCompare</code>
 	 */
 	public Quantity min(@NonNull final Quantity qtyToCompare)
+	{
+		final Quantity diff = this.subtract(qtyToCompare);
+		if (diff.signum() <= 0)
+		{
+			return this;
+		}
+		else
+		{
+			return qtyToCompare;
+		}
+	}
+
+	/**
+	 * @return maximum of <code>this</code> and <code>qtyToCompare</code>.
+	 */
+	public Quantity max(@NonNull final Quantity qtyToCompare)
 	{
 		final Quantity diff = this.subtract(qtyToCompare);
 		if (diff.signum() >= 0)

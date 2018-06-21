@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
-import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
@@ -26,9 +26,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
@@ -229,11 +231,13 @@ public class PurchaseCandidateToOrderWorkflowTest
 		final ProductId productId = ProductId.ofRepoId(5);
 		return PurchaseCandidate.builder()
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(1, 2))
+				.groupReference(DemandGroupReference.createEmpty())
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(1, 2))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.vendorId(BPartnerId.ofRepoId(vendorId))
 				.productId(ProductId.ofRepoId(5))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(ONE)

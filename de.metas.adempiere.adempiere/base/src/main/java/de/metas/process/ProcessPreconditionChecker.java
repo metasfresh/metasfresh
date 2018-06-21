@@ -114,7 +114,7 @@ public class ProcessPreconditionChecker
 	}
 
 	private static final IProcessPrecondition createProcessPreconditions(
-			final Class<? extends IProcessPrecondition> preconditionsClass, 
+			final Class<? extends IProcessPrecondition> preconditionsClass,
 			final IProcessPreconditionsContext context) throws Exception
 	{
 		final IProcessPrecondition processPreconditions = preconditionsClass.asSubclass(IProcessPrecondition.class).newInstance();
@@ -289,15 +289,15 @@ public class ProcessPreconditionChecker
 		return _processClassInfo;
 	}
 
-	public ProcessPreconditionChecker setPreconditionsContext(final Supplier<IProcessPreconditionsContext> preconditionsContextSupplier)
+	public ProcessPreconditionChecker setPreconditionsContext(final IProcessPreconditionsContext preconditionsContext)
 	{
-		_preconditionsContextSupplier = preconditionsContextSupplier;
+		setPreconditionsContext(() -> preconditionsContext);
 		return this;
 	}
 
-	public ProcessPreconditionChecker setPreconditionsContext(final IProcessPreconditionsContext preconditionsContext)
+	public ProcessPreconditionChecker setPreconditionsContext(final Supplier<IProcessPreconditionsContext> preconditionsContextSupplier)
 	{
-		_preconditionsContextSupplier = () -> preconditionsContext;
+		_preconditionsContextSupplier = preconditionsContextSupplier;
 		return this;
 	}
 

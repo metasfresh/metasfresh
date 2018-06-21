@@ -1,17 +1,21 @@
 package de.metas.purchasecandidate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
+import org.adempiere.util.Check;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.warehouse.WarehouseId;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -48,17 +52,30 @@ import lombok.Value;
 public class PurchaseCandidatesGroup
 {
 	public static PurchaseCandidatesGroup of(
+			@NonNull final PurchaseDemandId purchaseDemandId,
 			@NonNull final PurchaseCandidate purchaseCandidate,
-			@NonNull final PurchaseDemandId demandId,
 			@NonNull final VendorProductInfo vendorProductInfo)
 	{
+		Check.errorUnless(
+				Objects.equals(purchaseCandidate.getProductId(), vendorProductInfo.getProductId()),
+				"The given purchaseCandidate and vendorProductInfo have different productIds; purchaseCandidate={}; vendorProductInfo={}",
+				purchaseCandidate, vendorProductInfo);
+
+		Check.errorUnless(
+				Objects.equals(vendorProductInfo.getAttributeSetInstanceId(), AttributeSetInstanceId.NONE) // if vendorProductInfo has no ASI, then it's also fine.
+						|| Objects.equals(purchaseCandidate.getAttributeSetInstanceId(), vendorProductInfo.getAttributeSetInstanceId()),
+				"The given purchaseCandidate and vendorProductInfo have different attributeSetInstanceIds; purchaseCandidate={}; vendorProductInfo={}",
+				purchaseCandidate, vendorProductInfo);
+
 		final PurchaseCandidatesGroupBuilder builder = builder()
-				.demandId(demandId)
+				.purchaseDemandId(purchaseDemandId)
+				.demandGroupReferences(ImmutableList.of(purchaseCandidate.getGroupReference()))
 				//
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				//
 				.vendorProductInfo(vendorProductInfo)
+				.attributeSetInstanceId(purchaseCandidate.getAttributeSetInstanceId())
 				//
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
@@ -73,27 +90,37 @@ public class PurchaseCandidatesGroup
 		{
 			builder.purchaseCandidateId(purchaseCandidate.getId());
 		}
-		if (purchaseCandidate.getSalesOrderAndLineId() != null)
+		if (purchaseCandidate.getSalesOrderAndLineIdOrNull() != null)
 		{
-			builder.salesOrderAndLineId(purchaseCandidate.getSalesOrderAndLineId());
+			builder.salesOrderAndLineId(purchaseCandidate.getSalesOrderAndLineIdOrNull());
 		}
 
 		return builder.build();
 	}
 
+	/** they are needed because when a new purchase candidate is "split" from this group, it needs to inherit a reference. */
 	@NonNull
-	PurchaseDemandId demandId;
+	List<DemandGroupReference> demandGroupReferences;
+
+	@NonNull
+	PurchaseDemandId purchaseDemandId;
 
 	@NonNull
 	OrgId orgId;
+
 	@NonNull
 	WarehouseId warehouseId;
 
 	@NonNull
 	VendorProductInfo vendorProductInfo;
 
+	/** note that the ASI-ID of {@link #vendorProductInfo} might be "none" */
+	@NonNull
+	AttributeSetInstanceId attributeSetInstanceId;
+
 	@NonNull
 	Quantity qtyToPurchase;
+
 	@NonNull
 	Quantity purchasedQty;
 
@@ -118,12 +145,12 @@ public class PurchaseCandidatesGroup
 		return ListUtils.singleElementOrNull(getPurchaseCandidateIds());
 	}
 
-	public OrderAndLineId getSingleSalesOrderAndLineId()
+	public OrderAndLineId getSingleSalesOrderAndLineIdOrNull()
 	{
 		return ListUtils.singleElementOrNull(getSalesOrderAndLineIds());
 	}
 
-	public PurchaseCandidatesGroup changeProfitInfo(@Nullable final PurchaseProfitInfo newProfitInfo)
+	public PurchaseCandidatesGroup withProfitInfo(@Nullable final PurchaseProfitInfo newProfitInfo)
 	{
 		if (Objects.equals(getProfitInfo(), newProfitInfo))
 		{
@@ -146,6 +173,11 @@ public class PurchaseCandidatesGroup
 	public ProductId getProductId()
 	{
 		return getVendorProductInfo().getProductId();
+	}
+
+	public AttributeSetInstanceId getAttributeSetInstanceId()
+	{
+		return attributeSetInstanceId;
 	}
 
 	public boolean isAggregatePOs()

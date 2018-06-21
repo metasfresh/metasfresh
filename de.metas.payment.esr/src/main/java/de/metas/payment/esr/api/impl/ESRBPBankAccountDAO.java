@@ -36,7 +36,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 

@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDunningLevel;
 import org.compiere.model.MDunningRun;
@@ -33,6 +32,7 @@ import org.compiere.util.Env;
 
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.bpartner.exceptions.BPartnerNoAddressException;
 import de.metas.process.JavaProcess;
 
 

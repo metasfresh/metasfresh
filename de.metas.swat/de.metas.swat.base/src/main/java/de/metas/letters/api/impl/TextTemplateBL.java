@@ -30,8 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -45,6 +43,8 @@ import org.slf4j.Logger;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.letters.api.ITextTemplateBL;

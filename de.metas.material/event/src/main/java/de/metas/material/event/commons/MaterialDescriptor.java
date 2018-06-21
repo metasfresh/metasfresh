@@ -37,8 +37,7 @@ import lombok.experimental.FieldDefaults;
  * #L%
  */
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-@EqualsAndHashCode(
-		exclude = "quantity", // ignore quantity to avoid trouble comparing e.g. 10 with 10.0 with 1E+1
+@EqualsAndHashCode(exclude = "quantity", // ignore quantity to avoid trouble comparing e.g. 10 with 10.0 with 1E+1
 		callSuper = true)
 @ToString(callSuper = true)
 public class MaterialDescriptor extends ProductDescriptor
@@ -46,8 +45,12 @@ public class MaterialDescriptor extends ProductDescriptor
 	@Getter
 	int warehouseId;
 
+	/**
+	 * Optional, may be <= 0; if set, then the respective candidate allocated to the respective *customer*
+	 * and is not available to other customers.
+	 */
 	@Getter
-	int bPartnerId;
+	int customerId;
 
 	@Getter
 	BigDecimal quantity;
@@ -61,14 +64,14 @@ public class MaterialDescriptor extends ProductDescriptor
 	@Builder
 	private MaterialDescriptor(
 			final int warehouseId,
-			final int bPartnerId,
+			final int customerId,
 			final Date date,
 			final ProductDescriptor productDescriptor,
 			final BigDecimal quantity)
 	{
 		this(
 				warehouseId,
-				bPartnerId,
+				customerId,
 				quantity,
 				date,
 				productDescriptor == null ? 0 : productDescriptor.getProductId(),
@@ -79,7 +82,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	@JsonCreator
 	public MaterialDescriptor(
 			@JsonProperty("warehouseId") final int warehouseId,
-			@JsonProperty("bpartnerId") final int bPartnerId,
+			@JsonProperty("customerId") final int customerId,
 			@JsonProperty("quantity") final BigDecimal quantity,
 			@JsonProperty("date") final Date date,
 			@JsonProperty("productId") final int productId,
@@ -89,7 +92,7 @@ public class MaterialDescriptor extends ProductDescriptor
 		super(productId, attributesKey, attributeSetInstanceId);
 
 		this.warehouseId = warehouseId;
-		this.bPartnerId = bPartnerId;
+		this.customerId = customerId;
 		this.quantity = quantity;
 
 		this.date = date;
@@ -100,9 +103,9 @@ public class MaterialDescriptor extends ProductDescriptor
 	public MaterialDescriptor asssertMaterialDescriptorComplete()
 	{
 		Preconditions.checkArgument(warehouseId > 0, "warehouseId=%s needs to be >0", warehouseId);
-		Preconditions.checkArgument(bPartnerId >= 0, "bPartnerId=%s needs to be >=0", bPartnerId);
+		Preconditions.checkArgument(customerId >= 0, "customerId=%s needs to be >=0", customerId);
 		Preconditions.checkNotNull(quantity, "quantity needs to be not-null");
-		Preconditions.checkNotNull(date, "date needs to not-null");
+		Preconditions.checkNotNull(date, "date needs to be not-null");
 
 		return this;
 	}
@@ -114,7 +117,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.date(this.date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
-				.bPartnerId(this.bPartnerId)
+				.customerId(this.customerId)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
 	}
@@ -125,7 +128,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.date(date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
-				.bPartnerId(this.bPartnerId)
+				.customerId(this.customerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
@@ -137,7 +140,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.productDescriptor(productDescriptor)
 				.date(this.date)
 				.warehouseId(this.warehouseId)
-				.bPartnerId(this.bPartnerId)
+				.customerId(this.customerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
@@ -149,7 +152,19 @@ public class MaterialDescriptor extends ProductDescriptor
 				.warehouseId(warehouseId)
 				.date(this.date)
 				.productDescriptor(this)
-				.bPartnerId(this.bPartnerId)
+				.customerId(this.customerId)
+				.quantity(this.quantity)
+				.build();
+		return result.asssertMaterialDescriptorComplete();
+	}
+
+	public MaterialDescriptor withCustomerId(final int customerId)
+	{
+		final MaterialDescriptor result = MaterialDescriptor.builder()
+				.warehouseId(this.warehouseId)
+				.date(this.date)
+				.productDescriptor(this)
+				.customerId(customerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();

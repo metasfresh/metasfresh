@@ -38,7 +38,7 @@ import de.metas.elasticsearch.types.ESIndexType;
  * #L%
  */
 
-public final class DateDenormalizer implements IESDenormalizer
+final class DateDenormalizer implements IESDenormalizer
 {
 	public static final DateDenormalizer of(final int dateDisplayType, final ESIndexType indexType)
 	{
@@ -120,7 +120,5 @@ public final class DateDenormalizer implements IESDenormalizer
 		{
 			throw new AdempiereException("Unsupported date value '" + value + "' (" + value.getClass() + "))");
 		}
-
 	}
-
 }

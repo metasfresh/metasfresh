@@ -25,8 +25,7 @@ package de.metas.pricing;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.bpartner.BPartnerId;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 

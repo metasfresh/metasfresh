@@ -73,5 +73,5 @@ public interface IESIndexerResult
 	/**
 	 * If {@link #hasFailures()} this method will throw an exception with {@link #getFailureMessage()} as message.
 	 */
-	void throwExceceptionIfAnyFailure();
+	void throwExceptionIfAnyFailure();
 }

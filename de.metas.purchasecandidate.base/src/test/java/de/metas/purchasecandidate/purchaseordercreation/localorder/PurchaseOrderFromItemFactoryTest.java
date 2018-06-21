@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -27,6 +27,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.event.OrderUserNotifications;
@@ -36,6 +37,7 @@ import de.metas.order.model.I_C_Order;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -196,19 +198,23 @@ public class PurchaseOrderFromItemFactoryTest
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
+				.defaultVendor(true)
 				.productAndCategoryId(ProductAndCategoryId.of(20, 30))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(40))
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
 				.pricingConditions(createDummyPricingConditions())
 				.build();
 
 		return PurchaseCandidate.builder()
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
+				.groupReference(DemandGroupReference.createEmpty())
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(ProductId.ofRepoId(5))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)

@@ -6,7 +6,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor.SupplyRequiredDescriptorBuilder;
@@ -88,7 +88,7 @@ public class SupplyRequiredEventCreator
 			@NonNull final BigDecimal qty)
 	{
 		return SupplyRequiredDescriptor.builder()
-				.demandCandidateId(candidate.getId())
+				.demandCandidateId(candidate.getId().getRepoId())
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(candidate.getClientId(), candidate.getOrgId()))
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty));
 	}

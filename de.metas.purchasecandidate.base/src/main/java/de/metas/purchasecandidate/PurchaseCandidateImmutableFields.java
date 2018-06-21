@@ -1,9 +1,12 @@
 package de.metas.purchasecandidate;
 
-import org.adempiere.bpartner.BPartnerId;
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -36,18 +39,28 @@ import lombok.Value;
 @Builder
 class PurchaseCandidateImmutableFields
 {
-	OrderAndLineId salesOrderAndLineId;
+	@Nullable
+	OrderAndLineId salesOrderAndLineIdOrNull;
+
+	@NonNull
+	DemandGroupReference groupReference;
 
 	@NonNull
 	BPartnerId vendorId;
 
 	@NonNull
 	OrgId orgId;
+
 	@NonNull
 	WarehouseId warehouseId;
+
 	@NonNull
 	ProductId productId;
+
+	@NonNull
+	AttributeSetInstanceId attributeSetInstanceId;
+
 	String vendorProductNo;
-	
+
 	boolean aggregatePOs;
 }

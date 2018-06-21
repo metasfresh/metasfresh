@@ -30,25 +30,26 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.adempiere.bpartner.service.IBPartnerBL;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.Util;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
 import de.metas.document.model.IDocumentLocation;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * @author cg
@@ -109,7 +110,7 @@ public class UpdateAddresses extends JavaProcess
 	{
 		//
 		// Identify available column names
-		final List<String> availableColumnNames = new ArrayList<String>();
+		final List<String> availableColumnNames = new ArrayList<>();
 		for (String columnName : columnNames)
 		{
 			final I_AD_Column column = table.getColumn(columnName);
@@ -239,7 +240,7 @@ public class UpdateAddresses extends JavaProcess
 	private Iterator<PO> fetchRecords(final MTable table, final List<String> addressColumnNames)
 	{
 		final StringBuilder whereClause = new StringBuilder("1=1");
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		if (p_AD_Org_ID > 0)
 		{

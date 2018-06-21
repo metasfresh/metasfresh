@@ -10,12 +10,12 @@ package de.metas.handlingunits.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -53,7 +53,7 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.movement.event.MovementUserNotificationsProducer;
 
-@Validator(I_M_Movement.class)
+@Interceptor(I_M_Movement.class)
 public class M_Movement
 {
 	public static final transient M_Movement instance = new M_Movement();
@@ -67,7 +67,6 @@ public class M_Movement
 
 	private M_Movement()
 	{
-		super();
 	}
 
 	/**

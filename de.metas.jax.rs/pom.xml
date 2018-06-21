@@ -13,6 +13,7 @@
 
 	<properties>
 		<migration-sql-basedir></migration-sql-basedir>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
 	<dependencies>
@@ -24,6 +25,7 @@
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
+			<version>2.0.1</version> <!-- 2.0.1 is the version for apcache.cxf 3.1.6 -->
 		</dependency>
 		<dependency>
 			<groupId>javax.transaction</groupId>
@@ -90,110 +92,46 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-context</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-kahadb-store</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
-		<!-- spring -->
-		<!-- Note about all these exclusions:
-			We import apache-cxf's dependency management, which amounts to spring-4.1.8.
-			However, in metasfresh, we currently use 4.2.4.
-			So, as of now, we explicitly declare the
-			spring-dependencies here, with our version 4.2.4 and we explicitly exclude their dependencies
-			which might otherwise be resolved to 4.1.8
-		-->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<version>${spring.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-aop</artifactId>
-			<version>${spring.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-beans</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>${spring.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-aop</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-beans</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-core</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
 		</dependency>
-
 	</dependencies>
-
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Pull in the cxf-parents as import scope to re-use the dependenecyManagement 
-				sections of those poms. Those sections define the versions of various third 
-				party deps that CXF used to build with and test with and we would like to 
-				make sure the same versions are used for the samples 
-			-->
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-parent</artifactId>
-				<version>${metasfresh.cxf.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf</artifactId>
-				<version>${metasfresh.cxf.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 </project>

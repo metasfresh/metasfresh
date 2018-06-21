@@ -24,12 +24,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;

@@ -2,14 +2,14 @@ package de.metas.marketing.base;
 
 import java.util.stream.Stream;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
