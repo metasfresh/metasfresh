@@ -1274,7 +1274,15 @@ public final class CConnection implements Serializable, Cloneable
 		setDbUid(status.getDbUid());
 		setDbPwd(status.getDbPwd());
 
-		setRabbitmqHost(status.getRabbitmqHost());
+		final String rabbitmqHost = status.getRabbitmqHost();
+		if (StatusServiceResult.RABBITMQ_USE_APPSERVER_HOSTNAME.equals(rabbitmqHost))
+		{
+			setRabbitmqHost(getAppsHost());
+		}
+		else
+		{
+			setRabbitmqHost(rabbitmqHost);
+		}
 		setRabbitmqPort(status.getRabbitmqPort());
 		setRabbitmqUsername(status.getRabbitmqUsername());
 		setRabbitmqPassword(status.getRabbitmqPassword());

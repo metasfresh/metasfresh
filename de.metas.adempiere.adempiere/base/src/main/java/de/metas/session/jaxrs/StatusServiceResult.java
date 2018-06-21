@@ -32,6 +32,8 @@ import lombok.Data;
 @Data
 public class StatusServiceResult
 {
+	public static final String RABBITMQ_USE_APPSERVER_HOSTNAME = "<USE-APPSERVER-HOSTNAME>";
+
 	private String dateVersion;
 	private String mainVersion;
 	private String dbType;
