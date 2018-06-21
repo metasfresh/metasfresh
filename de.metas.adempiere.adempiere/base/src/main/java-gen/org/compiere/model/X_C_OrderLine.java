@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2011310646L;
+	private static final long serialVersionUID = 1911083632L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -1864,25 +1864,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getProductDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
-	}
-
-	/** Set Zusagbar (ATP).
-		@param Qty_AvailableToPromise Zusagbar (ATP)	  */
-	@Override
-	public void setQty_AvailableToPromise (java.math.BigDecimal Qty_AvailableToPromise)
-	{
-		set_Value (COLUMNNAME_Qty_AvailableToPromise, Qty_AvailableToPromise);
-	}
-
-	/** Get Zusagbar (ATP).
-		@return Zusagbar (ATP)	  */
-	@Override
-	public java.math.BigDecimal getQty_AvailableToPromise () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_AvailableToPromise);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Gelieferte Menge.

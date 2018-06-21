@@ -1,24 +1,14 @@
 package de.metas.ordercandidate.modelvalidator;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
@@ -68,29 +58,5 @@ public class C_OrderLine
 
 			InterfaceWrapperHelper.delete(ola);
 		}
-	}
-
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
-	public void updateQtyAvailableToPromise(final I_C_OrderLine ol)
-	{
-		 final AvailableToPromiseRepository stockRepository = Adempiere.getBean(AvailableToPromiseRepository.class);
-		 final AvailableToPromiseQueryBuilder stockQueryBuilder = AvailableToPromiseQuery.builder()
-					.warehouseIds(ImmutableSet.of(ol.getM_Warehouse_ID()))
-					.productId(ol.getM_Product_ID())
-					.bpartnerId(ol.getC_BPartner_ID())
-					.date(TimeUtil.asLocalDateTime(ol.getDatePromised()));
-
-			// Add query attributes
-			final int asiId = ol.getM_AttributeSetInstance_ID();
-			if (asiId > 0)
-			{
-				stockQueryBuilder.storageAttributesKey(AttributesKeys
-						.createAttributesKeyFromASIStorageAttributes(asiId)
-						.orElse(AttributesKey.ALL));
-			}
-
-		 final AvailableToPromiseQuery query = stockQueryBuilder.build();
-		final BigDecimal qtyAvailableToPromise = stockRepository.retrieveAvailableStockQtySum(query);
-		ol.setQty_AvailableToPromise(qtyAvailableToPromise);
 	}
 }

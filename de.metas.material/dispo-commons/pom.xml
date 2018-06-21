@@ -35,6 +35,11 @@
 		</dependency>
 
 		<dependency>
+				<groupId>de.metas.business</groupId>
+				<artifactId>de.metas.business</artifactId>
+				<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<version>${metasfresh.version}</version>
