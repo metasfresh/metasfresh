@@ -878,3 +878,116 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=11, Updated=now(), UpdatedBy=1
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-21 16:41:40','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Nutrition Translation',WEBUI_NameBrowse='Nutrition Translation' WHERE AD_Menu_ID=541116 AND AD_Language='en_US'
 ;
 
+-- 2018-06-21T17:04:52.768
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2018-06-21 17:04:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560471
+;
+
+-- 2018-06-21T17:05:00.704
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2018-06-21 17:05:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560470
+;
+
+-- 2018-06-21T17:05:56.184
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsTranslated='N',Updated=TO_TIMESTAMP('2018-06-21 17:05:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560470
+;
+
+-- 2018-06-21T17:06:02.637
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsTranslated='N',Updated=TO_TIMESTAMP('2018-06-21 17:06:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560471
+;
+
+-- 2018-06-21T17:06:50.704
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2018-06-21 17:06:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560471
+;
+
+-- 2018-06-21T17:06:55.965
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2018-06-21 17:06:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560470
+;
+
+-- 2018-06-21T17:09:57.101
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,560482,109,0,18,106,540997,'N','AD_Language',TO_TIMESTAMP('2018-06-21 17:09:57','YYYY-MM-DD HH24:MI:SS'),100,'N','Sprache für diesen Eintrag','D',10,'Definiert die Sprache für Anzeige und Aufbereitung','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','Y','Y','N','N','N','N','N','N','N','N','Sprache',0,0,TO_TIMESTAMP('2018-06-21 17:09:57','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2018-06-21T17:09:57.107
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=560482 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-06-21T17:11:50.906
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Element_ID=544131, AD_Reference_ID=19, ColumnName='M_Nutrition_Fact_ID', Description=NULL, Help=NULL, IsParent='Y', IsUpdateable='N', Name='Nutrition Fact',Updated=TO_TIMESTAMP('2018-06-21 17:11:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560479
+;
+
+-- 2018-06-21T17:11:50.908
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Nutrition Fact', Description=NULL, Help=NULL WHERE AD_Column_ID=560479
+;
+
+drop table m_nutrition_fact_trl;
+
+
+-- 2018-06-21T17:14:31.919
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsKey='N', IsUpdateable='N',Updated=TO_TIMESTAMP('2018-06-21 17:14:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560479
+;
+
+-- 2018-06-21T17:15:21.653
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ CREATE TABLE public.M_Nutrition_Fact_Trl (AD_Client_ID NUMERIC(10) NOT NULL, AD_Language VARCHAR(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, Description VARCHAR(255), IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_Nutrition_Fact_ID NUMERIC(10) NOT NULL, Name VARCHAR(60), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT M_Nutrition_Fact_Trl_Key PRIMARY KEY (AD_Language, M_Nutrition_Fact_ID), CONSTRAINT ADLangu_MNutritionFactTrl FOREIGN KEY (AD_Language) REFERENCES public.AD_Language DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MNutritionFact_MNutritionFactTrl FOREIGN KEY (M_Nutrition_Fact_ID) REFERENCES public.M_Nutrition_Fact DEFERRABLE INITIALLY DEFERRED)
+;
+
+-- 2018-06-21T17:16:30.400
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,560483,420,0,20,540997,'N','IsTranslated',TO_TIMESTAMP('2018-06-21 17:16:30','YYYY-MM-DD HH24:MI:SS'),100,'N','Diese Spalte ist übersetzt','D',1,'Das Selektionsfeld "Übersetzt" zeigt an, dass diese Spalte übersetzt ist','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','Übersetzt',0,0,TO_TIMESTAMP('2018-06-21 17:16:30','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2018-06-21T17:16:30.401
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=560483 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-06-21T17:16:51.563
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-21 17:16:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560483
+;
+
+-- 2018-06-21T17:16:58.372
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('M_Nutrition_Fact_Trl','ALTER TABLE public.M_Nutrition_Fact_Trl ADD COLUMN IsTranslated CHAR(1) DEFAULT ''N'' CHECK (IsTranslated IN (''Y'',''N'')) NOT NULL')
+;
+
+-- 2018-06-21T17:20:59.282
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2018-06-21 17:20:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560466
+;
+
+-- 2018-06-21T17:21:13.874
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2018-06-21 17:21:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560476
+;
+
+-- 2018-06-21T17:22:36.828
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('m_nutrition_fact_trl','IsActive','CHAR(1)',null,'Y')
+;
+
+-- 2018-06-21T17:22:36.860
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE M_Nutrition_Fact_Trl SET IsActive='Y' WHERE IsActive IS NULL
+;
+
+-- 2018-06-21T17:22:52.354
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('m_nutrition_fact','IsActive','CHAR(1)',null,'Y')
+;
+
+-- 2018-06-21T17:22:52.374
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE M_Nutrition_Fact SET IsActive='Y' WHERE IsActive IS NULL
+;
+
