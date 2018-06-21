@@ -11,6 +11,7 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.63 (2018-26)
 ## Features
+* metasfresh
   * [#4140](https://github.com/metasfresh/metasfresh/issues/4140) WebUI: Translation Window for Country
     * New Window for Country Translation maintenance.
   * [#4225](https://github.com/metasfresh/metasfresh/issues/4225) Pharma: Move Businesspartner Fields to Customer/ Vendor Tab
@@ -23,8 +24,17 @@ Here come the actual release notes:
     * Window Improvements for Purchase Candidates in WebUI.
 
 ## Fixes
+* metasfresh
   * [#4255](https://github.com/metasfresh/metasfresh/issues/4255) Contract Person in Charge not filtered by Systemuser
     * Fixed User in Charge Validation,. Now only showing Systemusers/ -contacts in the dropdown selection.
+
+* metasfresh-webui-frontend
+  * [#1811](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1811) Fields are set on null when you press tab too fast
+    * Fix for Tab Hold in Document windows. Now not blurring the Fields content anymore when values are already set.
+  * [#1837](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1837) Cancel request message disappears too fast
+    * Fixes the cancel request message. Now not dissappearing anymore when hovering.
+  * [#1843](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1843) Action button not properly displayed in Transportation Order window
+    * Fixes the Button Look&Feel in Case the Button has no data from API.
 
 
 # metasfresh 5.62 (2018-25)
@@ -43,8 +53,6 @@ Here come the actual release notes:
     * Improved shortcut Handling in delete record modal overlay.
   * [#1686](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1686) API login for cypress
     * New Feature for Testing Framework Cypress, now allowing the API to do a login.
-  * [#1722](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1722) Typing in dropdown fields
-    * Extended Search Feature in Dropdown Lists.
 
 ## Fixes
 * metasfresh
