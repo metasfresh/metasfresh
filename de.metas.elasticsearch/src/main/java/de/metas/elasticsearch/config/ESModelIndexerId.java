@@ -44,7 +44,7 @@ public class ESModelIndexerId
 	@NonNull
 	String indexName;
 	@NonNull
-	String indexType;
+	String modelTableName;
 	@NonNull
 	ESModelIndexerProfile profile;
 
@@ -59,7 +59,7 @@ public class ESModelIndexerId
 
 		return builder()
 				.indexName(parts.get(0))
-				.indexType(parts.get(1))
+				.modelTableName(parts.get(1))
 				.profile(ESModelIndexerProfile.valueOf(parts.get(2)))
 				.build();
 	}
@@ -67,12 +67,17 @@ public class ESModelIndexerId
 	@JsonValue
 	public String toJson()
 	{
-		return Joiner.on(SEPARATOR).join(indexName, indexType, profile.name());
+		return Joiner.on(SEPARATOR).join(indexName, modelTableName, profile.name());
 	}
 
 	public ESModelIndexerId includedModel(final String includedAttributeName)
 	{
 		// FIXME: derive a new ID. for now, it's OK to return this
 		return this;
+	}
+
+	public String getIndexType()
+	{
+		return getModelTableName();
 	}
 }

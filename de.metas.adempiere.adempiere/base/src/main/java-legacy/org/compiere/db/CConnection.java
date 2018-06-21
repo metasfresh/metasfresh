@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.naming.CommunicationException;
@@ -52,6 +53,8 @@ import de.metas.session.jaxrs.StatusServiceResult;
 public final class CConnection implements Serializable, Cloneable
 {
 	private static final String MSG_APPSERVER_CONNECTION_PROBLEM = "CConnection.AppserverConnectionProblem";
+
+	private static final String MSG_RABBITMQ_CONNECTION_PROBLEM = "CConnection.RabbitmqConnectionProblem";
 
 	/**
 	 *
@@ -176,7 +179,6 @@ public final class CConnection implements Serializable, Cloneable
 
 	private CConnection()
 	{
-		super();
 	} 	// CConnection
 
 	/** Connection attributes */
@@ -652,7 +654,7 @@ public final class CConnection implements Serializable, Cloneable
 	} // supportsBLOB
 
 	/**
-	 * 
+	 *
 	 * Is PostgreSQL DB
 	 *
 	 * @return true if PostgreSQL
@@ -1272,9 +1274,58 @@ public final class CConnection implements Serializable, Cloneable
 		setDbUid(status.getDbUid());
 		setDbPwd(status.getDbPwd());
 
+		final String rabbitmqHost = status.getRabbitmqHost();
+		if (StatusServiceResult.RABBITMQ_USE_APPSERVER_HOSTNAME.equals(rabbitmqHost))
+		{
+			setRabbitmqHost(getAppsHost());
+		}
+		else
+		{
+			setRabbitmqHost(rabbitmqHost);
+		}
+		setRabbitmqPort(status.getRabbitmqPort());
+		setRabbitmqUsername(status.getRabbitmqUsername());
+		setRabbitmqPassword(status.getRabbitmqPassword());
+
 		m_version = status.getDateVersion();
 		log.debug("Server=" + getDbHost() + ", DB=" + getDbName());
 	} 	// update Info
+
+	private void setRabbitmqHost(String rabbitmqHost)
+	{
+		if (Objects.equals(rabbitmqHost, attrs.getRabbitmqHost()))
+		{
+			return;
+		}
+		attrs.setRabbitmqHost(rabbitmqHost);
+	}
+
+	private void setRabbitmqPort(String rabbitmqPort)
+	{
+		if (Objects.equals(rabbitmqPort, attrs.getRabbitmqPort()))
+		{
+			return;
+		}
+		attrs.setRabbitmqPort(rabbitmqPort);
+	}
+
+	private void setRabbitmqUsername(String rabbitmqUsername)
+	{
+		if (Objects.equals(rabbitmqUsername, attrs.getRabbitmqUsername()))
+		{
+			return;
+		}
+		attrs.setRabbitmqUsername(rabbitmqUsername);
+	}
+
+	private void setRabbitmqPassword(String rabbitmqPassword)
+	{
+		if (Objects.equals(rabbitmqPassword, attrs.getRabbitmqPassword()))
+		{
+			return;
+		}
+		attrs.setRabbitmqPassword(rabbitmqPassword);
+	}
 
 	/**
 	 * Get Status Info
@@ -1347,6 +1398,29 @@ public final class CConnection implements Serializable, Cloneable
 				m_statusServiceEndpointProvider);
 
 		m_statusServiceEndpointProvider = provider;
+	}
+
+	public Properties createRabbitmqSpringProperties()
+	{
+		final Properties rabbitMqProperties = new Properties();
+
+		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
+		{
+			queryAppsServerInfo();
+		}
+
+		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
+		{
+			Services.get(IClientUI.class).error(0, MSG_RABBITMQ_CONNECTION_PROBLEM);
+			return rabbitMqProperties;
+		}
+
+		rabbitMqProperties.setProperty("spring.rabbitmq.host", attrs.getRabbitmqHost());
+		rabbitMqProperties.setProperty("spring.rabbitmq.port", attrs.getRabbitmqPort());
+		rabbitMqProperties.setProperty("spring.rabbitmq.username", attrs.getRabbitmqUsername());
+		rabbitMqProperties.setProperty("spring.rabbitmq.password", attrs.getRabbitmqPassword());
+
+		return rabbitMqProperties;
 	}
 
 }	// CConnection

@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
+import lombok.ToString;
 
 /*
  * #%L
@@ -33,6 +34,7 @@ import de.metas.elasticsearch.types.ESIndexType;
  * #L%
  */
 
+@ToString
 final class AD_Ref_List_Denormalizer implements IESDenormalizer
 {
 	public static final AD_Ref_List_Denormalizer of(final int AD_Reference_ID)
@@ -47,7 +49,6 @@ final class AD_Ref_List_Denormalizer implements IESDenormalizer
 
 	private AD_Ref_List_Denormalizer()
 	{
-		super();
 	}
 
 	@Override

@@ -66,12 +66,6 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 	@Test
 	public void createPurchaseAdvisedEvent()
 	{
-		final I_M_Product product = newInstance(I_M_Product.class);
-		product.setM_Product_Category_ID(60);
-		product.setValue("Value");
-		product.setName("Name");
-		save(product);
-
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
 		discountSchemaRecord.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
 		save(discountSchemaRecord);
@@ -82,12 +76,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.materialDescriptor(MaterialDescriptor.builder()
-						.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(product.getM_Product_ID()))
-						.warehouseId(40)
-						.quantity(TEN)
-						.date(SystemTime.asDate())
-						.build())
+				.materialDescriptor(createMaterialDescriptor())
 				.demandCandidateId(50)
 				.build();
 
@@ -109,5 +98,21 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 		assertThat(purchaseAdvisedEvent.get().getProductPlanningId()).isEqualTo(productPlanningRecord.getPP_Product_Planning_ID());
 		assertThat(purchaseAdvisedEvent.get().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
 		assertThat(purchaseAdvisedEvent.get().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+	}
+
+	static MaterialDescriptor createMaterialDescriptor()
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setM_Product_Category_ID(60);
+		product.setValue("Value");
+		product.setName("Name");
+		save(product);
+
+		return MaterialDescriptor.builder()
+				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(product.getM_Product_ID()))
+				.warehouseId(40)
+				.quantity(TEN)
+				.date(SystemTime.asDate())
+				.build();
 	}
 }

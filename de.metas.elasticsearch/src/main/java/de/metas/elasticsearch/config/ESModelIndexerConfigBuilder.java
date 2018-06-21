@@ -51,8 +51,6 @@ public class ESModelIndexerConfigBuilder
 	private final String modelTableName;
 	@Getter(AccessLevel.PRIVATE)
 	private final String indexName;
-	private String indexType;
-	private boolean allowChangingIndexType = true;
 
 	private final List<ESIncludedModelsConfig> includedModelsConfigs = new ArrayList<>();
 
@@ -87,39 +85,14 @@ public class ESModelIndexerConfigBuilder
 	{
 		return ESModelIndexerId.builder()
 				.indexName(getIndexName())
-				.indexType(getIndexType())
+				.modelTableName(getIndexType())
 				.profile(getProfile())
 				.build();
 	}
 
-	/**
-	 * Sets the index type.
-	 *
-	 * By default, the index type is the same as the table name.
-	 *
-	 * @param indexType
-	 */
-	public ESModelIndexerConfigBuilder setIndexType(final String indexType)
-	{
-		if (!allowChangingIndexType)
-		{
-			throw new IllegalStateException("Changing indexType from " + getIndexType() + " to " + indexType + " is no longer allowed because the index type was already used");
-		}
-
-		this.indexType = indexType;
-		return this;
-	}
-
 	private String getIndexType()
 	{
-		if (Check.isEmpty(indexType, true))
-		{
-			return getModelTableName();
-		}
-		else
-		{
-			return indexType;
-		}
+		return getModelTableName();
 	}
 
 	public List<IESModelIndexerTrigger> getTriggers()
@@ -169,7 +142,6 @@ public class ESModelIndexerConfigBuilder
 	private ESModelIndexerConfigBuilder addTrigger(final IESModelIndexerTrigger trigger)
 	{
 		triggers.add(trigger);
-		allowChangingIndexType = false;
 
 		return this;
 	}

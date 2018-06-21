@@ -3,6 +3,8 @@ package de.metas.elasticsearch.denormalizers.impl;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.PO;
 
+import lombok.ToString;
+
 /*
  * #%L
  * de.metas.elasticsearch.server
@@ -25,7 +27,7 @@ import org.compiere.model.PO;
  * #L%
  */
 
-
+@ToString
 final class PORawValueExtractor implements IESModelValueExtractor
 {
 	public static final transient PORawValueExtractor instance = new PORawValueExtractor();

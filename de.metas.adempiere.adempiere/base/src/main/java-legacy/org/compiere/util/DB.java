@@ -207,10 +207,10 @@ public final class DB
 		// Costing Setup
 		log.info("After migration: Product costing check");
 		MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, 0);
-		for (int i = 0; i < ass.length; i++)
+		for (MAcctSchema as : ass)
 		{
-			ass[i].checkCosting();
-			ass[i].save();
+			as.checkCosting();
+			as.save();
 		}
 
 		// Reset Flag
@@ -2336,17 +2336,17 @@ public final class DB
 		Check.assumeNotEmpty(paramsIn, "paramsIn not empty");
 
 		final boolean embedSqlParams = paramsOut == null;
-		
+
 		final InArrayQueryFilter<?> builder = new InArrayQueryFilter<>(columnName, paramsIn)
 				.setEmbedSqlParams(embedSqlParams);
 		final String sql = builder.getSql();
-		
+
 		if(!embedSqlParams)
 		{
 			final List<Object> sqlParams = builder.getSqlParams(Env.getCtx());
 			paramsOut.addAll(sqlParams);
 		}
-		
+
 		return sql;
 	}
 
@@ -2609,7 +2609,7 @@ public final class DB
 
 		return value;
 	}
-	
+
 	/**
 	 * Retrieves a primite value from given {@link ResultSet}. <br/>
 	 * The value is converted to given type.<br/>
@@ -2665,7 +2665,7 @@ public final class DB
 		return value;
 	}
 
-	
+
 	public static final <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
 	{
 		final AT value = retrieveValue(rs, columnIndex, returnType);
@@ -2673,7 +2673,7 @@ public final class DB
 		{
 			return value;
 		}
-		
+
 		return retrieveDefaultValue(returnType);
 	}
 
