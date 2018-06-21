@@ -10,12 +10,12 @@ package org.adempiere.ad.housekeeping.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,7 +27,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.LoggerLoggable;
@@ -39,6 +38,7 @@ import com.google.common.base.Stopwatch;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class HouseKeepingBL implements IHouseKeepingBL
 {
@@ -49,9 +49,8 @@ public class HouseKeepingBL implements IHouseKeepingBL
 	private final CopyOnWriteArrayList<IStartupHouseKeepingTask> startupTasks = new CopyOnWriteArrayList<>();
 
 	@Override
-	public void registerStartupHouseKeepingTask(final IStartupHouseKeepingTask task)
+	public void registerStartupHouseKeepingTask(@NonNull final IStartupHouseKeepingTask task)
 	{
-		Check.assumeNotNull(task, "task not null");
 		final boolean added = startupTasks.addIfAbsent(task);
 		if(added)
 		{
@@ -67,7 +66,7 @@ public class HouseKeepingBL implements IHouseKeepingBL
 	public void runStartupHouseKeepingTasks()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		
+
 		// first check if we shall run at all
 		final boolean skipHouseKeeping = sysConfigBL.getBooleanValue(SYSCONFIG_SKIP_HOUSE_KEEPING, false);
 		if (skipHouseKeeping)
@@ -88,7 +87,7 @@ public class HouseKeepingBL implements IHouseKeepingBL
 				final String taskName = task.getClass().getName();
 				final String sysConfigSkipTaskName = SYSCONFIG_SKIP_HOUSE_KEEPING + "." + taskName;
 				final boolean skipTask = sysConfigBL.getBooleanValue(sysConfigSkipTaskName, false);
-				
+
 				if (skipTask)
 				{
 					logger.warn("SysConfig {}={} => skipping execution of task {}", sysConfigSkipTaskName, skipTask, taskName);
