@@ -108,13 +108,22 @@ public class FullTextSearchLookupDescriptor implements LookupDescriptor, LookupD
 	{
 		logger.trace("Retrieving entries for: {}", evalCtx);
 
+		if (evalCtx.isAnyFilter())
+		{
+			// usually that's the case of dropdowns. In that case we don't want to use elasticsearch.
+			logger.trace("Fallback to database lookup because ANY filter was used");
+			return databaseLookup.findEntities(evalCtx);
+		}
+
 		final QueryBuilder query = createElasticsearchQuery(evalCtx);
 		logger.trace("ES query: {}", query);
 
+		int maxSize = Math.min(evalCtx.getLimit(100), 100);
 		final SearchResponse searchResponse = elasticsearchClient.prepareSearch(esIndexName)
 				.setQuery(query)
 				.setExplain(logger.isTraceEnabled())
-				.setSize(evalCtx.getLimit(Integer.MAX_VALUE))
+				.setSize(maxSize)
+				.addField(esKeyColumnName)
 				.get();
 		logger.trace("ES response: {}", searchResponse);
 
