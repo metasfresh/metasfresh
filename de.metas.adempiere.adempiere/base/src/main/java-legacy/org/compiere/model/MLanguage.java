@@ -39,7 +39,7 @@ import de.metas.logging.LogManager;
  *
  * @author Jorg Janke
  * @version $Id: MLanguage.java,v 1.4 2006/07/30 00:58:36 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  *         <li>BF [ 2444851 ] MLanguage should throw an exception if there is an error
  */
@@ -55,8 +55,7 @@ public class MLanguage extends X_AD_Language
 	// metas: begin: base language
 	/**
 	 * Load the BaseLanguage from AD_Language table and set it to {@link Language} class using {@link Language#setBaseLanguage(Language)} method. If Env.getCtx() has no <code>#AD_Language</code> set,
-	 * then
-	 * this method also sets this context property.
+	 * then this method also sets this context property.
 	 */
 	public static void setBaseLanguage()
 	{

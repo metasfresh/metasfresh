@@ -110,7 +110,6 @@ public interface IADProcessDAO extends ISingletonService
 	 */
 	int retrieveProcessIdByClass(Class<?> processClass);
 
-
 	/**
 	 * Retrieves the ID of the <code>AD_Process</code> whose {@link I_AD_Process#COLUMN_Classname Classname} column matches the given class.
 	 *
@@ -195,8 +194,10 @@ public interface IADProcessDAO extends ISingletonService
 	 * and saves.
 	 * Not overwritten: name, value, entitytype
 	 *
-	 * @param targetProcess
-	 * @param sourceProcess
+	 * @param targetProcessId
+	 * @param sourceProcessId
 	 */
-	void copyAD_Process(I_AD_Process targetProcess, I_AD_Process sourceProcess);
+	void copyProcess(int targetProcessId, int sourceProcessId);
+
+	void copyProcessParameters(int targetProcessId, int sourceProcessId);
 }

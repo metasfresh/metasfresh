@@ -13,9 +13,11 @@ import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -136,18 +138,31 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 			final PurchaseCandidateId newPurchaseCandidateId = purchaseCandidateRepository.save(newPurchaseCandidate);
 
-			final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-					.eventDescriptor(requestedEvent.getEventDescriptor().copy())
-					.purchaseCandidateRepoId(newPurchaseCandidateId.getRepoId())
-					.purchaseMaterialDescriptor(requestedEvent.getPurchaseMaterialDescriptor())
-					.supplyCandidateRepoId(requestedEvent.getSupplyCandidateRepoId())
-					.build();
+			final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = createCandidateCreatedEvent(requestedEvent,
+					newPurchaseCandidate.getVendorId(),
+					newPurchaseCandidateId);
 			postMaterialEventService.postEventAfterNextCommit(purchaseCandidateCreatedEvent);
 		}
 		finally
 		{
 			INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD.set(true);
 		}
+	}
+
+	@VisibleForTesting
+	static PurchaseCandidateCreatedEvent createCandidateCreatedEvent(
+			@NonNull final PurchaseCandidateRequestedEvent requestedEvent,
+			@NonNull final BPartnerId vendorId,
+			@NonNull final PurchaseCandidateId newPurchaseCandidateId)
+	{
+		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
+				.eventDescriptor(requestedEvent.getEventDescriptor().copy())
+				.purchaseCandidateRepoId(newPurchaseCandidateId.getRepoId())
+				.vendorId(vendorId.getRepoId())
+				.purchaseMaterialDescriptor(requestedEvent.getPurchaseMaterialDescriptor())
+				.supplyCandidateRepoId(requestedEvent.getSupplyCandidateRepoId())
+				.build();
+		return purchaseCandidateCreatedEvent;
 	}
 
 }

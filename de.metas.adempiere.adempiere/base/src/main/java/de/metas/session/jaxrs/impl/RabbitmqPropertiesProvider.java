@@ -1,12 +1,16 @@
-package de.metas.session.jaxrs;
+package de.metas.session.jaxrs.impl;
 
-import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import de.metas.session.jaxrs.StatusServiceResult;
+import lombok.Getter;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,32 +27,27 @@ import lombok.Data;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
- * A POJO that is filled by the metasfresh server and send to the client.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * Provides rabbitmq related spring properties to {@link StatusService}.
+ * This service will probably become obsolete when we turn {@link StatusService} into a "real" spring-managed REST endpoint, because then we can simply inject the properties into it directly.
  */
-@Data
-public class StatusServiceResult
+@Service
+public class RabbitmqPropertiesProvider
 {
-	public static final String RABBITMQ_USE_APPSERVER_HOSTNAME = "<USE-APPSERVER-HOSTNAME>";
-
-	private String dateVersion;
-	private String mainVersion;
-	private String dbType;
-	private String dbHost;
-	private int dbPort;
-	private String dbName;
-	private String connectionURL;
-	private String dbUid;
-	private String dbPwd;
-	private int versionCount;
-	private int dataBaseCount;
-	private String status;
-
+	@Value("${spring.swingui.rabbitmq.host:" + StatusServiceResult.RABBITMQ_USE_APPSERVER_HOSTNAME + "}")
+	@Getter
 	private String rabbitmqHost;
+
+	@Value("${spring.swingui.rabbitmq.port:5672}")
+	@Getter
 	private String rabbitmqPort;
+
+	@Value("${spring.rabbitmq.username:metasfresh}")
+	@Getter
 	private String rabbitmqUsername;
+
+	@Value("${spring.rabbitmq.password:metasfresh}")
+	@Getter
 	private String rabbitmqPassword;
 }

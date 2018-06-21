@@ -57,4 +57,13 @@ public class FTSIndexConfig
 	{
 		return getTemplate().getIndexStringFullTextSearchAnalyzer();
 	}
+
+	public ESModelIndexerId getESModelIndexerId()
+	{
+		return ESModelIndexerId.builder()
+				.indexName(getIndexName())
+				.modelTableName(getTableName())
+				.profile(ESModelIndexerProfile.FULL_TEXT_SEARCH)
+				.build();
+	}
 }
