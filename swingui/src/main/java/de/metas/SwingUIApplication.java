@@ -1,32 +1,7 @@
 package de.metas;
 
-import java.awt.KeyboardFocusManager;
-import java.util.Properties;
-
-import org.adempiere.util.Services;
-import org.compiere.Adempiere;
-import org.compiere.Adempiere.RunMode;
-import org.compiere.apps.AEnv;
-import org.compiere.apps.AKeyboardFocusManager;
-import org.compiere.apps.ALogin;
-import org.compiere.apps.AMenu;
-import org.compiere.db.CConnection;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.util.Env;
-import org.compiere.util.Splash;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.event.EventListener;
-
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.form.swing.SwingClientUI;
-import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -60,90 +35,10 @@ import de.metas.logging.LogManager;
  */
 @SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
 @Profile(SwingUIApplication.PROFILE)
-public class SwingUIApplication
+public class SwingUIApplication extends SwingUIApplicationTemplate
 {
-	private static final Logger logger = LogManager.getLogger(SwingUIApplication.class);
-
-	public static final String PROFILE = "metasfresh-swingui";
-
-	@Autowired
-	private ApplicationContext applicationContext;
-
-	public static void main(String[] args)
+	public static void main(final String[] args)
 	{
-		basicStartup();
-
-		showLoginDialog();
-
-		new SpringApplicationBuilder(SwingUIApplication.class)
-				.headless(false)
-				// actually we would like to it to start actuator endpoints and register with the spring-boot admin server, BUT
-				// we first need to solve the problem of running multiple clients on the same machine (they need to bind to differnt ports)
-				// there might be resource/performance problems
-				// at any rate, we have not yet a solution as to how to configure them
-				.web(false)
-				.profiles(PROFILE)
-				.properties(CConnection.get().createRabbitmqSpringProperties())
-				.run(args);
-	}
-
-	private static void showLoginDialog()
-	{
-		final Splash splash = Splash.getSplash();
-		final Properties ctx = Env.getCtx();
-		final ALogin login = new ALogin(splash, ctx);
-		if (login.initLogin())
-		{
-			return; // automatic login, nothing more to do
-		}
-
-		// Center the window
-		try
-		{
-			ModelValidationEngine.disable();
-			AEnv.showCenterScreen(login);	// HTML load errors
-		}
-		catch (Exception ex)
-		{
-			logger.error(ex.toString());
-		}
-		finally
-		{
-			ModelValidationEngine.enable();
-		}
-
-		if (!(login.isConnected() && login.isOKpressed()))
-		{
-			AEnv.exit(1);
-		}
-	}
-
-	private static void basicStartup()
-	{
-		Adempiere.instance.startup(RunMode.SWING_CLIENT);
-
-		// Focus Traversal
-		KeyboardFocusManager.setCurrentKeyboardFocusManager(AKeyboardFocusManager.get());
-		Services.registerService(IClientUI.class, new SwingClientUI());
-	}
-
-	@Bean(Adempiere.BEAN_NAME)
-	public Adempiere adempiere()
-	{
-		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		return adempiere;
-	}
-
-	@EventListener(ApplicationReadyEvent.class)
-	public void showSwingUIMainWindow()
-	{
-		ModelValidationEngine
-				.get()
-				.loginComplete(
-						Env.getAD_Client_ID(),
-						Env.getAD_Org_ID(Env.getCtx()),
-						Env.getAD_Role_ID(Env.getCtx()),
-						Env.getAD_User_ID());
-		new AMenu();
+		main(SwingUIApplication.class, args);
 	}
 }
