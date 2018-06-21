@@ -743,3 +743,138 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=564965 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
+-- 2018-06-21T16:41:10.056
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES ('W',0,541116,0,540452,TO_TIMESTAMP('2018-06-21 16:41:09','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','_Nährwert_Übersetzung','Y','N','N','N','N','Nährwert Übersetzung',TO_TIMESTAMP('2018-06-21 16:41:09','YYYY-MM-DD HH24:MI:SS'),100,'Nährwert Übersetzung')
+;
+
+-- 2018-06-21T16:41:10.059
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Menu_Trl (AD_Language,AD_Menu_ID, Description,Name,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Menu_ID, t.Description,t.Name,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Menu t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Menu_ID=541116 AND NOT EXISTS (SELECT 1 FROM AD_Menu_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Menu_ID=t.AD_Menu_ID)
+;
+
+-- 2018-06-21T16:41:10.062
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT  INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, AD_Tree_ID, Node_ID, Parent_ID, SeqNo) SELECT t.AD_Client_ID,0, 'Y', now(), 100, now(), 100,t.AD_Tree_ID, 541116, 0, 999 FROM AD_Tree t WHERE t.AD_Client_ID=0 AND t.IsActive='Y' AND t.IsAllNodes='Y' AND t.AD_Table_ID=116 AND NOT EXISTS (SELECT * FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=541116)
+;
+
+-- 2018-06-21T16:41:10.663
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=583 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:10.663
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=578 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:10.664
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=570 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:10.666
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=579 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:10.666
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=576 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:10.669
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=587 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:10.670
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=588 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:10.670
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=584 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:10.671
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=574 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:10.671
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=573 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:10.671
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=566, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541116 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.449
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000034 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.449
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000089 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.450
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540840 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.450
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540990 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.450
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000092 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.451
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000093 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.451
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541062 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.451
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541115 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.452
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541116 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.452
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000044 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.453
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000035 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:14.453
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000037 AND AD_Tree_ID=10
+;
+
+-- 2018-06-21T16:41:40.960
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-21 16:41:40','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Nutrition Translation',WEBUI_NameBrowse='Nutrition Translation' WHERE AD_Menu_ID=541116 AND AD_Language='en_US'
+;
+
