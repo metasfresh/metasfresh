@@ -238,3 +238,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 INSERT INTO t_alter_column values('m_nutrition_fact_trl','Description','VARCHAR(255)',null,null)
 ;
 
+-- 2018-06-21T16:18:39.522
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,554573,TO_TIMESTAMP('2018-06-21 16:18:39','YYYY-MM-DD HH24:MI:SS'),100,1000000,100,1,'Y','N','Y','Y','M_Nutrition_Fact','N',1000000,TO_TIMESTAMP('2018-06-21 16:18:39','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-06-21T16:18:50.621
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,554574,TO_TIMESTAMP('2018-06-21 16:18:50','YYYY-MM-DD HH24:MI:SS'),100,1000000,100,1,'Y','N','Y','Y','M_Nutrition_Fact_Trl','N',1000000,TO_TIMESTAMP('2018-06-21 16:18:50','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
