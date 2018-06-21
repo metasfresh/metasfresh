@@ -10,6 +10,7 @@ import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -33,6 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@ToString
 final class ESPOModelDenormalizerColumn
 {
 	public static final ESPOModelDenormalizerColumn of(final IESModelValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
