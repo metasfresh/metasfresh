@@ -1,7 +1,6 @@
 package de.metas.session.jaxrs;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /*
  * #%L
@@ -30,6 +29,7 @@ import lombok.Setter;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@Data
 public class StatusServiceResult
 {
 	private String dateVersion;
@@ -45,196 +45,8 @@ public class StatusServiceResult
 	private int dataBaseCount;
 	private String status;
 
-	@Getter
-	@Setter
 	private String rabbitmqHost;
-	@Getter
-	@Setter
 	private String rabbitmqPort;
-	@Getter
-	@Setter
 	private String rabbitmqUsername;
-	@Getter
-	@Setter
 	private String rabbitmqPassword;
-
-	/**
-	 * Get Version (Date)
-	 *
-	 * @return version e.g. 2002-09-02
-	 */
-	public String getDateVersion()
-	{
-		return dateVersion;
-	}
-
-	/**
-	 * Get Main Version
-	 *
-	 * @return main version
-	 */
-	public String getMainVersion()
-	{
-		return mainVersion;
-	}
-
-	/**
-	 * Get Database Type
-	 *
-	 * @return Database Type
-	 */
-	public String getDbType()
-	{
-		return dbType;
-	}
-
-	/**
-	 * Get Database Host
-	 *
-	 * @return Database Host Name
-	 */
-	public String getDbHost()
-	{
-		return dbHost;
-	}
-
-	/**
-	 * Get Database Port
-	 *
-	 * @return Database Port
-	 */
-	public int getDbPort()
-	{
-		return dbPort;
-	}
-
-	/**
-	 * Get Database SID
-	 *
-	 * @return Database SID
-	 */
-	public String getDbName()
-	{
-		return dbName;
-	}
-
-	/**
-	 * Get Database URL
-	 *
-	 * @return Database URL
-	 */
-	public String getConnectionURL()
-	{
-		return connectionURL;
-	}
-
-	/**
-	 * Get Database UID
-	 *
-	 * @return Database User Name
-	 */
-	public String getDbUid()
-	{
-		return dbUid;
-	}
-
-	/**
-	 * Get Database PWD
-	 *
-	 * @return Database User Password
-	 */
-	public String getDbPwd()
-	{
-		return dbPwd;
-	}
-
-	/**
-	 * Get Version Count
-	 *
-	 * @return number of version inquiries
-	 */
-	public int getVersionCount()
-	{
-		return versionCount;
-	}
-
-	/**
-	 * Get Database Count
-	 *
-	 * @return number of database inquiries
-	 */
-	public int getDataBaseCount()
-	{
-		return dataBaseCount;
-	}
-
-	/**
-	 * Describes the instance and its content for debugging purpose
-	 *
-	 * @return Debugging information about the instance and its content
-	 */
-	public String getStatus()
-	{
-		return status;
-	}
-
-	public void setDateVersion(String dateVersion)
-	{
-		this.dateVersion = dateVersion;
-	}
-
-	public void setMainVersion(String mainVersion)
-	{
-		this.mainVersion = mainVersion;
-	}
-
-	public void setDbType(String dbType)
-	{
-		this.dbType = dbType;
-	}
-
-	public void setDbHost(String dbHost)
-	{
-		this.dbHost = dbHost;
-	}
-
-	public void setDbPort(int dbPort)
-	{
-		this.dbPort = dbPort;
-	}
-
-	public void setDbName(String dbName)
-	{
-		this.dbName = dbName;
-	}
-
-	public void setConnectionURL(String connectionURL)
-	{
-		this.connectionURL = connectionURL;
-	}
-
-	public void setDbUid(String dbUid)
-	{
-		this.dbUid = dbUid;
-	}
-
-	public void setDbPwd(String dbPwd)
-	{
-		this.dbPwd = dbPwd;
-	}
-
-	public void setVersionCount(int versionCount)
-	{
-		this.versionCount = versionCount;
-	}
-
-	public void setDataBaseCount(int dataBaseCount)
-	{
-		this.dataBaseCount = dataBaseCount;
-	}
-
-	public void setStatus(String status)
-	{
-		this.status = status;
-	}
 }
