@@ -137,6 +137,13 @@ public class SwingUIApplication
 	@EventListener(ApplicationReadyEvent.class)
 	public void showSwingUIMainWindow()
 	{
+		ModelValidationEngine
+				.get()
+				.loginComplete(
+						Env.getAD_Client_ID(),
+						Env.getAD_Org_ID(Env.getCtx()),
+						Env.getAD_Role_ID(Env.getCtx()),
+						Env.getAD_User_ID());
 		new AMenu();
 	}
 }
