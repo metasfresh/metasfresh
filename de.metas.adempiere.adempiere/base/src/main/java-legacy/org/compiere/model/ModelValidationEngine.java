@@ -61,6 +61,7 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
@@ -111,7 +112,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			// else, in init() method, this get() is called indirectly which leads us to have 2 ModelValidationEngine instances
 			s_engine = new ModelValidationEngine();
 		}
-		if (State.ENABLED.equals(state))
+		if (State.TO_BE_INITALIZED.equals(state))
 		{
 			state = State.INITIALIZING;
 			s_engine.init();
@@ -1476,26 +1477,36 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private enum State
 	{
 		/** In this state, {@link #get()} does not attempt to initialize this model validator and basically returns a "no-op" instance. */
-		DISABLED,
+		SKIP_INITIALIZATION,
 
 		/** In this state, the next invocation of {@link #get()} will to initialize the model validator before returning an instance. */
-		ENABLED,
+		TO_BE_INITALIZED,
 
 		INITIALIZING,
 
 		INITIALIZED
 	}
 
-	private static State state = State.ENABLED;
+	private static State state = State.TO_BE_INITALIZED;
 
-	public static void disable()
+	public static IAutoCloseable postponeInit()
 	{
-		state = State.DISABLED;
+		changeStateToSkipInitialization();
+		return ModelValidationEngine::changeStateToBeInitialized;
 	}
 
-	public static void enable()
+	private static synchronized void changeStateToSkipInitialization()
 	{
-		state = State.ENABLED;
+		Check.assumeEquals(state, State.TO_BE_INITALIZED);
+		state = State.SKIP_INITIALIZATION;
+	}
+
+	private static synchronized void changeStateToBeInitialized()
+	{
+		if (state == State.SKIP_INITIALIZATION)
+		{
+			state = State.TO_BE_INITALIZED;
+		}
 	}
 
 }	// ModelValidatorEngine
