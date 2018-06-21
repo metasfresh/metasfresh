@@ -119,8 +119,8 @@ public class MSV3StockAvailabilityService
 		Services.get(IBPartnerProductDAO.class)
 				.retrieveAllProductSalesExcludes()
 				.forEach(productExclude -> eventsBuilder.item(MSV3ProductExclude.builder()
-						.pzn(getPZNByProductId(productExclude.getProductId()))
-						.bpartnerId(productExclude.getBpartnerId())
+						.pzn(getPZNByProductId(productExclude.getProductId().getRepoId()))
+						.bpartnerId(productExclude.getBpartnerId().getRepoId())
 						.build()));
 
 		msv3ServerPeerService.publishProductExcludes(eventsBuilder.build());

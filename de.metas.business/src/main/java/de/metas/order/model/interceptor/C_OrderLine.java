@@ -41,6 +41,7 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
@@ -50,6 +51,7 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactor
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
 
 @Interceptor(I_C_OrderLine.class)
@@ -266,6 +268,13 @@ public class C_OrderLine
 	@ModelChange(timings ={ ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID, I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void checkExcludedProducts(final I_C_OrderLine orderLine)
 	{
-		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(orderLine.getM_Product_ID(), orderLine.getC_BPartner_ID());
+		if (orderLine.getM_Product_ID() <= 0 || orderLine.getC_BPartner_ID() <= 0)
+		{
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final BPartnerId partnerId = BPartnerId.ofRepoId(orderLine.getC_BPartner_ID());
+		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(productId, partnerId);
 	}
 }

@@ -3,7 +3,6 @@
  */
 package de.metas.purchasing.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -47,6 +46,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_BannedManufacturer;
@@ -58,7 +58,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.product.Product;
 import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.purchasing.api.ProductExclude;
 import de.metas.purchasing.api.ProductExclude.ProductExcludeBuilder;
@@ -276,7 +278,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 
 	@Override
-	public Optional<ProductExclude> getExcludedFromSaleToCustomer(final int productId, final int partnerId)
+	public Optional<ProductExclude> getExcludedFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
 	{
 		final Optional<ProductExclude> productExcluded = getExcludedProductFromSaleToCustomer(productId, partnerId);
 		final Optional<ProductExclude> manufacturerExcluded = getBannedManufacturerFromSaleToCustomer(productId, partnerId);
@@ -284,8 +286,8 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		if (productExcluded.isPresent() || manufacturerExcluded.isPresent())
 		{
 			final ProductExcludeBuilder builder = ProductExclude.builder()
-					.bpartnerId(BPartnerId.ofRepoId(partnerId))
-					.productId(ProductId.ofRepoId(productId));
+					.bpartnerId(partnerId)
+					.productId(productId);
 
 			if (productExcluded.isPresent())
 			{
@@ -304,7 +306,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 
-	private Optional<ProductExclude> getExcludedProductFromSaleToCustomer(final int productId, final int partnerId)
+	private Optional<ProductExclude> getExcludedProductFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -313,8 +315,8 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, true)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partnerId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partnerId.getRepoId())
 				.create()
 				.firstOnly(I_C_BPartner_Product.class);
 
@@ -324,8 +326,8 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		}
 
 		final ProductExclude productExclude = ProductExclude.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bpartnerProduct.getC_BPartner_ID()))
-				.productId(ProductId.ofRepoId(bpartnerProduct.getM_Product_ID()))
+				.bpartnerId(partnerId)
+				.productId(productId)
 				.reason(bpartnerProduct.getExclusionFromSaleReason())
 				.build();
 
@@ -333,19 +335,21 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 
-	private Optional<ProductExclude> getBannedManufacturerFromSaleToCustomer(final int productId, final int partnerId)
+	private Optional<ProductExclude> getBannedManufacturerFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 
-		final I_M_Product product = load(productId, I_M_Product.class);
+		final ProductRepository productRepo = Adempiere.getBean(ProductRepository.class);
+		final Product product = productRepo.getById(productId);
+		final BPartnerId manufacturerId = product.getManufacturerId();
 
 		final I_M_BannedManufacturer bannedManufacturer = queryBL
 				.createQueryBuilderOutOfTrx(I_M_BannedManufacturer.class)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_C_BPartner_ID, partnerId)
-				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_Manufacturer_ID, product.getManufacturer_ID())
+				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_C_BPartner_ID, partnerId.getRepoId())
+				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_Manufacturer_ID, manufacturerId == null ? -1 : manufacturerId.getRepoId())
 				.create()
 				.firstOnly(I_M_BannedManufacturer.class);
 
@@ -356,8 +360,8 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		}
 
 		final ProductExclude productExclude = ProductExclude.builder()
-				.bpartnerId(BPartnerId.ofRepoId(partnerId))
-				.productId(ProductId.ofRepoId(productId))
+				.bpartnerId(partnerId)
+				.productId(productId)
 				.reason(bannedManufacturer.getExclusionFromSaleReason())
 				.build();
 
