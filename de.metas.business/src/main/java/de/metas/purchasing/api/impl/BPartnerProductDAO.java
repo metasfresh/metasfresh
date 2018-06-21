@@ -268,8 +268,8 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	private static ProductExclude toProductExclude(@NonNull final I_C_BPartner_Product bpartnerProduct)
 	{
 		return ProductExclude.builder()
-				.productId(bpartnerProduct.getM_Product_ID())
-				.bpartnerId(bpartnerProduct.getC_BPartner_ID())
+				.productId(ProductId.ofRepoId(bpartnerProduct.getM_Product_ID()))
+				.bpartnerId(BPartnerId.ofRepoId(bpartnerProduct.getC_BPartner_ID()))
 				.reason(bpartnerProduct.getExclusionFromSaleReason())
 				.build();
 	}
@@ -284,8 +284,8 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		if (productExcluded.isPresent() || manufacturerExcluded.isPresent())
 		{
 			final ProductExcludeBuilder builder = ProductExclude.builder()
-					.bpartnerId(partnerId)
-					.productId(productId);
+					.bpartnerId(BPartnerId.ofRepoId(partnerId))
+					.productId(ProductId.ofRepoId(productId));
 
 			if (productExcluded.isPresent())
 			{
@@ -324,8 +324,8 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		}
 
 		final ProductExclude productExclude = ProductExclude.builder()
-				.productId(bpartnerProduct.getM_Product_ID())
-				.bpartnerId(bpartnerProduct.getC_BPartner_ID())
+				.bpartnerId(BPartnerId.ofRepoId(bpartnerProduct.getC_BPartner_ID()))
+				.productId(ProductId.ofRepoId(bpartnerProduct.getM_Product_ID()))
 				.reason(bpartnerProduct.getExclusionFromSaleReason())
 				.build();
 
@@ -356,8 +356,8 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		}
 
 		final ProductExclude productExclude = ProductExclude.builder()
-				.productId(productId)
-				.bpartnerId(partnerId)
+				.bpartnerId(BPartnerId.ofRepoId(partnerId))
+				.productId(ProductId.ofRepoId(productId))
 				.reason(bannedManufacturer.getExclusionFromSaleReason())
 				.build();
 
