@@ -3,6 +3,7 @@ package de.metas.session.jaxrs.impl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import de.metas.session.jaxrs.StatusServiceResult;
 import lombok.Getter;
 
 /*
@@ -34,11 +35,11 @@ import lombok.Getter;
 @Service
 public class RabbitmqPropertiesProvider
 {
-	@Value("${spring.rabbitmq.host}")
+	@Value("${spring.swingui.rabbitmq.host:" + StatusServiceResult.RABBITMQ_USE_APPSERVER_HOSTNAME + "}")
 	@Getter
 	private String rabbitmqHost;
 
-	@Value("${spring.rabbitmq.port:5672}")
+	@Value("${spring.swingui.rabbitmq.port:5672}")
 	@Getter
 	private String rabbitmqPort;
 
