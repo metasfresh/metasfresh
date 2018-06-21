@@ -26,3 +26,4 @@ de.metas.migration.scanner.impl.GloballyOrderedScannerDecorator_sorted_scripts.t
 serverRoot/application.properties
 certs
 private
+serverRoot/src/main/resources/rebel.xml

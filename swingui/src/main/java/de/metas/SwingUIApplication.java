@@ -1,12 +1,6 @@
 package de.metas;
 
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
 /*
@@ -22,11 +16,11 @@ import org.springframework.context.annotation.Profile;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,37 +35,10 @@ import org.springframework.context.annotation.Profile;
  */
 @SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
 @Profile(SwingUIApplication.PROFILE)
-public class SwingUIApplication
+public class SwingUIApplication extends SwingUIApplicationTemplate
 {
-	public static final String PROFILE = "metasfresh-swingui";
-
-	@Autowired
-	private ApplicationContext applicationContext;
-
-	public static void main(String[] args)
+	public static void main(final String[] args)
 	{
-		new SpringApplicationBuilder(SwingUIApplication.class)
-				.headless(false)
-				// actually we would like to it to start actuator endpoints and register with the spring-boot admin server, BUT
-				// we first need to solve the problem of running multiple clients on the same machine (they need to bind to differnt ports)
-				// there might be resource/performance problems
-				// at any rate, we have not yet a solution as to how to configure them
-				.web(false)
-				.profiles(PROFILE)
-				.run(args);
-	}
-
-	/**
-	 * Starts the metasfresh swing client. This needs to be decomposed to make it return during startup.<br>
-	 * Otherwise, the whole spring thing doesn't work properly.
-	 *
-	 * @return
-	 */
-	@Bean(Adempiere.BEAN_NAME)
-	public Adempiere adempiere()
-	{
-		Adempiere.main(applicationContext);
-		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		return adempiere;
+		main(SwingUIApplication.class, args);
 	}
 }
