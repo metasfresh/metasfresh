@@ -35,6 +35,8 @@ Here come the actual release notes:
     * Fixes the cancel request message. Now not dissappearing anymore when hovering.
   * [#1843](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1843) Action button not properly displayed in Transportation Order window
     * Fixes the Button Look&Feel in Case the Button has no data from API.
+  * [#1853](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1853) Searching in BPartner field from order is not working
+    * Improvement of new Businesspartner and search in Order Window.
 
 
 # metasfresh 5.62 (2018-25)
