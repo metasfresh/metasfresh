@@ -1722,6 +1722,13 @@ public final class Env
 			return null;
 		}
 
+		if (WindowNo == 0)
+		{
+			s_log.warn("Env.getWindow() called with wrong parameter; If you want obtain the main window (AMenu), then please use the constant Env.WINDOW_MAIN instead of 0 (and btw, it's 1 now)");
+
+			Check.assume(WINDOW_MAIN != 0, "WINDOW_MAIN was changed from 0 to 1"); // avoid StackoverFlow if it's ever changed back to 0
+			return getWindow(WINDOW_MAIN);
+		}
 		try
 		{
 			return getFrame(s_windows.get(WindowNo));
