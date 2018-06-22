@@ -928,7 +928,7 @@ UPDATE AD_Column SET AD_Element_ID=544131, AD_Reference_ID=19, ColumnName='M_Nut
 UPDATE AD_Field SET Name='Nutrition Fact', Description=NULL, Help=NULL WHERE AD_Column_ID=560479
 ;
 
-drop table m_nutrition_fact_trl;
+drop table if exists m_nutrition_fact_trl;
 
 
 -- 2018-06-21T17:14:31.919
