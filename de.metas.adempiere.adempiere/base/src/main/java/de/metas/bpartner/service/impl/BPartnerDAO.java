@@ -715,4 +715,11 @@ public class BPartnerDAO implements IBPartnerDAO
 				.map(bpLocation -> BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID()))
 				.orElse(null);
 	}
+
+	@Override
+	public String getBPartnerNameById(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId.getRepoId(), I_C_BPartner.class);
+		return bpartner.getName();
+	}
 }

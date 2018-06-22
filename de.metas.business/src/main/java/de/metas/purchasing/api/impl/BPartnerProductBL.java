@@ -1,13 +1,11 @@
 package de.metas.purchasing.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
@@ -52,11 +50,12 @@ public class BPartnerProductBL implements IBPartnerProductBL
 
 	private void throwException(final ProductExclude productExclude)
 	{
-		final I_C_BPartner partner = loadOutOfTrx(productExclude.getBpartnerId().getRepoId(), I_C_BPartner.class);
+		final IBPartnerDAO partnertDAO = Services.get(IBPartnerDAO.class);
+		final String partnerName = partnertDAO.getBPartnerNameById(productExclude.getBpartnerId());
 		final String msg = Services.get(IMsgBL.class).getMsg(
 				Env.getCtx(),
 				MSG_ProductSalesExclusionError,
-				new Object[] { partner.getName(), productExclude.getReason() });
+				new Object[] { partnerName, productExclude.getReason() });
 
 		throw new AdempiereException(msg);
 	}
