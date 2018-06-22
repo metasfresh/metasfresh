@@ -21,6 +21,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -251,7 +252,8 @@ public final class HUIdsFilterHelper
 		public String getSql(
 				@NonNull final SqlParamsCollector sqlParamsOut, 
 				@NonNull final DocumentFilter filter, 
-				final SqlOptions sqlOpts_NOTUSED)
+				final SqlOptions sqlOpts_NOTUSED,
+				@NonNull final SqlDocumentFilterConverterContext context)
 		{
 			final HUIdsFilterData huIdsFilter = extractFilterData(filter);
 			final ImmutableList<Integer> onlyHUIds;

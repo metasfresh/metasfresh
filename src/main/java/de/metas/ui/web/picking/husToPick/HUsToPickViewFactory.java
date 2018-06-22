@@ -2,7 +2,9 @@ package de.metas.ui.web.picking.husToPick;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
@@ -14,12 +16,21 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
+import de.metas.ui.web.picking.pickingslot.PickingSlotView;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.CreateViewRequest.Builder;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewFactory;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -59,6 +70,20 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	public HUsToPickViewFactory()
 	{
 		super(ImmutableList.of());
+	}
+
+	public static CreateViewRequest createViewRequest(
+			@NonNull final ViewId pickingSlotViewId,
+			@NonNull final PickingSlotRowId pickingSlotRowId,
+			final int shipmentScheduleId)
+	{
+		Check.assumeGreaterThanZero(shipmentScheduleId, "shipmentScheduleId");
+
+		return CreateViewRequest.builder(WINDOW_ID, JSONViewDataType.includedView)
+				.setParentViewId(pickingSlotViewId)
+				.setParentRowId(pickingSlotRowId.toDocumentId())
+				.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, shipmentScheduleId)
+				.build();
 	}
 
 	@Override
@@ -123,5 +148,31 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass))
 				.webuiQuickAction(true)
 				.build();
+	}
+
+	@Override
+	public IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest, Supplier<IViewsRepository> viewsRepo)
+	{
+		final Builder filterViewBuilder = CreateViewRequest.filterViewBuilder(view, filterViewRequest);
+
+		if ((view instanceof HUEditorView))
+		{
+			final HUEditorView huEditorView = (HUEditorView)view;
+
+			final ViewId parentViewId = huEditorView.getParentViewId();
+
+			final IView parentView = viewsRepo.get().getView(parentViewId);
+
+			if (parentView instanceof PickingSlotView)
+			{
+
+				final PickingSlotView pickingSlotView = (PickingSlotView)parentView;
+
+				filterViewBuilder.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, pickingSlotView.getCurrentShipmentScheduleId());
+			}
+		}
+		final CreateViewRequest createViewRequest = filterViewBuilder.build();
+
+		return createView(createViewRequest);
 	}
 }

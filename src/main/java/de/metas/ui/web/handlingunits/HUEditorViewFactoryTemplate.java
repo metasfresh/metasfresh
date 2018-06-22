@@ -40,6 +40,7 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -404,7 +405,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		public String getSql(
 				@NonNull final SqlParamsCollector sqlParamsOut,
 				@NonNull final DocumentFilter filter,
-				final SqlOptions sqlOpts_NOTUSED)
+				final SqlOptions sqlOpts_NOTUSED,
+				@NonNull final SqlDocumentFilterConverterContext context)
 		{
 			final Object barcodeObj = filter.getParameter(PARAM_Barcode).getValue();
 			if (barcodeObj == null)

@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 
@@ -59,7 +60,11 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 	}
 
 	@Override
-	public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter, final SqlOptions sqlOpts)
+	public String getSql(
+			final SqlParamsCollector sqlParamsOut,
+			final DocumentFilter filter,
+			final SqlOptions sqlOpts,
+			final SqlDocumentFilterConverterContext context)
 	{
 		final String text = filter.getParameterValueAsString(PARAM_SearchText);
 		if (Check.isEmpty(text, true))
@@ -67,15 +72,15 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 			return "1=1";
 		}
 
-		final FullTextSearchFilterContext context = filter.getParameterValueAs(PARAM_Context);
-		Check.assumeNotNull(context, "Parameter context is not null"); // shall not happen
-		logger.trace("context: {}", context);
-		final Client elasticsearchClient = context.getElasticsearchClient();
-		final String esIndexName = context.getEsIndexName();
-		final String keyColumnName = context.getKeyColumnName();
-		final String esKeyColumnName = context.getEsKeyColumnName();
+		final FullTextSearchFilterContext ftsContext = filter.getParameterValueAs(PARAM_Context);
+		Check.assumeNotNull(ftsContext, "Parameter ftsContext is not null"); // shall not happen
+		logger.trace("context: {}", ftsContext);
+		final Client elasticsearchClient = ftsContext.getElasticsearchClient();
+		final String esIndexName = ftsContext.getEsIndexName();
+		final String keyColumnName = ftsContext.getKeyColumnName();
+		final String esKeyColumnName = ftsContext.getEsKeyColumnName();
 
-		final QueryBuilder query = QueryBuilders.multiMatchQuery(text, context.getEsSearchFieldNamesAsArray());
+		final QueryBuilder query = QueryBuilders.multiMatchQuery(text, ftsContext.getEsSearchFieldNamesAsArray());
 		logger.trace("ES query: {}", query);
 
 		final SearchResponse searchResponse = elasticsearchClient.prepareSearch(esIndexName)

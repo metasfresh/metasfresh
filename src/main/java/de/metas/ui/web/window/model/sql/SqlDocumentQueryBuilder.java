@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.WindowConstants;
@@ -437,8 +438,10 @@ public class SqlDocumentQueryBuilder
 		//
 		// Document filters
 		{
+
+			final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
 			final String sqlFilters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(entityBinding)
-					.getSql(sqlParams, getDocumentFilters(), SqlOptions.usingTableAlias(entityBinding.getTableAlias()));
+					.getSql(sqlParams, getDocumentFilters(), SqlOptions.usingTableAlias(entityBinding.getTableAlias()), context);
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
@@ -575,7 +578,7 @@ public class SqlDocumentQueryBuilder
 	{
 		return pageLength;
 	}
-	
+
 	/** @return map of (keyColumnName, value) pairs */
 	public static Map<String, Object> extractComposedKey(final DocumentId recordId, final List<? extends SqlEntityFieldBinding> keyFields)
 	{

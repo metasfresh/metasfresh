@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
@@ -87,7 +88,8 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			final ViewId viewId,
 			final List<DocumentFilter> filters,
 			final List<DocumentQueryOrderBy> orderBys,
-			final boolean applySecurityRestrictions)
+			final boolean applySecurityRestrictions,
+			final SqlDocumentFilterConverterContext context)
 	{
 		final UserRolePermissionsKey permissionsKey = viewEvalCtx.getPermissionsKey();
 		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(permissionsKey);
@@ -99,7 +101,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		//
 		final SqlCreateSelection sqlCreates = newSqlViewSelectionQueryBuilder()
 				.applySecurityRestrictions(applySecurityRestrictions)
-				.buildSqlCreateSelectionFrom(viewEvalCtx, viewId, filters, orderBys, queryLimit);
+				.buildSqlCreateSelectionFrom(viewEvalCtx, viewId, filters, orderBys, queryLimit, context);
 		logger.trace("Creating selection using {}", sqlCreates);
 
 		//
