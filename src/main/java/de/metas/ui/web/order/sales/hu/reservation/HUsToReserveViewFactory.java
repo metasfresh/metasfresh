@@ -7,8 +7,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
@@ -44,43 +42,19 @@ import lombok.NonNull;
  * #L%
  */
 
-/**
- * TODO: make sure that the SQL created for this HU-editor view is restricted to HUs that are available for a given sales order.
- * Caveat: not yet sure if HUQuery is enough..at least right now, HUQueryBuilder doesn't cover "reservations".
- * We need to decide if we want to add that; problably yes,
- * bc we need to deal with reserved HUs at many places..e.g. we need to exclude them in picking or production as well...
- * *unless* of course the picking is done for the sales order they were reserved for.
- *
- * So, maybe it makes sense to have not a "HUsToReserveViewFactory", but a "HUsThatMatchHuQueryBuilderViewFactory".
- */
 @ViewFactory(windowId = HUsToReserveViewFactory.WINDOW_ID_STRING, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class HUsToReserveViewFactory extends HUEditorViewFactoryTemplate
 {
-	public static final String WINDOW_ID_STRING = "husToReserve";
+	static final String WINDOW_ID_STRING = "husToReserve";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
+	// services
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	public HUsToReserveViewFactory()
 	{
 		super(ImmutableList.of());
 	}
-
-	@Override
-	protected DocumentFilterDescriptorsProvider createFilterDescriptorsProvider()
-	{
-		return ImmutableDocumentFilterDescriptorsProvider.builder()
-				.addDescriptors(super.createFilterDescriptorsProvider())
-				.build();
-	}
-
-	// @Override
-	// protected Map<String, SqlDocumentFilterConverter> createFilterConvertersIndexedByFilterId()
-	// {
-	// final Map<String, SqlDocumentFilterConverter> converters = new HashMap<>();
-	// converters.putAll(super.createFilterConvertersIndexedByFilterId());
-	// return converters;
-	// }
 
 	@Override
 	protected void customizeViewLayout(
