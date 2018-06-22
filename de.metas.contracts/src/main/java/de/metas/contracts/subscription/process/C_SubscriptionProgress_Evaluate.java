@@ -117,7 +117,8 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus,
 						X_C_Flatrate_Term.CONTRACTSTATUS_DeliveryPause,
 						X_C_Flatrate_Term.CONTRACTSTATUS_Running,
-						X_C_Flatrate_Term.CONTRACTSTATUS_Waiting)
+						X_C_Flatrate_Term.CONTRACTSTATUS_Waiting,
+						X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract)
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate).addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID).endOrderBy()
