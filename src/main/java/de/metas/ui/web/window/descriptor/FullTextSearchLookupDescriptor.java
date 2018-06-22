@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -147,10 +146,13 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 		return lookupValues;
 	}
 
-	private int extractId(final SearchHit hit)
+	private int extractId(@NonNull final SearchHit hit)
 	{
-		final Map<String, Object> source = hit.getSource();
-		return NumberUtils.asInt(source.get(esKeyColumnName), -1);
+		final Object value = hit
+				.getFields()
+				.get(esKeyColumnName)
+				.getValue();
+		return NumberUtils.asInt(value, -1);
 	}
 
 	private QueryBuilder createElasticsearchQuery(final LookupDataSourceContext evalCtx)
