@@ -63,7 +63,7 @@ public class SqlDocumentFilterConverterContext
 
 	public static final SqlDocumentFilterConverterContext EMPTY = new SqlDocumentFilterConverterContext();
 
-	private ImmutableMap<String, Object> params;
+	private final ImmutableMap<String, Object> params;
 
 	@Builder
 	private SqlDocumentFilterConverterContext(
@@ -79,6 +79,7 @@ public class SqlDocumentFilterConverterContext
 
 	public int getPropertyAsInt(@NonNull final String name, final int defaultValue)
 	{
+		final ImmutableMap<String, Object> params = getParams();
 		final Object value = params.get(name);
 		return NumberUtils.asInt(value, defaultValue);
 	}

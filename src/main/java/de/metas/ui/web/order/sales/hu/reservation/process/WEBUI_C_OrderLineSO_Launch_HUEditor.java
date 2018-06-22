@@ -101,8 +101,7 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		final List<Integer> availableHUIdsToPick = retrieveAvailableHuIdsForCurrentSalesOrderLine();
 
 		createHUEditorView(availableHUIdsToPick);
-		
-		
+
 		final String viewId = null; // TODO
 		getResult().setWebuiIncludedViewIdToOpen(viewId);
 
@@ -116,14 +115,14 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		final I_M_Warehouse orderLineWarehouse = Check.assumeNotNull(
 				warehouseAdvisor.evaluateWarehouse(orderLineRecord),
 				"For currently selected sales order line, there needs to be a warehouse; C_OrderLine={}", orderLineRecord);
-
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(orderLineWarehouse.getM_Warehouse_ID());
-
 		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
+
+		final int productId = orderLineRecord.getM_Product_ID();
 
 		final IHUQueryBuilder query = handlingUnitsDAO
 				.createHUQueryBuilder()
-				.addOnlyWithProductId(orderLineRecord.getM_Product_ID())
+				.addOnlyWithProductId(productId)
 				.addOnlyInWarehouseIds(warehouseIds);
 
 		// TODO: consider adding ASI-Id if set, or filter in memory
