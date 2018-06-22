@@ -47,8 +47,11 @@ Here come the actual release notes:
   * [#4201](https://github.com/metasfresh/metasfresh/issues/4201) WebUI: Show DeliveryRule in Businesspartner Customer and Sales Order
     * Improvement of Businesspartner and Sales Order Widnow in WebUI. Adding the Field for Delivery Rule.
   * [#4231](https://github.com/metasfresh/metasfresh/issues/4231) Address swing-client performance problem in rechnungsdispo summary info
-  * [#4230](https://github.com/metasfresh/metasfresh/issues/4230) Filter for POSReference in Invoicecand
+    * Improving the Performance of Invoice candidates summary info.
+  * [#4230](https://github.com/metasfresh/metasfresh/issues/4230) Filter for POReference in Invoicecand
+    * Improving the filtering Performance for POReference in Invoice candidates window.
   * [#4153](https://github.com/metasfresh/metasfresh/issues/4153) Serial Letter Feature
+    * New Feature allowing to create Serial Letters.
 
 * metasfresh-webui-frontend
   * [#1417](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1417) Shortcuts for delete modal window
@@ -59,7 +62,9 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#4134](https://github.com/metasfresh/metasfresh/issues/4134) updating record to not match tab where clause leads to error when PKs are different
+    * Fix a Bug that surfaced after using the new Virtual Tab Feature, causing an Error in where clause with different Primary Keys.
   * [#4232](https://github.com/metasfresh/metasfresh/issues/4232) CleverReach remote group id not stored when campaign is created
+    * Bugfix for the CleverR Feature, now storinf the Remote Group Identifier after creating a new campaign.
   * [#4233](https://github.com/metasfresh/metasfresh/issues/4233) Attributeset as Sysadmin cannot be created
     * Fixes the recording of Attributeset with System Client.
 
@@ -69,7 +74,7 @@ Here come the actual release notes:
   * [#1774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1774) Cannot stop uploading a file
     * Extend File Upload Feature, now possible to cancel the upload.
   * [#1840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1840) 404 error shall be centered
-    * Fxes the 404 error message. Now centered in WebUI Layout.
+    * Fixes the 404 error message. Now centered in WebUI Layout.
 
 # metasfresh 5.61 (2018-24)
 ## Features
