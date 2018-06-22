@@ -38,7 +38,9 @@ import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageQuery;
+import lombok.NonNull;
 
 /**
  * Developer friendly Query Builder which is oriented on Handling Units concerns.
@@ -153,6 +155,11 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder addOnlyWithProductId(int productId);
 
+	default IHUQueryBuilder addOnlyWithProductId(@NonNull final ProductId productId)
+	{
+		return addOnlyWithProductId(productId.getRepoId());
+	}
+
 	/**
 	 * See {@link #addOnlyWithProductIds(Collection)}.
 	 *
@@ -172,6 +179,7 @@ public interface IHUQueryBuilder
 	 * Filter only those HUs which are in any of the given warehouse(s).
 	 *
 	 * NOTE: given warehouse(s) are appended to the list of previously specified ones
+	 * 
 	 * @return this
 	 */
 	IHUQueryBuilder addOnlyInWarehouseIds(final Collection<WarehouseId> warehouseIds);
