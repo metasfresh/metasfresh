@@ -21,6 +21,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -100,8 +101,8 @@ public class HuReservationServiceTest
 		final HuReservation result = huReservationService.makeReservation(request);
 		assertThat(result).isNotNull();
 
-		assertThat(result.getReservedQtySum().getAsBigDecimal()).isEqualByComparingTo("1");
-		assertThat(result.getReservedQtySum().getUOMId()).isEqualTo(cuUOM.getC_UOM_ID());
+		assertThat(result.getReservedQtySum().get().getAsBigDecimal()).isEqualByComparingTo("1");
+		assertThat(result.getReservedQtySum().get().getUOMId()).isEqualTo(cuUOM.getC_UOM_ID());
 
 		final Map<HuId, Quantity> vhuId2reservedQtys = result.getVhuId2reservedQtys();
 		assertThat(vhuId2reservedQtys).hasSize(1);
@@ -121,12 +122,12 @@ public class HuReservationServiceTest
 		assertThat(includedHUs)
 				.filteredOn(isNotAggregateHU())
 				.hasSize(1)
-				.allSatisfy(hu -> assertThatHuHasQty(hu, "40"))
-				.allSatisfy(hu -> {
-					final List<I_M_HU> includedCUs = handlingUnitsDAO.retrieveIncludedHUs(hu);
+				.allSatisfy(includedHU -> assertThatHuHasQty(includedHU, "40"))
+				.allSatisfy(includedHU -> {
+					final List<I_M_HU> includedCUs = handlingUnitsDAO.retrieveIncludedHUs(includedHU);
 					assertThat(includedCUs).hasSize(2).filteredOn(hasQty("1"))
 							.hasSize(1)
-							// .allMatch(hu -> "R".equals(hu.getHUStatus()) // TODO
+							.allMatch(includedCU -> includedCU.getHUStatus().equals(X_M_HU.HUSTATUS_Reserved))
 							.extracting(I_M_HU::getM_HU_ID)
 							.allMatch(huId -> huId == vhuId.getRepoId());
 					assertThat(includedCUs).hasSize(2).filteredOn(hasQty("39")).hasSize(1);
@@ -147,7 +148,7 @@ public class HuReservationServiceTest
 				.build();
 
 		final HuReservation result = huReservationService.makeReservation(firstRequest);
-		assertThat(result.getReservedQtySum().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET);
+		assertThat(result.getReservedQtySum().get().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET);
 
 		final Map<HuId, Quantity> vhuId2reservedQtys = result.getVhuId2reservedQtys();
 		assertThat(vhuId2reservedQtys).hasSize(5);
@@ -164,12 +165,10 @@ public class HuReservationServiceTest
 					final List<I_M_HU> includedCUs = handlingUnitsDAO.retrieveIncludedHUs(tu);
 					assertThat(includedCUs).hasSize(1)
 							.filteredOn(hasQty("40")).hasSize(1)
-							// .allMatch(hu -> "R".equals(hu.getHUStatus()) // TODO
+							.allMatch(hu -> hu.getHUStatus().equals(X_M_HU.HUSTATUS_Reserved))
 							.extracting(I_M_HU::getM_HU_ID)
 							.allMatch(cuId -> vhuId2reservedQtys.containsKey(HuId.ofRepoId(cuId)));
 				});
-
-		// data.helper.commitAndDumpHU(hu);
 	}
 
 	@Test
@@ -185,19 +184,20 @@ public class HuReservationServiceTest
 				.build();
 
 		final HuReservation firstResult = huReservationService.makeReservation(firstRequest);
-		assertThat(firstResult.getReservedQtySum().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET); // guard
+		assertThat(firstResult.getReservedQtySum()).isPresent();
+		assertThat(firstResult.getReservedQtySum().get().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET); // guard
 
-		// invoke the method under test
 		final HuReservationRequest secondRequest = HuReservationRequest.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
 				.productId(ProductId.ofRepoId(data.helper.pTomato.getM_Product_ID()))
 				.build();
-		final HuReservation secondResult = huReservationService.makeReservation(secondRequest);
-		assertThat(secondResult.getReservedQtySum().isZero()).isTrue();
 
-		// data.helper.commitAndDumpHU(hu);
+		// invoke the method under test
+		final HuReservation secondResult = huReservationService.makeReservation(secondRequest);
+
+		assertThat(secondResult.getReservedQtySum().get().isZero()).isTrue();
 	}
 
 	private void assertThatHuHasQty(final I_M_HU hu, final String expectedQty)

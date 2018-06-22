@@ -44,6 +44,7 @@ public class HUStatusBL implements IHUStatusBL
 {
 	private final static List<String> HU_STATUSES_THAT_COUNT_FOR_QTY_ON_HAND = ImmutableList.of(
 			X_M_HU.HUSTATUS_Active,
+			X_M_HU.HUSTATUS_Reserved,
 			X_M_HU.HUSTATUS_Picked,
 			X_M_HU.HUSTATUS_Issued);
 
@@ -64,8 +65,14 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Picked)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Issued)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Destroyed)
-			// active => shipped transition is used in vendor returns
+			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Reserved)
+			// active => shipped state-transition is used in vendor returns
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Shipped)
+
+			.put(X_M_HU.HUSTATUS_Reserved, X_M_HU.HUSTATUS_Picked)
+			.put(X_M_HU.HUSTATUS_Reserved, X_M_HU.HUSTATUS_Issued)
+			.put(X_M_HU.HUSTATUS_Reserved, X_M_HU.HUSTATUS_Destroyed)
+			.put(X_M_HU.HUSTATUS_Reserved, X_M_HU.HUSTATUS_Active)
 
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Shipped)

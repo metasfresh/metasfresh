@@ -1,6 +1,7 @@
 package de.metas.handlingunits.reservation;
 
 import java.util.Map;
+import java.util.Optional;
 
 import de.metas.handlingunits.HuId;
 import de.metas.quantity.Quantity;
@@ -35,11 +36,8 @@ import lombok.Value;
 @Builder
 public class HuReservation
 {
-	/** can be null, if the reservation was not yet persisted */
-	HuReservationId id;
-
 	@NonNull
-	Quantity reservedQtySum;
+	Optional<Quantity> reservedQtySum;
 
 	@Singular
 	Map<HuId, Quantity> vhuId2reservedQtys;

@@ -1,8 +1,10 @@
 package de.metas.handlingunits.reservation;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
@@ -18,9 +20,11 @@ import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.reservation.HuReservation.HuReservationBuilder;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.order.OrderLineId;
@@ -66,11 +70,15 @@ public class HuReservationService
 		final List<HuId> huIds = Check.assumeNotEmpty(reservationRequest.getHuIds(),
 				"the given request needs to have huIds; request={}", reservationRequest);
 
-		final List<I_M_HU> hus = Services.get(IHandlingUnitsDAO.class).retrieveByIds(huIds);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final List<I_M_HU> hus = handlingUnitsDAO.retrieveByIds(huIds);
 
 		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
 				.sourceHUs(hus)
 				.qtyCU(reservationRequest.getQtyToReserve())
+				.onlyFromActiveHUs(true)
 				.keepNewCUsUnderSameParent(true)
 				// TODO: add productId to the request, for fuck's sake
 				.build();
@@ -79,14 +87,12 @@ public class HuReservationService
 				.get()
 				.husToNewCUs(husToNewCUsRequest);
 
-		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class)
-				.getStorageFactory();
 
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final I_M_Product productRecord = loadOutOfTrx(reservationRequest.getProductId(), I_M_Product.class);
+		final I_C_UOM uomRecord = reservationRequest.getQtyToReserve().getUOM();
 
 		final HuReservationBuilder reservationBuilder = HuReservation.builder();
-
-		final I_C_UOM uomRecord = reservationRequest.getQtyToReserve().getUOM();
 
 		Quantity reservedQtySum = Quantity.zero(uomRecord);
 		for (final I_M_HU newCU : newCUs)
@@ -97,10 +103,14 @@ public class HuReservationService
 
 			reservedQtySum = reservedQtySum.add(qty);
 			reservationBuilder.vhuId2reservedQty(HuId.ofRepoId(newCU.getM_HU_ID()), qty);
+
+			final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(getContextAware(newCU));
+			handlingUnitsBL.setHUStatus(huContext, newCU, X_M_HU.HUSTATUS_Reserved);
+			handlingUnitsDAO.saveHU(newCU);
 		}
 
 		return reservationBuilder
-				.reservedQtySum(reservedQtySum)
+				.reservedQtySum(Optional.of(reservedQtySum))
 				.build();
 	}
 
@@ -114,7 +124,7 @@ public class HuReservationService
 
 	/**
 	 * Returns a list that is based on the given {@code huIds} and contains the subset of HUs
-	 * which are not ruled out because they are reserved for order lines.
+	 * which are not ruled out because they are reserved for *other* order lines.
 	 */
 	public List<HuId> retainAvailableHUsForOrderLine(List<HuId> huIds, OrderLineId orderLineId)
 	{

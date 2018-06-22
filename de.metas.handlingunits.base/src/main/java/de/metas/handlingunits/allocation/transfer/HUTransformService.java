@@ -59,6 +59,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.EmptyHUListener;
@@ -1026,23 +1027,31 @@ public class HUTransformService
 
 		Quantity qtyCU;
 
-		/** if true, the extract CUs, but don't let them end up stand alone; instead, keep them as separate VHU under the same parent that the respective source CU had. */
+		/**
+		 * if true, the extract CUs, but don't let them end up stand alone;
+		 * instead, keep them as separate VHU under the same parent that the respective source CU had.
+		 */
 		boolean keepNewCUsUnderSameParent;
+
+		/** if true, then only active VHUs are split on order to get our new CUs */
+		boolean onlyFromActiveHUs;
 
 		public static HUsToNewCUsRequest forSourceHuAndQty(@NonNull I_M_HU sourceHU, @NonNull Quantity qtyCU)
 		{
 			return HUsToNewCUsRequest.builder().sourceHU(sourceHU).qtyCU(qtyCU).build();
 		}
 
-		@lombok.Builder
+		@lombok.Builder(toBuilder = true)
 		private HUsToNewCUsRequest(
 				@Singular("sourceHU") @NonNull final List<I_M_HU> sourceHUs,
 				@NonNull final Quantity qtyCU,
-				final Boolean keepNewCUsUnderSameParent)
+				@Nullable final Boolean keepNewCUsUnderSameParent,
+				@Nullable final Boolean onlyFromActiveHUs)
 		{
 			this.sourceHUs = sourceHUs;
 			this.qtyCU = qtyCU;
 			this.keepNewCUsUnderSameParent = Util.coalesce(keepNewCUsUnderSameParent, false);
+			this.onlyFromActiveHUs = Util.coalesce(onlyFromActiveHUs, false);
 		}
 	}
 
@@ -1056,7 +1065,13 @@ public class HUTransformService
 		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
 		for (final I_M_HU sourceHU : newCUsRequest.getSourceHUs())
 		{
-			final List<I_M_HU> currentResult = huToNewCUs(sourceHU, qtyCuLeft, newCUsRequest.isKeepNewCUsUnderSameParent());
+			final HUsToNewCUsRequest singleHuRequest = newCUsRequest.toBuilder()
+					.clearSourceHUs()
+					.sourceHU(sourceHU)
+					.qtyCU(qtyCuLeft)
+					.build();
+
+			final List<I_M_HU> currentResult = huToNewCUs(singleHuRequest);
 			result.addAll(currentResult);
 
 			qtyCuLeft = qtyCuLeft.subtract(calculateTotalQtyOfCUs(currentResult, qtyCuLeft.getUOM()));
@@ -1069,35 +1084,42 @@ public class HUTransformService
 		return result.build();
 	}
 
-	private List<I_M_HU> huToNewCUs(
-			@NonNull final I_M_HU sourceHU,
-			@NonNull final Quantity qtyCU,
-			final boolean keepNewCUsUnderSameParent)
+	private List<I_M_HU> huToNewCUs(@NonNull final HUsToNewCUsRequest singleSourceHuRequest
+	// @NonNull final I_M_HU sourceHU,
+	// @NonNull final Quantity qtyCU,
+	// final boolean keepNewCUsUnderSameParent
+	)
 	{
+		final I_M_HU sourceHU = ListUtils.singleElement(singleSourceHuRequest.getSourceHUs());
+
 		if (handlingUnitsBL.isLoadingUnit(sourceHU))
 		{
-			return luExtractCUs(sourceHU, qtyCU, keepNewCUsUnderSameParent);
+			return luExtractCUs(singleSourceHuRequest);
 		}
 		else if (handlingUnitsBL.isTransportUnitOrAggregate(sourceHU))
 		{
-			return tuExtractCUs(sourceHU, qtyCU, keepNewCUsUnderSameParent);
+			return tuExtractCUs(singleSourceHuRequest);
 		}
 		else
 		{
-			return cuToNewCU(sourceHU, qtyCU);
+			return cuToNewCU(sourceHU, singleSourceHuRequest.getQtyCU());
 		}
 	}
 
 	private List<I_M_HU> luExtractCUs(
-			@NonNull final I_M_HU sourceLU,
-			@NonNull final Quantity qtyCU,
-			final boolean keepNewCUsUnderSameParent)
+			@NonNull final HUsToNewCUsRequest singleSourceLuRequest
+	// @NonNull final I_M_HU sourceLU,
+	// @NonNull final Quantity qtyCU,
+	// final boolean keepNewCUsUnderSameParent
+	)
 	{
-		Preconditions.checkArgument(qtyCU.signum() > 0, "qtyCU > 0");
+		Preconditions.checkArgument(singleSourceLuRequest.getQtyCU().signum() > 0, "qtyCU > 0");
 
 		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
 
-		Quantity qtyCUsRemaining = qtyCU; // how many CUs we still have to extract
+		Quantity qtyCUsRemaining = singleSourceLuRequest.getQtyCU(); // how many CUs we still have to extract
+
+		final I_M_HU sourceLU = ListUtils.singleElement(singleSourceLuRequest.getSourceHUs());
 
 		// in this number, aggregate HUs count according to the number of TUs that they represent.
 		final int logicalNumberOfIncludedHUs = handlingUnitsDAO
@@ -1120,35 +1142,51 @@ public class HUTransformService
 			final boolean keepLuAsParent = true; // we need a "dedicated" TU, but it shall remain with sourceLU.
 			final I_M_HU extractedTU = ListUtils.singleElement(luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds));
 
-			final List<I_M_HU> cusFromTU = tuExtractCUs(extractedTU, qtyCUsRemaining, keepNewCUsUnderSameParent);
+			final HUsToNewCUsRequest singleSourceTuRequest = singleSourceLuRequest.toBuilder()
+					.clearSourceHUs()
+					.sourceHU(extractedTU)
+					.qtyCU(qtyCUsRemaining).build();
+
+			final List<I_M_HU> cusFromTU = tuExtractCUs(singleSourceTuRequest);
 
 			extractedCUs.addAll(cusFromTU);
 
-			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCU.getUOM()));
+			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCUsRemaining.getUOM()));
 		}
 		return extractedCUs.build();
 	}
 
-	private List<I_M_HU> tuExtractCUs(
-			@NonNull final I_M_HU sourceTU,
-			@NonNull final Quantity qtyCU,
-			final boolean keepNewCUsUnderSameParent)
+	private List<I_M_HU> tuExtractCUs(@NonNull final HUsToNewCUsRequest singleSourceTuRequest
+	// @NonNull final I_M_HU sourceTU,
+	// @NonNull final Quantity qtyCU,
+	// final boolean keepNewCUsUnderSameParent
+	)
 	{
 		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
-		Quantity qtyCUsRemaining = qtyCU;
+		Quantity qtyCUsRemaining = singleSourceTuRequest.getQtyCU();
+
+		final I_M_HU sourceTU = ListUtils.singleElement(singleSourceTuRequest.getSourceHUs());
 
 		for (final I_M_HU cu : handlingUnitsDAO.retrieveIncludedHUs(sourceTU))
 		{
+			if (singleSourceTuRequest.isOnlyFromActiveHUs() && !X_M_HU.HUSTATUS_Active.equals(cu.getHUStatus()))
+			{
+				continue;
+			}
+
 			if (qtyCUsRemaining.signum() <= 0)
 			{
 				break;
 			}
 
-			final List<I_M_HU> newCUs = cuToNewCU0(cu, qtyCUsRemaining, keepNewCUsUnderSameParent);
+			final List<I_M_HU> newCUs = cuToNewCU0(
+					cu,
+					qtyCUsRemaining,
+					singleSourceTuRequest.isKeepNewCUsUnderSameParent());
 
 			extractedCUs.addAll(newCUs);
 
-			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(newCUs, qtyCU.getUOM()));
+			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(newCUs, qtyCUsRemaining.getUOM()));
 		}
 		return extractedCUs.build();
 	}
