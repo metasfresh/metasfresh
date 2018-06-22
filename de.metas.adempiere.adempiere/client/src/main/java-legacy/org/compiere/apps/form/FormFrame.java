@@ -48,8 +48,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
@@ -60,15 +58,15 @@ import de.metas.process.ProcessInfo;
  *
  * 	@author 	Jorg Janke
  * 	@version 	$Id: FormFrame.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
- * 
- *  Colin Rooney 2007/03/20 RFE#1670185 & BUG#1684142 
+ *
+ *  Colin Rooney 2007/03/20 RFE#1670185 & BUG#1684142
  *                           Extend security to Info Queries
  */
-public class FormFrame extends CFrame 
-	implements ActionListener 
+public class FormFrame extends CFrame
+	implements ActionListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2559005548469735515L;
 
@@ -79,15 +77,15 @@ public class FormFrame extends CFrame
 	public FormFrame ()
 	{
 		super();
-		addWindowListener(new java.awt.event.WindowAdapter() 
+		addWindowListener(new java.awt.event.WindowAdapter()
 		{
 			@Override
-			public void windowOpened(java.awt.event.WindowEvent evt) 
+			public void windowOpened(java.awt.event.WindowEvent evt)
 			{
 				formWindowOpened(evt);
 			}
 		});
-		
+
 		m_WindowNo = Env.createWindowNo (this);
 		m_glassPane = MetasfreshGlassPane.install(this);
 		try
@@ -98,14 +96,14 @@ public class FormFrame extends CFrame
 		catch(Exception e)
 		{
 			log.error("Failed to initialize the form frame", e);
-			
+
 			// Dispose this FormFrame (to make sure the status is cleared)
 			dispose();
 		}
 	}	//	FormFrame
 
 	private ProcessInfo  m_pi;
-	
+
 	/**	WindowNo					*/
 	private final int	m_WindowNo;
 	/** The GlassPane           	*/
@@ -122,7 +120,7 @@ public class FormFrame extends CFrame
 	public boolean 		m_maximize = false;
 	/**	Logger			*/
 	private static final Logger log = LogManager.getLogger(FormFrame.class);
-	
+
 	/** Form ID			*/
 	private int		p_AD_Form_ID = -1;
 
@@ -138,7 +136,7 @@ public class FormFrame extends CFrame
 		{
 			this.setIconImage(icon);
 		}
-		
+
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.setJMenuBar(menuBar);
 	}	//	jbInit
@@ -162,17 +160,10 @@ public class FormFrame extends CFrame
 		InfoWindowMenuBuilder.newBuilder()
 				.setCtx(Env.getCtx())
 				// Provide a supplier for WindowNo because the windowNo is not available at this moment
-				.setParentWindowNo(new Supplier<Integer>()
-				{
-					@Override
-					public Integer get()
-					{
-						return getWindowNo();
-					}
-				})
+				.setParentWindowNo(() -> getWindowNo())
 				.setMenu(mView)
 				.build();
-		
+
 		//      Tools
 		JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
@@ -182,9 +173,9 @@ public class FormFrame extends CFrame
 				mTools.addSeparator();
 			AEnv.addMenuItem("Preference", null, null, mTools, this);
 		}
-		
+
 		//		Window
-		AMenu aMenu = (AMenu)Env.getWindow(0);
+		AMenu aMenu = (AMenu)Env.getWindow(Env.WINDOW_MAIN);
 		JMenu mWindow = new WindowMenu(aMenu.getWindowManager(), this);
 		menuBar.add(mWindow);
 
@@ -212,7 +203,7 @@ public class FormFrame extends CFrame
 		{
 			return;
 		}
-		
+
 		_disposing = true;
 		try
 		{
@@ -228,7 +219,7 @@ public class FormFrame extends CFrame
 			m_panel = null;
 			super.dispose();
 			Env.clearWinContext(m_WindowNo);
-			
+
 			_disposing = false;
 			_disposed = true;
 		}
@@ -238,7 +229,7 @@ public class FormFrame extends CFrame
 	 * true when frame is currently disposing
 	 */
 	private boolean _disposing = false;
-	
+
 	/**
 	 * true when frame was already disposed
 	 */
@@ -246,7 +237,7 @@ public class FormFrame extends CFrame
 
 	/**
 	 * 	Opens the Form or displays a warning using {@link IClientUI#warn(int, Throwable)}.
-	 * 
+	 *
 	 * 	@param AD_Form_ID form
 	 *  @return true if form opened
 	 */
@@ -261,7 +252,7 @@ public class FormFrame extends CFrame
 			{
 				throw new AdempiereException("@NotFound@ @AD_Form_ID@ (ID="+AD_Form_ID+")");
 			}
-			
+
 			opened = openForm0(form);
 		}
 		catch (Exception e)
@@ -270,13 +261,13 @@ public class FormFrame extends CFrame
 			dispose();
 			Services.get(IClientUI.class).warn(m_WindowNo, e);
 		}
-		
+
 		return opened;
 	}	//	openForm
 
 	/**
 	 * Opens the Form or displays a warning using {@link IClientUI#warn(int, Throwable)}.
-	 * 
+	 *
 	 * @param form
 	 * @return true if form was opened
 	 */
@@ -294,10 +285,10 @@ public class FormFrame extends CFrame
 			dispose();
 			Services.get(IClientUI.class).warn(m_WindowNo, e);
 		}
-		
+
 		return opened;
 	}
-	
+
 	private boolean openForm0(final I_AD_Form form) throws Exception
 	{
 		Check.assumeNotNull(form, "form not null", form);
@@ -324,17 +315,17 @@ public class FormFrame extends CFrame
 		m_panel = Util.getInstance(FormPanel.class, className);
 		m_panel.init(m_WindowNo, this);
 		final boolean ok = (m_panel != null) && !_disposed; // metas: return true if not disposed
-		
+
 		// Make sure the form frame is added to window manager
-		// (to be able to select it from windows list and to be able to close it automatically on user logout) 
+		// (to be able to select it from windows list and to be able to close it automatically on user logout)
 		if (ok)
 		{
 			AEnv.addToWindowManager(this);
 		}
-		
+
 		return ok;
 	}	// openForm
-	
+
 	/**
 	 * 	Get Form Panel
 	 *	@return form panel
@@ -407,19 +398,19 @@ public class FormFrame extends CFrame
 
 	/**
 	 * Set Busy Message.
-	 * 
+	 *
 	 * If you want to directly set a message, without any transaction, use {@link #setMessagePlain(String)}.
-	 * 
+	 *
 	 * @param AD_Message to be translated - null resets to default message.
 	 */
 	public final void setBusyMessage (final String AD_Message)
 	{
 		m_glassPane.setMessage(AD_Message);
 	}
-	
+
 	/**
 	 * Sets given busy message directly. No transaction or any other processing will be performed.
-	 * 
+	 *
 	 * @param message plain message to be set directly.
 	 */
 	public final void setBusyMessagePlain(final String message)
@@ -435,8 +426,8 @@ public class FormFrame extends CFrame
 	{
 		m_glassPane.setBusyTimer (time);
 	}   //  setBusyTimer
-	
-	 
+
+
 	/**
 	 * 	Set Maximize Window
 	 *	@param max maximize
@@ -445,14 +436,14 @@ public class FormFrame extends CFrame
 	{
 		m_maximize = max;
 	}	//	setMaximize
-	 
- 
+
+
 	/**
 	 * 	Form Window Opened.
 	 * 	Maximize window if required
 	 *	@param evt event
 	 */
-	private void formWindowOpened(java.awt.event.WindowEvent evt) 
+	private void formWindowOpened(java.awt.event.WindowEvent evt)
 	{
 		if (m_maximize == true)
 		{
@@ -462,20 +453,20 @@ public class FormFrame extends CFrame
    }	//	formWindowOpened
 
 // Add window and tab no called from
-	
+
 	public void setProcessInfo(ProcessInfo pi)
 	{
 		m_pi = pi;
-		
+
 	}
-	
+
 	public ProcessInfo getProcessInfo()
 	{
 		return m_pi;
 	}
 
 	// End
-	
+
 	/**
 	 * 	Start Batch
 	 *	@param process
@@ -517,7 +508,7 @@ public class FormFrame extends CFrame
 	{
 		return menuBar;
 	}
-	
+
 	public void showFormWindow()
 	{
 		if (m_panel instanceof FormPanel2)
