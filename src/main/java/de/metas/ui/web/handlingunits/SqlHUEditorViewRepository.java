@@ -1,7 +1,5 @@
 package de.metas.ui.web.handlingunits;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,6 +30,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -46,6 +46,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
@@ -445,7 +446,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	@Override
 	public List<Integer> retrieveHUIdsEffective(
 			@NonNull final HUIdsFilterData huIdsFilter,
-			@NonNull final List<DocumentFilter> filters)
+			@NonNull final List<DocumentFilter> filters,
+			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		final ImmutableList<Integer> onlyHUIds = extractHUIds(huIdsFilter);
 
@@ -477,7 +479,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		if (!filters.isEmpty())
 		{
 			final SqlDocumentFilterConverter sqlFilterConverter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding);
-			huQuery.addFilter(sqlFilterConverter.createQueryFilter(filters, SqlOptions.usingTableAlias(sqlViewBinding.getTableAlias())));
+			huQuery.addFilter(sqlFilterConverter.createQueryFilter(filters,
+					SqlOptions.usingTableAlias(sqlViewBinding.getTableAlias()),
+					context));
 		}
 
 		return huQuery.createQuery().listIds();
@@ -565,10 +569,11 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@NonNull final ViewEvaluationCtx viewEvalCtx,
 			final ViewId viewId,
 			final List<DocumentFilter> filters,
-			final List<DocumentQueryOrderBy> orderBys)
+			final List<DocumentQueryOrderBy> orderBys,
+			final SqlDocumentFilterConverterContext context)
 	{
 		final boolean applySecurityRestrictions = true;
-		return viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys, applySecurityRestrictions);
+		return viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys, applySecurityRestrictions, context);
 	}
 
 	@Override

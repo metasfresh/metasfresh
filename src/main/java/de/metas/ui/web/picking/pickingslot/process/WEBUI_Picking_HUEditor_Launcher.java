@@ -1,25 +1,15 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.List;
-
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
+import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -53,8 +43,6 @@ public class WEBUI_Picking_HUEditor_Launcher extends PickingSlotViewBasedProcess
 	@Autowired
 	private IViewsRepository viewsRepo;
 
-	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -68,9 +56,8 @@ public class WEBUI_Picking_HUEditor_Launcher extends PickingSlotViewBasedProcess
 	@Override
 	protected String doIt()
 	{
-		final List<Integer> availableHUIdsToPick = retrieveAvailableHuIdsForCurrentShipmentScheduleId();
 
-		final IView husToPickView = createHUEditorView(availableHUIdsToPick);
+		final IView husToPickView = createHUsToPickView();
 
 		getResult().setWebuiIncludedViewIdToOpen(husToPickView.getViewId().getViewId());
 		getResult().setWebuiViewProfileId("husToPick");
@@ -78,30 +65,16 @@ public class WEBUI_Picking_HUEditor_Launcher extends PickingSlotViewBasedProcess
 		return MSG_OK;
 	}
 
-	private List<Integer> retrieveAvailableHuIdsForCurrentShipmentScheduleId()
+	private IView createHUsToPickView()
 	{
-		final int shipmentScheduleId = getView().getCurrentShipmentScheduleId();
+		final PickingSlotView pickingSlotsView = getView();
+		final PickingSlotRowId pickingSlotRowId = getSingleSelectedRow().getPickingSlotRowId();
 
-		final PickingHUsQuery query = PickingHUsQuery.builder()
-				.shipmentSchedule(loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class))
-				.onlyTopLevelHUs(false)
-				.onlyIfAttributesMatchWithShipmentSchedules(true)
-				.build();
-		final List<Integer> availableHUIdsToPick = huPickingSlotBL.retrieveAvailableHUIdsToPick(query);
-		return availableHUIdsToPick;
-	}
+		final ViewId pickingSlotViewId = pickingSlotsView.getViewId();
+		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
 
-	private IView createHUEditorView(@NonNull final List<Integer> availableHUIdsToPick)
-	{
-		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		final ViewId pickingSlotViewId = getView().getViewId();
-
-		final IView husToPickView = viewsRepo.createView(
-				CreateViewRequest.builder(HUsToPickViewFactory.WINDOW_ID, JSONViewDataType.includedView)
-						.setParentViewId(pickingSlotViewId)
-						.setParentRowId(pickingSlotRow.getId())
-						.addStickyFilters(HUIdsFilterHelper.createFilter(availableHUIdsToPick))
-						.build());
+		final CreateViewRequest createRequest = HUsToPickViewFactory.createViewRequest(pickingSlotViewId, pickingSlotRowId, shipmentScheduleId);
+		final IView husToPickView = viewsRepo.createView(createRequest);
 		return husToPickView;
 	}
 }

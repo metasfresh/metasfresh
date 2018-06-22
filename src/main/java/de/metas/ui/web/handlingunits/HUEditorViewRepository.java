@@ -6,6 +6,7 @@ import java.util.Set;
 import org.adempiere.util.collections.PagedIterator.Page;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
@@ -40,10 +41,10 @@ public interface HUEditorViewRepository
 {
 	void invalidateCache();
 
-	ViewRowIdsOrderedSelection createSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters, List<DocumentQueryOrderBy> orderBys);
+	ViewRowIdsOrderedSelection createSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters, List<DocumentQueryOrderBy> orderBys, SqlDocumentFilterConverterContext context);
 
 	ViewRowIdsOrderedSelection createSelectionFromSelection(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
-	
+
 	void deleteSelection(ViewRowIdsOrderedSelection selection);
 
 	List<HUEditorRow> retrieveHUEditorRows(Set<Integer> huIds, HUEditorRowFilter filter);
@@ -56,7 +57,9 @@ public interface HUEditorViewRepository
 	 */
 	HUEditorRow retrieveForHUId(int huId);
 
-	List<Integer> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter, List<DocumentFilter> filters);
+	List<Integer> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter,
+			List<DocumentFilter> filters,
+			SqlDocumentFilterConverterContext context);
 
 	Page<Integer> retrieveHUIdsPage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
 
