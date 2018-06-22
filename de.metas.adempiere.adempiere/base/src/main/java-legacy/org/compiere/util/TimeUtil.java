@@ -707,7 +707,7 @@ public class TimeUtil
 		}
 		if (day == null)
 		{
-			day = new Timestamp(System.currentTimeMillis());
+			day = SystemTime.asTimestamp();
 		}
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -716,10 +716,7 @@ public class TimeUtil
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
-		if (offset == 0)
-		{
-			return new Timestamp(cal.getTimeInMillis());
-		}
+
 		cal.add(Calendar.DAY_OF_YEAR, offset);			// may have a problem with negative (before 1/1)
 		return new Timestamp(cal.getTimeInMillis());
 	}	// addDays
