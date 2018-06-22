@@ -325,13 +325,24 @@ public class ADProcessPostProcessService
 					.build();
 		}
 		//
-		// Open included view
+		// Open view/included view
 		else if (processExecutionResult.getWebuiIncludedViewIdToOpen() != null)
 		{
-			return OpenIncludedViewAction.builder()
-					.viewId(ViewId.ofViewIdString(processExecutionResult.getWebuiIncludedViewIdToOpen()))
-					.profileId(ViewProfileId.fromJson(processExecutionResult.getWebuiViewProfileId()))
-					.build();
+			// Open included view (in case current process was called from a view)
+			if (processExecutionResult.getWebuiViewId() != null)
+			{
+				return OpenIncludedViewAction.builder()
+						.viewId(ViewId.ofViewIdString(processExecutionResult.getWebuiIncludedViewIdToOpen()))
+						.profileId(ViewProfileId.fromJson(processExecutionResult.getWebuiViewProfileId()))
+						.build();
+			}
+			// Open view
+			else
+			{
+				return OpenViewAction.builder()
+						.viewId(ViewId.ofViewIdString(processExecutionResult.getWebuiIncludedViewIdToOpen()))
+						.build();
+			}
 		}
 		//
 		// Open single document
