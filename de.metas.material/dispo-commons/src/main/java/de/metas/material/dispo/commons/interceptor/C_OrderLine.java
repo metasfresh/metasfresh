@@ -1,5 +1,7 @@
 package de.metas.material.dispo.commons.interceptor;
 
+import java.math.BigDecimal;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -38,5 +40,16 @@ public class C_OrderLine
 			return;
 		}
 		OrderAvailableToPromiseTool.updateOrderLineRecord(orderLineRecord);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_Processed )
+	public void reseteQtyATP(final I_C_OrderLine orderLineRecord)
+	{
+		if(!orderLineRecord.getC_Order().isSOTrx() || !orderLineRecord.isProcessed())
+		{
+			return;
+		}
+
+		orderLineRecord.setQty_AvailableToPromise(BigDecimal.ZERO);
 	}
 }
