@@ -300,12 +300,13 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			//
 			// Display column
-			if (_lookupDescriptor != null)
+			final String sqlColumnName = getColumnName();
+			if (_lookupDescriptor != null
+					&& sqlColumnName != null) // in case of Labels, sqlColumnName is null
 			{
 				_usingDisplayColumn = true;
 
 				final String sqlTableAlias = getTableAlias();
-				final String sqlColumnName = getColumnName();
 
 				_displayColumnName = sqlColumnName + "$Display";
 				_displayColumnSqlExpression = extractDisplayColumnSqlExpression(_lookupDescriptor, sqlTableAlias, sqlColumnName);
