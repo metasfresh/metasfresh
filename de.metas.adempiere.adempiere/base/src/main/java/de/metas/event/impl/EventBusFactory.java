@@ -64,7 +64,6 @@ public class EventBusFactory implements IEventBusFactory
 			});
 
 	private final IEventBusRemoteEndpoint remoteEndpoint;
-	private final ExecutorService eventBusExecutor;
 
 	private final Set<Topic> availableUserNotificationsTopic = ConcurrentHashMap.newKeySet(10);
 
@@ -74,19 +73,6 @@ public class EventBusFactory implements IEventBusFactory
 		logger.info("Using remote endpoint: {}", remoteEndpoint);
 
 		JMXRegistry.get().registerJMX(new JMXEventBusManager(remoteEndpoint), OnJMXAlreadyExistsPolicy.Replace);
-
-		// Setup EventBus executor
-		if (EventBusConstants.isEventBusPostEventsAsync())
-		{
-			eventBusExecutor = Executors.newSingleThreadExecutor(CustomizableThreadFactory.builder()
-					.setThreadNamePrefix(getClass().getName() + "-AsyncExecutor")
-					.setDaemon(true)
-					.build());
-		}
-		else
-		{
-			eventBusExecutor = null;
-		}
 
 		//
 		// Setup default user notification topics
@@ -150,7 +136,7 @@ public class EventBusFactory implements IEventBusFactory
 	private final EventBus createEventBus(final Topic topic)
 	{
 		// Create the event bus
-		final EventBus eventBus = new EventBus(topic.getName(), eventBusExecutor);
+		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic.getName()));
 
 		// whether the event is really stored is determined for each individual event
 		eventBus.subscribe(EventBus2EventLogHandler.INSTANCE);
@@ -180,7 +166,20 @@ public class EventBusFactory implements IEventBusFactory
 		return eventBus;
 	}
 
-	private void destroyEventBus(final EventBus eventBus)
+	private ExecutorService createExecutorOrNull(@NonNull final String eventBusName)
+	{
+		// Setup EventBus executor
+		if (EventBusConstants.isEventBusPostEventsAsync())
+		{
+			return Executors.newSingleThreadExecutor(CustomizableThreadFactory.builder()
+					.setThreadNamePrefix(getClass().getName() + "-" + eventBusName + "-AsyncExecutor")
+					.setDaemon(true)
+					.build());
+		}
+		return null;
+	}
+
+	private void destroyEventBus(@NonNull final EventBus eventBus)
 	{
 		eventBus.destroy();
 	}
@@ -214,9 +213,9 @@ public class EventBusFactory implements IEventBusFactory
 	 * @return list of available topics on which user can subscribe for UI notifications
 	 */
 	private Set<Topic> getAvailableUserNotificationsTopics()
-		{
+	{
 		return ImmutableSet.copyOf(availableUserNotificationsTopic);
-		}
+	}
 
 	@Override
 	public void registerUserNotificationsListener(@NonNull final IEventListener listener)
@@ -234,7 +233,7 @@ public class EventBusFactory implements IEventBusFactory
 				.stream()
 				.map(this::getEventBus)
 				.forEach(eventBus -> eventBus.subscribeWeak(listener));
-		}
+	}
 
 	@Override
 	public boolean checkRemoteEndpointStatus()
