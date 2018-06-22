@@ -7,14 +7,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
-import com.google.common.base.MoreObjects;
-
 import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.types.ESIndexType;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -38,6 +37,7 @@ import de.metas.elasticsearch.types.ESIndexType;
  * #L%
  */
 
+@ToString
 final class DateDenormalizer implements IESDenormalizer
 {
 	public static final DateDenormalizer of(final int dateDisplayType, final ESIndexType indexType)
@@ -50,23 +50,10 @@ final class DateDenormalizer implements IESDenormalizer
 	private final ESIndexType indexType;
 	private final int dateDisplayType;
 
-	private DateDenormalizer(final int dateDisplayType, final ESIndexType indexType)
+	private DateDenormalizer(final int dateDisplayType, @NonNull final ESIndexType indexType)
 	{
-		super();
-
 		this.dateDisplayType = dateDisplayType;
-
-		Check.assumeNotNull(indexType, "Parameter indexType is not null");
 		this.indexType = indexType;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("dateDisplayType", dateDisplayType)
-				.add("indexType", indexType)
-				.toString();
 	}
 
 	@Override
@@ -89,7 +76,7 @@ final class DateDenormalizer implements IESDenormalizer
 		{
 			return null;
 		}
-		
+
 		if (dateDisplayType == DisplayType.Date)
 		{
 			return FORMATTER_StrictDate.format(toTemporal(value));

@@ -163,6 +163,10 @@ final class ESPOModelDenormalizerBuilder
 		{
 			return true;
 		}
+		else if (displayType == DisplayType.Location)
+		{
+			return true;
+		}
 		else
 		{
 			return false;

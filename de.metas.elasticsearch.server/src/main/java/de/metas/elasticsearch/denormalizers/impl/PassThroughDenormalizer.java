@@ -8,6 +8,7 @@ import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -31,6 +32,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@ToString
 final class PassThroughDenormalizer implements IESDenormalizer
 {
 	public static final PassThroughDenormalizer of(

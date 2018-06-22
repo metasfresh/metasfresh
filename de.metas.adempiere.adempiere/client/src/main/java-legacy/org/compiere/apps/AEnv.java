@@ -70,7 +70,6 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Splash;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
@@ -167,33 +166,22 @@ public final class AEnv
 		if (window instanceof Frame)
 		{
 			final Frame frame = (Frame)window;
-			EventQueue.invokeLater(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					frame.pack();
-					frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-					frame.setVisible(true);
-					frame.toFront();
-				}
+			EventQueue.invokeLater(() -> {
+				frame.pack();
+				frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+				frame.setVisible(true);
+				frame.toFront();
 			});
 		}
 		else if (window instanceof Dialog)
 		{
 			final Dialog dialog = (Dialog)window;
-			EventQueue.invokeLater(new Runnable()
-			{
-
-				@Override
-				public void run()
-				{
-					dialog.setLocation(0, 0);
-					final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-					dialog.setSize(screenSize.width, screenSize.height);
-					dialog.setVisible(true);
-					dialog.toFront();
-				}
+			EventQueue.invokeLater(() -> {
+				dialog.setLocation(0, 0);
+				final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+				dialog.setSize(screenSize.width, screenSize.height);
+				dialog.setVisible(true);
+				dialog.toFront();
 			});
 		}
 	}
@@ -500,11 +488,6 @@ public final class AEnv
 				aMenu.dispose();
 			}
 		}
-		else if (actionCommand.equals("Logout"))
-		{
-			final AMenu aMenu = (AMenu)Env.getWindow(Env.WINDOW_MAIN);
-			aMenu.logout();
-		}
 
 		// Go Menu ------------------------
 		else if (actionCommand.equals("WorkFlow"))
@@ -678,7 +661,7 @@ public final class AEnv
 
 	/**
 	 * Zoom into a given window based on a query
-	 * 
+	 *
 	 * @param query
 	 * @param adWindowId
 	 */
@@ -694,7 +677,7 @@ public final class AEnv
 			log.warn("No AD_Window_ID found for ID {}", adWindowId);
 			return;
 		}
-		
+
 		zoom(RecordZoomWindowFinder.newInstance(query, adWindowId));
 
 	}
@@ -751,16 +734,6 @@ public final class AEnv
 	{
 		Env.exitEnv(status);
 	}	// exit
-
-	public static void logout()
-	{
-		Env.logout();
-
-		Splash.getSplash().setVisible(true);
-
-		// reload
-		new AMenu();
-	}
 
 	/**
 	 * Is Workflow Process view enabled.
@@ -1185,18 +1158,13 @@ public final class AEnv
 			@Override
 			public void windowGainedFocus(final WindowEvent e)
 			{
-				EventQueue.invokeLater(new Runnable()
-				{
-					@Override
-					public void run()
+				EventQueue.invokeLater(() -> {
+					if (modalFrame == null || !modalFrame.isVisible() || !modalFrame.isShowing())
 					{
-						if (modalFrame == null || !modalFrame.isVisible() || !modalFrame.isShowing())
-						{
-							return;
-						}
-						modalFrame.toFront();
-						modalFrame.repaint();
+						return;
 					}
+					modalFrame.toFront();
+					modalFrame.repaint();
 				});
 			}
 
