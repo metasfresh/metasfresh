@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
@@ -93,7 +94,23 @@ public class OrderAvailableToPromiseTool
 		}
 	}
 
-	public static void updateOrderLineRecord(@NonNull final I_C_OrderLine orderLineRecord)
+	public static void resetQtyAvailableToPromise(@NonNull final I_C_Order orderRecord)
+	{
+		final Stream<I_C_OrderLine> orderLineRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
+				.create()
+				.stream();
+
+		orderLineRecords.forEach(orderLineRecord -> {
+			orderLineRecord.setQty_AvailableToPromise(BigDecimal.ZERO);
+			saveRecord(orderLineRecord);
+
+		});
+	}
+
+	public static void updateOrderLineRecordAndDoNotSave(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// we use the date at which the order needs to be ready for shipping
 		final LocalDateTime preparationDate = TimeUtil.asLocalDateTime(orderLineRecord.getC_Order().getPreparationDate());
@@ -106,7 +123,6 @@ public class OrderAvailableToPromiseTool
 		final BigDecimal result = stockRepository.retrieveAvailableStockQtySum(query);
 
 		orderLineRecord.setQty_AvailableToPromise(result);
-		saveRecord(orderLineRecord);
 	}
 
 	private static AvailableToPromiseQuery createSingleQuery(
