@@ -14,18 +14,22 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.reservation.HuReservationService;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.order.sales.hu.reservation.HUsToReserveViewFactory;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewId;
 import lombok.NonNull;
 
 /*
@@ -54,13 +58,11 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		extends JavaProcess
 		implements IProcessPrecondition
 {
-	private final HuReservationService huReservationService = Adempiere.getBean(HuReservationService.class);
-
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
-
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final transient HuReservationService huReservationService = Adempiere.getBean(HuReservationService.class);
+	private final transient IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
+	private final transient IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
+	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -69,8 +71,7 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 
 		if (!salesOrder.isSOTrx())
 		{
-			return ProcessPreconditionsResolution
-					.rejectWithInternalReason("only sales orders are allowed");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
 		}
 
 		final String docStatus = salesOrder.getDocStatus();
@@ -98,51 +99,40 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	@Override
 	protected String doIt()
 	{
-		final List<Integer> availableHUIdsToPick = retrieveAvailableHuIdsForCurrentSalesOrderLine();
+		final ViewId viewId = createHUEditorView();
 
-		createHUEditorView(availableHUIdsToPick);
-
-		final String viewId = null; // TODO
-		getResult().setWebuiIncludedViewIdToOpen(viewId);
+		getResult().setWebuiIncludedViewIdToOpen(viewId.getViewId());
 
 		return MSG_OK;
 	}
 
-	private List<Integer> retrieveAvailableHuIdsForCurrentSalesOrderLine()
+	private ViewId createHUEditorView()
 	{
 		final I_C_OrderLine orderLineRecord = ListUtils.singleElement(getSelectedIncludedRecords(I_C_OrderLine.class));
 
-		final I_M_Warehouse orderLineWarehouse = Check.assumeNotNull(
-				warehouseAdvisor.evaluateWarehouse(orderLineRecord),
-				"For currently selected sales order line, there needs to be a warehouse; C_OrderLine={}", orderLineRecord);
+		final I_M_Warehouse orderLineWarehouse = warehouseAdvisor.evaluateWarehouse(orderLineRecord);
+		Check.assumeNotNull(orderLineWarehouse, "For currently selected sales order line, there needs to be a warehouse; C_OrderLine={}", orderLineRecord);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(orderLineWarehouse.getM_Warehouse_ID());
+
+		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
+
+		final IView view = viewsRepo.createView(CreateViewRequest.builder(HUsToReserveViewFactory.WINDOW_ID)
+				.addStickyFilters(createDocumentFilter(productId, warehouseId))
+				.build());
+		return view.getViewId();
+	}
+
+	private DocumentFilter createDocumentFilter(@NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
+	{
 		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
 
-		final int productId = orderLineRecord.getM_Product_ID();
-
-		final IHUQueryBuilder query = handlingUnitsDAO
+		final IHUQueryBuilder huQuery = handlingUnitsDAO
 				.createHUQueryBuilder()
 				.addOnlyWithProductId(productId)
 				.addOnlyInWarehouseIds(warehouseIds);
 
 		// TODO: consider adding ASI-Id if set, or filter in memory
 
-		return query
-				.createQuery()
-				.listIds();
+		return HUIdsFilterHelper.createFilter(huQuery);
 	}
-
-	private void createHUEditorView(@NonNull final List<Integer> availableHUIdsToPick)
-	{
-		final ImmutableList<TableRecordReference> hus = availableHUIdsToPick
-				.stream()
-				.map(huId -> TableRecordReference.of(I_M_HU.Table_Name, huId))
-				.collect(ImmutableList.toImmutableList());
-
-		getResult()
-				.setRecordsToOpen(
-						hus,
-						HUsToReserveViewFactory.WINDOW_ID_STRING);
-	}
-
 }
