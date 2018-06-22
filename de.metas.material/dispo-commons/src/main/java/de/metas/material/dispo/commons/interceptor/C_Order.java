@@ -1,11 +1,10 @@
 package de.metas.material.dispo.commons.interceptor;
 
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.material.dispo.commons.model.I_C_OrderLine;
 
 /*
  * #%L
@@ -26,17 +25,13 @@ import de.metas.material.dispo.commons.model.I_C_OrderLine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Interceptor(I_C_OrderLine.class)
-@Component("de.metas.material.dispo.commons.interceptor.C_OrderLine")
-public class C_OrderLine
+@Interceptor(I_C_Order.class)
+@Component("de.metas.material.dispo.commons.interceptor.C_Order")
+public class C_Order
 {
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void updateSalesOrderLineQtyATP(final I_C_OrderLine orderLineRecord)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void updateQtyAvailableToPromise(final I_C_Order orderRecord)
 	{
-		if(!orderLineRecord.getC_Order().isSOTrx())
-		{
-			return;
-		}
-		OrderAvailableToPromiseTool.updateOrderLineRecord(orderLineRecord);
+		OrderAvailableToPromiseTool.updateOrderLineRecords(orderRecord);
 	}
 }

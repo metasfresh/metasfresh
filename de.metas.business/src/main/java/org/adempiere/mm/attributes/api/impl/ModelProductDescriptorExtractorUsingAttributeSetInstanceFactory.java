@@ -40,7 +40,9 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory
 		implements ModelProductDescriptorExtractor
 {
 	@Override
-	public final ProductDescriptor createProductDescriptor(@NonNull final Object model)
+	public final ProductDescriptor createProductDescriptor(
+			@NonNull final Object model,
+			@NonNull final AttributesKey defaultAttributesKey)
 	{
 		final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class)
 				.createOrNull(model);
@@ -49,7 +51,7 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory
 
 		final AttributesKey storageAttributesKey = AttributesKeys
 				.createAttributesKeyFromASIStorageAttributes(asiAware.getM_AttributeSetInstance_ID())
-				.orElse(AttributesKey.NONE);
+				.orElse(defaultAttributesKey);
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				asiAware.getM_Product_ID(),
