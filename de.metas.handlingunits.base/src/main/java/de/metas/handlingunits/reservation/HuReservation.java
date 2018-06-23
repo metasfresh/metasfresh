@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import de.metas.handlingunits.HuId;
+import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -41,4 +42,6 @@ public class HuReservation
 
 	@Singular
 	Map<HuId, Quantity> vhuId2reservedQtys;
+
+	OrderLineId salesOrderLineId;
 }

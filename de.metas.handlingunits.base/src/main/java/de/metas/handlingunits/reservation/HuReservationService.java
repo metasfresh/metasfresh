@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.commons.lang3.NotImplementedException;
@@ -61,12 +62,32 @@ public class HuReservationService
 	@Setter
 	private Supplier<HUTransformService> huTransformServiceSupplier = () -> HUTransformService.newInstance();
 
+	private final HuReservationRepository huReservationRepository;
+
+	public HuReservationService(@NonNull final HuReservationRepository huReservationRepository)
+	{
+		this.huReservationRepository = huReservationRepository;
+	}
+
 	/**
 	 * Creates an HU reservation record and creates dedicated reserved VHUs with HU status "reserved".
 	 */
 	// Shall we do something if the reservation is less that requested?
 	public HuReservation makeReservation(@NonNull final HuReservationRequest reservationRequest)
 	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final HuReservation persistedReservation = trxManager
+				.call(() -> {
+					final HuReservation huReservation = makeReservation0(reservationRequest);
+					huReservationRepository.save(huReservation);
+					return huReservation;
+				});
+		return persistedReservation;
+	}
+
+	private HuReservation makeReservation0(@NonNull final HuReservationRequest reservationRequest)
+	{
+
 		final List<HuId> huIds = Check.assumeNotEmpty(reservationRequest.getHuIds(),
 				"the given request needs to have huIds; request={}", reservationRequest);
 
@@ -86,7 +107,6 @@ public class HuReservationService
 		final List<I_M_HU> newCUs = huTransformServiceSupplier
 				.get()
 				.husToNewCUs(husToNewCUsRequest);
-
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final I_M_Product productRecord = loadOutOfTrx(reservationRequest.getProductId(), I_M_Product.class);
@@ -109,9 +129,11 @@ public class HuReservationService
 			handlingUnitsDAO.saveHU(newCU);
 		}
 
-		return reservationBuilder
+		final HuReservation huReservation = reservationBuilder
 				.reservedQtySum(Optional.of(reservedQtySum))
 				.build();
+
+		return huReservation;
 	}
 
 	/**

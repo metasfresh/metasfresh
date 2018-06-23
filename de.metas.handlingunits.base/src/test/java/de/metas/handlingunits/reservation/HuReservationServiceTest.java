@@ -75,7 +75,7 @@ public class HuReservationServiceTest
 		AdempiereTestHelper.get().init();
 
 		data = new LUTUProducerDestinationTestSupport();
-		huReservationService = new HuReservationService();
+		huReservationService = new HuReservationService(new HuReservationRepository());
 		huReservationService.setHuTransformServiceSupplier(() -> HUTransformService.newInstance(data.helper.getHUContext()));
 
 		cuUOM = data.helper.uomKg;

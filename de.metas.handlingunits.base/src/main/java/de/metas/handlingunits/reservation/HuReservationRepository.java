@@ -1,7 +1,13 @@
 package de.metas.handlingunits.reservation;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
@@ -72,6 +78,22 @@ public class HuReservationRepository
 		return builder
 				.reservedQtySum(Optional.ofNullable(sum))
 				.build();
+	}
+
+	public void save(@NonNull final HuReservation huReservation)
+	{
+		final Map<HuId, Quantity> vhuId2reservedQtys = huReservation.getVhuId2reservedQtys();
+		final Set<Entry<HuId, Quantity>> entrySet = vhuId2reservedQtys.entrySet();
+		for (final Entry<HuId, Quantity> entry : entrySet)
+		{
+			final I_M_HU_Reservation huReservationRecord = newInstance(I_M_HU_Reservation.class);
+			huReservationRecord.setC_OrderLineSO_ID(huReservation.getSalesOrderLineId().getRepoId());
+			huReservationRecord.setVHU_ID(entry.getKey().getRepoId());
+			huReservationRecord.setQtyReserved(entry.getValue().getAsBigDecimal());
+			huReservationRecord.setC_UOM_ID(entry.getValue().getUOMId());
+
+			saveRecord(huReservationRecord);
+		}
 	}
 
 }

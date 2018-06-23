@@ -33,7 +33,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.quantity.Quantity;
 
 /**
- * Allocation Request described what we need to allocate/deallocate. Implementors are immutable. In stead of modifying it (split, create partial requests etc), use {@link IAllocationRequestBuilder} to
+ * Allocation Request describes what we need to allocate/deallocate. Implementors are immutable. Instead of modifying it (split, create partial requests etc), use {@link IAllocationRequestBuilder} to
  * get new instances.
  *
  * @author tsa

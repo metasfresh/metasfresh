@@ -7,8 +7,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
@@ -46,6 +49,7 @@ public class HuReservationRepositoryTests
 {
 	private static final BigDecimal ELEVEN = TEN.add(ONE);
 	private I_C_UOM uomRecord;
+	private HuReservationRepository huReservationRepository;
 
 	@Before
 	public void init()
@@ -54,6 +58,8 @@ public class HuReservationRepositoryTests
 
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
+
+		huReservationRepository = new HuReservationRepository();
 	}
 
 	@Test
@@ -65,7 +71,7 @@ public class HuReservationRepositoryTests
 		final I_M_HU vhu2 = createHuReservationRecord(orderLineId, ONE);
 
 		// invoke the method under test
-		final HuReservation huReservation = new HuReservationRepository().getBySalesOrderLineId(orderLineId);
+		final HuReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
 
 		final Quantity reservedQtySum = huReservation.getReservedQtySum().get();
 		assertThat(reservedQtySum.getAsBigDecimal()).isEqualByComparingTo(ELEVEN);
@@ -88,7 +94,7 @@ public class HuReservationRepositoryTests
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(20);
 
 		// invoke the method under test
-		final HuReservation huReservation = new HuReservationRepository().getBySalesOrderLineId(orderLineId);
+		final HuReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
 
 		assertThat(huReservation.getReservedQtySum()).isNotPresent();
 		assertThat(huReservation.getVhuId2reservedQtys()).isEmpty();
@@ -106,5 +112,22 @@ public class HuReservationRepositoryTests
 		huReservationRecord.setQtyReserved(qtyReserved);
 		saveRecord(huReservationRecord);
 		return vhu1;
+	}
+
+	@Test
+	public void save()
+	{
+
+		final HuReservation huReservation = HuReservation.builder()
+				.salesOrderLineId(OrderLineId.ofRepoId(20))
+				.vhuId2reservedQty(HuId.ofRepoId(10), Quantity.of(TEN, uomRecord))
+				.vhuId2reservedQty(HuId.ofRepoId(11), Quantity.of(ONE, uomRecord))
+				.reservedQtySum(Optional.of(Quantity.of(ELEVEN, uomRecord)))
+				.build();
+
+		huReservationRepository.save(huReservation);
+		final List<I_M_HU_Reservation> reservationRecords = POJOLookupMap.get().getRecords(I_M_HU_Reservation.class);
+		assertThat(reservationRecords).hasSize(2);
+		assertThat(reservationRecords).allMatch(r -> r.getC_OrderLineSO_ID() == 20);
 	}
 }
