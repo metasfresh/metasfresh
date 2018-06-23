@@ -93,6 +93,12 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 	}
 
 	@Override
+	public Optional<String> getTableName()
+	{
+		return Optional.of(modelTableName);
+	}
+
+	@Override
 	public LookupDataSourceContext.Builder newContextForFetchingById(final Object id)
 	{
 		return LookupDataSourceContext.builder(modelTableName).putFilterById(id);
