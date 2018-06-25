@@ -9,6 +9,12 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.64 (2018-27)
+## Features
+  * [#4224](https://github.com/metasfresh/metasfresh/issues/4224) Pharma: Additional Document/ Certificate Fields
+    * New Certificate Fields for the Pharma Business Partner Widnow in WebUI.
+    
+
 # metasfresh 5.63 (2018-26)
 ## Features
 * metasfresh

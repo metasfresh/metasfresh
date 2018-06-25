@@ -2,6 +2,7 @@ package de.metas.product;
 
 import org.adempiere.uom.UomId;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,4 +38,6 @@ public class Product
 
 	@NonNull
 	UomId uomId;
+
+	BPartnerId manufacturerId;
 }

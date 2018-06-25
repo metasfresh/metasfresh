@@ -62,7 +62,7 @@ public class FTSIndexConfig
 	{
 		return ESModelIndexerId.builder()
 				.indexName(getIndexName())
-				.modelTableName(getTableName())
+				.indexType(getTableName())
 				.profile(ESModelIndexerProfile.FULL_TEXT_SEARCH)
 				.build();
 	}

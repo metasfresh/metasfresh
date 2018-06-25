@@ -6,6 +6,7 @@ import org.adempiere.uom.UomId;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.NonNull;
 
 /*
@@ -41,9 +42,12 @@ public class ProductRepository
 
 	public Product ofRecord(@NonNull final I_M_Product productRecord)
 	{
+		final int manufacturerId = productRecord.getManufacturer_ID();
+
 		return Product.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.uomId(UomId.ofRepoId(productRecord.getC_UOM_ID()))
+				.manufacturerId(manufacturerId > 0 ? BPartnerId.ofRepoId(manufacturerId) : null)
 				.build();
 	}
 }
