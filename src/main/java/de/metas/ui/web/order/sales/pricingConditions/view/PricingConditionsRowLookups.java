@@ -2,7 +2,6 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.awt.Color;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -12,6 +11,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.CCache;
 import org.compiere.util.Evaluatees;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.PricingSystemId;

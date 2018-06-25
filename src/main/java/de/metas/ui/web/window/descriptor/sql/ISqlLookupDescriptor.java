@@ -1,7 +1,8 @@
-package de.metas.ui.web.order.sales.pricingConditions.view;
+package de.metas.ui.web.window.descriptor.sql;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.pricing.conditions.PricingConditionsBreak;
+import org.adempiere.ad.expression.api.IStringExpression;
+
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
 
 /*
  * #%L
@@ -16,23 +17,16 @@ import de.metas.pricing.conditions.PricingConditionsBreak;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-@lombok.Value
-@lombok.Builder
-public class BasePricingSystemPriceCalculatorRequest
+public interface ISqlLookupDescriptor extends LookupDescriptor
 {
-	@lombok.NonNull
-	PricingConditionsBreak pricingConditionsBreak;
-	@lombok.NonNull
-	BPartnerId bpartnerId;
-	boolean isSOTrx;
+	IStringExpression getSqlForFetchingDisplayNameByIdExpression(String sqlKeyColumn);
 }

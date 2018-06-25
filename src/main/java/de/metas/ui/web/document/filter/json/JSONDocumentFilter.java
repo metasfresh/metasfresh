@@ -138,7 +138,7 @@ public final class JSONDocumentFilter
 
 		for (final DocumentFilterParam internalParam : filterDescriptor.getInternalParameters())
 		{
-			filter.addParameter(internalParam);
+			filter.addInternalParameter(internalParam);
 		}
 
 		return filter.build();
@@ -161,6 +161,7 @@ public final class JSONDocumentFilter
 		final String filterId = filter.getFilterId();
 		final List<JSONDocumentFilterParam> jsonParameters = filter.getParameters()
 				.stream()
+				.filter(filterParam -> !filter.isInternalParameter(filterParam.getFieldName()))
 				.map(filterParam -> JSONDocumentFilterParam.of(filterParam))
 				.filter(Optional::isPresent)
 				.map(Optional::get)

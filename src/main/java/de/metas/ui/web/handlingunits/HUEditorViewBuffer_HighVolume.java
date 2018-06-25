@@ -22,6 +22,7 @@ import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewEvaluationCtx;
@@ -75,7 +76,8 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			final HUEditorViewRepository huEditorRepo,
 			final List<DocumentFilter> stickyFilters,
 			final List<DocumentFilter> filters,
-			final List<DocumentQueryOrderBy> orderBys)
+			final List<DocumentQueryOrderBy> orderBys,
+			final SqlDocumentFilterConverterContext context)
 	{
 		this.viewEvaluationCtx = ViewEvaluationCtx.newInstanceFromCurrentContext();
 
@@ -83,8 +85,10 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		this.stickyFilters = ImmutableList.copyOf(stickyFilters);
 
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFilters, filters));
-		defaultSelectionFactory = () -> huEditorRepo.createSelection(getViewEvaluationCtx(), viewId, filtersAll, orderBys);
+
+		defaultSelectionFactory = () -> huEditorRepo.createSelection(getViewEvaluationCtx(), viewId, filtersAll, orderBys, context);
 		defaultSelectionRef = Mutables.synchronizedMutable(defaultSelectionFactory.get());
+
 	}
 
 	@Override

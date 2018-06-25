@@ -54,14 +54,15 @@ import lombok.ToString;
 	public String getSql(
 			@NonNull final SqlParamsCollector sqlParamsOut, 
 			@NonNull final DocumentFilter filter, 
-			@NonNull final SqlOptions sqlOpts)
+			@NonNull final SqlOptions sqlOpts,
+			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		// Find the effective converter to be used for given filter
 		final String filterId = filter.getFilterId();
 		final SqlDocumentFilterConverter effectiveConverter = converters.getConverterOrDefault(filterId, defaultConverter);
 
 		// Convert the filter to SQL using the effective converter
-		final String sqlFilter = effectiveConverter.getSql(sqlParamsOut, filter, sqlOpts);
+		final String sqlFilter = effectiveConverter.getSql(sqlParamsOut, filter, sqlOpts, context);
 		return sqlFilter;
 	}
 }

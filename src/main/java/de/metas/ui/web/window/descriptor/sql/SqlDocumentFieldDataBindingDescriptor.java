@@ -300,18 +300,17 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			//
 			// Display column
-			final SqlLookupDescriptor sqlLookupDescriptor = _lookupDescriptor == null ? null : _lookupDescriptor.castOrNull(SqlLookupDescriptor.class);
-			if (sqlLookupDescriptor != null)
+			final String sqlColumnName = getColumnName();
+			if (_lookupDescriptor != null
+					&& sqlColumnName != null) // in case of Labels, sqlColumnName is null
 			{
 				_usingDisplayColumn = true;
 
 				final String sqlTableAlias = getTableAlias();
-				final String sqlColumnName = getColumnName();
 
 				_displayColumnName = sqlColumnName + "$Display";
-				final String sqlColumnNameFQ = sqlTableAlias + "." + sqlColumnName;
-				_displayColumnSqlExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression(sqlColumnNameFQ);
-				_numericKey = sqlLookupDescriptor.isNumericKey();
+				_displayColumnSqlExpression = extractDisplayColumnSqlExpression(_lookupDescriptor, sqlTableAlias, sqlColumnName);
+				_numericKey = _lookupDescriptor.isNumericKey();
 			}
 			else
 			{
@@ -322,6 +321,32 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			}
 
 			return new SqlDocumentFieldDataBindingDescriptor(this);
+		}
+
+		private static IStringExpression extractDisplayColumnSqlExpression(
+				final LookupDescriptor lookupDescriptor,
+				final String sqlTableAlias,
+				final String sqlColumnName)
+		{
+			if (lookupDescriptor == null)
+			{
+				return ConstantStringExpression.of(sqlColumnName);
+			}
+
+			final ISqlLookupDescriptor sqlLookupDescriptor = lookupDescriptor.castOrNull(ISqlLookupDescriptor.class);
+			if (sqlLookupDescriptor == null)
+			{
+				return ConstantStringExpression.of(sqlColumnName);
+			}
+
+			final String sqlColumnNameFQ = sqlTableAlias + "." + sqlColumnName;
+			final IStringExpression displayColumnSqlExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression(sqlColumnNameFQ);
+			if (displayColumnSqlExpression == null || displayColumnSqlExpression.isNullExpression())
+			{
+				return ConstantStringExpression.of(sqlColumnName);
+			}
+
+			return displayColumnSqlExpression;
 		}
 
 		private final String buildSqlSelectValue()
@@ -442,7 +467,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			{
 				return DocumentFieldValueLoaders.toLabelValues(sqlColumnName);
 			}
-			else if(ColorValue.class == valueClass)
+			else if (ColorValue.class == valueClass)
 			{
 				return DocumentFieldValueLoaders.toColor(sqlColumnName);
 			}
@@ -560,7 +585,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		private Class<?> getSqlValueClass()
 		{
-			if(_sqlValueClass != null)
+			if (_sqlValueClass != null)
 			{
 				return _sqlValueClass;
 			}
