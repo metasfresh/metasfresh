@@ -27,11 +27,11 @@ import java.util.Arrays;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.client.terminal.POSTerminalTestHelper;
 import de.metas.handlingunits.client.terminal.select.api.IPOSFiltering;
 import de.metas.handlingunits.client.terminal.select.api.impl.InventoryHUFiltering;

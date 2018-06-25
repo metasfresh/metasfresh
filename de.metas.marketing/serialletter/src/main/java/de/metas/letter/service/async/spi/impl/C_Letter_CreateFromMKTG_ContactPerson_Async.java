@@ -2,8 +2,6 @@ package de.metas.letter.service.async.spi.impl;
 
 import java.util.Set;
 
-import org.adempiere.bpartnerlocation.BPartnerLocation;
-import org.adempiere.bpartnerlocation.BPartnerLocationRepository;
 import org.adempiere.location.Location;
 import org.adempiere.location.LocationRepository;
 import org.compiere.Adempiere;
@@ -11,6 +9,8 @@ import org.compiere.util.Env;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.bpartner.BPartnerLocation;
+import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateRepository;
 import de.metas.letters.model.Letter;

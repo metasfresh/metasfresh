@@ -34,7 +34,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,6 +41,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
@@ -55,7 +55,7 @@ import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.lookup.SimpleTableLookup;
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
 import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKey;
@@ -136,7 +136,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	 * The BPartner Location for which the empties inout will be created
 	 */
 	private org.compiere.model.I_C_BPartner_Location _bpLocation = null;
-	private final SimpleTableLookup<I_C_BPartner> bpartnerLookup = new SimpleTableLookup<I_C_BPartner>(I_C_BPartner.class, I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_Name);
+	private final SimpleTableLookup<I_C_BPartner> bpartnerLookup = new SimpleTableLookup<>(I_C_BPartner.class, I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_Name);
 	private Date _date;
 	private final BPartnerLocationKeyLayout _bpLocationKeyLayout;
 
@@ -188,8 +188,8 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 
 	private final void loadEmptiesKey()
 	{
-		final List<EmptiesKey> luEmpties = new ArrayList<EmptiesKey>();
-		final List<EmptiesKey> tuEmpties = new ArrayList<EmptiesKey>();
+		final List<EmptiesKey> luEmpties = new ArrayList<>();
+		final List<EmptiesKey> tuEmpties = new ArrayList<>();
 		final int adOrgID = Env.getAD_Org_ID(getTerminalContext().getCtx());
 		final List<I_M_HU_PI> huPIs = handlingUnitsDAO.retrieveAvailablePIsForOrg(getTerminalContext().getCtx(), adOrgID);
 		for (final I_M_HU_PI huPI : huPIs)
@@ -389,11 +389,11 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		}
 		else if (bpartnerReturnType == BPartnerReturnType.ReturnToVendor)
 		{
-			bpartnerFilter = new EqualsQueryFilter<I_C_BPartner>(I_C_BPartner.COLUMNNAME_IsVendor, true);
+			bpartnerFilter = new EqualsQueryFilter<>(I_C_BPartner.COLUMNNAME_IsVendor, true);
 		}
 		else if (bpartnerReturnType == BPartnerReturnType.ReturnFromCustomer)
 		{
-			bpartnerFilter = new EqualsQueryFilter<I_C_BPartner>(I_C_BPartner.COLUMNNAME_IsCustomer, true);
+			bpartnerFilter = new EqualsQueryFilter<>(I_C_BPartner.COLUMNNAME_IsCustomer, true);
 		}
 		else
 		{

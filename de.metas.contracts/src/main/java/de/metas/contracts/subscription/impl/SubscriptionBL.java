@@ -60,7 +60,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateDAO;
@@ -406,9 +406,9 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 
 		final IPricingResult pricingResult = olCandBL.computePriceActual(
-				olCand, 
-				newTerm.getPlannedQtyPerUnit(), 
-				PricingSystemId.ofRepoIdOrNull(newTerm.getM_PricingSystem_ID()), 
+				olCand,
+				newTerm.getPlannedQtyPerUnit(),
+				PricingSystemId.ofRepoIdOrNull(newTerm.getM_PricingSystem_ID()),
 				olCand.getDateCandidate());
 
 		newTerm.setPriceActual(pricingResult.getPriceStd());
@@ -493,7 +493,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		{
 			markPlannedPauseRecordAsExecuted(currentDate, currentProgressRecord);
 
-			term.setContractStatus(currentProgressRecord.getContractStatus());
+			updateTermStatus(term, currentProgressRecord);
 
 			final SubscriptionProgressQuery query = SubscriptionProgressQuery.builder()
 					.term(term)
@@ -521,6 +521,25 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 		save(term);
 		logger.info("Evaluated {} {} records", count, I_C_SubscriptionProgress.Table_Name);
+	}
+
+	private void updateTermStatus(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final I_C_SubscriptionProgress currentProgressRecord)
+	{
+		final String currentStatus = term.getContractStatus();
+
+		final boolean dontUpdateTermStatus = //
+				X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(currentStatus)
+						|| X_C_Flatrate_Term.CONTRACTSTATUS_Info.equals(currentStatus)
+						|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(currentStatus)
+						|| X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(currentStatus);
+		if (dontUpdateTermStatus)
+		{
+			return; // we don't want to loose this status in the flatrate term
+		}
+
+		term.setContractStatus(currentProgressRecord.getContractStatus());
 	}
 
 	/**

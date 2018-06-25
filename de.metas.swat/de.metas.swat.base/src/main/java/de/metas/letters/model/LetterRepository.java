@@ -4,9 +4,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.letter.BoilerPlateId;
 import lombok.NonNull;
 

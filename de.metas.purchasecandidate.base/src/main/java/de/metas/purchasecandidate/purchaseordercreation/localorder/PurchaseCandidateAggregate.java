@@ -53,7 +53,7 @@ public class PurchaseCandidateAggregate
 
 	private final PurchaseCandidateAggregateKey aggregationKey;
 
-	private LocalDateTime datePromised;
+	private LocalDateTime purchaseDatePromised;
 	private Quantity qtyToDeliver;
 	private final ArrayList<PurchaseCandidate> purchaseCandidates = new ArrayList<>();
 	private final HashSet<OrderAndLineId> salesOrderAndLineIds = new HashSet<>();
@@ -74,7 +74,7 @@ public class PurchaseCandidateAggregate
 		purchaseCandidates.add(purchaseCandidate);
 
 		//
-		datePromised = TimeUtil.min(datePromised, purchaseCandidate.getPurchaseDatePromised());
+		purchaseDatePromised = TimeUtil.min(purchaseDatePromised, purchaseCandidate.getPurchaseDatePromised());
 
 		final OrderAndLineId orderAndLineId = purchaseCandidate.getSalesOrderAndLineIdOrNull();
 		if (orderAndLineId != null)
@@ -115,13 +115,7 @@ public class PurchaseCandidateAggregate
 
 	public LocalDateTime getDatePromised()
 	{
-		return datePromised;
-	}
-
-	public LocalDateTime getPreparationDate()
-	{
-		// TODO Auto-generated method stub
-		return null;
+		return purchaseDatePromised;
 	}
 
 	public List<PurchaseCandidateId> getPurchaseCandidateIds()

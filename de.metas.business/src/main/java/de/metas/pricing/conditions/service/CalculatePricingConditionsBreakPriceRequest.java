@@ -1,7 +1,6 @@
 package de.metas.pricing.conditions.service;
 
-import org.adempiere.bpartner.BPartnerId;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import lombok.Builder;

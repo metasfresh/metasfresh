@@ -508,9 +508,8 @@ public class ContractChangeBL implements IContractChangeBL
 	}
 
 	@Override
-	public void endContract(I_C_Flatrate_Term currentTerm)
+	public void endContract(@NonNull final I_C_Flatrate_Term currentTerm)
 	{
-		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
 		currentTerm.setIsAutoRenew(false);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract);
 		save(currentTerm);

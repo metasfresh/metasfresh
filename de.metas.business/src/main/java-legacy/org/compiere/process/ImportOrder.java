@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
@@ -36,6 +35,7 @@ import org.compiere.model.X_I_Order;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 

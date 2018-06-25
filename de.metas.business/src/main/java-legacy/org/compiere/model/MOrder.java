@@ -28,9 +28,6 @@ import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.exceptions.BPartnerNoBillToAddressException;
-import org.adempiere.exceptions.BPartnerNoShipToAddressException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -42,6 +39,9 @@ import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
+import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.documentNo.IDocumentNoBL;

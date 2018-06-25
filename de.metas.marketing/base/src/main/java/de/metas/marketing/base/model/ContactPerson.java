@@ -4,12 +4,12 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartnerlocation.BPartnerLocationId;
 import org.adempiere.user.User;
 import org.adempiere.user.UserId;
 import org.adempiere.util.Check;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.letter.BoilerPlateId;
 import lombok.Builder;
 import lombok.NonNull;

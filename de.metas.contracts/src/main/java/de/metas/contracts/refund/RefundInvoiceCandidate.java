@@ -2,8 +2,7 @@ package de.metas.contracts.refund;
 
 import java.time.LocalDate;
 
-import org.adempiere.bpartner.BPartnerId;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import lombok.Builder;

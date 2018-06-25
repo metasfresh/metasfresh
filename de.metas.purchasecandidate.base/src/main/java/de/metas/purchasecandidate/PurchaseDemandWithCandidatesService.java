@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMDAO;
@@ -27,6 +26,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup.PurchaseCandidatesGroupBuilder;
@@ -285,16 +285,16 @@ public class PurchaseDemandWithCandidatesService
 				purchaseDemand, vendorProductInfo);
 
 		final WarehouseId warehouseId = getPurchaseWarehouseId(purchaseDemand);
-		final LocalDateTime salesDatePromised = purchaseDemand.getSalesDatePromised();
+		final LocalDateTime salesPreparationDate = purchaseDemand.getSalesPreparationDate();
 
 		//
 		// PurchaseDatePromised and ReminderTime
 		final BPartnerId vendorId = vendorProductInfo.getVendorId();
 		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService.getBPPurchaseSchedule(
 				vendorId,
-				salesDatePromised.toLocalDate())
+				salesPreparationDate.toLocalDate())
 				.orElse(null);
-		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule);
+		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesPreparationDate, bpPurchaseSchedule);
 		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
 		//

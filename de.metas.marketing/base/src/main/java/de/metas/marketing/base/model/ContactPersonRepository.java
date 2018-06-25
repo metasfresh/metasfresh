@@ -10,10 +10,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartnerlocation.BPartnerLocation;
-import org.adempiere.bpartnerlocation.BPartnerLocationId;
-import org.adempiere.bpartnerlocation.BPartnerLocationRepository;
 import org.adempiere.location.LocationId;
 import org.adempiere.user.UserId;
 import org.adempiere.util.Check;
@@ -27,6 +23,10 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocation;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.letter.BoilerPlateId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
 import lombok.NonNull;

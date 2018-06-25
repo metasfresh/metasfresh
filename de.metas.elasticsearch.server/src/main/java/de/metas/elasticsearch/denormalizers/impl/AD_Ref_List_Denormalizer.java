@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
+import lombok.ToString;
 
 /*
  * #%L
@@ -24,16 +25,17 @@ import de.metas.elasticsearch.types.ESIndexType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public final class AD_Ref_List_Denormalizer implements IESDenormalizer
+@ToString
+final class AD_Ref_List_Denormalizer implements IESDenormalizer
 {
 	public static final AD_Ref_List_Denormalizer of(final int AD_Reference_ID)
 	{
@@ -47,7 +49,6 @@ public final class AD_Ref_List_Denormalizer implements IESDenormalizer
 
 	private AD_Ref_List_Denormalizer()
 	{
-		super();
 	}
 
 	@Override
