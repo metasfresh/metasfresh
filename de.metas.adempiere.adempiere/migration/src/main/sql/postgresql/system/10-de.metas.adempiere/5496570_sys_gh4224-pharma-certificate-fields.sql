@@ -253,3 +253,108 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_BPartner','ALTER TABLE public.C_BPartner ADD COLUMN ContactStatusInfoVendor CHAR(1) CHECK (ContactStatusInfoVendor IN (''Y'',''N''))')
 ;
 
+-- 2018-06-25T13:00:34.517
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-25 13:00:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560509
+;
+
+-- 2018-06-25T13:00:37.521
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','ContactStatusInfoVendor','CHAR(1)',null,'N')
+;
+
+-- 2018-06-25T13:00:57.354
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-25 13:00:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560508
+;
+
+-- 2018-06-25T13:01:00.300
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','ContactStatusInfoCustomer','CHAR(1)',null,'N')
+;
+
+-- 2018-06-25T13:01:08.963
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-25 13:01:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560507
+;
+
+-- 2018-06-25T13:01:12.054
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','CertificateOfRegistrationVendor','CHAR(1)',null,'N')
+;
+
+-- 2018-06-25T13:01:22.057
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-25 13:01:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560506
+;
+
+-- 2018-06-25T13:01:55.517
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-25 13:01:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560502
+;
+
+-- 2018-06-25T13:01:58.385
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','QMSCertificateCustomer','CHAR(1)',null,'N')
+;
+
+-- 2018-06-25T13:02:10.706
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-25 13:02:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560503
+;
+
+-- 2018-06-25T13:02:12.828
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','QMSCertificateVendor','CHAR(1)',null,'N')
+;
+
+-- 2018-06-25T13:02:53.267
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-25 13:02:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560504
+;
+
+-- 2018-06-25T13:02:55.611
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','SelfDisclosureCustomer','CHAR(1)',null,'N')
+;
+
+-- 2018-06-25T13:03:06.291
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-25 13:03:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560505
+;
+
+-- 2018-06-25T13:03:09.661
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','SelfDisclosureVendor','CHAR(1)',null,'N')
+;
+
+-- 2018-06-25T13:03:37.491
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-25 13:03:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560500
+;
+
+-- 2018-06-25T13:03:40.597
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','GDPCertificateCustomer','CHAR(1)',null,'N')
+;
+
+-- 2018-06-25T13:03:55.534
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-25 13:03:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560501
+;
+
+-- 2018-06-25T13:06:06.178
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','GDPCertificateVendor','CHAR(1)',null,'N')
+;
+
+-- 2018-06-25T13:08:54.429
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','QMSCertificateCustomer','CHAR(1)',null,'N')
+;
+
+-- 2018-06-25T13:09:09.363
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','CertificateOfRegistrationCustomer','CHAR(1)',null,'N')
+;
+
