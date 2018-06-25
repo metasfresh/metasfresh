@@ -85,10 +85,9 @@ export default class App extends Component {
             };
             const { data, status } = error.response;
             const errorTitle = errorMessenger(status);
-            const message = data.message ? data.message : '';
 
             // eslint-disable-next-line no-console
-            data.message && console.error(data.message);
+            console.error(data.message);
 
             // Chart disabled notifications
             if (
@@ -99,7 +98,7 @@ export default class App extends Component {
 
             store.dispatch(
               addNotification(
-                'Error: ' + message.split(' ', 4).join(' ') + '...',
+                'Error: ' + data.message.split(' ', 4).join(' ') + '...',
                 data.message,
                 5000,
                 'error',
