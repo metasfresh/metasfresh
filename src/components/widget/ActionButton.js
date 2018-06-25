@@ -141,15 +141,14 @@ class ActionButton extends Component {
 
   render() {
     const { data, modalVisible } = this.props;
+    const { list } = this.state;
     const abrev = data.status.value && data.status.value.key;
-
+    const status = this.getStatusContext(abrev);
     let value;
 
     if (abrev) {
       value = data.status.value.caption;
     }
-
-    const { list } = this.state;
 
     return (
       <div
@@ -160,12 +159,15 @@ class ActionButton extends Component {
         onBlur={this.handleDropdownBlur}
         onFocus={this.handleDropdownFocus}
       >
-        <div className={'tag tag-' + this.getStatusContext(abrev)}>{value}</div>
-        <i
-          className={
-            'meta-icon-chevron-1 meta-icon-' + this.getStatusContext(abrev)
-          }
-        />
+        {value ? (
+          <div className={`tag tag-${status}`}>{value}</div>
+        ) : (
+          <div
+            className={`tag tag-${status}`}
+            dangerouslySetInnerHTML={{ __html: '&nbsp;' }}
+          />
+        )}
+        <i className={`meta-icon-chevron-1 meta-icon-${status}`} />
         <ul className="dropdown-status-list">{this.renderStatusList(list)}</ul>
         <DocumentStatusContextShortcuts
           handleDocumentCompleteStatus={() => {

@@ -823,11 +823,13 @@ export function attachFileAction(windowType, docId, data) {
         requestConfig
       )
       .then(() =>
-        addNotification(
-          titleDone,
-          counterpart.translate('window.attachment.upload.success'),
-          5000,
-          'primary'
+        dispatch(
+          addNotification(
+            titleDone,
+            counterpart.translate('window.attachment.upload.success'),
+            5000,
+            'primary'
+          )
         )
       )
       .finally(() => dispatch(deleteNotification(titlePending)))
