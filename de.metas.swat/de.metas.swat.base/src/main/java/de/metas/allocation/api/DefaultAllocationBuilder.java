@@ -29,12 +29,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_AllocationHdr;
@@ -44,6 +43,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.builder.BuilderSupport;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;

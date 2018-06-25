@@ -15,7 +15,7 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2123339649L;
+	private static final long serialVersionUID = -1769223225L;
 
     /** Standard Constructor */
     public X_M_DiscountSchemaBreak (Properties ctx, int M_DiscountSchemaBreak_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 			setBreakValue (BigDecimal.ZERO);
 			setIsBPartnerFlatDiscount (false); // N
 			setIsPriceOverride (false); // N
+			setIsValid (true); // Y
 			setM_DiscountSchema_ID (0);
 			setM_DiscountSchemaBreak_ID (0);
 			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_DiscountSchemaBreak WHERE M_DiscountSchema_ID=@M_DiscountSchema_ID@
@@ -203,6 +204,32 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	public boolean isPriceOverride () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsPriceOverride);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Gültig.
+		@param IsValid 
+		Element ist gültig
+	  */
+	@Override
+	public void setIsValid (boolean IsValid)
+	{
+		set_Value (COLUMNNAME_IsValid, Boolean.valueOf(IsValid));
+	}
+
+	/** Get Gültig.
+		@return Element ist gültig
+	  */
+	@Override
+	public boolean isValid () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsValid);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -420,6 +447,22 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Not valid reason.
+		@param NotValidReason Not valid reason	  */
+	@Override
+	public void setNotValidReason (java.lang.String NotValidReason)
+	{
+		set_Value (COLUMNNAME_NotValidReason, NotValidReason);
+	}
+
+	/** Get Not valid reason.
+		@return Not valid reason	  */
+	@Override
+	public java.lang.String getNotValidReason () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_NotValidReason);
 	}
 
 	/** 

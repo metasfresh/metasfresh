@@ -49,6 +49,7 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -60,7 +61,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.inout.event.InOutProcessedEventBus;
+import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -139,8 +140,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	@Override
 	public InOutGenerateResult createShipments(final List<ShipmentScheduleWithHU> candidates)
 	{
-		final InOutProcessedEventBus shipmentGeneratedNotifications = InOutProcessedEventBus.newInstance()
-				.queueEventsUntilCurrentTrxCommit();
+		final InOutUserNotificationsProducer shipmentGeneratedNotifications = InOutUserNotificationsProducer.newInstance();
 
 		try
 		{
@@ -154,7 +154,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 			//
 			// Send notifications
-			shipmentGeneratedNotifications.notify(result.getInOuts());
+			shipmentGeneratedNotifications.notifyInOutsProcessed(result.getInOuts());
 
 			return result;
 		}
@@ -293,11 +293,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Document Type
 		{
-			final int docTypeId = docTypeDAO.getDocTypeId(processorCtx.getCtx(),
-					X_C_DocType.DOCBASETYPE_MaterialDelivery,
-					shipmentSchedule.getAD_Client_ID(),
-					shipmentSchedule.getAD_Org_ID(),
-					ITrx.TRXNAME_NoneNotNull);
+			final int docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+					.adClientId(shipmentSchedule.getAD_Client_ID())
+					.adOrgId(shipmentSchedule.getAD_Org_ID())
+					.build());
 			shipment.setC_DocType_ID(docTypeId);
 			shipment.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
 			shipment.setIsSOTrx(true);

@@ -265,7 +265,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	}
 
 	@Override
-	public void updateProcessedFlagsForShipment(@NonNull final I_M_InOut inOut)
+	public void updateM_ShipmentSchedule_QtyPicked_ProcessedForShipment(@NonNull final I_M_InOut inOut)
 	{
 		final boolean newProcessedValue = inOut.isProcessed();
 

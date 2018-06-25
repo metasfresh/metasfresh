@@ -33,7 +33,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUByIdComparator;
-import de.metas.inout.event.InOutProcessedEventBus;
+import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 
 /*
@@ -174,9 +174,8 @@ public class ReceiptCorrectHUsProcessor
 		docActionBL.processDocumentsList(receiptsToReverse, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		// Notify the user that the receipt was reversed
-		InOutProcessedEventBus.newInstance()
-				.queueEventsUntilCurrentTrxCommit()
-				.notify(receiptsToReverse);
+		InOutUserNotificationsProducer.newInstance()
+				.notifyInOutsProcessed(receiptsToReverse);
 	}
 
 	/**

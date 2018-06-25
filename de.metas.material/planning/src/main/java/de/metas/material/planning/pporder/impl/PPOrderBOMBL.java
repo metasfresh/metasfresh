@@ -326,7 +326,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		}
 
 		//
-		final BigDecimal qtyToIssueEffective = Services.get(IUOMConversionBL.class).convertQty(orderBOMLine.getM_Product(), qtyToIssueEffective_InStdUOM, standardUOM, uom);
+		final BigDecimal qtyToIssueEffective = Services.get(IUOMConversionBL.class).convertQty(orderBOMLine.getM_Product_ID(), qtyToIssueEffective_InStdUOM, standardUOM, uom);
 		return new Quantity(qtyToIssueEffective, uom, qtyToIssueEffective_InStdUOM, standardUOM);
 	}
 
@@ -505,7 +505,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			Check.assumeNotNull(bomLineUOM, "bomLineUOM not null");
 
 			final BigDecimal bomToLineUOMMultiplier = Services.get(IUOMConversionBL.class)
-					.convertQty(bomProduct, BigDecimal.ONE, bomUOM, bomLineUOM);
+					.convertQty(bomProduct.getM_Product_ID(), BigDecimal.ONE, bomUOM, bomLineUOM);
 			qty = qty.multiply(bomToLineUOMMultiplier);
 		}
 		else

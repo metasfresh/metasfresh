@@ -10,10 +10,11 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.lang.Percent;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -51,7 +52,7 @@ public class Group
 	private final int groupTemplateId;
 	private final int precision;
 	@Getter
-	private final int bpartnerId;
+	private final BPartnerId bpartnerId;
 	@Getter
 	private final boolean isSOTrx;
 	@Getter
@@ -67,7 +68,7 @@ public class Group
 			@NonNull final GroupId groupId,
 			final int groupTemplateId,
 			final int precision,
-			final int bpartnerId,
+			final BPartnerId bpartnerId,
 			@NonNull final Boolean isSOTrx,
 			final int flatrateConditionsId,
 			@NonNull @Singular final List<GroupRegularLine> regularLines,
@@ -76,7 +77,7 @@ public class Group
 		this.groupId = groupId;
 		this.groupTemplateId = groupTemplateId;
 		this.precision = precision;
-		this.bpartnerId = bpartnerId > 0 ? bpartnerId : -1;
+		this.bpartnerId = bpartnerId;
 		this.isSOTrx = isSOTrx;
 		this.flatrateConditionsId = flatrateConditionsId > 0 ? flatrateConditionsId : -1;
 
@@ -152,10 +153,10 @@ public class Group
 	{
 		compensationLine.setBaseAmt(baseAmt);
 
-		final BigDecimal percentage = compensationLine.getPercentage();
+		final Percent percentage = compensationLine.getPercentage();
 		final GroupCompensationType compensationType = compensationLine.getType();
 
-		final BigDecimal compensationAmt = baseAmt.multiply(percentage).divide(Env.ONEHUNDRED, precision, RoundingMode.HALF_UP);
+		final BigDecimal compensationAmt = percentage.multiply(baseAmt, precision);
 		final BigDecimal amt = OrderGroupCompensationUtils.adjustAmtByCompensationType(compensationAmt, compensationType);
 
 		compensationLine.setPriceAndQty(amt, BigDecimal.ONE, precision);

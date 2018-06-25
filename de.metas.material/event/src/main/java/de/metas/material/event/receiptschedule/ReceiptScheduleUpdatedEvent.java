@@ -12,6 +12,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -41,6 +42,11 @@ import lombok.ToString;
 @Getter
 public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 {
+	public static ReceiptScheduleUpdatedEvent cast(@NonNull final AbstractReceiptScheduleEvent event)
+	{
+		return (ReceiptScheduleUpdatedEvent)event;
+	}
+
 	public static final String TYPE = "ReceiptScheduleUpdatedEvent";
 
 	private final BigDecimal orderedQuantityDelta;

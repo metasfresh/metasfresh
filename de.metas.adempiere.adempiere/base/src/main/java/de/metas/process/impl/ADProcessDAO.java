@@ -1,5 +1,8 @@
 package de.metas.process.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +21,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.proxy.Cached;
@@ -279,8 +283,13 @@ public class ADProcessDAO implements IADProcessDAO
 	@Override
 	public int retrieveProcessParaLastSeqNo(final I_AD_Process process)
 	{
-		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Process_Para.class, process)
-				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
+		return retrieveProcessParaLastSeqNo(process.getAD_Process_ID());
+	}
+
+	private int retrieveProcessParaLastSeqNo(final int processId)
+	{
+		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Process_Para.class)
+				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, processId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
@@ -348,8 +357,14 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
-	public void copyAD_Process(final I_AD_Process targetProcess, final I_AD_Process sourceProcess)
+	public void copyProcess(final int targetProcessId, final int sourceProcessId)
 	{
+		Check.assumeGreaterThanZero(targetProcessId, "targetProcessId");
+		Check.assumeGreaterThanZero(sourceProcessId, "sourceProcessId");
+
+		final I_AD_Process targetProcess = load(targetProcessId, I_AD_Process.class);
+		final I_AD_Process sourceProcess = load(sourceProcessId, I_AD_Process.class);
+
 		logger.debug("Copying from: {} to: {}", sourceProcess, targetProcess);
 
 		InterfaceWrapperHelper.copy()
@@ -361,78 +376,89 @@ public class ADProcessDAO implements IADProcessDAO
 				.copy();
 		InterfaceWrapperHelper.save(targetProcess);
 
-		// copy parameters
-		// TODO? Perhaps should delete existing first?
-		for (final I_AD_Process_Para sourcePara : retrieveProcessParameters(sourceProcess))
+		copyProcessParameters(targetProcess, sourceProcess.getAD_Process_ID());
+	}
+
+	@Override
+	public void copyProcessParameters(final int targetProcessId, final int sourceProcessId)
+	{
+		final I_AD_Process targetProcess = load(targetProcessId, I_AD_Process.class);
+		copyProcessParameters(targetProcess, sourceProcessId);
+	}
+
+	private void copyProcessParameters(final I_AD_Process targetProcess, final int sourceProcessId)
+	{
+		final int targetProcessId = targetProcess.getAD_Process_ID();
+		final Map<String, I_AD_Process_Para> existingTargetParams = retrieveProcessParameters(Env.getCtx(), targetProcessId, ITrx.TRXNAME_ThreadInherited);
+		final Collection<I_AD_Process_Para> sourceParams = retrieveProcessParameters(Env.getCtx(), sourceProcessId, ITrx.TRXNAME_ThreadInherited).values();
+
+		for (final I_AD_Process_Para sourcePara : sourceParams)
 		{
-			copyAD_Process_Para(targetProcess, sourcePara);
+			final I_AD_Process_Para existingTargetParam = existingTargetParams.get(sourcePara.getColumnName());
+			copyProcessPara(targetProcess, existingTargetParam, sourcePara);
 		}
 	}
 
-	/**
-	 * Copy settings from another process parameter
-	 * overwrites existing data
-	 * (including translations)
-	 * and saves
-	 *
-	 * @param sourcePara
-	 */
-	private I_AD_Process_Para copyAD_Process_Para(final I_AD_Process targetProcess, final I_AD_Process_Para sourcePara)
+	public void copyProcessPara(final I_AD_Process targetProcess, final I_AD_Process_Para existingTargetPara, final I_AD_Process_Para sourcePara)
 	{
 		logger.debug("Copying parameter from {} to {}", sourcePara, targetProcess);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(targetProcess);
-		final String trxName = InterfaceWrapperHelper.getTrxName(targetProcess);
+		final int targetProcessId = targetProcess.getAD_Process_ID();
+		final String entityType = targetProcess.getEntityType();
+		final String columnName = sourcePara.getColumnName();
 
-		final I_AD_Process_Para targetPara = InterfaceWrapperHelper.create(ctx, I_AD_Process_Para.class, trxName);
+		final I_AD_Process_Para targetPara = existingTargetPara != null ? existingTargetPara : newInstance(I_AD_Process_Para.class);
+		final boolean wasNew = InterfaceWrapperHelper.isNew(targetPara);
+
+		InterfaceWrapperHelper.copy()
+				.setFrom(sourcePara)
+				.setTo(targetPara)
+				.copy();
 		targetPara.setAD_Org_ID(sourcePara.getAD_Org_ID());
-		targetPara.setAD_Process(targetProcess);
-		targetPara.setEntityType(targetProcess.getEntityType());
+		targetPara.setAD_Process_ID(targetProcessId);
+		targetPara.setEntityType(entityType);
 
-		targetPara.setAD_Element_ID(sourcePara.getAD_Element_ID());
-		targetPara.setAD_Reference_ID(sourcePara.getAD_Reference_ID());
-		targetPara.setAD_Reference_Value_ID(sourcePara.getAD_Reference_Value_ID());
-		targetPara.setAD_Val_Rule_ID(sourcePara.getAD_Val_Rule_ID());
-		targetPara.setColumnName(sourcePara.getColumnName());
-		targetPara.setDefaultValue(sourcePara.getDefaultValue());
-		targetPara.setDefaultValue2(sourcePara.getDefaultValue2());
-		targetPara.setDescription(sourcePara.getDescription());
-		targetPara.setDisplayLogic(sourcePara.getDisplayLogic());
-		targetPara.setFieldLength(sourcePara.getFieldLength());
-		targetPara.setHelp(sourcePara.getHelp());
-		targetPara.setIsActive(sourcePara.isActive());
-		targetPara.setIsCentrallyMaintained(sourcePara.isCentrallyMaintained());
-		targetPara.setIsMandatory(sourcePara.isMandatory());
-		targetPara.setIsRange(sourcePara.isRange());
-		targetPara.setName(sourcePara.getName());
-		targetPara.setReadOnlyLogic(sourcePara.getReadOnlyLogic());
-		targetPara.setSeqNo(sourcePara.getSeqNo());
-		targetPara.setValueMax(sourcePara.getValueMax());
-		targetPara.setValueMin(sourcePara.getValueMin());
-		targetPara.setVFormat(sourcePara.getVFormat());
-		targetPara.setIsAutocomplete(sourcePara.isAutocomplete());
-		InterfaceWrapperHelper.save(targetPara);
-
-		//
-		// Delete newly created translations and copy translations from source
-		// NOTE: don't use parameterized SQL queries because this script will be logged as a migration script (task
+		if (targetPara.getSeqNo() <= 0)
 		{
-			final int adProcessParaId = targetPara.getAD_Process_Para_ID();
-			final String sqlDelete = "DELETE FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + adProcessParaId;
-			int count = DB.executeUpdateEx(sqlDelete, trxName);
-			logger.debug("AD_Process_Para_Trl deleted: " + count);
-
-			final String sqlInsert = "INSERT INTO AD_Process_Para_Trl (AD_Process_Para_ID, AD_Language, " +
-					" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
-					" Name, Description, Help, IsTranslated) " +
-					" SELECT AD_Process_Para_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
-					" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
-					" FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + adProcessParaId;
-			count = DB.executeUpdateEx(sqlInsert, trxName);
-			logger.debug("AD_Process_Para_Trl inserted: " + count);
+			final int lastSeqNo = retrieveProcessParaLastSeqNo(targetProcessId);
+			targetPara.setSeqNo(lastSeqNo + 10);
 		}
 
-		return targetPara;
+		InterfaceWrapperHelper.save(targetPara);
+
+		if (wasNew)
+		{
+			Loggables.get().addLog("@Created@ {}", columnName);
+		}
+		else
+		{
+			Loggables.get().addLog("@Updated@ {}", columnName);
+		}
+
+		//
+		copyProcessParaTrl(targetPara.getAD_Process_Para_ID(), sourcePara.getAD_Process_Para_ID());
+	}
+
+	private void copyProcessParaTrl(final int targetProcessParaId, final int sourceProcessParaId)
+	{
+		Check.assumeGreaterThanZero(targetProcessParaId, "targetProcessParaId");
+		Check.assumeGreaterThanZero(sourceProcessParaId, "sourceProcessParaId");
+
+		// Delete newly created translations and copy translations from source
+		// NOTE: don't use parameterized SQL queries because this script will be logged as a migration script (task
+
+		final String sqlDelete = "DELETE FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + targetProcessParaId;
+		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_Process_Para_Trl deleted: {}", countDelete);
+
+		final String sqlInsert = "INSERT INTO AD_Process_Para_Trl (AD_Process_Para_ID, AD_Language, " +
+				" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
+				" Name, Description, Help, IsTranslated) " +
+				" SELECT " + targetProcessParaId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
+				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
+				" FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + sourceProcessParaId;
+		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_Process_Para_Trl inserted: {}", countInsert);
 	}
 
 	@ToString

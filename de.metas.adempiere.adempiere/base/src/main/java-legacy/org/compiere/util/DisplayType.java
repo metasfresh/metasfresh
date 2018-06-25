@@ -205,6 +205,18 @@ public final class DisplayType
 			return true;
 		return false;
 	}	//	isText
+	
+	public static final boolean isPassword(final String columnName, final int displayType)
+	{
+		// TODO: introduce DisplayType.Password so we would not have to guess ;)
+		
+		if (!DisplayType.isText(displayType))
+		{
+			return false;
+		}
+		
+		return columnName.toLowerCase().indexOf("password") >= 0;
+	}
 
 	/**
 	 * Returns true if DisplayType is a Date or Time.

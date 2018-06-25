@@ -154,6 +154,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 			condition.setM_PricingSystem(productAndPricingSystem.getPricingSystem());
 			condition.setInvoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort);
 			condition.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
+			condition.setOnFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice);
 			condition.setName("Abo " + i);
 			save(condition);
 			conditions.add(condition);

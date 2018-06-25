@@ -151,7 +151,7 @@ import lombok.NonNull;
 			{
 				throw new AdempiereException("Cannot initialize " + annotatedClass + ". Initializer " + init + " failed."
 						+ "\n Method: " + method
-						+ "\n Params:" + params
+						+ "\n Params:" + Arrays.toString(params)
 						+ "\n Method Descriptor: " + init, Throwables.getRootCause(e));
 			}
 

@@ -25,10 +25,11 @@ package de.metas.pricing.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+
+import de.metas.pricing.service.IPriceListDAO;
 
 @Callout(I_M_ProductPrice.class)
 public class M_ProductPrice

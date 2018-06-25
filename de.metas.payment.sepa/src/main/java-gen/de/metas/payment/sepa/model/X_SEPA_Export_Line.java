@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.payment.sepa.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for SEPA_Export_Line
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 189054533L;
+	private static final long serialVersionUID = 298725425L;
 
     /** Standard Constructor */
     public X_SEPA_Export_Line (Properties ctx, int SEPA_Export_Line_ID, String trxName)
@@ -41,14 +24,12 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
       /** if (SEPA_Export_Line_ID == 0)
         {
 			setAD_Table_ID (0);
-			setAmt (Env.ZERO);
+			setAmt (BigDecimal.ZERO);
 			setC_BPartner_ID (0);
 			setC_Currency_ID (0);
 			setRecord_ID (0);
 			setSEPA_Export_ID (0);
 			setSEPA_Export_Line_ID (0);
-			setSEPA_MandateRefNo (null);
-			setSwiftCode (null);
         } */
     }
 
@@ -65,14 +46,6 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_SEPA_Export_Line[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -130,7 +103,7 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Amt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

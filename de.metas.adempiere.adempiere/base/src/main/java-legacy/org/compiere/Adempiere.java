@@ -23,6 +23,7 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Properties;
 
 import javax.swing.ImageIcon;
@@ -54,7 +55,6 @@ import org.compiere.util.Ini;
 import org.compiere.util.Login;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.SecureInterface;
-import org.compiere.util.Splash;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -196,6 +196,27 @@ public class Adempiere
 		return springApplicationContext.getBean(requiredType);
 	}
 
+	/**
+	 * When running this method from within a junit test, we need to fire up spring
+	 *
+	 * @param requiredType
+	 * @return
+	 */
+	public static final <T> Collection<T> getBeansOfType(final Class<T> requiredType)
+	{
+		final ApplicationContext springApplicationContext = getSpringApplicationContext();
+		try
+		{
+			throwExceptionIfNull(springApplicationContext);
+		}
+		catch (final AdempiereException e)
+		{
+			throw e.appendParametersToMessage()
+					.setParameter("requiredType", requiredType);
+		}
+		return springApplicationContext.getBeansOfType(requiredType).values();
+	}
+
 	private static void throwExceptionIfNull(final ApplicationContext springApplicationContext)
 	{
 		if (springApplicationContext != null)
@@ -274,7 +295,6 @@ public class Adempiere
 
 	private Adempiere()
 	{
-		super();
 	};
 
 	public static String getMainVersion()
@@ -638,6 +658,8 @@ public class Adempiere
 			return true;
 		}
 
+		startAddOns(); // needed
+
 		//
 		// Setup context provider (task 08859)
 		if (RunMode.SWING_CLIENT == runMode)
@@ -682,7 +704,6 @@ public class Adempiere
 		// System properties
 		Ini.loadProperties(false); // reload=false
 
-		//
 		// Update logging configuration from Ini file (applies only if we are running the swing client)
 		if (runmodeClient)
 		{
@@ -747,14 +768,6 @@ public class Adempiere
 
 	private boolean startupEnvironment(final RunMode runMode)
 	{
-		// commenting this out, it makes the startup procedure too complicated
-		// startup(runMode); // returns if already initiated
-		if (!DB.isConnected())
-		{
-			logger.error("No Database");
-			return false;
-		}
-
 		final I_AD_System system = Services.get(ISystemBL.class).get(Env.getCtx());	// Initializes Base Context too
 
 		if (system == null)
@@ -827,80 +840,6 @@ public class Adempiere
 
 		return true;
 	}	// startupEnvironment
-
-	/**
-	 * Main Method
-	 *
-	 * @param args optional start class
-	 * @deprecated please start the client in the way the <code>SwingUIApplication</code> class does.
-	 */
-	@Deprecated
-	public static void main(String[] args)
-	{
-		main(null, args);
-	}
-
-	/**
-	 * Starts the metasfresh swing client <b>in a new thread</b> and with an empty set of command line parameters, but with a spring application context.
-	 *
-	 * @param applicationContext
-	 */
-	public static void main(final ApplicationContext applicationContext)
-	{
-		final Runnable runnable = new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				main(applicationContext, new String[] {});
-			}
-		};
-		final Thread thread = new Thread(runnable, Adempiere.class.getSimpleName() + ".main");
-		thread.start();
-	}
-
-	/**
-	 * Main Method
-	 *
-	 * @param applicationContext the pring application context. It is set to the instance that can be retrieved via {@link Env#getSingleAdempiereInstance()}.
-	 * @param args optional start class
-	 */
-	private static void main(ApplicationContext applicationContext, String[] args)
-	{
-		instance.setApplicationContext(applicationContext);
-
-		startAddOns();
-
-		//
-		// Make sure first thing that we do is to initialize ADempiere.
-		// Mainly because we want to have the ContextProvider correctly setup. (task 08859).
-		instance.startup(RunMode.SWING_CLIENT);     // error exit and initUI
-
-		Splash.getSplash();
-
-		// Start with class as argument - or if nothing provided with Client
-		String className = "org.compiere.apps.AMenu";
-		for (int i = 0; i < args.length; i++)
-		{
-			if (!args[i].equals("-debug"))   // ignore -debug
-			{
-				className = args[i];
-				break;
-			}
-		}
-		//
-		try
-		{
-			final Class<?> startClass = Class.forName(className);
-			startClass.newInstance();
-		}
-		catch (Exception e)
-		{
-			System.err.println("ADempiere starting: " + className + " - " + e.toString());
-			e.printStackTrace();
-			System.exit(1); // make sure application is closed, even if there are open windows (like Splash)
-		}
-	}   // main
 
 	// metas:
 	private static void startAddOns()

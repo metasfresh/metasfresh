@@ -25,8 +25,8 @@ package de.metas.invoicecandidate.api;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
@@ -104,17 +104,17 @@ public interface IInvoiceCandInvalidUpdater
 	{
 		//
 		// Pricing System & Currency 
-		if (priceAndTax.getPricingSystemId() > 0)
+		if (priceAndTax.getPricingSystemId() != null)
 		{
-			ic.setM_PricingSystem_ID(priceAndTax.getPricingSystemId());
+			ic.setM_PricingSystem_ID(priceAndTax.getPricingSystemId().getRepoId());
 		}
 		if (priceAndTax.getPriceListVersionId() > 0)
 		{
 			ic.setM_PriceList_Version_ID(priceAndTax.getPriceListVersionId());
 		}
-		if (priceAndTax.getCurrencyId() > 0)
+		if (priceAndTax.getCurrencyId() != null)
 		{
-			ic.setC_Currency_ID(priceAndTax.getCurrencyId());
+			ic.setC_Currency_ID(priceAndTax.getCurrencyId().getRepoId());
 		}
 
 		//
@@ -133,7 +133,7 @@ public interface IInvoiceCandInvalidUpdater
 		}
 		if (priceAndTax.getDiscount() != null)
 		{
-			ic.setDiscount(priceAndTax.getDiscount());
+			ic.setDiscount(priceAndTax.getDiscount() != null ? priceAndTax.getDiscount().getValueAsBigDecimal() : null);
 		}
 
 		//

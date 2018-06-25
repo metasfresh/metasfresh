@@ -22,7 +22,7 @@ public class MHUProcessDAO implements IMHUProcessDAO
 	private final CCache<Integer, IndexedHUProcessDescriptors> huProcessDescriptors = CCache.newCache(I_M_HU_Process.Table_Name, 1, CCache.EXPIREMINUTES_Never);
 
 	@Override
-	public Collection<HUProcessDescriptor> getAllHUProcessDescriptors()
+	public Collection<HUProcessDescriptor> getHUProcessDescriptors()
 	{
 		return getIndexedHUProcessDescriptors().getAsCollection();
 	}
@@ -56,18 +56,21 @@ public class MHUProcessDAO implements IMHUProcessDAO
 		final HUProcessDescriptorBuilder builder = HUProcessDescriptor.builder()
 				.processId(huProcessRecord.getAD_Process_ID());
 
-		if (huProcessRecord.isApplyLU())
+		if (huProcessRecord.isApplyToLUs())
 		{
 			builder.acceptHUUnitType(X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		}
-		if (huProcessRecord.isApplyTU())
+		if (huProcessRecord.isApplyToTUs())
 		{
 			builder.acceptHUUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		}
-		if (huProcessRecord.isApplyVirtualPI())
+		if (huProcessRecord.isApplyToCUs())
 		{
 			builder.acceptHUUnitType(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI);
 		}
+
+		builder.provideAsUserAction(huProcessRecord.isProvideAsUserAction());
+		builder.acceptOnlyTopLevelHUs(huProcessRecord.isApplyToTopLevelHUsOnly());
 
 		return builder.build();
 	}

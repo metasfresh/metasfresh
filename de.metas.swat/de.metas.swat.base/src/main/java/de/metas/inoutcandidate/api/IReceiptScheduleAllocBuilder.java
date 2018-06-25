@@ -25,7 +25,7 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleAllocBuilder;

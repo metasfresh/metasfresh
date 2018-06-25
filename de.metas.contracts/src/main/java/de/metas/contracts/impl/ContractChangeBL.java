@@ -62,9 +62,12 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
+import de.metas.pricing.PricingSystemId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
@@ -168,7 +171,12 @@ public class ContractChangeBL implements IContractChangeBL
 		cancelNextContractIfNeeded(currentTerm, contractChangeParameters);
 		creditInvoicesIfNeeded(currentTerm, contractChangeParameters);
 
-		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(currentTerm);
+		if (currentTerm.isCloseInvoiceCandidate())
+		{
+			// Make sure that no further invoicing takes place
+			final List<I_C_Invoice_Candidate> icOfCurrentTerm = Services.get(IInvoiceCandDAO.class).retrieveReferencing(currentTerm);
+			Services.get(IInvoiceCandBL.class).closeInvoiceCandidates(icOfCurrentTerm.iterator());
+		}
 	}
 
 	@Override
@@ -316,8 +324,8 @@ public class ContractChangeBL implements IContractChangeBL
 		final IOrderPA orderPA = Services.get(IOrderPA.class);
 		final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
 		final I_C_Order termChangeOrder = orderPA.copyOrder(currentTermOrder, false, trxName);
-		final int pricingSystemId = getPricingSystemId(currentTerm, changeConditions);
-		termChangeOrder.setM_PricingSystem_ID(pricingSystemId);
+		final PricingSystemId pricingSystemId = getPricingSystemId(currentTerm, changeConditions);
+		termChangeOrder.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSystemId));
 
 		termChangeOrder.setDateOrdered(SystemTime.asDayTimestamp());
 		termChangeOrder.setDatePromised(changeDate);
@@ -477,7 +485,7 @@ public class ContractChangeBL implements IContractChangeBL
 		final I_C_Flatrate_Term currentTerm = compensationOrderContext.getCurrentTerm();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
 		final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
-		final int pricingSystemId = getPricingSystemId(currentTerm, contractChange);
+		final PricingSystemId pricingSystemId = getPricingSystemId(currentTerm, contractChange);
 
 		// compute the difference (see javaDoc of computePriceDifference for details)
 		final BigDecimal difference = subscriptionBL.computePriceDifference(ctx, pricingSystemId, deliveries, trxName);
@@ -485,24 +493,23 @@ public class ContractChangeBL implements IContractChangeBL
 		return difference;
 	}
 
-	private int getPricingSystemId(final I_C_Flatrate_Term currentTerm, final I_C_Contract_Change changeConditions)
+	private PricingSystemId getPricingSystemId(final I_C_Flatrate_Term currentTerm, final I_C_Contract_Change changeConditions)
 	{
-		final int pricingSystemId;
+		final PricingSystemId pricingSystemId;
 		if (changeConditions.getM_PricingSystem_ID() > 0)
 		{
-			pricingSystemId = changeConditions.getM_PricingSystem_ID();
+			pricingSystemId = PricingSystemId.ofRepoIdOrNull(changeConditions.getM_PricingSystem_ID());
 		}
 		else
 		{
-			pricingSystemId = currentTerm.getC_Flatrate_Conditions().getM_PricingSystem_ID();
+			pricingSystemId = PricingSystemId.ofRepoIdOrNull(currentTerm.getC_Flatrate_Conditions().getM_PricingSystem_ID());
 		}
 		return pricingSystemId;
 	}
 
 	@Override
-	public void endContract(I_C_Flatrate_Term currentTerm)
+	public void endContract(@NonNull final I_C_Flatrate_Term currentTerm)
 	{
-		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
 		currentTerm.setIsAutoRenew(false);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract);
 		save(currentTerm);

@@ -13,6 +13,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
+import lombok.EqualsAndHashCode;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -26,11 +28,11 @@ import com.google.common.collect.ImmutableMap;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,6 +43,7 @@ import com.google.common.collect.ImmutableMap;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@EqualsAndHashCode
 public final class ImmutableTranslatableString implements ITranslatableString
 {
 	public static final ITranslatableString ofMap(final Map<String, String> trlMap, final String defaultValue)
@@ -64,14 +67,14 @@ public final class ImmutableTranslatableString implements ITranslatableString
 
 		return new ImmutableTranslatableString(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
 	}
-	
+
 	public static final ITranslatableString singleLanguage(final String adLanguage, final String value)
 	{
-		if(Check.isEmpty(adLanguage, true))
+		if (Check.isEmpty(adLanguage, true))
 		{
 			return constant(value);
 		}
-		
+
 		final String valueNorm = value == null ? "" : value;
 		return new ImmutableTranslatableString(ImmutableMap.of(adLanguage, valueNorm), valueNorm);
 	}
@@ -80,14 +83,13 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	{
 		return ConstantTranslatableString.of(value);
 	}
-	
+
 	public static final ITranslatableString anyLanguage(final String value)
 	{
 		final boolean anyLanguage = true;
 		return ConstantTranslatableString.of(value, anyLanguage);
 	}
 
-	
 	public static final ITranslatableString empty()
 	{
 		return ConstantTranslatableString.EMPTY;
@@ -140,6 +142,47 @@ public final class ImmutableTranslatableString implements ITranslatableString
 
 		return ofMap(trlMap, trl.getDefaultValue());
 	}
+
+	public static boolean isBlank(final ITranslatableString trl)
+	{
+		if (trl == null)
+		{
+			return true;
+		}
+		else if(trl == ConstantTranslatableString.EMPTY)
+		{
+			return true;
+		}
+		else if (trl instanceof ConstantTranslatableString)
+		{
+			return Check.isEmpty(trl.getDefaultValue(), true);
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public static boolean isEmpty(final ITranslatableString trl)
+	{
+		if (trl == null)
+		{
+			return true;
+		}
+		else if(trl == ConstantTranslatableString.EMPTY)
+		{
+			return true;
+		}
+		else if (trl instanceof ConstantTranslatableString)
+		{
+			return Check.isEmpty(trl.getDefaultValue(), false);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 
 	private final Map<String, String> trlMap;
 	private final String defaultValue;

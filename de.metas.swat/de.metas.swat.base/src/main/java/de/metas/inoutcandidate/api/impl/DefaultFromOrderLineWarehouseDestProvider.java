@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.api.impl;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
@@ -12,7 +13,9 @@ import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -38,7 +41,7 @@ import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 
 /**
  * Default destination warehouse provider.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -88,13 +91,14 @@ import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 				: context.getM_AttributeSetInstance().getM_AttributeSetInstance_ID();
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
-				context.getAD_Org_ID() //
-				, 0  // M_Warehouse_ID
-				, 0  // S_Resource_ID
-				, context.getM_Product_ID() // M_Product_ID
-				, attributeSetInstanceId);
+		final ProductPlanningQuery query = ProductPlanningQuery.builder()
+				.orgId(context.getAD_Org_ID())
+				.productId(ProductId.ofRepoId(context.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceId))
+				// no warehouse, no plant
+				.build();
 
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);
 		if (productPlanning == null)
 		{
 			return null;

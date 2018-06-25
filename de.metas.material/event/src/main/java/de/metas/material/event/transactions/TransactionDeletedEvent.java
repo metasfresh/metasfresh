@@ -1,14 +1,14 @@
 package de.metas.material.event.transactions;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
+import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.Singular;
@@ -45,17 +45,23 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleIds2Qtys") @Singular final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
+			@JsonProperty("receiptScheduleIdsQtys") @Singular final Map<Integer, BigDecimal> receiptScheduleIdsQtys,
+			@JsonProperty("inOutId") final int inOutId,
+			@JsonProperty("inOutLineId") final int inOutLineId,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId,
 			@JsonProperty("transactionId") final int transactionId,
 			@JsonProperty("directMovementWarehouse") final boolean directMovementWarehouse,
-			@JsonProperty("huOnHandQtyChangeDescriptor")final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors)
+			@JsonProperty("huOnHandQtyChangeDescriptor") final Collection<HUDescriptor> huOnHandQtyChangeDescriptors)
 	{
 		super(eventDescriptor,
 				materialDescriptor,
 				shipmentScheduleIds2Qtys,
+				receiptScheduleIdsQtys,
+				inOutId,
+				inOutLineId,
 				ppOrderId,
 				ppOrderLineId,
 				ddOrderId,
@@ -75,7 +81,7 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 	}
 
 	/**
-	 * @return our material descriptor's <b>negated</b> quantity, i.e. the negated {@code MovementQty} if the underlying {@code M_Transaction}.
+	 * @return our material descriptor's <b>negated</b> quantity, i.e. the negated {@code MovementQty} of the underlying {@code M_Transaction}.
 	 */
 	@Override
 	public BigDecimal getQuantityDelta()

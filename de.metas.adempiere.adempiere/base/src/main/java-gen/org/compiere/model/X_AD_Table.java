@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1866695564L;
+	private static final long serialVersionUID = -1985934014L;
 
     /** Standard Constructor */
     public X_AD_Table (Properties ctx, int AD_Table_ID, String trxName)
@@ -38,23 +22,18 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
       super (ctx, AD_Table_ID, trxName);
       /** if (AD_Table_ID == 0)
         {
-			setAccessLevel (null);
-// 4
+			setAccessLevel (null); // 4
 			setAD_Table_ID (0);
-			setEntityType (null);
-// U
-			setIsAutocomplete (false);
-// N
+			setEntityType (null); // U
+			setIsAutocomplete (false); // N
 			setIsChangeLog (false);
-			setIsDeleteable (true);
-// Y
+			setIsDeleteable (true); // Y
 			setIsHighVolume (false);
 			setIsSecurityEnabled (false);
-			setIsView (false);
-// N
+			setIsView (false); // N
 			setName (null);
-			setReplicationType (null);
-// L
+			setPersonalDataCategory (null); // NP
+			setReplicationType (null); // L
 			setTableName (null);
         } */
     }
@@ -519,6 +498,34 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * PersonalDataCategory AD_Reference_ID=540857
+	 * Reference name: PersonalDataCategory
+	 */
+	public static final int PERSONALDATACATEGORY_AD_Reference_ID=540857;
+	/** NotPersonal = NP */
+	public static final String PERSONALDATACATEGORY_NotPersonal = "NP";
+	/** Personal = P */
+	public static final String PERSONALDATACATEGORY_Personal = "P";
+	/** SensitivePersonal = SP */
+	public static final String PERSONALDATACATEGORY_SensitivePersonal = "SP";
+	/** Set Personal Data Category.
+		@param PersonalDataCategory Personal Data Category	  */
+	@Override
+	public void setPersonalDataCategory (java.lang.String PersonalDataCategory)
+	{
+
+		set_Value (COLUMNNAME_PersonalDataCategory, PersonalDataCategory);
+	}
+
+	/** Get Personal Data Category.
+		@return Personal Data Category	  */
+	@Override
+	public java.lang.String getPersonalDataCategory () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PersonalDataCategory);
 	}
 
 	@Override

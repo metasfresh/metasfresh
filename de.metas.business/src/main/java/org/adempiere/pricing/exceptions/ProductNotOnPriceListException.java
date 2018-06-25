@@ -6,15 +6,16 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.pricing.api.IPricingContext;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MPriceList;
-import org.compiere.model.MProductPricing;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
+
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListDAO;
 
 @SuppressWarnings("serial")
 public class ProductNotOnPriceListException extends AdempiereException
@@ -36,30 +37,15 @@ public class ProductNotOnPriceListException extends AdempiereException
 		super(buildMessage(plv, productId));
 	}
 
-	@Deprecated
-	public ProductNotOnPriceListException(final MProductPricing productPricing, final int documentLineNo)
-	{
-		super(buildMessage(productPricing, documentLineNo));
-	}
-
 	private static String buildMessage(final IPricingContext pricingCtx, final int documentLineNo)
 	{
 		return buildMessage(documentLineNo,
 				pricingCtx.getM_Product_ID(),
-				pricingCtx.getM_PriceList_ID(),
+				pricingCtx.getPriceListId(),
 				pricingCtx.getPriceDate());
 	}
 
-	private static final String buildMessage(final MProductPricing pp, final int documentLineNo)
-	{
-		final int m_Product_ID = pp.getM_Product_ID();
-		final int m_PriceList_ID = pp.getM_PriceList_ID();
-		final Timestamp priceDate = pp.getPriceDate();
-
-		return buildMessage(documentLineNo, m_Product_ID, m_PriceList_ID, priceDate);
-	}
-
-	protected static String buildMessage(final int documentLineNo, final int productId, final int m_PriceList_ID, final Timestamp priceDate)
+	protected static String buildMessage(final int documentLineNo, final int productId, final PriceListId priceListId, final Timestamp priceDate)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (documentLineNo > 0)
@@ -79,14 +65,14 @@ public class ProductNotOnPriceListException extends AdempiereException
 			}
 			sb.append("@M_Product_ID@:").append(product == null ? "?" : product.getValue() + "_" + product.getName());
 		}
-		if (m_PriceList_ID > 0)
+		if (priceListId != null)
 		{
-			final MPriceList pl = MPriceList.get(Env.getCtx(), m_PriceList_ID, null);
+			final String priceListName = Services.get(IPriceListDAO.class).getPriceListName(priceListId);
 			if (sb.length() > 0)
 			{
 				sb.append(", ");
 			}
-			sb.append("@M_PriceList_ID@:").append(pl == null ? "?" : pl.getName());
+			sb.append("@M_PriceList_ID@:").append(priceListName);
 		}
 		if (priceDate != null)
 		{

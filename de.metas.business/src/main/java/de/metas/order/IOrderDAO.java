@@ -1,5 +1,9 @@
 package de.metas.order;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
+
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,19 +17,20 @@ package de.metas.order;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_Location;
@@ -34,9 +39,28 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 
 import de.metas.interfaces.I_C_OrderLine;
+import lombok.NonNull;
 
 public interface IOrderDAO extends ISingletonService
 {
+	I_C_Order getById(final OrderId orderId);
+
+	I_C_OrderLine getOrderLineById(final int orderLineId);
+
+	I_C_OrderLine getOrderLineById(final OrderLineId orderLineId);
+
+	Map<OrderAndLineId, I_C_OrderLine> getOrderLinesByIds(Collection<OrderAndLineId> orderAndLineIds);
+
+	default I_C_OrderLine getOrderLineById(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return getOrderLineById(orderAndLineId.getOrderLineId());
+	}
+
+	default <T extends org.compiere.model.I_C_OrderLine> List<T> getOrderLinesByIds(final Collection<OrderAndLineId> orderAndLineIds, final Class<T> modelType)
+	{
+		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), modelType);
+	}
+
 	/**
 	 * @param ctx
 	 * @param bpartnerId
@@ -102,4 +126,6 @@ public interface IOrderDAO extends ISingletonService
 	 * @return purchase orders matching the given parameters
 	 */
 	List<I_C_Order> retrievePurchaseOrdersForPickup(I_C_BPartner_Location bpLoc, Date deliveryDateTime, Date deliveryDateTimeMax);
+
+	Set<Integer> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
 }

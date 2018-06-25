@@ -28,10 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_ProductScalePrice;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.impl.rules.AbstractPriceListBasedRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
@@ -39,7 +35,13 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MProduct;
 
-import de.metas.pricing.ProductPrices;
+import de.metas.money.CurrencyId;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.rules.AbstractPriceListBasedRule;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductPA;
 
 /**
@@ -120,13 +122,13 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		final Properties ctx = pricingCtx.getCtx();
 		final int m_M_Product_ID = pricingCtx.getM_Product_ID();
 		int m_M_PriceList_Version_ID = pricingCtx.getM_PriceList_Version_ID();
-		int m_M_PriceList_ID = pricingCtx.getM_PriceList_ID();
+		PriceListId priceListId = pricingCtx.getPriceListId();
 		//
 		BigDecimal m_PriceStd = null;
 		BigDecimal m_PriceList = null;
 		BigDecimal m_PriceLimit = null;
 		int m_C_UOM_ID = -1;
-		int m_C_Currency_ID = -1;
+		CurrencyId currencyId = null;
 		boolean m_enforcePriceLimit = false;
 		boolean m_isTaxIncluded = false;
 		//
@@ -140,10 +142,10 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		final MProduct prod = MProduct.get(ctx, m_M_Product_ID);
 		m_C_UOM_ID = prod.getC_UOM_ID();
 
-		if (m_M_PriceList_ID <= 0)
+		if (priceListId == null)
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
-			m_M_PriceList_ID = priceListVersion.getM_PriceList_ID();
+			priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
 		}
 
 		if (m_M_PriceList_Version_ID <= 0)
@@ -153,15 +155,15 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 
 		// TODO handle bom-prices for products that don't have a price themselves.
 
-		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).retrievePriceList(ctx, m_M_PriceList_ID);
-		m_C_Currency_ID = priceList.getC_Currency_ID();
+		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
+		currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
 		m_enforcePriceLimit = priceList.isEnforcePriceLimit();
 		m_isTaxIncluded = priceList.isTaxIncluded();
 
 		result.setPriceStd(m_PriceStd);
 		result.setPriceList(m_PriceList);
 		result.setPriceLimit(m_PriceLimit);
-		result.setC_Currency_ID(m_C_Currency_ID);
+		result.setCurrencyId(currencyId);
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(m_enforcePriceLimit);

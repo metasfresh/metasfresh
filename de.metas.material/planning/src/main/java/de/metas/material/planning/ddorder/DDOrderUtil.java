@@ -16,7 +16,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.material.planning.exception.MrpException;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

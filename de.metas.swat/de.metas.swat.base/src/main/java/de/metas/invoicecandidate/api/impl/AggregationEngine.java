@@ -35,7 +35,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.ILoggable;
@@ -45,7 +44,6 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
@@ -69,8 +67,12 @@ import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
+import de.metas.lang.SOTrx;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
 import lombok.NonNull;
 
 public class AggregationEngine implements IAggregationEngine
@@ -337,11 +339,11 @@ public class AggregationEngine implements IAggregationEngine
 		else
 		{
 			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(ic.getM_PricingSystem_ID(), ic.getBill_Location(), ic.isSOTrx());
+			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()), ic.getBill_Location(), SOTrx.ofBoolean(ic.isSOTrx()));
 			if (pl == null)
 			{
 				final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-				throw new AdempiereException(Env.getAD_Language(ctx), ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
+				throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
 						new Object[] {
 								InterfaceWrapperHelper.create(ctx, ic.getM_PricingSystem_ID(), I_M_PricingSystem.class, ITrx.TRXNAME_None).getName(),
 								InterfaceWrapperHelper.create(ctx, invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class, ITrx.TRXNAME_None).getName() });
@@ -362,10 +364,9 @@ public class AggregationEngine implements IAggregationEngine
 
 		invoiceHeader.setTaxIncluded(invoiceCandBL.isTaxIncluded(ic)); // task 08541
 
-		final I_C_DocType invoiceDocType = ic.getC_DocTypeInvoice();
-		if (invoiceDocType != null && invoiceDocType.getC_DocType_ID() > 0)
+		if (ic.getC_DocTypeInvoice_ID() > 0)
 		{
-			invoiceHeader.setC_DocTypeInvoice(invoiceDocType);
+			invoiceHeader.setC_DocTypeInvoice(ic.getC_DocTypeInvoice());
 		}
 
 		// 06630: set shipment id to header

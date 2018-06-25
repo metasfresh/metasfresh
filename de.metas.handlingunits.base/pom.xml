@@ -80,7 +80,7 @@
 		
 		<dependency>
 			<groupId>de.metas.shipper.gateway</groupId>
-			<artifactId>de.metas.shipper.gateway.api</artifactId>
+			<artifactId>de.metas.shipper.gateway.commons</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 		

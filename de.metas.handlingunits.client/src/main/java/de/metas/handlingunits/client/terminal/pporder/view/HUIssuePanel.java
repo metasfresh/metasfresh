@@ -35,11 +35,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
@@ -315,10 +315,9 @@ public class HUIssuePanel implements IHUSelectPanel
 
 				final int orgId = product.getAD_Org_ID();
 
-				final I_C_BPartner_Product bppRaw = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
-				if (bppRaw != null)
+				final I_C_BPartner_Product bpp = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
+				if (bpp != null)
 				{
-					final de.metas.interfaces.I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(bppRaw, de.metas.interfaces.I_C_BPartner_Product.class);
 					productNo = bpp.getProductNo();
 					productEAN = bpp.getUPC();
 				}
@@ -329,7 +328,7 @@ public class HUIssuePanel implements IHUSelectPanel
 			details.append("<tr>");
 
 			details.append("<td>")
-					.append("@").append(de.metas.interfaces.I_C_BPartner_Product.COLUMNNAME_ProductNo).append("@")
+					.append("@").append(I_C_BPartner_Product.COLUMNNAME_ProductNo).append("@")
 					.append(": ")
 					.append(Check.isEmpty(productNo, true) ? "-" : productNo.trim())
 					.append("</td>");
@@ -337,7 +336,7 @@ public class HUIssuePanel implements IHUSelectPanel
 			//
 			// BPP CU EAN
 			details.append("<td>")
-					.append("@").append(de.metas.interfaces.I_C_BPartner_Product.COLUMNNAME_UPC).append("@")
+					.append("@").append(I_C_BPartner_Product.COLUMNNAME_UPC).append("@")
 					.append(": ")
 					.append(Check.isEmpty(productEAN, true) ? "-" : productEAN.trim())
 					.append("</td>");

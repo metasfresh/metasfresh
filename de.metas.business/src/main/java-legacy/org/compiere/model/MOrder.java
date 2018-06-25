@@ -28,9 +28,6 @@ import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.exceptions.BPartnerNoBillToAddressException;
-import org.adempiere.exceptions.BPartnerNoShipToAddressException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -42,6 +39,9 @@ import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
+import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.documentNo.IDocumentNoBL;
@@ -53,7 +53,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
-import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
+import de.metas.payment.api.IPaymentTermRepository;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IStorageBL;
@@ -189,7 +190,7 @@ public class MOrder extends X_C_Order implements IDocument
 			else
 			{
 				Services.get(IOrderBL.class).setDocTypeTargetId(this, DocSubType);
-		}
+			}
 		}
 		else
 		{
@@ -609,18 +610,18 @@ public class MOrder extends X_C_Order implements IDocument
 		//
 		// DocType
 		I_C_DocType docType = getC_DocType();
-		if(docType == null)
+		if (docType == null)
 		{
 			docType = getC_DocTypeTarget();
 		}
-		if(docType != null)
+		if (docType != null)
 		{
 			documentInfo.append(docType.getName());
 		}
 
 		//
 		// DocumentNo
-		if(documentInfo.length() > 0)
+		if (documentInfo.length() > 0)
 		{
 			documentInfo.append(" ");
 		}
@@ -963,8 +964,8 @@ public class MOrder extends X_C_Order implements IDocument
 				if (!lines[i].canChangeWarehouse(true))
 				{
 					return false;
+				}
 			}
-		}
 		}
 
 		// No Partner Info - set Template
@@ -977,7 +978,7 @@ public class MOrder extends X_C_Order implements IDocument
 			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), null));
 		}
 		// No Bill - get from Ship
-		if (getBill_BPartner_ID() == 0)
+		if (getBill_BPartner_ID() <= 0)
 		{
 			setBill_BPartner_ID(getC_BPartner_ID());
 			setBill_Location_ID(getC_BPartner_Location_ID());
@@ -1021,22 +1022,13 @@ public class MOrder extends X_C_Order implements IDocument
 		// Default Payment Term
 		if (getC_PaymentTerm_ID() == 0)
 		{
-			int ii = Env.getContextAsInt(getCtx(), "#C_PaymentTerm_ID");
-			if (ii != 0)
+			final PaymentTermId defaultPaymentTermId = Services.get(IPaymentTermRepository.class)
+					.getDefaultPaymentTermIdOrNull();
+			if (defaultPaymentTermId != null)
 			{
-				setC_PaymentTerm_ID(ii);
-			}
-			else
-			{
-				final String sql = "SELECT C_PaymentTerm_ID FROM C_PaymentTerm WHERE AD_Client_ID=? AND IsDefault='Y'";
-				ii = DB.getSQLValue(null, sql, getAD_Client_ID());
-				if (ii != 0)
-				{
-					setC_PaymentTerm_ID(ii);
+				setC_PaymentTerm_ID(defaultPaymentTermId.getRepoId());
 			}
 		}
-		}
-
 		return true;
 	}	// beforeSave
 
@@ -1325,17 +1317,14 @@ public class MOrder extends X_C_Order implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
-					return IDocument.STATUS_Invalid;
-				}
+			return IDocument.STATUS_Invalid;
+		}
 
 		m_justPrepared = true;
 		// if (!DOCACTION_Complete.equals(getDocAction())) don't set for just prepare
 		// setDocAction(DOCACTION_Complete);
 		return IDocument.STATUS_InProgress;
 	}	// prepareIt
-
-
-
 
 	// @formatter:off
 //	/**
@@ -1664,7 +1653,7 @@ public class MOrder extends X_C_Order implements IDocument
 					if (!newOTax.isTaxIncluded())
 					{
 						grandTotal = grandTotal.add(taxAmt);
-				}
+					}
 				}
 				if (!oTax.delete(true, trxName))
 				{
@@ -1673,15 +1662,15 @@ public class MOrder extends X_C_Order implements IDocument
 				if (!oTax.save(trxName))
 				{
 					return false;
-			}
+				}
 			}
 			else
 			{
 				if (!oTax.isTaxIncluded())
 				{
 					grandTotal = grandTotal.add(oTax.getTaxAmt());
+				}
 			}
-		}
 		}
 		//
 		setTotalLines(totalLines);
@@ -1723,12 +1712,6 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public String completeIt()
 	{
-		final String result = Services.get(IPrepayOrderAllocationBL.class).orderBeforeCompleteIt(this);
-		if (!Check.isEmpty(result))
-		{
-			return result; // there is nothing more to be done.
-		}
-
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		final String DocSubType = dt.getDocSubType();
 
@@ -1764,8 +1747,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		// Waiting Payment - until we have a payment
 		if (!m_forceCreation
-				&& (MDocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType)
-						|| de.metas.prepayorder.model.I_C_DocType.DOCSUBTYPE_PrepayOrder_metas.equals(DocSubType))  // cg fix for task US682
+				&& X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType)
 				&& getC_Payment_ID() == 0 && getC_CashLine_ID() == 0)
 		{
 			setProcessed(true);
@@ -1779,7 +1761,7 @@ public class MOrder extends X_C_Order implements IDocument
 			if (!IDocument.STATUS_InProgress.equals(status))
 			{
 				return status;
-		}
+			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
@@ -1803,8 +1785,7 @@ public class MOrder extends X_C_Order implements IDocument
 		MInOut shipment = null;
 		if (MDocType.DOCSUBTYPE_OnCreditOrder.equals(DocSubType)		// (W)illCall(I)nvoice
 				|| MDocType.DOCSUBTYPE_WarehouseOrder.equals(DocSubType)	// (W)illCall(P)ickup
-				|| MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType)			// (W)alkIn(R)eceipt
-				|| MDocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType))
+				|| MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType))			// (W)alkIn(R)eceipt
 		{
 			if (!DELIVERYRULE_Force.equals(getDeliveryRule()))
 			{
@@ -1826,8 +1807,7 @@ public class MOrder extends X_C_Order implements IDocument
 
 		// Create SO Invoice - Always invoice complete Order
 		if (MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType)
-				|| MDocType.DOCSUBTYPE_OnCreditOrder.equals(DocSubType)
-				|| MDocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType))
+				|| MDocType.DOCSUBTYPE_OnCreditOrder.equals(DocSubType))
 		{
 			final MInvoice invoice = createInvoice(dt, shipment, realTimePOS ? null : getDateOrdered());
 			if (invoice == null)
@@ -2099,7 +2079,7 @@ public class MOrder extends X_C_Order implements IDocument
 			if (!(tax.calculateTaxFromLines() && tax.save()))
 			{
 				return false;
-		}
+			}
 		}
 
 		addDescription(Services.get(IMsgBL.class).getMsg(getCtx(), "Voided"));
@@ -2171,7 +2151,7 @@ public class MOrder extends X_C_Order implements IDocument
 				if (ship.voidIt())
 				{
 					ship.setDocStatus(MInOut.DOCSTATUS_Voided);
-			}
+				}
 			}
 			else if (ship.reverseCorrectIt())  	// completed shipment
 			{
@@ -2208,7 +2188,7 @@ public class MOrder extends X_C_Order implements IDocument
 				if (invoice.voidIt())
 				{
 					invoice.setDocStatus(MInvoice.DOCSTATUS_Voided);
-			}
+				}
 			}
 			else if (invoice.reverseCorrectIt())  	// completed invoice
 			{
@@ -2316,8 +2296,8 @@ public class MOrder extends X_C_Order implements IDocument
 				if (!line.save(get_TrxName()))
 				{
 					return "Couldn't save orderline";
+				}
 			}
-		}
 		}
 		// Clear Reservations
 		if (!reserveStock(null, lines))
@@ -2418,8 +2398,8 @@ public class MOrder extends X_C_Order implements IDocument
 					if (type.isDefault() || newDT == null)
 					{
 						newDT = type;
+					}
 				}
-			}
 			}
 			if (newDT == null)
 			{
@@ -2428,7 +2408,7 @@ public class MOrder extends X_C_Order implements IDocument
 			else
 			{
 				setC_DocType_ID(newDT.getC_DocType_ID());
-		}
+			}
 		}
 
 		// PO - just re-open
@@ -2443,7 +2423,7 @@ public class MOrder extends X_C_Order implements IDocument
 			if (!createReversals())
 			{
 				return false;
-		}
+			}
 		}
 		else
 		{

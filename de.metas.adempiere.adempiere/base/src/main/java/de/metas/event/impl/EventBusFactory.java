@@ -1,38 +1,16 @@
 package de.metas.event.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.cache.CacheBuilder;
@@ -50,10 +28,9 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
-import de.metas.event.jms.ActiveMQJMSEndpoint;
-import de.metas.event.jms.IJMSEndpoint;
 import de.metas.event.jmx.JMXEventBusManager;
 import de.metas.event.log.EventBus2EventLogHandler;
+import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -86,35 +63,25 @@ public class EventBusFactory implements IEventBusFactory
 				}
 			});
 
-	private final IJMSEndpoint jmsEndpoint = new ActiveMQJMSEndpoint();
+	private final IEventBusRemoteEndpoint remoteEndpoint;
 
-	private final ExecutorService eventBusExecutor;
+	private final Set<Topic> availableUserNotificationsTopic = ConcurrentHashMap.newKeySet(10);
 
 	public EventBusFactory()
 	{
-		JMXRegistry.get().registerJMX(new JMXEventBusManager(jmsEndpoint), OnJMXAlreadyExistsPolicy.Replace);
+		remoteEndpoint = Adempiere.getBean(IEventBusRemoteEndpoint.class);
+		logger.info("Using remote endpoint: {}", remoteEndpoint);
 
-		// Setup EventBus executor
-		if (EventBusConstants.isEventBusPostEventsAsync())
-		{
-			eventBusExecutor = Executors.newSingleThreadExecutor(CustomizableThreadFactory.builder()
-					.setThreadNamePrefix(getClass().getName() + "-AsyncExecutor")
-					.setDaemon(true)
-					.build());
-		}
-		else
-		{
-			eventBusExecutor = null;
-		}
+		JMXRegistry.get().registerJMX(new JMXEventBusManager(remoteEndpoint), OnJMXAlreadyExistsPolicy.Replace);
 
 		//
 		// Setup default user notification topics
-		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralNotifications);
-		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralNotificationsLocal);
+		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotifications);
+		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotificationsLocal);
 	}
 
 	@Override
-	public IEventBus getEventBus(final Topic topic)
+	public IEventBus getEventBus(@NonNull final Topic topic)
 	{
 		try
 		{
@@ -135,6 +102,12 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	@Override
+	public IEventBus getEventBusIfExists(@NonNull final Topic topic)
+	{
+		return topic2eventBus.getIfPresent(topic);
+	}
+
+	@Override
 	public void initEventBussesWithGlobalListeners()
 	{
 		final ImmutableSet<Topic> topics = ImmutableSet.copyOf(globalEventListeners.keySet());
@@ -152,8 +125,10 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	/**
-	 * Creates the event bus. If the remove event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE}, then the event bus is also bould to a JMS
-	 * endpoint. Otherwise the event bus will only be local.
+	 * Creates the event bus.
+	 * If the remote event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE},
+	 * then the event bus is also bound to a remote endpoint.
+	 * Otherwise the event bus will only be local.
 	 *
 	 * @param topic
 	 * @return
@@ -161,12 +136,12 @@ public class EventBusFactory implements IEventBusFactory
 	private final EventBus createEventBus(final Topic topic)
 	{
 		// Create the event bus
-		final EventBus eventBus = new EventBus(topic.getName(), eventBusExecutor);
+		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic.getName()));
 
 		// whether the event is really stored is determined for each individual event
 		eventBus.subscribe(EventBus2EventLogHandler.INSTANCE);
 
-		// Bind the EventBus to JMS (only if the system is enabled).
+		// Bind the EventBus to remote endpoint (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
 		// because if we would return null or fail here a lot of BLs could fail.
 		if (Type.REMOTE.equals(topic.getType()))
@@ -175,7 +150,7 @@ public class EventBusFactory implements IEventBusFactory
 			{
 				logger.warn("Remote events are disabled via EventBusConstants. Creating local-only eventBus for topic={}", topic);
 			}
-			else if (jmsEndpoint.bindIfNeeded(eventBus))
+			else if (remoteEndpoint.bindIfNeeded(eventBus))
 			{
 				eventBus.setTypeRemote();
 			}
@@ -191,7 +166,20 @@ public class EventBusFactory implements IEventBusFactory
 		return eventBus;
 	}
 
-	private void destroyEventBus(final EventBus eventBus)
+	private ExecutorService createExecutorOrNull(@NonNull final String eventBusName)
+	{
+		// Setup EventBus executor
+		if (EventBusConstants.isEventBusPostEventsAsync())
+		{
+			return Executors.newSingleThreadExecutor(CustomizableThreadFactory.builder()
+					.setThreadNamePrefix(getClass().getName() + "-" + eventBusName + "-AsyncExecutor")
+					.setDaemon(true)
+					.build());
+		}
+		return null;
+	}
+
+	private void destroyEventBus(@NonNull final EventBus eventBus)
 	{
 		eventBus.destroy();
 	}
@@ -214,31 +202,43 @@ public class EventBusFactory implements IEventBusFactory
 		getEventBus(topic).subscribe(listener);
 	}
 
-	private final Set<Topic> availableUserNotificationsTopic = new HashSet<>();
-
 	@Override
-	public void addAvailableUserNotificationsTopic(final Topic topic)
+	public void addAvailableUserNotificationsTopic(@NonNull final Topic topic)
 	{
-		Check.assumeNotNull(topic, "topic not null");
-		synchronized (availableUserNotificationsTopic)
-		{
-			availableUserNotificationsTopic.add(topic);
-		}
+		final boolean added = availableUserNotificationsTopic.add(topic);
+		logger.info("Registered user notifications topic: {} (already registered: {})", topic, !added);
+	}
+
+	/**
+	 * @return list of available topics on which user can subscribe for UI notifications
+	 */
+	private Set<Topic> getAvailableUserNotificationsTopics()
+	{
+		return ImmutableSet.copyOf(availableUserNotificationsTopic);
 	}
 
 	@Override
-	public Set<Topic> getAvailableUserNotificationsTopics()
+	public void registerUserNotificationsListener(@NonNull final IEventListener listener)
 	{
-		synchronized (availableUserNotificationsTopic)
-		{
-			return ImmutableSet.copyOf(availableUserNotificationsTopic);
-		}
+		getAvailableUserNotificationsTopics()
+				.stream()
+				.map(this::getEventBus)
+				.forEach(eventBus -> eventBus.subscribe(listener));
+	}
+
+	@Override
+	public void registerWeakUserNotificationsListener(@NonNull final IEventListener listener)
+	{
+		getAvailableUserNotificationsTopics()
+				.stream()
+				.map(this::getEventBus)
+				.forEach(eventBus -> eventBus.subscribeWeak(listener));
 	}
 
 	@Override
 	public boolean checkRemoteEndpointStatus()
 	{
-		jmsEndpoint.checkConnection();
-		return jmsEndpoint.isConnected();
+		remoteEndpoint.checkConnection();
+		return remoteEndpoint.isConnected();
 	}
 }

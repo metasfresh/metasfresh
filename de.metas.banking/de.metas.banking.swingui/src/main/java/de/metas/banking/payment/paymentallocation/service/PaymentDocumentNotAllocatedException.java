@@ -13,24 +13,21 @@ package de.metas.banking.payment.paymentallocation.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Collection;
-
-import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 
 /**
  * Exception thrown by {@link PaymentAllocationBuilder} when some payment documents could not be allocated.
@@ -52,9 +49,10 @@ public class PaymentDocumentNotAllocatedException extends PaymentAllocationExcep
 	}
 
 	@Override
-	protected String buildMessage()
+	protected ITranslatableString buildMessage()
 	{
-		final StringBuilder message = new StringBuilder();
+		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+
 		if (payments != null && !payments.isEmpty())
 		{
 			for (final IPaymentDocument payment : payments)
@@ -63,7 +61,7 @@ public class PaymentDocumentNotAllocatedException extends PaymentAllocationExcep
 				{
 					continue;
 				}
-				if (message.length() > 0)
+				if (!message.isEmpty())
 				{
 					message.append(", ");
 				}
@@ -71,14 +69,8 @@ public class PaymentDocumentNotAllocatedException extends PaymentAllocationExcep
 			}
 		}
 
-		final String messagePrefix = Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG);
-		if (message.length() <= 0)
-		{
-			return messagePrefix;
-		}
-
-		message.insert(0, messagePrefix);
-		return message.toString();
+		message.insertFirstADMessage(MSG);
+		return message.build();
 	}
 
 }

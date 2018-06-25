@@ -34,8 +34,9 @@ import org.adempiere.util.StringUtils;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.MPriceList;
 import org.compiere.util.TimeUtil;
+
+import de.metas.pricing.service.IPriceListDAO;
 
 /**
  * {@link InvoiceHeaderImpl} builder class used to collect invoice header values and make sure they match.
@@ -213,11 +214,11 @@ public class InvoiceHeaderImplBuilder
 	 *
 	 * @return the <code>M_PriceList_ID</code> to use.
 	 *         If different <code>M_PriceList_ID</code>s were added using {@link #setM_PriceList_ID(int)},
-	 *         then {@link MPriceList#M_PriceList_ID_None} is returned instead.
+	 *         then {@link IPriceListDAO#M_PriceList_ID_None} is returned instead.
 	 */
 	public int getM_PriceList_ID()
 	{
-		return ListUtils.singleElementOrDefault(M_PriceList_IDs, MPriceList.M_PriceList_ID_None);
+		return ListUtils.singleElementOrDefault(M_PriceList_IDs, IPriceListDAO.M_PriceList_ID_None);
 	}
 
 	/**

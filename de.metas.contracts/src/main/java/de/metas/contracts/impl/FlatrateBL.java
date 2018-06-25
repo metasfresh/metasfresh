@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /*
@@ -38,15 +39,15 @@ import java.util.Properties;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
@@ -54,6 +55,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Period;
@@ -72,6 +74,7 @@ import org.slf4j.Logger;
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
@@ -379,11 +382,11 @@ public class FlatrateBL implements IFlatrateBL
 			final BigDecimal priceActual,
 			final String trxName)
 	{
-
 		final I_C_Invoice_Candidate newCand = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
+		Check.assume(newCand.getAD_Client_ID() == dataEntry.getAD_Client_ID(), "ctx contains the correct AD_Client_ID");
+
 		final int orgId = dataEntry.getAD_Org_ID();
 		newCand.setAD_Org_ID(orgId);
-		Check.assume(newCand.getAD_Client_ID() == dataEntry.getAD_Client_ID(), "ctx contains the correct AD_Client_ID");
 
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 		newCand.setM_PricingSystem_ID(fc.getM_PricingSystem_ID());
@@ -415,7 +418,7 @@ public class FlatrateBL implements IFlatrateBL
 		// 07442 activity and tax
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, trxName);
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), product);
 
 		newCand.setC_Activity(activity);
@@ -426,11 +429,19 @@ public class FlatrateBL implements IFlatrateBL
 		final boolean isSOTrx = true;
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, term, taxCategoryId, productId, -1 // chargeId
-				, dataEntry.getDate_Reported() // billDate
-				, dataEntry.getDate_Reported() // shipDate
-				, orgId, warehouse, billLocationID, -1 // ship location id
-				, isSOTrx, trxName);
+				ctx,
+				term,
+				taxCategoryId,
+				productId,
+				-1, // chargeId
+				dataEntry.getDate_Reported(),// billDate
+				dataEntry.getDate_Reported(),// shipDate
+				orgId,
+				warehouse,
+				billLocationID,
+				-1 // ship location id
+				, isSOTrx,
+				trxName);
 
 		newCand.setC_Tax_ID(taxId);
 
@@ -1033,11 +1044,16 @@ public class FlatrateBL implements IFlatrateBL
 			contracts.add(currentRequest.getContract());
 			do
 			{
-				extendContract0(currentRequest);
+				extendContractIfRequired(currentRequest);
 
 				final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
 				currentTerm.setAD_PInstance_EndOfTerm_ID(currentRequest.getAD_PInstance_ID());
 				InterfaceWrapperHelper.save(currentTerm);
+				if (currentTerm.getC_FlatrateTerm_Next_ID() <= 0)
+				{
+					// https://github.com/metasfresh/metasfresh/issues/4022 avoid NPE if currentTerm was actually *not* extended by extendContractIfRequired
+					break;
+				}
 
 				final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
 				final I_C_Flatrate_Conditions nextConditions = nextTerm.getC_Flatrate_Conditions();
@@ -1090,7 +1106,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 	}
 
-	private void extendContract0(final @NonNull ContractExtendingRequest request)
+	private void extendContractIfRequired(final @NonNull ContractExtendingRequest request)
 	{
 		final I_C_Flatrate_Term currentTerm = request.getContract();
 		final boolean forceExtend = request.isForceExtend();
@@ -1316,9 +1332,9 @@ public class FlatrateBL implements IFlatrateBL
 
 	private Timestamp computeEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
-		final Timestamp firstDayOfNewTerm = term.getStartDate();
+		final Timestamp firstDayOfTerm = term.getStartDate();
 
-		Timestamp lastDayOfNewTerm = null;
+		Timestamp lastDayOfTerm = null;
 
 		// metas: rc: start 03742
 		// Condition added to handle "EnsWithCalendarYear" flag for transitions
@@ -1331,9 +1347,8 @@ public class FlatrateBL implements IFlatrateBL
 				termDuration = transition.getTermDuration();
 			}
 			else
-			// duration units = months
 			{
-				// just to make sure; this should never happen because of the model validator
+				// make sure that durationUnit==month and duration==(n times 12); note that we have a model interceptor which enforces this.
 				Check.errorUnless(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE.equals(transition.getTermDurationUnit()),
 						"The term duration unit is not suitable for a term that ends with calendar year");
 				Check.errorUnless(transition.getTermDuration() % 12 == 0, "Term duration not suitable for a term that ends with calendar year");
@@ -1341,25 +1356,28 @@ public class FlatrateBL implements IFlatrateBL
 				termDuration = transition.getTermDuration() / 12;
 			}
 
-			Timestamp currentFirstDay = firstDayOfNewTerm; // first day of term or first day of new year
 
+			final I_C_Calendar calendar = transition.getC_Calendar_Contract();
+
+			Timestamp currentFirstDay = firstDayOfTerm; // first day of term or first day of new year
 			for (int i = 0; i < termDuration; i++)
 			{
-				final List<I_C_Period> periodContainingDay = Services.get(ICalendarDAO.class).retrievePeriods(
-						InterfaceWrapperHelper.getCtx(transition), transition.getC_Calendar_Contract(), currentFirstDay, currentFirstDay, InterfaceWrapperHelper.getTrxName(transition));
+				final List<I_C_Period> periodsContainingDay = Services.get(ICalendarDAO.class).retrievePeriods(
+						InterfaceWrapperHelper.getCtx(transition), calendar, currentFirstDay, currentFirstDay, InterfaceWrapperHelper.getTrxName(transition));
 
-				Check.errorUnless(periodContainingDay.size() != 0, "Date {} does not exist in calendar", currentFirstDay);
-				Check.errorUnless(periodContainingDay.size() == 1, "Date {} is contained in more than one period: {}", currentFirstDay, periodContainingDay);
-				final I_C_Period period = periodContainingDay.get(0);
+				Check.errorIf(periodsContainingDay.isEmpty(), "Date {} does not exist in calendar={}", currentFirstDay, calendar);
+				Check.errorIf(periodsContainingDay.size() > 1, "Date {} is contained in more than one period of calendar={}; periodsContainingDay={}", currentFirstDay, calendar, periodsContainingDay);
+
+				final I_C_Period period = ListUtils.singleElement(periodsContainingDay);
 				final I_C_Year year = period.getC_Year();
 
-				lastDayOfNewTerm = Services.get(ICalendarBL.class).getLastDayOfYear(year);
+				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(year);
 
-				currentFirstDay = TimeUtil.addDays(lastDayOfNewTerm, 1);
+				currentFirstDay = TimeUtil.addDays(lastDayOfTerm, 1);
 			}
 		}
 		// Case: If TermDuration is ZERO, we shall not calculate the EndDate automatically,
-		// but relly on what was set
+		// but rely on what was set
 		else if (transition.getTermDuration() == 0)
 		{
 			return null;
@@ -1368,28 +1386,28 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			if (X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE.equals(transition.getTermDurationUnit()))
 			{
-				lastDayOfNewTerm = TimeUtil.addDays(TimeUtil.addYears(firstDayOfNewTerm, transition.getTermDuration()), -1);
+				lastDayOfTerm = TimeUtil.addDays(TimeUtil.addYears(firstDayOfTerm, transition.getTermDuration()), -1);
 			}
 			else if (X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE.equals(transition.getTermDurationUnit()))
 			{
-				lastDayOfNewTerm = TimeUtil.addDays(TimeUtil.addMonths(firstDayOfNewTerm, transition.getTermDuration()), -1);
+				lastDayOfTerm = TimeUtil.addDays(TimeUtil.addMonths(firstDayOfTerm, transition.getTermDuration()), -1);
 			}
 			else if (X_C_Flatrate_Transition.TERMDURATIONUNIT_WocheN.equals(transition.getTermDurationUnit()))
 			{
-				lastDayOfNewTerm = TimeUtil.addDays(TimeUtil.addWeeks(firstDayOfNewTerm, transition.getTermDuration()), -1);
+				lastDayOfTerm = TimeUtil.addDays(TimeUtil.addWeeks(firstDayOfTerm, transition.getTermDuration()), -1);
 			}
 			else if (X_C_Flatrate_Transition.TERMDURATIONUNIT_TagE.equals(transition.getTermDurationUnit()))
 			{
-				lastDayOfNewTerm = TimeUtil.addDays(TimeUtil.addDays(firstDayOfNewTerm, transition.getTermDuration()), -1);
+				lastDayOfTerm = TimeUtil.addDays(TimeUtil.addDays(firstDayOfTerm, transition.getTermDuration()), -1);
 			}
 			else
 			{
 				Check.assume(false, "TermDurationUnit " + transition.getTermDuration() + " doesn't exist");
-				lastDayOfNewTerm = null; // code won't be reached
+				lastDayOfTerm = null; // code won't be reached
 			}
 		}
 
-		return lastDayOfNewTerm;
+		return lastDayOfTerm;
 	}
 
 	/**
@@ -1485,7 +1503,6 @@ public class FlatrateBL implements IFlatrateBL
 			{
 				throw new AdempiereException(
 						"de.metas.flatrate.Org.Warehouse_Missing",
-						Env.getAD_Language(ctx),
 						new Object[] { msgBL.translate(ctx, I_AD_Org.COLUMNNAME_AD_Org_ID), InterfaceWrapperHelper.loadOutOfTrx(term.getAD_Org_ID(), I_AD_Org.class) });
 			}
 			warehouseId = warehousesForOrg.get(0).getM_Warehouse_ID();
@@ -1633,17 +1650,19 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public void completeIfValid(final I_C_Flatrate_Term term)
 	{
-		final boolean hasOverlappingTerms = hasOverlappingTerms(term);
-		if (hasOverlappingTerms)
+		final boolean overlappingIsOK = canOverlapWithOtherTerms(term);
+		if (!overlappingIsOK)
 		{
-
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(
-					Env.getCtx(),
-					MSG_HasOverlapping_Term,
-					new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));
-			return;
+			final boolean hasOverlappingTerms = hasOverlappingTerms(term);
+			if (hasOverlappingTerms)
+			{
+				Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(
+						Env.getCtx(),
+						MSG_HasOverlapping_Term,
+						new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));
+				return;
+			}
 		}
-
 		complete(term);
 	}
 
@@ -1653,6 +1672,13 @@ public class FlatrateBL implements IFlatrateBL
 		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
 		Services.get(IDocumentBL.class).processEx(term, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 
+	}
+
+	@Override
+	public boolean canOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term)
+	{
+		final boolean overlappingIsOK = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions());
+		return overlappingIsOK;
 	}
 
 	@Override
@@ -1674,7 +1700,6 @@ public class FlatrateBL implements IFlatrateBL
 
 		for (final I_C_Flatrate_Term term : terms)
 		{
-
 			// Only consider completed terms
 			if (!X_C_Flatrate_Term.DOCSTATUS_Completed.equals(term.getDocStatus()))
 			{
@@ -1685,11 +1710,8 @@ public class FlatrateBL implements IFlatrateBL
 			{
 				return true;
 			}
-
 		}
-
 		return false;
-
 	}
 
 	/**
@@ -1706,8 +1728,11 @@ public class FlatrateBL implements IFlatrateBL
 
 		final org.compiere.model.I_M_Product newProduct = newTerm.getM_Product();
 		final org.compiere.model.I_M_Product product = term.getM_Product();
-
-		if (newProduct != null)
+		if (newProduct != null && product != null)
+		{
+			return newProduct.getM_Product_ID() == product.getM_Product_ID();
+		}
+		else if (newProduct != null)
 		{
 
 			final List<I_C_Flatrate_Matching> flatrateMatchings = flatrateDAO.retrieveFlatrateMatchings(term.getC_Flatrate_Conditions());
@@ -1840,7 +1865,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (ancestor != null)
 		{
-			I_C_Flatrate_Term nextAncestor = getInitialFlatrateTerm(ancestor);
+			final I_C_Flatrate_Term nextAncestor = getInitialFlatrateTerm(ancestor);
 			if (nextAncestor != null)
 			{
 				ancestor = nextAncestor;

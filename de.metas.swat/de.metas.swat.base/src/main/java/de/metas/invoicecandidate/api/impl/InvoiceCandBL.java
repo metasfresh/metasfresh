@@ -3,6 +3,7 @@
  */
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
@@ -30,7 +31,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,15 +47,9 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IMDiscountSchemaBL;
-import org.adempiere.pricing.api.IMDiscountSchemaDAO;
-import org.adempiere.pricing.api.IPriceListBL;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
@@ -66,21 +60,17 @@ import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MNote;
-import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -89,13 +79,14 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -106,6 +97,8 @@ import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -123,8 +116,18 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.pricing.conditions.service.IPricingConditionsRepository;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
 
@@ -201,7 +204,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 			else
 			{
-				final I_C_InvoiceSchedule invoiceSched = ic.getC_InvoiceSchedule();
 
 				final Timestamp deliveryDate = ic.getDeliveryDate(); // task 08451: when it comes to invoicing, the important date is not when it was ordered but when the delivery was made
 				if (deliveryDate == null)
@@ -211,7 +213,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 				else
 				{
-					dateToInvoice = mkDateToInvoiceForInvoiceSchedule(invoiceSched, deliveryDate);
+					final InvoiceScheduleRepository invoiceScheduleRepository = Adempiere.getBean(InvoiceScheduleRepository.class);
+					final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(ic.getC_InvoiceSchedule());
+
+					dateToInvoice = TimeUtil.asTimestamp(invoiceSchedule.calculateNextDateToInvoice(TimeUtil.asLocalDate(deliveryDate)));
 				}
 			}
 		}
@@ -220,83 +225,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			dateToInvoice = TimeUtil.getDay(ic.getCreated()); // shouldn't happen
 		}
 		ic.setDateToInvoice(dateToInvoice);
-	}
-
-	private Timestamp mkDateToInvoiceForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSched, final Timestamp deliveryDate)
-	{
-		Check.assumeNotNull(invoiceSched, " param 'invoiceSched' not null");
-		Check.assumeNotNull(deliveryDate, " param 'deliveryDate' not null");
-
-		final Timestamp dateToInvoice;
-
-		if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily.equals(invoiceSched.getInvoiceFrequency()))
-		{
-			dateToInvoice = deliveryDate;
-		}
-		else if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Weekly.equals(invoiceSched.getInvoiceFrequency()))
-		{
-			final Calendar calToday = Calendar.getInstance();
-			calToday.setTime(deliveryDate);
-			calToday.set(Calendar.DAY_OF_WEEK, MInvoiceSchedule.getCalendarDay(invoiceSched.getInvoiceWeekDay()));
-
-			final Timestamp dateDayOfWeek = new Timestamp(calToday.getTimeInMillis());
-			if (dateDayOfWeek.before(deliveryDate))
-			{
-				dateToInvoice = TimeUtil.addWeeks(dateDayOfWeek, 1);
-			}
-			else
-			{
-				dateToInvoice = dateDayOfWeek;
-			}
-		}
-		else if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly.equals(invoiceSched.getInvoiceFrequency())
-				|| X_C_InvoiceSchedule.INVOICEFREQUENCY_TwiceMonthly.equals(invoiceSched.getInvoiceFrequency()))
-		{
-			final Calendar calToday = Calendar.getInstance();
-			calToday.setTime(deliveryDate);
-
-			final Timestamp dateDayOfMonth = new Timestamp(calToday.getTimeInMillis());
-
-			if (X_C_InvoiceSchedule.INVOICEFREQUENCY_TwiceMonthly.equals(invoiceSched.getInvoiceFrequency()))
-			{
-				dateToInvoice = computeDateToInvoice_TwiceMontlhy(dateDayOfMonth);
-			}
-			else
-			{
-				if (dateDayOfMonth.before(deliveryDate))
-				{
-
-					dateToInvoice = TimeUtil.addMonths(dateDayOfMonth, 1);
-
-				}
-				else
-				{
-					dateToInvoice = dateDayOfMonth;
-				}
-			}
-		}
-		else
-		{
-			throw new AdempiereException(invoiceSched + " has unsupported frequency '" + invoiceSched.getInvoiceFrequency() + "'");
-		}
-		return dateToInvoice;
-	}
-
-	/**
-	 * @task 08484
-	 */
-	private Timestamp computeDateToInvoice_TwiceMontlhy(final Timestamp dateDayOfMonth)
-	{
-		final Timestamp middleDayOfMonth = TimeUtil.getMonthMiddleDay(dateDayOfMonth);
-
-		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                                // task 08869
-		{
-			return middleDayOfMonth;
-		}
-
-		final Timestamp lastDayOfMonth = TimeUtil.getMonthLastDay(dateDayOfMonth);
-
-		return lastDayOfMonth;
 	}
 
 	void setInvoiceScheduleAmtStatus(final Properties ctx, final I_C_Invoice_Candidate ic)
@@ -513,9 +441,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * If the ic's invoice rule is "CustomerScheduleAfterDelivery", this method tries to get the BPartner's invoice schedule id.
-	 *
-	 * @param ic
-	 * @return
 	 */
 	private int retrieveInvoiceScheduleId(final I_C_Invoice_Candidate ic)
 	{
@@ -965,30 +890,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public int getPrecisionFromPricelist(final I_C_Invoice_Candidate ic)
 	{
-
 		// take the precision from the bpartner price list
-
-		final I_M_PricingSystem pricingSystem = ic.getM_PricingSystem();
 		final Timestamp date = ic.getDateOrdered();
-		final boolean isSOTrx = ic.isSOTrx();
+		final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
 		final I_C_BPartner_Location partnerLocation = ic.getBill_Location();
 		if (partnerLocation != null)
 		{
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
 					.getCurrentPricelistOrNull(
-							pricingSystem,
-							partnerLocation.getC_Location().getC_Country(),
+							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
+							partnerLocation.getC_Location().getC_Country_ID(),
 							date,
-							isSOTrx);
+							soTrx);
 
 			if (pricelist != null)
 			{
 				return pricelist.getPricePrecision();
 			}
 		}
+
 		// fall back: get the precision from the currency
 		return getPrecisionFromCurrency(ic);
-
 	}
 
 	@Override
@@ -999,22 +921,21 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public I_C_Invoice_Candidate splitCandidate(final I_C_Invoice_Candidate ic, final String trxName)
+	public I_C_Invoice_Candidate splitCandidate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// services
 		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 
 		final BigDecimal splitAmt = ic.getSplitAmt();
-		Check.assume(splitAmt.signum() != 0, "Split amount shall not be zero: {}", ic);
+		// splitAmt may be zero, if we are going to compute&set priceactual etc later.
+		// Check.assume(splitAmt.signum() != 0, "Split amount shall not be zero: {}", ic);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+		final I_C_Invoice_Candidate splitCand = newInstance(I_C_Invoice_Candidate.class, ic);
 
-		final I_C_Invoice_Candidate splitCand = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
-
-		// splitCand.setAD_Client_ID(ic.getAD_Client_ID());
 		Check.assume(splitCand.getAD_Client_ID() == ic.getAD_Client_ID(), "Same AD_Client_ID (split's AD_Client_ID={}, IC's AD_Client_ID={}", splitCand.getAD_Client_ID(), ic.getAD_Client_ID());
 		splitCand.setAD_Org_ID(ic.getAD_Org_ID());
 
+		splitCand.setAD_Table_ID(ic.getAD_Table_ID());
 		splitCand.setRecord_ID(ic.getRecord_ID()); // even if 0, we can't leave it empty, as the column is mandatory
 
 		splitCand.setIsActive(true);
@@ -1070,7 +991,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setC_Tax(ic.getC_Tax());
 		splitCand.setC_Tax_Override(ic.getC_Tax_Override());
 
-		InterfaceWrapperHelper.save(splitCand);
 		return splitCand;
 	}
 
@@ -1078,7 +998,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public String getInvoiceRule(final I_C_Invoice_Candidate ic)
 	{
 		final String invoiceRuleOverride = ic.getInvoiceRule_Override();
-		if (invoiceRuleOverride != null)
+		if (!Check.isEmpty(invoiceRuleOverride, true))
 		{
 			return invoiceRuleOverride;
 		}
@@ -1635,7 +1555,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			askForRegeneration = true;
 		}
-		else if (e instanceof org.adempiere.pricing.exceptions.ProductNotOnPriceListException)
+		else if (e instanceof de.metas.pricing.exceptions.ProductNotOnPriceListException)
 		{
 			askForRegeneration = true;
 		}
@@ -2023,63 +1943,44 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void setQualityDiscountPercent_Override(final I_C_Invoice_Candidate ic, final List<I_M_AttributeInstance> instances)
 	{
-		final IMDiscountSchemaDAO discountSchemaDAO = Services.get(IMDiscountSchemaDAO.class);
-		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+		final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final I_C_BPartner partner = ic.getBill_BPartner();
-
-		final I_M_DiscountSchema discountSchema = bPartnerDAO.retrieveDiscountSchemaOrNull(partner, ic.isSOTrx());
-		if (discountSchema == null)
+		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()));
+		if (discountSchemaId <= 0)
 		{
 			// do nothing
 			return;
 		}
 
-		final I_M_Product product = ic.getM_Product();
-
-		final List<org.compiere.model.I_M_DiscountSchemaBreak> breaks = discountSchemaDAO.retrieveBreaks(discountSchema);
-		final boolean isQtyBased = discountSchema.isQuantityBased();
-		final int productID = product.getM_Product_ID();
-		final int categoryID = product.getM_Product_Category_ID();
 		BigDecimal qty = ic.getQtyToInvoice();
-
 		if (qty.signum() < 0)
 		{
 			final org.compiere.model.I_M_InOut inout = ic.getM_InOut();
 
 			if (inout != null)
 			{
-
 				if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
 				{
 					qty = qty.negate();
 				}
 			}
 		}
-		final BigDecimal amt = ic.getPriceActual().multiply(qty);
 
-		final org.compiere.model.I_M_DiscountSchemaBreak appliedBreak = discountSchemaBL.pickApplyingBreak(
-				breaks,
-				instances,
-				isQtyBased,
-				productID,
-				categoryID,
-				qty,
-				amt);
+		final BigDecimal priceActual = ic.getPriceActual();
+		final int productId = ic.getM_Product_ID();
+		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 
-		final BigDecimal qualityDiscountPercentage;
+		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
+		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
+				.attributeInstances(instances)
+				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
+				.qty(qty)
+				.price(priceActual)
+				.build());
 
-		if (appliedBreak == null)
-		{
-			qualityDiscountPercentage = null;
-		}
-		else
-		{
-			final I_M_DiscountSchemaBreak discountSchemaBreak = InterfaceWrapperHelper.create(appliedBreak, I_M_DiscountSchemaBreak.class);
-			qualityDiscountPercentage = discountSchemaBreak.getQualityIssuePercentage();
-		}
-
+		final BigDecimal qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercentage);
 	}
 

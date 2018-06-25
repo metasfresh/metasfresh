@@ -28,39 +28,47 @@ import lombok.Setter;
  */
 
 @Data
-public class PurchaseCandidateState
+class PurchaseCandidateState
 {
-	private boolean processed;
-
 	private final boolean locked;
 
+	private boolean prepared;
+	@Setter(AccessLevel.NONE)
+	private boolean preparedInitial;
+
+	private boolean processed;
 	@Setter(AccessLevel.NONE)
 	private boolean processedInitial;
 
 	@Builder
 	private PurchaseCandidateState(
+			final boolean prepared,
 			final boolean processed,
 			final boolean locked)
 	{
+		this.prepared = prepared;
+		this.preparedInitial = prepared;
+
 		this.processed = processed;
 		this.processedInitial = processed;
+
 		this.locked = locked;
 	}
 
-	// don't use @lombok.AllArgsConstructor, because we might get the parameter ordering wrong.
-	private PurchaseCandidateState(
-			final boolean processed,
-			final boolean processedInitial,
-			final boolean locked)
+	private PurchaseCandidateState(final PurchaseCandidateState from)
 	{
-		this.processed = processed;
-		this.processedInitial = processedInitial;
-		this.locked = locked;
+		this.prepared = from.prepared;
+		this.preparedInitial = from.preparedInitial;
+
+		this.processed = from.processed;
+		this.processedInitial = from.processedInitial;
+
+		this.locked = from.locked;
 	}
 
-	public PurchaseCandidateState createCopy()
+	public PurchaseCandidateState copy()
 	{
-		return new PurchaseCandidateState(processed, processedInitial, locked);
+		return new PurchaseCandidateState(this);
 	}
 
 	public void setProcessed()
@@ -70,11 +78,14 @@ public class PurchaseCandidateState
 
 	public boolean hasChanges()
 	{
-		return processed != processedInitial;
+		return prepared != preparedInitial
+				|| processed != processedInitial;
+
 	}
 
 	public void markSaved()
 	{
+		preparedInitial = prepared;
 		processedInitial = processed;
 	}
 

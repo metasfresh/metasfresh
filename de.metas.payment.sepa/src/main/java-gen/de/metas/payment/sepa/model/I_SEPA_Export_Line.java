@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.payment.sepa.model;
 
 
@@ -32,7 +16,7 @@ public interface I_SEPA_Export_Line
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -48,7 +32,7 @@ public interface I_SEPA_Export_Line
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_SEPA_Export_Line, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_SEPA_Export_Line, org.compiere.model.I_AD_Client>(I_SEPA_Export_Line.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_SEPA_Export_Line
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -104,7 +88,7 @@ public interface I_SEPA_Export_Line
 	 */
 	public int getAD_Table_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException;
+	public org.compiere.model.I_AD_Table getAD_Table();
 
 	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
 
@@ -158,7 +142,7 @@ public interface I_SEPA_Export_Line
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException;
+	public org.compiere.model.I_C_BPartner getC_BPartner();
 
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
@@ -187,7 +171,7 @@ public interface I_SEPA_Export_Line
 	 */
 	public int getC_BP_BankAccount_ID();
 
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException;
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
 
 	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
 
@@ -216,7 +200,7 @@ public interface I_SEPA_Export_Line
 	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException;
+	public org.compiere.model.I_C_Currency getC_Currency();
 
 	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
 
@@ -444,7 +428,7 @@ public interface I_SEPA_Export_Line
 	 */
 	public int getSEPA_Export_ID();
 
-	public de.metas.payment.sepa.model.I_SEPA_Export getSEPA_Export() throws RuntimeException;
+	public de.metas.payment.sepa.model.I_SEPA_Export getSEPA_Export();
 
 	public void setSEPA_Export(de.metas.payment.sepa.model.I_SEPA_Export SEPA_Export);
 
@@ -494,7 +478,7 @@ public interface I_SEPA_Export_Line
 	 */
 	public int getSEPA_Export_Line_Retry_ID();
 
-	public de.metas.payment.sepa.model.I_SEPA_Export_Line getSEPA_Export_Line_Retry() throws RuntimeException;
+	public de.metas.payment.sepa.model.I_SEPA_Export_Line getSEPA_Export_Line_Retry();
 
 	public void setSEPA_Export_Line_Retry(de.metas.payment.sepa.model.I_SEPA_Export_Line SEPA_Export_Line_Retry);
 
@@ -507,7 +491,7 @@ public interface I_SEPA_Export_Line
 	 * Set SEPA_MandateRefNo.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setSEPA_MandateRefNo (java.lang.String SEPA_MandateRefNo);
@@ -516,7 +500,7 @@ public interface I_SEPA_Export_Line
 	 * Get SEPA_MandateRefNo.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getSEPA_MandateRefNo();
@@ -556,7 +540,7 @@ public interface I_SEPA_Export_Line
 	 * Swift Code or BIC
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setSwiftCode (java.lang.String SwiftCode);
@@ -566,7 +550,7 @@ public interface I_SEPA_Export_Line
 	 * Swift Code or BIC
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getSwiftCode();

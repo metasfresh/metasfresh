@@ -13,6 +13,7 @@ import org.compiere.model.I_C_OrderLine;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.IESSystem;
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.event.Topic;
 import de.metas.order.event.OrderUserNotifications;
 
@@ -32,7 +33,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		return ImmutableList.of(OrderUserNotifications.EVENTBUS_TOPIC);
+		return ImmutableList.of(OrderUserNotifications.USER_NOTIFICATIONS_TOPIC);
 	}
 
 	@Override
@@ -46,7 +47,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 		final IESSystem esSystem = Services.get(IESSystem.class);
 		if (esSystem.isEnabled())
 		{
-			esSystem.newModelIndexerConfig("orders", I_C_OrderLine.class)
+			esSystem.newModelIndexerConfig(ESModelIndexerProfile.KPI, "orders", I_C_OrderLine.class)
 					.triggerOnDocumentChanged(I_C_Order.class, I_C_OrderLine.COLUMN_C_Order_ID)
 					.triggerOnDelete()
 					.buildAndInstall();

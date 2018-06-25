@@ -56,6 +56,8 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public final class ProductBL implements IProductBL
@@ -88,6 +90,13 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public int getUOMPrecision(final int productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return getUOMPrecision(product);
+	}
+
+	@Override
 	public String getMMPolicy(final I_M_Product product)
 	{
 		final MProductCategory pc = MProductCategory.get(Env.getCtx(), product.getM_Product_Category_ID());
@@ -116,8 +125,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public I_C_UOM getStockingUOM(final int productId)
 	{
-		Check.assume(productId > 0, "productId > 0");
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return getStockingUOM(product);
 	}
 
@@ -181,6 +189,13 @@ public final class ProductBL implements IProductBL
 //		}
 // @formatter:on
 		return false;
+	}
+
+	@Override
+	public boolean isItem(final int productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return isItem(product);
 	}
 
 	@Override
@@ -416,4 +431,64 @@ public final class ProductBL implements IProductBL
 		return isASIMandatory(product, isSOTrx);
 	}
 
+	@Override
+	public boolean isInstanceAttribute(@NonNull final I_M_Product product)
+	{
+		final I_M_AttributeSet mas = getM_AttributeSet(product);
+		if (mas == null)
+		{
+			return false;
+		}
+		return mas.isInstanceAttribute();
+	}
+
+	@Override
+	public boolean isProductInCategory(final int productId, final int expectedProductCategoryId)
+	{
+		if (productId <= 0 || expectedProductCategoryId <= 0)
+		{
+			return false;
+		}
+
+		final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+		return productCategoryId == expectedProductCategoryId;
+	}
+
+	@Override
+	public String getProductValueAndName(final int productId)
+	{
+		if (productId <= 0)
+		{
+			return "-";
+		}
+
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		if (product == null)
+		{
+			return "<" + productId + ">";
+		}
+		return product.getValue() + "_" + product.getName();
+	}
+
+	@Override
+	public String getProductValue(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		if (product == null)
+		{
+			return "<" + productId + ">";
+		}
+		return product.getValue();
+	}
+
+	@Override
+	public String getProductName(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		if (product == null)
+		{
+			return "<" + productId + ">";
+		}
+		return product.getName();
+	}
 }

@@ -28,8 +28,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TimeUtil;
 
 import de.metas.tourplanning.api.IDeliveryDayGenerator;
@@ -38,8 +38,14 @@ import de.metas.tourplanning.model.I_M_TourVersion;
 
 public class TourBL implements ITourBL
 {
-	@Override
-	public Timestamp getPreparationTime(final I_M_TourVersion tourVersion, final int dayOfWeek)
+	/**
+	 * Gets Preparation Time for given Day of the Week.
+	 * 
+	 * @param tourVersion
+	 * @param dayOfWeek
+	 * @return preparation time (hour/minute/sec/millis) or null if there is no preparation time for that day of the week
+	 */
+	private static Timestamp getPreparationTime(final I_M_TourVersion tourVersion, final int dayOfWeek)
 	{
 		Check.assumeNotNull(tourVersion, "tourVersion not null");
 

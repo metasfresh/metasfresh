@@ -5,9 +5,9 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
@@ -74,7 +74,7 @@ public class M_HU
 	{
 		final I_M_HU oldHu = InterfaceWrapperHelper.createOld(hu, I_M_HU.class);
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		huStatusBL.assertStatusChangeIsAllowed(oldHu.getHUStatus(), hu.getHUStatus());
+		huStatusBL.assertStatusChangeIsAllowed(hu, oldHu.getHUStatus(), hu.getHUStatus());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_M_Locator_ID)
@@ -86,7 +86,7 @@ public class M_HU
 
 	/**
 	 * Updates the status, locator BP and BPL for child handling units.
-	 * 
+	 *
 	 * Note that this method only updates the direct children, but that will cause it to be called again and so on.
 	 *
 	 * @param hu

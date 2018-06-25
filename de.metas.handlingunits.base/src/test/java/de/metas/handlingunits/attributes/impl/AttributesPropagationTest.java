@@ -10,12 +10,12 @@ package de.metas.handlingunits.attributes.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +40,6 @@ import org.junit.Test;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -72,7 +71,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 	protected void initialize()
 	{
 		attributesTestHelper = new AttributesTestHelper();
-		
+
 		//
 		// Handling Units Definition
 		huDefBag = helper.createHUDefinition(HUTestHelper.NAME_Bag_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -103,7 +102,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 			//helper.createHU_PI_Item_IncludedHU(huDefIFCO, huDefIFCO, BigDecimal.ONE);
 			final I_M_HU_PI_Item   piTU_Item_IFCO = helper.createHU_PI_Item_Material(huDefIFCO);
 			helper.assignProduct(piTU_Item_IFCO, pTomato, BigDecimal.TEN, uomEach);
-			
+
 			// value will not be propagated
 			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
 					.setM_HU_PI(huDefIFCO)
@@ -149,7 +148,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 
 		// create and destroy instances only with a I_M_Transaction
 		final List<I_M_HU> huPalets = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet);
-		
+
 		return huPalets;
 	}
 
@@ -157,8 +156,8 @@ public class AttributesPropagationTest extends AbstractHUTest
 	public void testNormalPropagation()
 	{
 		final List<I_M_HU> huPalets = createIncomingPalets();
-		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("huPalets", huPalets)));
-		
+		//System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("huPalets", huPalets)));
+
 		Assert.assertEquals("There should be 2 palets", 2, huPalets.size());
 
 		final I_M_HU palet1 = huPalets.get(0);

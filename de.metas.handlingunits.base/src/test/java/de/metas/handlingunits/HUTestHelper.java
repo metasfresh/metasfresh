@@ -56,12 +56,12 @@ import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
@@ -1212,13 +1212,6 @@ public class HUTestHelper
 		return attributeBuilder.create(ctx);
 	}
 
-	public void setAttributeValue(final I_M_HU hu, final I_M_Attribute attribute, final Object value)
-	{
-		final IAttributeStorageFactory storageFactory = getHUContext().getHUAttributeStorageFactory();
-		final IAttributeStorage attributes = storageFactory.getAttributeStorage(hu);
-		attributes.setValue(attribute, value);
-	}
-
 	public void createAttributeListValues(final org.compiere.model.I_M_Attribute attribute, final String... values)
 	{
 		for (final String value : values)
@@ -1465,7 +1458,7 @@ public class HUTestHelper
 	public List<I_M_HU> retrieveAllHandlingUnitsOfType(final I_M_HU_PI huPI)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
+
 		final List<I_M_HU> result = new ArrayList<>();
 
 		// Filter

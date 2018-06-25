@@ -4,8 +4,8 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Column;
 
 import de.metas.dlm.connection.DLMConnectionCustomizer;

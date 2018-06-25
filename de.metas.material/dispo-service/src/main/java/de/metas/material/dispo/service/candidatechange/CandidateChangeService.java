@@ -59,7 +59,8 @@ public class CandidateChangeService
 		final CandidateHandler candidateChangeHandler = type2handler.get(candidate.getType());
 		if (candidateChangeHandler == null)
 		{
-			throw new AdempiereException("Given 'candidate' parameter has an unsupported type").appendParametersToMessage()
+			throw new AdempiereException("The given candidate has an unsupported type")
+					.appendParametersToMessage()
 					.setParameter("type", candidate.getType())
 					.setParameter("candidate", candidate);
 		}

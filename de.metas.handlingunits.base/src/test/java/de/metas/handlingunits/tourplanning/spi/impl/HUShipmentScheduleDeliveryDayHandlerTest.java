@@ -27,10 +27,10 @@ import java.math.BigDecimal;
 import java.util.Random;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
 import org.hamcrest.Matchers;
 import org.junit.Assert;

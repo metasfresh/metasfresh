@@ -32,15 +32,11 @@ import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
@@ -51,17 +47,25 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.pricing.service.ProductPrices;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 public class InvoiceLineBL implements IInvoiceLineBL
 {
@@ -179,7 +183,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		if (invoice.getM_PriceList_ID() != MPriceList.M_PriceList_ID_None)
+		if (invoice.getM_PriceList_ID() != IPriceListDAO.M_PriceList_ID_None)
 		{
 			return getTaxCategoryFromProductPrice(invoiceLine, invoice);
 		}
@@ -208,9 +212,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_PriceList priceList = invoice.getM_PriceList();
 
-
-		final I_M_PriceList_Version priceListVersion = priceListDAO.
-				retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
+		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
 		final int m_Product_ID = invoiceLine.getM_Product_ID();
@@ -290,7 +292,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	public IEditablePricingContext createPricingContext(final I_C_InvoiceLine invoiceLine)
 	{
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		final int priceListId = invoice.getM_PriceList_ID();
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
 
 		final BigDecimal qtyInvoicedInPriceUOM = calculateQtyInvoicedInPriceUOM(invoiceLine);
 
@@ -298,7 +300,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	public IEditablePricingContext createPricingContext(I_C_InvoiceLine invoiceLine,
-			final int priceListId,
+			final PriceListId priceListId,
 			final BigDecimal priceQty)
 	{
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
@@ -322,12 +324,34 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// 03152: setting the 'ol' to allow the subscription system to compute the right price
 		pricingCtx.setReferencedObject(invoiceLine);
 
-		pricingCtx.setM_PriceList_ID(priceListId);
+		pricingCtx.setPriceListId(priceListId);
 		// PLV is only accurate if PL selected in header
 		// metas: relay on M_PriceList_ID only, don't use M_PriceList_Version_ID
 		// pricingCtx.setM_PriceList_Version_ID(orderLine.getM_PriceList_Version_ID());
 
+		final int countryId = getCountryIdOrZero(invoiceLine);
+		pricingCtx.setC_Country_ID(countryId);
+
 		return pricingCtx;
+	}
+
+	private int getCountryIdOrZero(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
+
+		if (invoice.getC_BPartner_Location_ID() <= 0)
+		{
+			return 0;
+		}
+
+		final org.compiere.model.I_C_BPartner_Location bPartnerLocation = invoice.getC_BPartner_Location();
+		if (bPartnerLocation.getC_Location_ID() <= 0)
+		{
+			return 0;
+		}
+
+		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
+		return countryId;
 	}
 
 	@Override
@@ -335,7 +359,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	{
 		if (qtyEntered != null)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(line);
 			final I_C_Invoice invoice = line.getC_Invoice();
 			final int priceListId = invoice.getM_PriceList_ID();
 
@@ -345,7 +368,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			// this code has been borrowed from
 			// org.compiere.model.CalloutOrder.amt
-			final int stdPrecision = MPriceList.getStandardPrecision(ctx, priceListId);
+			final int stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 
 			BigDecimal lineNetAmt = convertedQty.multiply(line.getPriceActual());
 
@@ -403,8 +426,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// When invoices are created by the system, there is no need to change an already-set discound (and this code is executed only once anyways)
 		if (invoiceLine.getDiscount().signum() == 0)
 		{
-			invoiceLine.setDiscount(pricingResult.getDiscount());
+			invoiceLine.setDiscount(pricingResult.getDiscount().getValueAsBigDecimal());
 		}
+
+		final PricingConditionsResult pricingConditions = pricingResult.getPricingConditions();
+		invoiceLine.setBase_PricingSystem_ID(pricingConditions != null ? PricingSystemId.getRepoId(pricingConditions.getBasePricingSystemId()) : -1);
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount

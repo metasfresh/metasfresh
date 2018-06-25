@@ -56,8 +56,9 @@ import de.metas.currency.ICurrencyDAO;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
- *
+ * @deprecated TODO shall be merged into CurrencyRepository
  */
+@Deprecated
 public class CurrencyDAO implements ICurrencyDAO
 {
 	@Override

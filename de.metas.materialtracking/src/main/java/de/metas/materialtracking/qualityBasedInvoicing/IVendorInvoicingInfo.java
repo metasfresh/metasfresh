@@ -24,9 +24,10 @@ package de.metas.materialtracking.qualityBasedInvoicing;
 
 
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.pricing.PricingSystemId;
 
 
 /**
@@ -42,7 +43,7 @@ public interface IVendorInvoicingInfo
 	/**
 	 * @return vendor billing bpartner
 	 */
-	int getBill_BPartner_ID();
+	BPartnerId getBill_BPartner_ID();
 
 	/**
 	 * @return vendor billing bpartner location
@@ -64,7 +65,7 @@ public interface IVendorInvoicingInfo
 	/**
 	 * @return vendor pricing system
 	 */
-	I_M_PricingSystem getM_PricingSystem();
+	PricingSystemId getPricingSystemId();
 
 	/**
 	 * @return vendor contract; never return null

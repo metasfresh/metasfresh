@@ -21,7 +21,6 @@ package org.eevolution.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;

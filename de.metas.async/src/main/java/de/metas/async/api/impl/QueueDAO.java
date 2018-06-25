@@ -10,12 +10,12 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,9 +34,9 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -100,7 +100,7 @@ public class QueueDAO extends AbstractQueueDAO
 				.setOrderBy(I_C_Queue_PackageProcessor.COLUMNNAME_C_Queue_PackageProcessor_ID)
 				.list(I_C_Queue_PackageProcessor.class);
 
-		final Map<Integer, I_C_Queue_PackageProcessor> map = new HashMap<Integer, I_C_Queue_PackageProcessor>(list.size());
+		final Map<Integer, I_C_Queue_PackageProcessor> map = new HashMap<>(list.size());
 		for (final I_C_Queue_PackageProcessor packageProcessor : list)
 		{
 			map.put(packageProcessor.getC_Queue_PackageProcessor_ID(), packageProcessor);
@@ -141,7 +141,7 @@ public class QueueDAO extends AbstractQueueDAO
 		{
 			throw new AdempiereException("@NotFound@ @AD_Table_ID@ (ID:" + adTableId + ")");
 		}
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(element);
 		final IContextAware context = new PlainContextAware(ctx, trxName);
 		final TableRecordReference itemRef = new TableRecordReference(adTableId, recordId);
@@ -150,14 +150,14 @@ public class QueueDAO extends AbstractQueueDAO
 		{
 			throw new PackageItemNotAvailableException(itemRef.getTableName(), itemRef.getRecord_ID());
 		}
-		
+
 		return item;
 	}
 
 	@Override
 	public IQuery<I_C_Queue_WorkPackage> createQuery(final Properties ctx, final IWorkPackageQuery packageQuery)
 	{
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 		final StringBuilder wc = new StringBuilder("1=1");
 
 		// Only not processed packages
@@ -219,7 +219,7 @@ public class QueueDAO extends AbstractQueueDAO
 		}
 
 		// NOTE: don't filter by AD_Client_ID because it might be that it's not available
-		return new TypedSqlQuery<I_C_Queue_WorkPackage>(ctx, I_C_Queue_WorkPackage.class, wc.toString(), ITrx.TRXNAME_None)
+		return new TypedSqlQuery<>(ctx, I_C_Queue_WorkPackage.class, wc.toString(), ITrx.TRXNAME_None)
 				.setParameters(params)
 				.setOnlyActiveRecords(true)
 				.setOrderBy(queueOrderByComparator.getSql());

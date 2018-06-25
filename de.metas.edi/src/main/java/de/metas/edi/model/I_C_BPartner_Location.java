@@ -23,7 +23,7 @@ package de.metas.edi.model;
  */
 
 
-public interface I_C_BPartner_Location extends de.metas.adempiere.model.I_C_BPartner_Location
+public interface I_C_BPartner_Location extends org.compiere.model.I_C_BPartner_Location
 {
 	// @formatter:off
 	String COLUMNNAME_GLN = "GLN";

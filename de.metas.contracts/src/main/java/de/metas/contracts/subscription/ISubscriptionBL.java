@@ -29,7 +29,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
@@ -41,6 +40,8 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 
 public interface ISubscriptionBL extends ISingletonService
 {
@@ -62,7 +63,7 @@ public interface ISubscriptionBL extends ISingletonService
 	 * the price that would be payable with the given pricing system and return the difference.
 	 * 
 	 * @param ctx
-	 * @param mPricingSystemId
+	 * @param pricingSystemId
 	 * @param deliveries
 	 *            instances with {@link I_C_SubscriptionProgress#COLUMNNAME_EventType} =
 	 *            {@link X_C_SubscriptionProgress#EVENTTYPE_Lieferung}.
@@ -74,7 +75,7 @@ public interface ISubscriptionBL extends ISingletonService
 	 * @throws ProductNotOnPriceListException
 	 *             if the product can't be delivered according to the new pricing system.
 	 */
-	BigDecimal computePriceDifference(Properties ctx, int mPricingSystemId, List<I_C_SubscriptionProgress> deliveries, String trxName);
+	BigDecimal computePriceDifference(Properties ctx, PricingSystemId pricingSystemId, List<I_C_SubscriptionProgress> deliveries, String trxName);
 
 	/**
 	 * Works on the given {@code sc}'s next {@link I_C_SubscriptionProgress} record.

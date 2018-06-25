@@ -62,7 +62,7 @@ public class MExpenseType extends X_S_ExpenseType
 	}	// MExpenseType
 
 	/** Cached Product */
-	private I_M_Product m_product = null;
+	private I_M_Product product = null;
 
 	/**
 	 * Get Product
@@ -71,24 +71,18 @@ public class MExpenseType extends X_S_ExpenseType
 	 */
 	private I_M_Product getProduct()
 	{
-		if (m_product == null)
+		if (product == null)
 		{
-			m_product = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_Product.class)
-					.addEqualsFilter(de.metas.adempiere.model.I_M_Product.COLUMN_S_ExpenseType_ID, getS_ExpenseType_ID())
+			product = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_M_Product.class, getCtx(), get_TrxName())
+					.addEqualsFilter(I_M_Product.COLUMN_S_ExpenseType_ID, getS_ExpenseType_ID())
 					.create()
 					.firstOnly(I_M_Product.class);
 		}
-		return m_product;
-	}	// getProduct
-
-	/**
-	 * beforeSave
-	 * 
-	 * @see org.compiere.model.PO#beforeSave(boolean)
-	 * @param newRecord
-	 * @return true
-	 */
+		return product;
+	}
+	
+	
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
@@ -99,21 +93,14 @@ public class MExpenseType extends X_S_ExpenseType
 				setValue(getName());
 			}
 			
-			m_product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-			m_product.setProductType(X_M_Product.PRODUCTTYPE_ExpenseType);
-			updateProductFromExpenseType(m_product, this);
-			InterfaceWrapperHelper.save(m_product);
+			product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			product.setProductType(X_M_Product.PRODUCTTYPE_ExpenseType);
+			updateProductFromExpenseType(product, this);
+			InterfaceWrapperHelper.save(product);
 		}
 		return true;
 	}	// beforeSave
 
-	/**
-	 * After Save
-	 * 
-	 * @param newRecord new
-	 * @param success success
-	 * @return success
-	 */
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
@@ -125,9 +112,9 @@ public class MExpenseType extends X_S_ExpenseType
 		{
 			InterfaceWrapperHelper.save(product);
 		}
-
+		
 		return success;
-	}	// afterSave
+	}
 
 	/**
 	 * Set Expense Type

@@ -28,12 +28,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
 import org.compiere.util.Util;
+
+import de.metas.lang.RepoIdAware;
+import lombok.NonNull;
 
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
@@ -78,12 +83,15 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private final IQueryFilterModifier operand1Modifier;
 	private final IQueryFilterModifier operand2Modifier;
 
-	/* package */ CompareQueryFilter(final String columnName, final Operator operator, final Object value, final IQueryFilterModifier modifier)
+	/* package */ CompareQueryFilter(
+			final String columnName,
+			@NonNull final Operator operator,
+			final Object value,
+			final IQueryFilterModifier modifier)
 	{
 		this.operand1 = ModelColumnNameValue.<T> forColumnName(columnName);
 		this.operand2 = value;
 
-		Check.assumeNotNull(operator, "operator not null");
 		this.operator = operator;
 
 		this.operand1Modifier = Util.coalesce(modifier, NullQueryFilterModifier.instance);
@@ -229,20 +237,36 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else if (value1 instanceof Comparable<?>)
 		{
-			@SuppressWarnings("unchecked")
-			final Comparable<Object> cmp1 = (Comparable<Object>)value1;
-			return cmp1.compareTo(value2);
+			return compareHandleRepoIdAware(value1, value2);
 		}
 		else if (value2 instanceof Comparable<?>)
 		{
-			@SuppressWarnings("unchecked")
-			final Comparable<Object> cmp2 = (Comparable<Object>)value2;
-			return -1 * cmp2.compareTo(value1);
+			return -1 * compareHandleRepoIdAware(value2, value1);
 		}
 		else
 		{
 			throw new IllegalArgumentException("Values '" + value1 + "' and '" + value2 + "' could not be compared");
 		}
+	}
+
+	/**
+	 * @param comparableObj can be cast to {@code Comparable<Object>}
+	 * @param valueToCompareWith might be {@code instanceof} {@link RepoIdAware}.
+	 */
+	private int compareHandleRepoIdAware(
+			@NonNull final Object comparableObj,
+			@Nullable final Object valueToCompareWith)
+	{
+		@SuppressWarnings("unchecked")
+		final Comparable<Object> comparable = (Comparable<Object>)comparableObj;
+
+		if (comparableObj instanceof Integer && valueToCompareWith instanceof RepoIdAware)
+		{
+			final RepoIdAware repoIdAware = (RepoIdAware)valueToCompareWith;
+			return comparable.compareTo(repoIdAware.getRepoId());
+		}
+
+		return comparable.compareTo(valueToCompareWith);
 	}
 
 	@Override

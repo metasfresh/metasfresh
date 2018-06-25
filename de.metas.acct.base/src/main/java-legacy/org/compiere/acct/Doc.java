@@ -39,7 +39,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -301,9 +300,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/** Contained Doc Lines */
 	private List<DocLineType> docLines;
 
-	/** Facts */
-	private List<Fact> m_fact = null;
-
 	/** No Currency in Document Indicator (-2) */
 	protected static final int NO_CURRENCY = -2;
 
@@ -523,8 +519,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Create Fact per AcctSchema
-		m_fact = new ArrayList<>();
-		List<DocLineType> p_lines = getDocLines();
+		final List<Fact> facts = new ArrayList<>();
 		// for all Accounting Schema
 		{
 			for (final MAcctSchema acctSchema : m_ass)
@@ -536,11 +531,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					// Header Level Org
 					skip = acctSchema.isSkipOrg(getAD_Org_ID());
 					// Line Level Org
-					if (p_lines != null)
+					final List<DocLineType> docLines = getDocLines();
+					if (docLines != null)
 					{
-						for (int line = 0; skip && line < p_lines.size(); line++)
+						for (int line = 0; skip && line < docLines.size(); line++)
 						{
-							skip = acctSchema.isSkipOrg(p_lines.get(line).getAD_Org_ID());
+							skip = acctSchema.isSkipOrg(docLines.get(line).getAD_Org_ID());
 							if (!skip)
 							{
 								break;
@@ -554,7 +550,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				}
 
 				// post
-				postLogic(acctSchema);
+				final List<Fact> factsForAcctSchema = postLogic(acctSchema);
+				facts.addAll(factsForAcctSchema);
 			}
 		}
 
@@ -566,7 +563,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		//
 		// Save facts
 		// p_Status = postCommit (p_Status);
-		for (final Fact fact : m_fact)
+		for (final Fact fact : facts)
 		{
 			// Skip null facts
 			if (fact == null)
@@ -588,14 +585,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		//
 		// Dispose facts
 		// Dispose lines
-		for (final Fact fact : m_fact)
+		for (Fact fact : facts)
 		{
 			if (fact != null)
 			{
 				fact.dispose();
 			}
 		}
-		p_lines = null;
 	}
 
 	/**
@@ -613,8 +609,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * Posting logic for Accounting Schema
 	 *
 	 * @param acctSchema Accounting Schema
+	 * @return
 	 */
-	private final void postLogic(final MAcctSchema acctSchema)
+	private final List<Fact> postLogic(final MAcctSchema acctSchema)
 	{
 		// rejectUnbalanced
 		if (!acctSchema.isSuspenseBalancing() && !isBalanced())
@@ -655,7 +652,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 						.setPostingStatus(PostingStatus.Error)
 						.setDetailMessage("No fact");
 			}
-			m_fact.add(fact);
+
 			//
 			// p_Status = STATUS_PostPrepared;
 
@@ -726,6 +723,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}	// for all facts
 
 		// return STATUS_Posted;
+		return facts;
 	}   // postLogic
 
 	/**
@@ -1874,19 +1872,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		{
 			final Object valueObj = po.get_Value(index);
 			return DisplayType.toBoolean(valueObj, defaultValue);
-		}
-
-		return defaultValue;
-	}
-
-	private final BigDecimal getValueAsBD(final String columnName, final BigDecimal defaultValue)
-	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index != -1)
-		{
-			final Object valueObj = po.get_Value(index);
-			return NumberUtils.asBigDecimal(valueObj, defaultValue);
 		}
 
 		return defaultValue;

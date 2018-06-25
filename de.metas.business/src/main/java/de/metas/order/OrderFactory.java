@@ -2,8 +2,8 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,8 +14,12 @@ import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.lang.SOTrx;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,13 +56,13 @@ public class OrderFactory
 	public static final OrderFactory newPurchaseOrder()
 	{
 		return new OrderFactory()
-				.soTrx(false);
+				.soTrx(SOTrx.PURCHASE);
 	}
 
 	public static final OrderFactory newSalesOrder()
 	{
 		return new OrderFactory()
-				.soTrx(true);
+				.soTrx(SOTrx.SALES);
 	}
 
 	private final I_C_Order order;
@@ -127,16 +131,16 @@ public class OrderFactory
 		return orderLineBuilder;
 	}
 
-	public Optional<OrderLineBuilder> orderLineByProductAndUom(final int productId, final int uomId)
+	public Optional<OrderLineBuilder> orderLineByProductAndUom(final ProductId productId, final int uomId)
 	{
 		return orderLineBuilders.stream()
-				.filter(orderLine -> orderLine.getProductId() == productId && orderLine.getUomId() == uomId)
+				.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))
 				.findFirst();
 	}
-
-	private OrderFactory soTrx(final boolean isSOTrx)
+	
+	private OrderFactory soTrx(@NonNull final SOTrx soTrx)
 	{
-		order.setIsSOTrx(isSOTrx);
+		order.setIsSOTrx(soTrx.toBoolean());
 		return this;
 	}
 
@@ -213,23 +217,23 @@ public class OrderFactory
 		return this;
 	}
 
-	public OrderFactory datePromised(final Date datePromised)
+	public OrderFactory datePromised(final LocalDateTime datePromised)
 	{
 		assertNotBuilt();
 		order.setDatePromised(TimeUtil.asTimestamp(datePromised));
 		return this;
 	}
 
-	public OrderFactory shipBPartner(final int bpartnerId, final int bpartnerLocationId, final int contactId)
+	public OrderFactory shipBPartner(@NonNull final BPartnerId bpartnerId, final int bpartnerLocationId, final int contactId)
 	{
 		assertNotBuilt();
-		order.setC_BPartner_ID(bpartnerId);
+		order.setC_BPartner_ID(bpartnerId.getRepoId());
 		order.setC_BPartner_Location_ID(bpartnerLocationId);
 		order.setAD_User_ID(contactId);
 		return this;
 	}
 
-	public OrderFactory shipBPartner(final int bpartnerId)
+	public OrderFactory shipBPartner(final BPartnerId bpartnerId)
 	{
 		final int bpartnerLocationId = -1;
 		final int contactId = -1;

@@ -5,7 +5,6 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
@@ -13,6 +12,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.api.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_BPartner;

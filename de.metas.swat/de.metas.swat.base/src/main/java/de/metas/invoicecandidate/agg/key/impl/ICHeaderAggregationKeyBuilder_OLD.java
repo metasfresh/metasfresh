@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.MPricingSystem;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -37,6 +36,7 @@ import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.pricing.service.IPriceListDAO;
 
 /**
  * AggregationKey value handler for Invoice Candidates in Material Tracking
@@ -118,7 +118,7 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		values.add(ic.isSOTrx());
 
 		// Pricing System
-		final int pricingSystemId = MPricingSystem.M_PricingSystem_ID_None; // 08511 workaround
+		final int pricingSystemId = IPriceListDAO.M_PricingSystem_ID_None; // 08511 workaround
 		values.add(pricingSystemId);
 		
 		values.add(invoiceCandBL.isTaxIncluded(ic)); // task 08451

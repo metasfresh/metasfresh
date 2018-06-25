@@ -1,37 +1,43 @@
 package de.metas.purchasecandidate;
 
 import static java.util.stream.Collectors.toCollection;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_C_OrderLine;
+import org.adempiere.warehouse.WarehouseId;
 
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.order.OrderAndLineId;
+import de.metas.product.ProductId;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
-import de.metas.vendor.gateway.api.ProductAndQuantity;
-import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
-import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
+import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
-import lombok.experimental.Delegate;
+import lombok.ToString;
 
 /*
  * #%L
@@ -56,105 +62,195 @@ import lombok.experimental.Delegate;
  */
 
 @Data
+@ToString(doNotUseGetters = true)
+@EqualsAndHashCode(doNotUseGetters = true)
 public class PurchaseCandidate
 {
 	@Setter(AccessLevel.NONE)
-	private int purchaseCandidateId;
+	private PurchaseCandidateId id;
 
-	private BigDecimal qtyToPurchase;
-
-	@Setter(AccessLevel.NONE)
-	private BigDecimal qtyToPurchaseInitial;
-
-	private Date dateRequired;
+	@NonNull
+	private Quantity qtyToPurchase;
 
 	@Setter(AccessLevel.NONE)
-	private Date dateRequiredInitial;
+	private Quantity qtyToPurchaseInitial;
 
-	@Delegate
-	private final PurchaseCandidateImmutableFields identifier;
+	@Nullable
+	private PurchaseProfitInfo profitInfo;
 
+	@NonNull
+	private LocalDateTime purchaseDatePromised;
+
+	@Setter(AccessLevel.NONE)
+	private LocalDateTime purchaseDatePromisedInitial;
+
+	@Getter(AccessLevel.NONE)
+	private final Duration reminderTime;
+
+	@Getter(AccessLevel.PRIVATE)
+	private final PurchaseCandidateImmutableFields immutableFields;
+
+	@Getter(AccessLevel.NONE)
 	private final PurchaseCandidateState state;
 
-	private final List<PurchaseOrderItem> purchaseOrderItems;
+	@Getter(AccessLevel.NONE)
+	private final ArrayList<PurchaseOrderItem> purchaseOrderItems;
 
-	private final List<PurchaseErrorItem> purchaseErrorItems;
+	@Getter(AccessLevel.NONE)
+	private final ArrayList<PurchaseErrorItem> purchaseErrorItems;
 
 	@Builder
 	private PurchaseCandidate(
-			final int purchaseCandidateId,
-			final int salesOrderId,
-			final int salesOrderLineId,
-			final int purchaseOrderLineId,
-			final int orgId,
-			final int warehouseId,
-			final int productId,
-			final int uomId,
-			final int vendorBPartnerId,
-			@NonNull final VendorProductInfo vendorProductInfo,
-			@NonNull final BigDecimal qtyToPurchase,
-			@NonNull final Date dateRequired,
+			final PurchaseCandidateId id,
+
+			@NonNull final DemandGroupReference groupReference,
+			@Nullable final OrderAndLineId salesOrderAndLineIdOrNull,
+
+			final boolean prepared,
 			final boolean processed,
 			final boolean locked,
-			@Singular final List<PurchaseItem> purchaseItems)
+			//
+			@NonNull final BPartnerId vendorId,
+			//
+			@NonNull final OrgId orgId,
+			@NonNull final WarehouseId warehouseId,
+			//
+			@NonNull final ProductId productId,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull final String vendorProductNo,
+			//
+			@NonNull final Quantity qtyToPurchase,
+			//
+			@NonNull final LocalDateTime purchaseDatePromised,
+			final Duration reminderTime,
+			//
+			final PurchaseProfitInfo profitInfo,
+			//
+			@Singular final List<PurchaseItem> purchaseItems,
+			//
+			final boolean aggregatePOs)
 	{
-		Check.assume(salesOrderId > 0, "salesOrderId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
-		Check.assume(salesOrderLineId > 0, "salesOrderLineId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
-		Check.assume(orgId > 0, "orgId > 0");
-		Check.assume(warehouseId > 0, "warehouseId > 0");
-		Check.assume(productId > 0, "productId > 0");
-		Check.assume(uomId > 0, "uomId > 0");
-		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
+		this.id = id;
 
-		this.purchaseCandidateId = purchaseCandidateId;
-
-		identifier = PurchaseCandidateImmutableFields.builder()
+		immutableFields = PurchaseCandidateImmutableFields.builder()
+				.groupReference(groupReference)
+				.salesOrderAndLineIdOrNull(salesOrderAndLineIdOrNull)
+				.vendorId(vendorId)
 				.orgId(orgId)
+				.warehouseId(warehouseId)
 				.productId(productId)
-				.salesOrderId(salesOrderId)
-				.salesOrderLineId(salesOrderLineId)
-				.uomId(uomId)
-				.vendorBPartnerId(vendorBPartnerId)
-				.vendorProductInfo(vendorProductInfo)
-				.warehouseId(warehouseId).build();
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.vendorProductNo(vendorProductNo)
+				.aggregatePOs(aggregatePOs)
+				.build();
 
 		state = PurchaseCandidateState.builder()
+				.prepared(prepared)
+				.processed(processed)
 				.locked(locked)
-				.processed(processed).build();
+				.build();
 
 		this.qtyToPurchase = qtyToPurchase;
-		qtyToPurchaseInitial = qtyToPurchase;
-		this.dateRequired = dateRequired;
-		dateRequiredInitial = dateRequired;
+		this.qtyToPurchaseInitial = qtyToPurchase;
 
-		final ImmutableListMultimap<Boolean, PurchaseItem> purchaseItemsByType;
-		purchaseItemsByType = Multimaps.index(purchaseItems, purchaseItem -> purchaseItem instanceof PurchaseOrderItem);
+		this.purchaseDatePromised = purchaseDatePromised;
+		this.purchaseDatePromisedInitial = purchaseDatePromised;
+		this.reminderTime = reminderTime;
 
-		purchaseOrderItems = purchaseItemsByType.get(true).stream()
-				.map(PurchaseOrderItem::cast).collect(toCollection(ArrayList::new));
-		purchaseErrorItems = purchaseItemsByType.get(false).stream()
-				.map(PurchaseErrorItem::cast).collect(toCollection(ArrayList::new));
+		this.profitInfo = profitInfo;
+
+		this.purchaseOrderItems = purchaseItems
+				.stream()
+				.filter(purchaseItem -> purchaseItem instanceof PurchaseOrderItem)
+				.map(PurchaseOrderItem::cast)
+				.collect(toCollection(ArrayList::new));
+		this.purchaseErrorItems = purchaseItems
+				.stream()
+				.filter(purchaseItem -> purchaseItem instanceof PurchaseErrorItem)
+				.map(PurchaseErrorItem::cast)
+				.collect(toCollection(ArrayList::new));
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
 	{
-		purchaseCandidateId = from.purchaseCandidateId;
+		id = from.id;
 
 		qtyToPurchase = from.qtyToPurchase;
 		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
-		dateRequired = from.dateRequired;
-		dateRequiredInitial = from.dateRequiredInitial;
 
-		identifier = from.identifier;
-		state = from.state.createCopy();
+		profitInfo = from.profitInfo;
 
-		purchaseErrorItems = from.purchaseErrorItems;
-		purchaseOrderItems = from.purchaseOrderItems;
+		purchaseDatePromised = from.purchaseDatePromised;
+		purchaseDatePromisedInitial = from.purchaseDatePromisedInitial;
+		reminderTime = from.reminderTime;
+
+		immutableFields = from.immutableFields;
+		state = from.state.copy();
+
+		purchaseOrderItems = from.purchaseOrderItems.stream()
+				.map(item -> item.copy(this))
+				.collect(toCollection(ArrayList::new));
+		purchaseErrorItems = new ArrayList<>(from.purchaseErrorItems);
 	}
 
 	public PurchaseCandidate copy()
 	{
 		return new PurchaseCandidate(this);
+	}
+
+	public OrgId getOrgId()
+	{
+		return getImmutableFields().getOrgId();
+	}
+
+	public ProductId getProductId()
+	{
+		return getImmutableFields().getProductId();
+	}
+
+	public AttributeSetInstanceId getAttributeSetInstanceId()
+	{
+		return getImmutableFields().getAttributeSetInstanceId();
+	}
+
+	public String getVendorProductNo()
+	{
+		return getImmutableFields().getVendorProductNo();
+	}
+
+	public WarehouseId getWarehouseId()
+	{
+		return getImmutableFields().getWarehouseId();
+	}
+
+	public DemandGroupReference getGroupReference()
+	{
+		return getImmutableFields().getGroupReference();
+	}
+
+	public OrderAndLineId getSalesOrderAndLineIdOrNull()
+	{
+		return getImmutableFields().getSalesOrderAndLineIdOrNull();
+	}
+
+	public BPartnerId getVendorId()
+	{
+		return getImmutableFields().getVendorId();
+	}
+
+	public boolean isAggregatePOs()
+	{
+		return getImmutableFields().isAggregatePOs();
+	}
+
+	public void setPrepared(final boolean prepared)
+	{
+		state.setPrepared(prepared);
+	}
+
+	public boolean isPrepared()
+	{
+		return state.isPrepared();
 	}
 
 	/**
@@ -163,16 +259,17 @@ public class PurchaseCandidate
 	 */
 	public void markProcessed()
 	{
-		if (state.isProcessed())
-		{
-			return;
-		}
 		state.setProcessed();
 	}
 
 	public boolean isProcessedOrLocked()
 	{
-		return state.isProcessed() || state.isLocked();
+		return isProcessed() || isLocked();
+	}
+
+	public boolean isLocked()
+	{
+		return state.isLocked();
 	}
 
 	public boolean isProcessed()
@@ -182,51 +279,20 @@ public class PurchaseCandidate
 
 	public boolean hasChanges()
 	{
-		return purchaseCandidateId <= 0 // never saved
+		return id == null // never saved
 				|| state.hasChanges()
 				|| qtyToPurchase.compareTo(qtyToPurchaseInitial) != 0
-				|| !Objects.equals(dateRequired, dateRequiredInitial);
+				|| !Objects.equals(purchaseDatePromised, purchaseDatePromisedInitial);
 	}
 
-	public void markSaved(final int C_PurchaseCandidate_ID)
+	public void markSaved(@NonNull final PurchaseCandidateId newId)
 	{
-		purchaseCandidateId = C_PurchaseCandidate_ID;
+		id = newId;
 
 		state.markSaved();
 
 		qtyToPurchaseInitial = qtyToPurchase;
-		dateRequiredInitial = dateRequired;
-	}
-
-	public AvailabilityRequestItem createAvailabilityRequestItem()
-	{
-		final ProductAndQuantity productAndQuantity = createProductAndQuantity();
-
-		return AvailabilityRequestItem.builder()
-				.productAndQuantity(productAndQuantity)
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderLineId(getSalesOrderLineId())
-				.build();
-	}
-
-	public PurchaseOrderRequestItem createPurchaseOrderRequestItem()
-	{
-		return new PurchaseOrderRequestItem(
-				getPurchaseCandidateId(),
-				createProductAndQuantity());
-	}
-
-	private ProductAndQuantity createProductAndQuantity()
-	{
-		final String productValue = identifier.getVendorProductInfo().getProductNo();
-
-		final I_C_OrderLine salesOrderLine = load(identifier.getSalesOrderLineId(), I_C_OrderLine.class);
-		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
-
-		final ProductAndQuantity productAndQuantity = new ProductAndQuantity(
-				productValue,
-				qtyToDeliver);
-		return productAndQuantity;
+		purchaseDatePromisedInitial = purchaseDatePromised;
 	}
 
 	public static final class ErrorItemBuilder
@@ -238,11 +304,11 @@ public class PurchaseCandidate
 		{
 			this.parent = parent;
 			innerBuilder = PurchaseErrorItem.builder()
-					.purchaseCandidateId(parent.getPurchaseCandidateId())
+					.purchaseCandidateId(parent.getId())
 					.orgId(parent.getOrgId());
 		}
 
-		public ErrorItemBuilder purchaseItemId(final int purchaseItemId)
+		public ErrorItemBuilder purchaseItemId(final PurchaseItemId purchaseItemId)
 		{
 			innerBuilder.purchaseItemId(purchaseItemId);
 			return this;
@@ -260,9 +326,9 @@ public class PurchaseCandidate
 			return this;
 		}
 
-		public ErrorItemBuilder issue(final I_AD_Issue issue)
+		public ErrorItemBuilder adIssueId(final int adIssueId)
 		{
-			innerBuilder.issue(issue);
+			innerBuilder.adIssueId(adIssueId);
 			return this;
 		}
 
@@ -290,19 +356,19 @@ public class PurchaseCandidate
 			innerBuilder = PurchaseOrderItem.builder().purchaseCandidate(parent);
 		}
 
-		public OrderItemBuilder purchaseItemId(final int purchaseItemId)
+		public OrderItemBuilder purchaseItemId(final PurchaseItemId purchaseItemId)
 		{
 			innerBuilder.purchaseItemId(purchaseItemId);
 			return this;
 		}
 
-		public OrderItemBuilder datePromised(@NonNull final Date datePromised)
+		public OrderItemBuilder datePromised(@NonNull final LocalDateTime datePromised)
 		{
 			innerBuilder.datePromised(datePromised);
 			return this;
 		}
 
-		public OrderItemBuilder purchasedQty(@NonNull final BigDecimal purchasedQty)
+		public OrderItemBuilder purchasedQty(@NonNull final Quantity purchasedQty)
 		{
 			innerBuilder.purchasedQty(purchasedQty);
 			return this;
@@ -338,20 +404,41 @@ public class PurchaseCandidate
 	 */
 	public void addLoadedPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
-		Check.errorIf(this.getPurchaseCandidateId() <= 0,
-				"This instance needs to have purchaseCandidateId>0; this={}", this);
+		final PurchaseCandidateId id = getId();
+		Check.assumeNotNull(id, "purchase candidate shall be saved: {}", this);
 
-		Check.errorIf(purchaseOrderItem.getPurchaseCandidateId() != this.getPurchaseCandidateId(),
+		Check.assumeEquals(id, purchaseOrderItem.getPurchaseCandidateId(),
 				"The given purchaseOrderItem's purchaseCandidateId needs to be equan to this instance's id; purchaseOrderItem={}; this={}",
 				purchaseOrderItem, this);
 
 		purchaseOrderItems.add(purchaseOrderItem);
 	}
 
-	public BigDecimal getPurchasedQty()
+	public Quantity getPurchasedQty()
 	{
 		return purchaseOrderItems.stream()
 				.map(PurchaseOrderItem::getPurchasedQty)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
+				.reduce(Quantity::add)
+				.orElseGet(() -> getQtyToPurchase().toZero());
+	}
+
+	public List<PurchaseOrderItem> getPurchaseOrderItems()
+	{
+		return ImmutableList.copyOf(purchaseOrderItems);
+	}
+
+	public List<PurchaseErrorItem> getPurchaseErrorItems()
+	{
+		return ImmutableList.copyOf(purchaseErrorItems);
+	}
+
+	public LocalDateTime getReminderDate()
+	{
+		if (reminderTime == null || purchaseDatePromised == null)
+		{
+			return null;
+		}
+
+		return purchaseDatePromised.minus(reminderTime);
 	}
 }

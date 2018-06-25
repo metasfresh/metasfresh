@@ -3,11 +3,14 @@ package de.metas.material.dispo.service.event.handler;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -20,20 +23,21 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
+import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -100,19 +104,23 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		if (event.getShipmentScheduleIds2Qtys() != null && !event.getShipmentScheduleIds2Qtys().isEmpty())
 		{
-			candidates.addAll(prepareCandidateForShipmentScheduleId(event));
+			candidates.addAll(prepareCandidatesForShipmentScheduleIds(event));
+		}
+		else if (event.getReceiptScheduleIds2Qtys() != null && !event.getReceiptScheduleIds2Qtys().isEmpty())
+		{
+			candidates.addAll(prepareCandidateForReceiptScheduleIds(event));
 		}
 		else if (event.getPpOrderId() > 0)
 		{
 			final Candidate candidateForPPorder = createCandidateForPPorder(event);
-			firePickRequiredEvent(candidateForPPorder, event);
+			firePickRequiredEventIfFeasible(candidateForPPorder, event);
 
 			candidates.add(candidateForPPorder);
 		}
 		else if (event.getDdOrderLineId() > 0)
 		{
 			final Candidate candidateForDDorder = createCandidateForDDorder(event);
-			firePickRequiredEvent(candidateForDDorder, event);
+			firePickRequiredEventIfFeasible(candidateForDDorder, event);
 
 			candidates.add(candidateForDDorder);
 		}
@@ -123,8 +131,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return candidates;
 	}
 
-	private void firePickRequiredEvent(
-			@NonNull final Candidate candidateForPPorder,
+	private void firePickRequiredEventIfFeasible(
+			@NonNull final Candidate candidate,
 			@NonNull final AbstractTransactionEvent transactionEvent)
 	{
 		if (transactionEvent instanceof TransactionDeletedEvent)
@@ -132,29 +140,24 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			return;
 		}
 
-		final Flag pickDirectlyIfFeasible = //
-				ProductionDetail
-						.cast(candidateForPPorder.getBusinessCaseDetail())
-						.getPickDirectlyIfFeasible();
-		final boolean dontPickDirectly = !pickDirectlyIfFeasible
-				.toBoolean();
-		if (dontPickDirectly)
+		final Flag pickDirectlyIfFeasible = extractPickDirectlyIfFeasible(candidate);
+		if (!pickDirectlyIfFeasible.toBoolean())
 		{
 			Loggables.get().addLog("Not posting PickingRequestedEvent: this event's candidate has pickDirectlyIfFeasible={}; candidate={}",
-					pickDirectlyIfFeasible, candidateForPPorder);
+					pickDirectlyIfFeasible, candidate);
 			return;
 		}
 
-		final DemandDetail demandDetail = candidateForPPorder.getDemandDetail();
+		final DemandDetail demandDetail = candidate.getDemandDetail();
 		final boolean noShipmentScheduleForPicking = demandDetail == null || demandDetail.getShipmentScheduleId() <= 0;
 		if (noShipmentScheduleForPicking)
 		{
 			Loggables.get().addLog("Not posting PickingRequestedEvent: this event's candidate has no shipmentScheduleId; candidate={}",
-					candidateForPPorder);
+					candidate);
 			return;
 		}
 
-		final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors = transactionEvent.getHuOnHandQtyChangeDescriptors();
+		final Collection<HUDescriptor> huOnHandQtyChangeDescriptors = transactionEvent.getHuOnHandQtyChangeDescriptors();
 		final boolean noHUsToPick = huOnHandQtyChangeDescriptors == null || huOnHandQtyChangeDescriptors.isEmpty();
 		if (noHUsToPick)
 		{
@@ -164,7 +167,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final ImmutableList<Integer> huIdsToPick = huOnHandQtyChangeDescriptors.stream()
 				.filter(huDescriptor -> huDescriptor.getQuantity().signum() > 0)
-				.map(HUOnHandQtyChangeDescriptor::getHuId)
+				.map(HUDescriptor::getHuId)
 				.collect(ImmutableList.toImmutableList());
 
 		final PickingRequestedEvent pickingRequestedEvent = PickingRequestedEvent.builder()
@@ -176,7 +179,30 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		postMaterialEventService.postEventAfterNextCommit(pickingRequestedEvent);
 	}
 
-	private List<Candidate> prepareCandidateForShipmentScheduleId(@NonNull final AbstractTransactionEvent event)
+	private Flag extractPickDirectlyIfFeasible(@NonNull final Candidate candidate)
+	{
+		final Flag pickDirectlyIfFeasible;
+		switch (candidate.getBusinessCase())
+		{
+			case PRODUCTION:
+				pickDirectlyIfFeasible = ProductionDetail
+						.cast(candidate.getBusinessCaseDetail())
+						.getPickDirectlyIfFeasible();
+				break;
+			case DISTRIBUTION:
+				pickDirectlyIfFeasible = DistributionDetail
+						.cast(candidate.getBusinessCaseDetail())
+						.getPickDirectlyIfFeasible();
+				break;
+			default:
+				pickDirectlyIfFeasible = null;
+				Check.fail("Unsupported business case {}; candidate={}",
+						candidate.getBusinessCase(), candidate);
+		}
+		return pickDirectlyIfFeasible;
+	}
+
+	private List<Candidate> prepareCandidatesForShipmentScheduleIds(@NonNull final AbstractTransactionEvent event)
 	{
 		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = event.getShipmentScheduleIds2Qtys();
 
@@ -221,7 +247,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else if (existingCandidate != null)
 		{
-			candidate = newCandidateWithAddedTransactionDetail(
+			candidate = createCandidateWithChangedTransactionDetailAndQuantity(
 					existingCandidate,
 					createTransactionDetail(event));
 		}
@@ -230,6 +256,70 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			throw createExceptionForUnexpectedEvent(event);
 		}
 
+		return candidate;
+	}
+
+	private List<Candidate> prepareCandidateForReceiptScheduleIds(@NonNull final AbstractTransactionEvent event)
+	{
+		final Map<Integer, BigDecimal> receiptScheduleIds2Qtys = event.getReceiptScheduleIds2Qtys();
+
+		final Builder<Candidate> result = ImmutableList.builder();
+
+		for (final Entry<Integer, BigDecimal> receiptScheduleId2Qty : receiptScheduleIds2Qtys.entrySet())
+		{
+			final Candidate candidate = createCandidateForReceiptSchedule(event, receiptScheduleId2Qty);
+			result.add(candidate);
+		}
+		return result.build();
+	}
+
+	/** uses PurchaseDetails.receiptScheduleRepoId to find out if a candidate already exists */
+	private Candidate createCandidateForReceiptSchedule(
+			@NonNull final AbstractTransactionEvent event,
+			@NonNull final Entry<Integer, BigDecimal> receiptScheduleId2Qty)
+	{
+		final Candidate candidate;
+		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
+
+		final PurchaseDetailsQuery purchaseDetailsQuery = PurchaseDetailsQuery.builder()
+				.receiptScheduleRepoId(receiptScheduleId2Qty.getKey())
+				.build();
+
+		final CandidatesQuery query = CandidatesQuery.builder()
+				.type(CandidateType.SUPPLY) // without it we might get stock candidates which we don't want
+				.purchaseDetailsQuery(purchaseDetailsQuery)
+				.build();
+
+
+		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
+
+		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
+		if (unrelatedNewTransaction)
+		{
+			// prepare the purchase detail with our inoutLineId
+			final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
+					.advised(Flag.FALSE_DONT_UPDATE)
+					.plannedQty(receiptScheduleId2Qty.getValue())
+					.receiptScheduleRepoId(receiptScheduleId2Qty.getKey())
+					.build();
+
+			candidate = createBuilderForNewUnrelatedCandidate(
+					(TransactionCreatedEvent)event,
+					event.getQuantity())
+							.businessCaseDetail(purchaseDetail)
+							.transactionDetail(transactionDetailOfEvent)
+							.build();
+		}
+		else if (existingCandidate != null)
+		{
+			candidate = createCandidateWithChangedTransactionDetailAndQuantity(
+					existingCandidate,
+					transactionDetailOfEvent);
+		}
+		else
+		{
+			throw createExceptionForUnexpectedEvent(event);
+		}
 		return candidate;
 	}
 
@@ -271,7 +361,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else if (existingCandidate != null)
 		{
-			candidate = newCandidateWithAddedTransactionDetail(
+			candidate = createCandidateWithChangedTransactionDetailAndQuantity(
 					existingCandidate,
 					transactionDetailOfEvent);
 		}
@@ -315,7 +405,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else if (existingCandidate != null)
 		{
-			candidate = newCandidateWithAddedTransactionDetail(
+			candidate = createCandidateWithChangedTransactionDetailAndQuantity(
 					existingCandidate,
 					transactionDetailOfEvent);
 		}
@@ -348,7 +438,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
 				.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
 				.build();
 		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
@@ -364,7 +453,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else if (existingCandidate != null)
 		{
-			candidate = newCandidateWithAddedTransactionDetailAndQuantity(
+			candidate = createCandidateWithChangedTransactionDetailAndQuantity(
 					existingCandidate,
 					transactionDetailOfEvent);
 		}
@@ -375,29 +464,22 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return candidate;
 	}
 
-	private Candidate newCandidateWithAddedTransactionDetailAndQuantity(
+	private Candidate createCandidateWithChangedTransactionDetailAndQuantity(
 			@NonNull final Candidate candidate,
-			@NonNull final TransactionDetail transactionDetail)
+			@NonNull final TransactionDetail changedTransactionDetail)
 	{
-		final BigDecimal newQuantity = candidate
-				.getQuantity()
-				.add(transactionDetail.getQuantity());
+		// note: making sure we don't end up with duplicated transactionDetails
 
-		Candidate newCandidate = candidate.withQuantity(newQuantity);
-		newCandidate = newCandidateWithAddedTransactionDetail(newCandidate, transactionDetail);
-		return newCandidate;
-	}
+		final ImmutableList<TransactionDetail> otherTransactionDetails = candidate.getTransactionDetails()
+				.stream()
+				.filter(transactionDetail -> transactionDetail.getTransactionId() != changedTransactionDetail.getTransactionId())
+				.collect(ImmutableList.toImmutableList());
 
-	private Candidate newCandidateWithAddedTransactionDetail(
-			@NonNull final Candidate candidate,
-			@NonNull final TransactionDetail transactionDetail)
-	{
-		final Builder<TransactionDetail> newTransactionDetailsList = //
-				ImmutableList.<TransactionDetail> builder()
-						.addAll(candidate.getTransactionDetails())
-						.add(transactionDetail);
+		final TreeSet<TransactionDetail> newTransactionDetailsSet = new TreeSet<>(Comparator.comparing(TransactionDetail::getTransactionId));
+		newTransactionDetailsSet.add(changedTransactionDetail);
+		newTransactionDetailsSet.addAll(otherTransactionDetails);
 
-		final Candidate withTransactionDetails = candidate.withTransactionDetails(newTransactionDetailsList.build());
+		final Candidate withTransactionDetails = candidate.withTransactionDetails(ImmutableList.copyOf(newTransactionDetailsSet));
 		final BigDecimal actualQty = withTransactionDetails.computeActualQty();
 		final BigDecimal plannedQty = candidate.getPlannedQty();
 

@@ -15,7 +15,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2079751182L;
+	private static final long serialVersionUID = 714307253L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (Properties ctx, int C_BPartner_Product_ID, String trxName)
@@ -31,6 +31,8 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 			setM_Product_ID (0);
 			setShelfLifeMinDays (0);
 			setShelfLifeMinPct (0);
+			setUsedForCustomer (false); // N
+			setUsedForVendor (true); // Y
         } */
     }
 
@@ -387,6 +389,76 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return bd;
 	}
 
+	/** Set Produktkategorie.
+		@param ProductCategory Produktkategorie	  */
+	@Override
+	public void setProductCategory (java.lang.String ProductCategory)
+	{
+		set_Value (COLUMNNAME_ProductCategory, ProductCategory);
+	}
+
+	/** Get Produktkategorie.
+		@return Produktkategorie	  */
+	@Override
+	public java.lang.String getProductCategory () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductCategory);
+	}
+
+	/** Set Produktbeschreibung.
+		@param ProductDescription 
+		Produktbeschreibung
+	  */
+	@Override
+	public void setProductDescription (java.lang.String ProductDescription)
+	{
+		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
+	}
+
+	/** Get Produktbeschreibung.
+		@return Produktbeschreibung
+	  */
+	@Override
+	public java.lang.String getProductDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
+	}
+
+	/** Set Produktname.
+		@param ProductName 
+		Name des Produktes
+	  */
+	@Override
+	public void setProductName (java.lang.String ProductName)
+	{
+		set_Value (COLUMNNAME_ProductName, ProductName);
+	}
+
+	/** Get Produktname.
+		@return Name des Produktes
+	  */
+	@Override
+	public java.lang.String getProductName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+	}
+
+	/** Set Produktnummer.
+		@param ProductNo Produktnummer	  */
+	@Override
+	public void setProductNo (java.lang.String ProductNo)
+	{
+		set_Value (COLUMNNAME_ProductNo, ProductNo);
+	}
+
+	/** Get Produktnummer.
+		@return Produktnummer	  */
+	@Override
+	public java.lang.String getProductNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductNo);
+	}
+
 	/** Set Qualitäts-Einstufung.
 		@param QualityRating 
 		Method for rating vendors
@@ -451,6 +523,71 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set UPC/EAN.
+		@param UPC 
+		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	  */
+	@Override
+	public void setUPC (java.lang.String UPC)
+	{
+		set_Value (COLUMNNAME_UPC, UPC);
+	}
+
+	/** Get UPC/EAN.
+		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	  */
+	@Override
+	public java.lang.String getUPC () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+	}
+
+	/** Set Verwendet für Kunden.
+		@param UsedForCustomer Verwendet für Kunden	  */
+	@Override
+	public void setUsedForCustomer (boolean UsedForCustomer)
+	{
+		set_Value (COLUMNNAME_UsedForCustomer, Boolean.valueOf(UsedForCustomer));
+	}
+
+	/** Get Verwendet für Kunden.
+		@return Verwendet für Kunden	  */
+	@Override
+	public boolean isUsedForCustomer () 
+	{
+		Object oo = get_Value(COLUMNNAME_UsedForCustomer);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Verwendet für Lieferant.
+		@param UsedForVendor Verwendet für Lieferant	  */
+	@Override
+	public void setUsedForVendor (boolean UsedForVendor)
+	{
+		set_Value (COLUMNNAME_UsedForVendor, Boolean.valueOf(UsedForVendor));
+	}
+
+	/** Get Verwendet für Lieferant.
+		@return Verwendet für Lieferant	  */
+	@Override
+	public boolean isUsedForVendor () 
+	{
+		Object oo = get_Value(COLUMNNAME_UsedForVendor);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Produkt-Kategorie Geschäftspartner.

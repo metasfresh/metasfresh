@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
@@ -59,6 +60,8 @@ import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.product.ProductId;
 
 /**
  *
@@ -231,19 +234,19 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final int orgId = orderLine.getAD_Org_ID();
 		final int asiId = orderLine.getM_AttributeSetInstance_ID();
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
-				 orgId //
-				, 0  // M_Warehouse_ID
-				, 0  // S_Resource_ID
-				, productId //
-				, asiId);
-
+		final ProductPlanningQuery query = ProductPlanningQuery.builder()
+				.orgId(orgId)
+				.productId(ProductId.ofRepoId(productId))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(asiId))
+				// no warehouse, no plant
+				.build();
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);
 		if (productPlanning == null)
 		{
-			// fallback to old behaviour -> a movement is created instead of dd_Order
+			// fallback to old behavior -> a movement is created instead of dd_Order
 			return DEFAULT_OnMaterialReceiptWithDestWarehouse;
 		}
-		
+
 		final String onMaterialReceiptWithDestWarehouse = productPlanning.getOnMaterialReceiptWithDestWarehouse();
 
 		return Check.isEmpty(onMaterialReceiptWithDestWarehouse) ? DEFAULT_OnMaterialReceiptWithDestWarehouse : onMaterialReceiptWithDestWarehouse;
@@ -252,7 +255,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 	/**
 	 * Create LotNumberDate Attribute instance and set it in the receipt shcedule's ASI
-	 * 
+	 *
 	 * @param receiptSchedule
 	 * @param order
 	 */

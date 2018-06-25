@@ -3,7 +3,7 @@ package de.metas.material.event.transactions;
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -12,7 +12,7 @@ import org.adempiere.util.Check;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
+import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -49,7 +49,14 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final MaterialDescriptor materialDescriptor;
 
+	/** note: one shipment-inoutLine might be an aggregation of multiple shipment schedules */
 	private final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys;
+
+	private final Map<Integer, BigDecimal> receiptScheduleIds2Qtys;
+
+	private final int inOutId;
+
+	private final int inOutLineId;
 
 	private final int transactionId;
 
@@ -63,19 +70,22 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final int ddOrderLineId;
 
-	private final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors;
+	private final Collection<HUDescriptor> huOnHandQtyChangeDescriptors;
 
 	public AbstractTransactionEvent(
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
 			final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
+			final Map<Integer, BigDecimal> receiptScheduleIds2Qtys,
+			final int inOutId,
+			final int inOutLineId,
 			final int ppOrderId,
 			final int ppOrderLineId,
 			final int ddOrderId,
 			final int ddOrderLineId,
 			final int transactionId,
 			final boolean directMovementWarehouse,
-			final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors)
+			final Collection<HUDescriptor> huOnHandQtyChangeDescriptors)
 	{
 		this.transactionId = checkIdGreaterThanZero("transactionId", transactionId);
 
@@ -85,6 +95,10 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.huOnHandQtyChangeDescriptors = huOnHandQtyChangeDescriptors;
 
 		this.shipmentScheduleIds2Qtys = shipmentScheduleIds2Qtys;
+		this.receiptScheduleIds2Qtys = receiptScheduleIds2Qtys;
+
+		this.inOutId = inOutId;
+		this.inOutLineId = inOutLineId;
 
 		this.ddOrderLineId = ddOrderLineId;
 		this.ddOrderId = ddOrderId;
@@ -96,6 +110,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 	}
 
 	public abstract BigDecimal getQuantity();
+
 	public abstract BigDecimal getQuantityDelta();
 
 	@OverridingMethodsMustInvokeSuper
@@ -105,7 +120,5 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
 		materialDescriptor.asssertMaterialDescriptorComplete();
-
-		huOnHandQtyChangeDescriptors.forEach(HUOnHandQtyChangeDescriptor::assertValid);
 	}
 }

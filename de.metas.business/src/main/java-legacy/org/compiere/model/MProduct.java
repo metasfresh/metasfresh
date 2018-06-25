@@ -124,7 +124,6 @@ public class MProduct extends X_M_Product
 		setM_ProductPlanningSchema_Selector(impP.getM_ProductPlanningSchema_Selector()); // #3406
 	}	// MProduct
 
-
 	/** UOM Precision */
 	private Integer m_precision = null;
 

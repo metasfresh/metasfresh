@@ -1,15 +1,20 @@
 package de.metas.purchasecandidate;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
+import java.math.BigDecimal;
+import java.util.Objects;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.Check;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.util.Util;
 
-import com.google.common.annotations.VisibleForTesting;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.lang.Percent;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
-// import de.metas.interfaces.I_C_BPartner_Product;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -38,59 +43,81 @@ import lombok.Value;
 @Value
 public class VendorProductInfo
 {
-	int bPartnerProductId;
-	int vendorBPartnerId;
-	int productId;
+	BPartnerId vendorId;
 
-	String productNo;
+	ProductAndCategoryId productAndCategoryId;
+	AttributeSetInstanceId attributeSetInstanceId;
 
-	String productName;
+	String vendorProductNo;
+	String vendorProductName;
 
-	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bPartnerProduct)
+	boolean aggregatePOs;
+
+	Percent vendorFlatDiscount;
+	private PricingConditions pricingConditions;
+
+	boolean defaultVendor;
+
+	@Builder
+	private VendorProductInfo(
+			@NonNull final BPartnerId vendorId,
+			@NonNull final Boolean defaultVendor,
+			//
+			@NonNull final ProductAndCategoryId productAndCategoryId,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+
+			@NonNull final String vendorProductNo,
+			@NonNull final String vendorProductName,
+			//
+			final boolean aggregatePOs,
+			//
+			final Percent vendorFlatDiscount,
+			@NonNull final PricingConditions pricingConditions)
 	{
-		final de.metas.interfaces.I_C_BPartner_Product extendedBPartnerProduct = create(
-				bPartnerProduct,
-				de.metas.interfaces.I_C_BPartner_Product.class);
+		this.vendorId = vendorId;
+		this.defaultVendor = defaultVendor;
 
-		final String productNo = Util.coalesceSuppliers(
-				() -> extendedBPartnerProduct.getVendorProductNo(),
-				() -> extendedBPartnerProduct.getProductNo(),
-				() -> bPartnerProduct.getM_Product().getValue());
+		this.productAndCategoryId = productAndCategoryId;
+		this.attributeSetInstanceId = attributeSetInstanceId;
 
-		final String productName = Util.coalesceSuppliers(
-				() -> extendedBPartnerProduct.getProductName(),
-				() -> bPartnerProduct.getM_Product().getName());
+		this.vendorProductNo = vendorProductNo;
+		this.vendorProductName = vendorProductName;
 
-		final int bPartnerVendorId = Util.firstGreaterThanZero(
-				bPartnerProduct.getC_BPartner_Vendor_ID(),
-				bPartnerProduct.getC_BPartner_ID());
+		this.aggregatePOs = aggregatePOs;
 
-		return new VendorProductInfo(
-				bPartnerProduct.getC_BPartner_Product_ID(),
-				bPartnerVendorId,
-				bPartnerProduct.getM_Product_ID(),
-				productNo,
-				productName);
+		this.vendorFlatDiscount = vendorFlatDiscount != null ? vendorFlatDiscount : Percent.ZERO;
+		this.pricingConditions = pricingConditions;
 	}
 
-	@VisibleForTesting
-	@Builder(toBuilder = true)
-	VendorProductInfo(
-			int bPartnerProductId,
-			int vendorBPartnerId,
-			int productId,
-			@NonNull String productNo,
-			@NonNull String productName)
+	public ProductId getProductId()
 	{
-		Check.assume(bPartnerProductId > 0, "bPartnerProductId > 0");
-		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
-		Check.assume(productId > 0, "productId > 0");
-
-		this.bPartnerProductId = bPartnerProductId;
-		this.vendorBPartnerId = vendorBPartnerId;
-		this.productId = productId;
-		this.productNo = productNo;
-		this.productName = productName;
+		return getProductAndCategoryId().getProductId();
 	}
 
+	public PricingConditionsBreak getPricingConditionsBreakOrNull(final Quantity qtyToDeliver)
+	{
+		final PricingConditionsBreakQuery query = createPricingConditionsBreakQuery(qtyToDeliver);
+		return getPricingConditions().pickApplyingBreak(query);
+	}
+
+	public VendorProductInfo assertThatAttributeSetInstanceIdCompatibleWith(@NonNull final AttributeSetInstanceId otherId)
+	{
+		if (AttributeSetInstanceId.NONE.equals(attributeSetInstanceId))
+		{
+			return this;
+		}
+		Check.errorUnless(Objects.equals(otherId, attributeSetInstanceId),
+				"The given atributeSetInstanceId is not compatible with our id; otherId={}; this={}", otherId, this);
+		return this;
+	}
+
+	private PricingConditionsBreakQuery createPricingConditionsBreakQuery(final Quantity qtyToDeliver)
+	{
+		return PricingConditionsBreakQuery.builder()
+				.productAndCategoryId(getProductAndCategoryId())
+				// .attributeInstances(attributeInstances)// TODO
+				.qty(qtyToDeliver.getAsBigDecimal())
+				.price(BigDecimal.ZERO) // N/A
+				.build();
+	}
 }

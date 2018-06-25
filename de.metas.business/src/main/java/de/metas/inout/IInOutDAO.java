@@ -1,5 +1,6 @@
 package de.metas.inout;
 
+import java.time.LocalDate;
 import java.util.Collection;
 
 /*
@@ -32,6 +33,10 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
+import de.metas.product.ProductId;
 
 public interface IInOutDAO extends ISingletonService
 {
@@ -94,4 +99,6 @@ public interface IInOutDAO extends ISingletonService
 	 * @return
 	 */
 	I_M_InOutLine retrieveLineWithQualityDiscount(I_M_InOutLine originInOutLine);
+
+	LocalDate getLastInOutDate(BPartnerId bpartnerId, ProductId productId, SOTrx soTrx);
 }

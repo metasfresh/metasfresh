@@ -14,7 +14,7 @@ public class X_C_Contract_Change extends org.compiere.model.PO implements I_C_Co
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -327922583L;
+	private static final long serialVersionUID = -1386080939L;
 
     /** Standard Constructor */
     public X_C_Contract_Change (Properties ctx, int C_Contract_Change_ID, String trxName)

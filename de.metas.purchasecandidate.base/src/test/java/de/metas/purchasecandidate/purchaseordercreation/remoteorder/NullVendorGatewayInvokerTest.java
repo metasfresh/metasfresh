@@ -1,19 +1,36 @@
 package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 
 import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderAndLineId;
+import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -37,32 +54,27 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class NullVendorGatewayInvokerTest
 {
 	@Test
 	public void placeRemotePurchaseOrder()
 	{
-		final int productId = 20;
-		final int vendorBPartnerId = 30;
-
-		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bPartnerProductId(10)
-				.productId(productId)
-				.vendorBPartnerId(vendorBPartnerId)
-				.productName("productName")
-				.productNo("productNo").build();
+		final I_C_UOM EACH = createUOM("Ea");
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.orgId(10)
-				.dateRequired(SystemTime.asTimestamp())
-				.vendorProductInfo(vendorProductInfo)
-				.vendorBPartnerId(vendorBPartnerId)
-				.productId(productId)
-				.qtyToPurchase(TEN)
-				.salesOrderId(40)
-				.salesOrderLineId(50)
-				.warehouseId(60)
-				.uomId(70)
+				.groupReference(DemandGroupReference.createEmpty())
+				.orgId(OrgId.ofRepoId(10))
+				.warehouseId(WarehouseId.ofRepoId(60))
+				.purchaseDatePromised(SystemTime.asLocalDateTime())
+				.vendorId(BPartnerId.ofRepoId(30))
+				.productId(ProductId.ofRepoId(20))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(21))
+				.vendorProductNo("vendorProductNo_20")
+				.qtyToPurchase(Quantity.of(TEN, EACH))
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(40, 50))
+				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();
 
 		final List<PurchaseItem> purchaseItems = NullVendorGatewayInvoker.INSTANCE.placeRemotePurchaseOrder(ImmutableList.of(purchaseCandidate));
@@ -72,6 +84,15 @@ public class NullVendorGatewayInvokerTest
 
 		final PurchaseOrderItem purchaseOrderItem = (PurchaseOrderItem)purchaseItems.get(0);
 		assertThat(purchaseOrderItem.getRemotePurchaseOrderId()).isEqualTo(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
+	}
+
+	private I_C_UOM createUOM(final String name)
+	{
+		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
+		uom.setName(name);
+		uom.setUOMSymbol(name);
+		save(uom);
+		return uom;
 	}
 
 }

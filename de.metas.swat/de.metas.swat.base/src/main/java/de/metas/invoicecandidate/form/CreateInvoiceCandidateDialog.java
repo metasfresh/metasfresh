@@ -47,15 +47,13 @@ import javax.swing.JLabel;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
@@ -79,6 +77,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -86,8 +85,11 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
-import de.metas.pricing.ProductPrices;
+import de.metas.lang.SOTrx;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exception.ProductPriceNotFoundException;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.ProductPrices;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import net.miginfocom.swing.MigLayout;
@@ -151,7 +153,7 @@ public class CreateInvoiceCandidateDialog
 	private final Timestamp date;
 
 	private final boolean isManual = true;
-	private final boolean isSOTrx = false;
+	private final SOTrx soTrx = SOTrx.PURCHASE;
 
 	public CreateInvoiceCandidateDialog(final Frame owner, final String title,
 			final int partnerId,
@@ -223,7 +225,7 @@ public class CreateInvoiceCandidateDialog
 		Env.setContext(ctx, windowNo, I_C_Invoice_Candidate.COLUMNNAME_DateOrdered, date);
 
 		Env.setContext(ctx, windowNo, I_C_Invoice_Candidate.COLUMNNAME_IsManual, isManual);
-		Env.setContext(ctx, windowNo, I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, isSOTrx);
+		Env.setContext(ctx, windowNo, I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, soTrx.toBoolean());
 	}
 
 	private final void init(final ISwingEditorFactory factory)
@@ -324,12 +326,12 @@ public class CreateInvoiceCandidateDialog
 
 		//
 		// Get pricing system (or dispose window if none was found)
-		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partnerId, isSOTrx, ITrx.TRXNAME_None);
-		if (pricingSystemId <= 0)
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partnerId, soTrx, ITrx.TRXNAME_None);
+		if (pricingSystemId == null)
 		{
 			missingCollector.add(I_C_Invoice_Candidate.COLUMNNAME_M_PricingSystem_ID);
 		}
-		pricingSystemField.setValue(pricingSystemId);
+		pricingSystemField.setValue(pricingSystemId.getRepoId());
 
 		// do not load UOMs; instead, they shall be loaded when the product is modified
 		// priceUOMField.loadFirstItem();
@@ -406,10 +408,10 @@ public class CreateInvoiceCandidateDialog
 						InterfaceWrapperHelper.getTrxName(product));
 
 				final I_M_PriceList_Version currentVersion = priceListBL.getCurrentPriceListVersionOrNull( //
-						pricingSystem //
-						, location.getC_Location().getC_Country() // country
+						PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()) //
+						, location.getC_Location().getC_Country_ID() // country
 						, SystemTime.asDayTimestamp() // date
-						, isSOTrx //
+						, soTrx //
 						, (Boolean)null // processedPLVFiltering
 				);
 
@@ -452,7 +454,8 @@ public class CreateInvoiceCandidateDialog
 					, product.getAD_Org_ID() // orgId
 					, warehouse, locationField.getValueAsInt() // billC_BPartner_Location_ID
 					, locationField.getValueAsInt() // shipC_BPartner_Location_ID
-					, isSOTrx, trxName);
+					, soTrx.toBoolean() //
+					, trxName);
 		}
 		catch (final ProductPriceNotFoundException ppnfe)
 		{
@@ -585,7 +588,7 @@ public class CreateInvoiceCandidateDialog
 				//
 				// Configure automatic values
 				ic.setIsManual(isManual);
-				ic.setIsSOTrx(isSOTrx);
+				ic.setIsSOTrx(soTrx.toBoolean());
 
 				// Copy
 				ic.setDateToInvoice(ic.getDateOrdered());

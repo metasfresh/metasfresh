@@ -1,26 +1,44 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_Order;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.OrderAndLineId;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -44,13 +62,29 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
 public class PurchaseOrderFromItemsAggregatorTest
 {
+	private I_C_UOM EACH;
+	private Quantity TEN;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		this.EACH = createUOM("Ea");
+		this.TEN = Quantity.of(BigDecimal.TEN, EACH);
+	}
+
+	private I_C_UOM createUOM(final String name)
+	{
+		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
+		uom.setName(name);
+		uom.setUOMSymbol(name);
+		save(uom);
+		return uom;
 	}
 
 	@Test
@@ -61,30 +95,37 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final I_C_Order salesOrder = newInstance(I_C_Order.class);
 		save(salesOrder);
 
-		// neede to construct the user notification message
+		// needed to construct the user notification message
 		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
+		vendor.setValue("Vendor");
+		vendor.setName("Vendor");
 		save(vendor);
 
-		final int productId = 20;
+		final ProductAndCategoryId productAndCategoryId = ProductAndCategoryId.of(20, 30);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bPartnerProductId(10)
-				.productId(productId)
-				.vendorBPartnerId(vendor.getC_BPartner_ID())
-				.productName("productName")
-				.productNo("productNo").build();
+				.productAndCategoryId(productAndCategoryId)
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(40))
+				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
+				.defaultVendor(false)
+				.vendorProductNo("productNo")
+				.vendorProductName("productName")
+				.pricingConditions(PricingConditions.builder().build())
+				.build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.orgId(10)
-				.dateRequired(SystemTime.asTimestamp())
-				.vendorProductInfo(vendorProductInfo)
-				.vendorBPartnerId(vendor.getC_BPartner_ID())
-				.productId(productId)
+				.groupReference(DemandGroupReference.createEmpty())
+				.orgId(OrgId.ofRepoId(10))
+				.purchaseDatePromised(SystemTime.asLocalDateTime())
+				.vendorId(vendorProductInfo.getVendorId())
+				.aggregatePOs(vendorProductInfo.isAggregatePOs())
+				.productId(vendorProductInfo.getProductId())
+				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
+				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.qtyToPurchase(TEN)
-				.salesOrderId(salesOrder.getC_Order_ID())
-				.salesOrderLineId(50)
-				.warehouseId(60)
-				.uomId(70)
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
+				.warehouseId(WarehouseId.ofRepoId(60))
+				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();
 
 		final PurchaseOrderFromItemsAggregator aggregator = PurchaseOrderFromItemsAggregator.newInstance();
@@ -92,7 +133,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		Services.get(ITrxManager.class).run(() -> {
 			aggregator.add(PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
-					.datePromised(SystemTime.asTimestamp())
+					.datePromised(SystemTime.asLocalDateTime())
 					.purchasedQty(TEN)
 					.remotePurchaseOrderId(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID)
 					.build());

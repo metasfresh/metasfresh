@@ -36,7 +36,7 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.invoice.event.InvoiceGeneratedEventBus;
+import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.util.Services;
@@ -107,7 +107,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 
 		//
 		// Setup event bus topics on which swing client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InvoiceGeneratedEventBus.EVENTBUS_TOPIC);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InvoiceUserNotificationsProducer.EVENTBUS_TOPIC);
 
 		// https://github.com/metasfresh/metasfresh/issues/251: clean up stale C_Invoice_Candidate_Recompute records that might prevent ICs from getting updated.
 		Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new Reset_C_Invoice_Candidate_Recompute());

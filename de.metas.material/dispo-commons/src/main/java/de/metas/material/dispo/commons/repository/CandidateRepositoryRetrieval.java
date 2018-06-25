@@ -20,16 +20,21 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.candidate.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.DemandDetailRepoHelper;
+import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
+import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -71,13 +76,13 @@ public class CandidateRepositoryRetrieval
 	 * @param parentId
 	 * @return
 	 */
-	public Optional<Candidate> retrieveSingleChild(@NonNull final Integer parentId)
+	public Optional<Candidate> retrieveSingleChild(@NonNull final CandidateId parentId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final I_MD_Candidate candidateRecord = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, parentId)
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, parentId.getRepoId())
 				.create()
 				.firstOnly(I_MD_Candidate.class);
 
@@ -127,18 +132,20 @@ public class CandidateRepositoryRetrieval
 
 		final ProductionDetail productionDetailOrNull = createProductionDetailOrNull(candidateRecordOrNull);
 		final DistributionDetail distributionDetailOrNull = createDistributionDetailOrNull(candidateRecordOrNull);
+		final PurchaseDetail purchaseDetailOrNull = PurchaseDetailRepoHelper.getSingleForCandidateRecordOrNull(candidateRecordOrNull);
 
-		final boolean hasProductionDetail = productionDetailOrNull != null;
-		final boolean hasDistributionDetail = distributionDetailOrNull != null;
+		final int hasProductionDetail = productionDetailOrNull == null ? 0 : 1;
+		final int hasDistributionDetail = distributionDetailOrNull == null ? 0 : 1;
+		final int hasPurchaseDetail = purchaseDetailOrNull == null ? 0 : 1;
 
-		Check.errorIf(hasProductionDetail && hasDistributionDetail,
-				"A candidate may not have both a distribution and a production detail; candidateRecord={}", candidateRecordOrNull);
+		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail > 1,
+				"A candidate may not have both a distribution, production and a production detail; candidateRecord={}", candidateRecordOrNull);
 
 		final DemandDetail demandDetailOrNull = createDemandDetailOrNull(candidateRecordOrNull);
 
-		final BusinessCaseDetail businessCaseDetail = Util.coalesce(productionDetailOrNull, distributionDetailOrNull, demandDetailOrNull);
+		final BusinessCaseDetail businessCaseDetail = Util.coalesce(productionDetailOrNull, distributionDetailOrNull, purchaseDetailOrNull, demandDetailOrNull);
 		builder.businessCaseDetail(businessCaseDetail);
-		if (hasProductionDetail || hasDistributionDetail)
+		if (hasProductionDetail > 0 || hasDistributionDetail > 0 || hasPurchaseDetail > 0)
 		{
 			builder.additionalDemandDetail(demandDetailOrNull);
 		}
@@ -176,13 +183,13 @@ public class CandidateRepositoryRetrieval
 				.productDescriptor(productDescriptor)
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
-				.bPartnerId(candidateRecord.getC_BPartner_ID())
+				.customerId(candidateRecord.getC_BPartner_Customer_ID())
 				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
 				.date(new Date(dateProjected.getTime()))
 				.build();
 
 		final CandidateBuilder candidateBuilder = Candidate.builder()
-				.id(candidateRecord.getMD_Candidate_ID())
+				.id(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
 				.clientId(candidateRecord.getAD_Client_ID())
 				.orgId(candidateRecord.getAD_Org_ID())
 				.seqNo(candidateRecord.getSeqNo())
@@ -194,7 +201,7 @@ public class CandidateRepositoryRetrieval
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
-			candidateBuilder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
+			candidateBuilder.parentId(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_Parent_ID()));
 		}
 		return candidateBuilder;
 	}
@@ -213,7 +220,7 @@ public class CandidateRepositoryRetrieval
 		return attributesKey;
 	}
 
-	private ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private static ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Prod_Detail productionDetail = //
 				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
@@ -225,7 +232,7 @@ public class CandidateRepositoryRetrieval
 		return ProductionDetail.forProductionDetailRecord(productionDetail);
 	}
 
-	private DistributionDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private static DistributionDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Dist_Detail distributionDetail = //
 				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Dist_Detail.class);
@@ -246,7 +253,7 @@ public class CandidateRepositoryRetrieval
 			return null;
 		}
 
-		return DemandDetail.forDemandDetailRecord(demandDetailRecord);
+		return DemandDetailRepoHelper.forDemandDetailRecord(demandDetailRecord);
 	}
 
 	private static List<TransactionDetail> createTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
@@ -280,8 +287,8 @@ public class CandidateRepositoryRetrieval
 		return queryBuilderWithoutOrdering
 				.orderBy()
 				.addColumnDescending(I_MD_Candidate.COLUMNNAME_DateProjected)
-				.addColumnAscending(I_MD_Candidate.COLUMNNAME_SeqNo)
-				.addColumnAscending(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID)
+				.addColumnDescending(I_MD_Candidate.COLUMNNAME_SeqNo)
+				.addColumnDescending(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID)
 				.endOrderBy();
 	}
 

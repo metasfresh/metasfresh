@@ -26,14 +26,19 @@ package de.metas.purchasing.api;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
+import org.adempiere.service.OrgId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 
-import de.metas.interfaces.I_C_BPartner_Product;
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
 
 /**
  * @author cg
@@ -41,6 +46,7 @@ import de.metas.interfaces.I_C_BPartner_Product;
  */
 public interface IBPartnerProductDAO extends ISingletonService
 {
+	I_C_BPartner_Product getById(int bpartnerProductId);
 
 	/**
 	 * Retrieves all C_BPartner_Products for selected vendor
@@ -84,9 +90,15 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 */
 	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product, int orgId);
 
-	List<I_C_BPartner_Product> retrieveAllVendors(int productId, int orgId);
+	List<I_C_BPartner_Product> retrieveAllVendors(ProductId productId, OrgId orgId);
 
 	List<ProductExclude> retrieveAllProductSalesExcludes();
 
 	Optional<ProductExclude> getExcludedFromSaleToCustomer(int productId, int partnerId);
+
+	Optional<I_C_BPartner_Product> retrieveDefaultVendor(ProductId productId, OrgId orgId);
+
+	Map<BPartnerId, I_C_BPartner_Product> retrieveByVendorIds(Set<BPartnerId> vendorIds, ProductId productId, OrgId orgId);
+
+	I_C_BPartner_Product retrieveByVendorId(BPartnerId vendorId, ProductId productId, OrgId orgId);
 }

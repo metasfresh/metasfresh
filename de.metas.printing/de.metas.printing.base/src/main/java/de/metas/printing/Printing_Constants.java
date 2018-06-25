@@ -13,23 +13,20 @@ package de.metas.printing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 
@@ -67,15 +64,10 @@ public final class Printing_Constants
 	 */
 	public static final String C_Async_Batch_InternalName_PDFPrinting = "PDFPrinting";
 
-	public static final Topic TOPIC_Printing = Topic.builder()
-			.name("de.metas.printing.async.ProcessedEvents")
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
+			.name("de.metas.printing.UserNotifications")
 			.type(Type.REMOTE)
 			.build();
-
-	public static final IEventBus getPrintingEventBus()
-	{
-		return Services.get(IEventBusFactory.class).getEventBus(TOPIC_Printing);
-	}
 
 	/**
 	 * @return true if printing module is enabled; false if printing module is fully disabled

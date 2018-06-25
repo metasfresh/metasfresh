@@ -72,10 +72,13 @@ final class EventBus implements IEventBus
 	 */
 	private Type type = Type.LOCAL;
 
+	private final ExecutorService executorOrNull;
+
 	public EventBus(
 			final String topicName,
 			final ExecutorService executor)
 	{
+		this.executorOrNull = executor;
 		this.name = Check.assumeNotEmpty(topicName, "name not empty");
 
 		if (executor == null)
@@ -125,7 +128,12 @@ final class EventBus implements IEventBus
 	{
 		this.destroyed = true;
 		this.eventBus = null;
-		logger.trace("{} - Destroyed");
+
+		if (executorOrNull != null)
+		{
+			executorOrNull.shutdown(); // not 100% sure it's needed, but better safe than sorry
+		}
+		logger.trace("{0} - Destroyed", this);
 	}
 
 	@Override
@@ -262,10 +270,13 @@ final class EventBus implements IEventBus
 		}
 		catch (final RuntimeException e)
 		{
-			final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
-			eventLogUserService
-					.newErrorLogEntry(eventListener.getClass(), e)
-					.createAndStore();
+			if (!Adempiere.isUnitTestMode())
+			{
+				final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
+				eventLogUserService
+						.newErrorLogEntry(eventListener.getClass(), e)
+						.createAndStore();
+			}
 		}
 		finally
 		{

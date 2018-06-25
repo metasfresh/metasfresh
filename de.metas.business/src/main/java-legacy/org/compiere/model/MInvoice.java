@@ -32,12 +32,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.BPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -57,6 +52,11 @@ import com.google.common.base.Joiner;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.exceptions.BPartnerNoAddressException;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerStatsBL;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.documentNo.IDocumentNoBuilder;
@@ -67,7 +67,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.logging.LogManager;
-import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -990,7 +990,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public void setM_PriceList_ID(final int M_PriceList_ID)
 	{
-		final MPriceList pl = MPriceList.get(getCtx(), M_PriceList_ID, null);
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(M_PriceList_ID);
 		if (pl != null)
 		{
 			setC_Currency_ID(pl.getC_Currency_ID());
@@ -1369,17 +1369,18 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		{
 			// task FRESH-152
 			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-
-			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
-			final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-			final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
-
-			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true),  getDateInvoiced()))
+			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
+			if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
 			{
-				throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
-						+ stats.getSOCreditUsed()
-						+ ", @SO_CreditLimit@=" + creditLimit);
+				final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+				final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
+
+				if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true),  getDateInvoiced()))
+				{
+					throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
+							+ stats.getSOCreditUsed()
+							+ ", @SO_CreditLimit@=" + creditLimit);
+				}
 			}
 		}
 
@@ -1612,7 +1613,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			return false;
 		}
 		final MPaymentTerm pt = new MPaymentTerm(getCtx(), getC_PaymentTerm_ID(), null);
-		log.debug(pt.toString());
 		return pt.apply(this);		// calls validate pay schedule
 	}	// createPaySchedule
 
@@ -1646,8 +1646,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	public String completeIt()
 	{
 		final String result = completeIt0();
-		Services.get(IPrepayOrderAllocationBL.class).invoiceAfterCompleteIt(this);
-
 		return result;
 	}
 
@@ -2141,8 +2139,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		Services.get(IPrepayOrderAllocationBL.class).invoiceBeforeReverseCorrectIt(this);
-
 		log.debug("{}", toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);

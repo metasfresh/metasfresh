@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1776266296L;
+	private static final long serialVersionUID = 1728621581L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -50,74 +50,71 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
     }
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	public org.compiere.model.I_C_BPartner getC_BPartner_Customer() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class);
 	}
 
 	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	public void setC_BPartner_Customer(org.compiere.model.I_C_BPartner C_BPartner_Customer)
 	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Customer);
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
+	/** Set Kunde.
+		@param C_BPartner_Customer_ID Kunde	  */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID)
 	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		if (C_BPartner_Customer_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Customer_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_Customer_ID, Integer.valueOf(C_BPartner_Customer_ID));
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
+	/** Get Kunde.
+		@return Kunde	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_Customer_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Customer_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	public org.compiere.model.I_C_Order getC_OrderSO() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
 	}
 
 	@Override
-	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	public void setC_OrderSO(org.compiere.model.I_C_Order C_OrderSO)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
 	}
 
 	/** Set Auftrag.
-		@param C_Order_ID 
+		@param C_OrderSO_ID 
 		Auftrag
 	  */
 	@Override
-	public void setC_Order_ID (int C_Order_ID)
+	public void setC_OrderSO_ID (int C_OrderSO_ID)
 	{
-		if (C_Order_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
+		if (C_OrderSO_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_OrderSO_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+			set_ValueNoCheck (COLUMNNAME_C_OrderSO_ID, Integer.valueOf(C_OrderSO_ID));
 	}
 
 	/** Get Auftrag.
 		@return Auftrag
 	  */
 	@Override
-	public int getC_Order_ID () 
+	public int getC_OrderSO_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderSO_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -191,6 +188,8 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public static final String MD_CANDIDATE_BUSINESSCASE_SHIPMENT = "SHIPMENT";
 	/** FORECAST = FORECAST */
 	public static final String MD_CANDIDATE_BUSINESSCASE_FORECAST = "FORECAST";
+	/** PURCHASE = PURCHASE */
+	public static final String MD_CANDIDATE_BUSINESSCASE_PURCHASE = "PURCHASE";
 	/** Set Geschäftsvorfall.
 		@param MD_Candidate_BusinessCase Geschäftsvorfall	  */
 	@Override

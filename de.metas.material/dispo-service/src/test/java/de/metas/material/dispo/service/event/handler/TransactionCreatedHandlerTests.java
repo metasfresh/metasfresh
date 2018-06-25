@@ -16,9 +16,10 @@ import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -133,7 +134,8 @@ public class TransactionCreatedHandlerTests
 			CandidatesQuery query;
 			candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
 			assertThat(query).isNotNull();
-			assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
+			assertThat(query.getTransactionDetails()).hasSize(1);
+			assertThat(query.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
@@ -149,7 +151,7 @@ public class TransactionCreatedHandlerTests
 
 		final Candidate exisitingCandidate = Candidate.builder()
 				.type(CandidateType.UNRELATED_INCREASE)
-				.id(11)
+				.id(CandidateId.ofRepoId(11))
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
@@ -177,11 +179,12 @@ public class TransactionCreatedHandlerTests
 			CandidatesQuery query;
 			candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
 			assertThat(query).isNotNull();
-			assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
+			assertThat(query.getTransactionDetails()).hasSize(1);
+			assertThat(query.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
-		assertThat(candidate.getId()).isEqualTo(11);
+		assertThat(candidate.getId().getRepoId()).isEqualTo(11);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("11");
 		assertThat(candidate.getAdditionalDemandDetail()).isNull();
 		assertThat(candidate.getBusinessCaseDetail()).isNull();
@@ -236,7 +239,7 @@ public class TransactionCreatedHandlerTests
 	public void createCandidate_related_transaction_with_shipmentSchedule()
 	{
 		final Candidate exisitingCandidate = Candidate.builder()
-				.id(11)
+				.id(CandidateId.ofRepoId(11))
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
@@ -278,7 +281,7 @@ public class TransactionCreatedHandlerTests
 				assertDemandDetailQuery(query);
 		}}; // @formatter:on
 
-		assertThat(candidate.getId()).isEqualTo(11);
+		assertThat(candidate.getId().getRepoId()).isEqualTo(11);
 		assertThat(candidate.getType()).isEqualTo(CandidateType.DEMAND);
 		assertThat(candidate.getQuantity())
 				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty that is bigger")
@@ -300,7 +303,7 @@ public class TransactionCreatedHandlerTests
 		assertThat(query.getMaterialDescriptorQuery())
 				.as("If we have a demand detail, then only query via that demand detail")
 				.isNull();
-		assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
+		assertThat(query.getTransactionDetails()).as("only search via the demand detail, if we have one").isEmpty();
 	}
 
 	private TransactionCreatedEventBuilder createTransactionEventBuilderWithQuantity(@NonNull final BigDecimal quantity)

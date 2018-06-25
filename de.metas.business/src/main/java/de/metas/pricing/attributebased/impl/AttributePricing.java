@@ -8,9 +8,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -21,11 +18,16 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.logging.LogManager;
-import de.metas.pricing.ProductPriceQuery.IProductPriceQueryMatcher;
-import de.metas.pricing.ProductPrices;
+import de.metas.money.CurrencyId;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
+import de.metas.pricing.rules.IPricingRule;
+import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
+import de.metas.pricing.service.ProductPrices;
 
 public class AttributePricing implements IPricingRule
 {
@@ -115,17 +117,17 @@ public class AttributePricing implements IPricingRule
 		final I_M_Product product = InterfaceWrapperHelper.create(productPrice.getM_Product(), I_M_Product.class);
 		final I_M_PriceList_Version pricelistVersion = productPrice.getM_PriceList_Version();
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(pricelistVersion.getM_PriceList(), I_M_PriceList.class);
-
+		
 		result.setPriceStd(productPrice.getPriceStd());
 		result.setPriceList(productPrice.getPriceList());
 		result.setPriceLimit(productPrice.getPriceLimit());
-		result.setC_Currency_ID(priceList.getC_Currency_ID());
+		result.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		result.setM_Product_Category_ID(product.getM_Product_Category_ID());
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(priceList.isEnforcePriceLimit());
 		result.setTaxIncluded(false);
-		result.setM_PricingSystem_ID(priceList.getM_PricingSystem_ID());
+		result.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 		result.setM_PriceList_Version_ID(productPrice.getM_PriceList_Version_ID());
 		result.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
 		result.setCalculated(true);

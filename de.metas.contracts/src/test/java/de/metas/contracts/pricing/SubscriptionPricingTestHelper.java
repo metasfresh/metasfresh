@@ -5,9 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
 
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.impl.PricingTestHelper;
-import org.adempiere.pricing.api.impl.ProductPriceBuilder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -15,6 +12,14 @@ import org.compiere.model.I_M_PriceList_Version;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.money.CurrencyId;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.rules.Discount;
+import de.metas.pricing.rules.PriceListVersion;
+import de.metas.pricing.service.impl.PricingTestHelper;
+import de.metas.pricing.service.impl.ProductPriceBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -52,11 +57,10 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 	@Override
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
-		return ImmutableList.copyOf(new String[] {
-				"de.metas.contracts.pricing.SubscriptionPricingRule"//
-				, "org.adempiere.pricing.spi.impl.rules.PriceListVersion" //
-				, "org.adempiere.pricing.spi.impl.rules.Discount" //
-		});
+		return ImmutableList.of(
+				SubscriptionPricingRule.class.getName(),
+				PriceListVersion.class.getName(),
+				Discount.class.getName());
 	}
 
 	public ProductPriceBuilder newProductPriceBuilder(I_M_PriceList_Version priceListVersion)
@@ -78,13 +82,13 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 			@NonNull final I_C_Country country)
 	{
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
-		pricingCtx.setM_PricingSystem_ID(getDefaultPricingSystem().getM_PricingSystem_ID());
-		pricingCtx.setM_PriceList_ID(priceList.getM_PriceList_ID());
+		pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(getDefaultPricingSystem().getM_PricingSystem_ID()));
+		pricingCtx.setPriceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
 		pricingCtx.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 		pricingCtx.setM_Product_ID(getDefaultProduct().getM_Product_ID());
 		pricingCtx.setReferencedObject(defautlFlatrateTermConditions);
 		pricingCtx.setC_Country_ID(country.getC_Country_ID());
-		pricingCtx.setC_Currency_ID(country.getC_Currency_ID());
+		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(country.getC_Currency_ID()));
 
 		return pricingCtx;
 	}

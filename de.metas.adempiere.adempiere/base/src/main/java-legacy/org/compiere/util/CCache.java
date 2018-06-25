@@ -47,6 +47,7 @@ import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Adempiere Cache.
@@ -239,7 +240,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	private final String debugId;
 
 	/**
-	 * If {@link #DEBUG} is enabled, this variable containts the constructor's stack trace (when this object was created)
+	 * If {@link #DEBUG} is enabled, this variable contains the constructor's stack trace (when this object was created)
 	 */
 	private final String debugAquireStacktrace;
 
@@ -513,6 +514,12 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	public V getOrLoad(final K key, final Callable<V> valueLoader)
 	{
 		return get(key, valueLoader);
+	}
+
+	public V getOrLoad(final K key, @NonNull final Function<K, V> valueLoader)
+	{
+		final Callable<V> callable = () -> valueLoader.apply(key);
+		return get(key, callable);
 	}
 
 	/**

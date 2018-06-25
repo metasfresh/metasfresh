@@ -1,5 +1,7 @@
 package de.metas.session.jaxrs;
 
+import lombok.Data;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -27,8 +29,11 @@ package de.metas.session.jaxrs;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@Data
 public class StatusServiceResult
 {
+	public static final String RABBITMQ_USE_APPSERVER_HOSTNAME = "<USE-APPSERVER-HOSTNAME>";
+
 	private String dateVersion;
 	private String mainVersion;
 	private String dbType;
@@ -42,171 +47,8 @@ public class StatusServiceResult
 	private int dataBaseCount;
 	private String status;
 
-	/**
-	 * 	Get Version (Date)
-	 *  @return version e.g. 2002-09-02
-	 */
-	public String getDateVersion()
-	{
-		return dateVersion;
-	}
-
-	/**
-	 * 	Get Main Version
-	 *  @return main version - e.g. Version 2.4.3b
-	 */
-	public String getMainVersion()
-	{
-		return mainVersion;
-	}
-
-	/**
-	 *  Get Database Type
-	 *  @return Database Type
-	 */
-	public String getDbType()
-	{
-		return dbType;
-	}
-
-	/**
-	 *  Get Database Host
-	 *  @return Database Host Name
-	 */
-	public String getDbHost()
-	{
-		return dbHost;
-	}
-
-	/**
-	 *  Get Database Port
-	 *  @return Database Port
-	 */
-	public int getDbPort()
-	{
-		return dbPort;
-	}
-
-	/**
-	 *  Get Database SID
-	 *  @return Database SID
-	 */
-	public String getDbName()
-	{
-		return dbName;
-	}
-
-	/**
-	 *  Get Database URL
-	 *  @return Database URL
-	 */
-	public String getConnectionURL()
-	{
-		return connectionURL;
-	}
-
-	/**
-	 *  Get Database UID
-	 *  @return Database User Name
-	 */
-	public String getDbUid()
-	{
-		return dbUid;
-	}
-
-	/**
-	 *  Get Database PWD
-	 *  @return Database User Password
-	 */
-	public String getDbPwd()
-	{
-		return dbPwd;
-	}
-
-	/**
-	 * 	Get Version Count
-	 * 	@return number of version inquiries
-	 */
-	public int getVersionCount()
-	{
-		return versionCount;
-	}
-
-	/**
-	 * 	Get Database Count
-	 * 	@return number of database inquiries
-	 */
-	public int getDataBaseCount()
-	{
-		return dataBaseCount;
-	}
-
-	/**
-	 * 	Describes the instance and its content for debugging purpose
-	 * 	@return Debugging information about the instance and its content
-	 */
-	public String getStatus()
-	{
-		return status;
-	}
-
-	public void setDateVersion(String dateVersion)
-	{
-		this.dateVersion = dateVersion;
-	}
-
-	public void setMainVersion(String mainVersion)
-	{
-		this.mainVersion = mainVersion;
-	}
-
-	public void setDbType(String dbType)
-	{
-		this.dbType = dbType;
-	}
-
-	public void setDbHost(String dbHost)
-	{
-		this.dbHost = dbHost;
-	}
-
-	public void setDbPort(int dbPort)
-	{
-		this.dbPort = dbPort;
-	}
-
-	public void setDbName(String dbName)
-	{
-		this.dbName = dbName;
-	}
-
-	public void setConnectionURL(String connectionURL)
-	{
-		this.connectionURL = connectionURL;
-	}
-
-	public void setDbUid(String dbUid)
-	{
-		this.dbUid = dbUid;
-	}
-
-	public void setDbPwd(String dbPwd)
-	{
-		this.dbPwd = dbPwd;
-	}
-
-	public void setVersionCount(int versionCount)
-	{
-		this.versionCount = versionCount;
-	}
-
-	public void setDataBaseCount(int dataBaseCount)
-	{
-		this.dataBaseCount = dataBaseCount;
-	}
-
-	public void setStatus(String status)
-	{
-		this.status = status;
-	}
+	private String rabbitmqHost;
+	private String rabbitmqPort;
+	private String rabbitmqUsername;
+	private String rabbitmqPassword;
 }

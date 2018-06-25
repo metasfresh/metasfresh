@@ -47,14 +47,14 @@ import lombok.ToString;
  *
  * @author Jorg Janke
  * @version $Id: Fact.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
- * 
+ *
  *          BF [ 2789949 ] Multicurrency in matching posting
  */
 public final class Fact
 {
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param document pointer to document
 	 * @param acctSchema Account Schema to create accounts
 	 * @param defaultPostingType the default Posting type (actual,..) for this posting
@@ -175,7 +175,7 @@ public final class Fact
 
 	/**
 	 * Add Fact Line
-	 * 
+	 *
 	 * @param line fact line
 	 */
 	private final void add(final FactLine line)
@@ -186,7 +186,7 @@ public final class Fact
 
 	/**
 	 * Remove Fact Line
-	 * 
+	 *
 	 * @param line fact line
 	 */
 	public void remove(FactLine line)
@@ -234,7 +234,7 @@ public final class Fact
 
 	/**
 	 * Is Posting Type
-	 * 
+	 *
 	 * @param PostingType - see POST_*
 	 * @return true if document is posting type
 	 */
@@ -245,7 +245,7 @@ public final class Fact
 
 	/**
 	 * Is converted
-	 * 
+	 *
 	 * @return true if converted
 	 */
 	public boolean isConverted()
@@ -255,7 +255,7 @@ public final class Fact
 
 	/**
 	 * Get AcctSchema
-	 * 
+	 *
 	 * @return AcctSchema; never returns null
 	 */
 	public final MAcctSchema getAcctSchema()
@@ -270,7 +270,7 @@ public final class Fact
 
 	/**************************************************************************
 	 * Are the lines Source Balanced
-	 * 
+	 *
 	 * @return true if source lines balanced
 	 */
 	public boolean isSourceBalanced()
@@ -291,7 +291,7 @@ public final class Fact
 
 	/**
 	 * Return Source Balance
-	 * 
+	 *
 	 * @return source balance
 	 */
 	protected BigDecimal getSourceBalance()
@@ -309,7 +309,7 @@ public final class Fact
 	/**
 	 * Create Source Line for Suspense Balancing. Only if Suspense Balancing is enabled and not a multi-currency document (double check as otherwise the rule should not have fired) If not balanced
 	 * create balancing entry in currency of the document
-	 * 
+	 *
 	 * @return FactLine
 	 */
 	public FactLine balanceSource()
@@ -343,7 +343,7 @@ public final class Fact
 
 	/**************************************************************************
 	 * Are all segments balanced
-	 * 
+	 *
 	 * @return true if segments are balanced
 	 */
 	public boolean isSegmentBalanced()
@@ -356,9 +356,9 @@ public final class Fact
 
 		MAcctSchemaElement[] elements = m_acctSchema.getAcctSchemaElements();
 		// check all balancing segments
-		for (int i = 0; i < elements.length; i++)
+		for (MAcctSchemaElement element : elements)
 		{
-			MAcctSchemaElement ase = elements[i];
+			MAcctSchemaElement ase = element;
 			if (ase.isBalanced() && !isSegmentBalanced(ase.getElementType()))
 				return false;
 		}
@@ -367,7 +367,7 @@ public final class Fact
 
 	/**
 	 * Is Source Segment balanced.
-	 * 
+	 *
 	 * @param segmentType - see AcctSchemaElement.SEGMENT_* Implemented only for Org Other sensible candidates are Project, User1/2
 	 * @return true if segments are balanced
 	 */
@@ -415,9 +415,8 @@ public final class Fact
 	{
 		MAcctSchemaElement[] elements = m_acctSchema.getAcctSchemaElements();
 		// check all balancing segments
-		for (int i = 0; i < elements.length; i++)
+		for (MAcctSchemaElement ase : elements)
 		{
-			MAcctSchemaElement ase = elements[i];
 			if (ase.isBalanced())
 				balanceSegment(ase.getElementType());
 		}
@@ -425,7 +424,7 @@ public final class Fact
 
 	/**
 	 * Balance Source Segment
-	 * 
+	 *
 	 * @param elementType segment element type
 	 */
 	private void balanceSegment(String elementType)
@@ -511,7 +510,7 @@ public final class Fact
 
 	/**************************************************************************
 	 * Are the lines Accounting Balanced
-	 * 
+	 *
 	 * @return true if accounting lines are balanced
 	 */
 	public boolean isAcctBalanced()
@@ -530,7 +529,7 @@ public final class Fact
 
 	/**
 	 * Return Accounting Balance
-	 * 
+	 *
 	 * @return true if accounting lines are balanced
 	 */
 	protected BigDecimal getAcctBalance()
@@ -548,7 +547,7 @@ public final class Fact
 	/**
 	 * Balance Accounting Currency. If the accounting currency is not balanced, if Currency balancing is enabled create a new line using the currency balancing account with zero source balance or
 	 * adjust the line with the largest balance sheet account or if no balance sheet account exist, the line with the largest amount
-	 * 
+	 *
 	 * @return FactLine
 	 */
 	public FactLine balanceAccounting()
@@ -707,7 +706,7 @@ public final class Fact
 
 	/**************************************************************************
 	 * String representation
-	 * 
+	 *
 	 * @return String
 	 */
 	@Override
@@ -723,7 +722,7 @@ public final class Fact
 
 	/**
 	 * Get Lines
-	 * 
+	 *
 	 * @return FactLine Array
 	 */
 	public FactLine[] getLines()
@@ -735,7 +734,7 @@ public final class Fact
 
 	/**
 	 * Save Fact
-	 * 
+	 *
 	 * @param trxName transaction
 	 * @return true if all lines were saved
 	 */
@@ -925,6 +924,8 @@ public final class Fact
 		private BigDecimal qty = null;
 		private int uomId;
 
+		private boolean alsoAddZeroLine = false;
+		
 		// Other dimensions
 		private Integer AD_Org_ID;
 		private Integer C_BPartner_ID;
@@ -932,15 +933,15 @@ public final class Fact
 		private Integer locatorId;
 		private Integer activityId;
 
+		
 		private FactLineBuilder(final Fact fact)
 		{
-			super();
 			this.fact = fact;
 		}
 
 		/**
 		 * Creates the {@link FactLine} and adds it to {@link Fact}.
-		 * 
+		 *
 		 * @return created {@link FactLine}
 		 */
 		public FactLine buildAndAdd()
@@ -1011,7 +1012,11 @@ public final class Fact
 				if (line.getQty().signum() == 0)
 				{
 					log.debug("Both amounts & qty = 0/Null - {}", this);
-					return null;
+					// https://github.com/metasfresh/metasfresh/issues/4147 we might need the zero-line later
+					if(!alsoAddZeroLine)
+					{
+						return null;
+					}
 				}
 
 				if (log.isDebugEnabled())
@@ -1181,6 +1186,16 @@ public final class Fact
 			return this;
 		}
 
+		/** 
+		 * Usually the {@link #buildAndAdd()} method ignores fact lines that have zero/null source amount and zero/null qty.
+		 * Invoke this builder method still have the builder add them.
+		 */
+		public FactLineBuilder alsoAddZeroLine()
+		{
+			alsoAddZeroLine = true;
+			return this;
+		}
+		
 		public FactLineBuilder setC_Currency_ID(final int currencyId)
 		{
 			assertNotBuild();
@@ -1232,7 +1247,7 @@ public final class Fact
 
 		/**
 		 * Sets the AmtSourceDr (if amtSource is positive) or AmtSourceCr (if amtSource is negative).
-		 * 
+		 *
 		 * @param amtSource
 		 */
 		public FactLineBuilder setAmtSourceDrOrCr(final BigDecimal amtSource)

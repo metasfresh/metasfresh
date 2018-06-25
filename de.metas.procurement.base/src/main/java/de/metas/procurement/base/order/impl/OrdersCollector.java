@@ -1,5 +1,6 @@
 package de.metas.procurement.base.order.impl;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.util.Loggables;
@@ -7,9 +8,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 
-import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.event.DocumentEventBus;
+import de.metas.event.DocumentUserNotificationsProducer;
 import de.metas.procurement.base.ProcurementConstants;
 
 /*
@@ -25,11 +26,11 @@ import de.metas.procurement.base.ProcurementConstants;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -54,29 +55,27 @@ public class OrdersCollector implements IOrdersCollector
 	private final AtomicInteger countOrders = new AtomicInteger(0);
 
 	private static final String MSG_Event_Generated = "Event_ProcurementPurchaseOrderGenerated";
-	private final DocumentEventBus<I_C_Order> orderGeneratedNotifier = DocumentEventBus.<I_C_Order> builder()
-			.setLogger(ProcurementConstants.getLogger(OrdersCollector.class))
-			.setTopic(ProcurementConstants.EVENTBUS_TOPIC_PurchaseOrderGenerated)
-			.setEventAD_Message(MSG_Event_Generated)
-			.setEventAD_MessageParamsExtractor(new Function<I_C_Order, Object[]>()
-			{
-				@Override
-				public Object[] apply(final I_C_Order document)
-				{
-					final I_C_BPartner bpartner = document.getC_BPartner();
-					final String bpValue = bpartner.getValue();
-					final String bpName = bpartner.getName();
-					return new Object[] { TableRecordReference.of(document), bpValue, bpName };
-				}
-			})
+	private final DocumentUserNotificationsProducer<I_C_Order> orderGeneratedNotifier = DocumentUserNotificationsProducer.<I_C_Order> builder()
+			.logger(ProcurementConstants.getLogger(OrdersCollector.class))
+			.topic(ProcurementConstants.USER_NOTIFICATIONS_TOPIC)
+			.eventAD_Message(MSG_Event_Generated)
+			.eventAD_MessageParamsExtractor(OrdersCollector::extractUserNotificationADMessageParams)
 			.build();
 
 	private int defaultNotificationRecipientId = -1;
 
 	private OrdersCollector()
 	{
-		super();
-		orderGeneratedNotifier.queueEventsUntilCurrentTrxCommit();
+	}
+
+	private static List<Object> extractUserNotificationADMessageParams(final I_C_Order order)
+	{
+		final I_C_BPartner bpartner = order.getC_BPartner();
+		return ImmutableList.builder()
+				.add(TableRecordReference.of(order))
+				.add(bpartner.getValue())
+				.add(bpartner.getName())
+				.build();
 	}
 
 	public void setDefaultNotificationRecipientId(final int defaultNotificationRecipientId)

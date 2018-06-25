@@ -68,11 +68,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			soTrxInvoice = null;
 		}
 
-		this.m_Counter_AllocationLine_ID = line.getCounter_AllocationLine_ID();
-
-		//
-		// Order (used for prepayments)
-		m_C_Order_ID = line.getC_Order_ID();
+        this.m_Counter_AllocationLine_ID = line.getCounter_AllocationLine_ID();
 
 		//
 		// Payment: via Cashbook (legacy)
@@ -121,8 +117,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 	private final int m_C_CashLine_ID;
 	private final I_C_CashLine cashLine;
-
-	private final int m_C_Order_ID;
 
 	private final BigDecimal m_AllocatedAmt;
 	private final BigDecimal m_DiscountAmt;
@@ -333,14 +327,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	public I_C_Payment getC_Payment()
 	{
 		return payment;
-	}
-
-	/**
-	 * @return Returns the c_Order_ID.
-	 */
-	public int getC_Order_ID()
-	{
-		return m_C_Order_ID;
 	}
 
 	public final boolean isSOTrxInvoice()

@@ -98,6 +98,33 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
+	 * Set Base_PricingSystem_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID);
+
+	/**
+	 * Get Base_PricingSystem_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBase_PricingSystem_ID();
+
+	public org.compiere.model.I_M_PricingSystem getBase_PricingSystem();
+
+	public void setBase_PricingSystem(org.compiere.model.I_M_PricingSystem Base_PricingSystem);
+
+    /** Column definition for Base_PricingSystem_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PricingSystem> COLUMN_Base_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PricingSystem>(I_C_OrderLine.class, "Base_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
+    /** Column name Base_PricingSystem_ID */
+    public static final String COLUMNNAME_Base_PricingSystem_ID = "Base_PricingSystem_ID";
+
+	/**
 	 * Set Kostenstelle.
 	 * Kostenstelle
 	 *
@@ -1122,6 +1149,29 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_IsSubscription = "IsSubscription";
 
 	/**
+	 * Set Temporary pricing conditions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsTempPricingConditions (boolean IsTempPricingConditions);
+
+	/**
+	 * Get Temporary pricing conditions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isTempPricingConditions();
+
+    /** Column definition for IsTempPricingConditions */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsTempPricingConditions = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsTempPricingConditions", null);
+    /** Column name IsTempPricingConditions */
+    public static final String COLUMNNAME_IsTempPricingConditions = "IsTempPricingConditions";
+
+	/**
 	 * Set Zeile Nr..
 	 * Unique line for this document
 	 *
@@ -1230,10 +1280,39 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+	 * Set Rabatt Schema.
+	 * Schema um den prozentualen Rabatt zu berechnen
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
+
+	/**
+	 * Get Rabatt Schema.
+	 * Schema um den prozentualen Rabatt zu berechnen
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_DiscountSchema_ID();
+
+	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema();
+
+	public void setM_DiscountSchema(org.compiere.model.I_M_DiscountSchema M_DiscountSchema);
+
+    /** Column definition for M_DiscountSchema_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchema> COLUMN_M_DiscountSchema_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchema>(I_C_OrderLine.class, "M_DiscountSchema_ID", org.compiere.model.I_M_DiscountSchema.class);
+    /** Column name M_DiscountSchema_ID */
+    public static final String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
+
+	/**
 	 * Set Discount Schema Break.
 	 * Trade Discount Break
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1243,7 +1322,7 @@ public interface I_C_OrderLine
 	 * Get Discount Schema Break.
 	 * Trade Discount Break
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1542,6 +1621,31 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceEntered = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PriceEntered", null);
     /** Column name PriceEntered */
     public static final String COLUMNNAME_PriceEntered = "PriceEntered";
+
+	/**
+	 * Set Rohertragspreis.
+	 * Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPriceGrossProfit (java.math.BigDecimal PriceGrossProfit);
+
+	/**
+	 * Get Rohertragspreis.
+	 * Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPriceGrossProfit();
+
+    /** Column definition for PriceGrossProfit */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceGrossProfit = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PriceGrossProfit", null);
+    /** Column name PriceGrossProfit */
+    public static final String COLUMNNAME_PriceGrossProfit = "PriceGrossProfit";
 
 	/**
 	 * Set Mindestpreis.

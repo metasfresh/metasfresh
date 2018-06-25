@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.cache.WindowBasedCacheInvalidateRequestInitializer;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.bpartner.process.BPartnerCreditLimit_RequestApproval;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.pricing.model.I_C_PricingRule;
@@ -64,6 +63,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -77,12 +77,14 @@ import org.compiere.util.CacheMgt;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
+import de.metas.bpartner.product.callout.C_BPartner_Product;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
+import de.metas.notification.INotificationGroupNameRepository;
+import de.metas.notification.NotificationGroupName;
 import de.metas.reference.model.interceptor.AD_Ref_Table;
 
 /**
@@ -93,11 +95,14 @@ import de.metas.reference.model.interceptor.AD_Ref_Table;
  */
 public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 {
-
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		return ImmutableList.of(BPartnerCreditLimit_RequestApproval.TOPIC_CreditLimitRequestApproval);
+		final INotificationGroupNameRepository notificationGroupNameRepo = Services.get(INotificationGroupNameRepository.class);
+		return notificationGroupNameRepo.getAll()
+				.stream()
+				.map(NotificationGroupName::toTopic)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -188,14 +193,13 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		//
 		// BPartner
-		engine.addModelValidator(new org.adempiere.bpartner.model.interceptor.C_BPartner(), client);
+		engine.addModelValidator(new de.metas.bpartner.model.interceptor.C_BPartner(), client);
 		//
 		// Prevent users from creating duplicate main prices https://github.com/metasfresh/metasfresh/issues/2510
 		engine.addModelValidator(de.metas.pricing.interceptor.M_ProductPrice.INSTANCE, client);
 
 		// #2895
 		engine.addModelValidator(AD_Ref_Table.instance, client);
-
 
 		// #2913
 		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance, client);
@@ -211,6 +215,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.process.callout.AD_Process_Para()); // FRESH-727
 
 		calloutsRegistry.registerAnnotatedCallout(AD_Column.instance);
+
+		calloutsRegistry.registerAnnotatedCallout(new C_BPartner_Product());
 	}
 
 	@Override
@@ -219,6 +225,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cachingService.addTableCacheConfig(I_AD_Client.class);
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Table.class);
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Ref_List.class);
+		cachingService.addTableCacheConfigIfAbsent(I_M_PriceList.class);
 
 		// M_Product (for now, using the same setting that were in MProduct.s_cache
 		cachingService.createTableCacheConfigBuilder(I_M_Product.class)

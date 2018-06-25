@@ -1,6 +1,7 @@
 package de.metas.email;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -10,6 +11,7 @@ import javax.activation.URLDataSource;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
+import org.springframework.core.io.Resource;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -61,14 +63,13 @@ public final class EMailAttachment implements Serializable
 		final URI uri = null;
 		return new EMailAttachment(filename, content, uri);
 	}
-	
+
 	public static EMailAttachment of(@NonNull final String filename, @NonNull final File file)
 	{
 		final byte[] content = Util.readBytes(file);
 		final URI uri = null;
 		return new EMailAttachment(filename, content, uri);
 	}
-
 
 	public static EMailAttachment of(@NonNull final String filename, final byte[] content)
 	{
@@ -81,6 +82,18 @@ public final class EMailAttachment implements Serializable
 		final String filename = null;
 		final byte[] content = null;
 		return new EMailAttachment(filename, content, uri);
+	}
+
+	public static EMailAttachment of(@NonNull final Resource resource)
+	{
+		try
+		{
+			return of(resource.getURI());
+		}
+		catch (IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 	}
 
 	@JsonProperty("filename")

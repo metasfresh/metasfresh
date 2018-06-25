@@ -443,7 +443,7 @@ public class RequisitionPOCreate extends JavaProcess
 			final int orgId = product.getAD_Org_ID();
 			final int productId = product.getM_Product_ID();
 			
-			final List<de.metas.interfaces.I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, productId, orgId);
+			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, productId, orgId);
 	
 			if (partnerProducts.size() > 0)
 			{

@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.adempiere.acct.api.GLDistributionBuilder;
 import org.adempiere.acct.api.GLDistributionResult;
 import org.adempiere.acct.api.GLDistributionResultLine;
+import org.adempiere.acct.api.GLDistributionResultLine.Sign;
 import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.acct.api.IGLDistributionDAO;
@@ -16,6 +17,8 @@ import org.adempiere.acct.api.impl.AcctSegmentType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.MAccount;
 import org.slf4j.Logger;
@@ -23,6 +26,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,11 +41,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -95,10 +99,13 @@ import de.metas.logging.LogManager;
 
 			//
 			// Create GL_Distribution fact lines
+			final IPair<Sign, BigDecimal> amountToDistribute = deriveAmountAndSign(line);
+
 			final GLDistributionResult distributionResult = GLDistributionBuilder.newInstance()
 					.setGLDistribution(distribution)
 					.setAccountDimension(lineDimension)
-					.setAmountToDistribute(line.getSourceBalance())
+					.setAmountSign(amountToDistribute.getLeft())
+					.setAmountToDistribute(amountToDistribute.getRight())
 					.setC_Currency_ID(line.getC_Currency_ID())
 					.setQtyToDistribute(line.getQty())
 					.distribute();
@@ -130,6 +137,23 @@ import de.metas.logging.LogManager;
 		newLines.addAll(newLines_Last);
 
 		return newLines;
+	}
+
+	private IPair<Sign, BigDecimal> deriveAmountAndSign(@NonNull final FactLine line)
+	{
+		final Sign amountSign;
+		final BigDecimal amount;
+		if (line.getAmtSourceDr() != null && line.getAmtSourceDr().signum() != 0)
+		{
+			amountSign = Sign.DEBIT;
+			amount = line.getAmtSourceDr();
+		}
+		else
+		{
+			amountSign = Sign.CREDIT;
+			amount = line.getAmtSourceCr();
+		}
+		return ImmutablePair.of(amountSign, amount);
 	}
 
 	/**
@@ -216,14 +240,8 @@ import de.metas.logging.LogManager;
 				.build());
 
 		// Amount
-		if (amount.signum() < 0)
-		{
-			factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), null, amount.negate());
-		}
-		else
-		{
-			factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), amount, null);
-		}
+		setAmountToFactLine(glDistributionLine, factLine);
+
 		factLine.setQty(glDistributionLine.getQty());
 		// Convert
 		factLine.convert();
@@ -233,5 +251,34 @@ import de.metas.logging.LogManager;
 
 		logger.info("{}", factLine);
 		return factLine;
+	}
+
+	private void setAmountToFactLine(
+			@NonNull final GLDistributionResultLine glDistributionLine,
+			@NonNull final FactLine factLine)
+	{
+		final BigDecimal amount = glDistributionLine.getAmount();
+
+		switch (glDistributionLine.getAmountSign())
+		{
+			case CREDIT:
+				factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), null, amount);
+				break;
+
+			case DEBIT:
+				factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), amount, null);
+				break;
+
+			case DETECT:
+				if (amount.signum() < 0)
+				{
+					factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), null, amount.negate());
+				}
+				else
+				{
+					factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), amount, null);
+				}
+				break;
+		}
 	}
 }

@@ -59,6 +59,13 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
+		<!-- allow the server to register at metasfresh-admin; it won't try to register unless configured -->
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-starter-client</artifactId>
+			<version>1.5.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-config</artifactId>
@@ -83,11 +90,6 @@
 		</dependency>
 
 		<!-- Database -->
-		<dependency>
-			<!-- used for embedded database, in demo and tests -->
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -121,7 +123,6 @@
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger-ui</artifactId>
 		</dependency>
-
 
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -161,7 +162,7 @@
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
@@ -193,6 +194,7 @@
 							<outputDirectory>${docker.build.directory}</outputDirectory>
 						</configuration>
 					</execution>
+
 					<execution>
 						<id>spring-boot-metasfresh-msv3-server-build-info</id>
 						<goals>

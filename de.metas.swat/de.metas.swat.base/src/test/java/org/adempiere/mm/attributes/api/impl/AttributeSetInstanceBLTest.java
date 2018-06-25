@@ -107,7 +107,7 @@ public class AttributeSetInstanceBLTest
 		private final I_M_Attribute listAttribute;
 		private final I_M_Attribute numberAttribute;
 		private final I_M_Attribute stringAttribute;
-		private final ImmutableMap<I_M_Attribute, ? extends Object> attribute2value;
+		private final ImmutableMap<String, ? extends Object> valuesByAttributeKey;
 
 		private TestAttributeSet()
 		{
@@ -118,11 +118,11 @@ public class AttributeSetInstanceBLTest
 			stringAttribute = attributesTestHelper.createM_Attribute("StringAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 			dateAttributeValue = SystemTime.asTimestamp();
-			attribute2value = ImmutableMap.of(
-					dateAttribute, dateAttributeValue,
-					listAttribute, "listValue",
-					numberAttribute, BigDecimal.ONE,
-					stringAttribute, "stringValue");
+			valuesByAttributeKey = ImmutableMap.of(
+					dateAttribute.getValue(), dateAttributeValue,
+					listAttribute.getValue(), "listValue",
+					numberAttribute.getValue(), BigDecimal.ONE,
+					stringAttribute.getValue(), "stringValue");
 		}
 
 		@Override
@@ -132,7 +132,7 @@ public class AttributeSetInstanceBLTest
 		}
 
 		@Override
-		public boolean hasAttribute(final I_M_Attribute attribute)
+		public boolean hasAttribute(final String attributeKey)
 		{
 			throw new UnsupportedOperationException("The method hasAttribute is expected not to be called by the method under test");
 		}
@@ -150,41 +150,41 @@ public class AttributeSetInstanceBLTest
 		}
 
 		@Override
-		public Object getValue(final I_M_Attribute attribute)
+		public Object getValue(final String attributeKey)
 		{
-			assertThat(attribute2value).containsKey(attribute);
-			return attribute2value.get(attribute);
+			assertThat(valuesByAttributeKey).containsKey(attributeKey);
+			return valuesByAttributeKey.get(attributeKey);
 		}
 
 		@Override
-		public BigDecimal getValueAsBigDecimal(final I_M_Attribute attribute)
+		public BigDecimal getValueAsBigDecimal(final String attributeKey)
 		{
-			assertThat(attribute).isSameAs(numberAttribute);
-			return (BigDecimal)attribute2value.get(attribute);
+			assertThat(attributeKey).isEqualTo(numberAttribute.getValue());
+			return (BigDecimal)valuesByAttributeKey.get(attributeKey);
 		}
 
 		@Override
-		public int getValueAsInt(final I_M_Attribute attribute)
+		public int getValueAsInt(final String attributeKey)
 		{
-			return getValueAsBigDecimal(attribute).intValue();
+			return getValueAsBigDecimal(attributeKey).intValue();
 		}
 
 		@Override
-		public Date getValueAsDate(final I_M_Attribute attribute)
+		public Date getValueAsDate(final String attributeKey)
 		{
-			assertThat(attribute).isSameAs(dateAttribute);
-			return (Date)attribute2value.get(attribute);
+			assertThat(attributeKey).isEqualTo(dateAttribute.getValue());
+			return (Date)valuesByAttributeKey.get(attributeKey);
 		}
 
 		@Override
-		public String getValueAsString(final I_M_Attribute attribute)
+		public String getValueAsString(final String attributeKey)
 		{
-			assertThat(ImmutableSet.of(stringAttribute, listAttribute)).contains(attribute);
-			return (String)attribute2value.get(attribute);
+			assertThat(ImmutableSet.of(stringAttribute.getValue(), listAttribute.getValue())).contains(attributeKey);
+			return (String)valuesByAttributeKey.get(attributeKey);
 		}
 
 		@Override
-		public void setValue(final I_M_Attribute attribute, final Object value)
+		public void setValue(final String attributeKey, final Object value)
 		{
 			throw new UnsupportedOperationException("The method setValue is expected not to be called by the method under test");
 		}

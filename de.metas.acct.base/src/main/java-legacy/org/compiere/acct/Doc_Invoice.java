@@ -393,11 +393,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			serviceAmt = getAmount(Doc.AMTTYPE_Gross);
 			grossAmt = BigDecimal.ZERO;
 		}
-		if (grossAmt.signum() != 0)
-		{
-			fact.createLine(null, MAccount.get(getCtx(), receivables_ID),
-					getC_Currency_ID(), grossAmt, null);
-		}
+
+		// https://github.com/metasfresh/metasfresh/issues/4147
+		// we need this line later, even if it is zero
+		fact.createLine()
+				.setAccount(MAccount.get(getCtx(), receivables_ID))
+				.setAmtSource(getC_Currency_ID(), grossAmt, null)
+				.alsoAddZeroLine()
+				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine(null, MAccount.get(getCtx(), receivablesServices_ID),
@@ -494,11 +497,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			serviceAmt = getAmount(Doc.AMTTYPE_Gross);
 			grossAmt = BigDecimal.ZERO;
 		}
-		if (grossAmt.signum() != 0)
-		{
-			fact.createLine(null, MAccount.get(getCtx(), receivables_ID),
-					getC_Currency_ID(), null, grossAmt);
-		}
+		
+		// https://github.com/metasfresh/metasfresh/issues/4147
+		// we need this line later, even if it is zero
+		fact.createLine()
+				.setAccount(MAccount.get(getCtx(), receivables_ID))
+				.setAmtSource(getC_Currency_ID(), null, grossAmt)
+				.alsoAddZeroLine()
+				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine(null, MAccount.get(getCtx(), receivablesServices_ID),
@@ -608,10 +614,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			serviceAmt = getAmount(Doc.AMTTYPE_Gross);
 			grossAmt = BigDecimal.ZERO;
 		}
-		if (grossAmt.signum() != 0)
-		{
-			fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), null, grossAmt);
-		}
+		
+		// https://github.com/metasfresh/metasfresh/issues/4147
+		// we need this line later, even if it is zero
+		fact.createLine()
+				.setAccount(MAccount.get(getCtx(), payables_ID))
+				.setAmtSource(getC_Currency_ID(), null, grossAmt)
+				.alsoAddZeroLine()
+				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine(null, MAccount.get(getCtx(), payablesServices_ID), getC_Currency_ID(), null, serviceAmt);
@@ -715,11 +725,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			serviceAmt = getAmount(Doc.AMTTYPE_Gross);
 			grossAmt = BigDecimal.ZERO;
 		}
-		if (grossAmt.signum() != 0)
-		{
-			fact.createLine(null, MAccount.get(getCtx(), payables_ID),
-					getC_Currency_ID(), grossAmt, null);
-		}
+		
+		// https://github.com/metasfresh/metasfresh/issues/4147
+		// we need this line later, even if it is zero
+		fact.createLine()
+				.setAccount(MAccount.get(getCtx(), payables_ID))
+				.setAmtSource(getC_Currency_ID(), grossAmt, null)
+				.alsoAddZeroLine()
+				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine(null, MAccount.get(getCtx(), payablesServices_ID),

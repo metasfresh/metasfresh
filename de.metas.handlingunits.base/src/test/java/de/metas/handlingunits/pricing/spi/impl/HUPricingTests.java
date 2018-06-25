@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.api.impl.ASIBuilder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.Env;
@@ -17,6 +14,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.service.impl.ASIBuilder;
 
 /*
  * #%L

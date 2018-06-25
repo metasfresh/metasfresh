@@ -20,6 +20,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.IOrderPA;
 
 /*
@@ -186,5 +187,11 @@ public class C_Order
 			referencingOrderLine.setLink_Order(null);
 			InterfaceWrapperHelper.save(referencingOrderLine);
 		}
+	}
+	
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void checkPricingConditionsInOrderLines(final I_C_Order order)
+	{
+		Services.get(IOrderLinePricingConditions.class).failForMissingPricingConditions(order);
 	}
 }
