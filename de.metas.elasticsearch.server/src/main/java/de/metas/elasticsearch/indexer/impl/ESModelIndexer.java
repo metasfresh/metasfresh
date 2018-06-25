@@ -2,7 +2,6 @@ package de.metas.elasticsearch.indexer.impl;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +36,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
+import de.metas.elasticsearch.indexer.ESModelIndexerDataSource;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
@@ -79,9 +79,6 @@ public final class ESModelIndexer implements IESModelIndexer
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final Client elasticsearchClient;
 	private final ObjectMapper jsonObjectMapper;
-
-	// private static final String RESOURCE_IndexDefaultSettings = "/de/metas/elasticsearch/indexer/index_default_settings.json";
-	// private static final String ANALYZER_FullTextSearch = "fts_analyzer";
 
 	@Getter
 	private final ESModelIndexerId id;
@@ -138,11 +135,10 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public String toString()
 	{
+		// NOTE: keep it short
 		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
 				.add("id", id)
 				.add("modelTableName", modelTableName)
-				.add("denormalizer", modelDenormalizer)
 				.toString();
 	}
 
@@ -194,43 +190,50 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public boolean createUpdateIndex()
 	{
-		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
-
-		//
-		// Create index if does not exist
-		final String indexName = getIndexName();
-		final boolean indexExists = indices
-				.prepareExists(indexName)
-				.get()
-				.isExists();
-		if (indexExists)
+		// Do nothing if index already exists
+		if (checkIndexExists())
 		{
 			// stop here
-			logger.debug("Skip create/update index because index already exists: {}", indexName);
+			logger.debug("Skip create/update index because index already exists: {}", getIndexName());
 			return false;
 		}
-		else
-		{
-			final CreateIndexRequestBuilder requestBuilder = indices.prepareCreate(indexName);
-			if (!Check.isEmpty(indexSettingsJson, true))
-			{
-				requestBuilder.setSettings(indexSettingsJson);
-			}
-
-			final boolean acknowledged = requestBuilder.get().isAcknowledged();
-			if (!acknowledged)
-			{
-				throw new AdempiereException("Cannot create index: " + indexName);
-			}
-
-			logger.debug("Index created: {} \nsettings: {}", indexName, indexSettingsJson);
-		}
 
 		//
 		//
+		createIndex();
 		createUpdateIndexTypeMapping();
 
 		return true; // index created now
+	}
+
+	private void createIndex()
+	{
+		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
+		final String indexName = getIndexName();
+
+		final CreateIndexRequestBuilder requestBuilder = indices.prepareCreate(indexName);
+		if (!Check.isEmpty(indexSettingsJson, true))
+		{
+			requestBuilder.setSettings(indexSettingsJson);
+		}
+
+		final boolean acknowledged = requestBuilder.get().isAcknowledged();
+		if (!acknowledged)
+		{
+			throw new AdempiereException("Cannot create index: " + indexName);
+		}
+
+		logger.debug("Index created: {} \nsettings: {}", indexName, indexSettingsJson);
+	}
+
+	private boolean checkIndexExists()
+	{
+		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
+		final String indexName = getIndexName();
+		return indices
+				.prepareExists(indexName)
+				.get()
+				.isExists();
 	}
 
 	private final void createUpdateIndexTypeMapping()
@@ -426,13 +429,13 @@ public final class ESModelIndexer implements IESModelIndexer
 	}
 
 	@Override
-	public IESIndexerResult addToIndex(final Iterator<?> models)
+	public IESIndexerResult addToIndex(@NonNull final ESModelIndexerDataSource dataSource)
 	{
 		final BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
 
 		try
 		{
-			IteratorUtils.stream(models)
+			IteratorUtils.stream(dataSource.getModelsToIndex())
 					.flatMap(this::createIndexRequestsAndStream)
 					.forEach(bulkRequest::add);
 

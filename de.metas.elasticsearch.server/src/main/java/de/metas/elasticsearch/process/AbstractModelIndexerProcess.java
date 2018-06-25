@@ -1,26 +1,19 @@
 package de.metas.elasticsearch.process;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.model.IQuery;
 
 import com.google.common.base.Stopwatch;
 
+import de.metas.elasticsearch.indexer.ESModelIndexerDataSources;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
+import de.metas.elasticsearch.indexer.SqlESModelIndexerDataSource;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -51,7 +44,6 @@ public abstract class AbstractModelIndexerProcess extends JavaProcess
 {
 	// services
 	protected final transient IESModelIndexersRegistry modelIndexingService = Services.get(IESModelIndexersRegistry.class);
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Param(parameterName = "WhereClause")
 	private String p_WhereClause = null;
@@ -109,62 +101,25 @@ public abstract class AbstractModelIndexerProcess extends JavaProcess
 			addLog("{} - Index created now", modelIndexer.getId());
 		}
 
-		final Iterator<Object> modelsToIndex = retrieveModelsToIndex(modelIndexer);
+		final List<IESModelIndexerTrigger> triggers = modelIndexer.getTriggers();
+		if (triggers.isEmpty())
+		{
+			addLog("Warning: skip {} because there are no triggers defined for it", modelIndexer);
+			return;
+		}
 
+		final SqlESModelIndexerDataSource modelsToIndex = ESModelIndexerDataSources.newSqlESModelIndexerDataSource()
+				.modelTableName(modelIndexer.getModelTableName())
+				.triggers(triggers)
+				.sqlWhereClause(p_WhereClause)
+				.sqlOrderByClause(p_OrderByClause)
+				.limit(p_Limit)
+				.build();
 		final IESIndexerResult result = modelIndexer.addToIndex(modelsToIndex);
 
 		countAll += result.getTotalCount();
 		countErrors += result.getFailuresCount();
 
 		addLog("{} - Indexed: {}", modelIndexer.getId(), result.getSummary());
-	}
-
-	private Iterator<Object> retrieveModelsToIndex(final IESModelIndexer modelIndexer)
-	{
-		final String modelTableName = modelIndexer.getModelTableName();
-		final List<IESModelIndexerTrigger> triggers = modelIndexer.getTriggers();
-		if (triggers.isEmpty())
-		{
-			addLog("Warning: skip {} because there are no triggers defined for it", modelIndexer);
-			return Collections.emptyIterator();
-		}
-
-		final ICompositeQueryFilter<Object> triggerFilters = queryBL.createCompositeQueryFilter(modelTableName)
-				.setDefaultAccept(true)
-				.setJoinOr();
-		for (final IESModelIndexerTrigger trigger : triggers)
-		{
-			final IQueryFilter<Object> filter = trigger.getMatchingModelsFilter();
-			if (filter == null)
-			{
-				continue;
-			}
-
-			triggerFilters.addFilter(filter);
-		}
-
-		final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilder(modelTableName, this)
-				.filter(triggerFilters);
-
-		if (!Check.isEmpty(p_WhereClause, true))
-		{
-			queryBuilder.filter(TypedSqlQueryFilter.of(p_WhereClause));
-		}
-
-		if (p_Limit > 0)
-		{
-			queryBuilder.setLimit(p_Limit);
-		}
-
-		final IQuery<Object> query = queryBuilder.create();
-
-		if (!Check.isEmpty(p_OrderByClause, true))
-		{
-			query.setOrderBy(queryBL.createSqlQueryOrderBy(p_OrderByClause));
-		}
-
-		//
-		// Execute query
-		return query.iterate(Object.class);
 	}
 }

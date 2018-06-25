@@ -14,6 +14,7 @@ import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.elasticsearch.config.ESModelIndexerId;
+import de.metas.elasticsearch.indexer.ESModelIndexerDataSources;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
@@ -85,7 +86,7 @@ public class AsyncAddToIndexProcessor extends WorkpackageProcessorAdapter
 
 			if (!modelsToAdd.isEmpty())
 			{
-				final IESIndexerResult result = modelIndexer.addToIndex(modelsToAdd.iterator());
+				final IESIndexerResult result = modelIndexer.addToIndex(ESModelIndexerDataSources.ofCollection(modelsToAdd));
 				Loggables.get().addLog(result.getSummary());
 				result.throwExceptionIfAnyFailure();
 			}

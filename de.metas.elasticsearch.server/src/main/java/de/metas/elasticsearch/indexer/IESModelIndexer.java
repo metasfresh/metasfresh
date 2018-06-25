@@ -1,7 +1,6 @@
 package de.metas.elasticsearch.indexer;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -57,9 +56,9 @@ public interface IESModelIndexer
 	/**
 	 * Add given models to ES index.
 	 *
-	 * @param models
+	 * @param dataSource
 	 */
-	IESIndexerResult addToIndex(Iterator<?> models);
+	IESIndexerResult addToIndex(ESModelIndexerDataSource dataSource);
 
 	IESIndexerResult removeFromIndexByIds(Collection<String> ids);
 
