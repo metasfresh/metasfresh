@@ -171,10 +171,6 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		}
 
 		//
-		// M_ProductPO
-		createUpdateProductPO(importRecord, newProduct);
-
-		//
 		// Price List
 		createUpdateProductPrice(importRecord);
 
@@ -183,93 +179,6 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		// #3404 Create default product planning
 		Services.get(IProductPlanningSchemaBL.class).createDefaultProductPlanningsForAllProducts();
 		return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
-	}
-
-	private final void createUpdateProductPO(final I_I_Product imp, final boolean newProduct)
-	{
-		// Do we have Product PO Info
-		final int C_BPartner_ID = imp.getC_BPartner_ID();
-		if (C_BPartner_ID <= 0)
-		{
-			return;
-		}
-
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
-		final int M_Product_ID = imp.getM_Product_ID();
-		final int I_Product_ID = imp.getI_Product_ID();
-
-		int updateCount_ProductPO = 0;
-		// If Product existed, Try to Update first
-		if (!newProduct)
-		{
-			final String sqlt = DB.convertSqlToNative("UPDATE M_Product_PO "
-					+ "SET (IsCurrentVendor,C_UOM_ID,C_Currency_ID,UPC,"
-					+ "PriceList,PricePO,RoyaltyAmt,PriceEffective,"
-					+ "VendorProductNo,VendorCategory,Manufacturer,"
-					+ "Discontinued,DiscontinuedBy,Order_Min,Order_Pack,"
-					+ "CostPerOrder,DeliveryTime_Promised,Updated,UpdatedBy)= "
-					+ "(SELECT CAST('Y' AS CHAR),C_UOM_ID,C_Currency_ID,UPC,"    // jz fix EDB unknown datatype error
-					+ "PriceList,PricePO,RoyaltyAmt,PriceEffective,"
-					+ "VendorProductNo,VendorCategory,Manufacturer,"
-					+ "Discontinued,DiscontinuedBy,Order_Min,Order_Pack,"
-					+ "CostPerOrder,DeliveryTime_Promised,now(),UpdatedBy"
-					+ " FROM I_Product"
-					+ " WHERE I_Product_ID=" + I_Product_ID + ") "
-					+ "WHERE M_Product_ID=" + M_Product_ID + " AND C_BPartner_ID=" + C_BPartner_ID);
-			PreparedStatement pstmt_updateProductPO = null;
-			try
-			{
-				pstmt_updateProductPO = DB.prepareStatement(sqlt, trxName);
-				updateCount_ProductPO = pstmt_updateProductPO.executeUpdate();
-				log.trace("Update Product_PO = " + updateCount_ProductPO);
-			}
-			catch (final SQLException ex)
-			{
-				throw new DBException("Update Product_PO: " + ex.toString(), ex);
-			}
-			finally
-			{
-				DB.close(pstmt_updateProductPO);
-			}
-			// noUpdatePO++;
-		}
-		if (updateCount_ProductPO == 0)		// Insert PO
-		{
-			PreparedStatement pstmt_insertProductPO = null;
-			try
-			{
-				pstmt_insertProductPO = DB.prepareStatement("INSERT INTO M_Product_PO (M_Product_ID,C_BPartner_ID, "
-						+ "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
-						+ "IsCurrentVendor,C_UOM_ID,C_Currency_ID,UPC,"
-						+ "PriceList,PricePO,RoyaltyAmt,PriceEffective,"
-						+ "VendorProductNo,VendorCategory,Manufacturer,"
-						+ "Discontinued,DiscontinuedBy,Order_Min,Order_Pack,"
-						+ "CostPerOrder,DeliveryTime_Promised) "
-						+ "SELECT ?,?, "
-						+ "AD_Client_ID,AD_Org_ID,'Y',now(),CreatedBy,now(),UpdatedBy,"
-						+ "'Y',C_UOM_ID,C_Currency_ID,UPC,"
-						+ "PriceList,PricePO,RoyaltyAmt,PriceEffective,"
-						+ "VendorProductNo,VendorCategory,Manufacturer,"
-						+ "Discontinued,DiscontinuedBy,Order_Min,Order_Pack,"
-						+ "CostPerOrder,DeliveryTime_Promised "
-						+ "FROM I_Product "
-						+ "WHERE I_Product_ID=?", trxName);
-				pstmt_insertProductPO.setInt(1, M_Product_ID);
-				pstmt_insertProductPO.setInt(2, C_BPartner_ID);
-				pstmt_insertProductPO.setInt(3, I_Product_ID);
-				updateCount_ProductPO = pstmt_insertProductPO.executeUpdate();
-				log.trace("Insert Product_PO = " + updateCount_ProductPO);
-			}
-			catch (final SQLException ex)
-			{
-				throw new DBException("Insert Product_PO: " + ex.toString(), ex);
-			}
-			finally
-			{
-				DB.close(pstmt_insertProductPO);
-			}
-			// noInsertPO++;
-		}
 	}
 
 	private final void createUpdateProductPrice(final I_I_Product imp)

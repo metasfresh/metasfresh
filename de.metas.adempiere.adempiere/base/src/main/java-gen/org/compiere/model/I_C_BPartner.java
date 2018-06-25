@@ -1119,6 +1119,29 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_IsEmployee = "IsEmployee";
 
 	/**
+	 * Set Manufacturer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsManufacturer (boolean IsManufacturer);
+
+	/**
+	 * Get Manufacturer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isManufacturer();
+
+    /** Column definition for IsManufacturer */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_IsManufacturer = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "IsManufacturer", null);
+    /** Column name IsManufacturer */
+    public static final String COLUMNNAME_IsManufacturer = "IsManufacturer";
+
+	/**
 	 * Set One time transaction.
 	 *
 	 * <br>Type: YesNo
