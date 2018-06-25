@@ -22,6 +22,8 @@ Here come the actual release notes:
     * New Window event log added to WebUI Menu.
   * [#4244](https://github.com/metasfresh/metasfresh/issues/4244) Purchase Candidates adjustments
     * Window Improvements for Purchase Candidates in WebUI.
+  * [#4264](https://github.com/metasfresh/metasfresh/issues/4264) Ingredients Data for Consumer Product Label
+    * New Fields for Consumer Label Ingredients in BOM Line.
   * [#4265](https://github.com/metasfresh/metasfresh/issues/4265) New Window/ Tab for Product Nutrition facts
     * New Windows in WebUI for Nutrition and Product Nutrition maintenance.
 
