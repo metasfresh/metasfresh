@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1358865702L;
+	private static final long serialVersionUID = -736944181L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -565,19 +565,16 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return false;
 	}
 
-	/** Set Eingekauft.
-		@param IsPurchased 
-		Organization purchases this product
-	  */
+	/** Set Wird Eingekauft.
+		@param IsPurchased Wird Eingekauft	  */
 	@Override
 	public void setIsPurchased (boolean IsPurchased)
 	{
 		set_Value (COLUMNNAME_IsPurchased, Boolean.valueOf(IsPurchased));
 	}
 
-	/** Get Eingekauft.
-		@return Organization purchases this product
-	  */
+	/** Get Wird Eingekauft.
+		@return Wird Eingekauft	  */
 	@Override
 	public boolean isPurchased () 
 	{
@@ -1000,29 +997,41 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
 	}
 
-	/** 
-	 * Manufacturer AD_Reference_ID=138
-	 * Reference name: C_BPartner (Trx)
-	 */
-	public static final int MANUFACTURER_AD_Reference_ID=138;
+	@Override
+	public org.compiere.model.I_C_BPartner getManufacturer() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer)
+	{
+		set_ValueFromPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class, Manufacturer);
+	}
+
 	/** Set Hersteller.
-		@param Manufacturer 
+		@param Manufacturer_ID 
 		Hersteller des Produktes
 	  */
 	@Override
-	public void setManufacturer (java.lang.String Manufacturer)
+	public void setManufacturer_ID (int Manufacturer_ID)
 	{
-
-		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+		if (Manufacturer_ID < 1) 
+			set_Value (COLUMNNAME_Manufacturer_ID, null);
+		else 
+			set_Value (COLUMNNAME_Manufacturer_ID, Integer.valueOf(Manufacturer_ID));
 	}
 
 	/** Get Hersteller.
 		@return Hersteller des Produktes
 	  */
 	@Override
-	public java.lang.String getManufacturer () 
+	public int getManufacturer_ID () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Manufacturer_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** 
