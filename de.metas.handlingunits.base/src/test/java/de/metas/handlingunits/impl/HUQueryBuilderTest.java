@@ -2,6 +2,7 @@ package de.metas.handlingunits.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -38,17 +39,27 @@ import org.adempiere.warehouse.WarehouseId;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.reservation.HuReservationRepository;
+import de.metas.order.OrderLineId;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HuReservationRepository.class })
 public class HUQueryBuilderTest
 {
 	private I_M_Warehouse wh;
@@ -142,7 +153,7 @@ public class HUQueryBuilderTest
 	}
 
 	@Test
-	public void createQueryFilter()
+	public void createQueryFilter_by_product_and_warehouse()
 	{
 		final IHUQueryBuilder huQueryBuilder = new HUQueryBuilder()
 				.addOnlyWithProduct(product)
@@ -156,6 +167,50 @@ public class HUQueryBuilderTest
 		assertThat(huFilters.accept(hus.get(2))).isFalse();
 		assertThat(huFilters.accept(hus.get(3))).isFalse();
 		assertThat(huFilters.accept(hus.get(4))).isFalse();
+	}
+
+	@Test
+	public void createQueryFilter_select_all()
+	{
+		final IHUQueryBuilder huQueryBuilder = new HUQueryBuilder();
+
+		// invoke the method under test
+		final IQueryFilter<I_M_HU> huFilters = huQueryBuilder.createQueryFilter();
+
+		assertThat(hus).allMatch(hu -> huFilters.accept(hu));
+	}
+
+	@Test
+	public void createQueryFilter_exclude_reserved()
+	{
+
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(10);
+		createReservationRecord(orderLineId, hus.get(0));
+
+		final OrderLineId otherOrderLineId = OrderLineId.ofRepoId(20);
+		createReservationRecord(otherOrderLineId, hus.get(1));
+
+		final IHUQueryBuilder huQueryBuilder = new HUQueryBuilder()
+				.setExcludeReservedToOtherThan(orderLineId);
+
+		// invoke the method under test
+		final IQueryFilter<I_M_HU> huFilters = huQueryBuilder.createQueryFilter();
+
+		assertThat(huFilters.accept(hus.get(0))).isTrue(); // because it's reserved for "orderLineId"
+		assertThat(huFilters.accept(hus.get(1))).isFalse(); // because it's reserved for a different order line
+		assertThat(huFilters.accept(hus.get(2))).isTrue(); // because they are not reserved at all
+		assertThat(huFilters.accept(hus.get(3))).isTrue();
+		assertThat(huFilters.accept(hus.get(4))).isTrue();
+	}
+
+	private void createReservationRecord(final OrderLineId orderLineId, final I_M_HU hu)
+	{
+		hu.setIsReserved(true);
+		saveRecord(hu);
+		final I_M_HU_Reservation huReservationRecord = newInstance(I_M_HU_Reservation.class);
+		huReservationRecord.setVHU(hu);
+		huReservationRecord.setC_OrderLineSO_ID(orderLineId.getRepoId());
+		saveRecord(huReservationRecord);
 	}
 
 }

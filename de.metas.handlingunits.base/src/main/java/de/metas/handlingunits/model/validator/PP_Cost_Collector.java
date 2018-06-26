@@ -1,7 +1,6 @@
 package de.metas.handlingunits.model.validator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -30,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
@@ -43,7 +42,9 @@ import org.eevolution.api.IPPCostCollectorBL;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
 import de.metas.handlingunits.exceptions.HUException;
@@ -58,7 +59,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import lombok.NonNull;
 
-@Validator(I_PP_Cost_Collector.class)
+@Interceptor(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector
 {
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
@@ -207,6 +208,7 @@ public class PP_Cost_Collector
 	private final void reverseCostCollector_Issue(@NonNull final I_PP_Cost_Collector cc)
 	{
 		final IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		huPPCostCollectorBL.restoreTopLevelHUs(cc);
 
 		// Delete issue candidate
@@ -217,9 +219,7 @@ public class PP_Cost_Collector
 			final I_M_HU huToVerify = issueCandidate.getM_HU();
 
 			// "active" might also be fine, depending on whether the HU was issued using a legacy swing client
-			final boolean huHassActiveStatus = X_M_HU.HUSTATUS_Active.equals(huToVerify.getHUStatus());
-
-			if (!hasIssuedStatus(huToVerify) && !huHassActiveStatus)
+			if (!huStatusBL.isStatusIssued(huToVerify) && !huStatusBL.isStatusActive(huToVerify))
 			{
 				throw new HUException("Expected the HU's status to be 'issued' (or 'active') again but it wasn't.")
 						.setParameter("HUStatus", huToVerify.getHUStatus())
@@ -235,20 +235,17 @@ public class PP_Cost_Collector
 
 		// set the HU back to 'active' if needed
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(getContextAware(cc));
 		for (final I_M_HU topLevelHU : huPPCostCollectorBL.getTopLevelHUs(cc))
 		{
-			if(hasIssuedStatus(topLevelHU))
+			if(huStatusBL.isStatusIssued(topLevelHU))
 			{
 				handlingUnitsBL.setHUStatus(huContext, topLevelHU, X_M_HU.HUSTATUS_Active);
-				save(topLevelHU);
+				handlingUnitsDAO.saveHU(topLevelHU);
 			}
 		}
-	}
-
-	private static boolean hasIssuedStatus(final I_M_HU topLevelHU)
-	{
-		return X_M_HU.HUSTATUS_Issued.equals(topLevelHU.getHUStatus());
 	}
 
 	@DocValidate(timings = {

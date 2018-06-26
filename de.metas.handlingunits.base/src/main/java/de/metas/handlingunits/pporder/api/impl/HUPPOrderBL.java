@@ -62,11 +62,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsDAO
 				.createHUQueryBuilder()
-
 				.addOnlyWithProductId(ppOrderBomLine.getM_Product_ID())
 				.addOnlyInWarehouseId(WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID()))
-
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
+				.setExcludeReserved()
 				.setOnlyTopLevelHUs()
 				.onlyNotLocked();
 	}

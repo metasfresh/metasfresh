@@ -48,6 +48,8 @@ import de.metas.quantity.Quantity;
 public class HuReservationRepositoryTests
 {
 	private static final BigDecimal ELEVEN = TEN.add(ONE);
+	private static final BigDecimal THIRTEEN = new BigDecimal("13");
+
 	private I_C_UOM uomRecord;
 	private HuReservationRepository huReservationRepository;
 
@@ -117,7 +119,6 @@ public class HuReservationRepositoryTests
 	@Test
 	public void save()
 	{
-
 		final HuReservation huReservation = HuReservation.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.vhuId2reservedQty(HuId.ofRepoId(10), Quantity.of(TEN, uomRecord))
@@ -126,8 +127,19 @@ public class HuReservationRepositoryTests
 				.build();
 
 		huReservationRepository.save(huReservation);
-		final List<I_M_HU_Reservation> reservationRecords = POJOLookupMap.get().getRecords(I_M_HU_Reservation.class);
+		List<I_M_HU_Reservation> reservationRecords = POJOLookupMap.get().getRecords(I_M_HU_Reservation.class);
 		assertThat(reservationRecords).hasSize(2);
+		assertThat(reservationRecords).allMatch(r -> r.getC_OrderLineSO_ID() == 20);
+
+		final HuReservation huReservation2 = huReservation.toBuilder()
+				.vhuId2reservedQty(HuId.ofRepoId(10), Quantity.of(TEN.add(ONE), uomRecord))
+				.vhuId2reservedQty(HuId.ofRepoId(11), Quantity.of(ONE.add(ONE), uomRecord))
+				.reservedQtySum(Optional.of(Quantity.of(THIRTEEN, uomRecord)))
+				.build();
+
+		huReservationRepository.save(huReservation2);
+		reservationRecords = POJOLookupMap.get().getRecords(I_M_HU_Reservation.class);
+		assertThat(reservationRecords).hasSize(2); // the existing records were update, none where added
 		assertThat(reservationRecords).allMatch(r -> r.getC_OrderLineSO_ID() == 20);
 	}
 }

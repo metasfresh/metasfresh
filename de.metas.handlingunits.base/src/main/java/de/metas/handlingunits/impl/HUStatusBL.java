@@ -44,7 +44,6 @@ public class HUStatusBL implements IHUStatusBL
 {
 	private final static List<String> HU_STATUSES_THAT_COUNT_FOR_QTY_ON_HAND = ImmutableList.of(
 			X_M_HU.HUSTATUS_Active,
-			X_M_HU.HUSTATUS_Reserved,
 			X_M_HU.HUSTATUS_Picked,
 			X_M_HU.HUSTATUS_Issued);
 
@@ -65,14 +64,8 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Picked)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Issued)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Destroyed)
-			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Reserved)
 			// active => shipped state-transition is used in vendor returns
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Shipped)
-
-			.put(X_M_HU.HUSTATUS_Reserved, X_M_HU.HUSTATUS_Picked)
-			.put(X_M_HU.HUSTATUS_Reserved, X_M_HU.HUSTATUS_Issued)
-			.put(X_M_HU.HUSTATUS_Reserved, X_M_HU.HUSTATUS_Destroyed)
-			.put(X_M_HU.HUSTATUS_Reserved, X_M_HU.HUSTATUS_Active)
 
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Shipped)
@@ -145,12 +138,34 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
-	public void assertLocatorChangeIsAllowed(@NonNull final String huStatus)
+	public void assertLocatorChangeIsAllowed(
+			@NonNull final I_M_HU huRecord,
+			@NonNull final String huStatus)
 	{
 		if (ALLOWED_STATUSES_FOR_LOCATOR_CHANGE.contains(huStatus))
 		{
 			return;
 		}
-		throw new HUException(StringUtils.formatMessage("A HU's locator cannot be changed if the M_HU.HUStatus is {}", huStatus));
+		throw new HUException(StringUtils.formatMessage("A HU's locator cannot be changed if the M_HU.HUStatus is {}; hu={}", huStatus, huRecord));
+	}
+
+	@Override
+	public boolean isStatusActive(final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Active.equals(huRecord.getHUStatus());
+	}
+
+	@Override
+	public boolean isStatusIssued(final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Issued.equals(huRecord.getHUStatus());
 	}
 }

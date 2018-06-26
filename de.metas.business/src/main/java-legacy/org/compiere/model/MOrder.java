@@ -940,11 +940,6 @@ public class MOrder extends X_C_Order implements IDocument
 			setC_DocType_ID(0);
 		}
 
-		// Default Warehouse
-		if (getM_Warehouse_ID() <= 0)
-		{
-			setM_Warehouse_ID(warehouseAdvisor.getDefaulWarehouseId(getCtx()));
-		}
 		// Warehouse Org
 		if (newRecord
 				|| is_ValueChanged("AD_Org_ID") || is_ValueChanged("M_Warehouse_ID"))

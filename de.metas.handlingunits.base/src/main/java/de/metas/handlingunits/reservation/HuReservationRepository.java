@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.HuId;
@@ -86,9 +87,9 @@ public class HuReservationRepository
 		final Set<Entry<HuId, Quantity>> entrySet = vhuId2reservedQtys.entrySet();
 		for (final Entry<HuId, Quantity> entry : entrySet)
 		{
-			final I_M_HU_Reservation huReservationRecord = newInstance(I_M_HU_Reservation.class);
+			final I_M_HU_Reservation huReservationRecord = createOrLoadRecordFor(entry.getKey());
 			huReservationRecord.setC_OrderLineSO_ID(huReservation.getSalesOrderLineId().getRepoId());
-			huReservationRecord.setVHU_ID(entry.getKey().getRepoId());
+
 			huReservationRecord.setQtyReserved(entry.getValue().getAsBigDecimal());
 			huReservationRecord.setC_UOM_ID(entry.getValue().getUOMId());
 
@@ -96,4 +97,30 @@ public class HuReservationRepository
 		}
 	}
 
+	private I_M_HU_Reservation createOrLoadRecordFor(@NonNull final HuId vhuId)
+	{
+		final I_M_HU_Reservation existingHuReservationRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Reservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Reservation.COLUMN_VHU_ID, vhuId)
+				.create()
+				.firstOnly(I_M_HU_Reservation.class);
+		if (existingHuReservationRecord != null)
+		{
+			return existingHuReservationRecord;
+		}
+
+		final I_M_HU_Reservation newHuReservationRecord = newInstance(I_M_HU_Reservation.class);
+		newHuReservationRecord.setVHU_ID(vhuId.getRepoId());
+		return newHuReservationRecord;
+	}
+
+	public IQuery<I_M_HU_Reservation> createQueryReservedToOtherThan(@NonNull final OrderLineId orderLineId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Reservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_OrderLineSO_ID, orderLineId)
+				.create();
+	}
 }

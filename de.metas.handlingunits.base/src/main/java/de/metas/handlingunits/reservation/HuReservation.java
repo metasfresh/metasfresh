@@ -34,7 +34,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class HuReservation
 {
 	@NonNull
@@ -43,5 +43,6 @@ public class HuReservation
 	@Singular
 	Map<HuId, Quantity> vhuId2reservedQtys;
 
+	@NonNull
 	OrderLineId salesOrderLineId;
 }

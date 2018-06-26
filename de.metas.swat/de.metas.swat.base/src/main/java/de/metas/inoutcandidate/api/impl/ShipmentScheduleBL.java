@@ -93,6 +93,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.storage.IStorageEngine;
@@ -1048,6 +1049,16 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				storageQuery.addAttributes(attributeSet);
 			}
 		}
+
+		if (sched.getC_OrderLine_ID() > 0)
+		{
+			storageQuery.setExcludeReservedToOtherThan(OrderLineId.ofRepoId(sched.getC_OrderLine_ID()));
+		}
+		else
+		{
+			storageQuery.setExcludeReserved();
+		}
+
 		return storageQuery;
 	}
 }

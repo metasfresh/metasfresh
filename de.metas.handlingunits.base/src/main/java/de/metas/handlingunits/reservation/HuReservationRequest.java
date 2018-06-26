@@ -5,9 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.util.Check;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -45,8 +43,7 @@ public class HuReservationRequest
 	/** always mandatory */
 	Quantity qtyToReserve;
 
-	/** at least one of {@link #customerId} and {@link #salesOrderLineId} has to be specified. */
-	BPartnerId customerId;
+	/** always mandatory */
 	OrderLineId salesOrderLineId;
 
 	/** mandatory, if the given HUs contain different products. */
@@ -64,22 +61,16 @@ public class HuReservationRequest
 	@Builder
 	private HuReservationRequest(
 			@NonNull final Quantity qtyToReserve,
-			@Nullable final BPartnerId customerId,
-			@Nullable final OrderLineId salesOrderLineId,
+			@NonNull final OrderLineId salesOrderLineId,
 			@NonNull final ProductId productId,
 			@Nullable final IAttributeSet attributeSet,
 			@Singular final List<HuId> huIds)
 	{
 		this.qtyToReserve = qtyToReserve;
-		this.customerId = customerId;
 		this.salesOrderLineId = salesOrderLineId;
 		this.productId = productId;
 		this.attributeSet = attributeSet;
 		this.huIds = huIds;
-
-		Check.errorIf(customerId == null && salesOrderLineId == null,
-				"At least one of the given parameters customerId and salesOrderLineId need to be not-null.");
-
 	}
 
 }

@@ -1,12 +1,14 @@
 package de.metas.handlingunits.reservation;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -21,11 +23,10 @@ import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.reservation.HuReservation.HuReservationBuilder;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.order.OrderLineId;
@@ -87,7 +88,6 @@ public class HuReservationService
 
 	private HuReservation makeReservation0(@NonNull final HuReservationRequest reservationRequest)
 	{
-
 		final List<HuId> huIds = Check.assumeNotEmpty(reservationRequest.getHuIds(),
 				"the given request needs to have huIds; request={}", reservationRequest);
 
@@ -102,6 +102,7 @@ public class HuReservationService
 				.onlyFromActiveHUs(true)
 				.keepNewCUsUnderSameParent(true)
 				// TODO: add productId to the request, for fuck's sake
+				// TODO: also add attributes!
 				.build();
 
 		final List<I_M_HU> newCUs = huTransformServiceSupplier
@@ -112,7 +113,9 @@ public class HuReservationService
 		final I_M_Product productRecord = loadOutOfTrx(reservationRequest.getProductId(), I_M_Product.class);
 		final I_C_UOM uomRecord = reservationRequest.getQtyToReserve().getUOM();
 
-		final HuReservationBuilder reservationBuilder = HuReservation.builder();
+		final HuReservationBuilder reservationBuilder = HuReservation
+				.builder()
+				.salesOrderLineId(reservationRequest.getSalesOrderLineId());
 
 		Quantity reservedQtySum = Quantity.zero(uomRecord);
 		for (final I_M_HU newCU : newCUs)
@@ -124,8 +127,7 @@ public class HuReservationService
 			reservedQtySum = reservedQtySum.add(qty);
 			reservationBuilder.vhuId2reservedQty(HuId.ofRepoId(newCU.getM_HU_ID()), qty);
 
-			final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(getContextAware(newCU));
-			handlingUnitsBL.setHUStatus(huContext, newCU, X_M_HU.HUSTATUS_Reserved);
+			newCU.setIsReserved(true);
 			handlingUnitsDAO.saveHU(newCU);
 		}
 
@@ -137,18 +139,38 @@ public class HuReservationService
 	}
 
 	/**
-	 * Deletes the respective reservation record. VHUs that were split off according to the reservation remain that way for the time being.
+	 * Deletes the respective reservation records. The method is lenient towards not-VHU and also towards not-reserved HUs.
+	 * <p>
+	 * VHUs that were split off according to the reservation remain that way for the time being, but their {@code IsReserved} flag is changed to 'N'.
 	 */
-	public void deleteReservation(HuReservationId reservationId)
+	public void deleteReservations(@NonNull final Collection<HuId> vhuIds)
 	{
-		throw new NotImplementedException("HuReservationService.deleteReservation");
+		Services.get(ITrxManager.class).run(() -> deleteReservation0(vhuIds));
+	}
+
+	private void deleteReservation0(@NonNull final Collection<HuId> vhuIds)
+	{
+		for (final HuId vhuId : vhuIds)
+		{
+			final I_M_HU vhu = load(vhuId.getRepoId(), I_M_HU.class);
+			vhu.setIsReserved(false);
+			Services.get(IHandlingUnitsDAO.class).saveHU(vhu);
+		}
+
+		Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Reservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_Reservation.COLUMN_VHU_ID, vhuIds)
+				.create()
+				.delete();
 	}
 
 	/**
 	 * Returns a list that is based on the given {@code huIds} and contains the subset of HUs
 	 * which are not ruled out because they are reserved for *other* order lines.
 	 */
-	public List<HuId> retainAvailableHUsForOrderLine(List<HuId> huIds, OrderLineId orderLineId)
+	public List<HuId> retainAvailableHUsForOrderLine(
+			@NonNull final List<HuId> huIds,
+			@NonNull final OrderLineId orderLineId)
 	{
 		// TODO: avoid the n+1 problem when implementing this
 		throw new NotImplementedException("HuReservationService.retainAvailableHUs");
@@ -162,4 +184,19 @@ public class HuReservationService
 				IDocument.STATUS_WaitingPayment,
 				IDocument.STATUS_Completed);
 	}
+
+	// private static final CCache<HuId, Boolean> HU_ID_2_HAS_RESERVATION = CCache.newLRUCache(
+	// I_M_HU_Reservation.Table_Name + "#by#" + I_M_HU_Reservation.COLUMNNAME_VHU_ID, 500, 5);
+	//
+	//
+	// private boolean hasReservation(@NonNull final HuId huId)
+	// {
+	// final boolean hasReservation = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Reservation.class)
+	// .addOnlyActiveRecordsFilter()
+	// .addEqualsFilter(I_M_HU_Reservation.COLUMN_VHU_ID, huId)
+	// .create()
+	// .match();
+	// return hasReservation;
+	// }
+
 }

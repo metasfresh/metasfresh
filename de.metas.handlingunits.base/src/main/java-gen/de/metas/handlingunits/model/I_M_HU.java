@@ -257,6 +257,29 @@ public interface I_M_HU
     public static final String COLUMNNAME_IsChildHU = "IsChildHU";
 
 	/**
+	 * Set Reserviert.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsReserved (boolean IsReserved);
+
+	/**
+	 * Get Reserviert.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isReserved();
+
+    /** Column definition for IsReserved */
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_IsReserved = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "IsReserved", null);
+    /** Column name IsReserved */
+    public static final String COLUMNNAME_IsReserved = "IsReserved";
+
+	/**
 	 * Set Gesperrt.
 	 *
 	 * <br>Type: YesNo

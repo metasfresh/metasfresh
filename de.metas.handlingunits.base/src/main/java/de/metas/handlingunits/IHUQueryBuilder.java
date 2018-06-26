@@ -30,6 +30,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -38,6 +39,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageQuery;
 import lombok.NonNull;
@@ -179,7 +181,7 @@ public interface IHUQueryBuilder
 	 * Filter only those HUs which are in any of the given warehouse(s).
 	 *
 	 * NOTE: given warehouse(s) are appended to the list of previously specified ones
-	 * 
+	 *
 	 * @return this
 	 */
 	IHUQueryBuilder addOnlyInWarehouseIds(final Collection<WarehouseId> warehouseIds);
@@ -340,6 +342,9 @@ public interface IHUQueryBuilder
 	 * @return this
 	 */
 	IHUQueryBuilder addOnlyWithAttribute(I_M_Attribute attribute, Object value);
+
+	/** Convenience method that works {@link #addOnlyWithAttribute(I_M_Attribute, Object)} for all attributes from the given {@code attributeSet}. */
+	IHUQueryBuilder addOnlyWithAttributes(ImmutableAttributeSet attributeSet);
 
 	/**
 	 * Filter only those HUs which have attribute with given <code>value</code>.
@@ -503,31 +508,31 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Sets if the HUs which are currently open or are in a picking slot queue, shall be excluded.
-	 *
-	 * @param excludeHUsOnPickingSlot
-	 * @return this
 	 */
 	IHUQueryBuilder setExcludeHUsOnPickingSlot(boolean excludeHUsOnPickingSlot);
 
 	/**
 	 * Set if the Locator of the HU shall be AfterPicking
-	 *
-	 * @param includeAfterPickingLocator
-	 * @return
 	 */
 	IHUQueryBuilder setIncludeAfterPickingLocator(boolean includeAfterPickingLocator);
 
 	/**
 	 * Entries with empty storage will be the only ones retrieved
-	 *
-	 * @return
 	 */
 	IHUQueryBuilder setEmptyStorageOnly();
 
 	/**
 	 * Entries with not-empty storage will be the only ones retrieved.
-	 *
-	 * @return
 	 */
 	IHUQueryBuilder setNotEmptyStorageOnly();
+
+	/**
+	 * Entries that are reserved to the given order line or are not reserved at all will be the only ones retrieved.
+	 */
+	IHUQueryBuilder setExcludeReservedToOtherThan(OrderLineId orderLineId);
+
+	/**
+	 * Ignored if also {@link #setExcludeReservedToOtherThan(OrderLineId)} was called.
+	 */
+	IHUQueryBuilder setExcludeReserved();
 }

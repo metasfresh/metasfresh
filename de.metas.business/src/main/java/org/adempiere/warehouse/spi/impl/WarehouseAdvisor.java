@@ -1,5 +1,7 @@
 package org.adempiere.warehouse.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -36,6 +38,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.order.OrderLineId;
 import lombok.NonNull;
 
 /**
@@ -50,7 +53,14 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 {
 
 	@Override
-	public I_M_Warehouse evaluateWarehouse(I_C_OrderLine orderLine)
+	public I_M_Warehouse evaluateWarehouse(@NonNull final OrderLineId orderLineId)
+	{
+		final I_C_OrderLine orderLineRecord = load(orderLineId, I_C_OrderLine.class);
+		return evaluateWarehouse(orderLineRecord);
+	}
+
+	@Override
+	public I_M_Warehouse evaluateWarehouse(@NonNull final I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "Order should not be null");
 
@@ -63,7 +73,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 	}
 
 	@Override
-	public I_M_Warehouse evaluateOrderWarehouse(I_C_Order order)
+	public I_M_Warehouse evaluateOrderWarehouse(@NonNull final I_C_Order order)
 	{
 		if (order.getM_Warehouse_ID() > 0)
 		{
@@ -73,7 +83,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 		return findOrderWarehouse(order);
 	}
 
-	protected I_M_Warehouse findOrderWarehouse(final I_C_Order order)
+	protected I_M_Warehouse findOrderWarehouse(@NonNull final I_C_Order order)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final int adOrgId = order.getAD_Org_ID();
@@ -136,11 +146,4 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 		// if order is a purchase order, return null
 		return null;
 	}
-
-	@Override
-	public int getDefaulWarehouseId(Properties ctx)
-	{
-		return -1;
-	}
-
 }

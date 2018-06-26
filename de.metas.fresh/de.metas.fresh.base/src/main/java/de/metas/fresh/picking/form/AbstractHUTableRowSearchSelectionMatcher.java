@@ -42,6 +42,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.picking.legacy.form.AbstractTableRowSearchSelectionMatcher;
+import lombok.NonNull;
 
 /**
  * Matchers all rows suitable for given HU.
@@ -59,11 +60,10 @@ import de.metas.picking.legacy.form.AbstractTableRowSearchSelectionMatcher;
 
 	private I_M_HU hu = null;
 
-	public AbstractHUTableRowSearchSelectionMatcher(final Properties ctx, final int warehouseId)
+	public AbstractHUTableRowSearchSelectionMatcher(
+			@NonNull final Properties ctx,
+			final int warehouseId)
 	{
-		super();
-
-		Check.assumeNotNull(ctx, "ctx not null");
 		this.ctx = ctx;
 
 		// Check.assume(warehouseId > 0, "warehouseId > 0");

@@ -55,6 +55,7 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.order.OrderLineId;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
 import de.metas.storage.spi.hu.IHUStorageBL;
@@ -385,7 +386,7 @@ import lombok.NonNull;
 
 		//
 		// Make sure given attribute available to be used by our HU Storage implementations.
-		// If we would filter by those attributes we would get NO result.
+		// If we would filter by other attributes we would get NO result.
 		final int attributeId = attribute.getM_Attribute_ID();
 		final Set<Integer> availableAttributeIds = getAvailableAttributeIds();
 		if (!availableAttributeIds.contains(attributeId))
@@ -402,9 +403,8 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IStorageQuery addAttributes(final IAttributeSet attributeSet)
+	public IStorageQuery addAttributes(@NonNull final IAttributeSet attributeSet)
 	{
-		Check.assumeNotNull(attributeSet, "attributeSet not null");
 		for (final I_M_Attribute attribute : attributeSet.getAttributes())
 		{
 			// Skip attributes which were newly generated just to have an complete attribute set,
@@ -439,6 +439,20 @@ import lombok.NonNull;
 	public IStorageQuery setExcludeAfterPickingLocator(final boolean excludeAfterPickingLocator)
 	{
 		huQueryBuilder.setExcludeAfterPickingLocator(excludeAfterPickingLocator);
+		return this;
+	}
+
+	@Override
+	public IStorageQuery setExcludeReservedToOtherThan(@NonNull final OrderLineId orderLineId)
+	{
+		huQueryBuilder.setExcludeReservedToOtherThan(orderLineId);
+		return this;
+	}
+
+	@Override
+	public IStorageQuery setExcludeReserved()
+	{
+		huQueryBuilder.setExcludeReserved();
 		return this;
 	}
 }

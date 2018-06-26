@@ -25,6 +25,7 @@ package de.metas.pricing.rules;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -170,7 +171,7 @@ public class Discount implements IPricingRule
 			return ImmutableList.of();
 		}
 
-		final int asiId = asiAware.getM_AttributeSetInstance_ID();
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asiAware.getM_AttributeSetInstance_ID());
 		final List<I_M_AttributeInstance> attributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asiId);
 		return attributeInstances;
 	}
@@ -180,7 +181,7 @@ public class Discount implements IPricingRule
 			final PricingConditionsResult pricingConditionsResult)
 	{
 		pricingResult.setPricingConditions(pricingConditionsResult);
-		
+
 		pricingResult.setDiscount(pricingConditionsResult.getDiscount());
 
 		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();

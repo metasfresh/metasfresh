@@ -14,7 +14,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1339818574L;
+	private static final long serialVersionUID = 1209238149L;
 
     /** Standard Constructor */
     public X_M_HU (Properties ctx, int M_HU_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
       /** if (M_HU_ID == 0)
         {
 			setHUStatus (null); // 'P'
+			setIsReserved (false); // N
 			setM_HU_ID (0);
 			setM_HU_PI_Version_ID (0);
 			setValue (null);
@@ -161,8 +162,6 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public static final String HUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
-	/** Reserved = R */
-	public static final String HUSTATUS_Reserved = "R";
 	/** Set Gebinde Status.
 		@param HUStatus Gebinde Status	  */
 	@Override
@@ -196,6 +195,29 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public boolean isChildHU () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsChildHU);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Reserviert.
+		@param IsReserved Reserviert	  */
+	@Override
+	public void setIsReserved (boolean IsReserved)
+	{
+		set_Value (COLUMNNAME_IsReserved, Boolean.valueOf(IsReserved));
+	}
+
+	/** Get Reserviert.
+		@return Reserviert	  */
+	@Override
+	public boolean isReserved () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsReserved);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

@@ -1,11 +1,13 @@
 package de.metas.handlingunits.reservation;
 
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -21,7 +23,6 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -54,6 +55,7 @@ import mockit.Mocked;
 
 public class HuReservationServiceTest
 {
+	private static final BigDecimal ELEVEN = TEN.add(ONE);
 	private static final BigDecimal TWOHUNDRET = new BigDecimal("200");
 
 	@Mocked
@@ -69,19 +71,25 @@ public class HuReservationServiceTest
 
 	private IHandlingUnitsDAO handlingUnitsDAO;
 
+	private HuReservationRepository huReservationRepository;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		data = new LUTUProducerDestinationTestSupport();
-		huReservationService = new HuReservationService(new HuReservationRepository());
+
+		huReservationRepository = new HuReservationRepository();
+
+		huReservationService = new HuReservationService(huReservationRepository);
 		huReservationService.setHuTransformServiceSupplier(() -> HUTransformService.newInstance(data.helper.getHUContext()));
 
 		cuUOM = data.helper.uomKg;
 
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 	}
 
 	@Test
@@ -127,7 +135,7 @@ public class HuReservationServiceTest
 					final List<I_M_HU> includedCUs = handlingUnitsDAO.retrieveIncludedHUs(includedHU);
 					assertThat(includedCUs).hasSize(2).filteredOn(hasQty("1"))
 							.hasSize(1)
-							.allMatch(includedCU -> includedCU.getHUStatus().equals(X_M_HU.HUSTATUS_Reserved))
+							.allMatch(I_M_HU::isReserved)
 							.extracting(I_M_HU::getM_HU_ID)
 							.allMatch(huId -> huId == vhuId.getRepoId());
 					assertThat(includedCUs).hasSize(2).filteredOn(hasQty("39")).hasSize(1);
@@ -165,7 +173,7 @@ public class HuReservationServiceTest
 					final List<I_M_HU> includedCUs = handlingUnitsDAO.retrieveIncludedHUs(tu);
 					assertThat(includedCUs).hasSize(1)
 							.filteredOn(hasQty("40")).hasSize(1)
-							.allMatch(hu -> hu.getHUStatus().equals(X_M_HU.HUSTATUS_Reserved))
+							.allMatch(I_M_HU::isReserved)
 							.extracting(I_M_HU::getM_HU_ID)
 							.allMatch(cuId -> vhuId2reservedQtys.containsKey(HuId.ofRepoId(cuId)));
 				});
@@ -229,5 +237,32 @@ public class HuReservationServiceTest
 	private Condition<I_M_HU> isNotAggregateHU()
 	{
 		return new Condition<>(hu -> !handlingUnitsBL.isAggregateHU(hu), "hu is not aggreagte");
+	}
+
+	@Test
+	public void retainAvailableHUsForOrderLine()
+	{
+		final HuId huId10 = HuId.ofRepoId(10);
+		final HuId huId11 = HuId.ofRepoId(11);
+		final HuId huId20 = HuId.ofRepoId(20);
+		final HuId huId21 = HuId.ofRepoId(21);
+
+		final HuReservation huReservation = HuReservation.builder()
+				.salesOrderLineId(OrderLineId.ofRepoId(20))
+				.vhuId2reservedQty(huId10, Quantity.of(TEN, cuUOM))
+				.vhuId2reservedQty(huId11, Quantity.of(ONE, cuUOM))
+				.reservedQtySum(Optional.of(Quantity.of(ELEVEN, cuUOM)))
+				.build();
+		huReservationRepository.save(huReservation);
+
+		final HuReservation huReservation2 = HuReservation.builder()
+				.salesOrderLineId(OrderLineId.ofRepoId(30))
+				.vhuId2reservedQty(huId20, Quantity.of(TEN, cuUOM))
+				.vhuId2reservedQty(huId21, Quantity.of(ONE, cuUOM))
+				.reservedQtySum(Optional.of(Quantity.of(ELEVEN, cuUOM)))
+				.build();
+		huReservationRepository.save(huReservation2);
+
+		//huReservationService.retainAvailableHUsForOrderLine(huIds, orderLineId)
 	}
 }

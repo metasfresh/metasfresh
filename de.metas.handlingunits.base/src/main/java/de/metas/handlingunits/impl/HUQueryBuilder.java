@@ -43,6 +43,7 @@ import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.model.PlainContextAware;
@@ -53,6 +54,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
@@ -68,8 +70,11 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.reservation.HuReservationRepository;
+import de.metas.order.OrderLineId;
 import lombok.NonNull;
 
 /**
@@ -91,6 +96,9 @@ import lombok.NonNull;
 	//
 	// Services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
+	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
+	private final transient HuReservationRepository huReservationRepository = Adempiere.getBean(HuReservationRepository.class);
 
 	@ToStringBuilder(skip = true)
 	private Object _contextProvider;
@@ -105,7 +113,7 @@ import lombok.NonNull;
 	private int parentHUId = -1;
 
 	private final Set<WarehouseId> _onlyInWarehouseIds = new HashSet<>();
-	private boolean _notInAnyWarehouse = true;
+	private boolean _notInAnyWarehouse = false;
 
 	@ToStringBuilder(skip = true)
 	private final Set<WarehouseId> _onlyInWarehouseIdsRO = Collections.unmodifiableSet(_onlyInWarehouseIds);
@@ -149,6 +157,9 @@ import lombok.NonNull;
 	private final Set<Integer> _huPIVersionIdsToInclude = new HashSet<>();
 	private boolean _excludeHUsOnPickingSlot = false;
 
+	private OrderLineId _excludeReservedToOtherThanOrderLineId = null;
+	private boolean _excludeReserved = false;
+
 	private IQuery<I_M_HU> huSubQueryFilter = null;
 
 	/**
@@ -190,6 +201,7 @@ import lombok.NonNull;
 		this._onlyWithBPartnerLocationIds.addAll(from._onlyWithBPartnerLocationIds);
 		this._onlyWithProductIds.addAll(from._onlyWithProductIds);
 		this._emptyStorageOnly = from._emptyStorageOnly;
+
 		for (final Map.Entry<Integer, HUAttributeQueryFilterVO> e : from.onlyAttributeId2values.entrySet())
 		{
 			final Integer attributeId = e.getKey();
@@ -217,6 +229,8 @@ import lombok.NonNull;
 		this._huIdsToExclude.addAll(from._huIdsToExclude);
 		this._huPIVersionIdsToInclude.addAll(from._huPIVersionIdsToInclude);
 		this._excludeHUsOnPickingSlot = from._excludeHUsOnPickingSlot;
+		this._excludeReservedToOtherThanOrderLineId = from._excludeReservedToOtherThanOrderLineId;
+		this._excludeReserved = from._excludeReserved;
 
 		this.huSubQueryFilter = from.huSubQueryFilter == null ? null : from.huSubQueryFilter.copy();
 
@@ -262,6 +276,8 @@ import lombok.NonNull;
 				.append(_huIdsToExclude)
 				.append(_huPIVersionIdsToInclude)
 				.append(_excludeHUsOnPickingSlot)
+				.append(_excludeReservedToOtherThanOrderLineId)
+				.append(_excludeReserved)
 				.append(otherFilters)
 				.append(huSubQueryFilter)
 				.append(barcode)
@@ -307,6 +323,8 @@ import lombok.NonNull;
 				.append(_huIdsToExclude, other._huIdsToExclude)
 				.append(_huPIVersionIdsToInclude, other._huPIVersionIdsToInclude)
 				.append(_excludeHUsOnPickingSlot, other._excludeHUsOnPickingSlot)
+				.append(_excludeReservedToOtherThanOrderLineId, other._excludeReservedToOtherThanOrderLineId)
+				.append(_excludeReserved, other._excludeReserved)
 				.append(otherFilters, other.otherFilters)
 				.append(huSubQueryFilter, other.huSubQueryFilter)
 				.append(barcode, other.barcode)
@@ -344,7 +362,6 @@ import lombok.NonNull;
 			}
 			sb.append(attributeSummary);
 		}
-
 		return sb.toString();
 	}
 
@@ -602,12 +619,12 @@ import lombok.NonNull;
 			// only locked
 			if (locked)
 			{
-				filters.addFilter(Services.get(IHULockBL.class).isLockedFilter());
+				filters.addFilter(huLockBL.isLockedFilter());
 			}
 			// only not locked
 			else
 			{
-				filters.addFilter(Services.get(IHULockBL.class).isNotLockedFilter());
+				filters.addFilter(huLockBL.isNotLockedFilter());
 			}
 		}
 
@@ -629,10 +646,28 @@ import lombok.NonNull;
 		// Exclude those HUs which are currently on a picking slot
 		if (_excludeHUsOnPickingSlot)
 		{
-			final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 			final IQueryFilter<I_M_HU> husOnPickingSlotFilter = huPickingSlotDAO.createHUOnPickingSlotQueryFilter(getContextProvider());
 			final IQueryFilter<I_M_HU> husNotOnPickingSlotFilter = new NotQueryFilter<>(husOnPickingSlotFilter);
 			filters.addFilter(husNotOnPickingSlotFilter);
+		}
+
+		if (_excludeReservedToOtherThanOrderLineId != null)
+		{
+			final IQuery<I_M_HU_Reservation> //
+			excludeSubQuery = huReservationRepository.createQueryReservedToOtherThan(_excludeReservedToOtherThanOrderLineId);
+
+			final ICompositeQueryFilter<I_M_HU> //
+			notReservedToOtherOrderLineFilter = queryBL
+					.createCompositeQueryFilter(I_M_HU.class)
+					.setJoinOr()
+					.addEqualsFilter(I_M_HU.COLUMN_IsReserved, false)
+					.addNotInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Reservation.COLUMN_VHU_ID, excludeSubQuery);
+
+			filters.addFilter(notReservedToOtherOrderLineFilter);
+		}
+		else if (_excludeReserved)
+		{
+			filters.addEqualsFilter(I_M_HU.COLUMN_IsReserved, false);
 		}
 
 		return filters;
@@ -1083,6 +1118,17 @@ import lombok.NonNull;
 	}
 
 	@Override
+	public IHUQueryBuilder addOnlyWithAttributes(ImmutableAttributeSet attributeSet)
+	{
+		for (final I_M_Attribute attribute : attributeSet.getAttributes())
+		{
+			final Object value = attributeSet.getValue(attribute);
+			addOnlyWithAttribute(attribute, value);
+		}
+		return this;
+	}
+
+	@Override
 	public boolean matches(final IAttributeSet attributes)
 	{
 		Check.assumeNotNull(attributes, "attributes not null");
@@ -1311,6 +1357,20 @@ import lombok.NonNull;
 	public HUQueryBuilder setExcludeHUsOnPickingSlot(final boolean excludeHUsOnPickingSlot)
 	{
 		_excludeHUsOnPickingSlot = excludeHUsOnPickingSlot;
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder setExcludeReservedToOtherThan(@NonNull final OrderLineId orderLineId)
+	{
+		_excludeReservedToOtherThanOrderLineId = orderLineId;
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder setExcludeReserved()
+	{
+		_excludeReserved = true;
 		return this;
 	}
 }
