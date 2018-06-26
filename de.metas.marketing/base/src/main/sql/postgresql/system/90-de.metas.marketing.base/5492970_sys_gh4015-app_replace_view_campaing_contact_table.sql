@@ -21,6 +21,7 @@ UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='Marketing Kampagne',Upd
 --remove the old window
 delete from ad_menu where (ad_window_id)=(149);
 delete from ad_wf_node where (ad_window_id)=(149);
+delete from ad_userquery where ad_tab_id=201;
 
 -- 2018-05-08T13:07:50.067
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
