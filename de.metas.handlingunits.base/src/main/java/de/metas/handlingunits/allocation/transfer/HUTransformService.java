@@ -279,7 +279,7 @@ public class HUTransformService
 		return storages.get(0);
 	}
 
-	public List<I_M_HU> cuToNewCU_AllocateMaximumPossibleQty( // FIXME find a better name
+	public List<I_M_HU> cuToNewCU_AllocateMaximumPossibleQty(
 			@NonNull final I_M_HU cuHU,
 			@NonNull final Quantity qtyCU)
 	{
