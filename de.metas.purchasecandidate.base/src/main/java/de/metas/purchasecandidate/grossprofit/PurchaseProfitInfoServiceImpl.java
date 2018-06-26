@@ -114,7 +114,12 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 					.forcePricingConditionsBreak(vendorPricingConditionsBreak)
 					.bpartnerFlatDiscount(vendorFlatDiscount)
 					.pricingCtx(createPricingContext(vendorPricingConditionsBreak, vendorId))
-					.build());
+					.build())
+					.orElse(null);
+			if(vendorPricingConditionsResult == null)
+			{
+				return null;
+			}
 
 			final BigDecimal purchaseBasePriceValue = vendorPricingConditionsResult.getPriceStdOverride();
 			final CurrencyId currencyId = vendorPricingConditionsResult.getCurrencyId();
