@@ -85,7 +85,7 @@ public class ESModelIndexerConfigBuilder
 	{
 		return ESModelIndexerId.builder()
 				.indexName(getIndexName())
-				.modelTableName(getIndexType())
+				.indexType(getIndexType())
 				.profile(getProfile())
 				.build();
 	}

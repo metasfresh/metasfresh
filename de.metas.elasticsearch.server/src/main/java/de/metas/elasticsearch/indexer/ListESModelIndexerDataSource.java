@@ -1,13 +1,15 @@
-package de.metas.purchasing.api;
+package de.metas.elasticsearch.indexer;
 
-import org.adempiere.util.ISingletonService;
+import java.util.Collection;
+import java.util.Iterator;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
+import com.google.common.collect.ImmutableList;
+
+import lombok.ToString;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.elasticsearch.server
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,12 +29,24 @@ import de.metas.product.ProductId;
  * #L%
  */
 
-public interface IBPartnerProductBL extends ISingletonService
+@ToString
+public class ListESModelIndexerDataSource implements ESModelIndexerDataSource
 {
+	public static ListESModelIndexerDataSource of(final Collection<Object> modelsToIndex)
+	{
+		return new ListESModelIndexerDataSource(modelsToIndex);
+	}
 
-	/**
-	 * Throw an exception if the product and partner are involved in a C_BPartnerProduct entry that is flagged as IsExcludedFromSale.
-	 */
-	void assertNotExcludedFromSaleToCustomer(ProductId productId, BPartnerId partnerId);
+	private final ImmutableList<Object> modelsToIndex;
 
+	private ListESModelIndexerDataSource(final Collection<Object> modelsToIndex)
+	{
+		this.modelsToIndex = ImmutableList.copyOf(modelsToIndex);
+	}
+
+	@Override
+	public Iterator<Object> getModelsToIndex()
+	{
+		return modelsToIndex.iterator();
+	}
 }

@@ -174,7 +174,7 @@ public class MProduct extends X_M_Product
 		setC_UOM_ID(impP.getC_UOM_ID());
 		setPackage_UOM_ID(impP.getPackage_UOM_ID());
 		setPackageSize(impP.getPackageSize());
-		setManufacturer(impP.getProductManufacturer());
+		setManufacturer_ID(impP.getManufacturer_ID());
 		setM_Product_Category_ID(impP.getM_Product_Category_ID());
 		setProductType(impP.getProductType());
 		setImageURL(impP.getImageURL());

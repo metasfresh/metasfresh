@@ -15,7 +15,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1009256563L;
+	private static final long serialVersionUID = 839891136L;
 
     /** Standard Constructor */
     public X_I_Product (Properties ctx, int I_Product_ID, String trxName)
@@ -757,23 +757,41 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
 	}
 
+	@Override
+	public org.compiere.model.I_C_BPartner getManufacturer() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer)
+	{
+		set_ValueFromPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class, Manufacturer);
+	}
+
 	/** Set Hersteller.
-		@param Manufacturer 
-		Manufacturer of the Product
+		@param Manufacturer_ID 
+		Hersteller des Produktes
 	  */
 	@Override
-	public void setManufacturer (java.lang.String Manufacturer)
+	public void setManufacturer_ID (int Manufacturer_ID)
 	{
-		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+		if (Manufacturer_ID < 1) 
+			set_Value (COLUMNNAME_Manufacturer_ID, null);
+		else 
+			set_Value (COLUMNNAME_Manufacturer_ID, Integer.valueOf(Manufacturer_ID));
 	}
 
 	/** Get Hersteller.
-		@return Manufacturer of the Product
+		@return Hersteller des Produktes
 	  */
 	@Override
-	public java.lang.String getManufacturer () 
+	public int getManufacturer_ID () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Manufacturer_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Name.
