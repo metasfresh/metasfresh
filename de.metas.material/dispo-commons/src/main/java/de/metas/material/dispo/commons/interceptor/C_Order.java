@@ -2,6 +2,7 @@ package de.metas.material.dispo.commons.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -27,17 +28,20 @@ import org.springframework.stereotype.Component;
  */
 @Interceptor(I_C_Order.class)
 @Component("de.metas.material.dispo.commons.interceptor.C_Order")
-public class C_Order
-{
+public class C_Order {
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
-	public void updateQtyAvailableToPromise(final I_C_Order orderRecord)
-	{
+	public void updateQtyAvailableToPromise(final I_C_Order orderRecord) {
 		OrderAvailableToPromiseTool.updateOrderLineRecords(orderRecord);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void resetQtyAvailableToPromise(final I_C_Order orderRecord)
-	{
+	public void resetQtyAvailableToPromise(final I_C_Order orderRecord) {
 		OrderAvailableToPromiseTool.resetQtyAvailableToPromise(orderRecord);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_PreparationDate })
+	public void updateQtyAvailableToPromiseWhenPreparationDateIsChanged(final I_C_Order orderRecord) {
+		OrderAvailableToPromiseTool.updateOrderLineRecords(orderRecord);
 	}
 }
