@@ -78,20 +78,22 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		}
 
 		final PPOrderLinesView ppOrderLineView = getView();
-		if (!(ppOrderLineView.isStatusPlanning() || ppOrderLineView.isStatusReview()))
+		final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
+
+		final boolean isIssueOnlyWhatWasReveiced = X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(singleSelectedRow.getIssueMethod());
+
+		if (!(ppOrderLineView.isStatusPlanning() || ppOrderLineView.isStatusReview()) && !isIssueOnlyWhatWasReveiced)
 		{
 			final String internalReason = StringUtils.formatMessage("The PP_Order of the the current ppOrderLineView is not in planning or in review; ppOrderLineView={}", ppOrderLineView);
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 		}
-
-		final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
 
 		if (!singleSelectedRow.isIssue())
 		{
 			final String internalReason = StringUtils.formatMessage("The selected ppOrderLineRow is not an issue row; selectedRow={}", singleSelectedRow);
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 		}
-		if (singleSelectedRow.isProcessed() && !(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(singleSelectedRow.getIssueMethod())))
+		if (singleSelectedRow.isProcessed() && !isIssueOnlyWhatWasReveiced)
 		{
 			final String internalReason = StringUtils.formatMessage("The selected ppOrderLineRow is already flagged as processed; selectedRow={}", singleSelectedRow);
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);

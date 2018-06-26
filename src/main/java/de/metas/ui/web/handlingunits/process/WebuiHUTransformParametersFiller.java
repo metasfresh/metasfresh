@@ -127,7 +127,7 @@ public class WebuiHUTransformParametersFiller
 		{
 			final I_M_HU cu = getSelectedRow().getM_HU(); // should work, because otherwise the param is not even shown.
 
-			return HUTransformService.newInstance().getMaximumQtyCU(cu, getSelectedRow().getC_UOM()).getQty();
+			return HUTransformService.newInstance().getMaximumQtyCU(cu, getSelectedRow().getC_UOM()).getAsBigDecimal();
 		}
 		else if (WEBUI_M_HU_Transform.PARAM_QtyTU.equals(parameterName))
 		{
