@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,12 +27,11 @@ import org.adempiere.util.collections.PagedIterator.Page;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -39,10 +40,12 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -95,6 +98,8 @@ import lombok.NonNull;
 
 public class SqlHUEditorViewRepository implements HUEditorViewRepository
 {
+	private static final String MSG_HU_RESERVED = "de.metas.handlingunit.HU_Reserved";
+
 	private static final transient Logger logger = LogManager.getLogger(SqlHUEditorViewRepository.class);
 
 	private final WindowId windowId;
@@ -213,7 +218,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final String huUnitTypeDisplayName = huRecordType.getName();
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(huUnitTypeCode, huUnitTypeDisplayName);
 
-		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
+		final JSONLookupValue huStatusDisplay = createHUStatusDisplayLookupValue(hu);
 		final boolean processed = rowProcessedPredicate.isProcessed(hu);
 		final int huId = hu.getM_HU_ID();
 		final HUEditorRowId rowId = HUEditorRowId.ofHU(huId, topLevelHUId);
@@ -228,7 +233,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				//
 				.setCode(hu.getValue())
 				.setHUUnitType(huUnitTypeLookupValue)
-				.setHUStatus(huStatus)
+				.setHUStatusDisplay(huStatusDisplay)
+				.setHUStatus(hu.getHUStatus())
+				.setHUReserved(hu.isReserved())
+
 				.setPackingInfo(extractPackingInfo(hu, huRecordType));
 
 		//
@@ -368,7 +376,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				// .setHUId(huId)
 				// .setCode(hu.getValue()) // NOTE: don't show value on storage level
 				.setHUUnitType(JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU"))
-				.setHUStatus(createHUStatusLookupValue(hu))
+				.setHUStatus(hu.getHUStatus())
+				.setHUReserved(hu.isReserved())
+				.setHUStatusDisplay(createHUStatusDisplayLookupValue(hu))
 				//
 				.setProduct(createProductLookupValue(product))
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
@@ -380,10 +390,22 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return huEditorRow;
 	}
 
-	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)
+	private static JSONLookupValue createHUStatusDisplayLookupValue(@NonNull final I_M_HU hu)
 	{
-		final String huStatusKey = hu.getHUStatus();
-		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(HUEditorRow.HUSTATUS_AD_Reference_ID, huStatusKey);
+		final String huStatusKey;
+		final String huStatusDisplayName;
+		if (hu.isReserved())
+		{
+			huStatusKey = MSG_HU_RESERVED;
+			huStatusDisplayName = Services.get(IMsgBL.class).getMsg(Env.getCtx(), huStatusKey);
+		}
+		else
+		{
+			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+			huStatusKey = hu.getHUStatus();
+			huStatusDisplayName = adReferenceDAO.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
+		}
+
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
 	}
 

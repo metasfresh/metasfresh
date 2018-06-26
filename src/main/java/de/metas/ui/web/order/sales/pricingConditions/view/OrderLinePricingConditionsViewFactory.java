@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -112,9 +113,12 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 
 		final int productId = salesOrderLine.getM_Product_ID();
 		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
-		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(salesOrderLine.getM_AttributeSetInstance_ID());
+
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(salesOrderLine.getM_AttributeSetInstance_ID());
+		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(asiId);
 		final BigDecimal qty = salesOrderLine.getQtyOrdered();
 		final BigDecimal price = salesOrderLine.getPriceActual();
+
 		return PricingConditionsBreakQuery.builder()
 				.attributeInstances(attributeInstances)
 				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))

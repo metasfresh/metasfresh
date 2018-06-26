@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -27,12 +26,12 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,9 +41,9 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 /**
  * This process is available from the HU editor window opened by {@link WEBUI_PP_Order_HUEditor_Launcher}.<br>
  * Its job is to flag the currently selected HUs so they are available as source-HUs for
- * 
+ *
  * @task https://github.com/metasfresh/metasfresh/issues/2298
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -56,11 +55,6 @@ public class WEBUI_PP_Order_HUEditor_Create_M_Source_HUs
 	private SourceHUsService sourceHuService;
 
 	private final Set<Integer> topLevelHUIdsProcessed = new HashSet<>();
-
-	public WEBUI_PP_Order_HUEditor_Create_M_Source_HUs()
-	{
-		Adempiere.autowire(this);
-	}
 
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()

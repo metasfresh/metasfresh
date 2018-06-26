@@ -1,5 +1,7 @@
 package de.metas.ui.web.picking.husToPick;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.List;
 import java.util.Map;
 
@@ -10,8 +12,6 @@ import org.compiere.util.DB;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
@@ -60,7 +60,7 @@ class HUsToPickViewFilters
 
 	private static final String HU_IDS_FilterId = "HU_IDS_Filter";
 	private static final String PARAM_ConsiderAttributes = "de.metas.ui.web.picking.HUsToPickViewFilters.ConsiderAttributes";
-	
+
 	static final String PARAM_CurrentShipmentScheduleId = "CurrentShipmentScheduleId";
 
 	public static ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()

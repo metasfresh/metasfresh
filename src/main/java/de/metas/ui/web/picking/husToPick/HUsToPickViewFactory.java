@@ -130,7 +130,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	}
 
 	@Override
-	protected void customizeHUEditorView(final HUEditorViewBuilder huViewBuilder)
+	protected void customizeHUEditorView(@NonNull final HUEditorViewBuilder huViewBuilder)
 	{
 		huViewBuilder
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_PickHU.class))
@@ -138,6 +138,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_Create_M_Source_HUs.class))
 				//
 				.clearOrderBys()
+				.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_IsReserved).ascending(false).nullsLast(true).build())
 				.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(true).nullsLast(true).build())
 				.orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_M_HU_ID));
 	}

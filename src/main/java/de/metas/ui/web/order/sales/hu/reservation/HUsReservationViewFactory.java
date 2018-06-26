@@ -42,8 +42,8 @@ import lombok.NonNull;
  * #L%
  */
 
-@ViewFactory(windowId = HUsToReserveViewFactory.WINDOW_ID_STRING, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
-public class HUsToReserveViewFactory extends HUEditorViewFactoryTemplate
+@ViewFactory(windowId = HUsReservationViewFactory.WINDOW_ID_STRING, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
+public class HUsReservationViewFactory extends HUEditorViewFactoryTemplate
 {
 	static final String WINDOW_ID_STRING = "husToReserve";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
@@ -51,7 +51,7 @@ public class HUsToReserveViewFactory extends HUEditorViewFactoryTemplate
 	// services
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-	public HUsToReserveViewFactory()
+	public HUsReservationViewFactory()
 	{
 		super(ImmutableList.of());
 	}
@@ -89,7 +89,7 @@ public class HUsToReserveViewFactory extends HUEditorViewFactoryTemplate
 		huViewBuilder
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.order.sales.hu.reservation.process.WEBUI_C_OrderLineSO_Make_HuReservation.class))
 				.clearOrderBys()
-				.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(true).nullsLast(true).build())
+					.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(true).nullsLast(true).build())
 				.orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_M_HU_ID));
 	}
 
@@ -98,6 +98,7 @@ public class HUsToReserveViewFactory extends HUEditorViewFactoryTemplate
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass))
 				.webuiQuickAction(true)
+				.webuiDefaultQuickAction()
 				.build();
 	}
 }
