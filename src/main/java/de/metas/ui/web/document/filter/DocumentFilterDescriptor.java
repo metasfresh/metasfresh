@@ -24,6 +24,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 /*
  * #%L
@@ -55,19 +56,29 @@ public final class DocumentFilterDescriptor
 		return new Builder();
 	}
 
+	@Getter
 	private final String filterId;
 	private final ITranslatableString displayNameTrls;
 
 	/**
 	 * To be displayed outside of the regular filters dropdown list for quicker access.
 	 */
+	@Getter
 	private final boolean frequentUsed;
 
+	/** How to render it when the filter is inline (i.e. {@link #frequentUsed} is true) */
+	@Getter
+	private final DocumentFilterInlineRenderMode inlineRenderMode;
+
+	@Getter
 	private final PanelLayoutType parametersLayoutType;
 	private final Map<String, DocumentFilterParamDescriptor> parametersByName;
+	@Getter
 	private final List<DocumentFilterParam> internalParameters;
+	@Getter
 	private final boolean autoFilter;
 
+	@Getter
 	private final Map<String, Object> debugProperties;
 
 	private DocumentFilterDescriptor(final Builder builder)
@@ -79,6 +90,7 @@ public final class DocumentFilterDescriptor
 		Check.assumeNotNull(displayNameTrls, "Parameter displayNameTrls is not null");
 
 		frequentUsed = builder.frequentUsed;
+		inlineRenderMode = builder.getInlineRenderMode();
 
 		parametersLayoutType = builder.getParametersLayoutType();
 		parametersByName = builder.buildParameters();
@@ -99,19 +111,9 @@ public final class DocumentFilterDescriptor
 				.toString();
 	}
 
-	public String getFilterId()
-	{
-		return filterId;
-	}
-
 	public String getDisplayName(final String adLanguage)
 	{
 		return displayNameTrls.translate(adLanguage);
-	}
-
-	public PanelLayoutType getParametersLayoutType()
-	{
-		return parametersLayoutType;
 	}
 
 	public Collection<DocumentFilterParamDescriptor> getParameters()
@@ -129,26 +131,6 @@ public final class DocumentFilterDescriptor
 		return parameter;
 	}
 
-	public List<DocumentFilterParam> getInternalParameters()
-	{
-		return internalParameters;
-	}
-
-	public boolean isFrequentUsed()
-	{
-		return frequentUsed;
-	}
-
-	public Map<String, Object> getDebugProperties()
-	{
-		return debugProperties;
-	}
-
-	public boolean isAutoFilter()
-	{
-		return autoFilter;
-	}
-
 	//
 	//
 	//
@@ -157,6 +139,8 @@ public final class DocumentFilterDescriptor
 		private String filterId;
 		private ITranslatableString displayNameTrls;
 		private boolean frequentUsed;
+
+		private DocumentFilterInlineRenderMode inlineRenderMode;
 
 		private PanelLayoutType parametersLayoutType;
 		private final List<DocumentFilterParamDescriptor.Builder> parameters = new ArrayList<>();
@@ -240,6 +224,17 @@ public final class DocumentFilterDescriptor
 		{
 			this.frequentUsed = frequentUsed;
 			return this;
+		}
+
+		public Builder setInlineRenderMode(DocumentFilterInlineRenderMode inlineRenderMode)
+		{
+			this.inlineRenderMode = inlineRenderMode;
+			return this;
+		}
+
+		private DocumentFilterInlineRenderMode getInlineRenderMode()
+		{
+			return inlineRenderMode != null ? inlineRenderMode : DocumentFilterInlineRenderMode.BUTTON;
 		}
 
 		public Builder setParametersLayoutType(PanelLayoutType parametersLayoutType)
