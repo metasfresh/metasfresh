@@ -30,11 +30,7 @@ class PluginContainer extends Component {
     );
 
     if (!pluginModal) {
-      return (
-        <div className="plugin-container">
-          {TagName && renderedTag}
-        </div>
-      );
+      return <div className="plugin-container">{TagName && renderedTag}</div>;
     }
 
     return renderedTag;
@@ -42,7 +38,7 @@ class PluginContainer extends Component {
 
   render() {
     const { modal, rawModal, pluginModal, breadcrumb } = this.props;
- 
+
     return (
       <Container {...{ modal, rawModal, pluginModal }} breadcrumb={breadcrumb}>
         {this.renderChildren()}
