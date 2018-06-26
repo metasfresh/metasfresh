@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
@@ -17,8 +19,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.elasticsearch.indexer.ESModelIndexerDataSources;
+import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
+import de.metas.elasticsearch.indexer.SqlESModelIndexerDataSource;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -47,6 +52,8 @@ import lombok.NonNull;
 public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 {
 	private static final Logger logger = LogManager.getLogger(ESModelIndexersRegistry.class);
+
+	private static final String SYSCONFIG_AUTOINDEX_MODELS = "de.metas.elasticsearch.indexer.AutoIndexModels";
 
 	private final ConcurrentHashMap<ESModelIndexerId, IESModelIndexer> indexersById = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<String, ImmutableList<IESModelIndexer>> indexersByModelTableName = new ConcurrentHashMap<>();
@@ -127,13 +134,36 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 		// Create/update mapping for our indexer
 		try
 		{
-			indexer.createUpdateIndex();
-			logger.info("Created/Updated index mapping for {}", indexer);
+			createIndexAndAddAllModels(indexer);
 		}
 		catch (final Exception ex)
 		{
 			logger.warn("Failed creating/updating index for {}", indexer, ex);
 		}
+	}
+
+	private void createIndexAndAddAllModels(final IESModelIndexer indexer)
+	{
+		final boolean indexJustCreated = indexer.createUpdateIndex();
+		logger.info("Created/Updated index mapping for {}", indexer);
+
+		if (indexJustCreated && isAutoIndexModelsForIndexName(indexer.getIndexName()))
+		{
+			final SqlESModelIndexerDataSource modelsToIndex = ESModelIndexerDataSources.allForModelIndexer(indexer);
+			final IESIndexerResult indexingResult = indexer.addToIndex(modelsToIndex);
+			logger.info("Indexed models for {}: {}", indexer, indexingResult.getSummary());
+		}
+	}
+
+	private boolean isAutoIndexModelsForIndexName(final String indexName)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_AUTOINDEX_MODELS, true))
+		{
+			return false;
+		}
+
+		return sysConfigBL.getBooleanValue(SYSCONFIG_AUTOINDEX_MODELS + "." + indexName, true);
 	}
 
 	private static ImmutableList<IESModelIndexer> merge(
