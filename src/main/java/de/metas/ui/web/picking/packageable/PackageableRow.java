@@ -4,14 +4,16 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
-import de.metas.printing.esb.base.util.Check;
+import de.metas.order.OrderLineId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewsIndexStorage;
@@ -67,7 +69,7 @@ public final class PackageableRow implements IViewRow
 	private final DocumentId id;
 	private final DocumentPath documentPath;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_Order_ID, layouts = {
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10)
 	})
 	private final LookupValue order;
@@ -87,7 +89,7 @@ public final class PackageableRow implements IViewRow
 	})
 	private final BigDecimal qtyPicked;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_ID, layouts = {
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40)
 	})
 	private final LookupValue bpartner;
@@ -98,6 +100,8 @@ public final class PackageableRow implements IViewRow
 	private final java.util.Date preparationDate;
 
 	private final int shipmentScheduleId;
+
+	private final Optional<OrderLineId> salesOrderLineId;
 
 	private final ViewId includedViewId;
 
@@ -121,6 +125,7 @@ public final class PackageableRow implements IViewRow
 	@Builder
 	private PackageableRow(
 			final int shipmentScheduleId,
+			@NonNull final Optional<OrderLineId> salesOrderLineId,
 			@NonNull final ViewId viewId,
 			final LookupValue order,
 			final LookupValue product,
@@ -129,8 +134,6 @@ public final class PackageableRow implements IViewRow
 			final LookupValue bpartner,
 			final Date preparationDate)
 	{
-		Check.assume(shipmentScheduleId > 0, "shipmentScheduleId > 0");
-
 		this.viewId = viewId;
 		this.id = createRowIdFromShipmentScheduleId(shipmentScheduleId);
 		this.documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingView, id);
@@ -141,7 +144,8 @@ public final class PackageableRow implements IViewRow
 		this.qtyPicked = qtyPicked != null ? qtyPicked : BigDecimal.ZERO;
 		this.bpartner = bpartner;
 		this.preparationDate = preparationDate;
-		this.shipmentScheduleId = shipmentScheduleId;
+		this.shipmentScheduleId = Check.assumeGreaterThanZero(shipmentScheduleId, "shipmentScheduleId");
+		this.salesOrderLineId = salesOrderLineId;
 
 		// create the included view's ID
 		// note that despite all our packageable-rows have the same picking slots, the IDs still need to be individual per-row,
@@ -217,6 +221,11 @@ public final class PackageableRow implements IViewRow
 		return shipmentScheduleId;
 	}
 
+	public Optional<OrderLineId> getSalesOrderLineId()
+	{
+		return salesOrderLineId;
+	}
+
 	public int getProductId()
 	{
 		return product != null ? product.getIdAsInt() : -1;
@@ -237,5 +246,4 @@ public final class PackageableRow implements IViewRow
 		final BigDecimal qtyOrderedMinusPicked = getQtyOrdered().subtract(getQtyPicked());
 		return qtyOrderedMinusPicked.signum() > 0 ? qtyOrderedMinusPicked : BigDecimal.ZERO;
 	}
-
 }

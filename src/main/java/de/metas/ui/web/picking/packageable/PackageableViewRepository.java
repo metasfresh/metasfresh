@@ -2,6 +2,7 @@ package de.metas.ui.web.picking.packageable;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -15,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.order.OrderLineId;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
@@ -65,7 +67,7 @@ public class PackageableViewRepository
 
 		orderLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
 				.setCtxTableName(null)
-				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_C_Order_ID)
+				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.buildProvider()
@@ -81,7 +83,7 @@ public class PackageableViewRepository
 
 		bpartnerLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
 				.setCtxTableName(null)
-				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_C_BPartner_ID)
+				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.buildProvider()
@@ -107,14 +109,16 @@ public class PackageableViewRepository
 	private PackageableRow createPickingRow(final ViewId viewId, final I_M_Packageable_V packageable)
 	{
 		final BigDecimal qtyPicked = packageable.getQtyPicked().add(packageable.getQtyPickedPlanned());
-		
+		final OrderLineId ofRepoIdOrNull = OrderLineId.ofRepoIdOrNull(packageable.getC_OrderLineSO_ID());
+
 		return PackageableRow.builder()
 				.shipmentScheduleId(packageable.getM_ShipmentSchedule_ID())
+				.salesOrderLineId(Optional.ofNullable(ofRepoIdOrNull))
 				.viewId(viewId)
 				//
-				.order(orderLookup.get().findById(packageable.getC_Order_ID()))
+				.order(orderLookup.get().findById(packageable.getC_OrderSO_ID()))
 				.product(productLookup.get().findById(packageable.getM_Product_ID()))
-				.bpartner(bpartnerLookup.get().findById(packageable.getC_BPartner_ID()))
+				.bpartner(bpartnerLookup.get().findById(packageable.getC_BPartner_Customer_ID()))
 				.preparationDate(packageable.getPreparationDate())
 				.qtyOrdered(packageable.getQtyOrdered())
 				.qtyPicked(qtyPicked)

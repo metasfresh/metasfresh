@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,6 +34,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -42,11 +44,13 @@ import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.reservation.HuReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -106,6 +110,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private final HUEditorRowAttributesProvider attributesProvider;
 	private final HUEditorRowIsProcessedPredicate rowProcessedPredicate;
+	private final HuReservationService huReservationService;
+
 	private final boolean showBestBeforeDate;
 	private final boolean showLocator;
 
@@ -113,12 +119,14 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
 	private final SqlViewSelectData sqlViewSelect;
 
+
 	@Builder
 	private SqlHUEditorViewRepository(
 			@NonNull final WindowId windowId,
 			@NonNull final SqlViewBinding sqlViewBinding,
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
+			@NonNull final HuReservationService huReservationService,
 			final boolean showBestBeforeDate,
 			final boolean showLocator)
 	{
@@ -132,6 +140,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		this.sqlViewBinding = sqlViewBinding;
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlViewBinding);
 		sqlViewSelect = sqlViewBinding.getSqlViewSelect();
+
+		this.huReservationService = huReservationService;
 	}
 
 	@Override
@@ -215,6 +225,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		{
 			huRecordType = HUEditorRowType.ofHU_UnitType(huUnitTypeCode);
 		}
+		final Optional<OrderLineId> orderLineIdWithReservation = huReservationService.getReservedForOrderLineId(HuId.ofRepoId(hu.getM_HU_ID()));
+
 		final String huUnitTypeDisplayName = huRecordType.getName();
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(huUnitTypeCode, huUnitTypeDisplayName);
 
@@ -235,7 +247,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setHUUnitType(huUnitTypeLookupValue)
 				.setHUStatusDisplay(huStatusDisplay)
 				.setHUStatus(hu.getHUStatus())
-				.setHUReserved(hu.isReserved())
+				.setReservedForOrderLine(orderLineIdWithReservation.orElse(null))
 
 				.setPackingInfo(extractPackingInfo(hu, huRecordType));
 
@@ -362,12 +374,14 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		// final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final I_M_HU hu = huStorage.getM_HU();
-		final int huId = hu.getM_HU_ID();
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final I_M_Product product = huStorage.getM_Product();
-		final HUEditorRowAttributesProvider attributesProviderEffective = huId != parent_HU_ID ? attributesProvider : null;
+		final HUEditorRowAttributesProvider attributesProviderEffective = huId.getRepoId() != parent_HU_ID ? attributesProvider : null;
+
+		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getReservedForOrderLineId(huId);
 
 		final HUEditorRow huEditorRow = HUEditorRow.builder(windowId)
-				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, product.getM_Product_ID()))
+				.setRowId(HUEditorRowId.ofHUStorage(huId.getRepoId(), topLevelHUId, product.getM_Product_ID()))
 				.setType(HUEditorRowType.HUStorage)
 				.setTopLevel(false)
 				.setProcessed(processed)
@@ -377,7 +391,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				// .setCode(hu.getValue()) // NOTE: don't show value on storage level
 				.setHUUnitType(JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU"))
 				.setHUStatus(hu.getHUStatus())
-				.setHUReserved(hu.isReserved())
+				.setReservedForOrderLine(reservedForOrderLineId.orElse(null))
 				.setHUStatusDisplay(createHUStatusDisplayLookupValue(hu))
 				//
 				.setProduct(createProductLookupValue(product))
