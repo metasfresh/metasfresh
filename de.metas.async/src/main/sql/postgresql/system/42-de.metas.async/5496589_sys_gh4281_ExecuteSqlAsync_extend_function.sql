@@ -1,4 +1,6 @@
-﻿create or replace function "de.metas.async".ExecuteSqlAsync(
+DROP FUNCTION "de.metas.async".ExecuteSqlAsync(text);
+
+create or replace function "de.metas.async".ExecuteSqlAsync(
 	p_workpackage_sql text, 
 	p_after_finish_sql text default '')
 returns void
