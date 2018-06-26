@@ -28,13 +28,11 @@ import de.metas.material.dispo.commons.model.I_C_OrderLine;
  */
 @Interceptor(I_C_OrderLine.class)
 @Component("de.metas.material.dispo.commons.interceptor.C_OrderLine")
-public class C_OrderLine
-{
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void updateSalesOrderLineQtyATP(final I_C_OrderLine orderLineRecord)
-	{
-		if (!orderLineRecord.getC_Order().isSOTrx() || orderLineRecord.isProcessed())
-		{
+public class C_OrderLine {
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_M_Product_ID, I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID })
+	public void updateSalesOrderLineQtyATP(final I_C_OrderLine orderLineRecord) {
+		if (!orderLineRecord.getC_Order().isSOTrx() || orderLineRecord.isProcessed()) {
 			return;
 		}
 
