@@ -1023,12 +1023,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
 		Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID());
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID());
 
-		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID()));
+		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
 		final List<I_M_Warehouse> warehouses = warehouseIds
 				.stream()
-				.map(warehouseId -> InterfaceWrapperHelper.loadOutOfTrx(warehouseId.getRepoId(), I_M_Warehouse.class))
+				.map(id -> InterfaceWrapperHelper.loadOutOfTrx(id, I_M_Warehouse.class))
 				.collect(ImmutableList.toImmutableList());
 
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);

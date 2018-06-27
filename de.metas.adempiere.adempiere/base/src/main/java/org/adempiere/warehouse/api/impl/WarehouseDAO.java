@@ -283,7 +283,7 @@ public class WarehouseDAO implements IWarehouseDAO
 				.map(record -> {
 					final WarehouseId warehouseId = WarehouseId.ofRepoId((int)record.get(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID));
 					final int warehousePickingGroupId = (int)record.get(I_M_Warehouse.COLUMNNAME_M_Warehouse_PickingGroup_ID);
-					return GuavaCollectors.entry(warehousePickingGroupId, WarehouseId.ofRepoId(warehouseId));
+					return GuavaCollectors.entry(warehousePickingGroupId, warehouseId);
 				})
 				.collect(GuavaCollectors.toImmutableSetMultimap());
 

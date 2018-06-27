@@ -11,7 +11,6 @@ import org.adempiere.warehouse.model.WarehousePickingGroup;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.product.ProductCategoryId;
-import de.metas.lang.RepoIdAwares;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -69,10 +68,9 @@ public class MSV3ServerConfig
 
 	public Set<WarehouseId> getWarehouseIds()
 	{
-		return RepoIdAwares
-				.asRepoIdsSet(warehousePickingGroupSupplier
+		return warehousePickingGroupSupplier
 						.map(Supplier::get)
 						.map(WarehousePickingGroup::getWarehouseIds)
-						.orElse(ImmutableSet.of()));
+						.orElse(ImmutableSet.of());
 	}
 }
