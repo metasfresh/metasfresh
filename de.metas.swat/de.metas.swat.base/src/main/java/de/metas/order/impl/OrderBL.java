@@ -53,15 +53,20 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.freighcost.api.IFreightCostBL;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -398,7 +403,16 @@ public class OrderBL implements IOrderBL
 		{
 			return;
 		}
-		org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		
+		final int bpartnerId = order.getC_BPartner_ID();
+		
+		if(bpartnerId <= 0)
+		{
+			return;
+		}
+				
+		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		
 		if (docType == null)
 		{
 			return;
@@ -408,9 +422,16 @@ public class OrderBL implements IOrderBL
 		{
 			return;
 		}
+	
+		final String adLanguage = Util.coalesce(order.getC_BPartner().getAD_Language(), Env.getAD_Language());
+		
+		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
+		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
+		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+		
 
-		order.setDescription(docType.getDescription());
-		order.setDescriptionBottom(docType.getDocumentNote());
+		order.setDescription(description.translate(adLanguage));
+		order.setDescriptionBottom(documentNote.translate(adLanguage));
 	}
 
 	@Override
