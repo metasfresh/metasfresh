@@ -350,7 +350,11 @@
             font-weight: bold;
             color: $brand-font-color;
         }
-    } 
+    }
+
+    &.inactive {
+        cursor: default;
+    }
 }
 
 .page-link {
