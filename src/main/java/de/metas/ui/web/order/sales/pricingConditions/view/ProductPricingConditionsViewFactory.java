@@ -72,12 +72,12 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 	{
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 
-		final PricingConditionsResult result = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
+		return pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
 				.forcePricingConditionsBreak(request.getPricingConditionsBreak())
 				.pricingCtx(createPricingContext(request))
-				.build());
-
-		return result.getPriceStdOverride();
+				.build())
+				.map(PricingConditionsResult::getPriceStdOverride)
+				.orElse(null);
 	}
 
 	private IPricingContext createPricingContext(final BasePricingSystemPriceCalculatorRequest request)

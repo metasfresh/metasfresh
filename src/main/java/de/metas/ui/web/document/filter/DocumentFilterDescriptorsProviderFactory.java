@@ -205,6 +205,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 				.setFilterId(FullTextSearchSqlDocumentFilterConverter.FILTER_ID)
 				.setDisplayName(caption)
 				.setFrequentUsed(true)
+				.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
 				.addParameter(DocumentFilterParamDescriptor.builder()
 						.setFieldName(FullTextSearchSqlDocumentFilterConverter.PARAM_SearchText)
 						.setDisplayName(caption)
