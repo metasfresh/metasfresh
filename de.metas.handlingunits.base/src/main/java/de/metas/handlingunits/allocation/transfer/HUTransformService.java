@@ -36,7 +36,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -66,6 +65,7 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -116,7 +116,6 @@ public class HUTransformService
 
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	//
@@ -1034,25 +1033,25 @@ public class HUTransformService
 		 */
 		boolean keepNewCUsUnderSameParent;
 
-		/** if true, then only active VHUs are split on order to get our new CUs */
-		boolean onlyFromActiveHUs;
+		/** if true, then only unreserved VHUs are split on order to get our new CUs */
+		boolean onlyFromUnreservedHUs;
 
-		public static HUsToNewCUsRequest forSourceHuAndQty(@NonNull I_M_HU sourceHU, @NonNull Quantity qtyCU)
-		{
-			return HUsToNewCUsRequest.builder().sourceHU(sourceHU).qtyCU(qtyCU).build();
-		}
+		/** Mandatory, to cover the case of HUs with multiple products */
+		ProductId productId;
 
 		@lombok.Builder(toBuilder = true)
 		private HUsToNewCUsRequest(
 				@Singular("sourceHU") @NonNull final List<I_M_HU> sourceHUs,
+				@NonNull ProductId productId,
 				@NonNull final Quantity qtyCU,
 				@Nullable final Boolean keepNewCUsUnderSameParent,
-				@Nullable final Boolean onlyFromActiveHUs)
+				@Nullable final Boolean onlyFromUnreservedHUs)
 		{
 			this.sourceHUs = sourceHUs;
 			this.qtyCU = qtyCU;
+			this.productId = productId;
 			this.keepNewCUsUnderSameParent = Util.coalesce(keepNewCUsUnderSameParent, false);
-			this.onlyFromActiveHUs = Util.coalesce(onlyFromActiveHUs, false);
+			this.onlyFromUnreservedHUs = Util.coalesce(onlyFromUnreservedHUs, false);
 		}
 	}
 
@@ -1085,11 +1084,7 @@ public class HUTransformService
 		return result.build();
 	}
 
-	private List<I_M_HU> huToNewCUs(@NonNull final HUsToNewCUsRequest singleSourceHuRequest
-	// @NonNull final I_M_HU sourceHU,
-	// @NonNull final Quantity qtyCU,
-	// final boolean keepNewCUsUnderSameParent
-	)
+	private List<I_M_HU> huToNewCUs(@NonNull final HUsToNewCUsRequest singleSourceHuRequest)
 	{
 		final I_M_HU sourceHU = ListUtils.singleElement(singleSourceHuRequest.getSourceHUs());
 
@@ -1107,12 +1102,7 @@ public class HUTransformService
 		}
 	}
 
-	private List<I_M_HU> luExtractCUs(
-			@NonNull final HUsToNewCUsRequest singleSourceLuRequest
-	// @NonNull final I_M_HU sourceLU,
-	// @NonNull final Quantity qtyCU,
-	// final boolean keepNewCUsUnderSameParent
-	)
+	private List<I_M_HU> luExtractCUs(@NonNull final HUsToNewCUsRequest singleSourceLuRequest)
 	{
 		Preconditions.checkArgument(singleSourceLuRequest.getQtyCU().signum() > 0, "qtyCU > 0");
 
@@ -1157,11 +1147,7 @@ public class HUTransformService
 		return extractedCUs.build();
 	}
 
-	private List<I_M_HU> tuExtractCUs(@NonNull final HUsToNewCUsRequest singleSourceTuRequest
-	// @NonNull final I_M_HU sourceTU,
-	// @NonNull final Quantity qtyCU,
-	// final boolean keepNewCUsUnderSameParent
-	)
+	private List<I_M_HU> tuExtractCUs(@NonNull final HUsToNewCUsRequest singleSourceTuRequest)
 	{
 		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
 		Quantity qtyCUsRemaining = singleSourceTuRequest.getQtyCU();
@@ -1170,9 +1156,17 @@ public class HUTransformService
 
 		for (final I_M_HU cu : handlingUnitsDAO.retrieveIncludedHUs(sourceTU))
 		{
-			if (singleSourceTuRequest.isOnlyFromActiveHUs() && !huStatusBL.isStatusActive(sourceTU))
+			if (singleSourceTuRequest.isOnlyFromUnreservedHUs() && cu.isReserved())
 			{
-				continue; // the request only wants us to use active source HUs
+				continue; // the request only wants us to use unreserved source HUs
+			}
+			final IHUProductStorage productStorageOrNull = handlingUnitsBL
+					.getStorageFactory()
+					.getStorage(cu)
+					.getProductStorageOrNull(singleSourceTuRequest.getProductId().getRepoId());
+			if(productStorageOrNull == null)
+			{
+				continue; // cu doesn't have the product we are looking for
 			}
 
 			if (qtyCUsRemaining.signum() <= 0)

@@ -9,7 +9,6 @@
 ALTER TABLE public.m_hu ALTER COLUMN IsReserved SET DEFAULT 'N';
 
 SELECT "de.metas.async".executeSqlAsync(
-	'UPDATE M_HU SET IsReserved=''N''
-	 WHERE M_HU_ID IN (select M_HU_ID from M_HU where IsReserved IS NULL ORDER BY M_HU_ID DESC LIMIT 100000)',
+	'UPDATE M_HU SET IsReserved=''N'' WHERE M_HU_ID IN (select M_HU_ID from M_HU where IsReserved IS NULL ORDER BY M_HU_ID DESC LIMIT 100000)',
 	'ALTER TABLE public.m_hu ALTER COLUMN IsReserved SET NOT NULL'
 );

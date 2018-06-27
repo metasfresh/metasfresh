@@ -47,25 +47,26 @@ import lombok.NonNull;
 public class HuReservationRepository
 {
 
-	public HuReservation getBySalesOrderLineId(@NonNull final OrderLineId id)
+	public HuReservation getBySalesOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		final List<I_M_HU_Reservation> huReservationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Reservation.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, id)
+				.addEqualsFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, orderLineId)
 				.create()
 				.list();
 
-		return ofRecords(huReservationRecords);
+		return ofRecords(huReservationRecords).salesOrderLineId(orderLineId).build();
 	}
 
-	private HuReservation ofRecords(@NonNull final List<I_M_HU_Reservation> huReservationRecords)
+	private HuReservationBuilder ofRecords(@NonNull final List<I_M_HU_Reservation> huReservationRecords)
 	{
 		Quantity sum = huReservationRecords.isEmpty()
 				? null
 				: Quantity.zero(huReservationRecords.get(0).getC_UOM());
 
 		final HuReservationBuilder builder = HuReservation.builder();
+
 		for (final I_M_HU_Reservation huReservationRecord : huReservationRecords)
 		{
 			final HuId vhuId = HuId.ofRepoId(huReservationRecord.getVHU_ID());
@@ -76,9 +77,7 @@ public class HuReservationRepository
 			sum = sum.add(reservedQty);
 		}
 
-		return builder
-				.reservedQtySum(Optional.ofNullable(sum))
-				.build();
+		return builder.reservedQtySum(Optional.ofNullable(sum));
 	}
 
 	public void save(@NonNull final HuReservation huReservation)

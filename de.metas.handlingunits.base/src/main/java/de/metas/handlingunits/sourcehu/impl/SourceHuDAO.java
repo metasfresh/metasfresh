@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheModel;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
@@ -86,7 +87,7 @@ public class SourceHuDAO implements ISourceHuDAO
 	}
 
 	@Override
-	public Set<Integer> retrieveActiveSourceHUIds(@NonNull final MatchingSourceHusQuery query)
+	public Set<HuId> retrieveActiveSourceHUIds(@NonNull final MatchingSourceHusQuery query)
 	{
 		final IQueryBuilder<I_M_HU> queryBuilder = retrieveActiveSourceHusQuery(query);
 		if (queryBuilder == null)
@@ -94,8 +95,13 @@ public class SourceHuDAO implements ISourceHuDAO
 			return ImmutableSet.of();
 		}
 
-		final List<Integer> huIds = queryBuilder.create().listIds();
-		return ImmutableSet.copyOf(huIds);
+		final Set<HuId> huIds = queryBuilder
+				.create()
+				.listIds()
+				.stream()
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		return huIds;
 	}
 
 	private IQueryBuilder<I_M_HU> retrieveActiveSourceHusQuery(@NonNull final MatchingSourceHusQuery query)

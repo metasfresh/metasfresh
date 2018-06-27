@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.transfer;
 
+import static de.metas.handlingunits.HUAssertions.assertThat;
 import static java.math.BigDecimal.ONE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasXPath;
@@ -19,12 +20,15 @@ import org.w3c.dom.Node;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.reservation.HuReservationService;
 import de.metas.quantity.Quantity;
 
 /*
@@ -49,8 +53,14 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
+/**
+ * Tests for {@link HUTransformService} that are especially geared at the sort of use which {@link HuReservationService} makes of it.
+ */
 public class HUTransformServiceReservationTests
 {
+	private static final BigDecimal THREE = new BigDecimal("3");
+	private static final BigDecimal FOUR = new BigDecimal("4");
+	private static final BigDecimal FIVE = new BigDecimal("5");
 
 	private static final BigDecimal TWOHUNDRET = new BigDecimal("200");
 	private IHandlingUnitsBL handlingUnitsBL;
@@ -65,7 +75,8 @@ public class HUTransformServiceReservationTests
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		testsBase = new HUTransformTestsBase();
 
-		huTransformService = HUTransformService.newInstance(testsBase.getData().helper.getHUContext());
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		huTransformService = HUTransformService.newInstance(data.helper.getHUContext());
 	}
 
 	/**
@@ -113,6 +124,7 @@ public class HUTransformServiceReservationTests
 
 		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
 				.sourceHU(topLevelParent)
+				.productId(data.helper.pTomatoProductId)
 				.qtyCU(Quantity.of(ONE, data.helper.uomKg))
 				.build();
 
@@ -143,6 +155,7 @@ public class HUTransformServiceReservationTests
 
 		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
 				.sourceHU(topLevelParent)
+				.productId(data.helper.pTomatoProductId)
 				.qtyCU(Quantity.of(ONE, data.helper.uomKg))
 				.keepNewCUsUnderSameParent(true)
 				.build();
@@ -176,6 +189,7 @@ public class HUTransformServiceReservationTests
 
 		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
 				.sourceHU(topLevelParent)
+				.productId(data.helper.pTomatoProductId)
 				.qtyCU(Quantity.of(ONE, data.helper.uomKg))
 				.keepNewCUsUnderSameParent(true)
 				.build();
@@ -198,7 +212,6 @@ public class HUTransformServiceReservationTests
 		Assert.assertThat(newCuXML, hasXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("1.000")));
 	}
 
-
 	@Test
 	public void husToNewCUs_aggregate_HU_keep_CU_below_sourceHU_extract_all()
 	{
@@ -211,6 +224,7 @@ public class HUTransformServiceReservationTests
 
 		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
 				.sourceHU(topLevelParent)
+				.productId(data.helper.pTomatoProductId)
 				.qtyCU(Quantity.of(TWOHUNDRET, data.helper.uomKg))
 				.keepNewCUsUnderSameParent(true)
 				.build();
@@ -247,6 +261,7 @@ public class HUTransformServiceReservationTests
 
 		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
 				.sourceHU(topLevelParent)
+				.productId(data.helper.pTomatoProductId)
 				.qtyCU(Quantity.of(ONE, data.helper.uomKg))
 				.keepNewCUsUnderSameParent(true)
 				.build();
@@ -261,5 +276,70 @@ public class HUTransformServiceReservationTests
 		final Node newCuXML = HUXmlConverter.toXml(ListUtils.singleElement(newCUs));
 		Assert.assertThat(newCuXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
 		Assert.assertThat(newCuXML, hasXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("1.000")));
+	}
+
+	@Test
+	public void husToNewCUs_mixed_source_HU()
+	{
+		final I_M_HU tomatoCU = testsBase.getData().mkRealCUWithTUandQtyCU("5");
+		final I_M_HU tuWithMixedCUs = testsBase.retrieveParent(tomatoCU);
+
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+
+		// create a standalone-CU
+		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		data.helper.load(producer, data.helper.pSalad, FOUR, data.helper.uomKg);
+
+		final I_M_HU saladCU = producer.getCreatedHUs().get(0);
+
+		// add the standalone-CU to get a mixed TU
+		huTransformService
+				.cuToExistingTU(saladCU, Quantity.of(FOUR, data.helper.uomKg), tuWithMixedCUs);
+
+		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
+				.sourceHU(tuWithMixedCUs)
+				.productId(data.helper.pSaladProductId)
+				.qtyCU(Quantity.of(ONE, data.helper.uomKg))
+				.keepNewCUsUnderSameParent(true)
+				.build();
+
+		// invoke the method under test
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+
+		assertThat(newCUs).hasSize(1);
+		final I_M_HU newSaladCU = newCUs.get(0);
+
+		assertThat(tuWithMixedCUs)
+				.hasStorage(data.helper.pSaladProductId, Quantity.of(FOUR, data.helper.uomKg))
+				.hasStorage(data.helper.pTomatoProductId, Quantity.of(FIVE, data.helper.uomKg))
+				.includesHU(saladCU)
+				.includesHU(newSaladCU)
+				.includesHU(tomatoCU);
+
+		assertThat(saladCU).hasStorage(data.helper.pSaladProductId, Quantity.of(THREE, data.helper.uomKg));
+		assertThat(newSaladCU).hasStorage(data.helper.pSaladProductId, Quantity.of(ONE, data.helper.uomKg));
+		assertThat(tomatoCU).hasStorage(data.helper.pTomatoProductId, Quantity.of(FIVE, data.helper.uomKg));
+	}
+
+	@Test
+	public void husToNewCUs_different_product()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU lu = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
+
+		final HUTestHelper helper = data.helper;
+		assertThat(lu).hasStorage(helper.pTomatoProductId, Quantity.of(TWOHUNDRET, helper.uomKg)); // guard
+
+		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
+				.sourceHU(lu)
+				.productId(helper.pSaladProductId)
+				.qtyCU(Quantity.of(ONE, helper.uomKg))
+				.keepNewCUsUnderSameParent(true)
+				.build();
+
+		// invoke the method under test
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+
+		assertThat(newCUs).isEmpty(); // nothing was extracted, because lu does not contain any salad.
 	}
 }

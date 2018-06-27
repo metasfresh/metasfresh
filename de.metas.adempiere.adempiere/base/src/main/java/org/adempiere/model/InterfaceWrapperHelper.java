@@ -70,6 +70,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
@@ -374,6 +375,16 @@ public class InterfaceWrapperHelper
 
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
 	{
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	public static <T> List<T> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
+	{
+		final ImmutableSet<Integer> ids = repoIdAwares
+				.stream()
+				.map(RepoIdAware::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
 

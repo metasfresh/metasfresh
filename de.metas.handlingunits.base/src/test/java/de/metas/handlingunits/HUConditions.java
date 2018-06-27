@@ -1,15 +1,9 @@
-package de.metas.handlingunits.reservation;
+package de.metas.handlingunits;
 
-import java.util.Map;
-import java.util.Optional;
+import org.adempiere.util.Services;
+import org.assertj.core.api.Condition;
 
-import de.metas.handlingunits.HuId;
-import de.metas.order.OrderLineId;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
+import de.metas.handlingunits.model.I_M_HU;
 
 /*
  * #%L
@@ -33,17 +27,20 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class HuReservation
+public class HUConditions
 {
-	/** This optional is empty if vhuId2reservedQtys is empty */
-	@NonNull
-	Optional<Quantity> reservedQtySum;
+	public static Condition<I_M_HU> isAggregate()
+	{
+		return new Condition<>(hu -> Services.get(IHandlingUnitsBL.class).isAggregateHU(hu), "aggreagate HU");
+	}
 
-	@Singular
-	Map<HuId, Quantity> vhuId2reservedQtys;
+	public static Condition<I_M_HU> isReserved()
+	{
+		return new Condition<>(I_M_HU::isReserved, "reserved HU");
+	}
 
-	@NonNull
-	OrderLineId salesOrderLineId;
+	public static Condition<I_M_HU> isNotAggregate()
+	{
+		return new Condition<>(hu -> !Services.get(IHandlingUnitsBL.class).isAggregateHU(hu), "no aggreagate HU");
+	}
 }

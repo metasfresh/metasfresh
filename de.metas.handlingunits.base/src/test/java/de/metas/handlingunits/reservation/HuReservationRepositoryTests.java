@@ -75,6 +75,8 @@ public class HuReservationRepositoryTests
 		// invoke the method under test
 		final HuReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
 
+		assertThat(huReservation.getSalesOrderLineId()).isEqualTo(orderLineId);
+
 		final Quantity reservedQtySum = huReservation.getReservedQtySum().get();
 		assertThat(reservedQtySum.getAsBigDecimal()).isEqualByComparingTo(ELEVEN);
 		assertThat(reservedQtySum.getUOMId()).isEqualTo(uomRecord.getC_UOM_ID());
@@ -97,6 +99,8 @@ public class HuReservationRepositoryTests
 
 		// invoke the method under test
 		final HuReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
+
+		assertThat(huReservation.getSalesOrderLineId()).isEqualTo(orderLineId);
 
 		assertThat(huReservation.getReservedQtySum()).isNotPresent();
 		assertThat(huReservation.getVhuId2reservedQtys()).isEmpty();

@@ -70,7 +70,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -361,7 +361,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		//
 		// Validate HU
-		HUAssert.assertStorageLevel(hu, pFolie, expectedHUQtyAfterIssue);
+		StaticHUAssert.assertStorageLevel(hu, pFolie, expectedHUQtyAfterIssue);
 		//
 		refresh(hu);
 		if (expectedHUQtyAfterIssue.signum() == 0)

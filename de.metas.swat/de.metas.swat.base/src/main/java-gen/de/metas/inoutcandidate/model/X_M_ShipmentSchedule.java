@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1274970292L;
+	private static final long serialVersionUID = 1094694437L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -835,8 +835,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_ReturnMaterial = "RM";
 	/** PrepayOrder = PR */
 	public static final String DOCSUBTYPE_PrepayOrder = "PR";
-	/** Auftrag (Vorkasse) zur Disposition = PM */
-	public static final String DOCSUBTYPE_AuftragVorkasseZurDisposition = "PM";
 	/** Provisionskorrektur = CC */
 	public static final String DOCSUBTYPE_Provisionskorrektur = "CC";
 	/** Provisionsberechnung = CA */
@@ -873,8 +871,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_DownPayment = "DP";
 	/** Saldokorektur = EC */
 	public static final String DOCSUBTYPE_Saldokorektur = "EC";
-	/** Material Disposal = MD */
-	public static final String DOCSUBTYPE_MaterialDisposal = "MD";
+	/** Internal Use Inventory = IUI */
+	public static final String DOCSUBTYPE_InternalUseInventory = "IUI";
+	/** Rückvergütungsrechnung = RI */
+	public static final String DOCSUBTYPE_Rueckverguetungsrechnung = "RI";
+	/** Rückvergütungsgutschrift = RC */
+	public static final String DOCSUBTYPE_Rueckverguetungsgutschrift = "RC";
 	/** Set Doc Sub Type.
 		@param DocSubType 
 		Document Sub Type

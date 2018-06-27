@@ -49,7 +49,7 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
@@ -505,7 +505,7 @@ public class LUTUProducerDestinationLoadTests
 
 		husExpectation.assertExpected(createdHUs);
 
-		HUAssert.assertAllStoragesAreValid();
+		StaticHUAssert.assertAllStoragesAreValid();
 	}
 
 	/**
@@ -537,7 +537,7 @@ public class LUTUProducerDestinationLoadTests
 			assertThat(huPaletsXML, hasXPath("count(/Truck/HU-Truck)", is("1")));
 			assertThat(huPaletsXML, hasXPath("/Truck/HU-Truck[1]/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg' and @Qty='999999.000']"));
 
-			HUAssert.assertAllStoragesAreValid();
+			StaticHUAssert.assertAllStoragesAreValid();
 		}
 	}
 

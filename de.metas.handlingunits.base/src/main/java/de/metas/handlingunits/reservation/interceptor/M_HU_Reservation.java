@@ -1,11 +1,16 @@
 package de.metas.handlingunits.reservation.interceptor;
 
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import lombok.NonNull;
 
@@ -42,5 +47,44 @@ public class M_HU_Reservation
 	{
 		final I_C_OrderLine orderLineRecord = huReservationRecord.getC_OrderLineSO();
 		huReservationRecord.setC_BPartner_Customer_ID(orderLineRecord.getC_BPartner_ID());
+	}
+
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
+			ifColumnsChanged = I_M_HU_Reservation.COLUMNNAME_IsActive)
+	public void setVhuReservedFlag(
+			@NonNull final I_M_HU_Reservation huReservationRecord,
+			@NonNull final ModelChangeType type)
+	{
+		final boolean reservationIsHere = type.isNew() || ModelChangeUtil.isJustActivated(huReservationRecord);
+		if (reservationIsHere)
+		{
+			final boolean isReserved = true;
+			updateVhuIsReservedFlag(huReservationRecord, isReserved);
+		}
+	}
+
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE }, //
+			ifColumnsChanged = I_M_HU_Reservation.COLUMNNAME_IsActive)
+	public void unsetVhuReservedFlag(
+			@NonNull final I_M_HU_Reservation huReservationRecord,
+			@NonNull final ModelChangeType type)
+	{
+		final boolean reservationIsGone = type.isDelete() || ModelChangeUtil.isJustDeactivated(huReservationRecord);
+		if (reservationIsGone)
+		{
+			final boolean isReserved = false;
+			updateVhuIsReservedFlag(huReservationRecord, isReserved);
+		}
+	}
+
+	private void updateVhuIsReservedFlag(
+			@NonNull final I_M_HU_Reservation huReservationRecord,
+			final boolean isReserved)
+	{
+		final I_M_HU vhu = huReservationRecord.getVHU();
+		vhu.setIsReserved(isReserved);
+		Services.get(IHandlingUnitsDAO.class).saveHU(vhu);
 	}
 }

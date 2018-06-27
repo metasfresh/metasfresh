@@ -33,7 +33,7 @@ import org.junit.Assume;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
@@ -73,7 +73,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Initial storage checking (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "10", "0");
+		StaticHUAssert.assertStorageLevels(storage, "10", "10", "0");
 
 		//
 		// Add 3items
@@ -84,7 +84,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 			// Validate actual request
 			assertRequestedQty(requestActual, "0");
 			// Validate storage status (Total/Qty/Free)
-			HUAssert.assertStorageLevels(storage, "10", "10", "0");
+			StaticHUAssert.assertStorageLevels(storage, "10", "10", "0");
 		}
 
 		//
@@ -96,7 +96,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 			// Validate actual request
 			assertRequestedQty(requestActual, "3");
 			// Validate storage status (Total/Qty/Free)
-			HUAssert.assertStorageLevels(storage, "10", "7", "3");
+			StaticHUAssert.assertStorageLevels(storage, "10", "7", "3");
 		}
 
 		//
@@ -108,7 +108,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 			// Validate actual request
 			assertRequestedQty(requestActual, "1");
 			// Validate storage status (Total/Qty/Free)
-			HUAssert.assertStorageLevels(storage, "10", "8", "2");
+			StaticHUAssert.assertStorageLevels(storage, "10", "8", "2");
 		}
 
 		//
@@ -120,7 +120,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 			// Validate actual request
 			assertRequestedQty(requestActual, "2");
 			// Validate storage status (Total/Qty/Free)
-			HUAssert.assertStorageLevels(storage, "10", "10", "0");
+			StaticHUAssert.assertStorageLevels(storage, "10", "10", "0");
 		}
 
 		//
@@ -135,7 +135,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 			// Validate actual request
 			assertRequestedQty(requestActual, "13");
 			// Validate storage status (Total/Qty/Free)
-			HUAssert.assertStorageLevels(storage, "10", "-3", "13");
+			StaticHUAssert.assertStorageLevels(storage, "10", "-3", "13");
 		}
 		// If Negative Storage is not allowed => 10items removed
 		else
@@ -146,7 +146,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 			// Validate actual request
 			assertRequestedQty(requestActual, "10");
 			// Validate storage status (Total/Qty/Free)
-			HUAssert.assertStorageLevels(storage, "10", "0", "10");
+			StaticHUAssert.assertStorageLevels(storage, "10", "0", "10");
 		}
 	}
 
@@ -159,7 +159,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Initial storage checking (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "0", "10");
+		StaticHUAssert.assertStorageLevels(storage, "10", "0", "10");
 
 		//
 		// Perform deallocation transaction
@@ -172,7 +172,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Validate storage status (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "3", "7");
+		StaticHUAssert.assertStorageLevels(storage, "10", "3", "7");
 	}
 
 	@Test
@@ -184,7 +184,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Initial storage checking (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "0", "10");
+		StaticHUAssert.assertStorageLevels(storage, "10", "0", "10");
 
 		//
 		// Perform deallocation transaction
@@ -197,7 +197,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Validate storage status (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "10", "0");
+		StaticHUAssert.assertStorageLevels(storage, "10", "10", "0");
 	}
 
 	@Test
@@ -209,7 +209,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Initial storage checking (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "0", "10");
+		StaticHUAssert.assertStorageLevels(storage, "10", "0", "10");
 
 		//
 		// Perform deallocation transaction
@@ -222,7 +222,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Validate storage status (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "3", "7");
+		StaticHUAssert.assertStorageLevels(storage, "10", "3", "7");
 	}
 
 	@Test
@@ -234,7 +234,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Initial storage checking (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "0", "10");
+		StaticHUAssert.assertStorageLevels(storage, "10", "0", "10");
 
 		//
 		// Perform deallocation transaction
@@ -247,7 +247,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Validate storage status (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "10", "0");
+		StaticHUAssert.assertStorageLevels(storage, "10", "10", "0");
 	}
 
 	@Test
@@ -259,7 +259,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Initial storage checking (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "0", "10");
+		StaticHUAssert.assertStorageLevels(storage, "10", "0", "10");
 
 		//
 		// Perform deallocation transaction
@@ -272,7 +272,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Validate storage status (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "10", "0");
+		StaticHUAssert.assertStorageLevels(storage, "10", "10", "0");
 	}
 
 	@Test
@@ -284,7 +284,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Initial storage checking (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "10", "0");
+		StaticHUAssert.assertStorageLevels(storage, "10", "10", "0");
 
 		//
 		// Perform deallocation transaction
@@ -297,7 +297,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Validate storage status (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "7", "3");
+		StaticHUAssert.assertStorageLevels(storage, "10", "7", "3");
 	}
 
 	@Test
@@ -309,7 +309,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Initial storage checking (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "10", "0");
+		StaticHUAssert.assertStorageLevels(storage, "10", "10", "0");
 
 		//
 		// Perform deallocation transaction
@@ -322,7 +322,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Validate storage status (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "0", "10");
+		StaticHUAssert.assertStorageLevels(storage, "10", "0", "10");
 	}
 
 	@Test
@@ -335,7 +335,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Initial storage checking (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "10", "0");
+		StaticHUAssert.assertStorageLevels(storage, "10", "10", "0");
 
 		//
 		// Perform deallocation transaction
@@ -348,7 +348,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Validate storage status (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "0", "10");
+		StaticHUAssert.assertStorageLevels(storage, "10", "0", "10");
 	}
 
 	@Test
@@ -382,7 +382,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 	{
 		//
 		// Initial storage checking (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "10", "0");
+		StaticHUAssert.assertStorageLevels(storage, "10", "10", "0");
 
 		//
 		// Perform deallocation transaction
@@ -395,7 +395,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		//
 		// Validate storage status (Total/Qty/Free)
-		HUAssert.assertStorageLevels(storage, "10", "-7", "17");
+		StaticHUAssert.assertStorageLevels(storage, "10", "-7", "17");
 	}
 
 	protected void assertRequestedQty(final IAllocationRequest request, final String expectedQtyStr)

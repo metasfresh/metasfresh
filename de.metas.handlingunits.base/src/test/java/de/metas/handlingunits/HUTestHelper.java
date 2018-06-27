@@ -146,6 +146,7 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -232,9 +233,11 @@ public class HUTestHelper
 	 * Value: Tomato
 	 */
 	public I_M_Product pTomato;
+	public ProductId pTomatoProductId;
 	public static final String NAME_Tomato_Product = "Tomato";
 
 	public I_M_Product pSalad;
+	public ProductId pSaladProductId;
 	public static final String NAME_Salad_Product = "Salad";
 
 	/**
@@ -627,7 +630,10 @@ public class HUTestHelper
 		pmPaloxe = createPackingMaterial("Paloxe-PM", pPaloxe);
 
 		pTomato = createProduct(HUTestHelper.NAME_Tomato_Product, uomEach);
+		pTomatoProductId = ProductId.ofRepoId(pTomato.getM_Product_ID());
+
 		pSalad = createProduct(HUTestHelper.NAME_Salad_Product, uomEach);
+		pSaladProductId = ProductId.ofRepoId(pSalad.getM_Product_ID());
 
 		//
 		// No-PI

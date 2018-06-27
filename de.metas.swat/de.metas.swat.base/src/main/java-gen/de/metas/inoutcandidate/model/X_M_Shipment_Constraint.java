@@ -14,7 +14,7 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -193814760L;
+	private static final long serialVersionUID = 893760221L;
 
     /** Standard Constructor */
     public X_M_Shipment_Constraint (Properties ctx, int M_Shipment_Constraint_ID, String trxName)
@@ -79,6 +79,39 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
+	}
+
+	/** Set Rechnung.
+		@param C_Invoice_ID 
+		Invoice Identifier
+	  */
+	@Override
+	public void setC_Invoice_ID (int C_Invoice_ID)
+	{
+		throw new IllegalArgumentException ("C_Invoice_ID is virtual column");	}
+
+	/** Get Rechnung.
+		@return Invoice Identifier
+	  */
+	@Override
+	public int getC_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Delivery stop.
 		@param IsDeliveryStop Delivery stop	  */
 	@Override
@@ -93,6 +126,31 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	public boolean isDeliveryStop () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDeliveryStop);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Gezahlt.
+		@param IsPaid 
+		Der Beleg ist bezahlt
+	  */
+	@Override
+	public void setIsPaid (boolean IsPaid)
+	{
+		throw new IllegalArgumentException ("IsPaid is virtual column");	}
+
+	/** Get Gezahlt.
+		@return Der Beleg ist bezahlt
+	  */
+	@Override
+	public boolean isPaid () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPaid);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

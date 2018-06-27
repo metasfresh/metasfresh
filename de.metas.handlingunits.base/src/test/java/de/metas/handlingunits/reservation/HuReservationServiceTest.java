@@ -1,5 +1,8 @@
 package de.metas.handlingunits.reservation;
 
+import static de.metas.handlingunits.HUAssertions.assertThat;
+import static de.metas.handlingunits.HUConditions.isAggregate;
+import static de.metas.handlingunits.HUConditions.isNotAggregate;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,10 +13,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.assertj.core.api.Condition;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.handlingunits.HuId;
@@ -55,6 +60,9 @@ import mockit.Mocked;
 
 public class HuReservationServiceTest
 {
+	@Rule
+	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
+
 	private static final BigDecimal ELEVEN = TEN.add(ONE);
 	private static final BigDecimal TWOHUNDRET = new BigDecimal("200");
 
@@ -101,14 +109,13 @@ public class HuReservationServiceTest
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(ONE, cuUOM))
-				.productId(ProductId.ofRepoId(data.helper.pTomato.getM_Product_ID()))
+				.productId(data.helper.pTomatoProductId)
 				.build();
-		// data.helper.commitAndDumpHU(hu);
 
 		// invoke the method under test
 		final HuReservation result = huReservationService.makeReservation(request);
-		assertThat(result).isNotNull();
 
+		assertThat(result).isNotNull();
 		assertThat(result.getReservedQtySum().get().getAsBigDecimal()).isEqualByComparingTo("1");
 		assertThat(result.getReservedQtySum().get().getUOMId()).isEqualTo(cuUOM.getC_UOM_ID());
 
@@ -117,18 +124,19 @@ public class HuReservationServiceTest
 		final HuId vhuId = vhuId2reservedQtys.entrySet().iterator().next().getKey();
 		assertThat(vhuId2reservedQtys.get(vhuId).getAsBigDecimal()).isEqualByComparingTo(ONE);
 
-		assertThatHuHasQty(lu, "200");
+		assertThatHuHasQty(lu,"200");
 
 		final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(lu);
+		//data.helper.commitAndDumpHU(lu);
 		assertThat(includedHUs).hasSize(2); // one for the remaining "aggregated" TUs, one for the "real" TU that contains the reserved CU
 
 		assertThat(includedHUs)
-				.filteredOn(isAggregateHU())
+				.filteredOn(isAggregate())
 				.hasSize(1)
 				.allSatisfy(hu -> assertThatHuHasQty(hu, "160"));
 
 		assertThat(includedHUs)
-				.filteredOn(isNotAggregateHU())
+				.filteredOn(isNotAggregate())
 				.hasSize(1)
 				.allSatisfy(includedHU -> assertThatHuHasQty(includedHU, "40"))
 				.allSatisfy(includedHU -> {
@@ -152,10 +160,12 @@ public class HuReservationServiceTest
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
-				.productId(ProductId.ofRepoId(data.helper.pTomato.getM_Product_ID()))
+				.productId(data.helper.pTomatoProductId)
 				.build();
 
+		// invoke the method under test
 		final HuReservation result = huReservationService.makeReservation(firstRequest);
+
 		assertThat(result.getReservedQtySum().get().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET);
 
 		final Map<HuId, Quantity> vhuId2reservedQtys = result.getVhuId2reservedQtys();
@@ -167,7 +177,7 @@ public class HuReservationServiceTest
 
 		final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(lu);
 		assertThat(includedHUs).hasSize(5)
-				.filteredOn(isNotAggregateHU()).hasSize(5)
+				.filteredOn(isNotAggregate()).hasSize(5)
 				.allSatisfy(tu -> assertThatHuHasQty(tu, "40"))
 				.allSatisfy(tu -> {
 					final List<I_M_HU> includedCUs = handlingUnitsDAO.retrieveIncludedHUs(tu);
@@ -188,10 +198,12 @@ public class HuReservationServiceTest
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
-				.productId(ProductId.ofRepoId(data.helper.pTomato.getM_Product_ID()))
+				.productId(data.helper.pTomatoProductId)
 				.build();
 
+		// invoke the method under test
 		final HuReservation firstResult = huReservationService.makeReservation(firstRequest);
+
 		assertThat(firstResult.getReservedQtySum()).isPresent();
 		assertThat(firstResult.getReservedQtySum().get().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET); // guard
 
@@ -210,8 +222,10 @@ public class HuReservationServiceTest
 
 	private void assertThatHuHasQty(final I_M_HU hu, final String expectedQty)
 	{
-		final BigDecimal luQuantity = extractQty(hu);
-		assertThat(luQuantity).isEqualByComparingTo(expectedQty);
+		final Quantity expectedQuantity = Quantity.of(new BigDecimal(expectedQty), cuUOM);
+		assertThat(hu).hasStorage(data.helper.pTomatoProductId, expectedQuantity);
+//		final BigDecimal luQuantity = extractQty(hu);
+//		assertThat(luQuantity).isEqualByComparingTo(expectedQty);
 	}
 
 	private Condition<I_M_HU> hasQty(final String qty)
@@ -227,16 +241,6 @@ public class HuReservationServiceTest
 
 		final Quantity luQuantity = productStorages.get(0).getQty(cuUOM);
 		return luQuantity.getAsBigDecimal();
-	}
-
-	private Condition<I_M_HU> isAggregateHU()
-	{
-		return new Condition<>(hu -> handlingUnitsBL.isAggregateHU(hu), "hu is aggreagte");
-	}
-
-	private Condition<I_M_HU> isNotAggregateHU()
-	{
-		return new Condition<>(hu -> !handlingUnitsBL.isAggregateHU(hu), "hu is not aggreagte");
 	}
 
 	@Test

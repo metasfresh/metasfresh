@@ -3,7 +3,6 @@ package de.metas.handlingunits;
 import org.adempiere.util.Check;
 
 import de.metas.lang.RepoIdAware;
-import de.metas.product.ProductId;
 import lombok.Value;
 
 /*
@@ -36,11 +35,6 @@ public class HuId implements RepoIdAware
 	public static HuId ofRepoId(final int repoId)
 	{
 		return new HuId(repoId);
-	}
-
-	public static int toRepoId(final ProductId productId)
-	{
-		return productId != null ? productId.getRepoId() : -1;
 	}
 
 	private HuId(final int repoId)
