@@ -27,7 +27,7 @@ import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.PricingConditionsBreaksExtractor;
@@ -112,7 +112,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
 		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
-		final ProductAndCategoryId productAndCategoryId = productsRepo.retrieveProductAndCategoryIdByProductId(productId);
+		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(salesOrderLine.getM_AttributeSetInstance_ID());
 		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(asiId);
@@ -120,8 +120,8 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		final BigDecimal price = salesOrderLine.getPriceActual();
 
 		return PricingConditionsBreakQuery.builder()
+				.product(product)
 				.attributeInstances(attributeInstances)
-				.productAndCategoryId(productAndCategoryId)
 				.qty(qty)
 				.price(price)
 				.build();
