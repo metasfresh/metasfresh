@@ -10,6 +10,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -22,13 +23,18 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
+import de.metas.vertical.pharma.PharmaBPartnerRepository;
+import de.metas.vertical.pharma.PharmaProductRepository;
+import de.metas.vertical.pharma.PharmaService;
 import lombok.NonNull;
 
 /*
@@ -70,9 +76,34 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 
+		validateInput(quickInput);
+
 		final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLineObj -> updateOrderLine(orderLineObj, quickInput));
 		final int newOrderLineId = newOrderLine.getC_OrderLine_ID();
 		return DocumentId.of(newOrderLineId);
+	}
+
+	private void validateInput(final QuickInput quickInput)
+	{
+		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+
+		if (!order.isSOTrx())
+		{
+			return;
+		}
+
+		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLineQuickInput.getM_Product_ID().getIdAsInt());
+
+		final PharmaBPartnerRepository pharmaBPartnerRepo = Adempiere.getBean(PharmaBPartnerRepository.class);
+		final PharmaProductRepository pharmaProductRepo = Adempiere.getBean(PharmaProductRepository.class);
+
+		final PharmaService pharmaService = new PharmaService(pharmaBPartnerRepo, pharmaProductRepo);
+
+		pharmaService.evaluatePrescriptionPermission(bpartnerId, productId);
+
 	}
 
 	private final void updateOrderLine(final Object orderLineObj, final QuickInput fromQuickInput)
