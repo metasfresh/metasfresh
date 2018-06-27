@@ -25,6 +25,8 @@ package de.metas.pricing.rules;
 import java.math.BigDecimal;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -51,6 +53,8 @@ import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /**
  * Discount Calculations
@@ -111,7 +115,7 @@ public class Discount implements IPricingRule
 		}
 
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
-		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
+		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request).orElse(null);
 
 		result.setUsesDiscountSchema(true);
 		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
@@ -142,13 +146,13 @@ public class Discount implements IPricingRule
 		}
 		else
 		{
-			final int productId = pricingCtx.getM_Product_ID();
-			final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+			final ProductId productId = ProductId.ofRepoId(pricingCtx.getM_Product_ID());
+			final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
 			builder.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
 					.qty(pricingCtx.getQty())
 					.price(result.getPriceStd())
-					.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
+					.productAndCategoryId(productAndCategoryId)
 					.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
 					.build());
 		}
@@ -176,11 +180,16 @@ public class Discount implements IPricingRule
 	}
 
 	private static void updatePricingResultFromPricingConditionsResult(
-			final IPricingResult pricingResult,
-			final PricingConditionsResult pricingConditionsResult)
+			@NonNull final IPricingResult pricingResult,
+			@Nullable final PricingConditionsResult pricingConditionsResult)
 	{
 		pricingResult.setPricingConditions(pricingConditionsResult);
-		
+
+		if (pricingConditionsResult == null)
+		{
+			return;
+		}
+
 		pricingResult.setDiscount(pricingConditionsResult.getDiscount());
 
 		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();

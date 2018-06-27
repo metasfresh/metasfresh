@@ -39,7 +39,7 @@ import org.compiere.apps.search.IInfoSimple;
 import org.compiere.apps.search.InfoPAttribute;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.swing.CButton;
-import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 
 /**
  * @author cg
@@ -91,7 +91,7 @@ public class InfoQueryCriteriaASI implements IInfoQueryCriteria
 
 	private void createWindow()
 	{
-		final JFrame parentWindow = Env.getFrame(m_Button);
+		final JFrame parentWindow = SwingUtils.getFrame(m_Button);
 		final InfoPAttribute ia = new InfoPAttribute(parentWindow, "M_Product");
 		String whereClause = ia.getWhereClause();
 		if (Check.isEmpty(whereClause, true))

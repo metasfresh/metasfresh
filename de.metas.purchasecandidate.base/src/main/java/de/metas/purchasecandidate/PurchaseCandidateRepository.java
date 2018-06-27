@@ -352,7 +352,7 @@ public class PurchaseCandidateRepository
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(record.getM_AttributeSetInstance_ID()))
-				.vendorProductNo(productsRepo.retrieveProductValueByProductId(record.getM_Product_ID()))
+				.vendorProductNo(productsRepo.retrieveProductValueByProductId(ProductId.ofRepoId(record.getM_Product_ID())))
 				//
 				.qtyToPurchase(qtyToPurchase)
 				//

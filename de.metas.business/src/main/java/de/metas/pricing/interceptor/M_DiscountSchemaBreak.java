@@ -22,6 +22,7 @@ import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.impl.PricingConditionsRepository;
 import de.metas.pricing.limit.IPriceLimitRule;
 import de.metas.pricing.limit.PriceLimitRuleContext;
@@ -145,9 +146,14 @@ public class M_DiscountSchemaBreak
 	{
 		final CalculatePricingConditionsRequest request = createCalculateDiscountRequest(context);
 
-		final BigDecimal price = Services.get(IPricingConditionsService.class)
+		final PricingConditionsResult pricingConditionsResult = Services.get(IPricingConditionsService.class)
 				.calculatePricingConditions(request)
-				.getPriceStdOverride();
+				.orElse(null);
+		if (pricingConditionsResult == null)
+		{
+			return;
+		}
+		final BigDecimal price = pricingConditionsResult.getPriceStdOverride();
 		if (price == null)
 		{
 			return;

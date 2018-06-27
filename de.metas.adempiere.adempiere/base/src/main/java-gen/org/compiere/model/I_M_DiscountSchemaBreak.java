@@ -473,6 +473,35 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setManufacturer_ID (int Manufacturer_ID);
+
+	/**
+	 * Get Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getManufacturer_ID();
+
+	public org.compiere.model.I_C_BPartner getManufacturer();
+
+	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer);
+
+    /** Column definition for Manufacturer_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_BPartner> COLUMN_Manufacturer_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_BPartner>(I_M_DiscountSchemaBreak.class, "Manufacturer_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Manufacturer_ID */
+    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
+
+	/**
 	 * Set Not valid reason.
 	 *
 	 * <br>Type: String

@@ -30,6 +30,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 
 import de.metas.i18n.IMsgBL;
 
@@ -258,7 +259,7 @@ public class StatusBar extends CPanel implements IStatusBar
 		
 		//
 		final String title = Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Who") + m_text;
-		final RecordInfo info = new RecordInfo(Env.getFrame(this), title, m_dse);
+		final RecordInfo info = new RecordInfo(SwingUtils.getFrame(this), title, m_dse);
 		AEnv.showCenterScreen(info);
 	}
 

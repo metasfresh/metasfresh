@@ -849,28 +849,32 @@ public interface I_I_Product
 
 	/**
 	 * Set Hersteller.
-	 * Manufacturer of the Product
+	 * Hersteller des Produktes
 	 *
-	 * <br>Type: String
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setManufacturer (java.lang.String Manufacturer);
+	public void setManufacturer_ID (int Manufacturer_ID);
 
 	/**
 	 * Get Hersteller.
-	 * Manufacturer of the Product
+	 * Hersteller des Produktes
 	 *
-	 * <br>Type: String
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getManufacturer();
+	public int getManufacturer_ID();
 
-    /** Column definition for Manufacturer */
-    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_Manufacturer = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "Manufacturer", null);
-    /** Column name Manufacturer */
-    public static final String COLUMNNAME_Manufacturer = "Manufacturer";
+	public org.compiere.model.I_C_BPartner getManufacturer();
+
+	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer);
+
+    /** Column definition for Manufacturer_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Product, org.compiere.model.I_C_BPartner> COLUMN_Manufacturer_ID = new org.adempiere.model.ModelColumn<I_I_Product, org.compiere.model.I_C_BPartner>(I_I_Product.class, "Manufacturer_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Manufacturer_ID */
+    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
 
 	/**
 	 * Set Name.

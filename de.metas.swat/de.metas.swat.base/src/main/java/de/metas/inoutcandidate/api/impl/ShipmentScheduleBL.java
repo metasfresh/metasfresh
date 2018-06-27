@@ -55,6 +55,7 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
@@ -137,9 +138,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IAutoCloseable onCloseCreateMissingScheds = //
 				() -> {
-						postponeMissingSchedsCreationUntilClose.set(false);
-						CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
-					};
+					postponeMissingSchedsCreationUntilClose.set(false);
+					CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
+				};
 
 		return onCloseCreateMissingScheds;
 	}
@@ -941,7 +942,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final I_C_Order order = sched.getC_Order();
 
 		final String docSubType = order.getC_DocType().getDocSubType();
-		final boolean isPrePayOrder =  X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
+		final boolean isPrePayOrder = X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
 		if (isPrePayOrder)
 		{
 			logger.debug("Because '" + order + "' is a prepay order, consolidation into one shipment is not allowed");
@@ -1023,19 +1024,17 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		{
 			final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
 			Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID());
 
-			final WarehousePickingGroup warehouseGroup = Services.get(IWarehouseDAO.class)
-					.getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouse.getM_Warehouse_ID());
+			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+			final WarehousePickingGroup warehouseGroup = warehousesRepo.getWarehousePickingGroupContainingWarehouseId(warehouseId);
 			if (warehouseGroup == null)
 			{
 				warehouses = ImmutableList.of(shipmentScheduleWarehouse);
 			}
 			else
 			{
-				warehouses = warehouseGroup.getWarehouseIds()
-						.stream()
-						.map(warehouseId -> InterfaceWrapperHelper.loadOutOfTrx(warehouseId, I_M_Warehouse.class))
-						.collect(ImmutableList.toImmutableList());
+				warehouses = warehousesRepo.getByIds(warehouseGroup.getWarehouseIds());
 			}
 		}
 

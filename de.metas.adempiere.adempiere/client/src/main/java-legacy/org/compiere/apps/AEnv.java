@@ -70,6 +70,7 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
@@ -502,7 +503,7 @@ public final class AEnv
 		// Tools Menu ------------------------
 		else if (actionCommand.equals("Calculator"))
 		{
-			final Calculator calc = new org.compiere.grid.ed.Calculator(Env.getFrame(c));
+			final Calculator calc = new org.compiere.grid.ed.Calculator(SwingUtils.getFrame(c));
 			calc.setDisposeOnEqual(false);
 			showCenterScreen(calc);
 		}
@@ -512,14 +513,14 @@ public final class AEnv
 		}
 		else if (actionCommand.equals("Editor"))
 		{
-			showCenterScreen(new org.compiere.grid.ed.Editor(Env.getFrame(c)));
+			showCenterScreen(new org.compiere.grid.ed.Editor(SwingUtils.getFrame(c)));
 		}
 		else if (actionCommand.equals("Preference"))
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions();
 			if (role.isShowPreference())
 			{
-				showCenterScreen(new Preference(Env.getFrame(c), WindowNo));
+				showCenterScreen(new Preference(SwingUtils.getFrame(c), WindowNo));
 			}
 		}
 
@@ -530,11 +531,11 @@ public final class AEnv
 		}
 		else if (actionCommand.equals("EMailSupport"))
 		{
-			ADialog.createSupportEMail(Env.getFrame(c), Env.getFrame(c).getTitle(), "\n\n");
+			ADialog.createSupportEMail(SwingUtils.getFrame(c), SwingUtils.getFrame(c).getTitle(), "\n\n");
 		}
 		else if (actionCommand.equals("About"))
 		{
-			showCenterScreen(new AboutBox(Env.getFrame(c)));
+			showCenterScreen(new AboutBox(SwingUtils.getFrame(c)));
 		}
 		else
 		{

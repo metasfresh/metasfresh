@@ -88,6 +88,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
+import org.compiere.util.SwingUtils;
 import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
@@ -1113,7 +1114,7 @@ public class VLookup extends JComponent
 
 	private void actionButton0(String queryValue)
 	{
-		Frame frame = Env.getFrame(this);
+		Frame frame = SwingUtils.getFrame(this);
 
 		/**
 		 * Three return options:

@@ -9,19 +9,33 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.64 (2018-27)
+## Features
+  * [#4224](https://github.com/metasfresh/metasfresh/issues/4224) Pharma: Additional Document/ Certificate Fields
+    * New Certificate Fields for the Pharma Business Partner Widnow in WebUI.
+    
+
 # metasfresh 5.63 (2018-26)
 ## Features
 * metasfresh
+  * [#3772](https://github.com/metasfresh/metasfresh/issues/3772) EventBus shall use RabbitMQ instead of ActiveMQ
   * [#4140](https://github.com/metasfresh/metasfresh/issues/4140) WebUI: Translation Window for Country
     * New Window for Country Translation maintenance.
   * [#4225](https://github.com/metasfresh/metasfresh/issues/4225) Pharma: Move Businesspartner Fields to Customer/ Vendor Tab
     * Improvement of the Pharma Business Partnmer Window in WebUI, rearranging customer and vendor Fields in their subtabs.
+  * [#4237](https://github.com/metasfresh/metasfresh/issues/4237) Add UC constraints to C_Aggregation
+  * [#4238](https://github.com/metasfresh/metasfresh/issues/4238) Implement full text search for BPartners
+  * [#4239](https://github.com/metasfresh/metasfresh/issues/4239) Be robust wrt priceentered with too many digits
   * [#4240](https://github.com/metasfresh/metasfresh/issues/4240) Translate new Repack Attributes
     * Improved Translation for Repack No. Attributes.
   * [#4242](https://github.com/metasfresh/metasfresh/issues/4242) WebUI: Window Event Log
     * New Window event log added to WebUI Menu.
   * [#4244](https://github.com/metasfresh/metasfresh/issues/4244) Purchase Candidates adjustments
     * Window Improvements for Purchase Candidates in WebUI.
+  * [#4146](https://github.com/metasfresh/metasfresh/issues/4146) Picking: Show HU Products with not exact Attribute matching
+  * [#4260](https://github.com/metasfresh/metasfresh/issues/4260) Appserver needs to tell SwingUI where to find RabbitMQ
+  * [#4264](https://github.com/metasfresh/metasfresh/issues/4264) Ingredients Data for Consumer Product Label
+    * New Fields for Consumer Label Ingredients in BOM Line.
   * [#4265](https://github.com/metasfresh/metasfresh/issues/4265) New Window/ Tab for Product Nutrition facts
     * New Windows in WebUI for Nutrition and Product Nutrition maintenance.
 
@@ -29,6 +43,9 @@ Here come the actual release notes:
 * metasfresh
   * [#4255](https://github.com/metasfresh/metasfresh/issues/4255) Contract Person in Charge not filtered by Systemuser
     * Fixed User in Charge Validation,. Now only showing Systemusers/ -contacts in the dropdown selection.
+  * [#4266](https://github.com/metasfresh/metasfresh/issues/4266) user notifications are stuck in the event framework
+  * [#4268](https://github.com/metasfresh/metasfresh/issues/4268) contract status is set back to running after termination in some unknown cases
+  * [#4269](https://github.com/metasfresh/metasfresh/issues/4269) Can't open custom forms in swing anymore
 
 * metasfresh-webui-frontend
   * [#1811](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1811) Fields are set on null when you press tab too fast

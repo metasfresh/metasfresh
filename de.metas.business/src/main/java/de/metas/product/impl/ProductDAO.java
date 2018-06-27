@@ -68,39 +68,28 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_UPC)
-	public I_M_Product retrieveProductByUPC(@CacheCtx final Properties ctx, final String upc)
+	public I_M_Product retrieveProductByValue(@NonNull final String value)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, upc)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient(ctx)
-				.create()
-				.firstOnly(I_M_Product.class);
+		final ProductId productId = retrieveProductIdByValue(value);
+		return productId != null ? loadOutOfTrx(productId.getRepoId(), I_M_Product.class) : null;
 	}
 
 	@Override
-	public I_M_Product retrieveProductByValue(final Properties ctx, @NonNull final String value)
-	{
-		final int productId = retrieveProductIdByValue(ctx, value);
-		return productId > 0 ? loadOutOfTrx(productId, I_M_Product.class) : null;
-	}
-
-	@Override
-	public int retrieveProductIdByValue(@NonNull final String value)
+	public ProductId retrieveProductIdByValue(@NonNull final String value)
 	{
 		return retrieveProductIdByValue(Env.getCtx(), value);
 	}
 
 	@Cached(cacheName = I_M_Product.Table_Name + "#ID#by#" + I_M_Product.COLUMNNAME_Value)
-	public int retrieveProductIdByValue(@CacheCtx final Properties ctx, @NonNull final String value)
+	public ProductId retrieveProductIdByValue(@CacheCtx final Properties ctx, @NonNull final String value)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
+		final int productRepoId = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.create()
 				.firstIdOnly();
+		return ProductId.ofRepoIdOrNull(productRepoId);
 	}
 
 	@Override
@@ -164,17 +153,6 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public int retrieveProductCategoryByProductId(final int productId)
-	{
-		if (productId <= 0)
-		{
-			return -1;
-		}
-		final I_M_Product product = getById(productId);
-		return product != null && product.isActive() ? product.getM_Product_Category_ID() : -1;
-	}
-
-	@Override
 	public ProductCategoryId retrieveProductCategoryByProductId(final ProductId productId)
 	{
 		if (productId == null)
@@ -194,9 +172,9 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public String retrieveProductValueByProductId(final int productId)
+	public String retrieveProductValueByProductId(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = loadOutOfTrx(productId.getRepoId(), I_M_Product.class);
 		return product.getValue();
 	}
 
