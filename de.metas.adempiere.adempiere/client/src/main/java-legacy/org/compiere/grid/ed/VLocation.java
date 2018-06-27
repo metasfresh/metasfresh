@@ -23,10 +23,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
@@ -45,9 +41,12 @@ import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 
 /**
  *	Location Control (Address)
@@ -346,7 +345,7 @@ public class VLocation extends JComponent
 		}
 		
 		//
-		final VLocationDialog ld = new VLocationDialog(Env.getFrame(this), Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Location"), m_value);
+		final VLocationDialog ld = new VLocationDialog(SwingUtils.getFrame(this), Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Location"), m_value);
 		ld.setVisible(true);
 		Object oldValue = getValue();
 		m_value = ld.getValue();

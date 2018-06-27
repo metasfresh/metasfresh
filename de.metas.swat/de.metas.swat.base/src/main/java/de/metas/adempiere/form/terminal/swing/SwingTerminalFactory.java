@@ -49,6 +49,7 @@ import org.adempiere.util.proxy.WeakWrapper;
 import org.compiere.apps.AppsAction;
 import org.compiere.swing.CButton;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -187,7 +188,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	@Override
 	public <T> ITerminalButtonGroup<T> createButtonGroup()
 	{
-		final SwingTerminalButtonGroup<T> buttonGroup = new SwingTerminalButtonGroup<T>(this);
+		final SwingTerminalButtonGroup<T> buttonGroup = new SwingTerminalButtonGroup<>(this);
 
 		// addToDisposableComponents(buttonGroup); done within the constructor
 		return buttonGroup;
@@ -643,7 +644,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		if (container instanceof Container)
 		{
-			return Env.getFrame((Container)container);
+			return SwingUtils.getFrame((Container)container);
 		}
 		else
 		{
@@ -788,7 +789,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	@Override
 	public <T> ITerminalTable2<T> createTerminalTable2(final Class<T> beanClass)
 	{
-		final SwingTerminalTable2<T> terminalTable = new SwingTerminalTable2<T>(getTerminalContext());
+		final SwingTerminalTable2<T> terminalTable = new SwingTerminalTable2<>(getTerminalContext());
 
 		addToDisposableComponents(terminalTable);
 		return terminalTable;

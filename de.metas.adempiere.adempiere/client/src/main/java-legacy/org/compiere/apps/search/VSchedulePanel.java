@@ -41,12 +41,13 @@ import org.compiere.grid.ed.VAssignmentDialog;
 import org.compiere.model.MAssignmentSlot;
 import org.compiere.model.MResourceAssignment;
 import org.compiere.plaf.CompiereUtils;
+import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 /**
  *	Schedule Panel
@@ -153,7 +154,7 @@ public class VSchedulePanel extends JComponent implements MouseListener
 		FontMetrics fm = null;
 		Graphics g = getGraphics();
 		if (g == null)
-			g = Env.getGraphics(this);
+			g = SwingUtils.getGraphics(this);
 		if (g != null)
 			fm = g.getFontMetrics(g.getFont());		//	the "correct" way
 		m_dayWidth = 0;
@@ -237,6 +238,7 @@ public class VSchedulePanel extends JComponent implements MouseListener
 	 *	Paint it
 	 *  @param g the <code>Graphics</code> object
 	 */
+	@Override
 	public void paint (Graphics g)
 	{
 	//	log.debug( "VSchedulePanel.paint", g.getClip());
@@ -352,6 +354,7 @@ public class VSchedulePanel extends JComponent implements MouseListener
 	 *	Mouse Clicked. Start AssignmentDialog
 	 * 	@param e event
 	 */
+	@Override
 	public void mouseClicked(MouseEvent e)
 	{
 		if (e.getClickCount() < 2)
@@ -380,7 +383,7 @@ public class VSchedulePanel extends JComponent implements MouseListener
 				if (!mas.isAssignment())
 					return;
 				//
-				VAssignmentDialog vad = new VAssignmentDialog (Env.getFrame(this),
+				VAssignmentDialog vad = new VAssignmentDialog (SwingUtils.getFrame(this),
 					m_slots[i].getMAssignment(), false, m_createNew);
 				m_infoSchedule.mAssignmentCallback(vad.getMResourceAssignment());
 				return;
@@ -393,22 +396,26 @@ public class VSchedulePanel extends JComponent implements MouseListener
 			ma.setAssignDateFrom(TimeUtil.getDayTime(TimeUtil.addDays(m_startDate, dayIndex),
 				m_timePanel.getTimeSlot(timeIndex).getStartTime()));
 			ma.setQty(new BigDecimal(1));
-			VAssignmentDialog vad =  new VAssignmentDialog (Env.getFrame(this), ma, false, m_createNew);
+			VAssignmentDialog vad =  new VAssignmentDialog (SwingUtils.getFrame(this), ma, false, m_createNew);
 			m_infoSchedule.mAssignmentCallback(vad.getMResourceAssignment());
 			return;
 		}
 	}	//	mouseClicked
 
 
+	@Override
 	public void mousePressed(MouseEvent e)
 	{
 	}
+	@Override
 	public void mouseReleased(MouseEvent e)
 	{
 	}
+	@Override
 	public void mouseEntered(MouseEvent e)
 	{
 	}
+	@Override
 	public void mouseExited(MouseEvent e)
 	{
 	}

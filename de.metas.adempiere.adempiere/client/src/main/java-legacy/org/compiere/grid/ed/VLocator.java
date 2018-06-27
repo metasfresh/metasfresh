@@ -53,6 +53,7 @@ import org.compiere.model.MWarehouse;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
@@ -381,7 +382,7 @@ public class VLocator extends JComponent
 		//
 		m_mLocator.setOnly_Warehouse_ID(only_Warehouse_ID);
 		m_mLocator.setOnly_Product_ID(getOnly_Product_ID());
-		VLocatorDialog ld = new VLocatorDialog(Env.getFrame(this),
+		VLocatorDialog ld = new VLocatorDialog(SwingUtils.getFrame(this),
 			Services.get(IMsgBL.class).translate(Env.getCtx(), m_columnName),
 			m_mLocator, M_Locator_ID, isMandatory(), only_Warehouse_ID);
 		//	display

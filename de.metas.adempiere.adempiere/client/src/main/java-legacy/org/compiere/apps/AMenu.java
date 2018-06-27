@@ -113,7 +113,9 @@ public final class AMenu extends CFrame
 	{
 		final Splash splash = Splash.getSplash();
 		//
-		m_WindowNo = Env.createWindowNo(this);
+		m_WindowNo = Env.WINDOW_MAIN;
+		Env.addWindow(m_WindowNo, this);
+		
 		// Login
 		initSystem(splash);        // login
 		splash.setText(msgBL.getMsg(m_ctx, "Loading"));

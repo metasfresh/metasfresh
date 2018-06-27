@@ -30,10 +30,6 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -58,9 +54,12 @@ import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextArea;
 import org.compiere.swing.CTextPane;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 
 /**
  *  Editor for Text (textArea) with HTML (textPane) View
@@ -88,7 +87,7 @@ public class Editor extends CDialog
 	public static String startEditor(Container jc, String header, String text, boolean editable, int maxSize)
 	{
 		//	Find frame
-		JFrame frame = Env.getFrame(jc);
+		JFrame frame = SwingUtils.getFrame(jc);
 		String hdr = header;
 		if (Check.isEmpty(hdr, true))
 			hdr = Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Editor");

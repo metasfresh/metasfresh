@@ -82,14 +82,13 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.SwingUtils;
 import org.eevolution.model.MPPOrder;
-import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessExecutionListener;
-import de.metas.logging.LogManager;
 
 /**
  *
@@ -419,7 +418,7 @@ public class VOrderPlanning extends CPanel
 		int AD_Tab_ID = MTab.getTab_ID(AD_Window_ID, "Order");
 		//
 		Find find = Find.builder()
-				.setParentFrame(Env.getFrame(this))
+				.setParentFrame(SwingUtils.getFrame(this))
 				// .setTargetWindowNo(AD_Window_ID) // TODO: commented out because it was wrongly used
 				.setTitle(getName())
 				.setAD_Tab_ID(AD_Tab_ID)

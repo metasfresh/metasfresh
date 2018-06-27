@@ -26,10 +26,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
@@ -45,11 +41,14 @@ import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.MResourceAssignment;
 import org.compiere.swing.CMenuItem;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 
 /**
  *	Resource Assignment Entry
@@ -372,13 +371,13 @@ public class VAssignment extends JComponent
 			// Start VAssignment Dialog
 			if (S_ResourceAssignment_ID != 0)
 			{
-				VAssignmentDialog vad = new VAssignmentDialog(Env.getFrame(this), ma, true, true);
+				VAssignmentDialog vad = new VAssignmentDialog(SwingUtils.getFrame(this), ma, true, true);
 				ma = vad.getMResourceAssignment();
 			}
 			// Start InfoSchedule directly
 			else
 			{
-				InfoSchedule is = new InfoSchedule(Env.getFrame(this), ma, true);
+				InfoSchedule is = new InfoSchedule(SwingUtils.getFrame(this), ma, true);
 				ma = is.getMResourceAssignment();
 			}
 
