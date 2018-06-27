@@ -207,10 +207,7 @@ public final class HUEditorRow implements IViewRow
 		locator = builder.getLocator();
 
 		includedRows = builder.buildIncludedRows();
-		includedOrderLineReservations = builder
-				.prepareIncludedOrderLineReservations()
-				.put(builder.orderLineReservation, this)
-				.build();
+		includedOrderLineReservations = builder.prepareIncludedOrderLineReservations(this);
 
 		final HUEditorRowAttributesProvider attributesProvider = builder.getAttributesProviderOrNull();
 		if (attributesProvider != null)
@@ -796,11 +793,14 @@ public final class HUEditorRow implements IViewRow
 		public Builder setReservedForOrderLine(@NonNull final OrderLineId orderLineId)
 		{
 			orderLineReservation = orderLineId;
-			huReserved = orderLineId!=null;;
+			huReserved = orderLineId != null;;
 			return this;
 		}
 
-		private ImmutableMultimap.Builder<OrderLineId, HUEditorRow> prepareIncludedOrderLineReservations()
+		/**
+		 * @param currentRow the row that is currently constructed using this builder
+		 */
+		private ImmutableMultimap<OrderLineId, HUEditorRow> prepareIncludedOrderLineReservations(@NonNull final HUEditorRow currentRow)
 		{
 			final ImmutableMultimap.Builder<OrderLineId, HUEditorRow> includedOrderLineReservationsBuilder = ImmutableMultimap.builder();
 
@@ -808,7 +808,11 @@ public final class HUEditorRow implements IViewRow
 			{
 				includedOrderLineReservationsBuilder.putAll(includedRow.getIncludedOrderLineReservations());
 			}
-			return includedOrderLineReservationsBuilder;
+			if (orderLineReservation != null)
+			{
+				includedOrderLineReservationsBuilder.put(orderLineReservation, currentRow);
+			}
+			return includedOrderLineReservationsBuilder.build();
 		}
 	}
 

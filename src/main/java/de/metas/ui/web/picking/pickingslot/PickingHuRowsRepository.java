@@ -13,7 +13,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -31,6 +30,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.reservation.HuReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery.MatchingSourceHusQueryBuilder;
@@ -81,19 +81,22 @@ import lombok.NonNull;
 {
 	private final HUEditorViewRepository huEditorRepo;
 
-	/** Default constructor */
-	@Autowired
-	public PickingHURowsRepository(final DefaultHUEditorViewFactory huEditorViewFactory)
+	public PickingHURowsRepository(
+			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
+			@NonNull final HuReservationService huReservationService)
 	{
-		this(createDefaultHUEditorViewRepository(huEditorViewFactory));
+		this(createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService));
 	}
 
-	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(final DefaultHUEditorViewFactory huEditorViewFactory)
+	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(
+			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
+			@NonNull final HuReservationService huReservationService)
 	{
 		return SqlHUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)
 				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(true).build())
 				.sqlViewBinding(huEditorViewFactory.getSqlViewBinding())
+				.huReservationService(huReservationService)
 				.build();
 	}
 

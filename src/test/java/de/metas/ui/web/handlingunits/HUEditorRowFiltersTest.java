@@ -7,9 +7,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.reservation.HuReservationRepository;
 
 /*
  * #%L
@@ -33,6 +39,8 @@ import de.metas.handlingunits.model.I_M_HU;
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HuReservationRepository.class })
 public class HUEditorRowFiltersTest
 {
 
