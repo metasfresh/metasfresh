@@ -3,6 +3,7 @@ package de.metas.ui.web.quickinput.orderline;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -26,15 +27,13 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderLineQuickInputValidator;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
-import de.metas.vertical.pharma.PharmaBPartnerRepository;
-import de.metas.vertical.pharma.PharmaProductRepository;
-import de.metas.vertical.pharma.PharmaService;
 import lombok.NonNull;
 
 /*
@@ -97,13 +96,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final ProductId productId = ProductId.ofRepoId(orderLineQuickInput.getM_Product_ID().getIdAsInt());
 
-		final PharmaBPartnerRepository pharmaBPartnerRepo = Adempiere.getBean(PharmaBPartnerRepository.class);
-		final PharmaProductRepository pharmaProductRepo = Adempiere.getBean(PharmaProductRepository.class);
-
-		final PharmaService pharmaService = new PharmaService(pharmaBPartnerRepo, pharmaProductRepo);
-
-		pharmaService.evaluatePrescriptionPermission(bpartnerId, productId);
-
+		final Collection<IOrderLineQuickInputValidator> validators = Adempiere.getBeansOfType(IOrderLineQuickInputValidator.class);
+		validators.forEach(validator -> validator.validate(bpartnerId, productId));
 	}
 
 	private final void updateOrderLine(final Object orderLineObj, final QuickInput fromQuickInput)
