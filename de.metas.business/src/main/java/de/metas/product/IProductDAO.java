@@ -37,11 +37,7 @@ public interface IProductDAO extends ISingletonService
 
 	I_M_Product getById(final int productId);
 
-	I_M_Product retrieveProductByUPC(Properties ctx, String upc);
-
 	/**
-	 *
-	 * @param ctx
 	 * @return default product category; never returns null
 	 */
 	I_M_Product_Category retrieveDefaultProductCategory(Properties ctx);
@@ -65,20 +61,18 @@ public interface IProductDAO extends ISingletonService
 	 */
 	List<de.metas.product.model.I_M_Product> retrieveAllMappedProducts(I_M_Product product);
 
-	I_M_Product retrieveProductByValue(Properties ctx, String value);
+	I_M_Product retrieveProductByValue(String value);
 
-	int retrieveProductIdByValue(String value);
-
-	/** @return M_Product_Category_ID or <code>-1</code> if product does not exist or it was deactivated */
-	int retrieveProductCategoryByProductId(int productId);
+	ProductId retrieveProductIdByValue(String value);
 
 	/** @return product category or null */
 	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
 
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
 
-	/** @return product category IDs indexed by product IDs */
-	Set<ProductAndCategoryId> retrieveProductCategoriesByProductIds(Set<Integer> productIds);
+	ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(ProductId productId);
 
-	String retrieveProductValueByProductId(int productId);
+	Set<ProductAndCategoryAndManufacturerId> retrieveProductAndCategoryAndManufacturersByProductIds(Set<ProductId> productIds);
+
+	String retrieveProductValueByProductId(ProductId productId);
 }

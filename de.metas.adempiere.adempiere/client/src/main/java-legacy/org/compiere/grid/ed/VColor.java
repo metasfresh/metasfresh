@@ -23,20 +23,18 @@ import java.beans.PropertyChangeEvent;
 import java.math.BigDecimal;
 import java.net.URL;
 
-import javax.swing.JFrame;
-
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.MImage;
 import org.compiere.swing.CButton;
 import org.compiere.swing.ColorEditor;
-import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.util.MFColorType;
 import de.metas.util.MFColor;
+import de.metas.util.MFColorType;
 
 /**
  *  Color Editor.
@@ -287,7 +285,7 @@ public class VColor extends CButton
 	public void actionPerformed (ActionEvent e)
 	{
 		//  Show Dialog
-		MFColor cc = ColorEditor.showDialog((JFrame)Env.getParent(this), color);
+		MFColor cc = ColorEditor.showDialog(SwingUtils.getFrame(this), color);
 		if (cc == null)
 		{
 			log.info( "VColor.actionPerformed - no color");

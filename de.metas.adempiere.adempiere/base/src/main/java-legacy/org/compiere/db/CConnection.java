@@ -34,6 +34,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
@@ -399,7 +400,7 @@ public final class CConnection implements Serializable, Cloneable
 				connect = getAppsHost() + ":" + getAppsPort();
 			}
 			log.error("Caught this while trying to connect to application server {}: {}", connect, t.toString());
-			Services.get(IClientUI.class).error(0, MSG_APPSERVER_CONNECTION_PROBLEM, t.getLocalizedMessage());
+			Services.get(IClientUI.class).error(Env.WINDOW_MAIN, MSG_APPSERVER_CONNECTION_PROBLEM, t.getLocalizedMessage());
 			t.printStackTrace();
 		}
 		return m_okApps;
@@ -1411,7 +1412,7 @@ public final class CConnection implements Serializable, Cloneable
 
 		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
 		{
-			Services.get(IClientUI.class).error(0, MSG_RABBITMQ_CONNECTION_PROBLEM);
+			Services.get(IClientUI.class).error(Env.WINDOW_MAIN, MSG_RABBITMQ_CONNECTION_PROBLEM);
 			return rabbitMqProperties;
 		}
 

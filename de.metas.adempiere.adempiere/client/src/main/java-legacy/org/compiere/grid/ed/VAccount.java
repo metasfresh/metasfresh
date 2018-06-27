@@ -28,8 +28,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
@@ -46,10 +44,12 @@ import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.MAccountLookup;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Account Control - Displays ValidCombination and launches Dialog
@@ -328,7 +328,7 @@ public final class VAccount extends JComponent
 		try
 		{
 			final int C_AcctSchema_ID = getAcctSchemaID();
-			final VAccountDialog ad = new VAccountDialog(Env.getFrame(this), m_title, m_mAccount, C_AcctSchema_ID);
+			final VAccountDialog ad = new VAccountDialog(SwingUtils.getFrame(this), m_title, m_mAccount, C_AcctSchema_ID);
 			//
 			final Integer newValue = ad.getValue();
 			// if (newValue == null)
