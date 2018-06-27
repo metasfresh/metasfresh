@@ -28,3 +28,13 @@ UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-27 18:24:5
 UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-06-27 18:24:59','YYYY-MM-DD HH24:MI:SS'),MsgText='Keine Lieferberechtigung.' WHERE AD_Message_ID=544756 AND AD_Language='de_CH'
 ;
 
+-- 2018-06-27T18:30:02.802
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET Value='de.metas.vertical.pharma.PharmaBPartnerRepository.NoPharmaShipmentPermissions',Updated=TO_TIMESTAMP('2018-06-27 18:30:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544756
+;
+
+-- 2018-06-27T18:33:31.241
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET Value='de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPharmaShipmentPermissions',Updated=TO_TIMESTAMP('2018-06-27 18:33:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544756
+;
+
