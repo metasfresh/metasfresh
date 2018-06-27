@@ -32,6 +32,7 @@ import org.compiere.model.GridTab;
 import org.compiere.model.GridTabMaxRowsRestrictionChecker;
 import org.compiere.model.MQuery;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 
 import lombok.NonNull;
 
@@ -274,7 +275,7 @@ public class FindPanelBuilder
 		Check.assumeNotNull(gridController, "gridController not null");
 		this.gridController = gridController;
 
-		setParentFrame(Env.getFrame(gridController));
+		setParentFrame(SwingUtils.getFrame(gridController));
 
 		final GridTab gridTab = gridController.getMTab();
 		setGridTab(gridTab);

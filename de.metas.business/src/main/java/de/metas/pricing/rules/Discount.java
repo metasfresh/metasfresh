@@ -26,6 +26,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -52,6 +54,7 @@ import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
+import lombok.NonNull;
 
 /**
  * Discount Calculations
@@ -112,7 +115,7 @@ public class Discount implements IPricingRule
 		}
 
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
-		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
+		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request).orElse(null);
 
 		result.setUsesDiscountSchema(true);
 		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
@@ -177,10 +180,15 @@ public class Discount implements IPricingRule
 	}
 
 	private static void updatePricingResultFromPricingConditionsResult(
-			final IPricingResult pricingResult,
-			final PricingConditionsResult pricingConditionsResult)
+			@NonNull final IPricingResult pricingResult,
+			@Nullable final PricingConditionsResult pricingConditionsResult)
 	{
 		pricingResult.setPricingConditions(pricingConditionsResult);
+
+		if (pricingConditionsResult == null)
+		{
+			return;
+		}
 
 		pricingResult.setDiscount(pricingConditionsResult.getDiscount());
 

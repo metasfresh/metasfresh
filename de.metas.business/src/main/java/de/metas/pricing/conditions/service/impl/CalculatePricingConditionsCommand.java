@@ -4,6 +4,7 @@
 package de.metas.pricing.conditions.service.impl;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -68,17 +69,17 @@ import lombok.NonNull;
 		this.request = request;
 	}
 
-	public PricingConditionsResult calculate()
+	public Optional<PricingConditionsResult> calculate()
 	{
 		final PricingConditionsDiscountType discountType = getDiscountType();
 		if (discountType == PricingConditionsDiscountType.FLAT_PERCENT)
 		{
-			return computeFlatDiscount();
+			return Optional.of(computeFlatDiscount());
 		}
 		else if (discountType == PricingConditionsDiscountType.FORMULA
 				|| discountType == PricingConditionsDiscountType.PRICE_LIST)
 		{
-			return PricingConditionsResult.ZERO;
+			return Optional.of(PricingConditionsResult.ZERO);
 		}
 		else if (discountType == PricingConditionsDiscountType.BREAKS)
 		{
@@ -137,12 +138,12 @@ import lombok.NonNull;
 
 	}
 
-	private PricingConditionsResult computeBreaksDiscount()
+	private Optional<PricingConditionsResult> computeBreaksDiscount()
 	{
 		final PricingConditionsBreak breakApplied = findMatchingPricingConditionBreak();
 		if (breakApplied == null)
 		{
-			return PricingConditionsResult.ZERO;
+			return Optional.empty();
 		}
 
 		final PricingConditionsResultBuilder result = PricingConditionsResult.builder()
@@ -152,7 +153,7 @@ import lombok.NonNull;
 		computePriceForPricingConditionsBreak(result, breakApplied.getPriceOverride());
 		computeDiscountForPricingConditionsBreak(result, breakApplied);
 
-		return result.build();
+		return Optional.of(result.build());
 	}
 
 	private void computePriceForPricingConditionsBreak(final PricingConditionsResultBuilder result, final PriceOverride priceOverride)
