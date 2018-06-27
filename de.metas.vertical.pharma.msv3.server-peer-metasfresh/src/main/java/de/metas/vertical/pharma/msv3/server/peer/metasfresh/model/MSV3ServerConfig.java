@@ -5,10 +5,12 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.product.ProductCategoryId;
 import de.metas.lang.RepoIdAwares;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -44,13 +46,13 @@ public class MSV3ServerConfig
 	private final int qtyAvailableToPromiseMin;
 	@Getter(AccessLevel.NONE)
 	private final Optional<Supplier<WarehousePickingGroup>> warehousePickingGroupSupplier;
-	private final Set<Integer> productCategoryIds;
+	private final Set<ProductCategoryId> productCategoryIds;
 
 	@Builder
 	private MSV3ServerConfig(
 			final int qtyAvailableToPromiseMin,
 			final Supplier<WarehousePickingGroup> warehousePickingGroupSupplier,
-			@Singular final Set<Integer> productCategoryIds)
+			@Singular final Set<ProductCategoryId> productCategoryIds)
 	{
 		Check.assume(qtyAvailableToPromiseMin >= 0, "qtyAvailableToPromiseMin >= 0 but it was {}", qtyAvailableToPromiseMin);
 
@@ -65,7 +67,7 @@ public class MSV3ServerConfig
 				&& !getWarehouseIds().isEmpty();
 	}
 
-	public Set<Integer> getWarehouseIds()
+	public Set<WarehouseId> getWarehouseIds()
 	{
 		return RepoIdAwares
 				.asRepoIdsSet(warehousePickingGroupSupplier

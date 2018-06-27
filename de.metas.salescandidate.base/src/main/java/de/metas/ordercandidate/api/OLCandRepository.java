@@ -105,7 +105,7 @@ public class OLCandRepository
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()));
 		olCandPO.setC_Flatrate_Conditions_ID(request.getFlatrateConditionsId());
 
-		olCandPO.setM_Product_ID(request.getProductId());
+		olCandPO.setM_Product_ID(request.getProductId().getRepoId());
 		olCandPO.setProductDescription(request.getProductDescription());
 		olCandPO.setQty(request.getQty());
 		olCandPO.setC_UOM_ID(request.getUomId());

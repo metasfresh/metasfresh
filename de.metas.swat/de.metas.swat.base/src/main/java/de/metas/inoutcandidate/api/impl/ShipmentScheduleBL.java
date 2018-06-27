@@ -1023,6 +1023,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
 		Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID());
 
 		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID()));
 		final List<I_M_Warehouse> warehouses = warehouseIds
