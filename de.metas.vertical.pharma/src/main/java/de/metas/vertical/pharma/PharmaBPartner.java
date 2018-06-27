@@ -2,6 +2,7 @@ package de.metas.vertical.pharma;
 
 import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -27,15 +28,14 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class PharmaBPartner
 {
-	BPartnerId partnerId;
-
-	boolean hasPermissions;
-
+	@NonNull
+	BPartnerId bpartnerId;
+	@NonNull
 	String name;
 
-	String shipmentPermissionPharma;
-
+	boolean hasAtLeastOnePermission;
+	PharmaShipmentPermission shipmentPermission;
 }

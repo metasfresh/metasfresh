@@ -37,7 +37,10 @@ public class PharmaProductRepository
 	{
 		final I_M_Product product = load(productId.getRepoId(), I_M_Product.class);
 
-		return new PharmaProduct(productId, product.isPrescription(), product.getValue());
-
+		return PharmaProduct.builder()
+				.productId(productId)
+				.prescriptionRequired(product.isPrescription())
+				.value(product.getValue())
+				.build();
 	}
 }

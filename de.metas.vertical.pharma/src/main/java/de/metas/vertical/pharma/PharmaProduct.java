@@ -2,6 +2,7 @@ package de.metas.vertical.pharma;
 
 import de.metas.product.ProductId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -27,12 +28,13 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class PharmaProduct
 {
+	@NonNull
 	ProductId productId;
-
-	boolean isPrescription;
-
+	@NonNull
 	String value;
+
+	boolean prescriptionRequired;
 }

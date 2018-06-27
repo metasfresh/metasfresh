@@ -2,9 +2,12 @@ package de.metas.vertical.pharma;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import lombok.NonNull;
 
@@ -35,15 +38,28 @@ public class PharmaBPartnerRepository
 {
 	public PharmaBPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner partner = load(bpartnerId.getRepoId(), I_C_BPartner.class);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
-		final PharmaCustomerPermissions partnerPermissions = PharmaCustomerPermissions.of(partner);
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(bpartnersRepo.getById(bpartnerId), I_C_BPartner.class);
 
-		return new PharmaBPartner(
-				bpartnerId,
-				partnerPermissions.hasAtLeastOnePermission(),
-				partner.getName(),
-				partner.getShipmentPermissionPharma());
+		final PharmaCustomerPermissions partnerPermissions = PharmaCustomerPermissions.of(bpartner);
 
+		return PharmaBPartner.builder()
+				.bpartnerId(bpartnerId)
+				.name(bpartner.getName())
+				.hasAtLeastOnePermission(partnerPermissions.hasAtLeastOnePermission())
+				.shipmentPermission(extractPharmaShipmentPermission(bpartner))
+				.build();
+	}
+
+	private static final PharmaShipmentPermission extractPharmaShipmentPermission(final I_C_BPartner bpartner)
+	{
+		final String shipmentPermissionCode = bpartner.getShipmentPermissionPharma();
+		if (shipmentPermissionCode == null)
+		{
+			return null;
+		}
+
+		return PharmaShipmentPermission.forCode(shipmentPermissionCode);
 	}
 }
