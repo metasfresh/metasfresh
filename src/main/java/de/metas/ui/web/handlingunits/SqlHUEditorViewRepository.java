@@ -20,6 +20,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -119,7 +120,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
 	private final SqlViewSelectData sqlViewSelect;
 
-
 	@Builder
 	private SqlHUEditorViewRepository(
 			@NonNull final WindowId windowId,
@@ -160,8 +160,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public List<HUEditorRow> retrieveHUEditorRows(@NonNull final Set<Integer> huIds, @NonNull final HUEditorRowFilter filter)
+	public List<HUEditorRow> retrieveHUEditorRows(@NonNull final Set<HuId> huIds, @NonNull final HUEditorRowFilter filter)
 	{
+		huReservationService.warmup(huIds);
+
 		final int topLevelHUId = -1;
 		return retrieveTopLevelHUs(huIds, filter)
 				.stream()
@@ -170,9 +172,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public HUEditorRow retrieveForHUId(final int huId)
+	public HUEditorRow retrieveForHUId(@Nullable final HuId huId)
 	{
-		if (huId <= 0)
+		if (huId == null)
 		{
 			return null;
 		}
@@ -184,7 +186,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return createHUEditorRow(hu, topLevelHUId);
 	}
 
-	private static List<I_M_HU> retrieveTopLevelHUs(@NonNull final Collection<Integer> huIds, @NonNull final HUEditorRowFilter filter)
+	private static List<I_M_HU> retrieveTopLevelHUs(@NonNull final Collection<HuId> huIds, @NonNull final HUEditorRowFilter filter)
 	{
 		if (huIds.isEmpty())
 		{
@@ -655,6 +657,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.rowIds(rowIds)
 				.rowIdsConverter(getRowIdsConverter())
 				.build();
+	}
+
+	@Override
+	public void warmUp(@NonNull final Set<HuId> huIds)
+	{
+		InterfaceWrapperHelper.loadByRepoIdAwares(huIds, I_M_HU.class); // caches the given HUs with one SQL query
+		huReservationService.warmup(huIds);
 	}
 
 }

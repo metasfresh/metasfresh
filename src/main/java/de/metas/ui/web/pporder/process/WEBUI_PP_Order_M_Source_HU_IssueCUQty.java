@@ -1,5 +1,7 @@
 package de.metas.ui.web.pporder.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -11,8 +13,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableList;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -30,6 +30,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -45,12 +46,12 @@ import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -102,12 +103,14 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				.map(I_M_Source_HU::getM_HU)
 				.collect(ImmutableList.toImmutableList());
 
-		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
+		final HUsToNewCUsRequest request = HUsToNewCUsRequest
+				.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
+				.productId(ProductId.ofRepoId(row.getM_Product_ID()))
 				.qtyCU(Quantity.of(qtyCU, row.getC_UOM()))
 				.build();
 
-		EmptyHUListener emptyHUListener = EmptyHUListener
+		final EmptyHUListener emptyHUListener = EmptyHUListener
 				.doBeforeDestroyed(hu -> {
 					if (huId2SourceHu.containsKey(hu.getM_HU_ID()))
 					{
