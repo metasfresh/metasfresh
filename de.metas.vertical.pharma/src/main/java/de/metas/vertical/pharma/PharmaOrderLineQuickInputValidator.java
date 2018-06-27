@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Component;
 
@@ -78,7 +79,7 @@ public class PharmaOrderLineQuickInputValidator implements IOrderLineQuickInputV
 			final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(MSG_NoPrescriptionPermission,
 					product.getValue(),
 					bpartner.getName(),
-					Util.coalesce(bpartner.getShipmentPermission(), noPermissionReason));
+					Util.coalesce(bpartner.getShipmentPermission(), noPermissionReason.translate(Env.getAD_Language())));
 
 			throw new AdempiereException(noPermissionMessage);
 		}
