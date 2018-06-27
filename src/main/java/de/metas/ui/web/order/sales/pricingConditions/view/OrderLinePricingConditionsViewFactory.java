@@ -110,14 +110,14 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
-		final int productId = salesOrderLine.getM_Product_ID();
-		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
+		final ProductAndCategoryId productAndCategoryId = productsRepo.retrieveProductAndCategoryIdByProductId(productId);
 		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(salesOrderLine.getM_AttributeSetInstance_ID());
 		final BigDecimal qty = salesOrderLine.getQtyOrdered();
 		final BigDecimal price = salesOrderLine.getPriceActual();
 		return PricingConditionsBreakQuery.builder()
 				.attributeInstances(attributeInstances)
-				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
+				.productAndCategoryId(productAndCategoryId)
 				.qty(qty)
 				.price(price)
 				.build();
