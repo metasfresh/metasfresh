@@ -35,6 +35,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.SupportInfo;
+import org.compiere.util.SwingUtils;
 import org.compiere.util.Trace;
 import org.slf4j.Logger;
 
@@ -75,7 +76,7 @@ public final class ADialog
 		}
 		
 		//
-		Window parent = Env.getParent(c);
+		Window parent = SwingUtils.getParentWindow(c);
 		if (parent == null)
 			parent = Env.getWindow(WindowNo);
 		//
@@ -123,7 +124,7 @@ public final class ADialog
 		if(!Check.isEmpty(msg, true))
 			out.append("\n").append(msg);
 		//
-		Window parent = Env.getParent(c);
+		Window parent = SwingUtils.getParentWindow(c);
 		if (parent == null)
 			parent = Env.getWindow(WindowNo);
 		//
@@ -184,7 +185,7 @@ public final class ADialog
 		if (msg != null && msg.length() > 0)
 			out.append("\n").append(msg);
 		//
-		Window parent = Env.getParent(c);
+		Window parent = SwingUtils.getParentWindow(c);
 		if (parent == null)
 			parent = Env.getWindow(WindowNo);
 		//
@@ -247,7 +248,7 @@ public final class ADialog
 		if(!Check.isEmpty(msg, true))
 			out.append("\n").append(msg);
 		//
-		Window parent = Env.getParent(c);
+		Window parent = SwingUtils.getParentWindow(c);
 		if (parent == null)
 			parent = Env.getWindow(WindowNo);
 		//
