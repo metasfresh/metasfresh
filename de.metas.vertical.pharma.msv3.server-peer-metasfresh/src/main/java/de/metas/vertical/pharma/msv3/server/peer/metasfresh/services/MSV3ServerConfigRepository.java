@@ -6,6 +6,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
+import de.metas.product.ProductCategoryId;
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Server;
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Server_Product_Category;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
@@ -67,7 +68,7 @@ public class MSV3ServerConfigRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_MSV3_Server_Product_Category.class)
-				.forEach(productCategoryRecord -> serverConfigBuilder.productCategoryId(productCategoryRecord.getM_Product_Category_ID()));
+				.forEach(productCategoryRecord -> serverConfigBuilder.productCategoryId(ProductCategoryId.ofRepoId(productCategoryRecord.getM_Product_Category_ID())));
 
 		return serverConfigBuilder.build();
 	}

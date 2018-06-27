@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -42,6 +43,7 @@ public class PricingConditionsBreakMatchCriteria
 	BigDecimal breakValue;
 	ProductId productId;
 	ProductCategoryId productCategoryId;
+	BPartnerId manufacturerId;
 	int attributeValueId;
 
 	public boolean breakValueMatches(final BigDecimal value)

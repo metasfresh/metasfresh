@@ -1,6 +1,7 @@
 package org.adempiere.warehouse.model;
 
 import org.adempiere.util.Check;
+import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -37,14 +38,14 @@ public final class WarehousePickingGroup
 	private final int id;
 	private final String name;
 	private final String description;
-	private final ImmutableSet<Integer> warehouseIds;
+	private final ImmutableSet<WarehouseId> warehouseIds;
 
 	@Builder
 	public WarehousePickingGroup(
 			final int id,
 			@NonNull final String name,
 			final String description,
-			@NonNull @Singular final ImmutableSet<Integer> warehouseIds)
+			@NonNull @Singular final ImmutableSet<WarehouseId> warehouseIds)
 	{
 		Check.assume(id > 0, "id > 0");
 
@@ -54,7 +55,7 @@ public final class WarehousePickingGroup
 		this.warehouseIds = warehouseIds;
 	}
 
-	public boolean containsWarehouseId(final int warehouseId)
+	public boolean containsWarehouseId(final WarehouseId warehouseId)
 	{
 		return warehouseIds.contains(warehouseId);
 	}

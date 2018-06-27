@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
@@ -132,16 +133,16 @@ public class ShipmentScheduleQtyOnHandStorage
 
 	private AvailableToPromiseQuery createMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final int shipmentScheduleWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
+		final WarehouseId shipmentScheduleWarehouseId = WarehouseId.ofRepoId(shipmentScheduleEffectiveBL.getWarehouseId(sched));
 		final WarehousePickingGroup warehousePickingGroup = warehouseDAO.getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouseId);
-		final Set<Integer> warehouseIds = warehousePickingGroup != null ? warehousePickingGroup.getWarehouseIds() : ImmutableSet.of(shipmentScheduleWarehouseId);
+		final Set<WarehouseId> warehouseIds = warehousePickingGroup != null ? warehousePickingGroup.getWarehouseIds() : ImmutableSet.of(shipmentScheduleWarehouseId);
 
 		final int productId = sched.getM_Product_ID();
 		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
 		final Date date = shipmentScheduleEffectiveBL.getPreparationDate(sched);
 
 		final AvailableToPromiseQueryBuilder stockQueryBuilder = AvailableToPromiseQuery.builder()
-				.warehouseIds(warehouseIds)
+				.warehouseIds(WarehouseId.toRepoIds(warehouseIds))
 				.productId(productId)
 				.bpartnerId(bpartnerId)
 				.date(TimeUtil.asLocalDateTime(date));

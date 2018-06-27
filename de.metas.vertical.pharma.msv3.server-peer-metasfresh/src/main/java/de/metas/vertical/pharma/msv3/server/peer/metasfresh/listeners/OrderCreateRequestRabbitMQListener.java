@@ -23,6 +23,7 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
@@ -128,7 +129,7 @@ public class OrderCreateRequestRabbitMQListener
 		{
 			for (final MSV3OrderSyncRequestPackageItem item : orderPackage.getItems())
 			{
-				final int productId = productDAO.retrieveProductIdByValue(item.getPzn().getValueAsString());
+				final ProductId productId = productDAO.retrieveProductIdByValue(item.getPzn().getValueAsString());
 				final int uomId = productBL.getStockingUOM(productId).getC_UOM_ID();
 				final int huPIItemProductId = -1; // TODO fetch it from item.getPackingMaterialId()
 				olCandRequests.add(OLCandCreateRequest.builder()
