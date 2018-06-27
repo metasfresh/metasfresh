@@ -40,7 +40,7 @@ import de.metas.money.CurrencyRepository;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.pricing.conditions.PricingConditions;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.BPPurchaseScheduleRepository;
 import de.metas.purchasecandidate.BPPurchaseScheduleService;
@@ -206,7 +206,7 @@ public class PurchaseRowsLoaderTest
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.vendorId(BPartnerId.ofRepoId(bPartnerVendor.getC_BPartner_ID()))
 				.defaultVendor(false)
-				.productAndCategoryId(ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
+				.product(ProductAndCategoryAndManufacturerId.of(product.getM_Product_ID(), product.getM_Product_Category_ID(), product.getManufacturer_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.vendorProductNo("bPartnerProduct.VendorProductNo")
 				.vendorProductName("bPartnerProduct.ProductName")

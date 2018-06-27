@@ -14,7 +14,7 @@ import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
@@ -56,14 +56,14 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 	@Override
 	protected PricingConditionsRowData createPricingConditionsRowData(final CreateViewRequest request)
 	{
-		final Set<Integer> productIds = request.getFilterOnlyIds();
+		final Set<ProductId> productIds = ProductId.ofRepoIds(request.getFilterOnlyIds());
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-		final Set<ProductAndCategoryId> productAndCategoryIds = productsRepo.retrieveProductCategoriesByProductIds(productIds);
+		final Set<ProductAndCategoryAndManufacturerId> products = productsRepo.retrieveProductAndCategoryAndManufacturersByProductIds(productIds);
 
 		return preparePricingConditionsRowData()
-				.pricingConditionsBreaksExtractor(pricingConditions -> pricingConditions.streamBreaksMatchingAnyOfProducts(productAndCategoryIds))
+				.pricingConditionsBreaksExtractor(pricingConditions -> pricingConditions.streamBreaksMatchingAnyOfProducts(products))
 				.basePricingSystemPriceCalculator(this::calculateBasePricingSystemPrice)
 				.load();
 	}
