@@ -33,6 +33,12 @@ UPDATE AD_Field SET Name='Kunde', Description=NULL, Help=NULL WHERE AD_Column_ID
 UPDATE AD_Column SET AD_Reference_Value_ID=138,Updated=TO_TIMESTAMP('2018-06-26 21:11:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=556835
 ;
 
+-- 2018-06-27T15:39:51.748
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=290,Updated=TO_TIMESTAMP('2018-06-27 15:39:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=556841
+;
+
+
 
 DROP VIEW IF EXISTS M_Packageable_V;
 

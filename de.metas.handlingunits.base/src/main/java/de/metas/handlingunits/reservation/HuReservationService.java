@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -91,7 +92,7 @@ public class HuReservationService
 				.onlyFromUnreservedHUs(true)
 				.keepNewCUsUnderSameParent(true)
 				.productId(reservationRequest.getProductId())
-				// TODO: also add attributes, for fuck's sake!
+				// TODO: also add attributes
 				.build();
 
 		final List<I_M_HU> newCUs = huTransformServiceSupplier
@@ -196,10 +197,10 @@ public class HuReservationService
 
 	public Map<HuId, Optional<OrderLineId>> getReservedForOrderLineId0(@NonNull final Collection<HuId> huIds)
 	{
-		final ImmutableMap.Builder<HuId, Optional<OrderLineId>> builder = ImmutableMap.builder();
+		final HashMap<HuId, Optional<OrderLineId>> map = new HashMap<>();
 		for (final HuId huId : huIds)
 		{
-			builder.put(huId, Optional.empty());
+			map.put(huId, Optional.empty());
 		}
 
 		final List<I_M_HU_Reservation> huReservationRecords = Services.get(IQueryBL.class)
@@ -212,8 +213,8 @@ public class HuReservationService
 		{
 			final HuId huId = HuId.ofRepoId(huReservationRecord.getVHU_ID());
 			final OrderLineId orderLineId = OrderLineId.ofRepoId(huReservationRecord.getC_OrderLineSO_ID());
-			builder.put(huId, Optional.of(orderLineId));
+			map.put(huId, Optional.of(orderLineId));
 		}
-		return builder.build();
+		return ImmutableMap.copyOf(map);
 	}
 }

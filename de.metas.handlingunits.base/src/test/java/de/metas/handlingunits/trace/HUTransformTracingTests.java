@@ -146,7 +146,9 @@ public class HUTransformTracingTests
 				.productId(tuTraceEvents.get(0).getProductId())
 				.type(HUTraceType.TRANSFORM_PARENT);
 
-		assertThat(tuTraceEvents.get(0).withHuTraceEventId(OptionalInt.empty()), // when comparing with "common", we needs to keep the ID out
+		// when comparing with "common", we needs to keep the ID out
+		final HUTraceEvent tuTraceEventToCompareWith = tuTraceEvents.get(0).toBuilder().huTraceEventId(OptionalInt.empty()).build();
+		assertThat(tuTraceEventToCompareWith,
 				is(common
 						.qty(new BigDecimal("-3"))
 						.topLevelHuId(parentTU.getM_HU_ID())
@@ -155,7 +157,10 @@ public class HUTransformTracingTests
 		final HUTraceEventQuery cuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(cuToSplit.getM_HU_ID()).build();
 		final List<HUTraceEvent> cuTraceEvents = huTraceRepository.query(cuTraceQuery);
 		assertThat(cuTraceEvents.size(), is(1));
-		assertThat(cuTraceEvents.get(0).withHuTraceEventId(OptionalInt.empty()), // when comparing with "common", we needs to keep the ID out
+
+		// when comparing with "common", we needs to keep the ID out
+		final HUTraceEvent cuTraceEventToCompareWith = cuTraceEvents.get(0).toBuilder().huTraceEventId(OptionalInt.empty()).build();
+		assertThat(cuTraceEventToCompareWith,
 				is(common
 						.qty(new BigDecimal("3"))
 						.topLevelHuId(cuToSplit.getM_HU_ID())

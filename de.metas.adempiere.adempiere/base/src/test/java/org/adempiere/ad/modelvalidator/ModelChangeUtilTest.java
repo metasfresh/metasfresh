@@ -36,7 +36,7 @@ import lombok.Value;
  * #L%
  */
 
-public class ModelChangeUtilUtilTest
+public class ModelChangeUtilTest
 {
 	@Before
 	public void init()

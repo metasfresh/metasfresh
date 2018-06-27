@@ -1059,7 +1059,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		{
 			storageQuery.setExcludeReserved();
 		}
-
 		return storageQuery;
 	}
 }

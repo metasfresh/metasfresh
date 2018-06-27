@@ -4,13 +4,11 @@ import static de.metas.handlingunits.HUAssertions.assertThat;
 import static de.metas.handlingunits.HUConditions.isAggregate;
 import static de.metas.handlingunits.HUConditions.isNotAggregate;
 import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -22,19 +20,16 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -63,11 +58,7 @@ public class HuReservationServiceTest
 	@Rule
 	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
 
-	private static final BigDecimal ELEVEN = TEN.add(ONE);
 	private static final BigDecimal TWOHUNDRET = new BigDecimal("200");
-
-	@Mocked
-	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector;
 
 	private LUTUProducerDestinationTestSupport data;
 
@@ -224,8 +215,6 @@ public class HuReservationServiceTest
 	{
 		final Quantity expectedQuantity = Quantity.of(new BigDecimal(expectedQty), cuUOM);
 		assertThat(hu).hasStorage(data.helper.pTomatoProductId, expectedQuantity);
-//		final BigDecimal luQuantity = extractQty(hu);
-//		assertThat(luQuantity).isEqualByComparingTo(expectedQty);
 	}
 
 	private Condition<I_M_HU> hasQty(final String qty)
@@ -241,32 +230,5 @@ public class HuReservationServiceTest
 
 		final Quantity luQuantity = productStorages.get(0).getQty(cuUOM);
 		return luQuantity.getAsBigDecimal();
-	}
-
-	@Test
-	public void retainAvailableHUsForOrderLine()
-	{
-		final HuId huId10 = HuId.ofRepoId(10);
-		final HuId huId11 = HuId.ofRepoId(11);
-		final HuId huId20 = HuId.ofRepoId(20);
-		final HuId huId21 = HuId.ofRepoId(21);
-
-		final HuReservation huReservation = HuReservation.builder()
-				.salesOrderLineId(OrderLineId.ofRepoId(20))
-				.vhuId2reservedQty(huId10, Quantity.of(TEN, cuUOM))
-				.vhuId2reservedQty(huId11, Quantity.of(ONE, cuUOM))
-				.reservedQtySum(Optional.of(Quantity.of(ELEVEN, cuUOM)))
-				.build();
-		huReservationRepository.save(huReservation);
-
-		final HuReservation huReservation2 = HuReservation.builder()
-				.salesOrderLineId(OrderLineId.ofRepoId(30))
-				.vhuId2reservedQty(huId20, Quantity.of(TEN, cuUOM))
-				.vhuId2reservedQty(huId21, Quantity.of(ONE, cuUOM))
-				.reservedQtySum(Optional.of(Quantity.of(ELEVEN, cuUOM)))
-				.build();
-		huReservationRepository.save(huReservation2);
-
-		//huReservationService.retainAvailableHUsForOrderLine(huIds, orderLineId)
 	}
 }

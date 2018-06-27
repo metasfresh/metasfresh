@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_UOM;
@@ -156,7 +155,7 @@ public class LUTUProducerDestinationTestSupport
 			piTruck_UnlimitedCapacity_Item = helper.createHU_PI_Item_Material(piTruckUnlimitedCapacity);
 			final I_M_HU_PI_Item_Product piItemProduct = helper.assignProduct(piTruck_UnlimitedCapacity_Item, helper.pTomato, new BigDecimal("6"), helper.uomEach);
 			piItemProduct.setIsInfiniteCapacity(true);
-			InterfaceWrapperHelper.save(piItemProduct);
+			save(piItemProduct);
 
 			// helper.createHU_PI_Item_PackingMaterial(huDefTruck, null); // in this case there is no truck M_Product
 

@@ -63,10 +63,8 @@ import de.metas.order.OrderLineId;
 public class HUQueryBuilderTest
 {
 	private I_M_Warehouse wh;
-	private I_M_Locator locator;
+
 	private I_M_Product product;
-	private I_M_Product otherProduct;
-	private I_M_Locator otherLocator;
 	private List<I_M_HU> hus;
 
 	@Before
@@ -77,21 +75,21 @@ public class HUQueryBuilderTest
 		wh = newInstance(I_M_Warehouse.class);
 		save(wh);
 
-		locator = newInstance(I_M_Locator.class);
+		final I_M_Locator locator = newInstance(I_M_Locator.class);
 		locator.setM_Warehouse(wh);
 		save(locator);
 
 		final I_M_Warehouse otherWh = newInstance(I_M_Warehouse.class);
 		save(otherWh);
 
-		otherLocator = newInstance(I_M_Locator.class);
+		final I_M_Locator otherLocator = newInstance(I_M_Locator.class);
 		otherLocator.setM_Warehouse(otherWh);
 		save(otherLocator);
 
 		product = newInstance(I_M_Product.class);
 		save(product);
 
-		otherProduct = newInstance(I_M_Product.class);
+		final I_M_Product otherProduct = newInstance(I_M_Product.class);
 		save(otherProduct);
 
 		hus = ImmutableList.of(

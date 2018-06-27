@@ -20,7 +20,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.storage.IStorageEngine;
@@ -95,7 +94,6 @@ public class RetrieveAvailableHUsToPick
 	{
 		//
 		// Create storage queries from shipment schedules
-
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		final Set<IStorageQuery> storageQueries = new HashSet<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
@@ -149,11 +147,14 @@ public class RetrieveAvailableHUsToPick
 			return;
 		}
 
-		final SourceHUsService sourceHuService = SourceHUsService.get();
-		if (sourceHuService.isSourceHu(vhu.getM_HU_ID()))
-		{
-			return;
-		}
+		// What was the purpose if this check?
+		// At any rate, it caused the problem that if you selected a top-level VHU as source-HU,
+		// you could never pick from it because it was not added to 'vhus'.
+		// final SourceHUsService sourceHuService = SourceHUsService.get();
+		// if (sourceHuService.isSourceHu(vhu.getM_HU_ID()))
+		// {
+		// return;
+		// }
 
 		vhus.add(vhu);
 	}

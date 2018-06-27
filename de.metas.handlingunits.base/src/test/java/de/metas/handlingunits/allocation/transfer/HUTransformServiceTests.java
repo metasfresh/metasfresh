@@ -151,7 +151,7 @@ public class HUTransformServiceTests
 		final List<I_M_HU> newTUs = huTransformService
 				.cuToNewTUs(
 						cuToSplit,
-						Quantity.of(BigDecimal.ONE, data.helper.uomKg),
+						Quantity.of(ONE, data.helper.uomKg),
 						data.piTU_Item_Product_Bag_8KgTomatoes,
 						isOwnPackingMaterials);
 
@@ -521,7 +521,7 @@ public class HUTransformServiceTests
 			data.disableHUPackingMaterialsCollector("when the new LU is created, the system would want to generate a packing material movement");
 
 			final List<I_M_HU> lus = huTransformService
-					.tuToNewLUs(tuToSplit, BigDecimal.ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
+					.tuToNewLUs(tuToSplit, ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
 			// get the LU and verify that it's properly linked with toToSplit
 			{
 				Assert.assertThat(lus.size(), is(1));
@@ -695,7 +695,7 @@ public class HUTransformServiceTests
 		// prepare tuToSplit onto a LU. This assumes that #testRealStandaloneTU_To_NewLU was green
 		final List<I_M_HU> oldLUs = HUTransformService
 				.newInstance(data.helper.getHUContext())
-				.tuToNewLUs(tuToSplit, BigDecimal.ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
+				.tuToNewLUs(tuToSplit, ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
 		Assert.assertThat(oldLUs.size(), is(1)); // guard
 		Assert.assertThat(tuToSplit.getM_HU_Item_Parent().getM_HU_ID(), is(oldLUs.get(0).getM_HU_ID()));
 		Assert.assertThat(oldLUs.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Active));
@@ -994,7 +994,7 @@ public class HUTransformServiceTests
 		Assert.assertThat(handlingUnitsBL.isAggregateHU(aggregateTU), is(true));
 
 		final List<I_M_HU> newTUs = huTransformService
-				.tuToNewTUs(aggregateTU, BigDecimal.ONE);
+				.tuToNewTUs(aggregateTU, ONE);
 		Assert.assertThat(newTUs.size(), is(1));
 		final I_M_HU newTU = newTUs.get(0);
 		// data.helper.commitAndDumpHU(newTU);
@@ -1120,9 +1120,9 @@ public class HUTransformServiceTests
 		final I_M_HU luHU = newLUs.get(0);
 		assertThat(luHU.isHUPlanningReceiptOwnerPM()).isEqualTo(isOwnPackingMaterials); // guard
 
-		huTransformService.tuToExistingLU(realTu2, BigDecimal.ONE, luHU);
+		huTransformService.tuToExistingLU(realTu2, ONE, luHU);
 		refresh(luHU);
-		huTransformService.tuToExistingLU(realTu3, BigDecimal.ONE, luHU);
+		huTransformService.tuToExistingLU(realTu3, ONE, luHU);
 		refresh(luHU);
 
 		// invoke method under test
