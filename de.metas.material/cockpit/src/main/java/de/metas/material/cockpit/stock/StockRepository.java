@@ -12,6 +12,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stock.StockChangedEvent;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -124,9 +126,8 @@ public class StockRepository
 		postMaterialEventService.postEventNow(event);
 	}
 
-	public BigDecimal getQtyOnHandForProductAndWarehouseIds(final int productId, final Set<Integer> warehouseIds)
+	public BigDecimal getQtyOnHandForProductAndWarehouseIds(@NonNull final ProductId productId, final Set<WarehouseId> warehouseIds)
 	{
-		Check.assume(productId > 0, "productId > 0");
 		Check.assumeNotEmpty(warehouseIds, "warehouseIds is not empty");
 
 		final BigDecimal qtyOnHand = Services.get(IQueryBL.class)

@@ -53,6 +53,7 @@ import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /**
@@ -145,13 +146,13 @@ public class Discount implements IPricingRule
 		}
 		else
 		{
-			final int productId = pricingCtx.getM_Product_ID();
-			final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+			final ProductId productId = ProductId.ofRepoId(pricingCtx.getM_Product_ID());
+			final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
 			builder.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
 					.qty(pricingCtx.getQty())
 					.price(result.getPriceStd())
-					.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
+					.productAndCategoryId(productAndCategoryId)
 					.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
 					.build());
 		}

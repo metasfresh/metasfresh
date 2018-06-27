@@ -15,6 +15,7 @@ import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilde
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -44,7 +45,7 @@ public class JsonConverters
 {
 	public final OLCandCreateRequestBuilder toOLCandCreateRequest(final JsonOLCandCreateRequest request)
 	{
-		final int productId = Services.get(IProductDAO.class).retrieveProductIdByValue(request.getProductCode());
+		final ProductId productId = Services.get(IProductDAO.class).retrieveProductIdByValue(request.getProductCode());
 		final int uomId = request.getUomId() > 0 ? request.getUomId() : Services.get(IProductBL.class).getStockingUOM(productId).getC_UOM_ID();
 
 		return OLCandCreateRequest.builder()
