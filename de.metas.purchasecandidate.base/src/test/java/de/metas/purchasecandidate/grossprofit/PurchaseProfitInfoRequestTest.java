@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.pricing.conditions.PricingConditions;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
 
@@ -54,8 +54,8 @@ public class PurchaseProfitInfoRequestTest
 				.vendorId(BPartnerId.ofRepoId(20))
 				.vendorProductName("vendorProductName")
 				.vendorProductNo("vendorProductNo")
-				.productAndCategoryId(ProductAndCategoryId.of(30, 40))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(50))
+				.product(ProductAndCategoryAndManufacturerId.of(30, 40, 50))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(60))
 				.pricingConditions(PricingConditions.builder().build())
 				.build();
 

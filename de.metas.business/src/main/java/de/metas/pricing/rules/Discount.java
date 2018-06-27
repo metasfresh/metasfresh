@@ -53,7 +53,7 @@ import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest.Cal
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -127,17 +127,20 @@ public class Discount implements IPricingRule
 		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
 		final SOTrx soTrx = pricingCtx.getSoTrx();
 
-		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
 		final Percent bpartnerFlatDiscount = Percent.of(bpartner.getFlatDiscount());
 
-		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(bpartner, soTrx);
-		if (discountSchemaId <= 0)
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaIdOrNull(bpartnerBL.getDiscountSchemaId(bpartner, soTrx));
+		if (pricingConditionsId == null)
 		{
 			return null;
 		}
 
 		final CalculatePricingConditionsRequestBuilder builder = CalculatePricingConditionsRequest.builder()
-				.pricingConditionsId(PricingConditionsId.ofDiscountSchemaId(discountSchemaId))
+				.pricingConditionsId(pricingConditionsId)
 				.bpartnerFlatDiscount(bpartnerFlatDiscount)
 				.pricingCtx(pricingCtx);
 
@@ -147,13 +150,15 @@ public class Discount implements IPricingRule
 		}
 		else
 		{
+			final IProductDAO productsRepo = Services.get(IProductDAO.class);
+			
 			final ProductId productId = ProductId.ofRepoId(pricingCtx.getM_Product_ID());
-			final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
+			final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 			builder.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
 					.qty(pricingCtx.getQty())
 					.price(result.getPriceStd())
-					.productAndCategoryId(productAndCategoryId)
+					.product(product)
 					.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
 					.build());
 		}

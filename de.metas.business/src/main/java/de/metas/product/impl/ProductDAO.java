@@ -48,6 +48,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -71,7 +72,7 @@ public class ProductDAO implements IProductDAO
 	public I_M_Product retrieveProductByValue(@NonNull final String value)
 	{
 		final ProductId productId = retrieveProductIdByValue(value);
-		return productId != null ? loadOutOfTrx(productId.getRepoId(), I_M_Product.class) : null;
+		return productId != null ? getById(productId) : null;
 	}
 
 	@Override
@@ -172,19 +173,35 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	public ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (product == null || !product.isActive())
+		{
+			return null;
+		}
+
+		return createProductAndCategoryAndManufacturerId(product);
+	}
+
+	@Override
 	public String retrieveProductValueByProductId(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = loadOutOfTrx(productId.getRepoId(), I_M_Product.class);
+		final I_M_Product product = getById(productId);
 		return product.getValue();
 	}
 
 	@Override
-	public Set<ProductAndCategoryId> retrieveProductCategoriesByProductIds(final Set<Integer> productIds)
+	public Set<ProductAndCategoryAndManufacturerId> retrieveProductAndCategoryAndManufacturersByProductIds(final Set<ProductId> productIds)
 	{
-		return loadByIdsOutOfTrx(productIds, I_M_Product.class)
+		return loadByIdsOutOfTrx(ProductId.toRepoIds(productIds), I_M_Product.class)
 				.stream()
-				.map(product -> ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
+				.map(this::createProductAndCategoryAndManufacturerId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	private ProductAndCategoryAndManufacturerId createProductAndCategoryAndManufacturerId(final I_M_Product product)
+	{
+		return ProductAndCategoryAndManufacturerId.of(product.getM_Product_ID(), product.getM_Product_Category_ID(), product.getManufacturer_ID());
+	}
 }
