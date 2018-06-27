@@ -1,5 +1,7 @@
 package de.metas.ui.web.picking.husToPick;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -10,8 +12,11 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderLineId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -20,6 +25,7 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
+import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -67,23 +73,41 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-	public HUsToPickViewFactory()
+	private HUReservationDocumentFilterService huReservationDocumentFilterService;
+
+	public HUsToPickViewFactory(@NonNull final HUReservationDocumentFilterService huReservationDocumentFilterService)
 	{
 		super(ImmutableList.of());
+
+		this.huReservationDocumentFilterService = huReservationDocumentFilterService;
 	}
 
-	public static CreateViewRequest createViewRequest(
+	public CreateViewRequest createViewRequest(
 			@NonNull final ViewId pickingSlotViewId,
 			@NonNull final PickingSlotRowId pickingSlotRowId,
 			final int shipmentScheduleId)
 	{
 		Check.assumeGreaterThanZero(shipmentScheduleId, "shipmentScheduleId");
 
-		return CreateViewRequest.builder(WINDOW_ID, JSONViewDataType.includedView)
+		final Builder builder = CreateViewRequest.builder(WINDOW_ID, JSONViewDataType.includedView)
 				.setParentViewId(pickingSlotViewId)
 				.setParentRowId(pickingSlotRowId.toDocumentId())
-				.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, shipmentScheduleId)
-				.build();
+				.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, shipmentScheduleId);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord = loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final DocumentFilter stickyFilter;
+		if (shipmentScheduleRecord.getC_OrderLine_ID() > 0)
+		{
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(shipmentScheduleRecord.getC_OrderLine_ID());
+			stickyFilter = huReservationDocumentFilterService.createOrderLineDocumentFilter(orderLineId);
+		}
+		else
+		{
+			stickyFilter = huReservationDocumentFilterService.createNoReservationDocumentFilter();
+		}
+		builder.addStickyFilters(stickyFilter);
+
+		return builder.build();
 	}
 
 	@Override

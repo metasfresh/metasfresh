@@ -6,7 +6,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Column;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
@@ -64,14 +66,19 @@ public class PackageableViewRepository
 	{
 		// creating those LookupDataSources requires DB access. So, to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers.
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		orderLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
-				.setCtxTableName(null)
-				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID)
-				.setDisplayType(DisplayType.Search)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.buildProvider()
-				.provideForScope(LookupScope.DocumentField)));
+		orderLookup = Suppliers.memoize(() -> {
+			final I_AD_Column orderColumn = adTableDAO.retrieveColumnOrNull(I_M_Packageable_V.Table_Name, I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID);
+			return LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
+					.setCtxTableName(null)
+					.setCtxColumnName(orderColumn.getColumnName())
+					.setDisplayType(orderColumn.getAD_Reference_ID())
+					.setAD_Reference_Value_ID(orderColumn.getAD_Reference_Value_ID()) // TODO
+					.setWidgetType(DocumentFieldWidgetType.Lookup)
+					.buildProvider()
+					.provideForScope(LookupScope.DocumentField));
+		});
 
 		productLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
 				.setCtxTableName(null)
@@ -81,13 +88,17 @@ public class PackageableViewRepository
 				.buildProvider()
 				.provideForScope(LookupScope.DocumentField)));
 
-		bpartnerLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
-				.setCtxTableName(null)
-				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID)
-				.setDisplayType(DisplayType.Search)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.buildProvider()
-				.provideForScope(LookupScope.DocumentField)));
+		bpartnerLookup = Suppliers.memoize(() -> {
+			final I_AD_Column bpartnerColumn = adTableDAO.retrieveColumnOrNull(I_M_Packageable_V.Table_Name, I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID);
+			return LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
+					.setCtxTableName(null)
+					.setCtxColumnName(bpartnerColumn.getColumnName())
+					.setDisplayType(bpartnerColumn.getAD_Reference_ID())
+					.setAD_Reference_Value_ID(bpartnerColumn.getAD_Reference_Value_ID())
+					.setWidgetType(DocumentFieldWidgetType.Lookup)
+					.buildProvider()
+					.provideForScope(LookupScope.DocumentField));
+		});
 	}
 
 	private List<PackageableRow> retrieveRowsByShipmentScheduleIds(final ViewId viewId, final Set<Integer> shipmentScheduleIds)

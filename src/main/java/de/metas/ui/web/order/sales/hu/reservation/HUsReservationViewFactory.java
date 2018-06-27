@@ -87,7 +87,7 @@ public class HUsReservationViewFactory extends HUEditorViewFactoryTemplate
 	protected void customizeHUEditorView(@NonNull final HUEditorViewBuilder huViewBuilder)
 	{
 		huViewBuilder
-				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.order.sales.hu.reservation.process.WEBUI_C_OrderLineSO_Make_HuReservation.class))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.order.sales.hu.reservation.process.WEBUI_C_OrderLineSO_Make_HUReservation.class))
 				.clearOrderBys()
 					.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(true).nullsLast(true).build())
 				.orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_M_HU_ID));

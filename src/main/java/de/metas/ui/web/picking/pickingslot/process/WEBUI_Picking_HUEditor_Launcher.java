@@ -21,12 +21,12 @@ import de.metas.ui.web.view.ViewId;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,13 +35,16 @@ import de.metas.ui.web.view.ViewId;
 
 /**
  * This process opens the HUsToPick view.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 public class WEBUI_Picking_HUEditor_Launcher extends PickingSlotViewBasedProcess
 {
 	@Autowired
 	private IViewsRepository viewsRepo;
+
+	@Autowired
+	private HUsToPickViewFactory husToPickViewFactory;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -56,7 +59,6 @@ public class WEBUI_Picking_HUEditor_Launcher extends PickingSlotViewBasedProcess
 	@Override
 	protected String doIt()
 	{
-
 		final IView husToPickView = createHUsToPickView();
 
 		getResult().setWebuiIncludedViewIdToOpen(husToPickView.getViewId().getViewId());
@@ -73,7 +75,7 @@ public class WEBUI_Picking_HUEditor_Launcher extends PickingSlotViewBasedProcess
 		final ViewId pickingSlotViewId = pickingSlotsView.getViewId();
 		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
 
-		final CreateViewRequest createRequest = HUsToPickViewFactory.createViewRequest(pickingSlotViewId, pickingSlotRowId, shipmentScheduleId);
+		final CreateViewRequest createRequest = husToPickViewFactory.createViewRequest(pickingSlotViewId, pickingSlotRowId, shipmentScheduleId);
 		final IView husToPickView = viewsRepo.createView(createRequest);
 		return husToPickView;
 	}

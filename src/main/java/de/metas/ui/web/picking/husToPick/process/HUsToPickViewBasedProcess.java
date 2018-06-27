@@ -109,7 +109,7 @@ import lombok.NonNull;
 			}
 			else if (numberOfOrderLineIds == 1)
 			{
-				final boolean reservedForDifferentOrderLine = !includedOrderLineReservations.containsKey(orderLineId);
+				final boolean reservedForDifferentOrderLine = !includedOrderLineReservations.containsKey(orderLineId.get());
 				if (reservedForDifferentOrderLine)
 				{
 					return false;

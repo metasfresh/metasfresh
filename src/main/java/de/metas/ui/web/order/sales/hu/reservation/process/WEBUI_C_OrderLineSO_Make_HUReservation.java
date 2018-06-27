@@ -45,7 +45,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class WEBUI_C_OrderLineSO_Make_HuReservation
+public class WEBUI_C_OrderLineSO_Make_HUReservation
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {

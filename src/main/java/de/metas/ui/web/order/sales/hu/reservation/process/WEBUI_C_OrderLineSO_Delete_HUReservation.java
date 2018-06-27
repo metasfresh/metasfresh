@@ -36,7 +36,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
  * #L%
  */
 
-public class WEBUI_C_OrderLineSO_Delete_HuReservation
+public class WEBUI_C_OrderLineSO_Delete_HUReservation
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition
 {

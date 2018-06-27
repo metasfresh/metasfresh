@@ -790,10 +790,10 @@ public final class HUEditorRow implements IViewRow
 			return ImmutableList.copyOf(includedRows);
 		}
 
-		public Builder setReservedForOrderLine(@NonNull final OrderLineId orderLineId)
+		public Builder setReservedForOrderLine(@Nullable final OrderLineId orderLineId)
 		{
 			orderLineReservation = orderLineId;
-			huReserved = orderLineId != null;;
+			huReserved = orderLineId != null;
 			return this;
 		}
 

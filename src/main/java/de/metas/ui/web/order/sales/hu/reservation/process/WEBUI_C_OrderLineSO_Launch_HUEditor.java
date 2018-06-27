@@ -1,34 +1,21 @@
 package de.metas.ui.web.order.sales.hu.reservation.process;
 
-import java.util.List;
 import java.util.Set;
 
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Warehouse;
 
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.reservation.HuReservationService;
 import de.metas.order.OrderLineId;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.purchasecandidate.SalesOrderLine;
-import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
+import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.order.sales.hu.reservation.HUsReservationViewFactory;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -64,12 +51,14 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 {
 	public static final String VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID = "WEBUI_C_OrderLineSO_ID";
 
-	private final transient HuReservationService huReservationService = Adempiere.getBean(HuReservationService.class);
-	private final transient SalesOrderLineRepository salesOrderLineRepository = Adempiere.getBean(SalesOrderLineRepository.class);
-	private final transient IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
-	private final transient IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
-	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient HuReservationService //
+	huReservationService = Adempiere.getBean(HuReservationService.class);
+
+	private final transient HUReservationDocumentFilterService //
+	huReservationDocumentFilterService = Adempiere.getBean(HUReservationDocumentFilterService.class);
+
+	private final transient IViewsRepository //
+	viewsRepo = Adempiere.getBean(IViewsRepository.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -117,37 +106,16 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	{
 		final Integer singleElement = ListUtils.singleElement(getSelectedIncludedRecordIds(I_C_OrderLine.class));
 
-		final SalesOrderLine salesOrderLine = salesOrderLineRepository.getById(OrderLineId.ofRepoId(singleElement));
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(singleElement);
+
+		final DocumentFilter stickyFilters = huReservationDocumentFilterService.createOrderLineDocumentFilter(orderLineId);
 
 		final IView view = viewsRepo
 				.createView(CreateViewRequest
 						.builder(HUsReservationViewFactory.WINDOW_ID)
-						.addStickyFilters(createDocumentFilter(salesOrderLine))
-						.setParameter(VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID, salesOrderLine.getId().getOrderLineId())
+						.addStickyFilters(stickyFilters)
+						.setParameter(VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID, orderLineId)
 						.build());
 		return view.getViewId();
-	}
-
-	private DocumentFilter createDocumentFilter(@NonNull final SalesOrderLine salesOrderLine)
-	{
-		final I_M_Warehouse //
-		orderLineWarehouse = warehouseAdvisor.evaluateWarehouse(salesOrderLine.getId().getOrderLineId());
-		Check.assumeNotNull(orderLineWarehouse, "For currently selected sales order line, there needs to be a warehouse; salesOrderLine={}", salesOrderLine);
-
-		final List<WarehouseId> //
-		warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(WarehouseId.ofRepoId(orderLineWarehouse.getM_Warehouse_ID()));
-
-		final ImmutableAttributeSet //
-		attributeSet = ImmutableAttributeSet.ofAttributesetInstanceId(salesOrderLine.getAsiId());
-
-		final IHUQueryBuilder huQuery = handlingUnitsDAO
-				.createHUQueryBuilder()
-				.addOnlyWithProductId(salesOrderLine.getProductId())
-				.addOnlyInWarehouseIds(warehouseIds)
-				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.addOnlyWithAttributes(attributeSet)
-				.setExcludeReservedToOtherThan(salesOrderLine.getId().getOrderLineId());
-
-		return HUIdsFilterHelper.createFilter(huQuery);
 	}
 }
