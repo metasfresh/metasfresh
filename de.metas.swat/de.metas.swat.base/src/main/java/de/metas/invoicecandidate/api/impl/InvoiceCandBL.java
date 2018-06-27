@@ -127,7 +127,7 @@ import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
@@ -1971,12 +1971,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final BigDecimal priceActual = ic.getPriceActual();
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
-		final ProductAndCategoryId productAndCategoryId = productsRepo.retrieveProductAndCategoryIdByProductId(productId);
+		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
 		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
 				.attributeInstances(instances)
-				.productAndCategoryId(productAndCategoryId)
+				.product(product)
 				.qty(qty)
 				.price(priceActual)
 				.build());

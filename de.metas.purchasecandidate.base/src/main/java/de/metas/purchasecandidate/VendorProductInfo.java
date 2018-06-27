@@ -11,7 +11,7 @@ import de.metas.lang.Percent;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -45,7 +45,7 @@ public class VendorProductInfo
 {
 	BPartnerId vendorId;
 
-	ProductAndCategoryId productAndCategoryId;
+	ProductAndCategoryAndManufacturerId product;
 	AttributeSetInstanceId attributeSetInstanceId;
 
 	String vendorProductNo;
@@ -63,7 +63,7 @@ public class VendorProductInfo
 			@NonNull final BPartnerId vendorId,
 			@NonNull final Boolean defaultVendor,
 			//
-			@NonNull final ProductAndCategoryId productAndCategoryId,
+			@NonNull final ProductAndCategoryAndManufacturerId product,
 			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
 
 			@NonNull final String vendorProductNo,
@@ -77,7 +77,7 @@ public class VendorProductInfo
 		this.vendorId = vendorId;
 		this.defaultVendor = defaultVendor;
 
-		this.productAndCategoryId = productAndCategoryId;
+		this.product = product;
 		this.attributeSetInstanceId = attributeSetInstanceId;
 
 		this.vendorProductNo = vendorProductNo;
@@ -91,7 +91,7 @@ public class VendorProductInfo
 
 	public ProductId getProductId()
 	{
-		return getProductAndCategoryId().getProductId();
+		return getProduct().getProductId();
 	}
 
 	public PricingConditionsBreak getPricingConditionsBreakOrNull(final Quantity qtyToDeliver)
@@ -114,7 +114,7 @@ public class VendorProductInfo
 	private PricingConditionsBreakQuery createPricingConditionsBreakQuery(final Quantity qtyToDeliver)
 	{
 		return PricingConditionsBreakQuery.builder()
-				.productAndCategoryId(getProductAndCategoryId())
+				.product(getProduct())
 				// .attributeInstances(attributeInstances)// TODO
 				.qty(qtyToDeliver.getAsBigDecimal())
 				.price(BigDecimal.ZERO) // N/A
