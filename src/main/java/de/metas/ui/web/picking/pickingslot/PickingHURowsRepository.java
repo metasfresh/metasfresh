@@ -13,6 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -77,10 +78,11 @@ import lombok.NonNull;
  *
  */
 @Service
-/* package */class PickingHURowsRepository
+public class PickingHURowsRepository
 {
 	private final HUEditorViewRepository huEditorRepo;
 
+	@Autowired
 	public PickingHURowsRepository(
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
 			@NonNull final HuReservationService huReservationService)
