@@ -99,10 +99,18 @@ export default class ShortcutProvider extends Component {
     window.removeEventListener('blur', this.handleBlur);
   }
 
+  // In case of different handlers using the same shortcut we can control which
+  // one will be fired by returning true/false from their execution. Handlers are
+  // added in reverse order, so this way we can only call the latest in the queue
   fireHandlers = (event, handlers) => {
-    handlers.forEach(handler => {
-      handler(event);
-    });
+    for (let i = 0; i < handlers.length; i += 1) {
+      const handler = handlers[i];
+      const result = handler(event);
+
+      if (result) {
+        break;
+      }
+    }
   };
 
   handleKeyDown = event => {
@@ -207,7 +215,7 @@ export default class ShortcutProvider extends Component {
     const key = keymap[name].toUpperCase();
     const bucket = hotkeys[key];
 
-    hotkeys[key] = [...bucket, handler];
+    hotkeys[key] = [handler, ...bucket];
   };
 
   unsubscribe = (name, handler) => {

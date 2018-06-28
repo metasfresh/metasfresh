@@ -97,6 +97,8 @@ export default class GlobalContextShortcuts extends Component {
       event.preventDefault();
 
       this.props.openModal();
+
+      return true;
     },
     OPEN_PRINT_RAPORT: event => {
       event.preventDefault();
