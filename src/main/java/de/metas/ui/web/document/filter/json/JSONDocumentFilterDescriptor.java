@@ -1,6 +1,5 @@
 package de.metas.ui.web.document.filter.json;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,19 +7,20 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.ToString;
 
 /*
  * #%L
@@ -35,17 +35,18 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class JSONDocumentFilterDescriptor implements Serializable
+@ToString
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+public final class JSONDocumentFilterDescriptor
 {
 	public static List<JSONDocumentFilterDescriptor> ofCollection(@Nullable final Collection<DocumentFilterDescriptor> filters, final JSONOptions jsonOpts)
 	{
@@ -56,7 +57,7 @@ public final class JSONDocumentFilterDescriptor implements Serializable
 
 		return filters.stream()
 				.map(filter -> new JSONDocumentFilterDescriptor(filter, jsonOpts))
-				.collect(GuavaCollectors.toImmutableList());
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@JsonProperty("filterId")
@@ -68,9 +69,12 @@ public final class JSONDocumentFilterDescriptor implements Serializable
 	@JsonProperty("frequent")
 	private final boolean frequentUsed;
 
+	@JsonProperty("inlineRenderMode")
+	private final DocumentFilterInlineRenderMode inlineRenderMode;
+
 	@JsonProperty("parametersLayoutType")
 	private final PanelLayoutType parametersLayoutType;
-	
+
 	@JsonProperty("parameters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilterParamDescriptor> parameters;
@@ -79,11 +83,11 @@ public final class JSONDocumentFilterDescriptor implements Serializable
 
 	private JSONDocumentFilterDescriptor(final DocumentFilterDescriptor filter, final JSONOptions jsonOpts)
 	{
-		super();
 		filterId = filter.getFilterId();
 		caption = filter.getDisplayName(jsonOpts.getAD_Language());
 		frequentUsed = filter.isFrequentUsed();
-		
+		inlineRenderMode = filter.getInlineRenderMode();
+
 		parametersLayoutType = filter.getParametersLayoutType();
 		parameters = JSONDocumentFilterParamDescriptor.ofCollection(filter.getParameters(), jsonOpts);
 
@@ -92,54 +96,22 @@ public final class JSONDocumentFilterDescriptor implements Serializable
 
 	@JsonCreator
 	private JSONDocumentFilterDescriptor(
-			@JsonProperty("filterId") final String filterId //
-			, @JsonProperty("caption") final String caption //
-			, @JsonProperty("frequent") final boolean frequentUsed //
-			, @JsonProperty("parametersLayoutType") final PanelLayoutType parametersLayoutType //
-			, @JsonProperty("parameters") final List<JSONDocumentFilterParamDescriptor> parameters //
-	)
+			@JsonProperty("filterId") final String filterId,
+			@JsonProperty("caption") final String caption,
+			@JsonProperty("frequent") final boolean frequentUsed,
+			@JsonProperty("inlineRenderMode") final DocumentFilterInlineRenderMode inlineRenderMode,
+			@JsonProperty("parametersLayoutType") final PanelLayoutType parametersLayoutType,
+			@JsonProperty("parameters") final List<JSONDocumentFilterParamDescriptor> parameters)
 	{
 		this.filterId = filterId;
 		this.caption = caption;
 		this.frequentUsed = frequentUsed;
-		
+		this.inlineRenderMode = inlineRenderMode;
+
 		this.parametersLayoutType = parametersLayoutType == null ? PanelLayoutType.Panel : parametersLayoutType;
 		this.parameters = parameters;
-		
+
 		debugProperties = new LinkedHashMap<>();
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("filterId", filterId)
-				.add("caption", caption)
-				.add("frequentUsed", frequentUsed)
-				.add("parameters", parameters.isEmpty() ? null : parameters)
-				.add("debugProperties", debugProperties.isEmpty() ? null : debugProperties)
-				.toString();
-	}
-
-	public String getFilterId()
-	{
-		return filterId;
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public boolean isFrequentUsed()
-	{
-		return frequentUsed;
-	}
-
-	public List<JSONDocumentFilterParamDescriptor> getParameters()
-	{
-		return parameters;
 	}
 
 	@JsonAnyGetter

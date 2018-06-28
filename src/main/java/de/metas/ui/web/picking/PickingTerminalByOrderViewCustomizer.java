@@ -79,16 +79,16 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 				.clearDefaultOrderBys()
 				.defaultOrderBy(DocumentQueryOrderBy.byFieldName(FIELDNAME_OrderOrBPLocation, true))
 				.orderByAliasFieldNames(FIELDNAME_OrderOrBPLocation,
-						I_M_Packageable_V.COLUMNNAME_C_Order_ID,
-						I_M_Packageable_V.COLUMNNAME_C_BPartner_ID,
+						I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID,
+						I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID,
 						I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
 	}
 
 	private static final SqlViewGroupingBinding createSqlViewGroupingBinding()
 	{
 		return SqlViewGroupingBinding.builder()
-				.groupBy(I_M_Packageable_V.COLUMNNAME_C_Order_ID)
-				.groupBy(I_M_Packageable_V.COLUMNNAME_C_BPartner_ID)
+				.groupBy(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID)
+				.groupBy(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID)
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
 				.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, "MIN(DeliveryDate)")
 				.columnSql(I_M_Packageable_V.COLUMNNAME_PreparationDate, "IF_MIN(DeliveryDate, PreparationDate)")
@@ -126,8 +126,8 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 		// Grouping row
 		if (rowBuilder.isRootRow())
 		{
-			final JSONLookupValue orderLV = (JSONLookupValue)rowBuilder.getFieldValue(I_M_Packageable_V.COLUMNNAME_C_Order_ID);
-			final JSONLookupValue bpartnerLV = (JSONLookupValue)rowBuilder.getFieldValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_ID);
+			final JSONLookupValue orderLV = (JSONLookupValue)rowBuilder.getFieldValue(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID);
+			final JSONLookupValue bpartnerLV = (JSONLookupValue)rowBuilder.getFieldValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID);
 			return JSONLookupValue.concat(orderLV, bpartnerLV);
 		}
 		// Detail/included row

@@ -1,9 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
-import java.util.Properties;
 
-import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 
 import com.google.common.collect.ImmutableList;
@@ -57,7 +55,6 @@ public class WEBUI_M_HU_PrintReceiptLabel
 
 		final HUReportService huReportService = HUReportService.get();
 
-		final Properties ctx = Env.getCtx(); // note: at this point, the JavaProces's ctx was not set so we are using the global context
 		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
 		if (adProcessId <= 0)
 		{

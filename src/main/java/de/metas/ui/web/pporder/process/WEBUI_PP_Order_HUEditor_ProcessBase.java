@@ -45,7 +45,7 @@ public abstract class WEBUI_PP_Order_HUEditor_ProcessBase extends HUEditorProces
 			return Optional.empty();
 		}
 
-		final IViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IViewsRepository.class);
+		final IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
 		final PPOrderLinesView ppOrderView = viewsRepo.getView(parentViewId, PPOrderLinesView.class);
 		return Optional.of(ppOrderView);
 	}
