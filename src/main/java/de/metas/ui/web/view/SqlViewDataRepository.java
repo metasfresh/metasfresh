@@ -30,6 +30,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -91,7 +92,6 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	private final SqlDocumentFilterConverter filterConverters;
 
-
 	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
 		tableName = sqlBindings.getTableName();
@@ -110,6 +110,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		this.rowCustomizer = sqlBindings.getRowCustomizer();
 
 		this.filterConverters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlBindings);
+
 	}
 
 	@Override
@@ -138,7 +139,8 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		// Convert filters to SQL
 		{
-			final String sqlFilters = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters, sqlOpts);
+			final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
+			final String sqlFilters = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters, sqlOpts, context);
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				if (sqlWhereClause.length() > 0)
@@ -172,13 +174,24 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final List<DocumentFilter> filters, final boolean applySecurityRestrictions)
+	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx,
+			final ViewId viewId,
+			final List<DocumentFilter> filters,
+			final boolean applySecurityRestrictions,
+			final SqlDocumentFilterConverterContext context)
 	{
-		return viewRowIdsOrderedSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, defaultOrderBys, applySecurityRestrictions);
+		return viewRowIdsOrderedSelectionFactory.createOrderedSelection(viewEvalCtx,
+				viewId,
+				filters,
+				defaultOrderBys,
+				applySecurityRestrictions,
+				context);
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection fromSelection, final List<DocumentQueryOrderBy> orderBys)
+	public ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(final ViewEvaluationCtx viewEvalCtx,
+			final ViewRowIdsOrderedSelection fromSelection,
+			final List<DocumentQueryOrderBy> orderBys)
 	{
 		return viewRowIdsOrderedSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, orderBys);
 	}
@@ -241,7 +254,10 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 	}
 
-	private final ImmutableList<IViewRow> loadViewRows(final ResultSet rs, final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final int limit) throws SQLException
+	private final ImmutableList<IViewRow> loadViewRows(final ResultSet rs,
+			final ViewEvaluationCtx viewEvalCtx,
+			final ViewId viewId,
+			final int limit) throws SQLException
 	{
 		final Map<DocumentId, ViewRow.Builder> rowBuilders = new LinkedHashMap<>();
 		final Set<DocumentId> rootRowIds = new HashSet<>();
@@ -437,7 +453,10 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public List<IViewRow> retrievePage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection orderedSelection, final int firstRow, final int pageLength) throws DBException
+	public List<IViewRow> retrievePage(final ViewEvaluationCtx viewEvalCtx,
+			final ViewRowIdsOrderedSelection orderedSelection,
+			final int firstRow,
+			final int pageLength) throws DBException
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
 		logger.debug("Using: {}", orderedSelection);
@@ -474,7 +493,10 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public List<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection orderedSelection, final int firstRow, final int pageLength)
+	public List<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx,
+			final ViewRowIdsOrderedSelection orderedSelection,
+			final int firstRow,
+			final int pageLength)
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
 		logger.debug("Using: {}", orderedSelection);

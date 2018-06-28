@@ -1,15 +1,10 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -18,7 +13,6 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.NonNull;
 
 /*
@@ -88,21 +82,25 @@ class PurchaseRowsCollection
 
 	public PurchaseRow getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
 	{
-		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(rowId);
-		if (purchaseRowId.isGroupRowId())
+		return getById(PurchaseRowId.fromDocumentId(rowId));
+	}
+
+	public PurchaseRow getById(@NonNull final PurchaseRowId rowId) throws EntityNotFoundException
+	{
+		if (rowId.isGroupRowId())
 		{
-			return getToplevelRowById(purchaseRowId);
+			return getToplevelRowById(rowId);
 		}
-		else if (purchaseRowId.isLineRowId())
+		else if (rowId.isLineRowId())
 		{
-			return getToplevelRowById(purchaseRowId.toGroupRowId())
-					.getIncludedRowById(purchaseRowId);
+			return getToplevelRowById(rowId.toGroupRowId())
+					.getIncludedRowById(rowId);
 		}
 		else
 		{
-			return getToplevelRowById(purchaseRowId.toGroupRowId())
-					.getIncludedRowById(purchaseRowId.toLineRowId())
-					.getIncludedRowById(purchaseRowId);
+			return getToplevelRowById(rowId.toGroupRowId())
+					.getIncludedRowById(rowId.toLineRowId())
+					.getIncludedRowById(rowId);
 		}
 	}
 
@@ -129,7 +127,15 @@ class PurchaseRowsCollection
 		return rowIds.stream().map(this::getById);
 	}
 
-	private void updateRow(@NonNull final PurchaseRowId rowId, @NonNull final PurchaseGroupRowEditor editor)
+	void patchRow(final PurchaseRowId rowId, final PurchaseRowChangeRequest request)
+	{
+		updateRow(rowId, request, PurchaseRow::changeIncludedRow);
+	}
+
+	private void updateRow(
+			@NonNull final PurchaseRowId rowId,
+			@NonNull final PurchaseRowChangeRequest request,
+			@NonNull final PurchaseGroupRowEditor editor)
 	{
 		topLevelRowsById.compute(rowId.toGroupRowId(), (groupRowId, groupRow) -> {
 			if (groupRow == null)
@@ -141,59 +147,21 @@ class PurchaseRowsCollection
 			if (rowId.isGroupRowId())
 			{
 				final PurchaseRowId includedRowId = null;
-				editor.edit(newGroupRow, includedRowId);
+				editor.edit(newGroupRow, includedRowId, request);
 			}
 			else
 			{
 				final PurchaseRowId includedRowId = rowId;
-				editor.edit(newGroupRow, includedRowId);
+				editor.edit(newGroupRow, includedRowId, request);
 			}
 
 			return newGroupRow;
 		});
 	}
 
-	public void patchRow(
-			final PurchaseRowId rowId,
-			final List<JSONDocumentChangedEvent> fieldChangeRequests)
-	{
-		updateRow(
-				rowId,
-				(groupRow, includedRowId) -> applyFieldChangeRequests(groupRow, includedRowId, fieldChangeRequests));
-	}
-
-	private void applyFieldChangeRequests(
-			@NonNull final PurchaseRow editableGroupRow,
-			final PurchaseRowId includedRowId,
-			@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
-	{
-		Check.errorIf(includedRowId == null,
-				"Only group rows with an includedRowId may be edited, but includedRowId=null; fieldChangeRequests={}; editableGroupRow={}",
-				fieldChangeRequests, editableGroupRow);
-
-		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
-		{
-			final String fieldName = fieldChangeRequest.getPath();
-			if (PurchaseRow.FIELDNAME_QtyToPurchase.equals(fieldName))
-			{
-				final BigDecimal qtyToPurchase = fieldChangeRequest.getValueAsBigDecimal();
-				editableGroupRow.changeQtyToPurchase(includedRowId, qtyToPurchase);
-			}
-			else if (PurchaseRow.FIELDNAME_DatePromised.equals(fieldName))
-			{
-				final Date datePromised = fieldChangeRequest.getValueAsDateTime();
-				editableGroupRow.changeDatePromised(includedRowId, datePromised);
-			}
-			else
-			{
-				throw new AdempiereException("Field " + fieldName + " is not editable").setParameter("row", editableGroupRow);
-			}
-		}
-	}
-
 	@FunctionalInterface
 	private static interface PurchaseGroupRowEditor
 	{
-		void edit(final PurchaseRow editableGroupRow, final PurchaseRowId includedRowId);
+		void edit(final PurchaseRow editableGroupRow, final PurchaseRowId includedRowId, final PurchaseRowChangeRequest request);
 	}
 }

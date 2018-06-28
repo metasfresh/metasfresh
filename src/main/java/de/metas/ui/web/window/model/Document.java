@@ -62,6 +62,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
+import de.metas.ui.web.window.model.DocumentsRepository.SaveResult;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentField.FieldInitializationMode;
 import lombok.NonNull;
@@ -592,7 +593,7 @@ public final class Document
 		private final DocumentType documentType;
 		private final DocumentId documentTypeId;
 		private final IDocumentEvaluatee _evaluatee;
-		private final DocumentId parentDocumentId;
+		private final Object parentLinkValue;
 
 		private InitialFieldValueSupplier(@NonNull final Document document, @NonNull final DocumentValuesSupplier parentSupplier)
 		{
@@ -604,8 +605,17 @@ public final class Document
 
 			_evaluatee = document.asEvaluatee();
 
+			final DocumentFieldDescriptor linkFieldDescriptor = entityDescriptor.getParentLinkFieldOrNull();
 			final Document parentDocument = document.getParentDocument();
-			parentDocumentId = parentDocument == null ? null : parentDocument.getDocumentId();
+			if (linkFieldDescriptor != null && parentDocument != null)
+			{
+				final String parentLinkFieldName = linkFieldDescriptor.getParentLinkFieldName();
+				parentLinkValue = parentDocument.getField(parentLinkFieldName).getValue();
+			}
+			else
+			{
+				parentLinkValue = null;
+			}
 		}
 
 		@Override
@@ -664,10 +674,7 @@ public final class Document
 			// Parent link field
 			if (fieldDescriptor.isParentLink())
 			{
-				if (parentDocumentId != null)
-				{
-					return parentDocumentId.toInt();
-				}
+				return parentLinkValue;
 			}
 
 			//
@@ -1816,11 +1823,11 @@ public final class Document
 			// Known issue(s):
 			// When saving an included document (e.g. a line) is failing, the exception is caught (here) but for header document,
 			// so here we are flagging the header document instead of flagging the line.
-			if(AdempiereException.isUserValidationError(saveEx))
+			if (AdempiereException.isUserValidationError(saveEx))
 			{
 				throw AdempiereException.wrapIfNeeded(saveEx);
 			}
-			
+
 			// NOTE: usually if we do the right checks we shall not get to this
 			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
 			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING);
@@ -1834,9 +1841,15 @@ public final class Document
 
 		//
 		// Save this document
+		boolean deleted = false;
 		if (hasChanges())
 		{
-			getDocumentRepository().save(this);
+			final SaveResult saveResult = getDocumentRepository().save(this);
+			if (saveResult == SaveResult.DELETED)
+			{
+				deleted = true;
+			}
+
 			documentCallout.onSave(asCalloutRecord());
 			logger.debug("Document saved: {}", this);
 		}
@@ -1862,7 +1875,7 @@ public final class Document
 			}
 		}
 
-		return setSaveStatusAndReturn(DocumentSaveStatus.saved());
+		return setSaveStatusAndReturn(deleted ? DocumentSaveStatus.deleted() : DocumentSaveStatus.saved());
 	}
 
 	/* package */void deleteFromRepository()

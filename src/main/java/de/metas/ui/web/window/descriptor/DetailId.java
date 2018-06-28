@@ -3,6 +3,8 @@ package de.metas.ui.web.window.descriptor;
 import java.util.Collection;
 import java.util.Set;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 
@@ -12,7 +14,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
-import groovy.transform.Immutable;
 import lombok.EqualsAndHashCode;
 
 /*

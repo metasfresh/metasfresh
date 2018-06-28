@@ -27,6 +27,12 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 public interface DocumentsRepository
 {
+	enum SaveResult
+	{
+		SAVED,
+		DELETED,
+	};
+	
 	OrderedDocumentsList retrieveDocuments(DocumentQuery query, IDocumentChangesCollector changesCollector);
 
 	/** @return document or null */
@@ -57,7 +63,7 @@ public interface DocumentsRepository
 
 	void refresh(Document document);
 
-	void save(Document document);
+	SaveResult save(Document document);
 
 	void delete(Document document);
 

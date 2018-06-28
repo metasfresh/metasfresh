@@ -159,6 +159,12 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		return filterStr;
 	}
 
+	public boolean isAnyFilter()
+	{
+		final String filterStr = getFilter();
+		return filterStr == FILTER_Any;
+	}
+
 	public LookupValueFilterPredicate getFilterPredicate()
 	{
 		final String filterStr = getFilter();

@@ -16,6 +16,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.Adempiere;
 import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
@@ -24,9 +25,12 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatees;
+import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.elasticsearch.indexer.IESModelIndexer;
+import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessId;
@@ -41,6 +45,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.FullTextSearchLookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -216,9 +221,9 @@ import lombok.NonNull;
 				.setIsSOTrx(isSOTrx) // legacy
 				//
 				.setPrintAD_Process_ID(gridTabVO.getPrint_Process_ID());
-		
+
 		final Predicate<GridFieldVO> isKeyColumn;
-		if(gridTabVO.getFields().stream().anyMatch(GridFieldVO::isKey))
+		if (gridTabVO.getFields().stream().anyMatch(GridFieldVO::isKey))
 		{
 			isKeyColumn = GridFieldVO::isKey;
 		}
@@ -264,7 +269,8 @@ import lombok.NonNull;
 		final String sqlColumnName = fieldName;
 
 		//
-		final boolean isParentLinkColumn = sqlColumnName.equals(entityBindings.getSqlParentLinkColumnName());
+		final boolean isParentLinkColumn = sqlColumnName.equals(entityBindings.getSqlLinkColumnName());
+		final String parentLinkFieldName = isParentLinkColumn ? entityBindings.getSqlParentLinkColumnName() : null;
 
 		//
 		//
@@ -272,7 +278,7 @@ import lombok.NonNull;
 		final Class<?> valueClass;
 		final Optional<IExpression<?>> defaultValueExpression;
 		final boolean alwaysUpdateable;
-		final LookupDescriptorProvider lookupDescriptorProvider;
+		LookupDescriptorProvider lookupDescriptorProvider;
 		final LookupDescriptor lookupDescriptor;
 		ILogicExpression readonlyLogic;
 
@@ -306,6 +312,7 @@ import lombok.NonNull;
 					.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
 					.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
 					.buildProvider();
+			lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(lookupDescriptorProvider);
 
 			lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
 			valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
@@ -378,7 +385,7 @@ import lombok.NonNull;
 				.setDescription(gridFieldVO.getDescriptionTrls(), gridFieldVO.getDescription())
 				//
 				.setKey(keyColumn)
-				.setParentLink(isParentLinkColumn)
+				.setParentLink(isParentLinkColumn, parentLinkFieldName)
 				//
 				.setWidgetType(widgetType)
 				.setButtonActionDescriptor(buttonAction)
@@ -414,9 +421,36 @@ import lombok.NonNull;
 		collectSpecialField(fieldBuilder);
 	}
 
+	private LookupDescriptorProvider wrapFullTextSeachFilterDescriptorProvider(@NonNull final LookupDescriptorProvider databaseLookupDescriptorProvider)
+	{
+		final String modelTableName = databaseLookupDescriptorProvider.getTableName().orElse(null);
+		if (modelTableName == null)
+		{
+			return databaseLookupDescriptorProvider;
+		}
+
+		final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
+		final IESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
+				.orElse(null);
+		if (modelIndexer == null)
+		{
+			return databaseLookupDescriptorProvider;
+		}
+
+		final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
+
+		return FullTextSearchLookupDescriptorProvider.builder()
+				.elasticsearchClient(elasticsearchClient)
+				.modelTableName(modelIndexer.getModelTableName())
+				.esIndexName(modelIndexer.getIndexName())
+				.esSearchFieldNames(modelIndexer.getFullTextSearchFieldNames())
+				.databaseLookupDescriptorProvider(databaseLookupDescriptorProvider)
+				.build();
+	}
+
 	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn)
 	{
-		if(keyColumn)
+		if (keyColumn)
 		{
 			return ConstantLogicExpression.TRUE;
 		}
@@ -425,7 +459,7 @@ import lombok.NonNull;
 		// NOTE: in SwingUI/application dictionary, in case a column is flagged as ParentLink it is automatically flagged as IsUpdateable=N.
 		// So, here we are identifying this case and consider it as editable.
 		// e.g. BPartner (pharma) window -> Product tab
-		else if(!gridFieldVO.isUpdateable()
+		else if (!gridFieldVO.isUpdateable()
 				&& gridFieldVO.isParentLink() && !isParentLinkColumn
 				&& gridFieldVO.isMandatory())
 		{
@@ -569,7 +603,6 @@ import lombok.NonNull;
 				.setDescription(trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Description, labelsUIElement.getDescription()))
 				//
 				.setKey(false)
-				.setParentLink(false)
 				//
 				.setWidgetType(DocumentFieldWidgetType.Labels)
 				.setValueClass(fieldBinding.getValueClass())

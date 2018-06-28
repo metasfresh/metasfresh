@@ -282,7 +282,7 @@ public class ViewsRepository implements IViewsRepository
 		//
 		// Create the new view
 		final IViewFactory factory = getFactory(view.getViewId().getWindowId(), view.getViewType());
-		final IView newView = factory.filterView(view, jsonRequest);
+		final IView newView = factory.filterView(view, jsonRequest, () -> this);
 		if (newView == null)
 		{
 			throw new AdempiereException("Failed filtering view")

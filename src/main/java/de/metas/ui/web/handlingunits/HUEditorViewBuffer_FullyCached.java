@@ -19,6 +19,7 @@ import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
@@ -75,7 +76,8 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			@NonNull final HUEditorViewRepository huEditorRepo,
 			final List<DocumentFilter> stickyFilters,
 			final List<DocumentFilter> filters,
-			final List<DocumentQueryOrderBy> orderBys)
+			final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		this.viewId = viewId;
 		this.huEditorRepo = huEditorRepo;
@@ -97,7 +99,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFiltersWithoutHUIdsFilter, filters));
 
-		huIdsSupplier = ExtendedMemorizingSupplier.of(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll)));
+		huIdsSupplier = ExtendedMemorizingSupplier.of(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll, context)));
 
 		this.defaultOrderBys = orderBys != null ? ImmutableList.copyOf(orderBys) : ImmutableList.of();
 	}
@@ -387,7 +389,5 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			parentRow.getIncludedRows()
 					.forEach(includedRow -> rowId2parentId.put(includedRow.getHURowId(), parentId));
 		}
-
 	}
-
 }

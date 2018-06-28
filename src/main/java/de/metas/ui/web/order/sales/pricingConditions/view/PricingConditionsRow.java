@@ -6,13 +6,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;

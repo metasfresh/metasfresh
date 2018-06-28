@@ -7,24 +7,39 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
-import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.money.Currency;
+import de.metas.money.Money;
+import de.metas.order.OrderAndLineId;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup;
+import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
@@ -50,71 +65,106 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { //
+		StartupListener.class, ShutdownListener.class, //
+		PurchaseRowFactory.class, //
+		AvailableToPromiseRepository.class, //
+		DoNothingPurchaseProfitInfoServiceImpl.class //
+})
 public class PurchaseRowFactoryTest
 {
+	@Autowired
+	private PurchaseRowFactory purchaseRowFactory;
+
+	private Currency currency;
+
+	private Quantity ONE;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		currency = PurchaseRowTestTools.createCurrency();
+
+		final I_C_UOM each = PurchaseRowTestTools.createUOM("Ea");
+		this.ONE = Quantity.of(BigDecimal.ONE, each);
 	}
 
 	@Test
 	public void test()
 	{
-		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(30);
-		final PurchaseRowFactory purchaseRowFactory = new PurchaseRowFactory(new AvailableToPromiseRepository());
+		final VendorProductInfo vendorProductInfo = createVendorProductInfo();
+		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(30, vendorProductInfo);
+		final PurchaseDemandId demandId = PurchaseDemandId.ofId(40);
 
-		final PurchaseRow candidateRow = purchaseRowFactory
-				.rowFromPurchaseCandidateBuilder()
-				.purchaseCandidate(purchaseCandidate)
-				.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
-				.datePromised(SystemTime.asTimestamp())
+		final PurchaseRow candidateRow = purchaseRowFactory.lineRowBuilder()
+				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(demandId, purchaseCandidate, vendorProductInfo))
+				.convertAmountsToCurrency(currency)
 				.build();
 
 		final DocumentId id = candidateRow.getId();
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(id);
 
-		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(purchaseCandidate.getVendorBPartnerId());
-		assertThat(purchaseRowId.getSalesOrderLineId()).isEqualTo(purchaseCandidate.getSalesOrderLineId());
-		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(30);
-
+		assertThat(purchaseRowId.getVendorId()).isEqualTo(purchaseCandidate.getVendorId());
+		assertThat(purchaseRowId.getPurchaseDemandId()).isEqualTo(demandId);
 	}
 
-	public static PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId)
+	public PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId, final VendorProductInfo vendorProductInfo)
 	{
-		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
-		save(bPartner);
+		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo
+				.builder()
+				.salesNetPrice(Money.of(11, currency))
+				.purchaseNetPrice(Money.of(9, currency))
+				.purchaseGrossPrice(Money.of(10, currency))
+				.build();
+
+		return PurchaseCandidate.builder()
+				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
+				.groupReference(DemandGroupReference.createEmpty())
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(1, 2))
+				.orgId(OrgId.ofRepoId(3))
+				.warehouseId(WarehouseId.ofRepoId(4))
+				.vendorId(vendorProductInfo.getVendorId())
+				.vendorProductNo(vendorProductInfo.getVendorProductNo())
+				.aggregatePOs(vendorProductInfo.isAggregatePOs())
+				.productId(vendorProductInfo.getProductId())
+				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
+				.qtyToPurchase(ONE)
+				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.profitInfo(profitInfo)
+				.processed(true) // important in case we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
+				.locked(false)
+				.build();
+	}
+
+	private VendorProductInfo createVendorProductInfo()
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		save(bpartner);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setUOMSymbol("uomSympol");
 		save(uom);
 
+		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
+		save(productCategory);
+
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setC_UOM(uom);
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		save(product);
+		final ProductAndCategoryId productAndCategoryId = ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID());
 
-		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bpartnerProductId(10)
-				.vendorBPartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
-				.productId(product.getM_Product_ID())
-				.productNo("productNo")
-				.productName("productName")
-				.build();
-
-		return PurchaseCandidate.builder()
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderId(1)
-				.salesOrderLineId(2)
-				.orgId(3)
-				.warehouseId(4)
-				.productId(product.getM_Product_ID())
-				.uomId(uom.getC_UOM_ID())
-				.vendorProductInfo(vendorProductInfo)
-				.qtyToPurchase(BigDecimal.ONE)
-				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
-				.processed(true) // imporant if we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
-				.locked(false)
+		return VendorProductInfo.builder()
+				.vendorId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
+				.defaultVendor(false)
+				.productAndCategoryId(productAndCategoryId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.vendorProductNo("productNo")
+				.vendorProductName("productName")
+				.pricingConditions(PricingConditions.builder()
+						.build())
 				.build();
 	}
 

@@ -52,12 +52,16 @@ public interface SqlDocumentFilterConverter
 	 * @param filter
 	 * @return SQL
 	 */
-	String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, final SqlOptions sqlOpts);
+	String getSql(SqlParamsCollector sqlParamsOut,
+			DocumentFilter filter,
+			final SqlOptions sqlOpts,
+			final SqlDocumentFilterConverterContext context);
 
 	default String getSql(
 			@NonNull final SqlParamsCollector sqlParamsOut,
 			@NonNull final List<DocumentFilter> filters,
-			@NonNull final SqlOptions sqlOpts)
+			@NonNull final SqlOptions sqlOpts,
+			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		if (filters.isEmpty())
 		{
@@ -68,7 +72,7 @@ public interface SqlDocumentFilterConverter
 
 		for (final DocumentFilter filter : filters)
 		{
-			final String sqlFilter = getSql(sqlParamsOut, filter, sqlOpts);
+			final String sqlFilter = getSql(sqlParamsOut, filter, sqlOpts, context);
 			if (Check.isEmpty(sqlFilter, true))
 			{
 				continue;
@@ -83,11 +87,14 @@ public interface SqlDocumentFilterConverter
 
 		return sqlWhereClauseBuilder.toString();
 	}
-	
-	default <T> IQueryFilter<T> createQueryFilter(@NonNull final List<DocumentFilter> filters, @NonNull final SqlOptions sqlOpts)
+
+	default <T> IQueryFilter<T> createQueryFilter(
+			@NonNull final List<DocumentFilter> filters,
+			@NonNull final SqlOptions sqlOpts,
+			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
-		final String sqlFilter = getSql(sqlFilterParams, filters, sqlOpts);
+		final String sqlFilter = getSql(sqlFilterParams, filters, sqlOpts, context);
 		return TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList());
 	}
 }

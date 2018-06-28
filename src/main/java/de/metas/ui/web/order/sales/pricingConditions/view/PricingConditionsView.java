@@ -13,6 +13,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -168,7 +169,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			{
 				orderLine.setIsManualPrice(true);
 				orderLine.setPriceEntered(editableRow.getBasePrice());
-				orderLine.setBase_PricingSystem_ID(price.getBasePricingSystemId());
+				orderLine.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
 
 			}
 			else if (type == PriceOverrideType.FIXED_PRICE)
@@ -179,7 +180,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 
 			orderLine.setIsManualDiscount(true);
 			orderLine.setDiscount(pricingConditionsBreak.getDiscount().getValueAsBigDecimal());
-			orderLine.setC_PaymentTerm_Override_ID(pricingConditionsBreak.getPaymentTermId());
+			orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.getRepoId(pricingConditionsBreak.getPaymentTermId()));
 		}
 		else
 		{

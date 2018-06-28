@@ -2,7 +2,6 @@ package de.metas.ui.web.window.descriptor.factory;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -12,6 +11,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.NewRecordDescriptor;

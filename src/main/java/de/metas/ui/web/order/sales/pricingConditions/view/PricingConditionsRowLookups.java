@@ -2,7 +2,6 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.awt.Color;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -12,7 +11,10 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.CCache;
 import org.compiere.util.Evaluatees;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.order.IOrderLinePricingConditions;
+import de.metas.payment.api.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.ColorValue;
@@ -94,14 +96,22 @@ public class PricingConditionsRowLookups
 		return priceTypeLookup.findById(priceType.getCode());
 	}
 
-	public LookupValue lookupPricingSystem(final int pricingSystemId)
+	public LookupValue lookupPricingSystem(final PricingSystemId pricingSystemId)
 	{
-		return pricingSystemLookup.findById(pricingSystemId);
+		if (pricingSystemId == null)
+		{
+			return null;
+		}
+		return pricingSystemLookup.findById(pricingSystemId.getRepoId());
 	}
 
-	public LookupValue lookupPaymentTerm(final int paymentTermId)
+	public LookupValue lookupPaymentTerm(final PaymentTermId paymentTermId)
 	{
-		return paymentTermLookup.findById(paymentTermId);
+		if (paymentTermId == null)
+		{
+			return null;
+		}
+		return paymentTermLookup.findById(paymentTermId.getRepoId());
 	}
 
 	public LookupValuesList getFieldTypeahead(final String fieldName, final String query)

@@ -7,6 +7,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsSqlDocumentFilterConverter;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -36,14 +37,16 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
 public class HUIdsFilterHelperTest
 {
 	/**
-	 * Verifies that if {@link HUIdsFilterHelper#createFilter(java.util.Collection)} is called with an empty list, 
+	 * Verifies that if {@link HUIdsFilterHelper#createFilter(java.util.Collection)} is called with an empty list,
 	 * then the filter's SQL does <b>not</b> select every single f**king HU on this planet.
 	 */
 	@Test
 	public void testEmptyHUIdsCollection()
 	{
 		final DocumentFilter noHusFilter = HUIdsFilterHelper.createFilter(ImmutableList.of());
-		final String sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(SqlParamsCollector.newInstance(), noHusFilter, SqlOptions.usingTableAlias("dummyTableAlias"));
+
+		final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
+		final String sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(SqlParamsCollector.newInstance(), noHusFilter, SqlOptions.usingTableAlias("dummyTableAlias"), context);
 
 		assertThat(sql).doesNotContain(HUIdsSqlDocumentFilterConverter.SQL_TRUE);
 	}

@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableList;
 
@@ -47,6 +48,13 @@ public interface IViewFactory
 		final CreateViewRequest createViewRequest = CreateViewRequest.filterViewBuilder(view, filterViewRequest).build();
 		return createView(createViewRequest);
 	}
+	
+	default IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest, Supplier<IViewsRepository> viewsRepo)
+	{
+		final CreateViewRequest createViewRequest = CreateViewRequest.filterViewBuilder(view, filterViewRequest).build();
+		return createView(createViewRequest);
+	}
+	
 
 	default IView deleteStickyFilter(final IView view, final String filterId)
 	{

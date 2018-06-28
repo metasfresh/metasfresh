@@ -28,6 +28,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.product.ProductId;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.view.json.JSONViewRowAttributes;
@@ -85,13 +86,12 @@ import lombok.NonNull;
 	private final ImmutableSet<String> readonlyAttributeNames;
 	private final ImmutableSet<String> hiddenAttributeNames;
 
-	/* package */ HUEditorRowAttributes(@NonNull final DocumentPath documentPath, @NonNull final IAttributeStorage attributesStorage, final boolean readonly)
+	/* package */ HUEditorRowAttributes(@NonNull final DocumentPath documentPath, @NonNull final IAttributeStorage attributesStorage, @NonNull ImmutableSet<ProductId> productIDs, final boolean readonly)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
 
 		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage));
-
 		//
 		// Extract readonly attribute names
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
@@ -102,9 +102,10 @@ import lombok.NonNull;
 				.map(HUEditorRowAttributesHelper::extractAttributeName)
 				.collect(GuavaCollectors.toImmutableSet());
 
-		hiddenAttributeNames = attributesStorage.getAttributes()
+		hiddenAttributeNames = 
+				attributesStorage.getAttributes()
 				.stream()
-				.filter(attribute -> !attributesStorage.isDisplayedUI(attribute))
+				.filter(attribute -> !attributesStorage.isDisplayedUI(productIDs, attribute))
 				.map(HUEditorRowAttributesHelper::extractAttributeName)
 				.collect(GuavaCollectors.toImmutableSet());
 

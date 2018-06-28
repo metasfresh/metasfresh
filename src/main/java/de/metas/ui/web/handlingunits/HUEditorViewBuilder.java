@@ -14,6 +14,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -287,7 +288,7 @@ public final class HUEditorViewBuilder
 		return this;
 	}
 
-	final HUEditorViewBuffer createRowsBuffer()
+	final HUEditorViewBuffer createRowsBuffer(@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		final ViewId viewId = getViewId();
 		final List<DocumentFilter> stickyFilters = getStickyFilters();
@@ -295,11 +296,11 @@ public final class HUEditorViewBuilder
 
 		if (HUEditorViewBuffer_HighVolume.isHighVolume(stickyFilters))
 		{
-			return new HUEditorViewBuffer_HighVolume(viewId, huEditorViewRepository, stickyFilters, filters, getOrderBys());
+			return new HUEditorViewBuffer_HighVolume(viewId, huEditorViewRepository, stickyFilters, filters, getOrderBys(), context);
 		}
 		else
 		{
-			return new HUEditorViewBuffer_FullyCached(viewId, huEditorViewRepository, stickyFilters, filters, getOrderBys());
+			return new HUEditorViewBuffer_FullyCached(viewId, huEditorViewRepository, stickyFilters, filters, getOrderBys(), context);
 		}
 	}
 }

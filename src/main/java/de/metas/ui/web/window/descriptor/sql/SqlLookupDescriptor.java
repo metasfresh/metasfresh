@@ -7,6 +7,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
@@ -46,7 +48,6 @@ import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.sql.DocActionValidationRule;
-import groovy.transform.Immutable;
 
 /*
  * #%L
@@ -71,7 +72,7 @@ import groovy.transform.Immutable;
  */
 
 @Immutable
-public final class SqlLookupDescriptor implements LookupDescriptor
+public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 {
 	public static final Builder builder()
 	{
@@ -245,6 +246,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return sqlForFetchingDisplayNameByIdExpression;
 	}
 
+	@Override
 	public IStringExpression getSqlForFetchingDisplayNameByIdExpression(final String sqlKeyColumn)
 	{
 		return sqlForFetchingDisplayNameByIdExpression.resolvePartial(Evaluatees.mapBuilder()

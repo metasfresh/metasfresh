@@ -4,6 +4,7 @@ import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -56,11 +57,12 @@ public class HUTraceResultExtender implements SqlDocumentFilterConverter
 	public String getSql(
 			@NonNull final SqlParamsCollector sqlParamsOut,
 			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts)
+			@NonNull final SqlOptions sqlOpts,
+			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		if (filter.getParameters() == null || filter.getParameters().isEmpty())
 		{
-			return converter.getSql(sqlParamsOut, filter, sqlOpts); // do whatever the system usually does
+			return converter.getSql(sqlParamsOut, filter, sqlOpts, context); // do whatever the system usually does
 		}
 		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
 		final int selectionId = huTraceRepository.queryToSelection(huTraceQuery);

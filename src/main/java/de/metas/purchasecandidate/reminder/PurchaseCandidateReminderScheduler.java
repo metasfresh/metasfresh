@@ -11,8 +11,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -27,6 +25,8 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.DateTimeTranslatableString;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;

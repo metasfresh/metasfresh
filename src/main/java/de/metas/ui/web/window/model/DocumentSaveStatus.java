@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import lombok.Builder;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -43,20 +45,21 @@ public final class DocumentSaveStatus
 		return STATUS_Saved;
 	}
 
+	public static final DocumentSaveStatus deleted()
+	{
+		return STATUS_Deleted;
+	}
+
 	public static final DocumentSaveStatus notSaved(final DocumentValidStatus invalidState)
 	{
-		final boolean hasChangesToBeSaved = true;
-		final boolean error = false;
 		final String reason = invalidState.getReason();
-		return new DocumentSaveStatus(hasChangesToBeSaved, error, reason);
+		return builder().hasChangesToBeSaved(true).error(false).reason(reason).build();
 	}
 
 	public static final DocumentSaveStatus notSaved(final Exception exception)
 	{
-		final boolean hasChangesToBeSaved = true;
-		final boolean error = true;
 		final String reason = exception.getLocalizedMessage();
-		return new DocumentSaveStatus(hasChangesToBeSaved, error, reason);
+		return builder().hasChangesToBeSaved(true).error(true).reason(reason).build();
 	}
 
 	public static final DocumentSaveStatus notSavedJustCreated()
@@ -69,10 +72,11 @@ public final class DocumentSaveStatus
 		return STATUS_SavedJustLoaded;
 	}
 
-	private static final DocumentSaveStatus STATUS_Unknown = new DocumentSaveStatus(true, false, "not yet checked");
-	private static final DocumentSaveStatus STATUS_Saved = new DocumentSaveStatus(false, false, null);
-	private static final DocumentSaveStatus STATUS_NotSavedJustCreated = new DocumentSaveStatus(true, false, "new");
-	private static final DocumentSaveStatus STATUS_SavedJustLoaded = new DocumentSaveStatus(false, false, "just loaded");
+	private static final DocumentSaveStatus STATUS_Unknown = builder().hasChangesToBeSaved(true).error(false).reason("not yet checked").build();
+	private static final DocumentSaveStatus STATUS_Saved = builder().hasChangesToBeSaved(false).error(false).build();
+	private static final DocumentSaveStatus STATUS_Deleted = builder().hasChangesToBeSaved(false).deleted(true).error(false).build(); // FIXME: it's same as Saved!
+	private static final DocumentSaveStatus STATUS_NotSavedJustCreated = builder().hasChangesToBeSaved(true).error(false).reason("new").build();
+	private static final DocumentSaveStatus STATUS_SavedJustLoaded = builder().hasChangesToBeSaved(false).error(false).reason("just loaded").build();
 
 	@JsonProperty("saved")
 	private final boolean saved;
@@ -84,13 +88,19 @@ public final class DocumentSaveStatus
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String reason;
 
+	private final boolean deleted;
+
 	private transient Integer _hashcode;
 
-	private DocumentSaveStatus(final boolean hasChangesToBeSaved, final boolean error, final String reason)
+	@Builder
+	private DocumentSaveStatus(
+			final boolean hasChangesToBeSaved,
+			final boolean deleted,
+			final boolean error,
+			final String reason)
 	{
-		super();
-
-		this.saved = !hasChangesToBeSaved && !error;
+		this.saved = !hasChangesToBeSaved && !error && !deleted;
+		this.deleted = deleted;
 
 		this.hasChangesToBeSaved = hasChangesToBeSaved;
 		this.error = error;
@@ -103,6 +113,7 @@ public final class DocumentSaveStatus
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("saved", saved)
+				.add("deleted", deleted)
 				.add("hasChangesToBeSaved", hasChangesToBeSaved)
 				.add("error", error)
 				.add("reason", reason)
@@ -146,18 +157,24 @@ public final class DocumentSaveStatus
 
 		final DocumentSaveStatus other = (DocumentSaveStatus)obj;
 		return hasChangesToBeSaved == other.hasChangesToBeSaved
+				&& deleted == other.deleted
 				&& error == other.error
 				&& (ignoreReason || Objects.equals(reason, other.reason));
 	}
 
 	public boolean isSaved()
 	{
-		return !hasChangesToBeSaved && !error;
+		return saved;
 	}
 
-	public boolean isNotSaved()
+	public boolean isDeleted()
 	{
-		return !isSaved();
+		return deleted;
+	}
+
+	public boolean isSavedOrDeleted()
+	{
+		return isSaved() || isDeleted();
 	}
 
 	public boolean hasChangesToBeSaved()
