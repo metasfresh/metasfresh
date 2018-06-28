@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -51,9 +52,9 @@ import lombok.NonNull;
 
 /**
  * HU Transformation command.
- * 
+ *
  * Takes {@link WebuiHUTransformParameters} as input and transform given HU by calling the proper {@link HUTransformService} methods.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -229,7 +230,7 @@ public class WebuiHUTransformCommand
 		}
 	}
 
-	
+
 
 	/**
 	 *
@@ -280,7 +281,14 @@ public class WebuiHUTransformCommand
 		// TODO: if qtyCU is the "maximum", then don't do anything, but show a user message
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewCU(cuRow.getM_HU(), qtyCU);
 
-		final ImmutableSet<Integer> createdHUIds = createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
+		final Predicate<? super I_M_HU> //
+		newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getM_HU_ID();
+
+		final ImmutableSet<Integer> createdHUIds = createdHUs
+				.stream()
+				.filter(newCUisDifferentFromInputHU)
+				.map(I_M_HU::getM_HU_ID)
+				.collect(ImmutableSet.toImmutableSet());
 
 		return WebuiHUTransformCommandResult.builder()
 				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
