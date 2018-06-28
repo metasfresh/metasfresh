@@ -44,6 +44,8 @@ public class Profiles
 	 */
 	public static final String PROFILE_App = "metasfresh-app";
 
+	public static final String PROFILE_SwingUI = "metasfresh-swingui";
+
 	/** Profile activate when running from IDE */
 	public static final String PROFILE_Development = "development";
 

@@ -1,19 +1,19 @@
-package de.metas.jax.rs.model.interceptor;
+package de.metas.jax.rs;
 
-import java.util.Properties;
-
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.db.CConnection;
-import org.compiere.model.I_AD_Client;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
-import de.metas.jax.rs.IJaxRsBL;
+import de.metas.Profiles;
+import de.metas.jms.JmsEmbeddedBrokerConfig;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
+
 
 /*
  * #%L
@@ -28,26 +28,26 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class JaxRsInterceptor extends AbstractModuleInterceptor
+@Configuration
+@Profile(value = { Profiles.PROFILE_App, Profiles.PROFILE_SwingUI })
+public class JaxRsConfig
 {
-	private static final Logger logger = LogManager.getLogger(JaxRsInterceptor.class);
+	private static final Logger logger = LogManager.getLogger(JaxRsConfig.class);
 
 	/**
-	 * Register JAX-RS endpoints. Disable this model interceptor to avoid registering them.
+	 * Register JAX-RS endpoints. The jmsInterceptor parameter is here to inform spring about the depdency.
 	 */
-	@Override
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	public JaxRsConfig(@NonNull final JmsEmbeddedBrokerConfig jmsInterceptor)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(client);
 		final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
 
 		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND;
@@ -61,7 +61,7 @@ public class JaxRsInterceptor extends AbstractModuleInterceptor
 		if (!serverMode)
 		{
 			logger.info("Creating JAX-RS client endpoints");
-			jaxRsBL.createClientEndPoints(ctx);
+			jaxRsBL.createClientEndPoints(Env.getCtx());
 		}
 	}
 
