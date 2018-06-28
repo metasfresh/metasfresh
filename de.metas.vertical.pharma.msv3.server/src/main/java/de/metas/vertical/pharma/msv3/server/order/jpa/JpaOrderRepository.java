@@ -28,5 +28,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface JpaOrderRepository extends JpaRepository<JpaOrder, Long>
 {
+	boolean existsByDocumentNoAndBpartnerId(final String documentNo, final int bpartnerId);
+
 	JpaOrder findByDocumentNoAndBpartnerId(final String documentNo, final int bpartnerId);
 }

@@ -70,20 +70,25 @@ public class StockAvailabilityService
 		{
 			final PZN pzn = queryItem.getPzn();
 			final Quantity qtyRequired = queryItem.getQtyRequired();
+			final Quantity qtyOnHand = getQtyAvailable(pzn, bpartner).orElse(Quantity.ZERO);
 
-			final Optional<Quantity> qtyOnHand = getQtyAvailable(pzn, bpartner);
-			final Quantity qty = qtyOnHand
-					.map(qtyRequired::min)
-					.orElse(Quantity.ZERO);
+			final StockAvailabilityResponseItem item;
+			if (qtyRequired.compareTo(qtyOnHand) <= 0)
+			{
+				item = createStockAvailabilityResponseItem_Available(pzn, qtyRequired);
+			}
+			else
+			{
+				item = createStockAvailabilityResponseItem_NotAvailable(pzn, qtyRequired);
+			}
 
-			final StockAvailabilityResponseItem item = createStockAvailabilityResponseItem(pzn, qty);
 			responseBuilder.item(item);
 		}
 
 		return responseBuilder.build();
 	}
 
-	private StockAvailabilityResponseItem createStockAvailabilityResponseItem(final PZN pzn, final Quantity qty)
+	private StockAvailabilityResponseItem createStockAvailabilityResponseItem_Available(final PZN pzn, final Quantity qty)
 	{
 		return StockAvailabilityResponseItem.builder()
 				.pzn(pzn)
@@ -91,6 +96,19 @@ public class StockAvailabilityService
 				.part(StockAvailabilityResponseItemPart.builder()
 						.type(StockAvailabilityResponseItemPartType.NORMAL)
 						.reason(StockAvailabilitySubstitutionReason.NO_INFO)
+						.qty(qty)
+						.build())
+				.build();
+	}
+
+	private StockAvailabilityResponseItem createStockAvailabilityResponseItem_NotAvailable(final PZN pzn, final Quantity qty)
+	{
+		return StockAvailabilityResponseItem.builder()
+				.pzn(pzn)
+				.qty(qty)
+				.part(StockAvailabilityResponseItemPart.builder()
+						.type(StockAvailabilityResponseItemPartType.NOT_DELIVERABLE)
+						.reason(StockAvailabilitySubstitutionReason.MISSING)
 						.qty(qty)
 						.build())
 				.build();
