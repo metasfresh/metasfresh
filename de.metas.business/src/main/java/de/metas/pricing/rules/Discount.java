@@ -25,6 +25,7 @@ package de.metas.pricing.rules;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -179,7 +180,7 @@ public class Discount implements IPricingRule
 			return ImmutableList.of();
 		}
 
-		final int asiId = asiAware.getM_AttributeSetInstance_ID();
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asiAware.getM_AttributeSetInstance_ID());
 		final List<I_M_AttributeInstance> attributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asiId);
 		return attributeInstances;
 	}

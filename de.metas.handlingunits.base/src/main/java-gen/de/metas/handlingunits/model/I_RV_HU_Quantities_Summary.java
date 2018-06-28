@@ -65,8 +65,7 @@ public interface I_RV_HU_Quantities_Summary
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Eingekauft.
-	 * Die Organisation kauft dieses Produkt ein
+	 * Set Wird Eingekauft.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -75,8 +74,7 @@ public interface I_RV_HU_Quantities_Summary
 	public void setIsPurchased (boolean IsPurchased);
 
 	/**
-	 * Get Eingekauft.
-	 * Die Organisation kauft dieses Produkt ein
+	 * Get Wird Eingekauft.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false

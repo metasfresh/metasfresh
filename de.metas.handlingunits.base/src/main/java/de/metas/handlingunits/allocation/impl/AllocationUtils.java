@@ -89,7 +89,7 @@ public final class AllocationUtils
 	}
 
 	public static IAllocationRequestBuilder createQtyLoadRequestBuilder(
-			final IAllocationRequest originalRequest,
+			@NonNull final IAllocationRequest originalRequest,
 			final IHUTransactionCandidate unloadTrx)
 	{
 		final Quantity qtyAbs = unloadTrx.getQuantity();

@@ -275,7 +275,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		final I_M_InOutLine shipmentLine = shipmentLineSource.getM_InOutLine();
 
 		final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(shipmentLine);
-		packingMaterialsCollectorFromHUs.addTUHUsRecursively(tuAssignmentsQuery);
+		packingMaterialsCollectorFromHUs.releasePackingMaterialForTUHUsRecursively(tuAssignmentsQuery);
 		final int countTUs_Calculated = packingMaterialsCollectorFromHUs.getAndResetCountTUs();
 
 		//

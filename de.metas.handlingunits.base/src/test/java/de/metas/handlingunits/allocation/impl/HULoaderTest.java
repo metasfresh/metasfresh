@@ -34,7 +34,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -86,12 +86,12 @@ public class HULoaderTest extends AbstractHUTest
 		//
 		// Create incoming "source" and validate
 		final MTransactionAllocationSourceDestination mtrxSource = new MTransactionAllocationSourceDestination(mtrx);
-		HUAssert.assertStorageLevels(mtrxSource.getStorage(), "23", "23", "0"); // Qty Total/Allocated/Available
+		StaticHUAssert.assertStorageLevels(mtrxSource.getStorage(), "23", "23", "0"); // Qty Total/Allocated/Available
 
 		//
 		// Create reversal "destination" and validate
 		final MTransactionAllocationSourceDestination mtrxReversalDestination = new MTransactionAllocationSourceDestination(mtrxReversal);
-		HUAssert.assertStorageLevels(mtrxReversalDestination.getStorage(), "23", "0", "23"); // Qty Total/Allocated/Available
+		StaticHUAssert.assertStorageLevels(mtrxReversalDestination.getStorage(), "23", "0", "23"); // Qty Total/Allocated/Available
 
 		final IMutableHUContext huContext = helper.getHUContext();
 
@@ -114,7 +114,7 @@ public class HULoaderTest extends AbstractHUTest
 			final IProductStorage mtrxStorage2 = new MTransactionAllocationSourceDestination(mtrx)
 					.getStorage();
 
-			HUAssert.assertStorageLevels(mtrxStorage2, "23", "0", "23"); // Total/Qty/Free
+			StaticHUAssert.assertStorageLevels(mtrxStorage2, "23", "0", "23"); // Total/Qty/Free
 		}
 
 		//
@@ -123,10 +123,10 @@ public class HULoaderTest extends AbstractHUTest
 			final IProductStorage mtrxReversalStorage2 = new MTransactionAllocationSourceDestination(mtrxReversal)
 					.getStorage();
 
-			HUAssert.assertStorageLevels(mtrxReversalStorage2, "23", "23", "0"); // Total/Qty/Free
+			StaticHUAssert.assertStorageLevels(mtrxReversalStorage2, "23", "23", "0"); // Total/Qty/Free
 		}
 
-		HUAssert.assertAllStoragesAreValid();
+		StaticHUAssert.assertAllStoragesAreValid();
 	}
 
 	// pure unit test

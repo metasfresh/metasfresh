@@ -10,12 +10,12 @@ package de.metas.handlingunits.storage;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,6 +30,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.quantity.Quantity;
 
 public interface IProductStorage
 {
@@ -69,7 +70,7 @@ public interface IProductStorage
 	 * @return product; never <code>null</code>
 	 */
 	I_M_Product getM_Product();
-	
+
 	default int getM_Product_ID()
 	{
 		final I_M_Product product = getM_Product();
@@ -88,7 +89,7 @@ public interface IProductStorage
 	 * @param uom
 	 * @return Qty converted to given UOM.
 	 */
-	BigDecimal getQty(I_C_UOM uom);
+	Quantity getQty(I_C_UOM uom);
 
 	/**
 	 * @return storage capacity

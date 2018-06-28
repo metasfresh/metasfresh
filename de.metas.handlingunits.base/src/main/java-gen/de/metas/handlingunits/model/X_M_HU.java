@@ -14,7 +14,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2008069057L;
+	private static final long serialVersionUID = 1209238149L;
 
     /** Standard Constructor */
     public X_M_HU (Properties ctx, int M_HU_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
       /** if (M_HU_ID == 0)
         {
 			setHUStatus (null); // 'P'
+			setIsReserved (false); // N
 			setM_HU_ID (0);
 			setM_HU_PI_Version_ID (0);
 			setValue (null);
@@ -203,6 +204,29 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 		return false;
 	}
 
+	/** Set Reserviert.
+		@param IsReserved Reserviert	  */
+	@Override
+	public void setIsReserved (boolean IsReserved)
+	{
+		set_Value (COLUMNNAME_IsReserved, Boolean.valueOf(IsReserved));
+	}
+
+	/** Get Reserviert.
+		@return Reserviert	  */
+	@Override
+	public boolean isReserved () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsReserved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Gesperrt.
 		@param Locked Gesperrt	  */
 	@Override
@@ -349,11 +373,11 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 		return ii.intValue();
 	}
 
-//	@Override
-//	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version() throws RuntimeException
-//	{
-//		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class);
-//	}
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class);
+	}
 
 	@Override
 	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version)

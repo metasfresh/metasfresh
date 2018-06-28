@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.inventory.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,6 +36,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 
@@ -248,7 +249,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		//
 		// Filter by Warehouse
 		final int warehouseId = getM_Warehouse_ID(true); // failIfNotSelected=true
-		huQueryBuilder.addOnlyInWarehouseId(warehouseId);
+		huQueryBuilder.addOnlyInWarehouseId(WarehouseId.ofRepoIdOrNull(warehouseId));
 
 		//
 		// Filter by BPartner/Location
@@ -279,7 +280,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 
 		// Exclude destroyed HUs (08544)
 		huQueryBuilder.addHUStatusToExclude(X_M_HU.HUSTATUS_Destroyed);
-		
+
 		// #1062: Do not display shipped hus.
 		huQueryBuilder.addHUStatusToExclude(X_M_HU.HUSTATUS_Shipped);
 
