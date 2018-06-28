@@ -220,7 +220,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 				loadModuleActivatorClass(adClient, className);
 			}
 
-			//
+
 			// Load from Spring context
 			for (final Object modelInterceptor : getSpringInterceptors())
 			{

@@ -15,7 +15,7 @@ public class X_MSV3_Server extends org.compiere.model.PO implements I_MSV3_Serve
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 13545636L;
+	private static final long serialVersionUID = -871631164L;
 
     /** Standard Constructor */
     public X_MSV3_Server (Properties ctx, int MSV3_Server_ID, String trxName)
@@ -23,9 +23,9 @@ public class X_MSV3_Server extends org.compiere.model.PO implements I_MSV3_Serve
       super (ctx, MSV3_Server_ID, trxName);
       /** if (MSV3_Server_ID == 0)
         {
+			setFixedQtyAvailableToPromise (BigDecimal.ZERO);
 			setM_Warehouse_PickingGroup_ID (0);
 			setMSV3_Server_ID (0);
-			setQty_AvailableToPromise_Min (BigDecimal.ZERO);
         } */
     }
 
@@ -43,6 +43,25 @@ public class X_MSV3_Server extends org.compiere.model.PO implements I_MSV3_Serve
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Konst. Zusagbar (ATP) Wert.
+		@param FixedQtyAvailableToPromise Konst. Zusagbar (ATP) Wert	  */
+	@Override
+	public void setFixedQtyAvailableToPromise (java.math.BigDecimal FixedQtyAvailableToPromise)
+	{
+		set_Value (COLUMNNAME_FixedQtyAvailableToPromise, FixedQtyAvailableToPromise);
+	}
+
+	/** Get Konst. Zusagbar (ATP) Wert.
+		@return Konst. Zusagbar (ATP) Wert	  */
+	@Override
+	public java.math.BigDecimal getFixedQtyAvailableToPromise () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FixedQtyAvailableToPromise);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
 
 	@Override
 	public org.compiere.model.I_M_Warehouse_PickingGroup getM_Warehouse_PickingGroup() throws RuntimeException
@@ -98,24 +117,5 @@ public class X_MSV3_Server extends org.compiere.model.PO implements I_MSV3_Serve
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Min. Zusagbar (ATP).
-		@param Qty_AvailableToPromise_Min Min. Zusagbar (ATP)	  */
-	@Override
-	public void setQty_AvailableToPromise_Min (java.math.BigDecimal Qty_AvailableToPromise_Min)
-	{
-		set_Value (COLUMNNAME_Qty_AvailableToPromise_Min, Qty_AvailableToPromise_Min);
-	}
-
-	/** Get Min. Zusagbar (ATP).
-		@return Min. Zusagbar (ATP)	  */
-	@Override
-	public java.math.BigDecimal getQty_AvailableToPromise_Min () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_AvailableToPromise_Min);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 }

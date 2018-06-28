@@ -1,10 +1,10 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.model;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.adempiere.util.Check;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 
@@ -42,20 +42,18 @@ import lombok.Value;
 @Value
 public class MSV3ServerConfig
 {
-	private final int qtyAvailableToPromiseMin;
+	OptionalInt fixedQtyAvailableToPromise;
 	@Getter(AccessLevel.NONE)
-	private final Optional<Supplier<WarehousePickingGroup>> warehousePickingGroupSupplier;
-	private final Set<ProductCategoryId> productCategoryIds;
+	Optional<Supplier<WarehousePickingGroup>> warehousePickingGroupSupplier;
+	Set<ProductCategoryId> productCategoryIds;
 
 	@Builder
 	private MSV3ServerConfig(
-			final int qtyAvailableToPromiseMin,
+			final int fixedQtyAvailableToPromise,
 			final Supplier<WarehousePickingGroup> warehousePickingGroupSupplier,
 			@Singular final Set<ProductCategoryId> productCategoryIds)
 	{
-		Check.assume(qtyAvailableToPromiseMin >= 0, "qtyAvailableToPromiseMin >= 0 but it was {}", qtyAvailableToPromiseMin);
-
-		this.qtyAvailableToPromiseMin = qtyAvailableToPromiseMin;
+		this.fixedQtyAvailableToPromise = fixedQtyAvailableToPromise > 0 ? OptionalInt.of(fixedQtyAvailableToPromise) : OptionalInt.empty();
 		this.warehousePickingGroupSupplier = Optional.ofNullable(warehousePickingGroupSupplier);
 		this.productCategoryIds = productCategoryIds != null ? ImmutableSet.copyOf(productCategoryIds) : ImmutableSet.of();
 	}
@@ -69,8 +67,8 @@ public class MSV3ServerConfig
 	public Set<WarehouseId> getWarehouseIds()
 	{
 		return warehousePickingGroupSupplier
-						.map(Supplier::get)
-						.map(WarehousePickingGroup::getWarehouseIds)
-						.orElse(ImmutableSet.of());
+				.map(Supplier::get)
+				.map(WarehousePickingGroup::getWarehouseIds)
+				.orElse(ImmutableSet.of());
 	}
 }

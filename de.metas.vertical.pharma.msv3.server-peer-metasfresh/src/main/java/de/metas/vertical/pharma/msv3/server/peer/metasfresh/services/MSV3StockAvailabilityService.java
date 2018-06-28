@@ -1,9 +1,9 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -132,15 +132,6 @@ public class MSV3StockAvailabilityService
 		msv3ServerPeerService.publishProductExcludes(eventsBuilder.build());
 	}
 
-	// used for dev stress testing
-	private Stream<MSV3StockAvailability> repeat(final MSV3StockAvailability sa, final int times)
-	{
-		final long pzn = sa.getPzn();
-
-		return IntStream.rangeClosed(1, times)
-				.mapToObj(i -> sa.toBuilder().pzn(pzn * 100000 + i).build());
-	}
-
 	private MSV3StockAvailability toMSV3StockAvailabilityOrNullIfFailed(final MSV3ServerConfig serverConfig, final List<StockDataRecord> records)
 	{
 		try
@@ -168,10 +159,16 @@ public class MSV3StockAvailabilityService
 
 	private int calculateQtyOnHand(final MSV3ServerConfig serverConfig, final List<StockDataRecord> records)
 	{
-		final BigDecimal qtyOnHand = records.stream()
+		if (serverConfig.getFixedQtyAvailableToPromise().isPresent())
+		{
+			return serverConfig.getFixedQtyAvailableToPromise().getAsInt();
+		}
+
+		return records.stream()
 				.map(StockDataRecord::getQtyOnHand)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-		return applyQtyAvailableToPromiseMin(qtyOnHand, serverConfig.getQtyAvailableToPromiseMin());
+				.reduce(BigDecimal.ZERO, BigDecimal::add)
+				.setScale(0, RoundingMode.DOWN)
+				.intValue();
 	}
 
 	public void handleStockChangedEvent(final StockChangedEvent event)
@@ -250,13 +247,14 @@ public class MSV3StockAvailabilityService
 
 	private int getQtyOnHand(final MSV3ServerConfig serverConfig, final ProductId productId)
 	{
-		final BigDecimal qtyOnHand = stockRepository.getQtyOnHandForProductAndWarehouseIds(productId, serverConfig.getWarehouseIds());
-		return applyQtyAvailableToPromiseMin(qtyOnHand, serverConfig.getQtyAvailableToPromiseMin());
-	}
+		if (serverConfig.getFixedQtyAvailableToPromise().isPresent())
+		{
+			return serverConfig.getFixedQtyAvailableToPromise().getAsInt();
+		}
 
-	private int applyQtyAvailableToPromiseMin(final BigDecimal qtyOnHand, final int qtyAvailableToPromiseMin)
-	{
-		return Math.max(qtyOnHand.intValue(), qtyAvailableToPromiseMin);
+		return stockRepository.getQtyOnHandForProductAndWarehouseIds(productId, serverConfig.getWarehouseIds())
+				.setScale(0, RoundingMode.DOWN)
+				.intValue();
 	}
 
 	@Async
@@ -265,7 +263,7 @@ public class MSV3StockAvailabilityService
 		final MSV3ServerConfig serverConfig = getServerConfig();
 
 		final PZN pzn = getPZNByProductId(productId);
-		final int qtyOnHand = serverConfig.getQtyAvailableToPromiseMin();
+		final int qtyOnHand = serverConfig.getFixedQtyAvailableToPromise().orElse(0);
 		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailability.builder()
 				.pzn(pzn.getValueAsLong())
 				.qty(qtyOnHand)
