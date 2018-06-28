@@ -179,7 +179,7 @@ public class PP_Order extends CalloutEngine
 	{
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
 				.orgId(ppOrder.getAD_Org_ID())
-				.warehouseId(WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrder.getM_Warehouse_ID()))
 				.plantId(ppOrder.getS_Resource_ID())
 				.productId(ProductId.ofRepoId(ppOrder.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID()))
