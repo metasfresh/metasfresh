@@ -306,60 +306,6 @@ public class HUTransformService
 		return storages.get(0);
 	}
 
-	public List<I_M_HU> cuToNewCU_AllocateMaximumPossibleQty(
-			@NonNull final I_M_HU cuHU,
-			@NonNull final Quantity qtyCU)
-	{
-		final Quantity maximumQtyCU = getMaximumQtyCU(cuHU, qtyCU.getUOM());
-
-		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(maximumQtyCU) >= 0;
-
-		final I_M_HU_Item cuParentItem = handlingUnitsDAO.retrieveParentItem(cuHU);
-
-		if (qtyCuExceedsCuHU && cuParentItem != null)
-		{
-			// detach cuHU from its parent
-			setParent(cuHU, null,
-					// before
-					localHuContext -> {
-						final I_M_HU oldTuHU = handlingUnitsDAO.retrieveParent(cuHU);
-						final I_M_HU oldLuHU = oldTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
-						updateAllocation(oldLuHU, oldTuHU, cuHU, qtyCU, true, localHuContext);
-					},
-					// after
-					localHuContext -> {
-						final I_M_HU newTuHU = handlingUnitsDAO.retrieveParent(cuHU);
-						final I_M_HU newLuHU = newTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
-						updateAllocation(newLuHU, newTuHU, cuHU, qtyCU, false, localHuContext);
-					});
-			return ImmutableList.of(cuHU);
-		}
-
-		else
-		{
-			final Quantity qtyCUToAllocate = qtyCU.min(maximumQtyCU);
-
-			final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
-			final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
-			HUSplitBuilderCoreEngine.builder()
-					.huContextInitital(huContext)
-					.huToSplit(cuHU)
-					.requestProvider(huContext -> createCUAllocationRequest(
-							huContext,
-							singleProductStorage.getM_Product(),
-							qtyCUToAllocate,
-							false) // forceAllocation = false; no need, because destination has no capacity constraints
-					)
-					.destination(destination)
-					.build()
-					.withPropagateHUValues()
-					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
-					.performSplit();
-
-			return destination.getCreatedHUs();
-		}
-	}
-
 	/**
 	 * Similar to {@link #cuToNewTUs(I_M_HU, BigDecimal, I_M_HU_PI_Item_Product, boolean)} , but the destination TU already exists
 	 * <p>
@@ -1152,7 +1098,7 @@ public class HUTransformService
 		}
 		else
 		{
-			return cuToNewCU_AllocateMaximumPossibleQty(sourceHU, singleSourceHuRequest.getQtyCU());
+			return cuToNewCU(sourceHU, singleSourceHuRequest.getQtyCU());
 		}
 	}
 
