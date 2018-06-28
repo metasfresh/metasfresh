@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.reservation.HuReservationService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
@@ -91,6 +92,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
+
+	@Autowired
+	private HuReservationService huReservationService;
+
 	private final ImmutableListMultimap<String, HUEditorViewCustomizer> viewCustomizersByReferencingTableName;
 	private final ImmutableMap<String, HUEditorRowIsProcessedPredicate> rowProcessedPredicateByReferencingTableName;
 	private final ImmutableMap<String, Boolean> rowAttributesAlwaysReadonlyByReferencingTableName;
@@ -277,8 +282,11 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.attributesProvider(HUEditorRowAttributesProvider.builder()
 							.readonly(attributesAlwaysReadonly)
 							.build())
-					.sqlViewBinding(sqlViewBinding);
+					.sqlViewBinding(sqlViewBinding)
+					.huReservationService(huReservationService);
+
 			customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
+
 			huEditorViewRepository = huEditorViewRepositoryBuilder.build();
 		}
 

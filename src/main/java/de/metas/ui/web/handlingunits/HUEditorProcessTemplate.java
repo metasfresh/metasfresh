@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -70,16 +71,17 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		return getView().streamByIds(filter.andOnlyRowIds(selectedDocumentIds));
 	}
 
-	protected final Stream<Integer> streamSelectedHUIds(@NonNull final Select select)
+	protected final Stream<HuId> streamSelectedHUIds(@NonNull final Select select)
 	{
 		return streamSelectedHUIds(HUEditorRowFilter.select(select));
 	}
 
-	protected final Stream<Integer> streamSelectedHUIds(@NonNull final HUEditorRowFilter filter)
+	protected final Stream<HuId> streamSelectedHUIds(@NonNull final HUEditorRowFilter filter)
 	{
 		return streamSelectedRows(filter)
 				.map(HUEditorRow::getM_HU_ID)
-				.filter(huId -> huId > 0);
+				.filter(huId -> huId > 0)
+				.map(HuId::ofRepoId);
 	}
 
 	/**
@@ -96,8 +98,9 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 
 	protected final Stream<I_M_HU> streamSelectedHUs(@NonNull final HUEditorRowFilter filter)
 	{
-		final Stream<Integer> huIds = streamSelectedHUIds(filter);
-		return StreamUtils.dice(huIds, 100)
+		final Stream<HuId> huIds = streamSelectedHUIds(filter);
+		return StreamUtils
+				.dice(huIds, 100)
 				.flatMap(huIdsChunk -> Services.get(IQueryBL.class)
 						.createQueryBuilder(I_M_HU.class)
 						.addInArrayFilter(I_M_HU.COLUMNNAME_M_HU_ID, huIdsChunk)

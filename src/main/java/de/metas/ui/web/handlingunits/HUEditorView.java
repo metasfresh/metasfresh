@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.lang.RepoIdAware;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
@@ -213,6 +214,13 @@ public class HUEditorView implements IView
 	{
 		final Boolean value = (Boolean)parameters.get(name);
 		return value != null ? value.booleanValue() : defaultValue;
+	}
+
+	public <T extends RepoIdAware> T getParameterAsIdOrNull(final String name)
+	{
+		@SuppressWarnings("unchecked")
+		final T value = (T)parameters.get(name);
+		return value;
 	}
 
 	@Override

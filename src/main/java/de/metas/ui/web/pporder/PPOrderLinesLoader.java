@@ -1,5 +1,7 @@
 package de.metas.ui.web.pporder;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -20,8 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
@@ -175,7 +176,7 @@ class PPOrderLinesLoader
 				.productIds(issueProductIds)
 				.warehouseId(m_Warehouse_ID).build();
 
-		for (final int sourceHUId : SourceHUsService.get().retrieveMatchingSourceHUIds(sourceHusQuery))
+		for (final HuId sourceHUId : SourceHUsService.get().retrieveMatchingSourceHUIds(sourceHusQuery))
 		{
 			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(sourceHUId);
 			result.add(createRowForSourceHU(huEditorRow));
@@ -263,7 +264,7 @@ class PPOrderLinesLoader
 		final ImmutableList<PPOrderLineRow> includedRows = createIncludedRowsForPPOrderQtys(
 				ppOrderQtys,
 				readOnly);
-		
+
 		return PPOrderLineRow.builderForPPOrderBomLine()
 				.ppOrderBomLine(ppOrderBOMLine)
 				.type(lineType)
@@ -308,7 +309,7 @@ class PPOrderLinesLoader
 
 	private PPOrderLineRow createForPPOrderQty(final I_PP_Order_Qty ppOrderQty, final boolean readonly)
 	{
-		final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(ppOrderQty.getM_HU_ID());
+		final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(HuId.ofRepoId(ppOrderQty.getM_HU_ID()));
 		final HUEditorRow parentHUViewRecord = null;
 		return createForHUViewRecordRecursively(ppOrderQty, huEditorRow, parentHUViewRecord, readonly);
 	}
@@ -339,7 +340,7 @@ class PPOrderLinesLoader
 				.product(huEditorRow.getProduct())
 				.packingInfo(huEditorRow.getPackingInfo())
 				.topLevelHU(huEditorRow.isTopLevel())
-				.huStatus(huEditorRow.getHUStatus())
+				.huStatus(huEditorRow.getHUStatusDisplay())
 				.quantity(quantity)
 				.includedRows(includedRows)
 				.build();
@@ -393,7 +394,7 @@ class PPOrderLinesLoader
 				.packingInfo(huEditorRow.getPackingInfo())
 				.uom(huEditorRow.getUOM())
 				.qty(huEditorRow.getQtyCU())
-				.huStatus(huEditorRow.getHUStatus())
+				.huStatus(huEditorRow.getHUStatusDisplay())
 				.topLevelHU(huEditorRow.isTopLevel())
 				.build();
 	}
