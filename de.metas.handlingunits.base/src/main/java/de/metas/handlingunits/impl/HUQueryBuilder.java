@@ -98,7 +98,6 @@ import lombok.NonNull;
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-	private final transient HuReservationRepository huReservationRepository = Adempiere.getBean(HuReservationRepository.class);
 
 	@ToStringBuilder(skip = true)
 	private Object _contextProvider;
@@ -653,6 +652,10 @@ import lombok.NonNull;
 
 		if (_excludeReservedToOtherThanOrderLineId != null)
 		{
+			// this would belong as a field to the other services at the top of the class, but then there are a lot of unrelated tests
+			// that would all have to be annotated with @SpringBootTest(blah, blah)
+			final HuReservationRepository huReservationRepository = Adempiere.getBean(HuReservationRepository.class);
+
 			final IQuery<I_M_HU_Reservation> //
 			excludeSubQuery = huReservationRepository.createQueryReservedToOtherThan(_excludeReservedToOtherThanOrderLineId);
 
