@@ -130,7 +130,6 @@ public class ProcessExecutionResult
 	//
 	// Webui related
 	//
-	/** Included viewId to be opened (WEBUI) after this process was successfully executed */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String webuiViewId = null;
 
@@ -417,8 +416,6 @@ public class ProcessExecutionResult
 
 	/**
 	 * Sets webui's viewId on which this process was executed.
-	 *
-	 * @param webuiIncludedViewIdToOpen
 	 */
 	public void setWebuiViewId(String webuiViewId)
 	{

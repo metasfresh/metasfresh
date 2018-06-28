@@ -144,8 +144,7 @@ public final class ALogin extends CDialog
 	private VDate dateField = new VDate(DisplayType.Date);
 	private CComboBox<KeyNamePair> orgCombo = new CComboBox<>();
 	private CComboBox<KeyNamePair> clientCombo = new CComboBox<>();
-	private CLabel warehouseLabel = new CLabel();
-	private CComboBox<KeyNamePair> warehouseCombo = new CComboBox<>();
+
 	private CLabel roleLabel = new CLabel();
 	private CComboBox<KeyNamePair> roleCombo = new CComboBox<>();
 	private CLabel languageLabel = new CLabel();
@@ -247,7 +246,6 @@ public final class ALogin extends CDialog
 		clientLabel.setRequestFocusEnabled(false);
 		orgLabel.setRequestFocusEnabled(false);
 		dateLabel.setRequestFocusEnabled(false);
-		warehouseLabel.setRequestFocusEnabled(false);
 
 		final CLabel compileDate = new CLabel();
 		compileDate.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -356,15 +354,6 @@ public final class ALogin extends CDialog
 		defaultPanel.add(dateField, new GridBagConstraints(1, 4, 1, 1, 1.0, 0.0
 				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
 		//
-		warehouseLabel.setText("Warehouse");
-		warehouseLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		warehouseLabel.setLabelFor(warehouseCombo);
-
-		defaultPanel.add(warehouseLabel, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
-		defaultPanel.add(warehouseCombo, new GridBagConstraints(1, 3, 1, 1, 1.0, 0.0
-				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
-
 		loginTabPane.add(defaultPanel, res.getString("Defaults"));
 
 		final CPanel mainPanel = new CPanel(new BorderLayout());
@@ -700,13 +689,6 @@ public final class ALogin extends CDialog
 				Env.setContext(ctx, Env.CTXNAME_AD_Language, language.getAD_Language());
 				Services.get(IMsgBL.class).getMsg(ctx, "0"); // trigger messages cache loading
 
-				//
-				// Show warehouse only if ShowWarehouseOnLogin is Y (task 06009)
-				// Also assume 'Y' if we have no connection.
-				final boolean showWarehouseOnLogin = m_login == null || m_login.isShowWarehouseOnLogin();
-				warehouseLabel.setVisible(showWarehouseOnLogin);
-				warehouseCombo.setVisible(showWarehouseOnLogin);
-
 				// Change Tab to Default
 				loginTabPane.setSelectedIndex(TABINDEX_Defaults);
 			}
@@ -775,7 +757,7 @@ public final class ALogin extends CDialog
 
 		// Load Properties and save Ini values
 		statusBar.setStatusLine("Loading Preferences");
-		final String msg = m_login.loadPreferences(org, warehouseCombo.getSelectedItem(), dateField.getTimestamp());
+		final String msg = m_login.loadPreferences(org, dateField.getTimestamp());
 		if (!Check.isEmpty(msg))
 		{
 			ADialog.info(m_WindowNo, this, msg);
@@ -1058,80 +1040,8 @@ public final class ALogin extends CDialog
 			}
 
 			log.trace("org changed: {}", org);
-
-			final Set<KeyNamePair> warehouses = m_login.getWarehouses(org);
-			warehouseCombo.setModel(ListComboBoxModel.ofNullable(warehouses));
-
-			final KeyNamePair defaultWarehouse = findDefaultWarehouse(warehouses);
-			if(defaultWarehouse != null)
-			{
-				warehouseCombo.setSelectedItem(defaultWarehouse);
-			}
 		});
 	}
-
-	private static final KeyNamePair findDefaultWarehouse(final Set<KeyNamePair> warehouses)
-	{
-		if (Check.isEmpty(warehouses))
-		{
-			return null;
-		}
-
-		final String iniDefaultName = Ini.getProperty(Ini.P_WAREHOUSE);
-		if(!Check.isEmpty(iniDefaultName))
-		{
-			for (final KeyNamePair warehouse : warehouses)
-			{
-				if (warehouse.getName().equals(iniDefaultName))
-				{
-					return warehouse;
-				}
-			}
-		}
-
-		return warehouses.iterator().next();
-	}
-
-
-	// @formatter:off
-//	/**
-//	 * Check Version
-//	 *
-//	 * @return true if version is OK and false if version could not be checked or is not the same
-//	 * @see AEnv#getServerVersion
-//	 */
-//	private boolean checkVersion()
-//	{
-//		boolean retValue = false;
-//		try
-//		{
-//			String version = AEnv.getServerVersion();
-//			if (Adempiere.getDateVersion().equals(version))
-//			{
-//				log.config("Server = Client - " + version);
-//				retValue = true;
-//			}
-//			else if (version != null)
-//			{
-//				StringBuffer msg = new StringBuffer(">>\n");
-//				msg.append(res.getString("VersionConflict")).append("\n")
-//						.append(res.getString("VersionInfo")).append("\n");
-//				msg.append(version == null ? "null" : version).append(" <> ")
-//						.append(Adempiere.getDateVersion()).append("\n");
-//				msg.append(res.getString("PleaseUpgrade")).append("\n<<");
-//				JOptionPane.showMessageDialog(null, msg.toString(),
-//						Adempiere.getName() + " - " + res.getString("VersionConflict"),
-//						JOptionPane.ERROR_MESSAGE);
-//				AEnv.exit(1);
-//			}
-//		}
-//		catch (Exception e)
-//		{
-//			log.severe("Contact Server failed - " + e.getClass().toString() + ": " + e.getMessage());
-//		}
-//		return retValue;
-//	}   // checkVersion
-	// @formatter:on
 
 	/**************************************************************************
 	 * Language issues
@@ -1188,7 +1098,7 @@ public final class ALogin extends CDialog
 		clientLabel.setText(res.getString("Client"));
 		orgLabel.setText(res.getString("Organization"));
 		dateLabel.setText(res.getString("Date"));
-		warehouseLabel.setText(res.getString("Warehouse"));
+
 		defaultPanel.setToolTipText(res.getString("Defaults"));
 		connectionPanel.setToolTipText(res.getString("Connection"));
 		//

@@ -62,6 +62,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 public class HULoader
 {
@@ -77,7 +78,6 @@ public class HULoader
 	private boolean allowPartialLoads = false;
 	private boolean forceLoad = false;
 	private boolean skipAttributesTransfer = false;
-	private boolean automaticallyMovePackingMaterials = true;
 
 	/**
 	 * The current executor. Will be <code>null</code> while no loading is taking place.
@@ -155,18 +155,6 @@ public class HULoader
 	}
 
 	/**
-	 * If enabled, the packing materials involved will be collected and will be transferred to/from empties warehouse.
-	 * This flag is enabled by default.
-	 * 
-	 * @param automaticallyMovePackingMaterials
-	 */
-	public HULoader setAutomaticallyMovePackingMaterials(final boolean automaticallyMovePackingMaterials)
-	{
-		this.automaticallyMovePackingMaterials = automaticallyMovePackingMaterials;
-		return this;
-	}
-
-	/**
 	 * Transfer request qty from <code>source</code> to <code>destination</code>. If the <code>Qty</code> of the given <code>request</code> is zero, then the method does nothing and just return
 	 * {@link AllocationUtils#nullResult()}.
 	 *
@@ -187,19 +175,14 @@ public class HULoader
 		}
 
 		final IHUContext huContextInitial = request.getHUContext();
-		return processInHUContext(huContextInitial, new IHUContextProcessor()
-		{
-			@Override
-			public IMutableAllocationResult process(final IHUContext huContext)
-			{
-				//
-				// Create the new allocation request, identical with given one, but the concept is with given transaction
-				final IAllocationRequest unloadRequestInLocalTrx = AllocationUtils.derive(request)
-						.setHUContext(huContext)
-						.create();
+		return processInHUContext(huContextInitial, huContext -> {
+			//
+			// Create the new allocation request, identical with given one, but the concept is with given transaction
+			final IAllocationRequest unloadRequestInLocalTrx = AllocationUtils.derive(request)
+					.setHUContext(huContext)
+					.create();
 
-				return unloadSourceThenLoadDestination(unloadRequestInLocalTrx);
-			}
+			return unloadSourceThenLoadDestination(unloadRequestInLocalTrx);
 		});
 	}
 
@@ -212,15 +195,10 @@ public class HULoader
 	 * <li>collecting and automatically processing {@link IHUTransactionAttribute}s</li>
 	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getHUPackingMaterialsCollector()})</li>
 	 * </ul>
-	 *
-	 * @param huContext
-	 * @param processor
-	 * @return
 	 */
 	private final IAllocationResult processInHUContext(final IHUContext huContext, final IHUContextProcessor processor)
 	{
-		currentInContextExecutor = huTrxBL.createHUContextProcessorExecutor(huContext)
-				.setAutomaticallyMovePackingMaterials(automaticallyMovePackingMaterials);
+		currentInContextExecutor = huTrxBL.createHUContextProcessorExecutor(huContext);
 		try
 		{
 			return currentInContextExecutor.run(processor);
@@ -246,9 +224,8 @@ public class HULoader
 	 *
 	 * @param huContext
 	 */
-	private final void assertValidProcessingContext(final IHUContext huContext)
+	private final void assertValidProcessingContext(@NonNull final IHUContext huContext)
 	{
-		Check.assumeNotNull(huContext, "huContext not null");
 		Check.assume(!trxManager.isNull(huContext.getTrxName()),
 				"HU Context shall not have null transaction: {}", huContext);
 
@@ -339,7 +316,10 @@ public class HULoader
 	 *            created to load on destination
 	 * @return load result (will contain also unload transactions); the result will be already processed
 	 */
-	private IMutableAllocationResult loadToDestination(final IHUContext huContext, final IAllocationResult unloadResult, final IAllocationRequest unloadRequestActual)
+	private IMutableAllocationResult loadToDestination(
+			@NonNull final IHUContext huContext,
+			@NonNull final IAllocationResult unloadResult,
+			@NonNull final IAllocationRequest unloadRequestActual)
 	{
 		assertValidProcessingContext(huContext);
 
@@ -454,7 +434,9 @@ public class HULoader
 		return finalResult;
 	}
 
-	private final IAllocationRequest createQtyLoadRequest(final IAllocationRequest unloadRequestActual, final IHUTransactionCandidate unloadTrx)
+	private final IAllocationRequest createQtyLoadRequest(
+			@NonNull final IAllocationRequest unloadRequestActual,
+			final IHUTransactionCandidate unloadTrx)
 	{
 		final IAllocationRequestBuilder builder = AllocationUtils.createQtyLoadRequestBuilder(unloadRequestActual, unloadTrx);
 		if (forceLoad)
@@ -471,7 +453,7 @@ public class HULoader
 		final I_M_Product unloadTrx_Product = unloadTrx.getProduct();
 		final Quantity qtyUnloadFull = unloadTrx.getQuantity();
 
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(unloadTrx_Product);
+		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(unloadTrx_Product.getM_Product_ID());
 
 		final Quantity qtyUnloadPartial = uomConversionBL.convertQuantityTo(
 				loadTrx

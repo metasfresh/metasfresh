@@ -37,11 +37,13 @@ import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Snapshot;
 import de.metas.handlingunits.snapshot.ISnapshotProducer;
 import de.metas.handlingunits.snapshot.ISnapshotRestorer;
+import de.metas.lang.RepoIdAwares;
 import lombok.NonNull;
 
 /**
@@ -56,7 +58,7 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final M_HU_SnapshotHandler huSnapshotHandler = new M_HU_SnapshotHandler();
 
-	private final Set<Integer> _huIds = new HashSet<>();
+	private final Set<HuId> _huIds = new HashSet<>();
 
 	@Override
 	public void restoreFromSnapshot()
@@ -91,7 +93,7 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 
 	private final void restoreInTrx()
 	{
-		final Collection<Integer> huIdsToRestore = getHUIdsAndClear();
+		final Collection<HuId> huIdsToRestore = getHUIdsAndClear();
 		final List<I_M_HU> husToRestore = Services.get(IHandlingUnitsDAO.class).retrieveByIds(huIdsToRestore);
 
 		for (final I_M_HU hu : husToRestore)
@@ -107,7 +109,7 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 		// If there are no HUs to snapshot, then do nothing
 		// NOTE: this is an accepted case in case we are using the producer together with some other incremental BLs
 		// which are snapshoting HUs while they are proceeding.
-		final Set<Integer> initialHUIds = ImmutableSet.copyOf(getHUIdsAndClear());
+		final Set<Integer> initialHUIds = RepoIdAwares.asRepoIdsSet(getHUIdsAndClear());
 		if (initialHUIds.isEmpty())
 		{
 			return this;
@@ -180,7 +182,7 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 	@Override
 	public M_HU_Snapshot_ProducerAndRestorer addModel(@NonNull final I_M_HU model)
 	{
-		_huIds.add(model.getM_HU_ID());
+		_huIds.add(HuId.ofRepoId(model.getM_HU_ID()));
 		return this;
 	}
 
@@ -196,9 +198,9 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 	 *
 	 * @return enqueued models to be restored or snapshot-ed
 	 */
-	private final Set<Integer> getHUIdsAndClear()
+	private final Set<HuId> getHUIdsAndClear()
 	{
-		final Set<Integer> modelIds = new HashSet<>(_huIds);
+		final Set<HuId> modelIds = new HashSet<>(_huIds);
 		_huIds.clear();
 		return modelIds;
 	}
@@ -211,13 +213,17 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 	@Override
 	public ISnapshotRestorer<I_M_HU> addModelId(final int huId)
 	{
-		_huIds.add(huId);
+		_huIds.add(HuId.ofRepoId(huId));
 		return this;
 	}
 
 	@Override
-	public ISnapshotRestorer<I_M_HU> addModelIds(final Collection<Integer> huIds)
+	public ISnapshotRestorer<I_M_HU> addModelIds(@NonNull final Collection<Integer> huRepoIds)
 	{
+		final ImmutableSet<HuId> huIds = huRepoIds
+				.stream()
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 		_huIds.addAll(huIds);
 		return this;
 	}

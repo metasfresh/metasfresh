@@ -1,6 +1,12 @@
 package de.metas.product;
 
+import java.util.Collection;
+import java.util.Set;
+
 import org.adempiere.util.Check;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
 import lombok.Value;
@@ -42,9 +48,25 @@ public class ProductId implements RepoIdAware
 		return repoId > 0 ? new ProductId(repoId) : null;
 	}
 
+	public static Set<ProductId> ofRepoIds(final Collection<Integer> repoIds)
+	{
+		return repoIds.stream()
+				.filter(repoId -> repoId != null && repoId > 0)
+				.map(ProductId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public static int toRepoId(final ProductId productId)
 	{
 		return productId != null ? productId.getRepoId() : -1;
+	}
+
+	public static Set<Integer> toRepoIds(final Collection<ProductId> productIds)
+	{
+		return productIds.stream()
+				.filter(Predicates.notNull())
+				.map(ProductId::toRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private ProductId(final int repoId)

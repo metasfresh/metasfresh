@@ -65,9 +65,9 @@ import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
-import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 
 public class PricingConditionsTest
 {
@@ -349,7 +349,7 @@ public class PricingConditionsTest
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(id(schema1))
 				.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
-						.productAndCategoryId(productAndCategoryId(product1))
+						.product(productAndCategoryId(product1))
 						.qty(new BigDecimal(100))
 						.price(price)
 						.build())
@@ -399,7 +399,7 @@ public class PricingConditionsTest
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(id(schema1))
 				.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
-						.productAndCategoryId(productAndCategoryId(product1))
+						.product(productAndCategoryId(product1))
 						.qty(new BigDecimal(100))
 						.price(price)
 						.attributeInstance(createAttributeInstance(attr1, attrValue1))
@@ -429,14 +429,18 @@ public class PricingConditionsTest
 		return PricingConditionsBreakId.of(record.getM_DiscountSchema_ID(), record.getM_DiscountSchemaBreak_ID());
 	}
 
-	private static final ProductAndCategoryId productAndCategoryId(final I_M_Product product)
+	private static final ProductAndCategoryAndManufacturerId productAndCategoryId(final I_M_Product product)
 	{
-		return ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID());
+		return ProductAndCategoryAndManufacturerId.of(product.getM_Product_ID(), product.getM_Product_Category_ID(), product.getManufacturer_ID());
 	}
 
 	private BigDecimal calculatePrice(final BigDecimal price, final CalculatePricingConditionsRequest request)
 	{
-		final PricingConditionsResult result = service.calculatePricingConditions(request);
+		final PricingConditionsResult result = service.calculatePricingConditions(request).orElse(null);
+		if (result == null)
+		{
+			return price;
+		}
 
 		final Percent discount = result.getDiscount();
 		return discount.subtractFromBase(price, 6);

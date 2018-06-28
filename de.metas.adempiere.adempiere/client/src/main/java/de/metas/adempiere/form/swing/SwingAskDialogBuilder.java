@@ -35,6 +35,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialogDialog;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.IAskDialogBuilder;
@@ -150,7 +151,7 @@ public class SwingAskDialogBuilder implements IAskDialogBuilder
 		Window parent = null;
 		if (_parentCompObj instanceof Component)
 		{
-			parent = Env.getParent((Component)_parentCompObj);
+			parent = SwingUtils.getParentWindow((Component)_parentCompObj);
 		}
 
 		if (parent == null && Env.isRegularOrMainWindowNo(_parentWindowNo))

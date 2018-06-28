@@ -6,16 +6,23 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
@@ -56,6 +63,45 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	public static final Builder builder()
 	{
 		return new Builder();
+	}
+
+	public static final ImmutableAttributeSet ofAttributesetInstanceId(
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final List<I_M_AttributeInstance> attributeInstances = attributeDAO.retrieveAttributeInstances(attributeSetInstanceId);
+
+		final Map<Object, Object> valuesByAttributeIdObj = new HashMap<>();
+		for (final I_M_AttributeInstance instance : attributeInstances)
+		{
+			final Object value;
+
+			final String attributeValueType = instance.getM_Attribute().getAttributeValueType();
+			if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+			{
+				value = instance.getValueDate();
+			}
+			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+			{
+				value = instance.getValue();
+			}
+			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+			{
+				value = instance.getValueNumber();
+			}
+			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+			{
+				value = instance.getValue();
+			}
+			else
+			{
+				Check.fail("Unsupported attributeValueType={}; M_AttributeInstance={}, M_Attribute={ ", attributeValueType, instance, instance.getM_Attribute());
+				value = null;
+			}
+
+			valuesByAttributeIdObj.put(instance.getM_Attribute_ID(), value);
+		}
+		return ofValuesIndexByAttributeId(valuesByAttributeIdObj);
 	}
 
 	public static final ImmutableAttributeSet ofValuesIndexByAttributeId(
@@ -106,7 +152,6 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	private final ImmutableMap<String, I_M_Attribute> attributesByKey;
 	private final ImmutableMap<String, Object> valuesByAttributeKey;
 
-
 	private ImmutableAttributeSet(
 			@NonNull final ImmutableMap<Integer, I_M_Attribute> attributes,
 			@NonNull final ImmutableMap<String, I_M_Attribute> attributesByKey,
@@ -148,7 +193,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	{
 		return attributesByKey.containsKey(attributeKey);
 	}
-	
+
 	private final void assertAttributeExists(final String attributeKey)
 	{
 		if (!hasAttribute(attributeKey))
@@ -312,7 +357,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			final int attributeId = attribute.getM_Attribute_ID();
 			attributes.put(attributeId, attribute);
-			
+
 			final String attributeKey = attribute.getValue();
 			attributesByKey.put(attributeKey, attribute);
 

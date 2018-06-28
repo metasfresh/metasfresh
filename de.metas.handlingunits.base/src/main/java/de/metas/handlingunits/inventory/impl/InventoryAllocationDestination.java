@@ -520,7 +520,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			pmCollectorForCountingTUs = new HUPackingMaterialsCollector(huContext);
 		}
 
-		pmCollectorForCountingTUs.addHURecursively(tuHU, inOutLineSource);
+		pmCollectorForCountingTUs.releasePackingMaterialForHURecursively(tuHU, inOutLineSource);
 
 		final int countTUs = pmCollectorForCountingTUs.getAndResetCountTUs();
 		return BigDecimal.valueOf(countTUs);
@@ -550,14 +550,14 @@ class InventoryAllocationDestination implements IAllocationDestination
 	{
 		final HUPackingMaterialsCollector collector = getCreatePackingMaterialsCollectorForInventory(huContext, inventoryId);
 		final IHUPackingMaterialCollectorSource source = null;
-		collector.addHURecursively(hu, source);
+		collector.releasePackingMaterialForHURecursively(hu, source);
 	}
 
 	private void collectPackingMaterials_LUOnly(final IHUContext huContext, final int inventoryId, final I_M_HU luHU)
 	{
 		final HUPackingMaterialsCollector collector = getCreatePackingMaterialsCollectorForInventory(huContext, inventoryId);
 		final IHUPackingMaterialCollectorSource source = null;
-		collector.addLU(luHU, source);
+		collector.releasePackingMaterialForLU(luHU, source);
 	}
 
 	private HUPackingMaterialsCollector getCreatePackingMaterialsCollectorForInventory(final IHUContext huContext, final int inventoryId)

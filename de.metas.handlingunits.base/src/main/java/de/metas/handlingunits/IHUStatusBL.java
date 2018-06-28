@@ -66,8 +66,12 @@ public interface IHUStatusBL extends ISingletonService
 	/**
 	 * Assert that {@link I_M_HU#COLUMN_M_Locator_ID} may be updated in HUs that have the given {@code huStatus}.
 	 *
-	 * @param huStatus
+	 * @param huRecord used to create a more informative error message
 	 * @throws AdempiereException if the locatorId may not be updated.
 	 */
-	void assertLocatorChangeIsAllowed(String huStatus);
+	void assertLocatorChangeIsAllowed(I_M_HU huRecord, String huStatus);
+
+	boolean isStatusActive(I_M_HU huRecord);
+
+	boolean isStatusIssued(I_M_HU huRecord);
 }

@@ -34,12 +34,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -161,65 +164,55 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 	/**
 	 * Predicate used to filter retrieved rows ( {@link IPOSTableRow} ) based on current pressed Keys
 	 */
-	private final Predicate<IPOSTableRow> rowsFilter = new Predicate<IPOSTableRow>()
-	{
-		@Override
-		public boolean test(final IPOSTableRow row)
+	private final Predicate<IPOSTableRow> rowsFilter = row -> {
+		if (row == null)
 		{
-			if (row == null)
-			{
-				return false;
-			}
-
-			final int currentBPartnerId = getC_BPartner_ID();
-			if (currentBPartnerId > 0 && row.getC_BPartner().getC_BPartner_ID() != currentBPartnerId)
-			{
-				return false;
-			}
-
-			final DDOrderFiltering service = getService();
-
-			final int currentDD_Order_ID = getDD_Order_ID();
-			if (currentDD_Order_ID > 0)
-			{
-				final IDDOrderTableRow ddOrderRow = service.getDDOrderTableRow(row);
-				if (!ddOrderRow.getDD_Order_IDs().contains(currentDD_Order_ID))
-				{
-					return false;
-				}
-			}
-
-			return true;
+			return false;
 		}
+
+		final int currentBPartnerId = getC_BPartner_ID();
+		if (currentBPartnerId > 0 && row.getC_BPartner().getC_BPartner_ID() != currentBPartnerId)
+		{
+			return false;
+		}
+
+		final DDOrderFiltering service = getService();
+
+		final int currentDD_Order_ID = getDD_Order_ID();
+		if (currentDD_Order_ID > 0)
+		{
+			final IDDOrderTableRow ddOrderRow = service.getDDOrderTableRow(row);
+			if (!ddOrderRow.getDD_Order_IDs().contains(currentDD_Order_ID))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	};
 
 	/**
 	 * Predicate used to filter retrieved rows ( {@link IPOSTableRow} ) based on current pressed Keys
 	 */
-	private final Predicate<IPOSTableRow> rowsFilterPPOrder = new Predicate<IPOSTableRow>()
-	{
-		@Override
-		public boolean test(final IPOSTableRow row)
+	private final Predicate<IPOSTableRow> rowsFilterPPOrder = row -> {
+		Check.assumeNotNull(pp_Order, "PP Order is not null");
+
+		final Set<Integer> rowProductIds = row.getM_Product_IDs();
+		if (rowProductIds == null || rowProductIds.isEmpty())
 		{
-			Check.assumeNotNull(pp_Order, "PP Order is not null");
-
-			final Set<Integer> rowProductIds = row.getM_Product_IDs();
-			if (rowProductIds == null || rowProductIds.isEmpty())
-			{
-				return false;
-			}
-
-			final List<I_PP_Order_BOMLine> bomList = ppOrderBOMDAO.retrieveOrderBOMLines(pp_Order);
-			for (final I_PP_Order_BOMLine bom : bomList)
-			{
-				final int bomProductId = bom.getM_Product_ID();
-				if (rowProductIds.contains(bomProductId))
-				{
-					return true;
-				}
-			}
 			return false;
 		}
+
+		final List<I_PP_Order_BOMLine> bomList = ppOrderBOMDAO.retrieveOrderBOMLines(pp_Order);
+		for (final I_PP_Order_BOMLine bom : bomList)
+		{
+			final int bomProductId = bom.getM_Product_ID();
+			if (rowProductIds.contains(bomProductId))
+			{
+				return true;
+			}
+		}
+		return false;
 	};
 
 	@Override
@@ -268,7 +261,11 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 
 		//
 		// Fetch source Warehouse IDs from selected rows
-		final Set<Integer> sourceWarehouseIds = service.getSourceWarehouseIds(rows);
+		final Set<WarehouseId> sourceWarehouseIds = service
+				.getSourceWarehouseIds(rows)
+				.stream()
+				.map(WarehouseId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 		if (sourceWarehouseIds.isEmpty())
 		{
 			// no lines selected => no warehouses => nothing to do
@@ -324,7 +321,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 		final List<I_DD_OrderLine> ddOrderLines = service.getDDOrderLines(ddOrderRow);
 		final List<I_M_Product> products = ddOrderRow.getM_Products();
 
-		final List<IHUProductStorage> huProductStorages = new ArrayList<IHUProductStorage>();
+		final List<IHUProductStorage> huProductStorages = new ArrayList<>();
 		for (final I_M_Product product : products)
 		{
 			final List<IHUProductStorage> subHUProductStorages = huEditorModel.getSelectedHUProductStorages(product);

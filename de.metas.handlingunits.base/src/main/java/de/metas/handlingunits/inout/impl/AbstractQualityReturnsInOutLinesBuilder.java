@@ -40,12 +40,12 @@ import de.metas.product.IProductBL;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -97,7 +97,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	 * Extract the product from the product storage together with its quantity.
 	 * If there is already an inout line for this product, update the existing qty based on the new one. If the inout line for this product does not exist yet, create it.
 	 * In the end assign the handling unit to the inout line and mark the HU as shipped.
-	 * 
+	 *
 	 * @param productStorage
 	 * @param originInOutLine
 	 */
@@ -127,7 +127,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
-		final BigDecimal qtyToMoveTotal = productStorage.getQty(productUOM);
+		final BigDecimal qtyToMoveTotal = productStorage.getQty(productUOM).getQty();
 
 		final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(productStorage.getM_HU());
 		final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPerc);
@@ -192,7 +192,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 	/**
 	 * Search the inout lines map (_inOutLines) and check if there is already a line for the given product. In case it already exists, return it. Otherwise, create a line for this product.
-	 * 
+	 *
 	 * @param product
 	 * @return
 	 */
@@ -274,7 +274,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 	/**
 	 * Make a unique key for the given product. This will serve in mapping the inout lines to their products.
-	 * 
+	 *
 	 * @param product
 	 * @return
 	 */

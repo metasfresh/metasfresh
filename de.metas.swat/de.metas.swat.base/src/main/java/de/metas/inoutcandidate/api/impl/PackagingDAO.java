@@ -63,7 +63,7 @@ public class PackagingDAO implements IPackagingDAO
 	private IPackageable createPackageable(final I_M_Packageable_V record)
 	{
 		final PackageableBuilder packageable = Packageable.builder();
-		packageable.bpartnerId(record.getC_BPartner_ID());
+		packageable.bpartnerId(record.getC_BPartner_Customer_ID());
 		packageable.bpartnerValue(record.getBPartnerValue());
 		packageable.bpartnerName(record.getBPartnerName());
 		packageable.bpartnerLocationId(record.getC_BPartner_Location_ID());
@@ -90,7 +90,7 @@ public class PackagingDAO implements IPackagingDAO
 
 		packageable.displayed(record.isDisplayed());
 
-		packageable.orderId(record.getC_Order_ID());
+		packageable.orderId(record.getC_OrderSO_ID());
 		packageable.docSubType(record.getDocSubType());
 
 		packageable.freightCostRule(record.getFreightCostRule());

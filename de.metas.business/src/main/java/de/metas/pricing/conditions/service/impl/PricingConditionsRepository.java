@@ -58,6 +58,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
 import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -173,12 +174,14 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.build();
 	}
 
-	private static PricingConditionsBreakMatchCriteria toPricingConditionsBreakMatchCriteria(final I_M_DiscountSchemaBreak schemaBreakRecord)
+	@VisibleForTesting
+	static PricingConditionsBreakMatchCriteria toPricingConditionsBreakMatchCriteria(final I_M_DiscountSchemaBreak schemaBreakRecord)
 	{
 		return PricingConditionsBreakMatchCriteria.builder()
 				.breakValue(schemaBreakRecord.getBreakValue())
 				.productId(ProductId.ofRepoIdOrNull(schemaBreakRecord.getM_Product_ID()))
 				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(schemaBreakRecord.getM_Product_Category_ID()))
+				.productManufacturerId(BPartnerId.ofRepoIdOrNull(schemaBreakRecord.getManufacturer_ID()))
 				.attributeValueId(schemaBreakRecord.getM_AttributeValue_ID())
 				.build();
 	}
@@ -351,7 +354,8 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		return toPricingConditionsBreak(schemaBreak);
 	}
 
-	private void updateSchemaBreakRecordFromRecordFromMatchCriteria(final I_M_DiscountSchemaBreak schemaBreak, final PricingConditionsBreakMatchCriteria matchCriteria)
+	@VisibleForTesting
+	static void updateSchemaBreakRecordFromRecordFromMatchCriteria(final I_M_DiscountSchemaBreak schemaBreak, final PricingConditionsBreakMatchCriteria matchCriteria)
 	{
 		if (matchCriteria == null)
 		{
@@ -361,6 +365,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		schemaBreak.setBreakValue(matchCriteria.getBreakValue());
 		schemaBreak.setM_Product_ID(ProductId.toRepoId(matchCriteria.getProductId()));
 		schemaBreak.setM_Product_Category_ID(ProductCategoryId.toRepoId(matchCriteria.getProductCategoryId()));
+		schemaBreak.setManufacturer_ID(BPartnerId.toRepoIdOr(matchCriteria.getProductManufacturerId(), -1));
 		schemaBreak.setM_AttributeValue_ID(matchCriteria.getAttributeValueId());
 	}
 

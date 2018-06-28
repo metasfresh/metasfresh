@@ -57,6 +57,7 @@ import org.compiere.model.GridField;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.Strings;
@@ -739,7 +740,7 @@ public final class VNumber extends JComponent
 		}
 		
 		//	Find frame
-		final Frame frame = Env.getFrame(jc);
+		final Frame frame = SwingUtils.getFrame(jc);
 		//	Actual Call
 		Calculator calc = new Calculator(frame, title, displayType, format, startValue);
 		AEnv.showCenterWindow(frame, calc);

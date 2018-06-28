@@ -27,7 +27,7 @@ import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import lombok.NonNull;
@@ -93,7 +93,7 @@ public class VendorProductInfoService
 
 	public List<VendorProductInfo> getVendorProductInfos(@NonNull final ProductId productId, @NonNull final OrgId orgId)
 	{
-		final ProductAndCategoryId productAndCategoryId = productsRepo.retrieveProductAndCategoryIdByProductId(productId);
+		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 		final Map<BPartnerId, Integer> discountSchemaIds = bpartnersRepo.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType.VENDOR);
 		if (discountSchemaIds.isEmpty())
@@ -110,7 +110,11 @@ public class VendorProductInfoService
 
 			final I_C_BPartner_Product bpartnerProductRecord = bpartnerProductRecords.get(vendorId);
 
-			final VendorProductInfo vendorProductInfo = createVendorProductInfo(vendorId, productAndCategoryId, pricingConditionsId, bpartnerProductRecord);
+			final VendorProductInfo vendorProductInfo = createVendorProductInfo(
+					vendorId,
+					product,
+					pricingConditionsId,
+					bpartnerProductRecord);
 			vendorProductInfos.add(vendorProductInfo);
 		}
 
@@ -122,19 +126,23 @@ public class VendorProductInfoService
 			@NonNull final ProductId productId,
 			@NonNull final OrgId orgId)
 	{
-		final ProductAndCategoryId productAndCategoryId = productsRepo.retrieveProductAndCategoryIdByProductId(productId);
+		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(vendorId, BPartnerType.VENDOR.getSOTrx());
 		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaId(discountSchemaId);
 
 		final I_C_BPartner_Product bpartnerProductRecord = partnerProductDAO.retrieveByVendorId(vendorId, productId, orgId);
 
-		return createVendorProductInfo(vendorId, productAndCategoryId, pricingConditionsId, bpartnerProductRecord);
+		return createVendorProductInfo(
+				vendorId,
+				product,
+				pricingConditionsId,
+				bpartnerProductRecord);
 	}
 
 	private VendorProductInfo createVendorProductInfo(
 			@NonNull final BPartnerId vendorId,
-			@NonNull final ProductAndCategoryId productAndCategoryId,
+			@NonNull final ProductAndCategoryAndManufacturerId product,
 			@NonNull final PricingConditionsId pricingConditionsId,
 			@Nullable final I_C_BPartner_Product bpartnerProductRecord)
 	{
@@ -144,7 +152,7 @@ public class VendorProductInfoService
 
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsId);
 
-		final ProductId productId = productAndCategoryId.getProductId();
+		final ProductId productId = product.getProductId();
 		final String vendorProductNo = Util.coalesceSuppliers(
 				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getVendorProductNo() : null,
 				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductNo() : null,
@@ -159,7 +167,7 @@ public class VendorProductInfoService
 		return VendorProductInfo.builder()
 				.vendorId(vendorId)
 				.defaultVendor(defaultVendor)
-				.productAndCategoryId(productAndCategoryId)
+				.product(product)
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE) // this might change when we incorporate attribute based pricing
 				.vendorProductNo(vendorProductNo)
 				.vendorProductName(vendorProductName)

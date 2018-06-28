@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 
@@ -53,8 +54,7 @@ public interface IHUPackingMaterialsCollector<T>
 	 * @param hu
 	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addHURecursively(I_M_HU hu,
-			T source);
+	void releasePackingMaterialForHURecursively(I_M_HU hu, T source);
 
 	/**
 	 * Recursivelly adds all the HUs from given collection.
@@ -64,19 +64,18 @@ public interface IHUPackingMaterialsCollector<T>
 	 * @param hus
 	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 *
-	 * @see #addHURecursively(I_M_HU)
+	 * @see #releasePackingMaterialForHURecursively(I_M_HU)
 	 */
-	void addHURecursively(Collection<I_M_HU> hus,
-			T source);
+	void releasePackingMaterialForHURecursively(Collection<I_M_HU> hus, T source);
 
 	/**
-	 * Retrieves suitable HUs from given {@link I_M_HU_Assignment}s query and add them recursively (see {@link #addHURecursively(Collection)}).
+	 * Retrieves suitable HUs from given {@link I_M_HU_Assignment}s query and add them recursively (see {@link #releasePackingMaterialForHURecursively(Collection)}).
 	 *
 	 * NOTE: this method makes sure that an HU is considered only once, so it's safe to call it as many times as you want.
 	 *
 	 * @param huAssignments
 	 */
-	void addHURecursively(IQueryBuilder<I_M_HU_Assignment> huAssignments);
+	void releasePackingMaterialForHURecursively(IQueryBuilder<I_M_HU_Assignment> huAssignments);
 
 	/**
 	 * Retrieves suitable TUs from {@link I_M_HU_Assignment}s query and add them recursively.
@@ -85,7 +84,7 @@ public interface IHUPackingMaterialsCollector<T>
 	 *
 	 * @param tuAssignmentsQuery
 	 */
-	void addTUHUsRecursively(IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery);
+	void releasePackingMaterialForTUHUsRecursively(IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery);
 
 	List<HUPackingMaterialDocumentLineCandidate> getAndClearCandidates();
 
@@ -96,7 +95,7 @@ public interface IHUPackingMaterialsCollector<T>
 	 *
 	 * @param hu
 	 */
-	void removeHURecursively(I_M_HU hu);
+	void requirePackingMaterialForHURecursively(I_M_HU hu);
 
 	/**
 	 * Add a trading unit packing materials
@@ -104,14 +103,14 @@ public interface IHUPackingMaterialsCollector<T>
 	 * @param tuHU
 	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addTU(I_M_HU tuHU, T source);
+	void releasePackingMaterialForTU(I_M_HU tuHU, T source);
 
 	/**
 	 * Collect (extract) trading unit packing materials
 	 *
 	 * @param tuHU
 	 */
-	void removeTU(I_M_HU tuHU);
+	void requirePackingMaterialForTU(I_M_HU tuHU);
 
 	/**
 	 * Add a loading unit packing materials
@@ -119,14 +118,12 @@ public interface IHUPackingMaterialsCollector<T>
 	 * @param luHU
 	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addLU(I_M_HU luHU, T source);
+	void releasePackingMaterialForLU(I_M_HU luHU, T source);
 
 	/**
-	 * Collect (extract) loading unit packing materials
-	 *
-	 * @param luHU
+	 * Collect (extract) loading unit packing materials.
 	 */
-	void removeLU(I_M_HU luHU);
+	void requirePackingMaterialForLU(I_M_HU luHU);
 
 	/**
 	 * Sets a shared "seen list" for added HUs.
@@ -158,4 +155,17 @@ public interface IHUPackingMaterialsCollector<T>
 
 	void setisCollectAggregatedHUs(boolean b);
 
+	IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> copy();
+
+	/**
+	 * If called, then every call to one of the {@code add..()} methods will be ignored.<br>
+	 * To be used if we know that despite e.g. a new M_HU is created, there shall be no packing material movement for it.
+	 */
+	IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> disable();
+
+	/**
+	 * If called, then every call to one of the {@code add..()} methods will throw an exception, unless {@link #disable()} was previously called.
+	 * To be used in unit tests, if you do HU operations that may not result in a packing material movement. Might also be used for assertions in production code.
+	 */
+	public IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> errorIfAnyHuIsAdded();
 }
