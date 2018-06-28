@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import java.time.LocalDateTime;
+
 import javax.xml.bind.JAXBElement;
 
 import com.google.common.collect.ImmutableList;
@@ -8,15 +10,19 @@ import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
+import de.metas.vertical.pharma.msv3.protocol.util.JAXBDateUtils;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellenResponse;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellstatusAbfragenResponse;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellstatusAntwort;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Bestellung;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAnteil;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwort;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwortAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwortPosition;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungDefektgrund;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungPosition;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungRueckmeldungTyp;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
 import lombok.NonNull;
 
@@ -119,10 +125,20 @@ public class OrderJAXBConverters
 
 	private BestellungAntwortPosition toJAXB(final OrderResponsePackageItem orderPackageItem)
 	{
+		final int qty = orderPackageItem.getQty().getValueAsInt();
+
+		final BestellungAnteil soapItemPart = jaxbObjectFactory.createBestellungAnteil();
+		soapItemPart.setMenge(qty);
+		soapItemPart.setTyp(BestellungRueckmeldungTyp.NORMAL);
+		soapItemPart.setGrund(BestellungDefektgrund.KEINE_ANGABE);
+		soapItemPart.setLieferzeitpunkt(JAXBDateUtils.toXMLGregorianCalendar(LocalDateTime.now().plusDays(1))); // FIXME: hardcoded
+		soapItemPart.setTourId("1"); // FIXME: hardcoded
+
 		final BestellungAntwortPosition soapItem = jaxbObjectFactory.createBestellungAntwortPosition();
 		soapItem.setBestellPzn(orderPackageItem.getPzn().getValueAsLong());
-		soapItem.setBestellMenge(orderPackageItem.getQty().getValueAsInt());
+		soapItem.setBestellMenge(qty);
 		soapItem.setBestellLiefervorgabe(orderPackageItem.getDeliverySpecifications().getSoapCode());
+		soapItem.getAnteile().add(soapItemPart);
 		// soapItem.setSubstitution(value); // TODO
 		return soapItem;
 	}
