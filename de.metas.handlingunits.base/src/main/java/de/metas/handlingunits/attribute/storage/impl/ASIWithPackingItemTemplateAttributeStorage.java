@@ -52,12 +52,12 @@ import lombok.NonNull;
 /**
  * Wraps an {@link I_M_AttributeSetInstance}, adds definitions from the packing item template's {@link I_M_HU_PI_Attribute}s.
  */
-/* package */ class ASIWithPackingItemTemplesAttributeStorage extends AbstractAttributeStorage
+/* package */ class ASIWithPackingItemTemplateAttributeStorage extends AbstractAttributeStorage
 {
 	private final String id;
 	private final I_M_AttributeSetInstance asi;
 
-	public ASIWithPackingItemTemplesAttributeStorage(
+	public ASIWithPackingItemTemplateAttributeStorage(
 			@NonNull final IAttributeStorageFactory storageFactory,
 			@NonNull final I_M_AttributeSetInstance asi)
 	{
@@ -103,7 +103,7 @@ import lombok.NonNull;
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
-		final IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		//
 		// Retrieve Template PI Attributes and build an M_Attribute_ID->M_HU_PI_Attribute map
@@ -113,7 +113,7 @@ import lombok.NonNull;
 		//
 		// Retrieve Attribute Instances for given ASI
 		// Build M_Attribute_ID to M_AttributeInstance map
-		final List<I_M_AttributeInstance> attributeInstances = attributesDAO.retrieveAttributeInstances(asi);
+		final List<I_M_AttributeInstance> attributeInstances = attributeDAO.retrieveAttributeInstances(asi);
 		final Map<Integer, I_M_AttributeInstance> attributeId2attributeInstance = new HashMap<>(attributeInstances.size());
 		for (final I_M_AttributeInstance instance : attributeInstances)
 		{
@@ -143,7 +143,7 @@ import lombok.NonNull;
 				// No M_AttributeInstance was found for our PI Attribute
 				// => create one but don't save
 				final String trxName = InterfaceWrapperHelper.getTrxName(asi);
-				attributeInstance = attributesDAO.createNewAttributeInstance(ctx, asi, attributeId, trxName);
+				attributeInstance = attributeDAO.createNewAttributeInstance(ctx, asi, attributeId, trxName);
 				isGeneratedAttribute = true;
 			}
 			else

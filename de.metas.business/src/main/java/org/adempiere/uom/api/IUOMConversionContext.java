@@ -39,12 +39,15 @@ import de.metas.quantity.Quantity;
  */
 public interface IUOMConversionContext
 {
+	/**
+	 * @deprecated please use {@link #of(int)}.
+	 */
 	@Deprecated
 	public static IUOMConversionContext of(final I_M_Product product)
 	{
 		return of(product != null ? product.getM_Product_ID() : -1);
 	}
-	
+
 	public static IUOMConversionContext of(final int productId)
 	{
 		return new UOMConversionContext(productId);

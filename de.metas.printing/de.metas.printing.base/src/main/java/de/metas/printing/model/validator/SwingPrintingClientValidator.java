@@ -103,7 +103,7 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 			clientStartupIssue = t;
 
 			logger.warn(t.getLocalizedMessage(), t);
-			Services.get(IClientUI.class).error(0, "Printing client not available", t.getLocalizedMessage());
+			Services.get(IClientUI.class).error(Env.WINDOW_MAIN, "Printing client not available", t.getLocalizedMessage());
 		}
 	}
 

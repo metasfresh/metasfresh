@@ -4,8 +4,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.adempiere.warehouse.WarehouseId;
+
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.product.ProductCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -36,14 +39,14 @@ import lombok.Value;
 @Value
 public class StockDataQuery
 {
-	ImmutableSet<Integer> productCategoryIds;
-	Set<Integer> warehouseIds;
+	ImmutableSet<ProductCategoryId> productCategoryIds;
+	Set<WarehouseId> warehouseIds;
 	ImmutableSet<StockDataQueryOrderBy> orderBys;
 
 	@Builder
 	private StockDataQuery(
-			@NonNull @Singular final ImmutableSet<Integer> productCategoryIds,
-			@NonNull @Singular final Set<Integer> warehouseIds,
+			@NonNull @Singular final ImmutableSet<ProductCategoryId> productCategoryIds,
+			@NonNull @Singular final Set<WarehouseId> warehouseIds,
 			@NonNull @Singular final ImmutableSet<StockDataQueryOrderBy> orderBys)
 	{
 		this.productCategoryIds = productCategoryIds;

@@ -35,7 +35,7 @@ import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.model.I_C_Order;
 import de.metas.pricing.conditions.PricingConditions;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -199,8 +199,8 @@ public class PurchaseOrderFromItemFactoryTest
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.vendorId(BPartnerId.ofRepoId(vendor.getC_BPartner_ID()))
 				.defaultVendor(true)
-				.productAndCategoryId(ProductAndCategoryId.of(20, 30))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(40))
+				.product(ProductAndCategoryAndManufacturerId.of(20, 30, 40))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(50))
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
 				.pricingConditions(createDummyPricingConditions())

@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -28,7 +29,6 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -176,7 +176,8 @@ public class AddQtyToHUCommand
 		final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
 
 		// we made sure that the source HU is active, so the target HU also needs to be active. Otherwise, goods would just seem to vanish
-		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		if (!huStatusBL.isStatusActive(hu))
 		{
 			throw new AdempiereException("not an active HU").setParameter("hu", hu);
 		}

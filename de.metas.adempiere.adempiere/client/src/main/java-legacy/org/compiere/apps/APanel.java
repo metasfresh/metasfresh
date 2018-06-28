@@ -121,6 +121,7 @@ import org.compiere.print.AReport;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicate;
@@ -3089,7 +3090,7 @@ public class APanel extends CPanel
 
 	private JFrame getCurrentFrame()
 	{
-		return Env.getFrame(this);
+		return SwingUtils.getFrame(this);
 	}
 
 	/**************************************************************************

@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.eevolution.model;
 
 
@@ -28,11 +12,11 @@ public interface I_PP_Product_BOMLine
     public static final String Table_Name = "PP_Product_BOMLine";
 
     /** AD_Table_ID=53019 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -48,7 +32,7 @@ public interface I_PP_Product_BOMLine
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, org.compiere.model.I_AD_Client>(I_PP_Product_BOMLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_PP_Product_BOMLine
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -85,7 +69,7 @@ public interface I_PP_Product_BOMLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Quantity Assay.
+	 * Set Mengen Probe.
 	 * Indicated the Quantity Assay to use into Quality Order
 	 *
 	 * <br>Type: Quantity
@@ -95,7 +79,7 @@ public interface I_PP_Product_BOMLine
 	public void setAssay (java.math.BigDecimal Assay);
 
 	/**
-	 * Get Quantity Assay.
+	 * Get Mengen Probe.
 	 * Indicated the Quantity Assay to use into Quality Order
 	 *
 	 * <br>Type: Quantity
@@ -110,7 +94,7 @@ public interface I_PP_Product_BOMLine
     public static final String COLUMNNAME_Assay = "Assay";
 
 	/**
-	 * Set Backflush Group.
+	 * Set Retrograde Gruppe.
 	 * The Grouping Components to the Backflush
 	 *
 	 * <br>Type: String
@@ -120,7 +104,7 @@ public interface I_PP_Product_BOMLine
 	public void setBackflushGroup (java.lang.String BackflushGroup);
 
 	/**
-	 * Get Backflush Group.
+	 * Get Retrograde Gruppe.
 	 * The Grouping Components to the Backflush
 	 *
 	 * <br>Type: String
@@ -154,7 +138,7 @@ public interface I_PP_Product_BOMLine
 	 */
 	public int getC_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException;
+	public org.compiere.model.I_C_UOM getC_UOM();
 
 	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
@@ -219,6 +203,29 @@ public interface I_PP_Product_BOMLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set CU Label Qty.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCULabelQuanitity (java.lang.String CULabelQuanitity);
+
+	/**
+	 * Get CU Label Qty.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCULabelQuanitity();
+
+    /** Column definition for CULabelQuanitity */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_CULabelQuanitity = new org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, Object>(I_PP_Product_BOMLine.class, "CULabelQuanitity", null);
+    /** Column name CULabelQuanitity */
+    public static final String COLUMNNAME_CULabelQuanitity = "CULabelQuanitity";
+
+	/**
 	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
@@ -240,6 +247,29 @@ public interface I_PP_Product_BOMLine
     public static final org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, Object>(I_PP_Product_BOMLine.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Erwartetes Ergebnis.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setexpectedResult (java.math.BigDecimal expectedResult);
+
+	/**
+	 * Get Erwartetes Ergebnis.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getexpectedResult();
+
+    /** Column definition for expectedResult */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_expectedResult = new org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, Object>(I_PP_Product_BOMLine.class, "expectedResult", null);
+    /** Column name expectedResult */
+    public static final String COLUMNNAME_expectedResult = "expectedResult";
 
 	/**
 	 * Set Feature.
@@ -392,7 +422,7 @@ public interface I_PP_Product_BOMLine
     public static final String COLUMNNAME_IsQtyPercentage = "IsQtyPercentage";
 
 	/**
-	 * Set Issue Method.
+	 * Set Zuteil Methode.
 	 * There are two methods for issue the components to Manufacturing Order
 	 *
 	 * <br>Type: List
@@ -402,7 +432,7 @@ public interface I_PP_Product_BOMLine
 	public void setIssueMethod (java.lang.String IssueMethod);
 
 	/**
-	 * Get Issue Method.
+	 * Get Zuteil Methode.
 	 * There are two methods for issue the components to Manufacturing Order
 	 *
 	 * <br>Type: List
@@ -467,8 +497,8 @@ public interface I_PP_Product_BOMLine
     public static final String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -477,8 +507,8 @@ public interface I_PP_Product_BOMLine
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -486,7 +516,7 @@ public interface I_PP_Product_BOMLine
 	 */
 	public int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException;
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
 	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
@@ -515,7 +545,7 @@ public interface I_PP_Product_BOMLine
 	 */
 	public int getM_ChangeNotice_ID();
 
-	public org.compiere.model.I_M_ChangeNotice getM_ChangeNotice() throws RuntimeException;
+	public org.compiere.model.I_M_ChangeNotice getM_ChangeNotice();
 
 	public void setM_ChangeNotice(org.compiere.model.I_M_ChangeNotice M_ChangeNotice);
 
@@ -544,7 +574,7 @@ public interface I_PP_Product_BOMLine
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
+	public org.compiere.model.I_M_Product getM_Product();
 
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
@@ -552,6 +582,31 @@ public interface I_PP_Product_BOMLine
     public static final org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, org.compiere.model.I_M_Product>(I_PP_Product_BOMLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set % oldScrap.
+	 * Indicate the % Scrap  for calculate the Scrap Quantity
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setoldScrap (java.math.BigDecimal oldScrap);
+
+	/**
+	 * Get % oldScrap.
+	 * Indicate the % Scrap  for calculate the Scrap Quantity
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getoldScrap();
+
+    /** Column definition for oldScrap */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_oldScrap = new org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, Object>(I_PP_Product_BOMLine.class, "oldScrap", null);
+    /** Column name oldScrap */
+    public static final String COLUMNNAME_oldScrap = "oldScrap";
 
 	/**
 	 * Set BOM & Formula.
@@ -573,7 +628,7 @@ public interface I_PP_Product_BOMLine
 	 */
 	public int getPP_Product_BOM_ID();
 
-	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM() throws RuntimeException;
+	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM();
 
 	public void setPP_Product_BOM(org.eevolution.model.I_PP_Product_BOM PP_Product_BOM);
 
@@ -683,6 +738,29 @@ public interface I_PP_Product_BOMLine
     public static final String COLUMNNAME_Scrap = "Scrap";
 
 	/**
+	 * Set Show Sub BOM Ingredients.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setShowSubBOMIngredients (boolean ShowSubBOMIngredients);
+
+	/**
+	 * Get Show Sub BOM Ingredients.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isShowSubBOMIngredients();
+
+    /** Column definition for ShowSubBOMIngredients */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_ShowSubBOMIngredients = new org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, Object>(I_PP_Product_BOMLine.class, "ShowSubBOMIngredients", null);
+    /** Column name ShowSubBOMIngredients */
+    public static final String COLUMNNAME_ShowSubBOMIngredients = "ShowSubBOMIngredients";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
@@ -763,7 +841,7 @@ public interface I_PP_Product_BOMLine
     public static final String COLUMNNAME_ValidTo = "ValidTo";
 
 	/**
-	 * Set VariantGroup.
+	 * Set Varianten Gruppe.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -772,7 +850,7 @@ public interface I_PP_Product_BOMLine
 	public void setVariantGroup (java.lang.String VariantGroup);
 
 	/**
-	 * Get VariantGroup.
+	 * Get Varianten Gruppe.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false

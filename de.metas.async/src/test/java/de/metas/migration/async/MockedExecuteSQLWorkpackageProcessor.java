@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -36,7 +37,7 @@ public class MockedExecuteSQLWorkpackageProcessor extends ExecuteSQLWorkpackageP
 {
 	public static final List<I_C_Queue_WorkPackage> processedWorkpackages = Collections.synchronizedList(new ArrayList<I_C_Queue_WorkPackage>());
 	public static final Map<Integer, ExecuteSQLWorkpackageExpectation> expectations = Collections.synchronizedMap(new HashMap<Integer, ExecuteSQLWorkpackageExpectation>());
-	
+
 	private static final int DEFAULT_ExpectationKey = -100;
 
 	public static final void reset()
@@ -62,9 +63,9 @@ public class MockedExecuteSQLWorkpackageProcessor extends ExecuteSQLWorkpackageP
 		{
 			return expectation;
 		}
-		
+
 		expectation = expectations.get(DEFAULT_ExpectationKey);
-		
+
 		Check.assumeNotNull(expectation, "expectation not null");
 		return expectation;
 	}
@@ -83,10 +84,10 @@ public class MockedExecuteSQLWorkpackageProcessor extends ExecuteSQLWorkpackageP
 	}
 
 	@Override
-	int executeSql(final String sql, final String trxName)
+	int executeSql(final String sql)
 	{
 		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
 		final ExecuteSQLWorkpackageExpectation expectation = getExpectation(workpackage);
-		return expectation.onExecuteSql(sql, trxName);
+		return expectation.onExecuteSql(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 }

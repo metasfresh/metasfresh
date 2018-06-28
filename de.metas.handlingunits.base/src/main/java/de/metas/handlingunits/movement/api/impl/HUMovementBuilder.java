@@ -10,12 +10,12 @@ package de.metas.handlingunits.movement.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,7 +55,6 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -192,7 +191,7 @@ public class HUMovementBuilder
 		Check.assumeNotNull(_warehouseTo, "_warehouseTo not null");
 		return _warehouseTo;
 	}
-	
+
 	public HUMovementBuilder setLocatorTo(@NonNull final I_M_Locator locatorTo)
 	{
 		_warehouseTo = locatorTo.getM_Warehouse();
@@ -269,15 +268,10 @@ public class HUMovementBuilder
 	{
 		final IContextAware contextInitial = getContextInitial();
 		huTrxBL.createHUContextProcessorExecutor(contextInitial)
-				.run(new IHUContextProcessor()
-				{
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext)
-					{
-						setHUContext(huContext);
-						createMovement0();
-						return NULL_RESULT; // we don't care about the result
-					}
+				.run((IHUContextProcessor)huContext -> {
+					setHUContext(huContext);
+					createMovement0();
+					return IHUContextProcessor.NULL_RESULT; // we don't care about the result
 				});
 
 		//
@@ -331,7 +325,7 @@ public class HUMovementBuilder
 				{
 					updateMovementLine(productStorage);
 				}
-				
+
 				addHUMoved(hu);
 			}
 		}
@@ -405,7 +399,7 @@ public class HUMovementBuilder
 		final I_M_MovementLine movementLine = getCreateMovementLine(product);
 
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
-		final BigDecimal qtyToMove = productStorage.getQty(productUOM);
+		final BigDecimal qtyToMove = productStorage.getQty(productUOM).getQty();
 
 		//
 		// Adjust movement line's qty to move

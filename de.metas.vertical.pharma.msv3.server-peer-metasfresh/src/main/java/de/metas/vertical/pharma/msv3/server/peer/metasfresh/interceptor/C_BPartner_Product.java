@@ -13,6 +13,8 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService;
 import lombok.NonNull;
 
@@ -66,9 +68,9 @@ public class C_BPartner_Product
 		}
 
 		final MSV3StockAvailabilityService stockAvailabilityService = getStockAvailabilityService();
-		final int productId = bpartnerProduct.getM_Product_ID();
-		final int newBPartnerId = bpartnerProduct.getC_BPartner_ID();
-		final int oldBPartnerId = -1;
+		final ProductId productId = ProductId.ofRepoId(bpartnerProduct.getM_Product_ID());
+		final BPartnerId newBPartnerId = BPartnerId.ofRepoIdOrNull(bpartnerProduct.getC_BPartner_ID());
+		final BPartnerId oldBPartnerId = null;
 		runAfterCommit(() -> stockAvailabilityService.publishProductExcludeAddedOrChanged(productId, newBPartnerId, oldBPartnerId));
 	}
 
@@ -85,9 +87,9 @@ public class C_BPartner_Product
 		}
 
 		final MSV3StockAvailabilityService stockAvailabilityService = getStockAvailabilityService();
-		final int productId = bpartnerProduct.getM_Product_ID();
-		final int newBPartnerId = bpartnerProduct.getC_BPartner_ID();
-		final int oldBPartnerId = bpartnerProductOld.getC_BPartner_ID();
+		final ProductId productId = ProductId.ofRepoId(bpartnerProduct.getM_Product_ID());
+		final BPartnerId newBPartnerId = BPartnerId.ofRepoIdOrNull(bpartnerProduct.getC_BPartner_ID());
+		final BPartnerId oldBPartnerId = BPartnerId.ofRepoIdOrNull(bpartnerProductOld.getC_BPartner_ID());
 		if (isExcludedFromSale)
 		{
 			runAfterCommit(() -> stockAvailabilityService.publishProductExcludeAddedOrChanged(productId, newBPartnerId, oldBPartnerId));
@@ -104,9 +106,9 @@ public class C_BPartner_Product
 		final I_C_BPartner_Product bpartnerProductOld = InterfaceWrapperHelper.createOld(bpartnerProduct, I_C_BPartner_Product.class);
 
 		final MSV3StockAvailabilityService stockAvailabilityService = getStockAvailabilityService();
-		final int productId = bpartnerProduct.getM_Product_ID();
-		final int newBPartnerId = bpartnerProduct.getC_BPartner_ID();
-		final int oldBPartnerId = bpartnerProductOld.getC_BPartner_ID();
+		final ProductId productId = ProductId.ofRepoId(bpartnerProduct.getM_Product_ID());
+		final BPartnerId newBPartnerId = BPartnerId.ofRepoIdOrNull(bpartnerProduct.getC_BPartner_ID());
+		final BPartnerId oldBPartnerId = BPartnerId.ofRepoIdOrNull(bpartnerProductOld.getC_BPartner_ID());
 		runAfterCommit(() -> stockAvailabilityService.publishProductExcludeDeleted(productId, newBPartnerId, oldBPartnerId));
 	}
 

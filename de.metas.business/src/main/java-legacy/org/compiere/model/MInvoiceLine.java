@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -42,10 +42,10 @@ import de.metas.tax.api.ITaxBL;
 
 /**
  * Invoice Line Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MInvoiceLine.java,v 1.5 2006/07/30 00:51:03 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  *         <ul>
  *         <li>BF [ 2804142 ] MInvoice.setRMALine should work only for CreditMemo invoices https://sourceforge.net/tracker/?func=detail&aid=2804142&group_id=176962&atid=879332
@@ -55,7 +55,8 @@ import de.metas.tax.api.ITaxBL;
  *         calculated.
  * @author tobi42 "metas us1064"
  *         <ul>
- *         <li>We changed MProductPricing such that getPriceStd returns the "real" PriceStd from the PL (without subtracting the discount) <li>Making sure that setPrice still works the way it used to
+ *         <li>We changed MProductPricing such that getPriceStd returns the "real" PriceStd from the PL (without subtracting the discount)
+ *         <li>Making sure that setPrice still works the way it used to
  */
 public class MInvoiceLine extends X_C_InvoiceLine
 {
@@ -67,7 +68,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get Invoice Line referencing InOut Line
-	 * 
+	 *
 	 * @param sLine shipment line
 	 * @return (first) invoice line
 	 */
@@ -77,7 +78,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			return null;
 		}
-		
+
 		MInvoiceLine retValue = null;
 		final String sql = "SELECT * FROM C_InvoiceLine WHERE M_InOutLine_ID=?";
 		PreparedStatement pstmt = null;
@@ -118,7 +119,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**************************************************************************
 	 * Invoice Line Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_InvoiceLine_ID invoice line or 0
 	 * @param trxName transaction name
@@ -145,7 +146,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Parent Constructor
-	 * 
+	 *
 	 * @param invoice parent
 	 */
 	public MInvoiceLine(MInvoice invoice)
@@ -160,7 +161,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 * @param trxName transaction
@@ -173,7 +174,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	private int m_M_PriceList_ID = 0;
 	private Timestamp m_DateInvoiced = null;
 	private int m_C_BPartner_ID = 0;
-	//private int m_C_BPartner_Location_ID = 0;
+	// private int m_C_BPartner_Location_ID = 0;
 	private boolean m_IsSOTrx = true;
 	private boolean m_priceSet = false;
 	private MProduct m_product = null;
@@ -191,7 +192,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Defaults from Order. Called also from copy lines from invoice Does not set Parent !!
-	 * 
+	 *
 	 * @param invoice invoice
 	 */
 	public void setInvoice(I_C_Invoice invoice)
@@ -207,7 +208,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get Parent
-	 * 
+	 *
 	 * @return parent
 	 * @deprecated Please use {@link #getC_Invoice()}
 	 */
@@ -223,7 +224,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set values from Order Line. Does not set quantity!
-	 * 
+	 *
 	 * @param oLine line
 	 */
 	public void setOrderLine(MOrderLine oLine)
@@ -291,7 +292,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set values from Shipment Line. Does not set quantity!
-	 * 
+	 *
 	 * @param sLine ship line
 	 */
 	public void setShipLine(MInOutLine sLine)
@@ -399,17 +400,17 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setAD_OrgTrx_ID(sLine.getAD_OrgTrx_ID());
 		setUser1_ID(sLine.getUser1_ID());
 		setUser2_ID(sLine.getUser2_ID());
-		
-		//task FRESH-273
+
+		// task FRESH-273
 		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
-		final de.metas.inout.model.I_M_InOutLine sl = InterfaceWrapperHelper.create(sLine, de.metas.inout.model.I_M_InOutLine.class);		
+		final de.metas.inout.model.I_M_InOutLine sl = InterfaceWrapperHelper.create(sLine, de.metas.inout.model.I_M_InOutLine.class);
 		il.setIsPackagingMaterial(sl.isPackagingMaterial());
-		
+
 	}	// setShipLine
 
 	/**
 	 * Add to Description
-	 * 
+	 *
 	 * @param description text
 	 */
 	public void addDescription(String description)
@@ -423,7 +424,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set M_AttributeSetInstance_ID
-	 * 
+	 *
 	 * @param M_AttributeSetInstance_ID id
 	 */
 	@Override
@@ -451,7 +452,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Price for Product and PriceList
-	 * 
+	 *
 	 * @param M_PriceList_ID price list
 	 * @param C_BPartner_ID business partner
 	 */
@@ -465,14 +466,14 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				getQtyInvoiced(), m_IsSOTrx);
 		m_productPricing.setM_PriceList_ID(M_PriceList_ID);
 		m_productPricing.setPriceDate(m_DateInvoiced);
-		
+
 		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		
+
 		// Set the IsManualPrice in the pricing engine based on the value in the invoice Line
 		m_productPricing.setManualPrice(il.isManualPrice());
-		
-		if(m_productPricing.isManualPrice())
+
+		if (m_productPricing.isManualPrice())
 		{
 			log.debug("Do not calculate the prices for " + m_productPricing + " because they were already manually set");
 			return;
@@ -515,7 +516,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Price Entered/Actual. Use this Method if the Line UOM is the Product UOM
-	 * 
+	 *
 	 * @param PriceActual price
 	 */
 	public void setPrice(BigDecimal PriceActual)
@@ -527,7 +528,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Price Actual. (actual price is not updateable)
-	 * 
+	 *
 	 * @param PriceActual actual price
 	 */
 	@Override
@@ -540,7 +541,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Tax - requires Warehouse
-	 * 
+	 *
 	 * @return true if found
 	 */
 	public boolean setTax()
@@ -654,7 +655,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get Charge
-	 * 
+	 *
 	 * @return product or null
 	 */
 	public MCharge getCharge()
@@ -666,7 +667,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get Tax
-	 * 
+	 *
 	 * @return tax
 	 */
 	protected MTax getTax()
@@ -678,7 +679,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Qty Invoiced/Entered.
-	 * 
+	 *
 	 * @param Qty Invoiced/Ordered
 	 */
 	public void setQty(int Qty)
@@ -688,7 +689,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Qty Invoiced
-	 * 
+	 *
 	 * @param Qty Invoiced/Entered
 	 */
 	public void setQty(BigDecimal Qty)
@@ -699,7 +700,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Qty Entered - enforce entered UOM
-	 * 
+	 *
 	 * @param QtyEntered
 	 */
 	@Override
@@ -715,7 +716,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Qty Invoiced - enforce Product UOM
-	 * 
+	 *
 	 * @param QtyInvoiced
 	 */
 	@Override
@@ -732,7 +733,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Product
-	 * 
+	 *
 	 * @param product product
 	 */
 	public void setProduct(MProduct product)
@@ -754,7 +755,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set M_Product_ID
-	 * 
+	 *
 	 * @param M_Product_ID product
 	 * @param setUOM set UOM from product
 	 */
@@ -769,7 +770,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Product and UOM
-	 * 
+	 *
 	 * @param M_Product_ID product
 	 * @param C_UOM_ID uom
 	 */
@@ -782,7 +783,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get Product
-	 * 
+	 *
 	 * @return product or null
 	 */
 	public MProduct getProduct()
@@ -794,7 +795,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get C_Project_ID
-	 * 
+	 *
 	 * @return project
 	 */
 	@Override
@@ -808,7 +809,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get C_Activity_ID
-	 * 
+	 *
 	 * @return Activity
 	 */
 	@Override
@@ -822,7 +823,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get C_Campaign_ID
-	 * 
+	 *
 	 * @return Campaign
 	 */
 	@Override
@@ -836,7 +837,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get User2_ID
-	 * 
+	 *
 	 * @return User2
 	 */
 	@Override
@@ -850,7 +851,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get User2_ID
-	 * 
+	 *
 	 * @return User2
 	 */
 	@Override
@@ -864,7 +865,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get AD_OrgTrx_ID
-	 * 
+	 *
 	 * @return trx org
 	 */
 	@Override
@@ -878,7 +879,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -894,7 +895,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get (Product/Charge) Name
-	 * 
+	 *
 	 * @return name
 	 */
 	public String getName()
@@ -942,7 +943,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Set Temporary (cached) Name
-	 * 
+	 *
 	 * @param tempName Cached Name
 	 */
 	public void setName(String tempName)
@@ -952,7 +953,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get Description Text. For jsp access (vs. isDescription)
-	 * 
+	 *
 	 * @return description
 	 */
 	public String getDescriptionText()
@@ -962,7 +963,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Get Currency Precision
-	 * 
+	 *
 	 * @return precision
 	 * @deprecated Please use {@link IInvoiceBL#getPrecision(org.compiere.model.I_C_InvoiceLine)}.
 	 */
@@ -974,9 +975,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Is Tax Included in Amount
-	 * 
+	 *
 	 * @return true if tax is included
-	 * 
+	 *
 	 * @deprecated Please use {@link IInvoiceBL#isTaxIncluded(org.compiere.model.I_C_InvoiceLine)}.
 	 */
 	@Deprecated
@@ -987,7 +988,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**************************************************************************
 	 * Before Save
-	 * 
+	 *
 	 * @param newRecord
 	 * @return true if save
 	 */
@@ -1083,10 +1084,10 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Recalculate invoice tax
-	 * 
+	 *
 	 * @param oldTax true if the old C_Tax_ID should be used
 	 * @return true if success, false otherwise
-	 * 
+	 *
 	 * @author teo_sarca [ 1583825 ]
 	 */
 	private boolean updateInvoiceTax(final boolean oldTax)
@@ -1126,7 +1127,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * After Save
-	 * 
+	 *
 	 * @param newRecord new
 	 * @param success success
 	 * @return saved
@@ -1147,7 +1148,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * After Delete
-	 * 
+	 *
 	 * @param success success
 	 * @return deleted
 	 */
@@ -1170,7 +1171,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Update Tax & Header
-	 * 
+	 *
 	 * @return true if header updated with tax
 	 */
 	private boolean updateHeaderTax()
@@ -1194,7 +1195,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			final int no = DB.executeUpdateEx(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
 			if (no != 1)
 			{
-				new AdempiereException("Updating TotalLines failed");
+				throw new AdempiereException("Updating TotalLines failed; updated records=" + no + "; sql=" + sql);
 			}
 		}
 
@@ -1209,7 +1210,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			final int no = DB.executeUpdateEx(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
 			if (no != 1)
 			{
-				new AdempiereException("Updating GrandTotal failed");
+				throw new AdempiereException("Updating GrandTotal failed; updated records=" + no + "; sql=" + sql);
 			}
 		}
 		m_parent = null;
@@ -1219,7 +1220,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**************************************************************************
 	 * Allocate Landed Costs
-	 * 
+	 *
 	 * @return error message or ""
 	 */
 	public String allocateLandedCosts()
@@ -1245,13 +1246,13 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				ArrayList<MInOutLine> list = new ArrayList<>();
 				MInOut ship = new MInOut(getCtx(), lc.getM_InOut_ID(), get_TrxName());
 				MInOutLine[] lines = ship.getLines();
-				for (int i = 0; i < lines.length; i++)
+				for (MInOutLine line : lines)
 				{
-					if (lines[i].isDescription() || lines[i].getM_Product_ID() == 0)
+					if (line.isDescription() || line.getM_Product_ID() == 0)
 						continue;
 					if (lc.getM_Product_ID() == 0
-							|| lc.getM_Product_ID() == lines[i].getM_Product_ID())
-						list.add(lines[i]);
+							|| lc.getM_Product_ID() == line.getM_Product_ID())
+						list.add(line);
 				}
 				if (list.size() == 0)
 					return "No Matching Lines (with Product) in Shipment";
@@ -1326,9 +1327,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// *** Multiple Criteria ***
 		String LandedCostDistribution = lcs[0].getLandedCostDistribution();
 		int M_CostElement_ID = lcs[0].getM_CostElement_ID();
-		for (int i = 0; i < lcs.length; i++)
+		for (MLandedCost lc2 : lcs)
 		{
-			MLandedCost lc = lcs[i];
+			MLandedCost lc = lc2;
 			if (!LandedCostDistribution.equals(lc.getLandedCostDistribution()))
 				return "Multiple Landed Cost Rules must have consistent Landed Cost Distribution";
 			if (lc.getM_Product_ID() != 0 && lc.getM_InOut_ID() == 0 && lc.getM_InOutLine_ID() == 0)
@@ -1338,21 +1339,20 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		}
 		// Create List
 		ArrayList<MInOutLine> list = new ArrayList<>();
-		for (int ii = 0; ii < lcs.length; ii++)
+		for (MLandedCost lc : lcs)
 		{
-			MLandedCost lc = lcs[ii];
 			if (lc.getM_InOut_ID() != 0 && lc.getM_InOutLine_ID() == 0)		// entire receipt
 			{
 				MInOut ship = new MInOut(getCtx(), lc.getM_InOut_ID(), get_TrxName());
 				MInOutLine[] lines = ship.getLines();
-				for (int i = 0; i < lines.length; i++)
+				for (MInOutLine line : lines)
 				{
-					if (lines[i].isDescription()		// decription or no product
-							|| lines[i].getM_Product_ID() == 0)
+					if (line.isDescription()		// decription or no product
+							|| line.getM_Product_ID() == 0)
 						continue;
 					if (lc.getM_Product_ID() == 0		// no restriction or product match
-							|| lc.getM_Product_ID() == lines[i].getM_Product_ID())
-						list.add(lines[i]);
+							|| lc.getM_Product_ID() == line.getM_Product_ID())
+						list.add(line);
 				}
 			}
 			else if (lc.getM_InOutLine_ID() != 0)	// receipt line
@@ -1411,9 +1411,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				getCtx(), getC_InvoiceLine_ID(), get_TrxName());
 		MLandedCostAllocation largestAmtAllocation = null;
 		BigDecimal allocationAmt = Env.ZERO;
-		for (int i = 0; i < allocations.length; i++)
+		for (MLandedCostAllocation allocation : allocations)
 		{
-			MLandedCostAllocation allocation = allocations[i];
 			if (largestAmtAllocation == null
 					|| allocation.getAmt().compareTo(largestAmtAllocation.getAmt()) > 0)
 				largestAmtAllocation = allocation;
@@ -1433,7 +1432,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	// MZ Goodwill
 	/**
 	 * Get LandedCost of InvoiceLine
-	 * 
+	 *
 	 * @param whereClause starting with AND
 	 * @return landedCost
 	 */
@@ -1483,7 +1482,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	/**
 	 * Copy LandedCost From other InvoiceLine.
-	 * 
+	 *
 	 * @param otherInvoiceLine invoiceline
 	 * @return number of lines copied
 	 */
@@ -1493,10 +1492,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			return 0;
 		MLandedCost[] fromLandedCosts = otherInvoiceLine.getLandedCost(null);
 		int count = 0;
-		for (int i = 0; i < fromLandedCosts.length; i++)
+		for (MLandedCost fromLandedCost : fromLandedCosts)
 		{
 			MLandedCost landedCost = new MLandedCost(getCtx(), 0, get_TrxName());
-			MLandedCost fromLandedCost = fromLandedCosts[i];
 			PO.copyValues(fromLandedCost, landedCost, fromLandedCost.getAD_Client_ID(), fromLandedCost.getAD_Org_ID());
 			landedCost.setC_InvoiceLine_ID(getC_InvoiceLine_ID());
 			landedCost.set_ValueNoCheck("C_LandedCost_ID", I_ZERO);	// new
@@ -1563,9 +1561,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			setC_Activity_ID(rmaLine.getC_Activity_ID());
 		}
 		setC_Campaign_ID(rmaLine.getC_Campaign_ID());
-		
+
 		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
-		//task FRESH-273
+		// task FRESH-273
 		il.setIsPackagingMaterial(true);
 	}
 

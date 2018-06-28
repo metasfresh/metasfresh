@@ -36,6 +36,7 @@ import java.util.Set;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
@@ -124,7 +125,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 
 		//
 		// retrieve products from BOM line for specified order
-		final Set<Integer> productIds = new HashSet<Integer>();
+		final Set<Integer> productIds = new HashSet<>();
 		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
 			if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
@@ -142,7 +143,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 				.setContext(ppOrder)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithProductIds(productIds)
-				.addOnlyInWarehouseId(warehouseId)
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(warehouseId))
 				.onlyNotLocked() // skip those locked because usually those were planned for something...
 		;
 

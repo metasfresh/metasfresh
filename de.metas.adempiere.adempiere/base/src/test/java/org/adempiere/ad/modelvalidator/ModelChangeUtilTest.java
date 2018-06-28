@@ -36,7 +36,7 @@ import lombok.Value;
  * #L%
  */
 
-public class InterceptorUtilTest
+public class ModelChangeUtilTest
 {
 	@Before
 	public void init()
@@ -76,7 +76,7 @@ public class InterceptorUtilTest
 		final Spec spec = specBuilder.build();
 		final I_C_Order table = setupTestRecord(spec);
 
-		assertThat(InterceptorUtil.isJustDeactivated(table)).isEqualTo(spec.isResult());
+		assertThat(ModelChangeUtil.isJustDeactivated(table)).isEqualTo(spec.isResult());
 	}
 
 	@Test
@@ -93,7 +93,7 @@ public class InterceptorUtilTest
 		final Spec spec = specBuilder.build();
 
 		final I_C_Order table = setupTestRecord(spec);
-		assertThat(InterceptorUtil.isJustActivated(table)).isEqualTo(spec.isResult());
+		assertThat(ModelChangeUtil.isJustActivated(table)).isEqualTo(spec.isResult());
 	}
 
 	@Test
@@ -126,7 +126,7 @@ public class InterceptorUtilTest
 		final Spec spec = specBuilder.build();
 
 		final I_C_Order table = setupTestRecord(spec);
-		assertThat(InterceptorUtil.isJustDeactivatedOrUnProcessed(table)).isEqualTo(spec.isResult());
+		assertThat(ModelChangeUtil.isJustDeactivatedOrUnProcessed(table)).isEqualTo(spec.isResult());
 	}
 
 	@Test
@@ -158,7 +158,7 @@ public class InterceptorUtilTest
 		final Spec spec = specBuilder.build();
 
 		final I_C_Order table = setupTestRecord(spec);
-		assertThat(InterceptorUtil.isJustActivatedOrProcessed(table)).isEqualTo(spec.isResult());
+		assertThat(ModelChangeUtil.isJustActivatedOrProcessed(table)).isEqualTo(spec.isResult());
 	}
 
 	private Spec.SpecBuilder spec()

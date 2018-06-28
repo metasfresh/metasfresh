@@ -71,7 +71,7 @@ public class HUPackingMaterialsCollectorTest
 		// Create a packing materials collector and collect the LU we just create it
 		final HUPackingMaterialsCollector collector = new HUPackingMaterialsCollector(data.helper.createMutableHUContext());
 		final IHUPackingMaterialCollectorSource source = null; // N/A
-		collector.addHURecursively(luHU, source);
+		collector.releasePackingMaterialForHURecursively(luHU, source);
 
 		//
 		// Assert collected TUs counter is OK.
