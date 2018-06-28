@@ -94,31 +94,6 @@ public interface I_I_Datev_Payment
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Bank Account No.
-	 * Bank Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setBankAccountNo (java.lang.String BankAccountNo);
-
-	/**
-	 * Get Bank Account No.
-	 * Bank Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getBankAccountNo();
-
-    /** Column definition for BankAccountNo */
-    public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_BankAccountNo = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "BankAccountNo", null);
-    /** Column name BankAccountNo */
-    public static final String COLUMNNAME_BankAccountNo = "BankAccountNo";
-
-	/**
 	 * Set Geschäftspartner-Schlüssel.
 	 * Key of the Business Partner
 	 *
@@ -142,35 +117,6 @@ public interface I_I_Datev_Payment
     public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_BPartnerValue = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "BPartnerValue", null);
     /** Column name BPartnerValue */
     public static final String COLUMNNAME_BPartnerValue = "BPartnerValue";
-
-	/**
-	 * Set Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
-
-	/**
-	 * Get Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BP_BankAccount_ID();
-
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
-
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
-
-    /** Column definition for C_BP_BankAccount_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, org.compiere.model.I_C_BP_BankAccount>(I_I_Datev_Payment.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
-    /** Column name C_BP_BankAccount_ID */
-    public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Set Geschäftspartner.
@@ -392,31 +338,6 @@ public interface I_I_Datev_Payment
     public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_DocTypeName = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "DocTypeName", null);
     /** Column name DocTypeName */
     public static final String COLUMNNAME_DocTypeName = "DocTypeName";
-
-	/**
-	 * Set Nr..
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
-
-	/**
-	 * Get Nr..
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDocumentNo();
-
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Datev Payment.

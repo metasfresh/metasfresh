@@ -15,7 +15,7 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1590859627L;
+	private static final long serialVersionUID = -782154907L;
 
     /** Standard Constructor */
     public X_I_Datev_Payment (Properties ctx, int I_Datev_Payment_ID, String trxName)
@@ -62,25 +62,6 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 		return (java.lang.String)get_Value(COLUMNNAME_AccountNo);
 	}
 
-	/** Set Bank Account No.
-		@param BankAccountNo 
-		Bank Account Number
-	  */
-	@Override
-	public void setBankAccountNo (java.lang.String BankAccountNo)
-	{
-		set_Value (COLUMNNAME_BankAccountNo, BankAccountNo);
-	}
-
-	/** Get Bank Account No.
-		@return Bank Account Number
-	  */
-	@Override
-	public java.lang.String getBankAccountNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_BankAccountNo);
-	}
-
 	/** Set Geschäftspartner-Schlüssel.
 		@param BPartnerValue 
 		Key of the Business Partner
@@ -98,43 +79,6 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 	public java.lang.String getBPartnerValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerValue);
-	}
-
-	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
-	}
-
-	@Override
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class, C_BP_BankAccount);
-	}
-
-	/** Set Bankverbindung.
-		@param C_BP_BankAccount_ID 
-		Bankverbindung des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
-	}
-
-	/** Get Bankverbindung.
-		@return Bankverbindung des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_BankAccount_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	@Override
@@ -343,25 +287,6 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 	public java.lang.String getDocTypeName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocTypeName);
-	}
-
-	/** Set Nr..
-		@param DocumentNo 
-		Document sequence number of the document
-	  */
-	@Override
-	public void setDocumentNo (java.lang.String DocumentNo)
-	{
-		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
-	}
-
-	/** Get Nr..
-		@return Document sequence number of the document
-	  */
-	@Override
-	public java.lang.String getDocumentNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	/** Set Datev Payment.
