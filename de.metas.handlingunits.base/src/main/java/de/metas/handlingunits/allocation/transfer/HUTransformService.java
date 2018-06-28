@@ -82,12 +82,12 @@ import lombok.Singular;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -97,7 +97,7 @@ import lombok.Singular;
 /**
  * This class contains business logic run by clients when they transform HUs.
  * Use {@link #newInstance(Properties)} or {@link #newInstance(IHUContext)} to obtain an instance.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh-webui/issues/181
  *
@@ -126,7 +126,7 @@ public class HUTransformService
 
 	/**
 	 * Uses {@link IHUContextFactory#createMutableHUContext(Properties, String)} with the given {@code ctx} and {@code trxName} and returns a new {@link HUTransformService} instance with that huContext.
-	 * 
+	 *
 	 * @param ctx optional
 	 * @param trxName optional
 	 * @param emptyHUListener
@@ -155,7 +155,7 @@ public class HUTransformService
 
 	/**
 	 * When running unit tests, then use this builder to get your instance. Pass the HUTestHelper's getHUContext() result to it, to avoid transactional trouble.
-	 * 
+	 *
 	 * @param huContext
 	 * @param referencedObjects
 	 */
@@ -216,7 +216,7 @@ public class HUTransformService
 
 	/**
 	 * Takes a quantity out of a TU <b>or</b> to splits one CU into two.
-	 * 
+	 *
 	 * @param cuHU the currently selected source CU line
 	 * @param qtyCU the CU-quantity to take out or split
 	 * @return the newly created CU.
@@ -229,7 +229,7 @@ public class HUTransformService
 	}
 
 	/**
-	 * @return the now-standalone CUs
+	 * @return the now-standalone CUs, also if they were already standalone to start with.
 	 */
 	private List<I_M_HU> cuToNewCU0(
 			@NonNull final I_M_HU cuHU,
@@ -250,20 +250,20 @@ public class HUTransformService
 			{
 				if (!keepCUsUnderSameParent)
 				{
-				// detach cuHU from its parent
-				setParent(cuHU, null,
-						// before
-						localHuContext -> {
-							final I_M_HU oldTuHU = handlingUnitsDAO.retrieveParent(cuHU);
-							final I_M_HU oldLuHU = oldTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
-							updateAllocation(oldLuHU, oldTuHU, cuHU, qtyCU, true, localHuContext);
-						},
-						// after
-						localHuContext -> {
-							final I_M_HU newTuHU = handlingUnitsDAO.retrieveParent(cuHU);
-							final I_M_HU newLuHU = newTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
-							updateAllocation(newLuHU, newTuHU, cuHU, qtyCU, false, localHuContext);
-						});
+					// detach cuHU from its parent
+					setParent(cuHU, null,
+							// before
+							localHuContext -> {
+								final I_M_HU oldTuHU = handlingUnitsDAO.retrieveParent(cuHU);
+								final I_M_HU oldLuHU = oldTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
+								updateAllocation(oldLuHU, oldTuHU, cuHU, qtyCU, true, localHuContext);
+							},
+							// after
+							localHuContext -> {
+								final I_M_HU newTuHU = handlingUnitsDAO.retrieveParent(cuHU);
+								final I_M_HU newLuHU = newTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
+								updateAllocation(newLuHU, newTuHU, cuHU, qtyCU, false, localHuContext);
+							});
 				}
 				return ImmutableList.of(cuHU);
 			}
@@ -293,7 +293,7 @@ public class HUTransformService
 			if (parentOfSourceCU != null)
 			{
 				addCUsToTU(createdHUs, parentOfSourceCU);
-	}
+			}
 		}
 
 		return createdHUs;
@@ -366,11 +366,11 @@ public class HUTransformService
 	 * <b>Important:</b> the user is allowed to exceed the TU capacity which was configured in metasfresh! No new TUs will be created.<br>
 	 * That's because if a user manages to squeeze something into a box in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
 	 * <p>
-	 * 
+	 *
 	 * @param sourceCuHU the source CU to be split or joined
 	 * @param qtyCU the CU-quantity to join or split
 	 * @param targetTuHU the target TU
-	 * 
+	 *
 	 * @return the CUs that were created
 	 */
 	public List<I_M_HU> cuToExistingTU(
@@ -451,7 +451,7 @@ public class HUTransformService
 
 	/**
 	 * Update {@link IHUAllocations}. Currently know examples are receipt schedule allocations and shipment schedule allocations.
-	 * 
+	 *
 	 * @param luHU
 	 * @param tuHU
 	 * @param cuHU if {@code null}, then all cuHus of the given tuHU are iterated.
@@ -517,7 +517,7 @@ public class HUTransformService
 	 * That's because if a user manages to jenga another box onto a loaded pallet in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
 	 * <p>
 	 * <b>Also, please note that an aggregate TU is "de-aggregated" before it is added to the LU.</b>
-	 * 
+	 *
 	 * @param sourceTuHU the source TU to process. Can be an aggregated HU and therefore represent many homogeneous TUs
 	 * @param qtyTU the number of TUs to join or split one the target LU
 	 * @param luHU the target LU
@@ -583,7 +583,7 @@ public class HUTransformService
 	/**
 	 * Creates one or more TUs (depending on the given quantity and the TU capacity) and joins, splits and/or distributes the source CU to them.<br>
 	 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
-	 * 
+	 *
 	 * @param cuHU the currently selected source CU line
 	 * @param qtyCU the CU-quantity to join or split
 	 * @param tuPIItemProduct the PI item product to specify both the PI and capacity of the target TU
@@ -629,7 +629,7 @@ public class HUTransformService
 	/**
 	 * Takes a TU off a LU or splits one aggregate TU into two. This has the effect of "de-aggregating" the given {@code sourceTuHU}.<br>
 	 * The resulting TUs will always have the same PI as the source TU.
-	 * 
+	 *
 	 * @param sourceTuHU he source TU to process. Can be an aggregated HU and therefore represent many homogeneous TUs
 	 * @param qtyTU the number of TUs to take off or split
 	 */
@@ -732,7 +732,7 @@ public class HUTransformService
 
 	/**
 	 * Extract a given number of TUs from an LU.
-	 * 
+	 *
 	 * @param sourceLU LU from where the TUs shall be extracted
 	 * @param qtyTU how many TUs to extract
 	 * @param keepSourceLuAsParent if true, the TUs will be created as necessary, but they will remain children of the given {@code sourceLU}.
@@ -796,18 +796,18 @@ public class HUTransformService
 				if (!keepSourceLuAsParent)
 				{
 					// move the single TU out of sourceLU
-				setParent(tu, null,
-						// beforeParentChange
-						localHuContext -> {
-							final I_M_HU cu = null;
-							updateAllocation(sourceLU, tu, cu, null, true, localHuContext);
-						},
-						// afterParentChange
-						localHuContext -> {
-							final I_M_HU newParentLU = null;
-							final I_M_HU cu = null;
-							updateAllocation(newParentLU, tu, cu, null, false, localHuContext);
-						});
+					setParent(tu, null,
+							// beforeParentChange
+							localHuContext -> {
+								final I_M_HU cu = null;
+								updateAllocation(sourceLU, tu, cu, null, true, localHuContext);
+							},
+							// afterParentChange
+							localHuContext -> {
+								final I_M_HU newParentLU = null;
+								final I_M_HU cu = null;
+								updateAllocation(newParentLU, tu, cu, null, false, localHuContext);
+							});
 				}
 				extractedTUs.add(tu);
 				qtyTUsRemaining--;
@@ -825,7 +825,7 @@ public class HUTransformService
 	}
 
 	/**
-	 * 
+	 *
 	 * @param childHU
 	 * @param parentItem may be {@code null} if the childHU in question is removed from it's parent HU.
 	 * @param beforeParentChange
@@ -850,28 +850,28 @@ public class HUTransformService
 				.createHUContextProcessorExecutor(huContext)
 				.run(
 						localHuContext -> {
-						Preconditions.checkNotNull(localHuContext, "Param 'localHuContext' may not be null");
-						trxManager.assertTrxNotNull(localHuContext);
+							Preconditions.checkNotNull(localHuContext, "Param 'localHuContext' may not be null");
+							trxManager.assertTrxNotNull(localHuContext);
 
-						beforeParentChange.accept(localHuContext);
+							beforeParentChange.accept(localHuContext);
 
-						// Take it out from its parent
-						huTrxBL.setParentHU(localHuContext,
-								parentItem, // might be null
-								childHU,
-								true // destroyOldParentIfEmptyStorage
-						);
+							// Take it out from its parent
+							huTrxBL.setParentHU(localHuContext,
+									parentItem, // might be null
+									childHU,
+									true // destroyOldParentIfEmptyStorage
+							);
 
-						afterParentChange.accept(localHuContext);
+							afterParentChange.accept(localHuContext);
 
 							return IHUContextProcessor.NULL_RESULT; // we don't care about the result
-				});
+						});
 	}
 
 	/**
 	 * Creates a new LU and joins or splits a source TU to it. If the user goes with the full quantity of the (aggregate) source TU(s), and if if all fits on one LU, then the source remains unchanged and is only joined.<br>
 	 * Otherwise, the source is split and distributed over many LUs.
-	 * 
+	 *
 	 * @param sourceTuHU the source TU line to process. Can be an aggregated HU and therefore represent many homogeneous TUs.
 	 * @param qtyTU the number of TUs to join or split onto the destination LU(s).
 	 * @param luPIItem the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU.
@@ -1152,7 +1152,7 @@ public class HUTransformService
 		}
 		else
 		{
-			return cuToNewCU_AllocateMaximumPossibleQty(sourceHU, qtyCU);
+			return cuToNewCU_AllocateMaximumPossibleQty(sourceHU, singleSourceHuRequest.getQtyCU());
 		}
 	}
 
@@ -1218,7 +1218,7 @@ public class HUTransformService
 					.getStorageFactory()
 					.getStorage(cu)
 					.getProductStorageOrNull(singleSourceTuRequest.getProductId().getRepoId());
-			if(productStorageOrNull == null)
+			if (productStorageOrNull == null)
 			{
 				continue; // cu doesn't have the product we are looking for
 			}
@@ -1284,5 +1284,5 @@ public class HUTransformService
 						updateAllocation(newParentLU, newParentTU, childCU, null, false, localHuContext);
 					});
 		});
-}
+	}
 }
