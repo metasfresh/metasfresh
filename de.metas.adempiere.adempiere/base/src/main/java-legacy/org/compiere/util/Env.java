@@ -146,7 +146,10 @@ public final class Env
 		//
 
 		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
-		SpringApplication.exit(springApplicationContext, () -> 0);
+		if (springApplicationContext != null) // don't fail if we exit before swing-client's login was done
+		{
+			SpringApplication.exit(springApplicationContext, () -> 0);
+		}
 
 		// should not be required anymore since we make sure that all non-demon threads are stopped
 		// works in my debugging-session (without system.exit), but doesn't (always!) works on lx-term01 (x2go)
@@ -1625,7 +1628,7 @@ public final class Env
 	{
 		return windows.addWindow(window);
 	}
-	
+
 	public static void addWindow(final int windowNo, final Container window)
 	{
 		windows.addWindow(windowNo, window);

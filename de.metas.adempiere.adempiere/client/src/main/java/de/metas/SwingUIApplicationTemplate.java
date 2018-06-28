@@ -37,12 +37,12 @@ import de.metas.logging.LogManager;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,8 +52,6 @@ import de.metas.logging.LogManager;
 public abstract class SwingUIApplicationTemplate
 {
 	private static final Logger logger = LogManager.getLogger(SwingUIApplicationTemplate.class);
-
-	public static final String PROFILE = "metasfresh-swingui";
 
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -71,7 +69,7 @@ public abstract class SwingUIApplicationTemplate
 				// there might be resource/performance problems
 				// at any rate, we have not yet a solution as to how to configure them
 				.web(false)
-				.profiles(PROFILE)
+				.profiles(Profiles.PROFILE_SwingUI)
 				.properties(CConnection.get().createRabbitmqSpringProperties())
 				.run(args);
 	}
