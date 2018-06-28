@@ -198,11 +198,17 @@ public class OrderService
 		final PZN pzn = requestPackageItem.getPzn();
 		final Quantity qtyAvailable = stockAvailabilityService.getQtyAvailable(pzn, bpartner)
 				.orElseThrow(() -> new RuntimeException("PZN not found: " + pzn));
-		final Quantity qty = qtyAvailable.min(requestPackageItem.getQty());
+
+		final Quantity qtyRequired = requestPackageItem.getQty();
+		if (qtyRequired.compareTo(qtyAvailable) > 0)
+		{
+			throw new RuntimeException("Not available: PZN=" + pzn.getValueAsString() + ", Qty=" + qtyRequired.toJson());
+		}
+
 		return OrderResponsePackageItem.builder()
 				.id(requestPackageItem.getId())
 				.pzn(pzn)
-				.qty(qty)
+				.qty(qtyRequired)
 				.deliverySpecifications(requestPackageItem.getDeliverySpecifications())
 				.build();
 	}
