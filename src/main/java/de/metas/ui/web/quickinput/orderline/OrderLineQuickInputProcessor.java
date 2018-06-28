@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -17,6 +18,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
 import de.metas.adempiere.gui.search.IHUPackingAware;
@@ -26,8 +29,10 @@ import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineQuickInputValidator;
+import de.metas.order.OrderLineQuickInputValidatorResults;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
@@ -64,6 +69,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private static final transient Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
 	private final transient IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 
+	final Collection<IOrderLineQuickInputValidator> validators = Adempiere.getBeansOfType(IOrderLineQuickInputValidator.class);
+
 	public OrderLineQuickInputProcessor()
 	{
 		super();
@@ -96,8 +103,26 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final ProductId productId = ProductId.ofRepoId(orderLineQuickInput.getM_Product_ID().getIdAsInt());
 
-		final Collection<IOrderLineQuickInputValidator> validators = Adempiere.getBeansOfType(IOrderLineQuickInputValidator.class);
-		validators.forEach(validator -> validator.validate(bpartnerId, productId));
+		final List<ITranslatableString> validationErrorMessages = validators
+				.stream()
+				.map(validator -> {
+					final OrderLineQuickInputValidatorResults validationResults = validator.validate(bpartnerId, productId);
+
+					if (!validationResults.isValid())
+					{
+						return validationResults.getErrorMessage();
+					}
+
+					return null;
+				})
+				.filter(errorMessage -> errorMessage != null)
+				.collect(ImmutableList.toImmutableList());
+
+		if (!validationErrorMessages.isEmpty())
+		{
+			throw new AdempiereException(ITranslatableString.compose("\n", validationErrorMessages));
+		}
+
 	}
 
 	private final void updateOrderLine(final Object orderLineObj, final QuickInput fromQuickInput)
