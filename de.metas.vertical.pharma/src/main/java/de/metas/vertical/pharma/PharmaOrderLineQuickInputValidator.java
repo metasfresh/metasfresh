@@ -2,7 +2,6 @@ package de.metas.vertical.pharma;
 
 import java.util.Collections;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -11,8 +10,9 @@ import org.springframework.stereotype.Component;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.order.IOrderLineQuickInputValidator;
+import de.metas.order.OrderLineQuickInputValidatorResults;
+import de.metas.order.OrderLineQuickInputValidatorResults.OrderLineQuickInputValidatorResultsBuilder;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -56,33 +56,39 @@ public class PharmaOrderLineQuickInputValidator implements IOrderLineQuickInputV
 	}
 
 	@Override
-	public void validate(BPartnerId bpartnerId, ProductId productId)
+	public OrderLineQuickInputValidatorResults validate(final @NonNull BPartnerId bpartnerId, final @NonNull ProductId productId)
 	{
-		evaluatePrescriptionPermission(bpartnerId, productId);
+		return evaluatePrescriptionPermission(bpartnerId, productId);
 	}
 
-	private void evaluatePrescriptionPermission(final BPartnerId bpartnerId, final ProductId productId)
+	private OrderLineQuickInputValidatorResults evaluatePrescriptionPermission(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final OrderLineQuickInputValidatorResultsBuilder resultBuilder = OrderLineQuickInputValidatorResults.builder();
 
 		final PharmaBPartner bpartner = pharmaBPartnerRepo.getById(bpartnerId);
 		if (bpartner.isHasAtLeastOnePermission())
 		{
-			return;
+			return resultBuilder.isValid(true).build();
 		}
 
 		final PharmaProduct product = pharmaProductRepo.getById(productId);
-		if (product.isPrescriptionRequired())
+		if (!product.isPrescriptionRequired())
 		{
-			final ITranslatableString noPermissionReason = msgBL.getTranslatableMsgText(MSG_NoPharmaShipmentPermission, Collections.emptyList());
-
-			final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(MSG_NoPrescriptionPermission,
-					product.getValue(),
-					bpartner.getName(),
-					Util.coalesce(bpartner.getShipmentPermission(), noPermissionReason.translate(Env.getAD_Language())));
-
-			throw new AdempiereException(noPermissionMessage);
+			return resultBuilder.isValid(true).build();
 		}
+
+		final ITranslatableString noPermissionReason = msgBL.getTranslatableMsgText(MSG_NoPharmaShipmentPermission, Collections.emptyList());
+
+		final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(MSG_NoPrescriptionPermission,
+				product.getValue(),
+				bpartner.getName(),
+				Util.coalesce(bpartner.getShipmentPermission(), noPermissionReason.translate(Env.getAD_Language())));
+
+		return resultBuilder.isValid(false)
+				.errorMessage(noPermissionMessage).build();
+
 	}
 
 }

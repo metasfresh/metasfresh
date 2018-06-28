@@ -1,7 +1,5 @@
 package de.metas.vertical.pharma;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;

@@ -40,7 +40,7 @@ public enum PharmaShipmentPermission
 	@Getter
 	private final String code;
 
-	PharmaShipmentPermission(final String code)
+	private PharmaShipmentPermission(final String code)
 	{
 		this.code = code;
 	}

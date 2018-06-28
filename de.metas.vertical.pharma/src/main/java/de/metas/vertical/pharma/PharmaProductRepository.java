@@ -1,9 +1,10 @@
 package de.metas.vertical.pharma;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.vertical.pharma.model.I_M_Product;
 import lombok.NonNull;
@@ -35,7 +36,9 @@ public class PharmaProductRepository
 {
 	public PharmaProduct getById(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = load(productId.getRepoId(), I_M_Product.class);
+		final IProductDAO productRepo = Services.get(IProductDAO.class);
+
+		final I_M_Product product = InterfaceWrapperHelper.create(productRepo.getById(productId.getRepoId()), I_M_Product.class);
 
 		return PharmaProduct.builder()
 				.productId(productId)
