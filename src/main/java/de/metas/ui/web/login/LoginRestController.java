@@ -227,7 +227,6 @@ public class LoginRestController
 		final KeyNamePair role = KeyNamePair.of(loginRole.getRoleId());
 		final KeyNamePair tenant = KeyNamePair.of(loginRole.getTenantId());
 		final KeyNamePair org = KeyNamePair.of(loginRole.getOrgId());
-		final KeyNamePair warehouse = null;
 
 		//
 		// Update context
@@ -258,7 +257,7 @@ public class LoginRestController
 		// Load preferences
 		{
 			final java.sql.Timestamp date = null;
-			final String msg = loginService.loadPreferences(org, warehouse, date);
+			final String msg = loginService.loadPreferences(org, date);
 			if (!Check.isEmpty(msg, true))
 			{
 				throw new AdempiereException(msg);
@@ -274,7 +273,7 @@ public class LoginRestController
 		userPreference.setProperty(UserPreference.P_ORG, loginCtx.getAD_Org_ID());
 		userPreference.setProperty(UserPreference.P_WAREHOUSE, loginCtx.getM_Warehouse_ID());
 		userPreference.savePreference();
-		
+
 		//
 		userSessionRepo.load(userSession);
 

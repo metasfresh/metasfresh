@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -7,6 +9,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,6 +20,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -25,13 +29,13 @@ import org.adempiere.util.collections.PagedIterator.Page;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -39,11 +43,15 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.reservation.HuReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -95,12 +103,16 @@ import lombok.NonNull;
 
 public class SqlHUEditorViewRepository implements HUEditorViewRepository
 {
+	private static final String MSG_HU_RESERVED = "de.metas.handlingunit.HU_Reserved";
+
 	private static final transient Logger logger = LogManager.getLogger(SqlHUEditorViewRepository.class);
 
 	private final WindowId windowId;
 
 	private final HUEditorRowAttributesProvider attributesProvider;
 	private final HUEditorRowIsProcessedPredicate rowProcessedPredicate;
+	private final HuReservationService huReservationService;
+
 	private final boolean showBestBeforeDate;
 	private final boolean showLocator;
 
@@ -114,6 +126,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@NonNull final SqlViewBinding sqlViewBinding,
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
+			@NonNull final HuReservationService huReservationService,
 			final boolean showBestBeforeDate,
 			final boolean showLocator)
 	{
@@ -127,6 +140,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		this.sqlViewBinding = sqlViewBinding;
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlViewBinding);
 		sqlViewSelect = sqlViewBinding.getSqlViewSelect();
+
+		this.huReservationService = huReservationService;
 	}
 
 	@Override
@@ -145,8 +160,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public List<HUEditorRow> retrieveHUEditorRows(@NonNull final Set<Integer> huIds, @NonNull final HUEditorRowFilter filter)
+	public List<HUEditorRow> retrieveHUEditorRows(@NonNull final Set<HuId> huIds, @NonNull final HUEditorRowFilter filter)
 	{
+		huReservationService.warmup(huIds);
+
 		final int topLevelHUId = -1;
 		return retrieveTopLevelHUs(huIds, filter)
 				.stream()
@@ -155,9 +172,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public HUEditorRow retrieveForHUId(final int huId)
+	public HUEditorRow retrieveForHUId(@Nullable final HuId huId)
 	{
-		if (huId <= 0)
+		if (huId == null)
 		{
 			return null;
 		}
@@ -169,7 +186,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return createHUEditorRow(hu, topLevelHUId);
 	}
 
-	private static List<I_M_HU> retrieveTopLevelHUs(@NonNull final Collection<Integer> huIds, @NonNull final HUEditorRowFilter filter)
+	private static List<I_M_HU> retrieveTopLevelHUs(@NonNull final Collection<HuId> huIds, @NonNull final HUEditorRowFilter filter)
 	{
 		if (huIds.isEmpty())
 		{
@@ -210,10 +227,12 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		{
 			huRecordType = HUEditorRowType.ofHU_UnitType(huUnitTypeCode);
 		}
+		final Optional<OrderLineId> orderLineIdWithReservation = huReservationService.getReservedForOrderLineId(HuId.ofRepoId(hu.getM_HU_ID()));
+
 		final String huUnitTypeDisplayName = huRecordType.getName();
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(huUnitTypeCode, huUnitTypeDisplayName);
 
-		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
+		final JSONLookupValue huStatusDisplay = createHUStatusDisplayLookupValue(hu);
 		final boolean processed = rowProcessedPredicate.isProcessed(hu);
 		final int huId = hu.getM_HU_ID();
 		final HUEditorRowId rowId = HUEditorRowId.ofHU(huId, topLevelHUId);
@@ -228,7 +247,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				//
 				.setCode(hu.getValue())
 				.setHUUnitType(huUnitTypeLookupValue)
-				.setHUStatus(huStatus)
+				.setHUStatusDisplay(huStatusDisplay)
+				.setHUStatus(hu.getHUStatus())
+				.setReservedForOrderLine(orderLineIdWithReservation.orElse(null))
+
 				.setPackingInfo(extractPackingInfo(hu, huRecordType));
 
 		//
@@ -354,12 +376,14 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		// final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final I_M_HU hu = huStorage.getM_HU();
-		final int huId = hu.getM_HU_ID();
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final I_M_Product product = huStorage.getM_Product();
-		final HUEditorRowAttributesProvider attributesProviderEffective = huId != parent_HU_ID ? attributesProvider : null;
+		final HUEditorRowAttributesProvider attributesProviderEffective = huId.getRepoId() != parent_HU_ID ? attributesProvider : null;
+
+		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getReservedForOrderLineId(huId);
 
 		final HUEditorRow huEditorRow = HUEditorRow.builder(windowId)
-				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, product.getM_Product_ID()))
+				.setRowId(HUEditorRowId.ofHUStorage(huId.getRepoId(), topLevelHUId, product.getM_Product_ID()))
 				.setType(HUEditorRowType.HUStorage)
 				.setTopLevel(false)
 				.setProcessed(processed)
@@ -368,7 +392,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				// .setHUId(huId)
 				// .setCode(hu.getValue()) // NOTE: don't show value on storage level
 				.setHUUnitType(JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU"))
-				.setHUStatus(createHUStatusLookupValue(hu))
+				.setHUStatus(hu.getHUStatus())
+				.setReservedForOrderLine(reservedForOrderLineId.orElse(null))
+				.setHUStatusDisplay(createHUStatusDisplayLookupValue(hu))
 				//
 				.setProduct(createProductLookupValue(product))
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
@@ -380,10 +406,22 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return huEditorRow;
 	}
 
-	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)
+	private static JSONLookupValue createHUStatusDisplayLookupValue(@NonNull final I_M_HU hu)
 	{
-		final String huStatusKey = hu.getHUStatus();
-		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(HUEditorRow.HUSTATUS_AD_Reference_ID, huStatusKey);
+		final String huStatusKey;
+		final String huStatusDisplayName;
+		if (hu.isReserved())
+		{
+			huStatusKey = MSG_HU_RESERVED;
+			huStatusDisplayName = Services.get(IMsgBL.class).getMsg(Env.getCtx(), huStatusKey);
+		}
+		else
+		{
+			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+			huStatusKey = hu.getHUStatus();
+			huStatusDisplayName = adReferenceDAO.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
+		}
+
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
 	}
 
@@ -619,6 +657,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.rowIds(rowIds)
 				.rowIdsConverter(getRowIdsConverter())
 				.build();
+	}
+
+	@Override
+	public void warmUp(@NonNull final Set<HuId> huIds)
+	{
+		InterfaceWrapperHelper.loadByRepoIdAwares(huIds, I_M_HU.class); // caches the given HUs with one SQL query
+		huReservationService.warmup(huIds);
 	}
 
 }

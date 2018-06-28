@@ -23,12 +23,14 @@ import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.order.OrderLineId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.report.HUEditorRowAsHUToReport;
 import de.metas.ui.web.view.IViewRow;
@@ -45,6 +47,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -87,8 +90,6 @@ public final class HUEditorRow implements IViewRow
 	{
 		return (HUEditorRow)viewRow;
 	}
-
-	static final int HUSTATUS_AD_Reference_ID = X_M_HU.HUSTATUS_AD_Reference_ID;
 
 	private final DocumentPath documentPath;
 	private final HUEditorRowId rowId;
@@ -149,7 +150,12 @@ public final class HUEditorRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_HUStatus, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
 	})
-	private final JSONLookupValue huStatus;
+	private final JSONLookupValue huStatusDisplay;
+
+	public static final String FIELDNAME_IsReserved = I_M_HU.COLUMNNAME_IsReserved;
+	private final boolean huReserved;
+
+	private final String huStatus;
 
 	public static final String FIELDNAME_BestBeforeDate = "BestBeforeDate";
 	@ViewColumn(fieldName = FIELDNAME_BestBeforeDate, widgetType = DocumentFieldWidgetType.Date, layouts = {
@@ -169,6 +175,9 @@ public final class HUEditorRow implements IViewRow
 
 	private final List<HUEditorRow> includedRows;
 
+	@Getter
+	private final ImmutableMultimap<OrderLineId, HUEditorRow> includedOrderLineReservations;
+
 	private transient String _summary; // lazy
 	private transient Map<String, Object> _values; // lazy
 
@@ -185,7 +194,11 @@ public final class HUEditorRow implements IViewRow
 		huId = rowId.getHuId();
 		code = builder.code;
 		huUnitType = builder.huUnitType;
+
 		huStatus = builder.huStatus;
+		huReserved = builder.huReserved;
+		huStatusDisplay = builder.huStatusDisplay;
+
 		packingInfo = builder.packingInfo;
 		product = builder.product;
 		uom = builder.uom;
@@ -194,6 +207,7 @@ public final class HUEditorRow implements IViewRow
 		locator = builder.getLocator();
 
 		includedRows = builder.buildIncludedRows();
+		includedOrderLineReservations = builder.prepareIncludedOrderLineReservations(this);
 
 		final HUEditorRowAttributesProvider attributesProvider = builder.getAttributesProviderOrNull();
 		if (attributesProvider != null)
@@ -378,30 +392,29 @@ public final class HUEditorRow implements IViewRow
 		return code;
 	}
 
-	public JSONLookupValue getHUStatus()
+	public String getHUStatus()
 	{
 		return huStatus;
 	}
 
-	public String getHUStatusKey()
+	public JSONLookupValue getHUStatusDisplay()
 	{
-		final JSONLookupValue jsonHUStatus = getHUStatus();
-		return jsonHUStatus == null ? null : jsonHUStatus.getKey();
+		return huStatusDisplay;
 	}
 
 	public boolean isHUStatusPlanning()
 	{
-		return X_M_HU.HUSTATUS_Planning.equals(getHUStatusKey());
+		return X_M_HU.HUSTATUS_Planning.equals(huStatus);
 	}
 
 	public boolean isHUStatusActive()
 	{
-		return X_M_HU.HUSTATUS_Active.equals(getHUStatusKey());
+		return X_M_HU.HUSTATUS_Active.equals(huStatus);
 	}
 
 	public boolean isHUStatusDestroyed()
 	{
-		return X_M_HU.HUSTATUS_Destroyed.equals(getHUStatusKey());
+		return X_M_HU.HUSTATUS_Destroyed.equals(huStatus);
 	}
 
 	public boolean isPureHU()
@@ -575,7 +588,11 @@ public final class HUEditorRow implements IViewRow
 
 		private String code;
 		private JSONLookupValue huUnitType;
-		private JSONLookupValue huStatus;
+
+		private String huStatus;
+		private boolean huReserved;
+		private JSONLookupValue huStatusDisplay;
+
 		private String packingInfo;
 		private JSONLookupValue product;
 		private JSONLookupValue uom;
@@ -585,6 +602,7 @@ public final class HUEditorRow implements IViewRow
 		private int bpartnerId;
 
 		private List<HUEditorRow> includedRows = null;
+		private OrderLineId orderLineReservation = null;
 
 		private HUEditorRowAttributesProvider attributesProvider;
 
@@ -613,14 +631,12 @@ public final class HUEditorRow implements IViewRow
 		/** @return row ID */
 		private HUEditorRowId getRowId()
 		{
-			Check.assumeNotNull(_rowId, "Parameter rowId is not null");
-			return _rowId;
+			return Check.assumeNotNull(_rowId, "Parameter rowId is not null");
 		}
 
 		private HUEditorRowType getType()
 		{
-			Check.assumeNotNull(type, "Parameter type is not null");
-			return type;
+			return Check.assumeNotNull(type, "Parameter type is not null");
 		}
 
 		public Builder setType(final HUEditorRowType type)
@@ -637,8 +653,7 @@ public final class HUEditorRow implements IViewRow
 
 		private boolean isTopLevel()
 		{
-			Check.assumeNotNull(topLevel, "Parameter topLevel is not null");
-			return topLevel;
+			return Check.assumeNotNull(topLevel, "Parameter topLevel is not null");
 		}
 
 		public Builder setProcessed(final boolean processed)
@@ -673,9 +688,15 @@ public final class HUEditorRow implements IViewRow
 			return this;
 		}
 
-		public Builder setHUStatus(final JSONLookupValue huStatus)
+		public Builder setHUStatus(final String huStatus)
 		{
-			this.huStatus = huStatus;
+			this.huStatus = Check.assumeNotEmpty(huStatus, "Parameter huStatus may not be empty");
+			return this;
+		}
+
+		public Builder setHUStatusDisplay(final JSONLookupValue huStatusDisplay)
+		{
+			this.huStatusDisplay = Check.assumeNotNull(huStatusDisplay, "Parameter huStatusDisplay may not be null");
 			return this;
 		}
 
@@ -767,6 +788,31 @@ public final class HUEditorRow implements IViewRow
 			}
 
 			return ImmutableList.copyOf(includedRows);
+		}
+
+		public Builder setReservedForOrderLine(@Nullable final OrderLineId orderLineId)
+		{
+			orderLineReservation = orderLineId;
+			huReserved = orderLineId != null;
+			return this;
+		}
+
+		/**
+		 * @param currentRow the row that is currently constructed using this builder
+		 */
+		private ImmutableMultimap<OrderLineId, HUEditorRow> prepareIncludedOrderLineReservations(@NonNull final HUEditorRow currentRow)
+		{
+			final ImmutableMultimap.Builder<OrderLineId, HUEditorRow> includedOrderLineReservationsBuilder = ImmutableMultimap.builder();
+
+			for (final HUEditorRow includedRow : buildIncludedRows())
+			{
+				includedOrderLineReservationsBuilder.putAll(includedRow.getIncludedOrderLineReservations());
+			}
+			if (orderLineReservation != null)
+			{
+				includedOrderLineReservationsBuilder.put(orderLineReservation, currentRow);
+			}
+			return includedOrderLineReservationsBuilder.build();
 		}
 	}
 

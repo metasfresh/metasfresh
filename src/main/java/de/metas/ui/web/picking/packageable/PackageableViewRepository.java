@@ -2,10 +2,13 @@ package de.metas.ui.web.picking.packageable;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Column;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.order.OrderLineId;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
@@ -62,14 +66,19 @@ public class PackageableViewRepository
 	{
 		// creating those LookupDataSources requires DB access. So, to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers.
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		orderLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
-				.setCtxTableName(null)
-				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_C_Order_ID)
-				.setDisplayType(DisplayType.Search)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.buildProvider()
-				.provideForScope(LookupScope.DocumentField)));
+		orderLookup = Suppliers.memoize(() -> {
+			final I_AD_Column orderColumn = adTableDAO.retrieveColumnOrNull(I_M_Packageable_V.Table_Name, I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID);
+			return LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
+					.setCtxTableName(null)
+					.setCtxColumnName(orderColumn.getColumnName())
+					.setDisplayType(orderColumn.getAD_Reference_ID())
+					.setAD_Reference_Value_ID(orderColumn.getAD_Reference_Value_ID()) // TODO
+					.setWidgetType(DocumentFieldWidgetType.Lookup)
+					.buildProvider()
+					.provideForScope(LookupScope.DocumentField));
+		});
 
 		productLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
 				.setCtxTableName(null)
@@ -79,13 +88,17 @@ public class PackageableViewRepository
 				.buildProvider()
 				.provideForScope(LookupScope.DocumentField)));
 
-		bpartnerLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
-				.setCtxTableName(null)
-				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_C_BPartner_ID)
-				.setDisplayType(DisplayType.Search)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.buildProvider()
-				.provideForScope(LookupScope.DocumentField)));
+		bpartnerLookup = Suppliers.memoize(() -> {
+			final I_AD_Column bpartnerColumn = adTableDAO.retrieveColumnOrNull(I_M_Packageable_V.Table_Name, I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID);
+			return LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
+					.setCtxTableName(null)
+					.setCtxColumnName(bpartnerColumn.getColumnName())
+					.setDisplayType(bpartnerColumn.getAD_Reference_ID())
+					.setAD_Reference_Value_ID(bpartnerColumn.getAD_Reference_Value_ID())
+					.setWidgetType(DocumentFieldWidgetType.Lookup)
+					.buildProvider()
+					.provideForScope(LookupScope.DocumentField));
+		});
 	}
 
 	private List<PackageableRow> retrieveRowsByShipmentScheduleIds(final ViewId viewId, final Set<Integer> shipmentScheduleIds)
@@ -107,14 +120,16 @@ public class PackageableViewRepository
 	private PackageableRow createPickingRow(final ViewId viewId, final I_M_Packageable_V packageable)
 	{
 		final BigDecimal qtyPicked = packageable.getQtyPicked().add(packageable.getQtyPickedPlanned());
-		
+		final OrderLineId ofRepoIdOrNull = OrderLineId.ofRepoIdOrNull(packageable.getC_OrderLineSO_ID());
+
 		return PackageableRow.builder()
 				.shipmentScheduleId(packageable.getM_ShipmentSchedule_ID())
+				.salesOrderLineId(Optional.ofNullable(ofRepoIdOrNull))
 				.viewId(viewId)
 				//
-				.order(orderLookup.get().findById(packageable.getC_Order_ID()))
+				.order(orderLookup.get().findById(packageable.getC_OrderSO_ID()))
 				.product(productLookup.get().findById(packageable.getM_Product_ID()))
-				.bpartner(bpartnerLookup.get().findById(packageable.getC_BPartner_ID()))
+				.bpartner(bpartnerLookup.get().findById(packageable.getC_BPartner_Customer_ID()))
 				.preparationDate(packageable.getPreparationDate())
 				.qtyOrdered(packageable.getQtyOrdered())
 				.qtyPicked(qtyPicked)

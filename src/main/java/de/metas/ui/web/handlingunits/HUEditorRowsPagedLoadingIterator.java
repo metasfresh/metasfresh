@@ -15,6 +15,7 @@ import org.compiere.util.CCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -69,7 +70,7 @@ class HUEditorRowsPagedLoadingIterator implements Iterator<HUEditorRow>
 		this.bufferSize = bufferSize > 0 ? bufferSize : DEFAULT_BUFFERSIZE;
 		this.rowIds = rowIds;
 		this.filter = filter != null ? filter : HUEditorRowFilter.ALL;
-		this.filterPredicate = HUEditorRowFilters.toPredicate(this.filter); 
+		this.filterPredicate = HUEditorRowFilters.toPredicate(this.filter);
 	}
 
 	@Override
@@ -161,7 +162,12 @@ class HUEditorRowsPagedLoadingIterator implements Iterator<HUEditorRow>
 					.map(rowId -> GuavaCollectors.entry(rowId.toTopLevelRowId(), rowId))
 					.collect(GuavaCollectors.toImmutableListMultimap());
 
-			final Set<Integer> topLevelHUIds = topLevelRowId2rowIds.keys().stream().map(HUEditorRowId::getTopLevelHUId).collect(ImmutableSet.toImmutableSet());
+			final Set<HuId> topLevelHUIds = topLevelRowId2rowIds
+					.keys()
+					.stream()
+					.map(HUEditorRowId::getTopLevelHUId)
+					.map(HuId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
 
 			huEditorRepo.retrieveHUEditorRows(topLevelHUIds, filter)
 					.forEach(topLevelRow -> {

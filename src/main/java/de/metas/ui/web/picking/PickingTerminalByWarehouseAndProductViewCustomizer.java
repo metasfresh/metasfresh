@@ -83,7 +83,7 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 				.defaultOrderBy(DocumentQueryOrderBy.byFieldName(FIELDNAME_ProductOrBPartner, true))
 				.orderByAliasFieldNames(FIELDNAME_ProductOrBPartner,
 						I_M_Packageable_V.COLUMNNAME_M_Product_ID,
-						I_M_Packageable_V.COLUMNNAME_C_BPartner_ID,
+						I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID,
 						I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
 	}
 
@@ -111,7 +111,7 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 
 		viewLayoutBuilder.elementsOrder(
 				FIELDNAME_ProductOrBPartner,
-				I_M_Packageable_V.COLUMNNAME_C_Order_ID,
+				I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID,
 				I_M_Packageable_V.COLUMNNAME_QtyOrdered,
 				I_M_Packageable_V.COLUMNNAME_QtyPicked,
 				I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID,
@@ -136,7 +136,7 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 		// Detail/included row
 		else
 		{
-			final JSONLookupValue bpartnerLV = (JSONLookupValue)rowBuilder.getFieldValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_ID);
+			final JSONLookupValue bpartnerLV = (JSONLookupValue)rowBuilder.getFieldValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID);
 			final JSONLookupValue bpLocationLV = (JSONLookupValue)rowBuilder.getFieldValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
 			return JSONLookupValue.concat(bpartnerLV, bpLocationLV);
 		}

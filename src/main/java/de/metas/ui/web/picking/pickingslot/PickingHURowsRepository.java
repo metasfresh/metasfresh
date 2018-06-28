@@ -20,15 +20,18 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableListMultimap.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.reservation.HuReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery.MatchingSourceHusQueryBuilder;
@@ -56,12 +59,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -70,34 +73,38 @@ import lombok.NonNull;
 
 /**
  * This class is used by {@link PickingSlotViewRepository} and provides the HUs that are related to picking.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Service
-/* package */class PickingHURowsRepository
+public class PickingHURowsRepository
 {
 	private final HUEditorViewRepository huEditorRepo;
 
-	/** Default constructor */
 	@Autowired
-	public PickingHURowsRepository(final DefaultHUEditorViewFactory huEditorViewFactory)
+	public PickingHURowsRepository(
+			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
+			@NonNull final HuReservationService huReservationService)
 	{
-		this(createDefaultHUEditorViewRepository(huEditorViewFactory));
+		this(createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService));
 	}
 
-	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(final DefaultHUEditorViewFactory huEditorViewFactory)
+	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(
+			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
+			@NonNull final HuReservationService huReservationService)
 	{
 		return SqlHUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)
 				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(true).build())
 				.sqlViewBinding(huEditorViewFactory.getSqlViewBinding())
+				.huReservationService(huReservationService)
 				.build();
 	}
 
 	/**
 	 * Creates an instance using the given {@code huEditorRepo}. Intended for testing.
-	 * 
+	 *
 	 * @param huEditorRepo
 	 */
 	@VisibleForTesting
@@ -108,21 +115,21 @@ import lombok.NonNull;
 
 	/**
 	 * Retrieve the union of all HUs that match any one of the given shipment schedule IDs and that are flagged to be fine picking source HUs.
-	 * 
+	 *
 	 * @param shipmentScheduleIds
 	 * @return
 	 */
 	public List<HUEditorRow> retrieveSourceHUs(@NonNull final PickingSlotRepoQuery query)
 	{
 		final MatchingSourceHusQuery matchingSourceHUsQuery = createMatchingSourceHusQuery(query);
-		final Set<Integer> sourceHUIds = SourceHUsService.get().retrieveMatchingSourceHUIds(matchingSourceHUsQuery);
+		final Set<HuId> sourceHUIds = SourceHUsService.get().retrieveMatchingSourceHUIds(matchingSourceHUsQuery);
 		return huEditorRepo.retrieveHUEditorRows(sourceHUIds, HUEditorRowFilter.ALL);
 	}
 
 	@VisibleForTesting
 	static MatchingSourceHusQuery createMatchingSourceHusQuery(@NonNull final PickingSlotRepoQuery query)
 	{
-		final I_M_ShipmentSchedule currentShipmentSchedule = query.getCurrentShipmentScheduleId() > 0 ? load(query.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class) : null; 
+		final I_M_ShipmentSchedule currentShipmentSchedule = query.getCurrentShipmentScheduleId() > 0 ? load(query.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class) : null;
 		final List<Integer> productIds;
 		final Set<Integer> allShipmentScheduleIds = query.getShipmentScheduleIds();
 		if (allShipmentScheduleIds.isEmpty())
@@ -152,10 +159,10 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pickingSlotRowQuery determines which {@code M_ShipmentSchedule_ID}s this is about,<br>
 	 *            and also (optionally) if the returned rows shall have picking candidates with a certain status.
-	 * 
+	 *
 	 * @return a multi-map where the keys are {@code M_PickingSlot_ID}s and the value is a list of HUEditorRows which also contain with the respective {@code M_Picking_Candidate}s' {@code processed} states.
 	 */
 	public ListMultimap<Integer, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
@@ -240,7 +247,7 @@ import lombok.NonNull;
 				continue;
 			}
 
-			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);
+			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(HuId.ofRepoId(huId));
 			final boolean pickingCandidateProcessed = isPickingCandidateProcessed(pickingCandidate);
 			final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRow, pickingCandidateProcessed);
 
@@ -273,14 +280,20 @@ import lombok.NonNull;
 		}
 	}
 
-	public ListMultimap<Integer, PickedHUEditorRow> retrieveAllPickedHUsIndexedByPickingSlotId(List<I_M_PickingSlot> pickingSlots)
+	public ListMultimap<Integer, PickedHUEditorRow> //
+			retrieveAllPickedHUsIndexedByPickingSlotId(@NonNull final List<I_M_PickingSlot> pickingSlots)
 	{
-		final SetMultimap<Integer, Integer> huIdsByPickingSlotId = Services.get(IHUPickingSlotDAO.class).retrieveAllHUIdsIndexedByPickingSlotId(pickingSlots);
+		final SetMultimap<Integer, HuId> //
+		huIdsByPickingSlotId = Services.get(IHUPickingSlotDAO.class).retrieveAllHUIdsIndexedByPickingSlotId(pickingSlots);
 
-		return huIdsByPickingSlotId.entries().stream()
+		huEditorRepo.warmUp(ImmutableSet.copyOf(huIdsByPickingSlotId.values()));
+
+		return huIdsByPickingSlotId
+				.entries()
+				.stream()
 				.map(pickingSlotAndHU -> {
 					final int pickingSlotId = pickingSlotAndHU.getKey();
-					final int huId = pickingSlotAndHU.getValue();
+					final HuId huId = pickingSlotAndHU.getValue();
 
 					final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);
 					final boolean pickingCandidateProcessed = true;
@@ -293,7 +306,7 @@ import lombok.NonNull;
 
 	/**
 	 * Immutable pojo that contains the HU editor as retrieved from {@link HUEditorViewRepository} plus the the {@code processed} value from the respective {@link I_M_Picking_Candidate}.
-	 * 
+	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
