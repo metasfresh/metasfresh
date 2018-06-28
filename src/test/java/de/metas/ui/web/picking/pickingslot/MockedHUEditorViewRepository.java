@@ -9,6 +9,7 @@ import org.adempiere.util.collections.PagedIterator.Page;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -48,11 +49,11 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 public class MockedHUEditorViewRepository implements HUEditorViewRepository
 {
-	private final LinkedHashMap<Integer, HUEditorRow> rowsByHUId = new LinkedHashMap<>();
+	private final LinkedHashMap<HuId, HUEditorRow> rowsByHUId = new LinkedHashMap<>();
 
 	public void addRow(final HUEditorRow row)
 	{
-		rowsByHUId.put(row.getM_HU_ID(), row);
+		rowsByHUId.put(HuId.ofRepoId(row.getM_HU_ID()), row);
 	}
 
 	@Override
@@ -62,7 +63,7 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public List<HUEditorRow> retrieveHUEditorRows(final Set<Integer> huIds, final HUEditorRowFilter filter)
+	public List<HUEditorRow> retrieveHUEditorRows(final Set<HuId> huIds, final HUEditorRowFilter filter)
 	{
 		return huIds.stream()
 				.map(rowsByHUId::get)
@@ -72,7 +73,7 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public HUEditorRow retrieveForHUId(final int huId)
+	public HUEditorRow retrieveForHUId(final HuId huId)
 	{
 		final HUEditorRow row = rowsByHUId.get(huId);
 		if (row == null)
@@ -140,6 +141,13 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	public String buildSqlWhereClause(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
 		throw new UnsupportedOperationException("not implemented");
+	}
+
+	/** Does nothing. */
+	@Override
+	public void warmUp(Set<HuId> huIds)
+	{
+		// nothing to do
 	}
 
 }

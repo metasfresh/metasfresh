@@ -1,28 +1,27 @@
 package de.metas.ui.web.handlingunits;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.reservation.HuReservationRepository;
-import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsSqlDocumentFilterConverter;
-import de.metas.ui.web.window.model.sql.SqlOptions;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,21 +41,26 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HuReservationRepository.class })
-public class HUIdsFilterHelperTest
+public class HUEditorRowFiltersTest
 {
-	/**
-	 * Verifies that if {@link HUIdsFilterHelper#createFilter(java.util.Collection)} is called with an empty list,
-	 * then the filter's SQL does <b>not</b> select every single f**king HU on this planet.
-	 */
-	@Test
-	public void testEmptyHUIdsCollection()
+
+	@Before
+	public void init()
 	{
-		final DocumentFilter noHusFilter = HUIdsFilterHelper.createFilter(ImmutableList.of());
-
-		final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
-		final String sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(SqlParamsCollector.newInstance(), noHusFilter, SqlOptions.usingTableAlias("dummyTableAlias"), context);
-
-		assertThat(sql).doesNotContain(HUIdsSqlDocumentFilterConverter.SQL_TRUE);
+		AdempiereTestHelper.get().init();
 	}
 
+	@Test
+	public void toHUQueryBuilderPart()
+	{
+		final I_M_HU huRecord = newInstance(I_M_HU.class);
+		huRecord.setM_Locator_ID(20);
+		saveRecord(huRecord);
+
+
+		final HUEditorRowFilter allFilter = HUEditorRowFilter.ALL;
+		final IHUQueryBuilder huQueryBuilderPart = HUEditorRowFilters.toHUQueryBuilderPart(allFilter);
+		assertThat(huQueryBuilderPart.first()).isNotNull();
+		assertThat(huQueryBuilderPart.first().getM_HU_ID()).isEqualTo(huRecord.getM_HU_ID());
+	}
 }

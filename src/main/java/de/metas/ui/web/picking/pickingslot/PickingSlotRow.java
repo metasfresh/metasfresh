@@ -54,7 +54,7 @@ import lombok.ToString;
 
 /**
  * Rows shown in {@link PickingSlotView}. One row can represent a picking slot, a TU or a picked good (CU).
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -154,7 +154,7 @@ public final class PickingSlotRow implements IViewRow
 
 	/**
 	 * Picking slot row constructor.
-	 * 
+	 *
 	 * @param pickingSlotId
 	 * @param pickingSlotName
 	 * @param pickingSlotWarehouse
@@ -204,7 +204,7 @@ public final class PickingSlotRow implements IViewRow
 
 	/**
 	 * Constructor for a row that represents an HU which is already assigned to a picking slot (aka a picked HU).
-	 * 
+	 *
 	 * @param pickingSlotId
 	 * @param huId
 	 * @param huStorageProductId
@@ -419,7 +419,7 @@ public final class PickingSlotRow implements IViewRow
 	}
 
 	/**
-	 * 
+	 *
 	 * @return {@code true} if this row represents an HU that is a source-HU for fine-picking.
 	 */
 	public boolean isPickingSourceHURow()

@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -136,7 +137,12 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 	private IndexedHUEditorRows retrieveHUEditorRows()
 	{
-		final List<HUEditorRow> rows = huEditorRepo.retrieveHUEditorRows(getHUIds(), HUEditorRowFilter.ALL);
+		final ImmutableSet<HuId> huIds = getHUIds()
+				.stream()
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final List<HUEditorRow> rows = huEditorRepo.retrieveHUEditorRows(huIds, HUEditorRowFilter.ALL);
 		return new IndexedHUEditorRows(rows);
 	}
 
