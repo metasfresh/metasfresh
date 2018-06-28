@@ -39,7 +39,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 
@@ -186,7 +186,7 @@ public class SSCC18CodeBLTests
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -200,7 +200,7 @@ public class SSCC18CodeBLTests
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -214,7 +214,7 @@ public class SSCC18CodeBLTests
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -228,7 +228,7 @@ public class SSCC18CodeBLTests
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test

@@ -4,7 +4,7 @@ CREATE OR REPLACE VIEW M_Packageable_V AS
 SELECT
 	--
 	-- BPartner
-	p.C_BPartner_ID,
+	p.C_BPartner_ID AS C_BPartner_Customer_ID,
 	p.Value AS BPartnerValue,
 	(coalesce(p.Name,'') || coalesce(p.Name2,'')) AS BPartnerName,
 	--
@@ -14,11 +14,12 @@ SELECT
 	s.BPartnerAddress_Override,
 	--
 	-- Order Info
-	o.C_Order_ID,
+	s.C_Order_ID AS C_OrderSO_ID,
 	o.DocumentNo as OrderDocumentNo,
 	o.FreightCostRule,
 	dt.DocSubType,
 	s.DateOrdered,
+	s.C_OrderLine_ID as C_OrderLineSO_ID,
 	--
 	-- Warehouse
 	w.M_Warehouse_ID,
@@ -85,7 +86,7 @@ LEFT JOIN C_BPartner_Stats stats ON (p.C_BPartner_ID = stats.C_BPartner_ID)
 LEFT JOIN C_BPartner_Location l ON (l.C_BPartner_Location_ID=COALESCE(s.C_BP_Location_Override_ID, s.C_BPartner_Location_ID))
 LEFT JOIN M_Product prod ON (prod.M_Product_ID=s.M_Product_ID)
 LEFT JOIN C_OrderLine ol ON (ol.C_OrderLine_ID=s.C_OrderLine_ID)
-LEFT JOIN C_Order o ON (o.C_Order_ID=ol.C_Order_ID)
+LEFT JOIN C_Order o ON (o.C_Order_ID=s.C_Order_ID)
 LEFT JOIN C_DocType dt ON (dt.C_DocType_ID=o.C_DocType_ID)
 LEFT JOIN M_Shipper sh ON (sh.M_Shipper_ID=ol.M_Shipper_ID)
 WHERE

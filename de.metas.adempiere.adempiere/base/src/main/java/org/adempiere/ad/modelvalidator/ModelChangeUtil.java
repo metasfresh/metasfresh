@@ -26,9 +26,9 @@ import lombok.NonNull;
  * #L%
  */
 
-public final class InterceptorUtil
+public final class ModelChangeUtil
 {
-	private InterceptorUtil()
+	private ModelChangeUtil()
 	{
 	}
 

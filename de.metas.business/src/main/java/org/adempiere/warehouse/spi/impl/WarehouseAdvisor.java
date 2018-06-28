@@ -1,5 +1,7 @@
 package org.adempiere.warehouse.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,18 +12,17 @@ package org.adempiere.warehouse.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -37,19 +38,29 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.order.OrderLineId;
+import lombok.NonNull;
+
 /**
  * Default implementation of {@link IWarehouseAdvisor}.
- * 
+ *
  * It's just fetching the warehouse from record's M_Warehouse_ID field and if nothing found then organization's warehouse is returned.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class WarehouseAdvisor implements IWarehouseAdvisor
 {
 
 	@Override
-	public I_M_Warehouse evaluateWarehouse(I_C_OrderLine orderLine)
+	public I_M_Warehouse evaluateWarehouse(@NonNull final OrderLineId orderLineId)
+	{
+		final I_C_OrderLine orderLineRecord = load(orderLineId, I_C_OrderLine.class);
+		return evaluateWarehouse(orderLineRecord);
+	}
+
+	@Override
+	public I_M_Warehouse evaluateWarehouse(@NonNull final I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "Order should not be null");
 
@@ -62,7 +73,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 	}
 
 	@Override
-	public I_M_Warehouse evaluateOrderWarehouse(I_C_Order order)
+	public I_M_Warehouse evaluateOrderWarehouse(@NonNull final I_C_Order order)
 	{
 		if (order.getM_Warehouse_ID() > 0)
 		{
@@ -72,43 +83,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 		return findOrderWarehouse(order);
 	}
 
-	/**
-	 * Retrieve the picking warehouse based on the order's bPartner. Returns <code>null</code> if the partner is not customer, has no warehouse assigned or the order is not a sales order.
-	 * 
-	 * @param order
-	 * @return
-	 */
-	private I_M_Warehouse findPickingWarehouse(final I_C_Order order)
-	{
-		if (!order.isSOTrx())
-		{
-			return null;
-		}
-
-		if (order.getC_BPartner_ID() <= 0)
-		{
-			return null;
-		}
-
-		final de.metas.interfaces.I_C_BPartner bp = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.interfaces.I_C_BPartner.class);
-		if (!bp.isCustomer() || bp.getM_Warehouse_ID() <= 0)
-		{
-			return null;
-		}
-
-		final org.adempiere.warehouse.model.I_M_Warehouse partnerWarehouse = InterfaceWrapperHelper.create(bp.getM_Warehouse(), org.adempiere.warehouse.model.I_M_Warehouse.class);
-
-		final boolean isPickingWarehouse = partnerWarehouse.isPickingWarehouse();
-		if (isPickingWarehouse)
-		{
-			return partnerWarehouse;
-		}
-
-		// if order is a purchase order, return null
-		return null;
-	}
-
-	protected I_M_Warehouse findOrderWarehouse(final I_C_Order order)
+	protected I_M_Warehouse findOrderWarehouse(@NonNull final I_C_Order order)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final int adOrgId = order.getAD_Org_ID();
@@ -139,11 +114,36 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 		return Services.get(IWarehouseDAO.class).retrieveOrgWarehouse(ctx, adOrgId);
 	}
 
-	@Override
-	public int getDefaulWarehouseId(Properties ctx)
+	/**
+	 * Retrieve the picking warehouse based on the order's bPartner. Returns <code>null</code> if the partner is not customer, has no warehouse assigned or the order is not a sales order.
+	 */
+	private I_M_Warehouse findPickingWarehouse(@NonNull final I_C_Order order)
 	{
-		return -1;
-		// return Env.getContextAsInt(ctx, "#M_Warehouse_ID");
-	}
+		if (!order.isSOTrx())
+		{
+			return null;
+		}
 
+		if (order.getC_BPartner_ID() <= 0)
+		{
+			return null;
+		}
+
+		final de.metas.interfaces.I_C_BPartner bp = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.interfaces.I_C_BPartner.class);
+		if (!bp.isCustomer() || bp.getM_Warehouse_ID() <= 0)
+		{
+			return null;
+		}
+
+		final org.adempiere.warehouse.model.I_M_Warehouse partnerWarehouse = InterfaceWrapperHelper.create(bp.getM_Warehouse(), org.adempiere.warehouse.model.I_M_Warehouse.class);
+
+		final boolean isPickingWarehouse = partnerWarehouse.isPickingWarehouse();
+		if (isPickingWarehouse)
+		{
+			return partnerWarehouse;
+		}
+
+		// if order is a purchase order, return null
+		return null;
+	}
 }

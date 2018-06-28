@@ -31,13 +31,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.document.impl.AbstractHUAllocations;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.quantity.Quantity;
 
 /**
  * Manage HU allocations to a particular {@link I_M_ReceiptSchedule}. See {@link ReceiptScheduleHUGenerator} for the code that creates those HUs.
@@ -81,8 +81,7 @@ public class ReceiptScheduleHUAllocations extends AbstractHUAllocations
 	protected final void createAllocation(final I_M_HU luHU,
 			final I_M_HU tuHU,
 			final I_M_HU vhu,
-			final BigDecimal qtyToAllocate,
-			final I_C_UOM uom,
+			final Quantity qtyToAllocate,
 			final boolean deleteOldTUAllocations)
 	{
 		// In case TU is null, consider using VHU as HU (i.e. the case of an VHU on LU, or free VHU)
@@ -107,7 +106,7 @@ public class ReceiptScheduleHUAllocations extends AbstractHUAllocations
 				.setQtyToAllocate(BigDecimal.ZERO)
 				.setQtyWithIssues(BigDecimal.ZERO) // to be sure...
 		;
-		builder.setHU_QtyAllocated(qtyToAllocate, uom)
+		builder.setHU_QtyAllocated(qtyToAllocate)
 				.setM_LU_HU(luHU)
 				.setM_TU_HU(tuHUActual)
 				.setVHU(vhu);

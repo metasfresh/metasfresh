@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.model.I_M_HU;
@@ -45,12 +46,12 @@ import lombok.Singular;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -70,11 +71,11 @@ public class SourceHUsService
 		}
 		return Adempiere.getBean(SourceHUsService.class);
 	}
-	
+
 	public List<I_M_HU> retrieveParentHusThatAreSourceHUs(@NonNull final List<I_M_HU> vhus)
 	{
 		final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
-		
+
 		final TreeSet<I_M_HU> sourceHUs = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
 
 		// this filter's real job is to collect those HUs that are flagged as "source"
@@ -114,7 +115,7 @@ public class SourceHUsService
 	private static List<I_M_HU> retrieveTopLevelHuIfNoSourceHuIsOnThePath(final int huId)
 	{
 		final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
-		
+
 		final Predicate<I_M_HU> filterToExcludeSourceHus = //
 				currentHu -> !sourceHuDAO.isSourceHu(currentHu.getM_HU_ID());
 
@@ -142,14 +143,15 @@ public class SourceHUsService
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final int deleteCount = queryBL.createQueryBuilder(I_M_Source_HU.class)
+		final int deleteCount = queryBL
+				.createQueryBuilder(I_M_Source_HU.class)
 				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, huId)
 				.create()
 				.delete();
 
 		return deleteCount > 0;
 	}
-	
+
 	public void snapshotSourceHU(@NonNull final I_M_Source_HU sourceHU)
 	{
 		final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
@@ -182,7 +184,7 @@ public class SourceHUsService
 		sourceHuRecord.setPreDestroy_Snapshot_UUID(null);
 		save(sourceHuRecord);
 	}
-	
+
 	public void snapshotHuIfMarkedAsSourceHu(@NonNull final I_M_HU hu)
 	{
 		final I_M_Source_HU sourceHuMarker = Services.get(ISourceHuDAO.class).retrieveSourceHuMarkerOrNull(hu);
@@ -197,7 +199,7 @@ public class SourceHUsService
 		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHuMarkers(query);
 	}
 
-	public Set<Integer> retrieveMatchingSourceHUIds(@NonNull final MatchingSourceHusQuery query)
+	public Set<HuId> retrieveMatchingSourceHUIds(@NonNull final MatchingSourceHusQuery query)
 	{
 		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHUIds(query);
 	}
@@ -223,7 +225,7 @@ public class SourceHUsService
 
 		int warehouseId;
 
-		public static MatchingSourceHusQuery fromHuId(final int huId)
+		public static MatchingSourceHusQuery fromHuId(final HuId huId)
 		{
 			final I_M_HU hu = load(huId, I_M_HU.class);
 			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();

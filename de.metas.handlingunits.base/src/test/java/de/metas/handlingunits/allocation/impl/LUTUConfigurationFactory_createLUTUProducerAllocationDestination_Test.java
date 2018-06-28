@@ -40,7 +40,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -162,9 +162,9 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 
 	public final void assertHUStorageLevel(final I_M_HU hu, final I_M_HU_PI expectedPI, final int expectedQtyInt)
 	{
-		HUAssert.assertHU_PI(hu, expectedPI);
+		StaticHUAssert.assertHU_PI(hu, expectedPI);
 		final BigDecimal expectedQty = BigDecimal.valueOf(expectedQtyInt);
-		HUAssert.assertStorageLevel(huContext, hu, cuProduct, expectedQty);
+		StaticHUAssert.assertStorageLevel(huContext, hu, cuProduct, expectedQty);
 	}
 
 	@Test(expected = NullPointerException.class)

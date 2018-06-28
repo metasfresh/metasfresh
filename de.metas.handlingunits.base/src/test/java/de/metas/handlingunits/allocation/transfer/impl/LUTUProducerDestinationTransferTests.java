@@ -21,7 +21,7 @@ import org.w3c.dom.Node;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -103,7 +103,7 @@ public class LUTUProducerDestinationTransferTests
 		final Node sourceXML2 = HUXmlConverter.toXml(lutuProducer2.getCreatedHUs().get(0));
 		verifySingleIFCO(sourceXML2, "20.000");
 
-		HUAssert.assertAllStoragesAreValid();
+		StaticHUAssert.assertAllStoragesAreValid();
 
 		// TODO transfer them onto a new palet and IFCO
 		// verify if there will be an aggregate HU on the target LU or if instead on the target LU there will be two "real" IFCOs
@@ -232,7 +232,7 @@ public class LUTUProducerDestinationTransferTests
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI'])", is("1")));
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='23.000' and @C_UOM_Name='Kg'])", is("1")));
 
-				HUAssert.assertAllStoragesAreValid();
+				StaticHUAssert.assertAllStoragesAreValid();
 			}
 		}
 
@@ -273,7 +273,7 @@ public class LUTUProducerDestinationTransferTests
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI'])", is("1")));
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='6.000' and @C_UOM_Name='Kg'])", is("1")));
 
-			HUAssert.assertAllStoragesAreValid();
+			StaticHUAssert.assertAllStoragesAreValid();
 		}
 		//
 		// Validate Bags after transferring 17 items to it
@@ -315,7 +315,7 @@ public class LUTUProducerDestinationTransferTests
 			assertThat(huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[3]/Item[@ItemType='MI']/HU-VirtualPI)", is("2")));
 			assertThat(huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[3]/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("2")));
 
-			HUAssert.assertAllStoragesAreValid();
+			StaticHUAssert.assertAllStoragesAreValid();
 		}
 
 		//
@@ -362,7 +362,7 @@ public class LUTUProducerDestinationTransferTests
 			assertThat(huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[3]/Item[@ItemType='MI']/HU-VirtualPI[2]/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
 			assertThat(huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[3]/Item[@ItemType='MI']/HU-VirtualPI[2]/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
 
-			HUAssert.assertAllStoragesAreValid();
+			StaticHUAssert.assertAllStoragesAreValid();
 		}
 
 		// TraceUtils.dump(huPalets);
@@ -492,7 +492,7 @@ public class LUTUProducerDestinationTransferTests
 			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
 			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
 
-			HUAssert.assertAllStoragesAreValid();
+			StaticHUAssert.assertAllStoragesAreValid();
 		}
 
 	}
@@ -584,7 +584,7 @@ public class LUTUProducerDestinationTransferTests
 			assertThat(splitLUsXML, hasXPath("count(/SplitLUs/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='15.000' and @C_UOM_Name='Kg'])", is("1")));
 			assertThat(splitLUsXML, hasXPath("count(/SplitLUs/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='15.000' and @C_UOM_Name='Kg'])", is("1")));
 
-			HUAssert.assertAllStoragesAreValid();
+			StaticHUAssert.assertAllStoragesAreValid();
 		}
 	}
 

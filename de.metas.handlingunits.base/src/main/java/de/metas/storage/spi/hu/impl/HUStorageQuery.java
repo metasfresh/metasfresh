@@ -41,17 +41,21 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.order.OrderLineId;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
 import de.metas.storage.spi.hu.IHUStorageBL;
@@ -351,14 +355,18 @@ import lombok.NonNull;
 	{
 		Check.assumeNotNull(warehouse, "warehouse not null");
 		final int warehouseId = warehouse.getM_Warehouse_ID();
-		huQueryBuilder.addOnlyInWarehouseId(warehouseId);
+		huQueryBuilder.addOnlyInWarehouseId(WarehouseId.ofRepoId(warehouseId));
 		_warehouses.add(warehouse);
 		return this;
 	}
 
 	private final Set<Integer> getWarehouseIds()
 	{
-		return huQueryBuilder.getOnlyInWarehouseIds();
+		return huQueryBuilder
+				.getOnlyInWarehouseIds()
+				.stream()
+				.map(WarehouseId::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**
@@ -366,8 +374,8 @@ import lombok.NonNull;
 	 */
 	@Override
 	public IStorageQuery addAttribute(
-			@NonNull final I_M_Attribute attribute, 
-			final String attributeValueType, 
+			@NonNull final I_M_Attribute attribute,
+			final String attributeValueType,
 			@Nullable final Object attributeValue)
 	{
 			// Skip null values because in this case user filled nothing => so we accept any value
@@ -378,7 +386,7 @@ import lombok.NonNull;
 
 		//
 		// Make sure given attribute available to be used by our HU Storage implementations.
-		// If we would filter by those attributes we would get NO result.
+		// If we would filter by other attributes we would get NO result.
 		final int attributeId = attribute.getM_Attribute_ID();
 		final Set<Integer> availableAttributeIds = getAvailableAttributeIds();
 		if (!availableAttributeIds.contains(attributeId))
@@ -395,9 +403,8 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IStorageQuery addAttributes(final IAttributeSet attributeSet)
+	public IStorageQuery addAttributes(@NonNull final IAttributeSet attributeSet)
 	{
-		Check.assumeNotNull(attributeSet, "attributeSet not null");
 		for (final I_M_Attribute attribute : attributeSet.getAttributes())
 		{
 			// Skip attributes which were newly generated just to have an complete attribute set,
@@ -432,6 +439,20 @@ import lombok.NonNull;
 	public IStorageQuery setExcludeAfterPickingLocator(final boolean excludeAfterPickingLocator)
 	{
 		huQueryBuilder.setExcludeAfterPickingLocator(excludeAfterPickingLocator);
+		return this;
+	}
+
+	@Override
+	public IStorageQuery setExcludeReservedToOtherThan(@NonNull final OrderLineId orderLineId)
+	{
+		huQueryBuilder.setExcludeReservedToOtherThan(orderLineId);
+		return this;
+	}
+
+	@Override
+	public IStorageQuery setExcludeReserved()
+	{
+		huQueryBuilder.setExcludeReserved();
 		return this;
 	}
 }

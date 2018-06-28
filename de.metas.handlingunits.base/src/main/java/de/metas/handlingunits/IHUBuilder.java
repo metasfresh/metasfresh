@@ -10,12 +10,12 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,7 +52,6 @@ public interface IHUBuilder extends IHUIterator
 	 */
 	ModelDynAttributeAccessor<I_M_HU, I_M_HU_PI_Version> BUILDER_INVOCATION_HU_PI_VERSION = new ModelDynAttributeAccessor<>("invocationParamPIVersion", I_M_HU_PI_Version.class);
 
-
 	/**
 	 * Create handling unit by calling {@link #create(I_M_HU_PI_Version)} with the current version of the given <code>pi</code>.
 	 *
@@ -85,7 +84,7 @@ public interface IHUBuilder extends IHUIterator
 	 * <p>
 	 * Otherwise, if the item type of the given {@code parentItem} is {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} (or if the given parent item is {@code null}),
 	 * then {@link #create(I_M_HU_PI_Version)} shall create a "normal" HU.
-	 * 
+	 *
 	 * @param parentItem
 	 */
 	IHUBuilder setM_HU_Item_Parent(I_M_HU_Item parentItem);
@@ -128,8 +127,6 @@ public interface IHUBuilder extends IHUIterator
 
 	/**
 	 * For material receipts, flag that the HU's PM owner will be "us". See {@link I_M_HU#isHUPlanningReceiptOwnerPM()}
-	 *
-	 * @param huPlanningReceiptOwnerPM
 	 */
 	IHUBuilder setHUPlanningReceiptOwnerPM(boolean huPlanningReceiptOwnerPM);
 
@@ -137,5 +134,4 @@ public interface IHUBuilder extends IHUIterator
 	 * @return true if the HU's owner is "us". See {@link I_M_HU#isHUPlanningReceiptOwnerPM()}
 	 */
 	boolean isHUPlanningReceiptOwnerPM();
-
 }

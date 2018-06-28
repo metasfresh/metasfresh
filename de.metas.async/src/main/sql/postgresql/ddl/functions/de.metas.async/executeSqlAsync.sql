@@ -1,4 +1,6 @@
-﻿create or replace function "de.metas.async".executeSqlAsync(p_Sql text)
+﻿create or replace function "de.metas.async".ExecuteSqlAsync(
+	p_workpackage_sql text, 
+	p_after_finish_sql text default '')
 returns void
 as
 $BODY$
@@ -81,9 +83,18 @@ begin
     VALUES (
 		v_C_Queue_Workpackage_ID
 		, nextval('c_queue_workpackage_param_seq')
-		, 'Code'
-		, 10 -- String
-		, p_Sql
+		, 'WorkPackageSQL' -- parametername
+		, 10 -- ad_reference_id: String
+		, p_workpackage_sql
+		--
+		, p_AD_Client_ID, p_AD_Org_ID, p_TS, p_CreatedBy, 'Y', p_TS, p_CreatedBy
+	),
+	(
+		v_C_Queue_Workpackage_ID
+		, nextval('c_queue_workpackage_param_seq')
+		, 'AfterFinishSQL' -- parametername
+		, 10 -- ad_reference_id: String
+		, p_after_finish_sql
 		--
 		, p_AD_Client_ID, p_AD_Org_ID, p_TS, p_CreatedBy, 'Y', p_TS, p_CreatedBy
 	);
@@ -97,7 +108,13 @@ end;
 $BODY$
 LANGUAGE plpgsql VOLATILE COST 100;
 
+COMMENT ON FUNCTION "de.metas.async".executeSqlAsync(text, text)
+IS 'Enqueues the given SQL to metasfresh async executor which will execute the SQL given as p_workpackage_sql as many times until the SQL update count becomes ZERO.
+If that is the case, then the optional p_after_finish_sql value is executed one time.
+The following example updates the M_HU.IsReserved flag to N (100k records at a time) and when there is no null value left, it makes the column mandatory.
 
-COMMENT ON FUNCTION "de.metas.async".executeSqlAsync(p_Sql text)
-IS 'Enqueues the given SQL to metasfresh async executor which will execute the query as many times until the SQL update count gets ZERO.';
-
+SELECT "de.metas.async".executeSqlAsync(
+	''UPDATE M_HU SET IsReserved=''N'' WHERE M_HU_ID IN (select M_HU_ID from M_HU where IsReserved IS NULL ORDER BY M_HU_ID DESC LIMIT 100000)'',
+	''ALTER TABLE public.m_hu ALTER COLUMN IsReserved SET NOT NULL''
+);
+';
