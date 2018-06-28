@@ -150,7 +150,12 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx());
 			final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
 
-			final I_M_HU hu = activeSourceHus.stream().sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID)).map(I_M_Source_HU::getM_HU).findFirst().orElseThrow(() -> new AdempiereException("@NoSelection@"));
+			final I_M_HU hu = activeSourceHus
+					.stream()
+					.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
+					.map(I_M_Source_HU::getM_HU)
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("@NoSelection@"));
 
 			final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
 
