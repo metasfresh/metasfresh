@@ -14,6 +14,7 @@ import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant.RequestParticipantBuilder;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CountryCode;
 import de.metas.shipper.gateway.spi.model.DeliveryDate;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -124,6 +125,9 @@ public class DerKurierTestTools
 						.zipCode("54321")
 						.city("Köln")
 						.country(COUNTRY_CODE_DE)
+						.build())
+				.deliveryContact(ContactPerson.builder()
+						.emailAddress("test@testmail.org")
 						.build())
 				.customerReference("some info for customer");
 		return deliveryOrderBuilder;

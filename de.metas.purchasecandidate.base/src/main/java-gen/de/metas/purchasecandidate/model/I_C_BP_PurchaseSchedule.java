@@ -69,29 +69,6 @@ public interface I_C_BP_PurchaseSchedule
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set BPartner's purchase schedule.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BP_PurchaseSchedule_ID (int C_BP_PurchaseSchedule_ID);
-
-	/**
-	 * Get BPartner's purchase schedule.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BP_PurchaseSchedule_ID();
-
-    /** Column definition for C_BP_PurchaseSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_C_BP_PurchaseSchedule_ID = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "C_BP_PurchaseSchedule_ID", null);
-    /** Column name C_BP_PurchaseSchedule_ID */
-    public static final String COLUMNNAME_C_BP_PurchaseSchedule_ID = "C_BP_PurchaseSchedule_ID";
-
-	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
@@ -119,6 +96,29 @@ public interface I_C_BP_PurchaseSchedule
     public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_C_BPartner>(I_C_BP_PurchaseSchedule.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set BPartner's purchase schedule.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_PurchaseSchedule_ID (int C_BP_PurchaseSchedule_ID);
+
+	/**
+	 * Get BPartner's purchase schedule.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_PurchaseSchedule_ID();
+
+    /** Column definition for C_BP_PurchaseSchedule_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_C_BP_PurchaseSchedule_ID = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "C_BP_PurchaseSchedule_ID", null);
+    /** Column name C_BP_PurchaseSchedule_ID */
+    public static final String COLUMNNAME_C_BP_PurchaseSchedule_ID = "C_BP_PurchaseSchedule_ID";
 
 	/**
 	 * Get Erstellt.
@@ -247,6 +247,31 @@ public interface I_C_BP_PurchaseSchedule
     public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Lead Time Offset.
+	 * Optional Lead Time offest before starting production
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLeadTimeOffset (int LeadTimeOffset);
+
+	/**
+	 * Get Lead Time Offset.
+	 * Optional Lead Time offest before starting production
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLeadTimeOffset();
+
+    /** Column definition for LeadTimeOffset */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_LeadTimeOffset = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "LeadTimeOffset", null);
+    /** Column name LeadTimeOffset */
+    public static final String COLUMNNAME_LeadTimeOffset = "LeadTimeOffset";
 
 	/**
 	 * Set Day of the Month.

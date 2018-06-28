@@ -46,6 +46,10 @@ import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
 import de.metas.material.event.procurement.PurchaseOfferUpdatedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
@@ -99,7 +103,6 @@ public class MaterialEventSerializerTests
 				.dateOrdered(NOW)
 				.ddOrder(createDdOrder(0))
 				.build();
-		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
@@ -148,7 +151,7 @@ public class MaterialEventSerializerTests
 	private DDOrder createDdOrder(final int ddOrderId)
 	{
 		return DDOrder.builder()
-				.datePromised(SystemTime.asDayTimestamp())
+				.datePromised(SystemTime.asDayDate())
 				.ddOrderId(ddOrderId)
 				.docStatus("IP")
 				.materialDispoGroupId(35)
@@ -254,7 +257,7 @@ public class MaterialEventSerializerTests
 		final PPOrderChangedEvent event = PPOrderChangedEvent.builder()
 				.productDescriptor(createProductDescriptor())
 				.newDatePromised(NOW)
-				.oldDatePromised(SystemTime.asTimestamp())
+				.oldDatePromised(SystemTime.asDate())
 				.ppOrderId(10)
 				.oldDocStatus("CO")
 				.newDocStatus("CL")
@@ -326,6 +329,56 @@ public class MaterialEventSerializerTests
 				.qtyRequired(valueOf(220))
 				.receipt(true)
 				.build();
+	}
+
+	@Test
+	public void purchaseCandidateAdvisedEvent()
+	{
+		final PurchaseCandidateAdvisedEvent purchaseAdvisedEvent = PurchaseCandidateAdvisedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.productPlanningId(10)
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(purchaseAdvisedEvent);
+	}
+
+	@Test
+	public void purchaseCandidateCreatedEvent()
+	{
+		final PurchaseCandidateCreatedEvent event = PurchaseCandidateCreatedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.purchaseCandidateRepoId(20)
+				.purchaseMaterialDescriptor(createMaterialDescriptor())
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
+				.vendorId(30)
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void purchaseCandidateUpdatedEvent()
+	{
+		final PurchaseCandidateUpdatedEvent event = PurchaseCandidateUpdatedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.purchaseCandidateRepoId(20)
+				.purchaseMaterialDescriptor(createMaterialDescriptor())
+				.vendorId(30)
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void purchaseCandidateRequestedEvent()
+	{
+		final PurchaseCandidateRequestedEvent event = PurchaseCandidateRequestedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.purchaseMaterialDescriptor(createMaterialDescriptor())
+				.supplyCandidateRepoId(10)
+				.build();
+		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
 	@Test

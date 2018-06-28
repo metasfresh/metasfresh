@@ -1,26 +1,44 @@
 package de.metas.contracts.refund;
 
-import static org.adempiere.model.InterfaceWrapperHelper.createOld;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
-import static org.adempiere.model.InterfaceWrapperHelper.isNew;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
+import de.metas.document.IDocTypeDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyFactory;
@@ -56,15 +74,15 @@ import lombok.NonNull;
 class InvoiceCandidateFactory
 {
 	private final InvoiceCandidateRepository invoiceCandidateRepository;
-	private final RefundConfigRepository refundConfigRepository;
+	private final RefundContractRepository refundContractRepository;
 	private final MoneyFactory moneyFactory;
 
 	public InvoiceCandidateFactory(
 			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository,
-			@NonNull final RefundConfigRepository refundConfigRepository,
+			@NonNull final RefundContractRepository refundContractRepository,
 			@NonNull final MoneyFactory moneyFactory)
 	{
-		this.refundConfigRepository = refundConfigRepository;
+		this.refundContractRepository = refundContractRepository;
 		this.invoiceCandidateRepository = invoiceCandidateRepository;
 		this.moneyFactory = moneyFactory;
 	}
@@ -106,31 +124,31 @@ class InvoiceCandidateFactory
 			return Optional.empty();
 		}
 
-		final TableRecordReference reference = refundRecord.getAD_Table_ID() > 0 ? TableRecordReference.ofReferenced(refundRecord) : null;
-		final Optional<FlatrateTermId> refundContractId = retrieveRefundContractIdOrNull(reference);
+		final TableRecordReference reference = refundRecord.getAD_Table_ID() > 0
+				? TableRecordReference.ofReferenced(refundRecord)
+				: null;
 
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(refundRecord.getC_Invoice_Candidate_ID());
-
-		if (!refundContractId.isPresent())
+		final Optional<RefundContract> refundContract = retrieveRefundContractOrNull(reference);
+		if (!refundContract.isPresent())
 		{
 			return Optional.empty();
 		}
 
-		final Timestamp invoicableFromDate = getValueOverrideOrValue(refundRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(refundRecord.getC_Invoice_Candidate_ID());
 
-		final RefundConfig config = refundConfigRepository.getByRefundContractId(refundContractId.get());
+		final Timestamp invoicableFromDate = getValueOverrideOrValue(refundRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
 
 		final BigDecimal priceActual = getValueOverrideOrValue(refundRecord, I_C_Invoice_Candidate.COLUMNNAME_PriceActual);
 		final Money money = moneyFactory.forAmountAndCurrencyId(
 				priceActual,
 				CurrencyId.ofRepoId(refundRecord.getC_Currency_ID()));
 
-		final RefundInvoiceCandidate invoiceCandidate = RefundInvoiceCandidate.builder()
+		final RefundInvoiceCandidate invoiceCandidate = RefundInvoiceCandidate
+				.builder()
 				.id(invoiceCandidateId)
-				.refundContractId(refundContractId.get())
+				.refundContract(refundContract.get())
 				.bpartnerId(BPartnerId.ofRepoId(refundRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
-				.refundConfig(config)
 				.money(money)
 				.build();
 		return Optional.of(invoiceCandidate);
@@ -140,8 +158,8 @@ class InvoiceCandidateFactory
 	{
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(assignableRecord.getC_Invoice_Candidate_ID());
 
-		final Optional<RefundInvoiceCandidate> refundInvoiceCandidate = //
-				invoiceCandidateRepository.getRefundInvoiceCandidate(invoiceCandidateId);
+		final Optional<AssignmentToRefundCandidate> assignmentToRefundCandidate = //
+				invoiceCandidateRepository.getAssignmentToRefundCandidate(invoiceCandidateId);
 
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(assignableRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
 		final BigDecimal moneyAmount = assignableRecord
@@ -151,34 +169,19 @@ class InvoiceCandidateFactory
 		final CurrencyId currencyId = CurrencyId.ofRepoId(assignableRecord.getC_Currency_ID());
 		final Money money = moneyFactory.forAmountAndCurrencyId(moneyAmount, currencyId);
 
-		final Money oldMoney;
-		if (isNew(assignableRecord))
-		{
-			oldMoney = moneyFactory.zero(currencyId);
-		}
-		else
-		{
-			final I_C_Invoice_Candidate oldAssignableRecord = createOld(assignableRecord, I_C_Invoice_Candidate.class);
-			final BigDecimal oldMoneyValue = oldAssignableRecord
-					.getNetAmtInvoiced()
-					.add(assignableRecord.getNetAmtToInvoice());
-			oldMoney = moneyFactory.forAmountAndCurrencyId(oldMoneyValue, currencyId);
-		}
-
 		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
-				.refundInvoiceCandidate(refundInvoiceCandidate.orElse(null))
+				.assignmentToRefundCandidate(assignmentToRefundCandidate.orElse(null))
 				.bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
-				.oldMoney(oldMoney)
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
 				.build();
 
 		return invoiceCandidate;
 	}
 
-	private Optional<FlatrateTermId> retrieveRefundContractIdOrNull(@Nullable final TableRecordReference reference)
+	private Optional<RefundContract> retrieveRefundContractOrNull(@Nullable final TableRecordReference reference)
 	{
 		if (reference == null)
 		{
@@ -196,6 +199,129 @@ class InvoiceCandidateFactory
 			return Optional.empty();
 		}
 
-		return Optional.of(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		final RefundContract refundContract = refundContractRepository.getById(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		return Optional.of(refundContract);
 	}
+
+	public RefundInvoiceCandidate createRefundInvoiceCandidate(
+			@NonNull final AssignableInvoiceCandidate invoiceCandidate,
+			@NonNull final FlatrateTermId contractId)
+	{
+		final I_C_Invoice_Candidate assignableInvoiceCandidateRecord = load(
+				invoiceCandidate.getId().getRepoId(),
+				I_C_Invoice_Candidate.class);
+
+		final I_C_Invoice_Candidate refundInvoiceCandidateRecord = Services.get(IInvoiceCandBL.class)
+				.splitCandidate(assignableInvoiceCandidateRecord);
+
+		final I_C_ILCandHandler handlerRecord = Services.get(IInvoiceCandidateHandlerDAO.class)
+				.retrieveForClassOneOnly(Env.getCtx(), FlatrateTerm_Handler.class);
+		refundInvoiceCandidateRecord.setC_ILCandHandler(handlerRecord);
+
+		refundInvoiceCandidateRecord.setC_Order(null);
+		refundInvoiceCandidateRecord.setC_OrderLine(null);
+
+		final I_C_Flatrate_Term contractRecord = loadOutOfTrx(contractId.getRepoId(), I_C_Flatrate_Term.class);
+		refundInvoiceCandidateRecord.setRecord_ID(contractRecord.getC_Flatrate_Term_ID());
+		refundInvoiceCandidateRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
+
+		refundInvoiceCandidateRecord.setPriceActual(ZERO);
+		refundInvoiceCandidateRecord.setPriceEntered(ZERO);
+
+		refundInvoiceCandidateRecord.setQtyOrdered(ONE);
+		refundInvoiceCandidateRecord.setQtyDelivered(ONE);
+
+		final RefundConfig refundConfig = retrieveConfig(refundInvoiceCandidateRecord);
+
+		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(refundConfig.getInvoiceSchedule().getId().getRepoId());
+		refundInvoiceCandidateRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
+		refundInvoiceCandidateRecord.setInvoiceRule_Override(null);
+		refundInvoiceCandidateRecord.setDateToInvoice_Override(null);
+
+		final boolean soTrx = assignableInvoiceCandidateRecord.isSOTrx();
+		refundInvoiceCandidateRecord.setIsSOTrx(soTrx);
+
+		final LocalDate dateToInvoice = refundConfig
+				.getInvoiceSchedule()
+				.calculateNextDateToInvoice(invoiceCandidate.getInvoiceableFrom());
+		refundInvoiceCandidateRecord.setDateOrdered(TimeUtil.asTimestamp(dateToInvoice));
+		refundInvoiceCandidateRecord.setDeliveryDate(TimeUtil.asTimestamp(dateToInvoice));
+
+		try
+		{
+			final int docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundConfig);
+			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+					.setParameter("invoiceCandidate", invoiceCandidate)
+					.setParameter("refundConfig", refundConfig)
+					.setParameter("assignableInvoiceCandidateRecord", assignableInvoiceCandidateRecord);
+		}
+
+		saveRecord(refundInvoiceCandidateRecord);
+
+		invalidateNewRefundRecordIfNeeded(refundInvoiceCandidateRecord);
+
+		return ofNullableRefundRecord(refundInvoiceCandidateRecord).get();
+	}
+
+	private RefundConfig retrieveConfig(@NonNull final I_C_Invoice_Candidate refundInvoiceCandidateRecord)
+	{
+		final FlatrateTermId contractId = FlatrateTermId.ofRepoId(refundInvoiceCandidateRecord.getRecord_ID());
+		final RefundContract refundContract = refundContractRepository.getById(contractId);
+
+		return refundContract.getRefundConfig();
+	}
+
+	private int computeDocType(
+			final I_C_Invoice_Candidate assignableInvoiceCandidateRecord,
+			final RefundConfig refundConfig)
+	{
+		final boolean soTrx = assignableInvoiceCandidateRecord.isSOTrx();
+
+		final DocTypeQueryBuilder docTypeQueryBuilder = DocTypeQuery
+				.builder()
+				.isSOTrx(soTrx)
+				.adClientId(assignableInvoiceCandidateRecord.getAD_Client_ID())
+				.adOrgId(assignableInvoiceCandidateRecord.getAD_Org_ID())
+				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE);
+
+		if (soTrx)
+		{
+			docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo);
+		}
+		else
+		{
+			docTypeQueryBuilder.docBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
+		}
+
+		switch (refundConfig.getRefundInvoiceType())
+		{
+			case INVOICE:
+				docTypeQueryBuilder.docSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung);
+				break;
+			case CREDITMEMO:
+				docTypeQueryBuilder.docSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsgutschrift);
+				break;
+			default:
+				Check.fail("The current refundConfig has an ussupported invoice type={}", refundConfig.getRefundInvoiceType());
+		}
+
+		final int docTypeId = Services.get(IDocTypeDAO.class)
+				.getDocTypeIdOrNull(docTypeQueryBuilder.build());
+
+		return Check.assumeGreaterThanZero(docTypeId, "docTypeId");
+	}
+
+	private void invalidateNewRefundRecordIfNeeded(@NonNull final I_C_Invoice_Candidate refundInvoiceCandidateRecord)
+	{
+		if (!Services.get(IInvoiceCandBL.class).isUpdateProcessInProgress())
+		{
+			return; // it's not necessary to make an explicit call because that's already done by a model interceptor
+		}
+		Services.get(IInvoiceCandDAO.class).invalidateCand(refundInvoiceCandidateRecord);
+	}
+
 }

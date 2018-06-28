@@ -43,7 +43,7 @@ public class SupplyRequiredHandlerUtils
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{
-		final int descriptorBPartnerId = supplyRequiredDescriptor.getMaterialDescriptor().getBPartnerId();
+		final int descriptorBPartnerId = supplyRequiredDescriptor.getMaterialDescriptor().getCustomerId();
 
 		final int productId = supplyRequiredDescriptor.getMaterialDescriptor().getProductId();
 		final I_M_Product product = load(productId, I_M_Product.class);

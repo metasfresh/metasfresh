@@ -69,33 +69,31 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Kunde.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Kunde.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	public int getC_BPartner_Customer_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
+	public org.compiere.model.I_C_BPartner getC_BPartner_Customer();
 
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+	public void setC_BPartner_Customer(org.compiere.model.I_C_BPartner C_BPartner_Customer);
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_BPartner>(I_MD_Candidate.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+    /** Column definition for C_BPartner_Customer_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_Customer_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_BPartner>(I_MD_Candidate.class, "C_BPartner_Customer_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_Customer_ID */
+    public static final String COLUMNNAME_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
 
 	/**
 	 * Set Auftrag.
@@ -105,7 +103,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Order_ID (int C_Order_ID);
+	public void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
 	 * Get Auftrag.
@@ -115,16 +113,16 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Order_ID();
+	public int getC_OrderSO_ID();
 
-	public org.compiere.model.I_C_Order getC_Order();
+	public org.compiere.model.I_C_Order getC_OrderSO();
 
-	public void setC_Order(org.compiere.model.I_C_Order C_Order);
+	public void setC_OrderSO(org.compiere.model.I_C_Order C_OrderSO);
 
-    /** Column definition for C_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_Order>(I_MD_Candidate.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_Order_ID */
-    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
+    /** Column definition for C_OrderSO_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_Order>(I_MD_Candidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_OrderSO_ID */
+    public static final String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
 	 * Get Erstellt.

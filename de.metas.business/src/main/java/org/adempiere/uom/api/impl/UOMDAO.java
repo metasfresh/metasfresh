@@ -1,5 +1,7 @@
 package org.adempiere.uom.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,15 +15,14 @@ package org.adempiere.uom.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -41,6 +42,11 @@ import de.metas.adempiere.util.CacheCtx;
 
 public class UOMDAO implements IUOMDAO
 {
+	@Override
+	public I_C_UOM getById(final int uomId)
+	{
+		return loadOutOfTrx(uomId, I_C_UOM.class); // assume it's cached on table level
+	}
 
 	@Override
 	public I_C_UOM retrieveByX12DE355(@CacheCtx final Properties ctx, final String x12de355)

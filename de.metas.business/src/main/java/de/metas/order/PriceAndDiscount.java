@@ -1,15 +1,17 @@
 package de.metas.order;
 
+import static java.math.BigDecimal.ZERO;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 import de.metas.lang.Percent;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -37,7 +39,6 @@ import lombok.Value;
 
 /** Order line price & discount calculations */
 @Value
-@Builder(toBuilder = true)
 public class PriceAndDiscount
 {
 	public static PriceAndDiscount of(final I_C_OrderLine orderLine, final int precision)
@@ -51,27 +52,34 @@ public class PriceAndDiscount
 				.build();
 	}
 
-	@NonNull
-	@Default
-	BigDecimal priceEntered = BigDecimal.ZERO;
-
-	@NonNull
-	@Default
-	BigDecimal priceActual = BigDecimal.ZERO;
-
-	@NonNull
-	@Default
-	Percent discount = Percent.ZERO;
-
-	@Default
-	int precision = 2;
-
-	@NonNull
-	@Default
-	BigDecimal priceLimit = BigDecimal.ZERO;
+	BigDecimal priceEntered;
+	BigDecimal priceActual;
+	Percent discount;
+	int precision;
+	BigDecimal priceLimit;
 
 	boolean priceLimitEnforced;
 	String priceLimitEnforceExplanation;
+
+	@Builder(toBuilder = true)
+	private PriceAndDiscount(
+			BigDecimal priceEntered,
+			BigDecimal priceActual,
+			Percent discount,
+			int precision,
+			BigDecimal priceLimit,
+			boolean priceLimitEnforced,
+			String priceLimitEnforceExplanation)
+	{
+		this.precision = precision >= 0 ? precision : 2;
+		this.priceEntered = Util.coalesce(priceEntered, ZERO).setScale(precision, RoundingMode.HALF_UP);
+		this.priceActual = Util.coalesce(priceActual, ZERO).setScale(precision, RoundingMode.HALF_UP);
+		this.priceLimit = Util.coalesce(priceLimit, ZERO).setScale(precision, RoundingMode.HALF_UP);
+
+		this.discount = Util.coalesce(discount, Percent.ZERO);
+		this.priceLimitEnforced = priceLimitEnforced;
+		this.priceLimitEnforceExplanation = priceLimitEnforceExplanation;
+	}
 
 	public PriceAndDiscount enforcePriceLimit(final PriceLimitRuleResult priceLimitResult)
 	{
@@ -138,21 +146,21 @@ public class PriceAndDiscount
 			return Percent.ZERO;
 		}
 
-		BigDecimal discount = priceEntered.subtract(priceActual)
-				.divide(priceEntered, 12, RoundingMode.HALF_UP)
-				.multiply(Env.ONEHUNDRED);
-		if (discount.scale() > 2)
-		{
-			discount = discount.setScale(2, BigDecimal.ROUND_HALF_UP);
-		}
-
-		return Percent.of(discount);
+		final BigDecimal delta = priceEntered.subtract(priceActual);
+		return Percent.of(delta, priceEntered, precision);
 	}
 
-	public static BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(final BigDecimal priceActual, final BigDecimal discount, final int precision)
+	public static BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(
+			@NonNull final BigDecimal priceActual,
+			@NonNull final BigDecimal discount,
+			final int precision)
 	{
-		final BigDecimal multiplier = Env.ONEHUNDRED.add(discount).divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
-		return priceActual.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
+		final BigDecimal multiplier = Env.ONEHUNDRED
+				.add(discount)
+				.divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
+		return priceActual
+				.multiply(multiplier)
+				.setScale(precision, RoundingMode.HALF_UP);
 	}
 
 	public void applyTo(final I_C_OrderLine orderLine)

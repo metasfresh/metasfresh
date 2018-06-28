@@ -89,8 +89,7 @@ public class DDOrderAdvisedEvent extends AbstractDDOrderEvent
 	private void checkRequiredPropertiesForLookup(final DDOrder ddOrder)
 	{
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = getSupplyRequiredDescriptor();
-		Check.errorIf(supplyRequiredDescriptor == null, "The given ppOrderAdvisedEvent has no supplyRequiredDescriptor");
-		supplyRequiredDescriptor.validate();
+		Check.errorIf(supplyRequiredDescriptor == null, "The given ppOrderAdvisedEvent needs to have a supplyRequiredDescriptor");
 
 		final int productPlanningId = ddOrder.getProductPlanningId();
 		Check.errorIf(productPlanningId <= 0,

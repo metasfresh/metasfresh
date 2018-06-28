@@ -9,6 +9,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.money.CurrencyId;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 
 /*
@@ -71,7 +72,7 @@ public interface IPMMPricingAware
 
 	void setM_PriceList_ID(int M_PriceList_ID);
 
-	void setC_Currency_ID(int C_Currency_ID);
+	void setCurrencyId(CurrencyId currencyId);
 
 	void setPrice(BigDecimal price);
 }

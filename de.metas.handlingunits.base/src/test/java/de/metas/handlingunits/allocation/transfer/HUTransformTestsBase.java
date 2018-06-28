@@ -5,6 +5,7 @@ import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createLocator;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -16,15 +17,13 @@ import java.util.List;
 
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.w3c.dom.Node;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
 import de.metas.handlingunits.HUXmlConverter;

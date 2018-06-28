@@ -23,6 +23,8 @@ package de.metas.order;
  */
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Map;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
@@ -42,6 +44,10 @@ public interface IOrderLineBL extends ISingletonService
 	public static final String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
 
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
+
+	Quantity getQtyOrdered(OrderAndLineId orderAndLineId);
+
+	Quantity getQtyToDeliver(OrderAndLineId orderAndLineId);
 
 	/**
 	 * Creates a new order line using the given {@code order} as header.
@@ -215,4 +221,6 @@ public interface IOrderLineBL extends ISingletonService
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 
 	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
+
+	Map<OrderAndLineId, Quantity> getQtyToDeliver(Collection<OrderAndLineId> orderAndLineIds);
 }

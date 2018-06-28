@@ -4,9 +4,9 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;

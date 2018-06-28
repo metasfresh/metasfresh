@@ -45,7 +45,7 @@ import lombok.NonNull;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@EqualsAndHashCode
+@EqualsAndHashCode(doNotUseGetters = true)
 public final class AttributesKey
 {
 	// first, declare the "static" constants that might be used within the "factory-method" constants
@@ -72,14 +72,14 @@ public final class AttributesKey
 		{
 			return NONE;
 		}
-		
+
 		final ImmutableSet<Integer> attributeValueIds = extractAttributeValueIds(attributesKeyString);
 		final String attributesKeyStringNorm = toAttributesKeyString(attributeValueIds);
 		if (attributesKeyStringNorm.isEmpty())
 		{
 			return NONE;
 		}
-		
+
 		return new AttributesKey(attributesKeyStringNorm, attributeValueIds);
 	}
 
@@ -106,14 +106,14 @@ public final class AttributesKey
 		final String attributesKeyString = toAttributesKeyString(attributeValueIds);
 		return new AttributesKey(attributesKeyString, ImmutableSet.copyOf(attributeValueIds));
 	}
-	
+
 	private static String toAttributesKeyString(final Collection<Integer> attributeValueIds)
 	{
-		if(attributeValueIds == null || attributeValueIds.isEmpty())
+		if (attributeValueIds == null || attributeValueIds.isEmpty())
 		{
 			return NONE.getAsString();
 		}
-		
+
 		return ATTRIBUTEVALUEIDS_JOINER.join(attributeValueIds.stream().sorted().toArray());
 	}
 
@@ -178,14 +178,14 @@ public final class AttributesKey
 		}
 		return attributeValueIds;
 	}
-	
+
 	private static ImmutableSet<Integer> extractAttributeValueIds(final String attributesKeyString)
 	{
-		if(attributesKeyString.trim().isEmpty())
+		if (attributesKeyString.trim().isEmpty())
 		{
 			return ImmutableSet.of();
 		}
-		
+
 		return ATTRIBUTEVALUEIDS_SPLITTER.splitToList(attributesKeyString.trim())
 				.stream()
 				.map(Integer::parseInt)

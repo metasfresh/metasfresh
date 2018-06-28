@@ -2,8 +2,11 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import java.time.LocalDateTime;
 
-import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,14 +38,23 @@ import lombok.Value;
 @Builder
 /* package */ final class PurchaseOrderAggregationKey
 {
-	public static PurchaseOrderAggregationKey formPurchaseOrderItem(
-			@NonNull final PurchaseOrderItem purchaseOrderItem)
+	public static PurchaseOrderAggregationKey fromPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseOrderItem.getOrgId())
 				.warehouseId(purchaseOrderItem.getWarehouseId())
-				.vendorBPartnerId(purchaseOrderItem.getVendorBPartnerId())
+				.vendorId(purchaseOrderItem.getVendorId())
 				.datePromised(purchaseOrderItem.getDatePromised())
+				.build();
+	}
+
+	public static PurchaseOrderAggregationKey fromPurchaseCandidate(@NonNull final PurchaseCandidate purchaseCandidate)
+	{
+		return PurchaseOrderAggregationKey.builder()
+				.orgId(purchaseCandidate.getOrgId())
+				.warehouseId(purchaseCandidate.getWarehouseId())
+				.vendorId(purchaseCandidate.getVendorId())
+				.datePromised(purchaseCandidate.getPurchaseDatePromised())
 				.build();
 	}
 
@@ -51,8 +63,8 @@ import lombok.Value;
 		return (PurchaseOrderAggregationKey)obj;
 	}
 
-	private final int orgId;
-	private final int warehouseId;
-	private final BPartnerId vendorBPartnerId;
+	private final OrgId orgId;
+	private final WarehouseId warehouseId;
+	private final BPartnerId vendorId;
 	private final LocalDateTime datePromised;
 }

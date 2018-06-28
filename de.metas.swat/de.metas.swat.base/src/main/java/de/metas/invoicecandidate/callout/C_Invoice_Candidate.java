@@ -30,11 +30,11 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
@@ -44,7 +44,9 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.Group;
+import de.metas.pricing.PricingSystemId;
 
 @Callout(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
@@ -135,8 +137,8 @@ public class C_Invoice_Candidate
 	private void setPricingSystem(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-		final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, ic.getBill_BPartner_ID(), ic.isSOTrx(), ITrx.TRXNAME_None);
-		ic.setM_PricingSystem_ID(pricingSysId);
+		final PricingSystemId pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, ic.getBill_BPartner_ID(), SOTrx.ofBoolean(ic.isSOTrx()), ITrx.TRXNAME_None);
+		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSysId));
 	}
 
 	@CalloutMethod(columnNames = { I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override })

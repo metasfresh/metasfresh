@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
@@ -53,6 +52,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.callcenter.model.BundleUtil;
 import de.metas.callcenter.model.CallCenterValidator;
 import de.metas.callcenter.model.I_RV_R_Group_Prospect;

@@ -12,6 +12,7 @@ import org.adempiere.util.time.generator.Frequency;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -56,12 +57,25 @@ public class BPPurchaseSchedule
 	@Getter
 	private final Duration reminderTime;
 
-	@Builder
+	@Getter
+	private final Duration leadTimeOffset;
+
+	@Getter
+	private final BPartnerId bpartnerId;
+
+	/** might be null, if the BPPurchaseSchedule wasn't stored yet */
+	@Getter
+	BPPurchaseScheduleId bpPurchaseScheduleId;
+
+	@Builder(toBuilder = true)
 	private BPPurchaseSchedule(
+			final BPPurchaseScheduleId bpPurchaseScheduleId,
 			final LocalDate validFrom,
 			@NonNull final Frequency frequency,
 			@Singular @NonNull final ImmutableMap<DayOfWeek, LocalTime> dailyPreparationTimes,
-			@NonNull final Duration reminderTime)
+			@NonNull final Duration reminderTime,
+			final Duration leadTimeOffset,
+			@NonNull final BPartnerId bpartnerId)
 	{
 		Check.assume(!reminderTime.isNegative(), "reminderTime shall be >= 0 but it was {}", reminderTime);
 
@@ -69,6 +83,9 @@ public class BPPurchaseSchedule
 		this.frequency = frequency;
 		this.dailyPreparationTimes = dailyPreparationTimes;
 		this.reminderTime = reminderTime;
+		this.leadTimeOffset = leadTimeOffset;
+		this.bpPurchaseScheduleId = bpPurchaseScheduleId;
+		this.bpartnerId = bpartnerId;
 	}
 
 	public LocalTime getPreparationTime(final DayOfWeek dayOfWeek)

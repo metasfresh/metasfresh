@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -17,14 +16,9 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.CCache;
-import org.compiere.util.TimeUtil;
 
-import de.metas.contracts.IContractsDAO;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.acct.api.IProductAcctDAO;
@@ -81,12 +75,6 @@ public class HandlerTools
 
 		ic.setM_Product_ID(term.getM_Product_ID());
 
-		// 03799
-		// If the term is the first one, then the candidate should be created
-		// with DateOrdered=Term.getStartDate
-		final Timestamp dateOrdered = getDateOrdered(term);
-
-		ic.setDateOrdered(dateOrdered);
 		ic.setC_Currency_ID(term.getC_Currency_ID());
 
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
@@ -114,58 +102,6 @@ public class HandlerTools
 		return ic;
 	}
 
-	public static Timestamp getDateOrdered(@NonNull final I_C_Flatrate_Term term)
-	{
-		final Timestamp dateOrdered;
-		final boolean termHasAPredecessor = Services.get(IContractsDAO.class).termHasAPredecessor(term);
-		if (!termHasAPredecessor)
-		{
-			dateOrdered = term.getStartDate();
-		}
-		// If the term was extended (meaning that there is a predecessor term),
-		// C_Invoice_Candidate.DateOrdered should rather be the StartDate minus TermOfNoticeDuration/TermOfNoticeUnit
-		else
-		{
-			final Timestamp firstDayOfNewTerm = getGetExtentionDateOfNewTerm(term);
-			dateOrdered = firstDayOfNewTerm;
-		}
-		return dateOrdered;
-	}
-
-	/**
-	 * For the given <code>term</code> and its <code>C_Flatrate_Transition</code> record, this method returns the term's start date minus the period specified by <code>TermOfNoticeDuration</code> and
-	 * <code>TermOfNoticeUnit</code>.
-	 */
-	public static Timestamp getGetExtentionDateOfNewTerm(@NonNull final I_C_Flatrate_Term term)
-	{
-		final Timestamp startDateOfTerm = term.getStartDate();
-
-		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
-		final I_C_Flatrate_Transition transition = conditions.getC_Flatrate_Transition();
-		final String termOfNoticeUnit = transition.getTermOfNoticeUnit();
-		final int termOfNotice = transition.getTermOfNotice();
-
-		final Timestamp minimumDateToStart;
-		if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_MonatE.equals(termOfNoticeUnit))
-		{
-			minimumDateToStart = TimeUtil.addMonths(startDateOfTerm, termOfNotice * -1);
-		}
-		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_WocheN.equals(termOfNoticeUnit))
-		{
-			minimumDateToStart = TimeUtil.addWeeks(startDateOfTerm, termOfNotice * -1);
-		}
-		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_TagE.equals(termOfNoticeUnit))
-		{
-			minimumDateToStart = TimeUtil.addDays(startDateOfTerm, termOfNotice * -1);
-		}
-		else
-		{
-			Check.assume(false, "TermOfNoticeDuration " + transition.getTermOfNoticeUnit() + " doesn't exist");
-			minimumDateToStart = null; // code won't be reached
-		}
-
-		return minimumDateToStart;
-	}
 
 	public static boolean isCancelledContract(@NonNull final I_C_Flatrate_Term term)
 	{

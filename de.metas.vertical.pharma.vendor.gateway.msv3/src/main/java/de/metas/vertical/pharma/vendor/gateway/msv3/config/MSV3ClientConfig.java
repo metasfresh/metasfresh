@@ -5,8 +5,10 @@ import java.net.URL;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
@@ -34,7 +36,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder=true)
 @ToString(exclude = "authPassword")
 public class MSV3ClientConfig
 {
@@ -48,6 +50,8 @@ public class MSV3ClientConfig
 				.authPassword(configDataRecord.getPassword())
 				.authUsername(configDataRecord.getUserID())
 				.baseUrl(baseUrl)
+				.bpartnerId(BPartnerId.ofRepoId(configDataRecord.getC_BPartner_ID()))
+				.configId(MSV3ClientConfigId.ofRepoId(configDataRecord.getMSV3_Vendor_Config_ID()))
 				.build();
 	}
 
@@ -72,4 +76,12 @@ public class MSV3ClientConfig
 	String authUsername;
 	@NonNull
 	String authPassword;
+
+	@Getter
+	@NonNull
+	BPartnerId bpartnerId;
+
+	/** might be null, if the MSV3ClientConfig wasn't stored yet */
+	@Getter
+	MSV3ClientConfigId configId;
 }

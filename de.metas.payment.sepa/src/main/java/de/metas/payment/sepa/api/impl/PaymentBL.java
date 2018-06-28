@@ -40,7 +40,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.sepa.api.IPaymentBL;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;

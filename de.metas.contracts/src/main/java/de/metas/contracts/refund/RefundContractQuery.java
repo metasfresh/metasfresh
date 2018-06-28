@@ -2,8 +2,7 @@ package de.metas.contracts.refund;
 
 import java.time.LocalDate;
 
-import org.adempiere.bpartner.BPartnerId;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.grossprofit.GrossProfitComputeRequest;
 import de.metas.product.ProductId;
 import lombok.NonNull;

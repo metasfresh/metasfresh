@@ -25,6 +25,8 @@ package de.metas.quantity;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
@@ -55,6 +57,22 @@ public final class Quantity implements Comparable<Quantity>
 	public static boolean isInfinite(final BigDecimal qty)
 	{
 		return QTY_INFINITE.compareTo(qty) == 0;
+	}
+
+	public static Quantity addNullables(@Nullable final Quantity qty1, @Nullable final Quantity qty2)
+	{
+		if (qty1 == null)
+		{
+			return qty2;
+		}
+		else if (qty2 == null)
+		{
+			return qty1;
+		}
+		else
+		{
+			return qty1.add(qty2);
+		}
 	}
 
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
@@ -172,7 +190,7 @@ public final class Quantity implements Comparable<Quantity>
 			return false;
 		}
 
-		if (this.getC_UOM_ID() != quantity.getC_UOM_ID())
+		if (this.getUOMId() != quantity.getUOMId())
 		{
 			return false;
 		}
@@ -183,9 +201,18 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return Quantity value; never return null
 	 */
-	public BigDecimal getQty()
+	public BigDecimal getAsBigDecimal()
 	{
 		return qty;
+	}
+
+	/**
+	 * @deprecated Please use {@link #getAsBigDecimal()}
+	 */
+	@Deprecated
+	public BigDecimal getQty()
+	{
+		return getAsBigDecimal();
 	}
 
 	/**
@@ -222,9 +249,14 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return quantity's C_UOM_ID
 	 */
-	private int getC_UOM_ID()
+	public int getUOMId()
 	{
 		return uom.getC_UOM_ID();
+	}
+
+	public String getUOMSymbol()
+	{
+		return uom.getUOMSymbol();
 	}
 
 	/**
@@ -314,6 +346,11 @@ public final class Quantity implements Comparable<Quantity>
 			return this;
 		}
 		return new Quantity(BigDecimal.ZERO, uom, BigDecimal.ZERO, sourceUom);
+	}
+
+	public Quantity toZeroIfNegative()
+	{
+		return qty.signum() >= 0 ? this : toZero();
 	}
 
 	/**
@@ -435,8 +472,8 @@ public final class Quantity implements Comparable<Quantity>
 
 		// Get QtyToAdd value (mandatory)
 		final BigDecimal qtyToAdd_Value;
-		final int uomId = this.getC_UOM_ID();
-		final int qtyToAdd_uomId = qtyToAdd.getC_UOM_ID();
+		final int uomId = this.getUOMId();
+		final int qtyToAdd_uomId = qtyToAdd.getUOMId();
 		final int qtyToAdd_sourceUomId = qtyToAdd.getSource_UOM_ID();
 		if (uomId == qtyToAdd_uomId)
 		{
@@ -491,18 +528,50 @@ public final class Quantity implements Comparable<Quantity>
 		return new Quantity(qtyNew_Value, qtyNew_UOM, qtyNew_SourceValue, qtyNew_SourceUOM);
 	}
 
-	public Quantity subtract(@NonNull final Quantity qtyToRemove)
+	public Quantity add(@NonNull final BigDecimal qtyToAdd)
 	{
-		final Quantity qtyToAdd = qtyToRemove.negate();
+		if (qtyToAdd.signum() == 0)
+		{
+			return this;
+		}
+		return add(of(qtyToAdd, uom));
+	}
+
+	public Quantity subtract(@NonNull final Quantity qtyToSubtract)
+	{
+		final Quantity qtyToAdd = qtyToSubtract.negate();
 		return add(qtyToAdd);
 	}
 
+	public Quantity subtract(@NonNull final BigDecimal qtyToSubtract)
+	{
+		if (qtyToSubtract.signum() == 0)
+		{
+			return this;
+		}
+		return add(qtyToSubtract.negate());
+	}
+
 	/**
-	 *
-	 * @param qtyToCompare
 	 * @return minimum of <code>this</code> and <code>qtyToCompare</code>
 	 */
 	public Quantity min(@NonNull final Quantity qtyToCompare)
+	{
+		final Quantity diff = this.subtract(qtyToCompare);
+		if (diff.signum() <= 0)
+		{
+			return this;
+		}
+		else
+		{
+			return qtyToCompare;
+		}
+	}
+
+	/**
+	 * @return maximum of <code>this</code> and <code>qtyToCompare</code>.
+	 */
+	public Quantity max(@NonNull final Quantity qtyToCompare)
 	{
 		final Quantity diff = this.subtract(qtyToCompare);
 		if (diff.signum() >= 0)
@@ -529,11 +598,11 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity multiply(final BigDecimal multiplicand)
 	{
-		if(multiplicand.compareTo(BigDecimal.ONE) == 0)
+		if (multiplicand.compareTo(BigDecimal.ONE) == 0)
 		{
 			return this;
 		}
-		
+
 		return new Quantity(qty.multiply(multiplicand), uom, sourceQty.multiply(multiplicand), sourceUom);
 	}
 }

@@ -4,10 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.util.time.generator.DateSequenceGenerator;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.NonNull;
 
 /*
@@ -47,7 +47,7 @@ public class BPPurchaseScheduleService
 		return bpPurchaseScheduleRepo.getByBPartnerIdAndValidFrom(bpartnerId, date);
 	}
 
-	public Optional<LocalDateTime> calculatePurchaseDatePromised(@NonNull final LocalDateTime salesDatePromised, @NonNull final BPPurchaseSchedule schedule)
+	public Optional<LocalDateTime> calculatePurchaseDatePromised(@NonNull final LocalDateTime salesPreparationDate, @NonNull final BPPurchaseSchedule schedule)
 	{
 		final Optional<LocalDate> purchaseDate = DateSequenceGenerator.builder()
 				.dateFrom(LocalDate.MIN)
@@ -55,7 +55,7 @@ public class BPPurchaseScheduleService
 				// .shifter(shifter) // TODO: non business days aware shifter
 				.frequency(schedule.getFrequency())
 				.build()
-				.generateCurrentPrevious(salesDatePromised.toLocalDate());
+				.generateCurrentPrevious(salesPreparationDate.toLocalDate());
 
 		return purchaseDate.map(schedule::applyTimeTo);
 	}

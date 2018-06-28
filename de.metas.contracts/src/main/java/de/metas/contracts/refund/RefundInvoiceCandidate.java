@@ -2,9 +2,7 @@ package de.metas.contracts.refund;
 
 import java.time.LocalDate;
 
-import org.adempiere.bpartner.BPartnerId;
-
-import de.metas.contracts.FlatrateTermId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import lombok.Builder;
@@ -52,48 +50,22 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 	LocalDate invoiceableFrom;
 
 	@NonNull
-	FlatrateTermId refundContractId;
-
-	@NonNull
-	RefundConfig refundConfig;
+	RefundContract refundContract;
 
 	@NonNull
 	Money money;
 
-	public RefundInvoiceCandidate withSubtractedMoneyAmount(
-			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
-	{
-		final Money subtrahent = assignableInvoiceCandidate
-				.getMoney()
-				.percentage(refundConfig.getPercent());
-
-		return toBuilder()
-				.money(money.subtract(subtrahent))
-				.build();
-	}
-
-	public RefundInvoiceCandidate withAddedMoneyAmount(
+	public AssignmentToRefundCandidate withAddedMoneyAmount(
 			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
 		final Money augend = assignableInvoiceCandidate
 				.getMoney()
-				.percentage(refundConfig.getPercent());
+				.percentage(refundContract.getRefundConfig().getPercent());
 
-		return toBuilder()
+		final RefundInvoiceCandidate updatedRefundCandidate = toBuilder()
 				.money(money.add(augend))
 				.build();
 
-	}
-
-	public RefundInvoiceCandidate withUpdatedMoneyAmout(
-			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
-	{
-		final Money augend = assignableInvoiceCandidate
-				.getMoneyDelta()
-				.percentage(refundConfig.getPercent());
-
-		return toBuilder()
-				.money(money.add(augend))
-				.build();
+		return new AssignmentToRefundCandidate(updatedRefundCandidate, augend);
 	}
 }

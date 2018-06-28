@@ -28,22 +28,26 @@ import java.util.Collection;
 import java.util.List;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 
 /**
  * Result of a pricing calculation
  *
- * @author tsa
- *
  */
 public interface IPricingResult
 {
 	int NO_PRECISION = -1;
 
-	int getC_Currency_ID();
+	CurrencyId getCurrencyId();
 
-	void setC_Currency_ID(int currencyId);
+	void setCurrencyId(CurrencyId currencyId);
+
+	default int getCurrencyRepoId()
+	{
+		return CurrencyId.toRepoId(getCurrencyId());
+	}
 
 	int getPrice_UOM_ID();
 
@@ -97,13 +101,13 @@ public interface IPricingResult
 
 	void setCalculated(boolean calculated);
 
-	int getM_PricingSystem_ID();
+	PricingSystemId getPricingSystemId();
 
-	void setM_PricingSystem_ID(final int pricingSystemId);
+	void setPricingSystemId(PricingSystemId pricingSystemId);
 
-	void setM_PriceList_ID(int tM_PriceList_ID);
+	void setPriceListId(PriceListId priceListId);
 
-	int getM_PriceList_ID();
+	PriceListId getPriceListId();
 
 	void setM_PriceList_Version_ID(int M_PriceList_Version_ID);
 

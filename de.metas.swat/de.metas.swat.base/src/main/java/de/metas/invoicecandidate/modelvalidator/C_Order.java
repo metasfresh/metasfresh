@@ -28,11 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.BPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -46,6 +41,11 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerStatsBL;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -73,13 +73,13 @@ public class C_Order
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getC_BPartner_ID());
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getBill_BPartner_ID());
 		final BigDecimal creditUsed = stats.getSOCreditUsed();
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getC_BPartner_ID(), dateOrdered);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getBill_BPartner_ID(), dateOrdered);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{
@@ -133,7 +133,7 @@ public class C_Order
 		}
 
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getC_BPartner_ID());
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getBill_BPartner_ID());
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
 		{
 			return false;

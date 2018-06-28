@@ -9,20 +9,20 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;

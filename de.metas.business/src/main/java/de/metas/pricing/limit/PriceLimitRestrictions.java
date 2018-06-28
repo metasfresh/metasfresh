@@ -2,8 +2,7 @@ package de.metas.pricing.limit;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
+import de.metas.pricing.PricingSystemId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,18 +32,16 @@ import lombok.Value;
 @Value
 public final class PriceLimitRestrictions
 {
-	int basePricingSystemId;
+	PricingSystemId basePricingSystemId;
 	BigDecimal priceAddAmt;
 	BigDecimal discountPercent;
 
 	@Builder
 	private PriceLimitRestrictions(
-			final int basePricingSystemId,
+			@NonNull final PricingSystemId basePricingSystemId,
 			@NonNull final BigDecimal priceAddAmt,
 			@NonNull final BigDecimal discountPercent)
 	{
-		Check.assumeGreaterThanZero(basePricingSystemId, "basePricingSystemId");
-
 		this.basePricingSystemId = basePricingSystemId;
 		this.priceAddAmt = priceAddAmt;
 		this.discountPercent = discountPercent;

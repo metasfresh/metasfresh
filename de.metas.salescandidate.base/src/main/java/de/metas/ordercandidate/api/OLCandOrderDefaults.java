@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.pricing.PricingSystemId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -43,5 +44,5 @@ public class OLCandOrderDefaults
 	private final int paymentTermId;
 
 	private final String invoiceRule;
-	private final int pricingSystemId;
+	private final PricingSystemId pricingSystemId;
 }

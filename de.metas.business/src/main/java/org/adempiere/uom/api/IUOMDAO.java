@@ -30,6 +30,8 @@ import org.compiere.model.I_C_UOM;
 
 public interface IUOMDAO extends ISingletonService
 {
+	I_C_UOM getById(int uomId);
+	
 	String X12DE355_Each = "PCE";
 	int C_UOM_ID_Each = 100;
 	String X12DE355_Kilogram = "KGM";
@@ -58,6 +60,4 @@ public interface IUOMDAO extends ISingletonService
 	 * @return
 	 */
 	I_C_UOM retrieveEachUOM(Properties ctx);
-
-
 }

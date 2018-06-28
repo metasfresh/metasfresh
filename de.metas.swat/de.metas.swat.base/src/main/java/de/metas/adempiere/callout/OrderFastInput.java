@@ -10,12 +10,12 @@ package de.metas.adempiere.callout;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,6 @@ import java.util.function.Consumer;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -53,12 +52,15 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
 
 /**
@@ -69,7 +71,7 @@ import de.metas.purchasing.api.IBPartnerProductBL;
  * <ul>
  * <li>{@link C_OrderFastInputTabCallout}: this tabcallout makes sure that the quick-input fields are empty (and not "0"!) when a new order record is created (task 09232).
  * </ul>
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Geschwindigkeit_Erfassung_%282009_0027_G131%29'>(2009 0027 G131)</a>"
  */
@@ -251,19 +253,12 @@ public class OrderFastInput extends CalloutEngine
 
 	private void clearFieldsLater(final ICalloutField calloutField, final boolean save)
 	{
-		Services.get(IClientUI.class).invokeLater(calloutField.getWindowNo(), new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				clearFields(calloutField, save);
-			}
-		});
+		Services.get(IClientUI.class).invokeLater(calloutField.getWindowNo(), () -> clearFields(calloutField, save));
 	}
 
 	public static I_C_OrderLine addOrderLine(final Properties ctx, final I_C_Order order, final Consumer<Object> orderLineCustomizer)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);		
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		final I_C_OrderLine ol = orderLineBL.createOrderLine(order);
 
@@ -291,7 +286,9 @@ public class OrderFastInput extends CalloutEngine
 		// end: cg: 01717
 
 		// 3834
-		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(ol.getM_Product_ID(), ol.getC_BPartner_ID());
+		final ProductId productId = ProductId.ofRepoId(ol.getM_Product_ID());
+		final BPartnerId partnerId = BPartnerId.ofRepoId(ol.getC_BPartner_ID());
+		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(productId, partnerId);
 
 		// set the prices before saveEx, because otherwise, priceEntered is
 		// reset and that way IOrderLineBL.setPrices can't tell whether it
@@ -321,7 +318,7 @@ public class OrderFastInput extends CalloutEngine
 
 	/**
 	 * Checks if the Weight of the given Product is zero or less and shows a warning if so.
-	 * 
+	 *
 	 * @param product
 	 * @param WindowNo
 	 */

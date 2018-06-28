@@ -26,6 +26,7 @@ import org.adempiere.ad.trx.api.ITrx;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -34,7 +35,6 @@ import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_BP_Group;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.model.I_C_Dunning_Candidate;

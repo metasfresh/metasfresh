@@ -31,7 +31,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,9 +47,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -64,6 +60,7 @@ import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
@@ -73,9 +70,7 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MNote;
-import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -90,6 +85,8 @@ import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -100,6 +97,8 @@ import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -117,8 +116,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
@@ -203,7 +204,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 			else
 			{
-				final I_C_InvoiceSchedule invoiceSched = ic.getC_InvoiceSchedule();
 
 				final Timestamp deliveryDate = ic.getDeliveryDate(); // task 08451: when it comes to invoicing, the important date is not when it was ordered but when the delivery was made
 				if (deliveryDate == null)
@@ -213,7 +213,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 				else
 				{
-					dateToInvoice = mkDateToInvoiceForInvoiceSchedule(invoiceSched, deliveryDate);
+					final InvoiceScheduleRepository invoiceScheduleRepository = Adempiere.getBean(InvoiceScheduleRepository.class);
+					final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(ic.getC_InvoiceSchedule());
+
+					dateToInvoice = TimeUtil.asTimestamp(invoiceSchedule.calculateNextDateToInvoice(TimeUtil.asLocalDate(deliveryDate)));
 				}
 			}
 		}
@@ -222,83 +225,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			dateToInvoice = TimeUtil.getDay(ic.getCreated()); // shouldn't happen
 		}
 		ic.setDateToInvoice(dateToInvoice);
-	}
-
-	private Timestamp mkDateToInvoiceForInvoiceSchedule(
-			@NonNull final I_C_InvoiceSchedule invoiceSched,
-			@NonNull final Timestamp deliveryDate)
-	{
-		final Timestamp dateToInvoice;
-
-		final int offset = Integer.max(invoiceSched.getInvoiceDistance() - 1, 0);
-
-		if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily.equals(invoiceSched.getInvoiceFrequency()))
-		{
-			dateToInvoice = TimeUtil.addDays(deliveryDate, offset);
-		}
-		else if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Weekly.equals(invoiceSched.getInvoiceFrequency()))
-		{
-			final Calendar calToday = Calendar.getInstance();
-			calToday.setTime(deliveryDate);
-			calToday.set(Calendar.DAY_OF_WEEK, MInvoiceSchedule.getCalendarDay(invoiceSched.getInvoiceWeekDay()));
-
-			final Timestamp dateDayOfWeek = new Timestamp(calToday.getTimeInMillis());
-			if (dateDayOfWeek.before(deliveryDate))
-			{
-				dateToInvoice = TimeUtil.addWeeks(dateDayOfWeek, 1 + offset);
-			}
-			else
-			{
-				dateToInvoice = TimeUtil.addWeeks(dateDayOfWeek, offset);
-			}
-		}
-		else if (X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly.equals(invoiceSched.getInvoiceFrequency())
-				|| X_C_InvoiceSchedule.INVOICEFREQUENCY_TwiceMonthly.equals(invoiceSched.getInvoiceFrequency()))
-		{
-			final Calendar calToday = Calendar.getInstance();
-			calToday.setTime(deliveryDate);
-
-			final Timestamp dateDayOfMonth = new Timestamp(calToday.getTimeInMillis());
-
-			if (X_C_InvoiceSchedule.INVOICEFREQUENCY_TwiceMonthly.equals(invoiceSched.getInvoiceFrequency()))
-			{
-				dateToInvoice = computeDateToInvoice_TwiceMontlhy(dateDayOfMonth);
-			}
-			else
-			{
-				if (dateDayOfMonth.before(deliveryDate))
-				{
-
-					dateToInvoice = TimeUtil.addMonths(dateDayOfMonth, 1 + offset);
-				}
-				else
-				{
-					dateToInvoice = TimeUtil.addMonths(dateDayOfMonth, offset);
-				}
-			}
-		}
-		else
-		{
-			throw new AdempiereException(invoiceSched + " has unsupported frequency '" + invoiceSched.getInvoiceFrequency() + "'");
-		}
-		return dateToInvoice;
-	}
-
-	/**
-	 * @task 08484
-	 */
-	private Timestamp computeDateToInvoice_TwiceMontlhy(final Timestamp dateDayOfMonth)
-	{
-		final Timestamp middleDayOfMonth = TimeUtil.getMonthMiddleDay(dateDayOfMonth);
-
-		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                                // task 08869
-		{
-			return middleDayOfMonth;
-		}
-
-		final Timestamp lastDayOfMonth = TimeUtil.getMonthLastDay(dateDayOfMonth);
-
-		return lastDayOfMonth;
 	}
 
 	void setInvoiceScheduleAmtStatus(final Properties ctx, final I_C_Invoice_Candidate ic)
@@ -966,16 +892,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		// take the precision from the bpartner price list
 		final Timestamp date = ic.getDateOrdered();
-		final boolean isSOTrx = ic.isSOTrx();
+		final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
 		final I_C_BPartner_Location partnerLocation = ic.getBill_Location();
 		if (partnerLocation != null)
 		{
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
 					.getCurrentPricelistOrNull(
-							ic.getM_PricingSystem_ID(),
+							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
 							partnerLocation.getC_Location().getC_Country_ID(),
 							date,
-							isSOTrx);
+							soTrx);
 
 			if (pricelist != null)
 			{
@@ -2021,7 +1947,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), ic.isSOTrx());
+		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()));
 		if (discountSchemaId <= 0)
 		{
 			// do nothing
@@ -2041,7 +1967,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 		}
-		
+
 		final BigDecimal priceActual = ic.getPriceActual();
 		final int productId = ic.getM_Product_ID();
 		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);

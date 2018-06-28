@@ -5,8 +5,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
@@ -20,6 +18,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.X_C_BP_BankAccount;
@@ -27,12 +26,13 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.pricing.service.IPriceListDAO;
 
 /*

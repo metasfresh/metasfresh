@@ -1,15 +1,19 @@
 package de.metas.purchasecandidate;
 
-import java.util.OptionalInt;
+import java.math.BigDecimal;
+import java.util.Objects;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.util.Util;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.lang.Percent;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,79 +43,81 @@ import lombok.Value;
 @Value
 public class VendorProductInfo
 {
-	OptionalInt bpartnerProductId;
+	BPartnerId vendorId;
 
-	BPartnerId vendorBPartnerId;
+	ProductAndCategoryId productAndCategoryId;
+	AttributeSetInstanceId attributeSetInstanceId;
 
-	int productId;
-	String productNo;
-	String productName;
+	String vendorProductNo;
+	String vendorProductName;
 
 	boolean aggregatePOs;
 
-	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProduct)
-	{
-		final BPartnerId bpartnerVendorIdOverride = null;
-		final Boolean aggregatePOsOverride = null; // N/A
-		return fromDataRecord(bpartnerProduct, bpartnerVendorIdOverride, aggregatePOsOverride);
-	}
+	Percent vendorFlatDiscount;
+	private PricingConditions pricingConditions;
 
-	public static VendorProductInfo fromDataRecord(
-			@NonNull final I_C_BPartner_Product bpartnerProduct,
-			final BPartnerId bpartnerVendorIdOverride,
-			final Boolean aggregatePOsOverride)
-	{
-		final String productNo = Util.coalesceSuppliers(
-				() -> bpartnerProduct.getVendorProductNo(),
-				() -> bpartnerProduct.getProductNo(),
-				() -> bpartnerProduct.getM_Product().getValue());
-
-		final String productName = Util.coalesceSuppliers(
-				() -> bpartnerProduct.getProductName(),
-				() -> bpartnerProduct.getM_Product().getName());
-
-		final BPartnerId bpartnerVendorId = Util.coalesceSuppliers(
-				() -> bpartnerVendorIdOverride,
-				() -> BPartnerId.ofRepoIdOrNull(bpartnerProduct.getC_BPartner_ID()));
-
-		final boolean aggregatePOs;
-		if (aggregatePOsOverride != null)
-		{
-			aggregatePOs = aggregatePOsOverride;
-		}
-		else
-		{
-			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerVendorId);
-			aggregatePOs = bpartner.isAggregatePO();
-		}
-
-		return builder()
-				.bpartnerProductId(bpartnerProduct.getC_BPartner_Product_ID())
-				.vendorBPartnerId(bpartnerVendorId)
-				.productId(bpartnerProduct.getM_Product_ID())
-				.productNo(productNo)
-				.productName(productName)
-				.aggregatePOs(aggregatePOs)
-				.build();
-	}
+	boolean defaultVendor;
 
 	@Builder
 	private VendorProductInfo(
-			final int bpartnerProductId,
-			@NonNull final BPartnerId vendorBPartnerId,
-			final int productId,
-			@NonNull final String productNo,
-			@NonNull final String productName,
-			final boolean aggregatePOs)
-	{
-		Check.assume(productId > 0, "productId > 0");
+			@NonNull final BPartnerId vendorId,
+			@NonNull final Boolean defaultVendor,
+			//
+			@NonNull final ProductAndCategoryId productAndCategoryId,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
 
-		this.bpartnerProductId = bpartnerProductId > 0 ? OptionalInt.of(bpartnerProductId) : OptionalInt.empty();
-		this.vendorBPartnerId = vendorBPartnerId;
-		this.productId = productId;
-		this.productNo = productNo;
-		this.productName = productName;
+			@NonNull final String vendorProductNo,
+			@NonNull final String vendorProductName,
+			//
+			final boolean aggregatePOs,
+			//
+			final Percent vendorFlatDiscount,
+			@NonNull final PricingConditions pricingConditions)
+	{
+		this.vendorId = vendorId;
+		this.defaultVendor = defaultVendor;
+
+		this.productAndCategoryId = productAndCategoryId;
+		this.attributeSetInstanceId = attributeSetInstanceId;
+
+		this.vendorProductNo = vendorProductNo;
+		this.vendorProductName = vendorProductName;
+
 		this.aggregatePOs = aggregatePOs;
+
+		this.vendorFlatDiscount = vendorFlatDiscount != null ? vendorFlatDiscount : Percent.ZERO;
+		this.pricingConditions = pricingConditions;
 	}
 
+	public ProductId getProductId()
+	{
+		return getProductAndCategoryId().getProductId();
+	}
+
+	public PricingConditionsBreak getPricingConditionsBreakOrNull(final Quantity qtyToDeliver)
+	{
+		final PricingConditionsBreakQuery query = createPricingConditionsBreakQuery(qtyToDeliver);
+		return getPricingConditions().pickApplyingBreak(query);
+	}
+
+	public VendorProductInfo assertThatAttributeSetInstanceIdCompatibleWith(@NonNull final AttributeSetInstanceId otherId)
+	{
+		if (AttributeSetInstanceId.NONE.equals(attributeSetInstanceId))
+		{
+			return this;
+		}
+		Check.errorUnless(Objects.equals(otherId, attributeSetInstanceId),
+				"The given atributeSetInstanceId is not compatible with our id; otherId={}; this={}", otherId, this);
+		return this;
+	}
+
+	private PricingConditionsBreakQuery createPricingConditionsBreakQuery(final Quantity qtyToDeliver)
+	{
+		return PricingConditionsBreakQuery.builder()
+				.productAndCategoryId(getProductAndCategoryId())
+				// .attributeInstances(attributeInstances)// TODO
+				.qty(qtyToDeliver.getAsBigDecimal())
+				.price(BigDecimal.ZERO) // N/A
+				.build();
+	}
 }

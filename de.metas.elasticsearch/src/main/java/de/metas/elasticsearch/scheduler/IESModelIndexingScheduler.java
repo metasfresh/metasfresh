@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.elasticsearch.config.ESModelIndexerId;
+
 /*
  * #%L
  * de.metas.elasticsearch
@@ -28,7 +30,7 @@ import org.adempiere.util.ISingletonService;
 
 public interface IESModelIndexingScheduler extends ISingletonService
 {
-	void addToIndex(String modelIndexerId, String modelTableName, List<Integer> modelIds);
+	void addToIndex(ESModelIndexerId modelIndexerId, String modelTableName, List<Integer> modelIds);
 
-	void removeToIndex(String modelIndexerId, String modelTableName, List<Integer> modelIds);
+	void removeToIndex(ESModelIndexerId modelIndexerId, String modelTableName, List<Integer> modelIds);
 }

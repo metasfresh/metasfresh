@@ -133,6 +133,41 @@ public interface I_MKTG_Campaign_ContactPerson
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Anschrift.
+	 * Adresse oder Anschrift
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_Location_ID (int C_Location_ID);
+
+	/**
+	 * Get Anschrift.
+	 * Adresse oder Anschrift
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getC_Location_ID();
+
+	@Deprecated
+	public org.compiere.model.I_C_Location getC_Location();
+
+	@Deprecated
+	public void setC_Location(org.compiere.model.I_C_Location C_Location);
+
+    /** Column definition for C_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, org.compiere.model.I_C_Location> COLUMN_C_Location_ID = new org.adempiere.model.ModelColumn<I_MKTG_Campaign_ContactPerson, org.compiere.model.I_C_Location>(I_MKTG_Campaign_ContactPerson.class, "C_Location_ID", org.compiere.model.I_C_Location.class);
+    /** Column name C_Location_ID */
+    public static final String COLUMNNAME_C_Location_ID = "C_Location_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *

@@ -1,15 +1,22 @@
 package de.metas.elasticsearch.config;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.elasticsearch.trigger.ESDocumentIndexTriggerInterceptor;
-import de.metas.elasticsearch.trigger.ESOnDeleteTriggerInterceptor;
+import de.metas.elasticsearch.trigger.ESOnChangeTriggerInterceptor;
+import de.metas.elasticsearch.trigger.ESOnChangeTriggerInterceptor.ESOnChangeTriggerInterceptorBuilder;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -24,11 +31,11 @@ import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,26 +44,36 @@ public class ESModelIndexerConfigBuilder
 {
 	private final Consumer<ESModelIndexerConfigBuilder> configInstaller;
 
-	private final String _modelTableName;
+	@Getter(AccessLevel.PRIVATE)
+	private final ESModelIndexerProfile profile;
 
-	private final String _indexName;
-	private String _indexType;
-	private boolean allowChangingIndexType = true;
+	@Getter
+	private final String modelTableName;
+	@Getter(AccessLevel.PRIVATE)
+	private final String indexName;
 
-	private final List<IESModelIndexerTrigger> _triggers = new ArrayList<>();
+	private final List<ESIncludedModelsConfig> includedModelsConfigs = new ArrayList<>();
 
-	public ESModelIndexerConfigBuilder(final Consumer<ESModelIndexerConfigBuilder> configInstaller, final String indexName, final String modelTableName)
+	private final List<IESModelIndexerTrigger> triggers = new ArrayList<>();
+
+	@Getter
+	private String indexSettingsJson;
+	@Getter
+	private String indexStringFullTextSearchAnalyzer;
+
+	public ESModelIndexerConfigBuilder(
+			@NonNull final Consumer<ESModelIndexerConfigBuilder> configInstaller,
+			@NonNull final ESModelIndexerProfile profile,
+			@NonNull final String indexName,
+			@NonNull final String modelTableName)
 	{
-		super();
-
-		Check.assumeNotNull(configInstaller, "Parameter configInstaller is not null");
-		this.configInstaller = configInstaller;
-
 		Check.assumeNotEmpty(indexName, "indexName is not empty");
-		_indexName = indexName;
-
 		Check.assumeNotEmpty(modelTableName, "modelTableName is not empty");
-		_modelTableName = modelTableName;
+
+		this.configInstaller = configInstaller;
+		this.profile = profile;
+		this.indexName = indexName;
+		this.modelTableName = modelTableName;
 	}
 
 	public void buildAndInstall()
@@ -64,75 +81,98 @@ public class ESModelIndexerConfigBuilder
 		configInstaller.accept(this);
 	}
 
-	public String getId()
+	public ESModelIndexerId getId()
 	{
-		return getIndexName() + "#" + getIndexType();
+		return ESModelIndexerId.builder()
+				.indexName(getIndexName())
+				.indexType(getIndexType())
+				.profile(getProfile())
+				.build();
 	}
 
-	public String getIndexName()
+	private String getIndexType()
 	{
-		return _indexName;
-	}
-
-	/**
-	 * Sets the index type.
-	 *
-	 * By default, the index type is the same as the table name.
-	 *
-	 * @param indexType
-	 */
-	public ESModelIndexerConfigBuilder setIndexType(final String indexType)
-	{
-		if (!allowChangingIndexType)
-		{
-			throw new IllegalStateException("Changing indexType from " + getIndexType() + " to " + indexType + " is no longer allowed because the index type was already used");
-		}
-
-		_indexType = indexType;
-		return this;
-	}
-
-	public String getIndexType()
-	{
-		if (Check.isEmpty(_indexType, true))
-		{
-			return getModelTableName();
-		}
-		else
-		{
-			return _indexType;
-		}
-	}
-
-	public String getModelTableName()
-	{
-		// note: we assume is not null at this point
-		return _modelTableName;
+		return getModelTableName();
 	}
 
 	public List<IESModelIndexerTrigger> getTriggers()
 	{
-		return _triggers;
+		return ImmutableList.copyOf(triggers);
 	}
 
-	public <DocumentType, ModelType> ESModelIndexerConfigBuilder triggerOnDocumentChanged(final Class<DocumentType> documentClass, final ModelColumn<ModelType, DocumentType> modelParentColumn)
+	public <DocumentType, ModelType> ESModelIndexerConfigBuilder triggerOnDocumentChanged(
+			final Class<DocumentType> documentClass,
+			final ModelColumn<ModelType, DocumentType> modelParentColumn)
 	{
 		final String modelParentColumnName = modelParentColumn.getColumnName();
 		final ESDocumentIndexTriggerInterceptor<DocumentType> trigger = new ESDocumentIndexTriggerInterceptor<>(documentClass, getModelTableName(), modelParentColumnName, getId());
+		return addTrigger(trigger);
+	}
 
-		_triggers.add(trigger);
-		allowChangingIndexType = false;
+	public ESModelIndexerConfigBuilder triggerOnChangeOrDelete()
+	{
+		return addTrigger(prepareOnChangeTriggerInterceptor()
+				.triggerOnNewOrChange(true)
+				.triggerOnDelete(true)
+				.build());
+	}
 
-		return this;
+	public ESModelIndexerConfigBuilder triggerOnChange()
+	{
+		return addTrigger(prepareOnChangeTriggerInterceptor()
+				.triggerOnNewOrChange(true)
+				.build());
 	}
 
 	public ESModelIndexerConfigBuilder triggerOnDelete()
 	{
-		final ESOnDeleteTriggerInterceptor trigger = new ESOnDeleteTriggerInterceptor(getModelTableName(), getId());
+		return addTrigger(prepareOnChangeTriggerInterceptor()
+				.triggerOnDelete(true)
+				.build());
+	}
 
-		_triggers.add(trigger);
-		allowChangingIndexType = false;
+	private ESOnChangeTriggerInterceptorBuilder prepareOnChangeTriggerInterceptor()
+	{
+		return ESOnChangeTriggerInterceptor.builder()
+				.modelTableName(getModelTableName())
+				.includedModelsConfigs(getIncludedModelsConfigs())
+				.modelIndexerId(getId());
+	}
+
+	private ESModelIndexerConfigBuilder addTrigger(final IESModelIndexerTrigger trigger)
+	{
+		triggers.add(trigger);
 
 		return this;
 	}
+
+	public ImmutableList<ESIncludedModelsConfig> getIncludedModelsConfigs()
+	{
+		return ImmutableList.copyOf(includedModelsConfigs);
+	}
+
+	public ESModelIndexerConfigBuilder includeModel(@NonNull final ESIncludedModelsConfig includedModelConfig)
+	{
+		includedModelsConfigs.add(includedModelConfig);
+		return this;
+	}
+
+	public ESModelIndexerConfigBuilder includeModels(@NonNull final Collection<ESIncludedModelsConfig> includedModelConfigs)
+	{
+		includedModelsConfigs.addAll(includedModelConfigs);
+		return this;
+	}
+
+	public ESModelIndexerConfigBuilder indexSettingsJson(final String indexSettingsJson)
+	{
+		this.indexSettingsJson = indexSettingsJson;
+		return this;
+	}
+
+	public ESModelIndexerConfigBuilder indexStringFullTextSearchAnalyzer(final String indexStringFullTextSearchAnalyzer)
+	{
+		this.indexStringFullTextSearchAnalyzer = indexStringFullTextSearchAnalyzer;
+		return this;
+	}
+
 }

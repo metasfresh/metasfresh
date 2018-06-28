@@ -504,10 +504,16 @@ public class C_Flatrate_Term
 		// services
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
+		final boolean overlappingIsOK = flatrateBL.canOverlapWithOtherTerms(term);
+		if(overlappingIsOK)
+		{
+			return; // nothing to do
+		}
+
 		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(term);
 		if (hasOverlappingTerms)
 		{
-			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() });
+			throw AdempiereException.ofADMessage(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue());
 		}
 	}
 

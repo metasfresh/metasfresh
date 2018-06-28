@@ -3,6 +3,7 @@
  */
 package de.metas.pricing.conditions.service;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -93,8 +94,11 @@ public class CalculatePricingConditionsRequest
 		}
 	}
 
-	private static final PricingConditionsId extractPricingConditionsIdOrNull(final PricingConditionsId pricingConditionsId, final PricingConditionsBreak forcePricingConditionsBreak)
+	private static final PricingConditionsId extractPricingConditionsIdOrNull(
+			@Nullable final PricingConditionsId pricingConditionsId,
+			@Nullable final PricingConditionsBreak forcePricingConditionsBreak)
 	{
+		// note that in case both are given, we already asserted that they match
 		if (pricingConditionsId != null)
 		{
 			return pricingConditionsId;

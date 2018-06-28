@@ -2,7 +2,6 @@ package de.metas.jms;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
@@ -45,7 +44,7 @@ public class JmsInterceptor extends AbstractModuleInterceptor
 {
 	private static final Logger logger = LogManager.getLogger(JmsInterceptor.class);
 
-	
+
 	/**
 	 * Starts an embedded JMS broker if either
 	 * <ul>
@@ -72,7 +71,7 @@ public class JmsInterceptor extends AbstractModuleInterceptor
 					JmsConstants.isUseEmbeddedBroker(),
 					CConnection.isServerEmbedded());
 
-			Services.get(IJMSService.class).startEmbeddedBroker();
+			EmbeddedActiveMQBrokerService.INSTANCE.startEmbeddedBroker();
 		}
 	}
 

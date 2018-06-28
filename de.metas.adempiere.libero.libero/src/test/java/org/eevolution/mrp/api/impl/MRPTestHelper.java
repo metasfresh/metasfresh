@@ -45,6 +45,7 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
@@ -77,7 +78,6 @@ import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_OrgInfo;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;

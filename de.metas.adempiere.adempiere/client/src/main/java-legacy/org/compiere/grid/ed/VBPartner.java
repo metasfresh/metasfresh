@@ -30,7 +30,6 @@ import javax.swing.JComponent;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
@@ -51,6 +50,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;

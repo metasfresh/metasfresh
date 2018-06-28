@@ -13,12 +13,12 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,6 +47,8 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.async.Async_Constants;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.logging.LogManager;
@@ -91,6 +93,13 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		// 03870
 		item.setAD_Org_ID(printOut.getAD_Org_ID());
+
+		// set async batch
+		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(printOut, Async_Constants.C_Async_Batch);
+		if (asyncBatch != null)
+		{
+			item.setC_Async_Batch_ID(asyncBatch.getC_Async_Batch_ID());
+		}
 
 		// 03829: set the values for new columns
 		item.setAD_User_ID(Env.getAD_User_ID(localCtx));
@@ -272,7 +281,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		final IQuery<I_C_Printing_Queue> query = printingDAO.createQuery(ctx, printingQueueQuery, ITrx.TRXNAME_None);
 		final List<Map<String, Object>> aggregationKeys = query.listDistinct(I_C_Printing_Queue.COLUMNNAME_PrintingQueueAggregationKey);
 
-		final List<IPrintingQueueSource> sources = new ArrayList<IPrintingQueueSource>(aggregationKeys.size());
+		final List<IPrintingQueueSource> sources = new ArrayList<>(aggregationKeys.size());
 
 		// create one source per aggregation key
 		for (final Map<String, Object> value2key : aggregationKeys)
@@ -291,7 +300,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	@Override
 	public void setItemAggregationKey(final I_C_Printing_Queue item)
 	{
-		final List<Object> keyItems = new ArrayList<Object>();
+		final List<Object> keyItems = new ArrayList<>();
 		keyItems.add(item.getCopies());
 		keyItems.add(item.isPrintoutForOtherUser());
 		if (item.isPrintoutForOtherUser())

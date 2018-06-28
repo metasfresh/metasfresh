@@ -60,6 +60,7 @@ import org.compiere.db.CConnection;
 import org.compiere.model.MLanguage;
 import org.compiere.swing.CFrame;
 import org.slf4j.Logger;
+import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 
 import com.google.common.base.Supplier;
@@ -152,6 +153,9 @@ public final class Env
 		LogManager.shutdown();
 		//
 
+		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
+		SpringApplication.exit(springApplicationContext, () -> 0);
+
 		// should not be required anymore since we make sure that all non-demon threads are stopped
 		// works in my debugging-session (without system.exit), but doesn't (always!) works on lx-term01 (x2go)
 		if (Ini.isClient())
@@ -159,17 +163,6 @@ public final class Env
 			System.exit(status);
 		}
 	}	// close
-
-	/**
-	 * Logout from the system
-	 */
-	public static void logout()
-	{
-		// End Session
-		Services.get(ISessionBL.class).logoutCurrentSession();
-		//
-		reset(true);	// final cache reset
-	}
 
 	/**
 	 * Reset Cache
@@ -242,7 +235,7 @@ public final class Env
 	 * Application Context
 	 */
 	/** WindowNo for Main */
-	public static final int WINDOW_MAIN = 0;
+	public static final int WINDOW_MAIN = 1; // note: 0 is the ALogin window that's shown in the swing client on startup
 	/** WindowNo for Find */
 	public static final int WINDOW_FIND = 1110;
 	/** WindowNo for PrintCustomize */
@@ -1729,6 +1722,13 @@ public final class Env
 			return null;
 		}
 
+		if (WindowNo == 0)
+		{
+			s_log.warn("Env.getWindow() called with wrong parameter; If you want obtain the main window (AMenu), then please use the constant Env.WINDOW_MAIN instead of 0 (and btw, it's 1 now)");
+
+			Check.assume(WINDOW_MAIN != 0, "WINDOW_MAIN was changed from 0 to 1"); // avoid StackoverFlow if it's ever changed back to 0
+			return getWindow(WINDOW_MAIN);
+		}
 		try
 		{
 			return getFrame(s_windows.get(WindowNo));

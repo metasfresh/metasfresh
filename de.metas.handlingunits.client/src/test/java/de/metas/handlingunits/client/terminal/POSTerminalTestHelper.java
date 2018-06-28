@@ -28,11 +28,11 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IPOSAccessBL;
 import de.metas.adempiere.service.impl.MockedPOSAccessBL;
 import de.metas.handlingunits.model.I_M_Locator;

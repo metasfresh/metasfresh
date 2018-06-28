@@ -36,6 +36,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -45,7 +46,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_C_OrderLine;

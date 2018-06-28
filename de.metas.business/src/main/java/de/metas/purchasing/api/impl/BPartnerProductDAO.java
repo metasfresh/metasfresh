@@ -1,7 +1,9 @@
 /**
- * 
+ *
  */
 package de.metas.purchasing.api.impl;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -13,12 +15,12 @@ package de.metas.purchasing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,8 +28,10 @@ package de.metas.purchasing.api.impl;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,27 +41,43 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_BannedManufacturer;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.Product;
+import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.purchasing.api.ProductExclude;
+import de.metas.purchasing.api.ProductExclude.ProductExcludeBuilder;
+import lombok.NonNull;
 
 /**
  * @author cg
- * 
+ *
  */
 public class BPartnerProductDAO implements IBPartnerProductDAO
 {
+	@Override
+	public I_C_BPartner_Product getById(final int bpartnerProductId)
+	{
+		return loadOutOfTrx(bpartnerProductId, I_C_BPartner_Product.class);
+	}
+
 	@Override
 	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(final Properties ctx, final int Vendor_ID, final int productId, final int orgId)
 	{
@@ -94,16 +114,42 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public List<I_C_BPartner_Product> retrieveAllVendors(final int productId, final int orgId)
+	public List<I_C_BPartner_Product> retrieveAllVendors(@NonNull final ProductId productId, @NonNull final OrgId orgId)
 	{
 		return retrieveAllVendorsQuery(productId, orgId)
+				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor) // current vendors first
 				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
 				.create()
 				.list(I_C_BPartner_Product.class);
 	}
 
 	@Override
-	public Optional<I_C_BPartner_Product> retrieveDefaultVendor(final int productId, final int orgId)
+	public I_C_BPartner_Product retrieveByVendorId(
+			@NonNull final BPartnerId vendorId,
+			@NonNull final ProductId productId,
+			@NonNull final OrgId orgId)
+	{
+		return retrieveByVendorIds(ImmutableSet.of(vendorId), productId, orgId)
+				.get(vendorId);
+	}
+
+	@Override
+	public Map<BPartnerId, I_C_BPartner_Product> retrieveByVendorIds(
+			@NonNull final Set<BPartnerId> vendorIds,
+			@NonNull final ProductId productId,
+			@NonNull final OrgId orgId)
+	{
+		return retrieveAllVendorsQuery(productId, orgId)
+				.addInArrayFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, vendorIds)
+				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor) // current vendors first
+				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
+				.create()
+				.stream()
+				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(record -> BPartnerId.ofRepoId(record.getC_BPartner_ID())));
+	}
+
+	@Override
+	public Optional<I_C_BPartner_Product> retrieveDefaultVendor(final ProductId productId, final OrgId orgId)
 	{
 		return retrieveAllVendorsQuery(productId, orgId)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_IsCurrentVendor, true)
@@ -113,12 +159,13 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.firstOptional(I_C_BPartner_Product.class);
 	}
 
-	public IQueryBuilder<org.compiere.model.I_C_BPartner_Product> retrieveAllVendorsQuery(final int productId, final int orgId)
+	private IQueryBuilder<I_C_BPartner_Product> retrieveAllVendorsQuery(final ProductId productId, final OrgId orgId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilderOutOfTrx(org.compiere.model.I_C_BPartner_Product.class)
-				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, Env.CTXVALUE_AD_Org_ID_Any)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId);
 	}
@@ -220,32 +267,104 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ProductExclude toProductExclude(final I_C_BPartner_Product bpartnerProduct)
+	private static ProductExclude toProductExclude(@NonNull final I_C_BPartner_Product bpartnerProduct)
 	{
 		return ProductExclude.builder()
-				.productId(bpartnerProduct.getM_Product_ID())
-				.bpartnerId(bpartnerProduct.getC_BPartner_ID())
+				.productId(ProductId.ofRepoId(bpartnerProduct.getM_Product_ID()))
+				.bpartnerId(BPartnerId.ofRepoId(bpartnerProduct.getC_BPartner_ID()))
 				.reason(bpartnerProduct.getExclusionFromSaleReason())
 				.build();
 	}
 
+
 	@Override
-	public Optional<ProductExclude> getExcludedFromSaleToCustomer(final int productId, final int partnerId)
+	public Optional<ProductExclude> getExcludedFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
 	{
-		final I_C_BPartner_Product bpartnerProduct = Services.get(IQueryBL.class)
+		final Optional<ProductExclude> productExcluded = getExcludedProductFromSaleToCustomer(productId, partnerId);
+		final Optional<ProductExclude> manufacturerExcluded = getBannedManufacturerFromSaleToCustomer(productId, partnerId);
+
+		if (productExcluded.isPresent() || manufacturerExcluded.isPresent())
+		{
+			final ProductExcludeBuilder builder = ProductExclude.builder()
+					.bpartnerId(partnerId)
+					.productId(productId);
+
+			if (productExcluded.isPresent())
+			{
+				builder.reason(productExcluded.get().getReason());
+			}
+
+			if (manufacturerExcluded.isPresent())
+			{
+				builder.reason(manufacturerExcluded.get().getReason());
+			}
+
+			return Optional.of(builder.build());
+		}
+
+		return Optional.empty();
+	}
+
+
+	private Optional<ProductExclude> getExcludedProductFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_C_BPartner_Product bpartnerProduct = queryBL
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, true)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partnerId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partnerId.getRepoId())
 				.create()
 				.firstOnly(I_C_BPartner_Product.class);
-		if (bpartnerProduct == null)
+
+		if (bpartnerProduct == null )
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(toProductExclude(bpartnerProduct));
+		final ProductExclude productExclude = ProductExclude.builder()
+				.bpartnerId(partnerId)
+				.productId(productId)
+				.reason(bpartnerProduct.getExclusionFromSaleReason())
+				.build();
+
+		return Optional.of(productExclude);
+	}
+
+
+	private Optional<ProductExclude> getBannedManufacturerFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+
+		final ProductRepository productRepo = Adempiere.getBean(ProductRepository.class);
+		final Product product = productRepo.getById(productId);
+		final BPartnerId manufacturerId = product.getManufacturerId();
+
+		final I_M_BannedManufacturer bannedManufacturer = queryBL
+				.createQueryBuilderOutOfTrx(I_M_BannedManufacturer.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_C_BPartner_ID, partnerId.getRepoId())
+				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_Manufacturer_ID, manufacturerId == null ? -1 : manufacturerId.getRepoId())
+				.create()
+				.firstOnly(I_M_BannedManufacturer.class);
+
+
+		if (bannedManufacturer == null )
+		{
+			return Optional.empty();
+		}
+
+		final ProductExclude productExclude = ProductExclude.builder()
+				.bpartnerId(partnerId)
+				.productId(productId)
+				.reason(bannedManufacturer.getExclusionFromSaleReason())
+				.build();
+
+		return Optional.of(productExclude);
 	}
 }

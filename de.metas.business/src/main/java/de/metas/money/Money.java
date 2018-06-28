@@ -4,10 +4,23 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
+import org.adempiere.util.collections.ListUtils;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+
+import de.metas.currency.Amount;
+import de.metas.lang.Percent;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,17 +51,17 @@ import lombok.Value;
 @Value
 public class Money
 {
-	private static final BigDecimal HUNDRED = new BigDecimal("100");
-
-	public static final Money of(
-			@NonNull final BigDecimal value,
-			@NonNull final Currency currency)
+	public static final Money of(@NonNull final BigDecimal value, @NonNull final Currency currency)
 	{
 		return new Money(value, currency);
 	}
 
-	public static final Money zero(
-			@NonNull final Currency currency)
+	public static final Money of(final int value, @NonNull final Currency currency)
+	{
+		return of(BigDecimal.valueOf(value), currency);
+	}
+
+	public static final Money zero(@NonNull final Currency currency)
 	{
 		return new Money(ZERO, currency);
 	}
@@ -106,7 +119,7 @@ public class Money
 
 	public Money multiply(@NonNull final Quantity quantity)
 	{
-		return multiply(quantity.getQty());
+		return multiply(quantity.getAsBigDecimal());
 	}
 
 	public Money add(@NonNull final Money amtToAdd)
@@ -165,21 +178,32 @@ public class Money
 		return new Money(value.subtract(amtToSubtract), currency);
 	}
 
-	public Money percentage(@NonNull final BigDecimal percentage)
+	public Money subtract(@NonNull final Percent percent)
 	{
-		return new Money(computeFraction(percentage), currency);
+		if (percent.isZero())
+		{
+			return this;
+		}
+
+		if (value.signum() == 0)
+		{
+			return this;
+		}
+
+		return new Money(percent.subtractFromBase(value, currency.getPrecision()), currency);
 	}
 
-	private BigDecimal computeFraction(@NonNull final BigDecimal percent)
+	/** example: if this instance is 100CHF and {@code percent} is 80%, then the result is 80CHF */
+	public Money percentage(@NonNull final Percent percent)
 	{
-		final int currencyPrecision = currency.getPrecision();
+		if (percent.isOneHundred())
+		{
+			return this;
+		}
 
-		final BigDecimal subtrahend = value
-				.setScale(currencyPrecision + 2)
-				.divide(HUNDRED, RoundingMode.UNNECESSARY)
-				.multiply(percent)
-				.setScale(currencyPrecision, RoundingMode.HALF_UP);
-		return subtrahend;
+		final BigDecimal newValue = percent
+				.multiply(value, currency.getPrecision());
+		return new Money(newValue, currency);
 	}
 
 	public Money toZero()
@@ -189,5 +213,56 @@ public class Money
 			return this;
 		}
 		return Money.zero(currency);
+	}
+
+	public Amount toAmount()
+	{
+		return Amount.of(getValue(), currency.getThreeLetterCode());
+	}
+
+	public static Currency getCommonCurrencyOfAll(@NonNull final Money... moneys)
+	{
+		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
+
+		final Iterator<Money> moneysIterator = Stream.of(moneys)
+				.filter(Predicates.notNull())
+				.iterator();
+		final ImmutableListMultimap<Currency, Money> currency2moneys = Multimaps.index(moneysIterator, Money::getCurrency);
+		if (currency2moneys.isEmpty())
+		{
+			throw new AdempiereException("The given moneys may not be empty");
+		}
+
+		final ImmutableSet<Currency> currencies = currency2moneys.keySet();
+		Check.errorIf(currencies.size() > 1,
+				"at least two money instances have different currencies: {}", currency2moneys);
+
+		return ListUtils.singleElement(currencies.asList());
+	}
+
+	public static boolean isSameCurrency(@NonNull final Money... moneys)
+	{
+		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
+		return isSameCurrency(Arrays.asList(moneys));
+	}
+
+	public static boolean isSameCurrency(@NonNull final Collection<Money> moneys)
+	{
+		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
+
+		final ImmutableSet<Currency> currencies = moneys.stream().map(Money::getCurrency).collect(ImmutableSet.toImmutableSet());
+		return currencies.size() == 1;
+	}
+
+	public Money min(@NonNull final Money other)
+	{
+		assertCurrencyMatching(other);
+		return this.value.compareTo(other.value) <= 0 ? this : other;
+	}
+
+	public Money max(@NonNull final Money other)
+	{
+		assertCurrencyMatching(other);
+		return this.value.compareTo(other.value) >= 0 ? this : other;
 	}
 }

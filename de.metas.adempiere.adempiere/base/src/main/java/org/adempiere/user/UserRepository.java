@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.NonNull;
 
 /*
@@ -36,10 +37,12 @@ public class UserRepository
 {
 	public User ofRecord(@NonNull final I_AD_User userRecord)
 	{
-		return new User(
-				UserId.ofRepoId(userRecord.getAD_User_ID()),
-				userRecord.getName(),
-				userRecord.getEMail());
+		return User.builder()
+				.bpartnerId(BPartnerId.ofRepoId(userRecord.getC_BPartner_ID()))
+				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
+				.name(userRecord.getName())
+				.emailAddress(userRecord.getEMail())
+				.build();
 	}
 
 	public User save(@NonNull final User user)

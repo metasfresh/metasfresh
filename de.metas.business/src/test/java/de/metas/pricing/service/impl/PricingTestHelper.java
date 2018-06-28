@@ -25,6 +25,8 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
 
 /*
@@ -206,8 +208,8 @@ public class PricingTestHelper
 	public final IEditablePricingContext createPricingContext()
 	{
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
-		pricingCtx.setM_PricingSystem_ID(defaultPricingSystem.getM_PricingSystem_ID());
-		pricingCtx.setM_PriceList_ID(defaultPriceList.getM_PriceList_ID());
+		pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(defaultPricingSystem.getM_PricingSystem_ID()));
+		pricingCtx.setPriceListId(PriceListId.ofRepoId(defaultPriceList.getM_PriceList_ID()));
 		pricingCtx.setM_PriceList_Version_ID(defaultPriceListVerion.getM_PriceList_Version_ID());
 		pricingCtx.setM_Product_ID(defaultProduct.getM_Product_ID());
 

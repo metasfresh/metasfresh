@@ -55,6 +55,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
@@ -92,6 +93,8 @@ public class InterfaceWrapperHelper
 			.addFactory(new POInterfaceWrapperHelper())
 			.addFactory(new GridTabInterfaceWrapperHelper())
 			.addFactory(new POJOInterfaceWrapperHelper());
+
+	private static final String COLUMNNAME_IsActive = "IsActive";
 
 	private static final POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
 	{
@@ -543,7 +546,6 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-
 	/**
 	 * Does the same as {@link #save(Object)},
 	 * but this method can be static-imported into repository implementations which usually have their own method named "save()".
@@ -749,6 +751,14 @@ public class InterfaceWrapperHelper
 		{
 			return helpers.getId(model);
 		}
+	}
+
+	public static boolean isActive(@NonNull final Object model)
+	{
+		final boolean throwExIfColumnNotFound = false;
+		final boolean useOverrideColumnIfAvailable = false;
+		final Object valueObj = getValue(model, COLUMNNAME_IsActive, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
+		return StringUtils.toBoolean(valueObj);
 	}
 
 	/**

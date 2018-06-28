@@ -18,6 +18,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
@@ -178,7 +179,7 @@ public class HUTransformService
 		// Create allocation request for the quantity user entered
 		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
 				cuProduct,
-				qtyCU.getQty(),
+				qtyCU.getAsBigDecimal(),
 				qtyCU.getUOM(),
 				SystemTime.asTimestamp(),
 				null, // referenced model
@@ -276,6 +277,60 @@ public class HUTransformService
 		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
 		return storages.get(0);
+	}
+
+	public List<I_M_HU> cuToNewCU_AllocateMaximumPossibleQty(
+			@NonNull final I_M_HU cuHU,
+			@NonNull final Quantity qtyCU)
+	{
+		final Quantity maximumQtyCU = getMaximumQtyCU(cuHU, qtyCU.getUOM());
+
+		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(maximumQtyCU) >= 0;
+
+		final I_M_HU_Item cuParentItem = handlingUnitsDAO.retrieveParentItem(cuHU);
+
+		if (qtyCuExceedsCuHU && cuParentItem != null)
+		{
+			// detach cuHU from its parent
+			setParent(cuHU, null,
+					// before
+					localHuContext -> {
+						final I_M_HU oldTuHU = handlingUnitsDAO.retrieveParent(cuHU);
+						final I_M_HU oldLuHU = oldTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
+						updateAllocation(oldLuHU, oldTuHU, cuHU, qtyCU, true, localHuContext);
+					},
+					// after
+					localHuContext -> {
+						final I_M_HU newTuHU = handlingUnitsDAO.retrieveParent(cuHU);
+						final I_M_HU newLuHU = newTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
+						updateAllocation(newLuHU, newTuHU, cuHU, qtyCU, false, localHuContext);
+					});
+			return ImmutableList.of(cuHU);
+		}
+
+		else
+		{
+			final Quantity qtyCUToAllocate = qtyCU.min(maximumQtyCU);
+
+			final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
+			final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
+			HUSplitBuilderCoreEngine.builder()
+					.huContextInitital(huContext)
+					.huToSplit(cuHU)
+					.requestProvider(huContext -> createCUAllocationRequest(
+							huContext,
+							singleProductStorage.getM_Product(),
+							qtyCUToAllocate,
+							false) // forceAllocation = false; no need, because destination has no capacity constraints
+					)
+					.destination(destination)
+					.build()
+					.withPropagateHUValues()
+					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
+					.performSplit();
+
+			return destination.getCreatedHUs();
+		}
 	}
 
 	/**
@@ -433,7 +488,7 @@ public class HUTransformService
 			}
 			else
 			{
-				qtyToUse = qtyCU.getQty().multiply(factor);
+				qtyToUse = qtyCU.getAsBigDecimal().multiply(factor);
 			}
 
 			for (final TableRecordReference ref : getReferencedObjects())
@@ -1047,7 +1102,7 @@ public class HUTransformService
 		}
 		else
 		{
-			return cuToNewCU(sourceHU, qtyCU);
+			return cuToNewCU_AllocateMaximumPossibleQty(sourceHU, qtyCU);
 		}
 	}
 
@@ -1059,28 +1114,23 @@ public class HUTransformService
 
 		Quantity qtyCUsRemaining = qtyCU; // how many CUs we still have to extract
 
-		for (int i = 0; i < handlingUnitsDAO.retrieveIncludedHUs(sourceLU).size(); i++)
+		final int numberOfIncludedHUs = handlingUnitsDAO.retrieveIncludedHUs(sourceLU).size();
+
+		for (int i = 0; i < numberOfIncludedHUs; i++)
 		{
 			if (qtyCUsRemaining.signum() <= 0)
 			{
 				break;
 			}
 
-			final List<I_M_HU> extractedTUs = luExtractTUs(sourceLU, 1);
+			final I_M_HU extractedTU = ListUtils.singleElement(luExtractTUs(sourceLU, 1));
 
-			for (final I_M_HU tu : extractedTUs)
-			{
-				if (qtyCUsRemaining.signum() <= 0)
-				{
-					break;
-				}
+			final List<I_M_HU> cusFromTU = tuExtractCUs(extractedTU, qtyCUsRemaining);
 
-				final List<I_M_HU> cusFromTU = tuExtractCUs(tu, qtyCUsRemaining);
+			extractedCUs.addAll(cusFromTU);
 
-				extractedCUs.addAll(cusFromTU);
+			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCU.getUOM()));
 
-				qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCU.getUOM()));
-			}
 		}
 		return extractedCUs.build();
 	}
@@ -1114,7 +1164,7 @@ public class HUTransformService
 		{
 			final Quantity qtyToAdd = getMaximumQtyCU(cu, uom);
 
-			totalQtyCU.add(qtyToAdd);
+			totalQtyCU = totalQtyCU.add(qtyToAdd);
 		}
 		return totalQtyCU;
 	}

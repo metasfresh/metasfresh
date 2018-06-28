@@ -1,5 +1,7 @@
 package de.metas.shipper.gateway.derkurier;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -9,9 +11,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Service;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;

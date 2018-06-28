@@ -49,7 +49,6 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 	@NonNull
 	private final MaterialDescriptor materialDescriptor;
 
-	// needed on update and delete
 	private final BigDecimal reservedQuantity;
 
 	private final int receiptScheduleId;

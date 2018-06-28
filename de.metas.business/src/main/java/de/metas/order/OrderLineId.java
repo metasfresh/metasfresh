@@ -1,7 +1,13 @@
 package de.metas.order;
 
+import java.util.Collection;
+import java.util.Set;
+
 import org.adempiere.util.Check;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -27,7 +33,7 @@ import lombok.Value;
  */
 
 @Value
-public class OrderLineId
+public class OrderLineId implements RepoIdAware
 {
 	public static OrderLineId ofRepoId(final int repoId)
 	{
@@ -37,6 +43,16 @@ public class OrderLineId
 	public static OrderLineId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new OrderLineId(repoId) : null;
+	}
+
+	public static int getRepoIdOr(final OrderLineId orderLineId, final int defaultValue)
+	{
+		return orderLineId != null ? orderLineId.getRepoId() : defaultValue;
+	}
+
+	public static Set<Integer> toIntSet(final Collection<OrderLineId> orderLineIds)
+	{
+		return orderLineIds.stream().map(OrderLineId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
 	int repoId;

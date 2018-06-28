@@ -8,11 +8,18 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
+import org.compiere.db.Database;
+import org.compiere.model.IQuery;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
+import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -43,27 +50,52 @@ import lombok.experimental.UtilityClass;
 /* package */ final class AvailableToPromiseSqlHelper
 {
 	@VisibleForTesting
-	public IQueryBuilder<I_MD_Candidate_Stock_v> createDBQueryForStockQuery(@NonNull final AvailableToPromiseQuery query)
+	public IQuery<I_MD_Candidate_ATP_QueryResult> createDBQueryForStockQuery(@NonNull final AvailableToPromiseQuery query)
+	{
+		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> queryBuilder = createDBQueryForStockQueryBuilder(query);
+
+		final IQuery<I_MD_Candidate_ATP_QueryResult> dbQuery = queryBuilder
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
+				.create();
+
+		if (isRealSqlQuery())
+		{
+			Check.assume(dbQuery instanceof TypedSqlQuery, "If we are not in unit test mode, then our query has to be an sql query; query={}", dbQuery);
+			final TypedSqlQuery<I_MD_Candidate_ATP_QueryResult> sqlDbQuery = (TypedSqlQuery<I_MD_Candidate_ATP_QueryResult>)dbQuery;
+
+			final String dateString = Database.TO_DATE(TimeUtil.asTimestamp(query.getDate()), false);
+			sqlDbQuery.setSqlFrom("de_metas_material.retrieve_atp_at_date(" + dateString + ")");
+		}
+
+		//
+		return dbQuery;
+	}
+
+	@VisibleForTesting
+	IQueryBuilder<I_MD_Candidate_ATP_QueryResult> createDBQueryForStockQueryBuilder(@NonNull final AvailableToPromiseQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_MD_Candidate_Stock_v> queryBuilder = //
-				queryBL.createQueryBuilder(I_MD_Candidate_Stock_v.class);
+		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> queryBuilder = //
+				queryBL.createQueryBuilder(I_MD_Candidate_ATP_QueryResult.class);
 
-		// Date
-		queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, query.getDate());
+		if (!isRealSqlQuery())
+		{
+			// Date; this only makes sense in unit test's there the I_MD_Candidate_ATP_QueryResult records to return were hand-crafted for the respective test
+			queryBuilder.addCompareFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(query.getDate()));
+		}
 
 		// Warehouse
 		final Set<Integer> warehouseIds = query.getWarehouseIds();
 		if (!warehouseIds.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, warehouseIds);
+			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID, warehouseIds);
 		}
 
 		// Product
 		final List<Integer> productIds = query.getProductIds();
 		if (!productIds.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, productIds);
+			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Product_ID, productIds);
 		}
 
 		// BPartner
@@ -74,43 +106,47 @@ import lombok.experimental.UtilityClass;
 		}
 		else if (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
 		{
-			queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_C_BPartner_ID, null);
+			queryBuilder.addEqualsFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_C_BPartner_Customer_ID, null);
 		}
 		else
 		{
-			queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_C_BPartner_ID, bpartnerId);
+			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_C_BPartner_Customer_ID, bpartnerId, null);
 		}
 
 		//
 		// Storage Attributes Key
 		queryBuilder.filter(createANDFilterForStorageAttributesKeys(query));
-
-		//
 		return queryBuilder;
 	}
 
-	private static ICompositeQueryFilter<I_MD_Candidate_Stock_v> createANDFilterForStorageAttributesKeys(@NonNull final AvailableToPromiseQuery query)
+	private boolean isRealSqlQuery()
+	{
+		final boolean isRealSqlQuery = !Adempiere.isUnitTestMode();
+		return isRealSqlQuery;
+	}
+
+	private static ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> createANDFilterForStorageAttributesKeys(@NonNull final AvailableToPromiseQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> orFilterForDifferentStorageAttributesKeys = queryBL
-				.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
+		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> orFilterForDifferentStorageAttributesKeys = queryBL
+				.createCompositeQueryFilter(I_MD_Candidate_ATP_QueryResult.class)
 				.setJoinOr();
 
 		for (final AttributesKey attributesKey : query.getStorageAttributesKeys())
 		{
-			final IQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey = createANDFilterForStorageAttributesKey(query, attributesKey);
+			final IQueryFilter<I_MD_Candidate_ATP_QueryResult> andFilterForCurrentStorageAttributesKey = createANDFilterForStorageAttributesKey(query, attributesKey);
 			orFilterForDifferentStorageAttributesKeys.addFilter(andFilterForCurrentStorageAttributesKey);
 		}
 
 		return orFilterForDifferentStorageAttributesKeys;
 	}
 
-	private static ICompositeQueryFilter<I_MD_Candidate_Stock_v> createANDFilterForStorageAttributesKey(
+	private static ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> createANDFilterForStorageAttributesKey(
 			@NonNull final AvailableToPromiseQuery query,
 			@NonNull final AttributesKey attributesKey)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> filterForCurrentStorageAttributesKey = queryBL.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
+		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> filterForCurrentStorageAttributesKey = queryBL.createCompositeQueryFilter(I_MD_Candidate_ATP_QueryResult.class)
 				.setJoinAnd();
 
 		if (Objects.equals(attributesKey, AttributesKey.OTHER))
@@ -130,7 +166,7 @@ import lombok.experimental.UtilityClass;
 	}
 
 	private static void addNotLikeFiltersForAttributesKeys(
-			@NonNull final ICompositeQueryFilter<I_MD_Candidate_Stock_v> compositeFilter,
+			@NonNull final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> compositeFilter,
 			@NonNull final List<AttributesKey> attributesKeys)
 	{
 		for (final AttributesKey storageAttributesKeyAgain : attributesKeys)
@@ -138,15 +174,15 @@ import lombok.experimental.UtilityClass;
 			if (!Objects.equals(storageAttributesKeyAgain, AttributesKey.OTHER))
 			{
 				final String likeExpression = createLikeExpression(storageAttributesKeyAgain);
-				compositeFilter.addStringNotLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
+				compositeFilter.addStringNotLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, likeExpression, false);
 			}
 		}
 	}
 
-	private static void addLikeFilterForAttributesKey(final AttributesKey attributesKey, final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey)
+	private static void addLikeFilterForAttributesKey(final AttributesKey attributesKey, final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> andFilterForCurrentStorageAttributesKey)
 	{
 		final String likeExpression = createLikeExpression(attributesKey);
-		andFilterForCurrentStorageAttributesKey.addStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
+		andFilterForCurrentStorageAttributesKey.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, likeExpression, false);
 	}
 
 	private static String createLikeExpression(@NonNull final AttributesKey attributesKey)

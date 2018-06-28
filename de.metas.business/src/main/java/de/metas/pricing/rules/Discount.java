@@ -25,9 +25,6 @@ package de.metas.pricing.rules;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -38,7 +35,11 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -46,8 +47,8 @@ import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest.CalculatePricingConditionsRequestBuilder;
-import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 
@@ -119,12 +120,12 @@ public class Discount implements IPricingRule
 	private CalculatePricingConditionsRequest createCalculatePricingConditionsRequest(final IPricingContext pricingCtx, final IPricingResult result)
 	{
 		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
-		final boolean isSOTrx = pricingCtx.isSOTrx();
+		final SOTrx soTrx = pricingCtx.getSoTrx();
 
 		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 		final Percent bpartnerFlatDiscount = Percent.of(bpartner.getFlatDiscount());
 
-		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(bpartner, isSOTrx);
+		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(bpartner, soTrx);
 		if (discountSchemaId <= 0)
 		{
 			return null;

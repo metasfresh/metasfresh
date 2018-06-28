@@ -67,6 +67,12 @@ public interface IWorkPackageBuilder
 	 * NOTE: the {@link IWorkPackageParamsBuilder} will trigger the creation of {@link I_C_Queue_WorkPackage}.
 	 */
 	IWorkPackageParamsBuilder parameters();
+	
+	default IWorkPackageBuilder parameter(final String parameterName, final Object parameterValue)
+	{
+		parameters().setParameter(parameterName, parameterValue);
+		return this;
+	}
 
 	/**
 	 * Sets the workpackage's queue priority. If no particular priority is set, the system will use {@link IWorkPackageQueue#PRIORITY_AUTO}.

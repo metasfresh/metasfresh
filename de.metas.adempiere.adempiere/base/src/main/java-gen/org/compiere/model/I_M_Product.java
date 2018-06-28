@@ -670,8 +670,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_IsPickListPrintDetails = "IsPickListPrintDetails";
 
 	/**
-	 * Set Eingekauft.
-	 * Organization purchases this product
+	 * Set Wird Eingekauft.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -680,8 +679,7 @@ public interface I_M_Product
 	public void setIsPurchased (boolean IsPurchased);
 
 	/**
-	 * Get Eingekauft.
-	 * Organization purchases this product
+	 * Get Wird Eingekauft.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1064,26 +1062,30 @@ public interface I_M_Product
 	 * Set Hersteller.
 	 * Hersteller des Produktes
 	 *
-	 * <br>Type: String
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setManufacturer (java.lang.String Manufacturer);
+	public void setManufacturer_ID (int Manufacturer_ID);
 
 	/**
 	 * Get Hersteller.
 	 * Hersteller des Produktes
 	 *
-	 * <br>Type: String
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getManufacturer();
+	public int getManufacturer_ID();
 
-    /** Column definition for Manufacturer */
-    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Manufacturer = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Manufacturer", null);
-    /** Column name Manufacturer */
-    public static final String COLUMNNAME_Manufacturer = "Manufacturer";
+	public org.compiere.model.I_C_BPartner getManufacturer();
+
+	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer);
+
+    /** Column definition for Manufacturer_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_BPartner> COLUMN_Manufacturer_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_BPartner>(I_M_Product.class, "Manufacturer_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Manufacturer_ID */
+    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
 
 	/**
 	 * Set MRP ausschliessen.

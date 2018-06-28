@@ -6,23 +6,27 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMPricingBL;
@@ -91,7 +95,7 @@ public class PMMPricingBL implements IPMMPricingBL
 
 	private void updatePriceFromPricingMasterdata(final IPMMPricingAware pricingAware)
 	{
-		final boolean soTrx = false;
+		final SOTrx soTrx = SOTrx.PURCHASE;
 		final Properties ctx = pricingAware.getCtx();
 
 		final I_C_BPartner bpartner = pricingAware.getC_BPartner();
@@ -103,8 +107,8 @@ public class PMMPricingBL implements IPMMPricingBL
 
 		// Pricing system
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final int pricingSystemId = bpartnerDAO.retrievePricingSystemId(ctx, bpartnerId, soTrx, ITrx.TRXNAME_ThreadInherited);
-		if (pricingSystemId <= 0)
+		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemId(ctx, bpartnerId, soTrx, ITrx.TRXNAME_ThreadInherited);
+		if (pricingSystemId == null)
 		{
 			// no term and no pricing system means that we can't figure out the price
 			throw new AdempiereException("@Missing@ @" + I_PMM_QtyReport_Event.COLUMNNAME_M_PricingSystem_ID + "@ ("
@@ -125,8 +129,8 @@ public class PMMPricingBL implements IPMMPricingBL
 		// Fetch price from pricing engine
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final BigDecimal qty = pricingAware.getQty();
-		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId, uom.getC_UOM_ID(), qty, soTrx);
-		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
+		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId, uom.getC_UOM_ID(), qty, soTrx.toBoolean());
+		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceDate(date);
 		pricingCtx.setC_Country_ID(countryId);
 		pricingCtx.setReferencedObject(pricingAware.getWrappedModel()); // important for ASI pricing
@@ -139,9 +143,9 @@ public class PMMPricingBL implements IPMMPricingBL
 
 		// these will be "empty" results, if the price was not calculated
 		logger.trace("Updating {} from {}", pricingAware, pricingResult);
-		pricingAware.setM_PricingSystem_ID(pricingResult.getM_PricingSystem_ID());
-		pricingAware.setM_PriceList_ID(pricingResult.getM_PriceList_ID());
-		pricingAware.setC_Currency_ID(pricingResult.getC_Currency_ID());
+		pricingAware.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
+		pricingAware.setM_PriceList_ID(PriceListId.getRepoId(pricingResult.getPriceListId()));
+		pricingAware.setCurrencyId(pricingResult.getCurrencyId());
 		pricingAware.setPrice(pricingResult.getPriceStd());
 	}
 
@@ -184,7 +188,7 @@ public class PMMPricingBL implements IPMMPricingBL
 				uom,  													// this is the qtyReportEvent's UOM
 				flatrateTerm.getC_Currency().getStdPrecision());
 
-		pricingAware.setC_Currency_ID(flatrateTerm.getC_Currency_ID());
+		pricingAware.setCurrencyId(CurrencyId.ofRepoIdOrNull(flatrateTerm.getC_Currency_ID()));
 		pricingAware.setPrice(price);
 		return true;
 	}

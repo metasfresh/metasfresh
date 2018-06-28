@@ -31,9 +31,12 @@ import java.util.List;
 import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import lombok.Getter;
@@ -55,9 +58,15 @@ class PricingResult implements IPricingResult
 {
 	private boolean calculated = false;
 
-	private int M_PricingSystem_ID = -1;
-	private int M_PriceList_ID = -1;
-	private int C_Currency_ID = -1;
+	@Getter
+	@Setter
+	private PricingSystemId pricingSystemId;
+	@Getter
+	@Setter
+	private PriceListId priceListId;
+	@Setter
+	@Getter
+	private CurrencyId currencyId;
 	private int C_UOM_ID = -1;
 	private int M_Product_ID = -1;
 	private int M_Product_Category_ID = -1;
@@ -83,48 +92,6 @@ class PricingResult implements IPricingResult
 	private final List<IPricingRule> rulesApplied = new ArrayList<>();
 
 	private final List<IPricingAttribute> pricingAttributes = new ArrayList<>();
-
-	@Override
-	public int getM_PricingSystem_ID()
-	{
-		return M_PricingSystem_ID;
-	}
-
-	@Override
-	public void setM_PricingSystem_ID(final int pricingSystemId)
-	{
-		M_PricingSystem_ID = pricingSystemId;
-	}
-
-	@Override
-	public void setM_PriceList_ID(final int M_PriceList_ID)
-	{
-		this.M_PriceList_ID = M_PriceList_ID;
-	}
-
-	@Override
-	public int getM_PriceList_ID()
-	{
-		return M_PriceList_ID;
-	}
-
-	/**
-	 * @return the c_Currency_ID
-	 */
-	@Override
-	public int getC_Currency_ID()
-	{
-		return C_Currency_ID;
-	}
-
-	/**
-	 * @param c_Currency_ID the c_Currency_ID to set
-	 */
-	@Override
-	public void setC_Currency_ID(final int c_Currency_ID)
-	{
-		C_Currency_ID = c_Currency_ID;
-	}
 
 	/**
 	 * @return the c_UOM_ID

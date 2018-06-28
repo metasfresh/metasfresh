@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
@@ -48,7 +49,6 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;

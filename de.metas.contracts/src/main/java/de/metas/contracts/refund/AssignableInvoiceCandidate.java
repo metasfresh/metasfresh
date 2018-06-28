@@ -4,8 +4,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.bpartner.BPartnerId;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -47,9 +46,9 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 	BPartnerId bpartnerId;
 	ProductId productId;
 	LocalDate invoiceableFrom;
-	RefundInvoiceCandidate refundInvoiceCandidate;
 	Money money;
-	Money oldMoney;
+
+	AssignmentToRefundCandidate assignmentToRefundCandidate;
 
 	@Builder(toBuilder = true)
 	private AssignableInvoiceCandidate(
@@ -57,38 +56,27 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
-			@Nullable final RefundInvoiceCandidate refundInvoiceCandidate,
 			@NonNull final Money money,
-			@Nullable final Money oldMoney)
+			@Nullable final AssignmentToRefundCandidate assignmentToRefundCandidate)
 	{
 		this.id = id;
 		this.bpartnerId = bpartnerId;
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
-		this.refundInvoiceCandidate = refundInvoiceCandidate;
 		this.money = money;
-		this.oldMoney = oldMoney;
+
+		this.assignmentToRefundCandidate = assignmentToRefundCandidate;
 	}
 
 	public AssignableInvoiceCandidate withoutRefundInvoiceCandidate()
 	{
 		return toBuilder()
-				.refundInvoiceCandidate(null)
+				.assignmentToRefundCandidate(null)
 				.build();
-	}
-
-	public Money getMoneyDelta()
-	{
-		if (oldMoney == null)
-		{
-			return money;
-		}
-
-		return money.subtract(oldMoney);
 	}
 
 	public boolean isAssigned()
 	{
-		return refundInvoiceCandidate != null;
+		return assignmentToRefundCandidate != null;
 	}
 }

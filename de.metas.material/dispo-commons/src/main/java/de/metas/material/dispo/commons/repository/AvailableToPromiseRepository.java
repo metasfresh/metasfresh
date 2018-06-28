@@ -1,24 +1,17 @@
 package de.metas.material.dispo.commons.repository;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Functions;
-import org.adempiere.util.Functions.MemoizingFunction;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
+import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -29,9 +22,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
-import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.Value;
@@ -62,7 +53,7 @@ import lombok.Value;
 public class AvailableToPromiseRepository
 {
 	private static final String SYSCONFIG_ATP_ATTRIBUTES_KEYS = "de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.AttributesKeys";
-	
+
 	@NonNull
 	public BigDecimal retrieveAvailableStockQtySum(@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
@@ -70,41 +61,94 @@ public class AvailableToPromiseRepository
 				.getResultGroups()
 				.stream().map(ResultGroup::getQty).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
-	
+
 	@NonNull
 	public BigDecimal retrieveAvailableStockQtySum(@NonNull final AvailableToPromiseQuery query)
 	{
 		return retrieveAvailableStockQtySum(AvailableToPromiseMultiQuery.of(query));
 	}
 
-
 	@NonNull
-	public AvailableToPromiseResult retrieveAvailableStock(@NonNull AvailableToPromiseMultiQuery multiQuery)
+	public AvailableToPromiseResult retrieveAvailableStock(@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
 		final AvailableToPromiseResult result = multiQuery.isAddToPredefinedBuckets()
 				? AvailableToPromiseResult.createEmptyWithPredefinedBuckets(multiQuery)
 				: AvailableToPromiseResult.createEmpty();
 
-		final IQuery<I_MD_Candidate_Stock_v> dbQuery = createDBQueryForMaterialQueryOrNull(multiQuery);
+		final IQuery<I_MD_Candidate_ATP_QueryResult> dbQuery = createDBQueryForMaterialQueryOrNull(multiQuery);
 		if (dbQuery == null)
 		{
 			return result;
 		}
 
-		final List<AddToResultGroupRequest> addRequests = dbQuery
+		final List<I_MD_Candidate_ATP_QueryResult> atpRecords = dbQuery
 				.stream()
-				.map(stockRecord -> createAddToResultGroupRequest(stockRecord))
+				.sorted(Comparator
+						.comparing(I_MD_Candidate_ATP_QueryResult::getDateProjected)
+						.thenComparing(I_MD_Candidate_ATP_QueryResult::getSeqNo)
+						.reversed())
 				.collect(ImmutableList.toImmutableList());
 
-		if (multiQuery.isAddToPredefinedBuckets())
+		// note: this is a dedicated step in order to ease debugging (i.e. have a chance to take a look at the atpRecords)
+		final ImmutableList<AddToResultGroupRequest> requests = atpRecords
+				.stream()
+				.map(AvailableToPromiseRepository::createAddToResultGroupRequest)
+				.collect(ImmutableList.toImmutableList());
+
+		final List<AddToResultGroupRequest> filteredRequests = filterOutRedundantQuantities(requests);
+
+		for (final AddToResultGroupRequest request : filteredRequests)
 		{
-			addRequests.forEach(result::addQtyToAllMatchingGroups);
-		}
-		else
-		{
-			addRequests.forEach(result::addGroup);
+			if (multiQuery.isAddToPredefinedBuckets())
+			{
+				result.addQtyToAllMatchingGroups(request);
+			}
+			else
+			{
+				result.addToNewGroupGroup(request);
+			}
 		}
 		return result;
+	}
+
+	/**
+	 * The result does not contain requests that have not bPartnerID (i.e. are applicable to) all partners,
+	 * if there is a later requests for the same product, warehouse etc.
+	 * That's because those "bpartner-unspecific" requests' quantities are already in the respective later specific requests.
+	 * <p>
+	 * Also see the service in materialdispo-services that is responsible for updating stock-candidates
+	 *
+	 * @param requests need to be ordered "chronologically", latest first.
+	 */
+	private List<AddToResultGroupRequest> filterOutRedundantQuantities(@NonNull final List<AddToResultGroupRequest> requests)
+	{
+		final Set<ArrayKey> keysOfRequestsWithSpecificBPartnerId = new HashSet<>();
+
+		final ImmutableList.Builder<AddToResultGroupRequest> result = ImmutableList.builder();
+
+		for (final AddToResultGroupRequest request : requests)
+		{
+			final ArrayKey key = ArrayKey.builder() // note that we *do not* add the bpartnerId
+					.append(request.getProductId())
+					.append(request.getStorageAttributesKey())
+					.append(request.getWarehouseId()).build();
+
+			final boolean requestHasBPartnerId = request.getBpartnerId() > 0;
+			if (requestHasBPartnerId)
+			{
+				keysOfRequestsWithSpecificBPartnerId.add(key);
+			}
+			else
+			{
+				final boolean qtyOfrequestWasAlreadyAdded = keysOfRequestsWithSpecificBPartnerId.contains(key);
+				if (qtyOfrequestWasAlreadyAdded)
+				{
+					continue;
+				}
+			}
+			result.add(request);
+		}
+		return result.build();
 	}
 
 	public AvailableToPromiseResult retrieveAvailableStock(@NonNull AvailableToPromiseQuery query)
@@ -112,62 +156,28 @@ public class AvailableToPromiseRepository
 		return retrieveAvailableStock(AvailableToPromiseMultiQuery.of(query));
 	}
 
-	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(@NonNull final AvailableToPromiseMultiQuery multiQuery)
+	private IQuery<I_MD_Candidate_ATP_QueryResult> createDBQueryForMaterialQueryOrNull(
+			@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
-		final MemoizingFunction<Date, Timestamp> maxDateLessOrEqualFunction //
-				= Functions.memoizing(date -> retrieveMaxDateLessOrEqual(date));
-
-		final UnaryOperator<AvailableToPromiseQuery> setStockQueryDataParameter = //
-				stockQuery -> {
-					final Timestamp latestDateOrNull = maxDateLessOrEqualFunction.apply(stockQuery.getDate());
-					if (latestDateOrNull == null)
-					{
-						return null;
-					}
-					return stockQuery.withDate(latestDateOrNull);
-				};
-
-		final Function<AvailableToPromiseQuery, IQuery<I_MD_Candidate_Stock_v>> createDbQueryForSingleStockQuery = //
+		final Function<AvailableToPromiseQuery, IQuery<I_MD_Candidate_ATP_QueryResult>> createDbQueryForSingleStockQuery = //
 				stockQuery -> AvailableToPromiseSqlHelper
-						.createDBQueryForStockQuery(stockQuery)
-						.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
-						.create();
+						.createDBQueryForStockQuery(stockQuery);
 
 		return multiQuery.getQueries()
 				.stream()
-				.map(setStockQueryDataParameter)
 				.filter(Predicates.notNull())
 				.map(createDbQueryForSingleStockQuery)
 				.reduce(IQuery.unionDistict())
 				.orElse(null);
 	}
 
-	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final Date date)
-	{
-		return Services.get(IQueryBL.class)
-
-				// select from MD_Candidate, because the performance is much worse with MD_Candidate_Stock_v
-				// also note that this method is supported by the DB index md_candidate_stock_latest_date_perf
-				.createQueryBuilder(I_MD_Candidate.class)
-
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
-				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(date))
-
-				.orderBy()
-				.addColumn(I_MD_Candidate.COLUMN_DateProjected, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
-				.endOrderBy()
-
-				.create()
-				.first(I_MD_Candidate.COLUMNNAME_DateProjected, Timestamp.class);
-	}
-
 	@VisibleForTesting
-	static AddToResultGroupRequest createAddToResultGroupRequest(final I_MD_Candidate_Stock_v stockRecord)
+	static AddToResultGroupRequest createAddToResultGroupRequest(final I_MD_Candidate_ATP_QueryResult stockRecord)
 	{
-		final int bPpartnerIdForRequest = stockRecord.getC_BPartner_ID() > 0
-				? stockRecord.getC_BPartner_ID()
-				: AvailableToPromiseQuery.BPARTNER_ID_NONE;
+		final int bPpartnerIdForRequest = stockRecord.getC_BPartner_Customer_ID() > 0
+				? stockRecord.getC_BPartner_Customer_ID()
+				: AvailableToPromiseQuery.BPARTNER_ID_ANY // records that have no bPartner-ID are applicable to any bpartner
+		;
 
 		return AddToResultGroupRequest.builder()
 				.productId(stockRecord.getM_Product_ID())
@@ -177,7 +187,7 @@ public class AvailableToPromiseRepository
 				.qty(stockRecord.getQty())
 				.build();
 	}
-	
+
 	public Set<AttributesKey> getPredefinedStorageAttributeKeys()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -213,7 +223,6 @@ public class AvailableToPromiseRepository
 			return AttributesKey.ofString(storageAttributesKey);
 		}
 	}
-	
 
 	@Value
 	private static class ProductAndAttributeKey
