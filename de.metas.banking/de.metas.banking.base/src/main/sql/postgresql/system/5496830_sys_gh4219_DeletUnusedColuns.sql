@@ -89,3 +89,20 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=560542
 DELETE FROM AD_Column WHERE AD_Column_ID=560542
 ;
 
+
+
+-- 2018-06-28T18:06:42.523
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=540745, DefaultValue='N',Updated=TO_TIMESTAMP('2018-06-28 18:06:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560567
+;
+
+-- 2018-06-28T18:06:46.140
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('i_datev_payment','I_IsImported','CHAR(1)',null,'N')
+;
+
+-- 2018-06-28T18:06:46.158
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE I_Datev_Payment SET I_IsImported='N' WHERE I_IsImported IS NULL
+;
+

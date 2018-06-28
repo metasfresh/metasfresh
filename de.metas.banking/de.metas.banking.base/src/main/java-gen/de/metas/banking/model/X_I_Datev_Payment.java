@@ -15,7 +15,7 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -782154907L;
+	private static final long serialVersionUID = 1168970591L;
 
     /** Standard Constructor */
     public X_I_Datev_Payment (Properties ctx, int I_Datev_Payment_ID, String trxName)
@@ -24,7 +24,7 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
       /** if (I_Datev_Payment_ID == 0)
         {
 			setI_Datev_Payment_ID (0);
-			setI_IsImported (false);
+			setI_IsImported (null); // N
         } */
     }
 
@@ -330,30 +330,35 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 		return (java.lang.String)get_Value(COLUMNNAME_I_ErrorMsg);
 	}
 
+	/** 
+	 * I_IsImported AD_Reference_ID=540745
+	 * Reference name: I_IsImported
+	 */
+	public static final int I_ISIMPORTED_AD_Reference_ID=540745;
+	/** NotImported = N */
+	public static final String I_ISIMPORTED_NotImported = "N";
+	/** Imported = Y */
+	public static final String I_ISIMPORTED_Imported = "Y";
+	/** ImportFailed = E */
+	public static final String I_ISIMPORTED_ImportFailed = "E";
 	/** Set Importiert.
 		@param I_IsImported 
 		Ist dieser Import verarbeitet worden?
 	  */
 	@Override
-	public void setI_IsImported (boolean I_IsImported)
+	public void setI_IsImported (java.lang.String I_IsImported)
 	{
-		set_Value (COLUMNNAME_I_IsImported, Boolean.valueOf(I_IsImported));
+
+		set_Value (COLUMNNAME_I_IsImported, I_IsImported);
 	}
 
 	/** Get Importiert.
 		@return Ist dieser Import verarbeitet worden?
 	  */
 	@Override
-	public boolean isI_IsImported () 
+	public java.lang.String getI_IsImported () 
 	{
-		Object oo = get_Value(COLUMNNAME_I_IsImported);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return (java.lang.String)get_Value(COLUMNNAME_I_IsImported);
 	}
 
 	/** Set Invoice Document No.

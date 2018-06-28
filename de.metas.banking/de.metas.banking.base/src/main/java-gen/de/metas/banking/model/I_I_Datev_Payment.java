@@ -391,21 +391,21 @@ public interface I_I_Datev_Payment
 	 * Set Importiert.
 	 * Ist dieser Import verarbeitet worden?
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setI_IsImported (boolean I_IsImported);
+	public void setI_IsImported (java.lang.String I_IsImported);
 
 	/**
 	 * Get Importiert.
 	 * Ist dieser Import verarbeitet worden?
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isI_IsImported();
+	public java.lang.String getI_IsImported();
 
     /** Column definition for I_IsImported */
     public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "I_IsImported", null);
