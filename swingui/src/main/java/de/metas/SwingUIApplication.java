@@ -1,7 +1,6 @@
 package de.metas;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Profile;
 
 /*
  * #%L
@@ -34,7 +33,6 @@ import org.springframework.context.annotation.Profile;
  *
  */
 @SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
-@Profile(SwingUIApplication.PROFILE)
 public class SwingUIApplication extends SwingUIApplicationTemplate
 {
 	public static void main(final String[] args)
