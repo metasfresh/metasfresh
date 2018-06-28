@@ -187,7 +187,7 @@ public class PrintPackageBL implements IPrintPackageBL
 
 		printCtx.setHostKey(hostKey);
 
-		logger.info("Print package context: {}", printCtx);
+		logger.debug("Print package context: {}", printCtx);
 		return printCtx;
 	}
 

@@ -7,6 +7,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AKeyboardFocusManager;
 import org.compiere.apps.ALogin;
@@ -62,16 +63,24 @@ public abstract class SwingUIApplicationTemplate
 
 		showLoginDialog();
 
-		new SpringApplicationBuilder(bootstrapClass)
-				.headless(false)
-				// actually we would like to it to start actuator endpoints and register with the spring-boot admin server, BUT
-				// we first need to solve the problem of running multiple clients on the same machine (they need to bind to differnt ports)
-				// there might be resource/performance problems
-				// at any rate, we have not yet a solution as to how to configure them
-				.web(false)
-				.profiles(Profiles.PROFILE_SwingUI)
-				.properties(CConnection.get().createRabbitmqSpringProperties())
-				.run(args);
+		try
+		{
+			new SpringApplicationBuilder(bootstrapClass)
+					.headless(false)
+					// actually we would like to it to start actuator endpoints and register with the spring-boot admin server, BUT
+					// we first need to solve the problem of running multiple clients on the same machine (they need to bind to differnt ports)
+					// there might be resource/performance problems
+					// at any rate, we have not yet a solution as to how to configure them
+					.web(false)
+					.profiles(Profiles.PROFILE_SwingUI)
+					.properties(CConnection.get().createRabbitmqSpringProperties())
+					.run(args);
+		}
+		catch (final Exception ex)
+		{
+			ADialog.error(-1, null, ex);
+			AEnv.exit(1);
+		}
 	}
 
 	private static void showLoginDialog()

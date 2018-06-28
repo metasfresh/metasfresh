@@ -39,16 +39,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.model.I_M_HU_Storage;
@@ -58,14 +52,14 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.reservation.HuReservationRepository;
 import de.metas.order.OrderLineId;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HuReservationRepository.class })
 public class HUQueryBuilderTest
 {
 	private I_M_Warehouse wh;
 
 	private I_M_Product product;
 	private List<I_M_HU> hus;
+
+	private HUQueryBuilder huQueryBuilder;
 
 	@Before
 	public void init()
@@ -98,6 +92,8 @@ public class HUQueryBuilderTest
 				createHU("locator-otherProduct", locator, otherProduct),
 				createHU("otherLocator-product", otherLocator, product),
 				createHU("otherLocator-otherProduct", otherLocator, otherProduct));
+
+		huQueryBuilder = new HUQueryBuilder(new HuReservationRepository());
 	}
 
 	private static I_M_HU createHU(
@@ -125,12 +121,11 @@ public class HUQueryBuilderTest
 	@Test
 	public void test_copy_NotFails()
 	{
-		final HUQueryBuilder husQuery = new HUQueryBuilder();
-		final HUQueryBuilder husQueryCopy = husQuery.copy();
+		final HUQueryBuilder husQueryCopy = huQueryBuilder.copy();
 
 		Assert.assertNotNull("copy shall not be null", husQueryCopy);
-		Assert.assertNotSame("original and copy shall not be the same", husQueryCopy, husQuery);
-		assertSameStringRepresentation(husQuery, husQueryCopy);
+		Assert.assertNotSame("original and copy shall not be the same", husQueryCopy, huQueryBuilder);
+		assertSameStringRepresentation(huQueryBuilder, husQueryCopy);
 	}
 
 	private final void assertSameStringRepresentation(final Object expected, final Object actual)
@@ -153,7 +148,7 @@ public class HUQueryBuilderTest
 	@Test
 	public void createQueryFilter_by_product_and_warehouse()
 	{
-		final IHUQueryBuilder huQueryBuilder = new HUQueryBuilder()
+		huQueryBuilder
 				.addOnlyWithProduct(product)
 				.addOnlyInWarehouseId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
 
@@ -170,7 +165,6 @@ public class HUQueryBuilderTest
 	@Test
 	public void createQueryFilter_select_all()
 	{
-		final IHUQueryBuilder huQueryBuilder = new HUQueryBuilder();
 
 		// invoke the method under test
 		final IQueryFilter<I_M_HU> huFilters = huQueryBuilder.createQueryFilter();
@@ -188,8 +182,7 @@ public class HUQueryBuilderTest
 		final OrderLineId otherOrderLineId = OrderLineId.ofRepoId(20);
 		createReservationRecord(otherOrderLineId, hus.get(1));
 
-		final IHUQueryBuilder huQueryBuilder = new HUQueryBuilder()
-				.setExcludeReservedToOtherThan(orderLineId);
+		huQueryBuilder.setExcludeReservedToOtherThan(orderLineId);
 
 		// invoke the method under test
 		final IQueryFilter<I_M_HU> huFilters = huQueryBuilder.createQueryFilter();
