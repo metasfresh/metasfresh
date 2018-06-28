@@ -54,7 +54,6 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
@@ -98,7 +97,7 @@ import lombok.NonNull;
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-	private final transient HuReservationRepository huReservationRepository = Adempiere.getBean(HuReservationRepository.class);
+	private final transient HuReservationRepository huReservationRepository;
 
 	@ToStringBuilder(skip = true)
 	private Object _contextProvider;
@@ -180,12 +179,14 @@ import lombok.NonNull;
 	private boolean _errorIfNoHUs = false;
 	private String _errorIfNoHUs_ADMessage = null;
 
-	public HUQueryBuilder()
+	public HUQueryBuilder(@NonNull final HuReservationRepository huReservationRepository)
 	{
+		this.huReservationRepository = huReservationRepository;
 	}
 
 	private HUQueryBuilder(final HUQueryBuilder from)
 	{
+		this.huReservationRepository = from.huReservationRepository;
 		this._contextProvider = from._contextProvider;
 		this.huItemParentNull = from.huItemParentNull;
 		this.parentHUItemId = from.parentHUItemId;

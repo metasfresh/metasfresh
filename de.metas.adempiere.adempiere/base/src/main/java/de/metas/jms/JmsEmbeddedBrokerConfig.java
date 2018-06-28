@@ -1,13 +1,13 @@
 package de.metas.jms;
 
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.db.CConnection;
-import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
+import de.metas.Profiles;
 import de.metas.logging.LogManager;
 
 /*
@@ -23,11 +23,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,15 +35,16 @@ import de.metas.logging.LogManager;
 /**
  * Module interceptor for the jms package.
  * <p>
- * This interceptor needs its own record in {@link org.compiere.model.I_AD_ModelValidator} and its own entitytype, because there shall never be an embedded broker when we run in minimal mode.
+ * Note: only the app server needs to provide JMS services (for procurement-webui and currently still for the swing client),
+ * hence the {@link Profile} annotation.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-public class JmsInterceptor extends AbstractModuleInterceptor
+@Configuration
+@Profile(value = { Profiles.PROFILE_App, Profiles.PROFILE_SwingUI })
+public class JmsEmbeddedBrokerConfig
 {
-	private static final Logger logger = LogManager.getLogger(JmsInterceptor.class);
-
+	private static final Logger logger = LogManager.getLogger(JmsEmbeddedBrokerConfig.class);
 
 	/**
 	 * Starts an embedded JMS broker if either
@@ -52,8 +53,7 @@ public class JmsInterceptor extends AbstractModuleInterceptor
 	 * <li>we are running in embedded server mode, i.e. {@link CConnection#isServerEmbedded()} returns <code>true</code>.
 	 * </ul>
 	 */
-	@Override
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	public JmsEmbeddedBrokerConfig()
 	{
 		startEmbeddedBrokerIfRequired();
 	}
@@ -61,7 +61,7 @@ public class JmsInterceptor extends AbstractModuleInterceptor
 	/** Start embedded server if running in server mode or we were asked for embedded server */
 	private void startEmbeddedBrokerIfRequired()
 	{
-		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND || Ini.getRunMode() == RunMode.WEBUI;
+		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND;
 		if ((serverMode && JmsConstants.isUseEmbeddedBroker())
 				|| CConnection.isServerEmbedded())
 		{
