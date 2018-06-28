@@ -1,11 +1,6 @@
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import { Component } from 'react';
 
-import {
-  subscribeShortcut,
-  unSubscribeShortcut,
-} from '../../actions/GenericActions';
 import { disabledWithFocus } from '../../shortcuts/keymap';
 
 const codeToKey = {
@@ -66,8 +61,7 @@ const codeToKey = {
   189: '-',
 };
 
-// export default class ShortcutProvider extends Component {
-class ShortcutProvider extends Component {
+export default class ShortcutProvider extends Component {
   static propTypes = {
     children: PropTypes.node,
     hotkeys: PropTypes.object.isRequired,
@@ -106,7 +100,6 @@ class ShortcutProvider extends Component {
   }
 
   fireHandlers = (event, handlers) => {
-    console.log('handlers: ', handlers)
     handlers.forEach(handler => {
       handler(event);
     });
@@ -198,7 +191,7 @@ class ShortcutProvider extends Component {
   };
 
   subscribe = (name, handler) => {
-    const { hotkeys, keymap, subscribeShortcut } = this.props;
+    const { hotkeys, keymap } = this.props;
 
     if (!(name in this.props.keymap)) {
       // eslint-disable-next-line no-console
@@ -207,19 +200,18 @@ class ShortcutProvider extends Component {
       return;
     }
 
-    if (!handler){
+    if (!handler) {
       return;
     }
 
     const key = keymap[name].toUpperCase();
     const bucket = hotkeys[key];
 
-    // hotkeys[key] = [...bucket, handler];
-    subscribeShortcut({ key, handlers: [...bucket, handler] });
+    hotkeys[key] = [...bucket, handler];
   };
 
   unsubscribe = (name, handler) => {
-    const { hotkeys, keymap, unSubscribeShortcut } = this.props;
+    const { hotkeys, keymap } = this.props;
 
     if (!(name in this.props.keymap)) {
       // eslint-disable-next-line no-console
@@ -228,7 +220,7 @@ class ShortcutProvider extends Component {
       return;
     }
 
-    if (!handler){
+    if (!handler) {
       return;
     }
 
@@ -236,16 +228,7 @@ class ShortcutProvider extends Component {
     const bucket = hotkeys[key];
     let found = false;
 
-    // hotkeys[key] = bucket.filter(_handler => {
-    //   if (_handler === handler) {
-    //     found = true;
-
-    //     return false;
-    //   }
-
-    //   return true;
-    // });
-    const filtered = bucket.filter(_handler => {
+    hotkeys[key] = bucket.filter(_handler => {
       if (_handler === handler) {
         found = true;
 
@@ -254,7 +237,6 @@ class ShortcutProvider extends Component {
 
       return true;
     });
-    unSubscribeShortcut({ key, handlers: filtered });
 
     if (!found) {
       // eslint-disable-next-line no-console
@@ -269,12 +251,3 @@ class ShortcutProvider extends Component {
     return this.props.children;
   }
 }
-
-const mapStateToProps = state => ({
-  hotkeys: state.shortcutsHandler,
-});
-
-export default connect(mapStateToProps, {
-  subscribeShortcut,
-  unSubscribeShortcut,
-})(ShortcutProvider);
