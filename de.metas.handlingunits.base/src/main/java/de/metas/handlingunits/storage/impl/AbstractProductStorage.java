@@ -10,18 +10,17 @@ package de.metas.handlingunits.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -54,8 +53,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 
 	protected static enum RequestType
 	{
-		ADD,
-		REMOVE,
+		ADD, REMOVE,
 	}
 
 	public AbstractProductStorage()
@@ -116,12 +114,16 @@ public abstract class AbstractProductStorage implements IProductStorage
 	}
 
 	@Override
-	public final BigDecimal getQty(final I_C_UOM uom)
+	public final Quantity getQty(final I_C_UOM uom)
 	{
 		final I_M_Product product = getM_Product();
 		final BigDecimal qty = getQty();
 		final I_C_UOM uomFrom = getC_UOM();
-		return Services.get(IUOMConversionBL.class).convertQty(product, qty, uomFrom, uom);
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final BigDecimal convertQty = uomConversionBL.convertQty(product.getM_Product_ID(), qty, uomFrom, uom);
+
+		return Quantity.of(convertQty, uom);
 	}
 
 	@Override

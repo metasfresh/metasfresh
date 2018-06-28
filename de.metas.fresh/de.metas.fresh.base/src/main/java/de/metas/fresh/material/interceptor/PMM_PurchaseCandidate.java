@@ -2,7 +2,7 @@ package de.metas.fresh.material.interceptor;
 
 import java.math.BigDecimal;
 
-import org.adempiere.ad.modelvalidator.InterceptorUtil;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -57,8 +57,8 @@ public class PMM_PurchaseCandidate
 
 		final AbstractPurchaseOfferEvent event;
 
-		final boolean deleted = type.isDelete() || InterceptorUtil.isJustDeactivated(purchaseCandidate);
-		final boolean created = type.isNew() || InterceptorUtil.isJustActivated(purchaseCandidate);
+		final boolean deleted = type.isDelete() || ModelChangeUtil.isJustDeactivated(purchaseCandidate);
+		final boolean created = type.isNew() || ModelChangeUtil.isJustActivated(purchaseCandidate);
 		final BigDecimal qtyPromised = purchaseCandidate.getQtyPromised();
 		if (deleted)
 		{

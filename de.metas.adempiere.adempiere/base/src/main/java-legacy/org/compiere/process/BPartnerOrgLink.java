@@ -35,7 +35,7 @@ import de.metas.process.ProcessInfoParameter;
 /**
  *	Link Business Partner to Organization.
  *	Either to existing or create new one
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: BPartnerOrgLink.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
@@ -56,8 +56,8 @@ public class BPartnerOrgLink extends JavaProcess
 	 * Business partner location (03084)
 	 */
 	private int  p_C_BPartner_Location_ID;
-	
-	
+
+
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
@@ -65,20 +65,20 @@ public class BPartnerOrgLink extends JavaProcess
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
 				;
 			else if (name.equals("AD_Org_ID"))
-				p_AD_Org_ID = para[i].getParameterAsInt();
+				p_AD_Org_ID = element.getParameterAsInt();
 			else if (name.equals("AD_OrgType_ID"))
-				p_AD_OrgType_ID = para[i].getParameterAsInt();
+				p_AD_OrgType_ID = element.getParameterAsInt();
 			else if (name.equals("AD_Role_ID"))
-				p_AD_Role_ID = para[i].getParameterAsInt();
+				p_AD_Role_ID = element.getParameterAsInt();
 			// 03084: get the C_BPartner_Location parameter
 			else if (name.equals("C_BPartner_Location_ID"))
-				p_C_BPartner_Location_ID = para[i].getParameterAsInt();
+				p_C_BPartner_Location_ID = element.getParameterAsInt();
 			else
 				log.error("prepare - Unknown Parameter: " + name);
 		}
@@ -93,7 +93,7 @@ public class BPartnerOrgLink extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		log.info("C_BPartner_ID=" + p_C_BPartner_ID 
+		log.info("C_BPartner_ID=" + p_C_BPartner_ID
 			+ ", AD_Org_ID=" + p_AD_Org_ID
 			+ ", AD_OrgType_ID=" + p_AD_OrgType_ID
 			+ ", AD_Role_ID=" + p_AD_Role_ID
@@ -104,9 +104,9 @@ public class BPartnerOrgLink extends JavaProcess
 		MBPartner bp = new MBPartner (getCtx(), p_C_BPartner_ID, get_TrxName());
 		if (bp.get_ID() == 0)
 			throw new AdempiereUserError ("Business Partner not found - C_BPartner_ID=" + p_C_BPartner_ID);
-				
+
 		//	Create Org
-		boolean newOrg = p_AD_Org_ID == 0; 
+		boolean newOrg = p_AD_Org_ID == 0;
 		MOrg org = new MOrg (getCtx(), p_AD_Org_ID, get_TrxName());
 		if (newOrg)
 		{
@@ -120,20 +120,20 @@ public class BPartnerOrgLink extends JavaProcess
 		{
 			int C_BPartner_ID = org.getLinkedC_BPartner_ID(get_TrxName());
 			if (C_BPartner_ID > 0)
-				throw new IllegalArgumentException ("Organization '" + org.getName() 
+				throw new IllegalArgumentException ("Organization '" + org.getName()
 					+ "' already linked (to C_BPartner_ID=" + C_BPartner_ID + ")");
 		}
 		p_AD_Org_ID = org.getAD_Org_ID();
-		
+
 		//	Update Org Info
 		MOrgInfo oInfo = org.getInfo();
 		oInfo.setAD_OrgType_ID (p_AD_OrgType_ID);
-		
+
 		// metas: 03084: We are no longer setting the location to AD_OrgInfo.
 		// Location is contained in linked bpartner's location
 		//if (newOrg)
-		//	oInfo.setC_Location_ID(C_Location_ID);		
-		
+		//	oInfo.setC_Location_ID(C_Location_ID);
+
 		//	Create Warehouse
 		MWarehouse wh = null;
 		if (!newOrg)
@@ -151,6 +151,7 @@ public class BPartnerOrgLink extends JavaProcess
 				throw new Exception ("Warehouse not saved");
 		}
 		//	Create Locator
+
 		MLocator mLoc = wh.getDefaultLocator();
 		if (mLoc == null)
 		{
@@ -158,24 +159,24 @@ public class BPartnerOrgLink extends JavaProcess
 			mLoc.setIsDefault(true);
 			mLoc.save(get_TrxName());
 		}
-		
+
 		//	Update/Save Org Info
 		oInfo.setM_Warehouse_ID(wh.getM_Warehouse_ID());
 		if (!oInfo.save(get_TrxName()))
 			throw new Exception ("Organization Info not saved");
-		
+
 		//	Update BPartner
 		bp.setAD_OrgBP_ID(p_AD_Org_ID);
 		if (bp.getAD_Org_ID() != 0)
 			bp.setClientOrg(bp.getAD_Client_ID(), 0);	//	Shared BPartner
-		
+
 		//	Save BP
-		if (!bp.save())	
+		if (!bp.save())
 			throw new Exception ("Business Partner not updated");
 
 		//
 		//	Limit to specific Role
-		if (p_AD_Role_ID > 0)	
+		if (p_AD_Role_ID > 0)
 		{
 			boolean found = false;
 			//	delete all accesses except the specific
@@ -196,16 +197,16 @@ public class BPartnerOrgLink extends JavaProcess
 				permissionsDAO.createOrgAccess(p_AD_Role_ID, org.getAD_Org_ID());
 			}
 		}
-		
+
 		//	Reset Client Role
 		// FIXME: MRole.getDefault(getCtx(), true);
-		
+
 		return "Business Partner - Organization Link created";
 	}	//	doIt
-	
+
 	/**
 	 * Configure/Update Warehouse from given linked BPartner
-	 * 
+	 *
 	 * @param warehouse
 	 * @param bpartner
 	 * @task http://dewiki908/mediawiki/index.php/03084:_Move_Org-Infos_to_related_BPartners_%282012080310000055%29

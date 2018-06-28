@@ -15,7 +15,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2021906309L;
+	private static final long serialVersionUID = -444750742L;
 
     /** Standard Constructor */
     public X_RV_M_Material_Tracking_HU_Details (Properties ctx, int RV_M_Material_Tracking_HU_Details_ID, String trxName)
@@ -95,6 +95,8 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	public static final String HUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
+	/** Reserved = R */
+	public static final String HUSTATUS_Reserved = "R";
 	/** Set Gebinde Status.
 		@param HUStatus Gebinde Status	  */
 	@Override

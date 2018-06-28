@@ -70,8 +70,9 @@ public interface IProductDAO extends ISingletonService
 
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
 
-	/** @return product category IDs indexed by product IDs */
-	Set<ProductAndCategoryId> retrieveProductCategoriesByProductIds(Set<Integer> productIds);
+	ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(ProductId productId);
+
+	Set<ProductAndCategoryAndManufacturerId> retrieveProductAndCategoryAndManufacturersByProductIds(Set<ProductId> productIds);
 
 	String retrieveProductValueByProductId(ProductId productId);
 }

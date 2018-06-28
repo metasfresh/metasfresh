@@ -35,8 +35,7 @@ import lombok.NonNull;
 /**
  * Goal of this interface: get an instance from an attribute set instance, one can use in a storage context.
  *
- * @see ImmutableAttributeSet
- * @author metas-dev <dev@metasfresh.com>
+ * Also see {@link ImmutableAttributeSet} for methods to create simple instances that are not necessarily in a HU context.
  */
 public interface IAttributeSet
 {
@@ -122,6 +121,7 @@ public interface IAttributeSet
 
 	/**
 	 * Set attribute's value and propagate to its parent/child attribute sets.
+	 *
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
 	void setValue(String attribute, Object value);

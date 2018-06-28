@@ -174,7 +174,10 @@ public class Capacity implements CapacityInterface
 		}
 
 		final BigDecimal qtyUsedConv = Services.get(IUOMConversionBL.class)
-				.convertQty(product, quantity.getQty(), quantity.getUOM(), uom);
+				.convertQty(product.getM_Product_ID(),
+						quantity.getAsBigDecimal(),
+						quantity.getUOM(),
+						uom);
 
 		final BigDecimal capacityAvailable = capacity.subtract(qtyUsedConv);
 

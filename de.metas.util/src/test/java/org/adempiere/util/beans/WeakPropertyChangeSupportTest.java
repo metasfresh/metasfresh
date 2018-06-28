@@ -25,6 +25,7 @@ package org.adempiere.util.beans;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeListenerProxy;
+import java.util.Arrays;
 
 import org.adempiere.util.beans.WeakPropertyChangeSupportTest.MockedPropertyChangeListener;
 import org.junit.Assert;
@@ -70,7 +71,7 @@ public class WeakPropertyChangeSupportTest
 		Assert.assertNotNull("pcs not null", pcs);
 
 		final PropertyChangeListener[] listeners = pcs.getPropertyChangeListeners();
-		Assert.assertTrue("No listeners shall be registered but they are: " + listeners, listeners == null || listeners.length == 0);
+		Assert.assertTrue("No listeners shall be registered but they are: " + Arrays.toString(listeners), listeners == null || listeners.length == 0);
 	}
 
 	@Test

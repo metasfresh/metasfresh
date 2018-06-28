@@ -13,7 +13,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
@@ -26,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.lang.RepoIdAwares;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
@@ -134,15 +134,14 @@ public class ShipmentScheduleQtyOnHandStorage
 	private AvailableToPromiseQuery createMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final WarehouseId shipmentScheduleWarehouseId = WarehouseId.ofRepoId(shipmentScheduleEffectiveBL.getWarehouseId(sched));
-		final WarehousePickingGroup warehousePickingGroup = warehouseDAO.getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouseId);
-		final Set<WarehouseId> warehouseIds = warehousePickingGroup != null ? warehousePickingGroup.getWarehouseIds() : ImmutableSet.of(shipmentScheduleWarehouseId);
+		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(shipmentScheduleWarehouseId);
 
 		final int productId = sched.getM_Product_ID();
 		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
 		final Date date = shipmentScheduleEffectiveBL.getPreparationDate(sched);
 
 		final AvailableToPromiseQueryBuilder stockQueryBuilder = AvailableToPromiseQuery.builder()
-				.warehouseIds(WarehouseId.toRepoIds(warehouseIds))
+				.warehouseIds(RepoIdAwares.asRepoIds(warehouseIds))
 				.productId(productId)
 				.bpartnerId(bpartnerId)
 				.date(TimeUtil.asLocalDateTime(date));

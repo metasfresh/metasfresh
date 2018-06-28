@@ -35,7 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
 import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -91,7 +91,7 @@ public class HUAttributeSetTest extends AbstractHUTest
 
 		as.setValueNoPropagate(attrNumber1, "string value");
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test(expected = AttributeNotFoundException.class)
@@ -101,7 +101,7 @@ public class HUAttributeSetTest extends AbstractHUTest
 
 		as.getValue(attrString1);
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test
@@ -122,7 +122,7 @@ public class HUAttributeSetTest extends AbstractHUTest
 
 		as.setValueNoPropagate(attrList1, HUAttributeSetTest.ATTRLIST1_Value2 + "_invalid_value");
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test

@@ -43,8 +43,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.DefaultServiceNamePolicy;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.adempiere.warehouse.spi.impl.WarehouseAdvisor;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.MLanguage;
@@ -828,7 +826,6 @@ public class Adempiere
 
 		// metas: begin
 		Services.registerService(IProcessingService.class, ProcessingService.get());
-		Services.registerService(IWarehouseAdvisor.class, new WarehouseAdvisor());
 		// metas: end
 
 		// task 06295

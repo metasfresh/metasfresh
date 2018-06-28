@@ -200,7 +200,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 
 		final BigDecimal currentQtyToDeliver = schedule.getQtyToDeliver();
 
-		if (currentQtyToDeliver.compareTo(qtyPickCandidate.getQty()) < 0)
+		if (currentQtyToDeliver.compareTo(qtyPickCandidate.getAsBigDecimal()) < 0)
 		{
 			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(schedule), PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed));
 		}

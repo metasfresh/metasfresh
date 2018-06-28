@@ -1177,7 +1177,7 @@ public class VLookup extends JComponent
 			{
 				final int AD_Table_ID = m_mField.getAD_Table_ID();
 				multipleSelection = (InterfaceWrapperHelper.getTableId(I_C_OrderLine.class) == AD_Table_ID)
-						|| (MInvoiceLine.Table_ID == AD_Table_ID) || (I_PP_Product_BOMLine.Table_ID == AD_Table_ID)
+						|| (MInvoiceLine.Table_ID == AD_Table_ID) || (InterfaceWrapperHelper.getTableId(I_PP_Product_BOMLine.class) == AD_Table_ID)
 						|| (I_M_ProductPrice.Table_Name.equals(m_mField.getTableName()));
 			}
 

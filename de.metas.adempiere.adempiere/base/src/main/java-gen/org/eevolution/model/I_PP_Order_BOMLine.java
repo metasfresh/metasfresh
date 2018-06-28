@@ -98,7 +98,7 @@ public interface I_PP_Order_BOMLine
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Quantity Assay.
+	 * Set Mengen Probe.
 	 * Indicated the Quantity Assay to use into Quality Order
 	 *
 	 * <br>Type: Quantity
@@ -108,7 +108,7 @@ public interface I_PP_Order_BOMLine
 	public void setAssay (java.math.BigDecimal Assay);
 
 	/**
-	 * Get Quantity Assay.
+	 * Get Mengen Probe.
 	 * Indicated the Quantity Assay to use into Quality Order
 	 *
 	 * <br>Type: Quantity
@@ -123,7 +123,7 @@ public interface I_PP_Order_BOMLine
     public static final String COLUMNNAME_Assay = "Assay";
 
 	/**
-	 * Set Backflush Group.
+	 * Set Retrograde Gruppe.
 	 * The Grouping Components to the Backflush
 	 *
 	 * <br>Type: String
@@ -133,7 +133,7 @@ public interface I_PP_Order_BOMLine
 	public void setBackflushGroup (java.lang.String BackflushGroup);
 
 	/**
-	 * Get Backflush Group.
+	 * Get Retrograde Gruppe.
 	 * The Grouping Components to the Backflush
 	 *
 	 * <br>Type: String
@@ -232,6 +232,29 @@ public interface I_PP_Order_BOMLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set CU Label Qty.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCULabelQuanitity (java.lang.String CULabelQuanitity);
+
+	/**
+	 * Get CU Label Qty.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCULabelQuanitity();
+
+    /** Column definition for CULabelQuanitity */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_CULabelQuanitity = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "CULabelQuanitity", null);
+    /** Column name CULabelQuanitity */
+    public static final String COLUMNNAME_CULabelQuanitity = "CULabelQuanitity";
+
+	/**
 	 * Set Lieferdatum.
 	 * Date when the product was delivered
 	 *
@@ -278,7 +301,7 @@ public interface I_PP_Order_BOMLine
     public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
-	
+
 	/**
 	 * Set Feature.
 	 * Indicated the Feature for Product Configure
@@ -430,7 +453,7 @@ public interface I_PP_Order_BOMLine
     public static final String COLUMNNAME_IsQtyPercentage = "IsQtyPercentage";
 
 	/**
-	 * Set Issue Method.
+	 * Set Zuteil Methode.
 	 * There are two methods for issue the components to Manufacturing Order
 	 *
 	 * <br>Type: List
@@ -440,7 +463,7 @@ public interface I_PP_Order_BOMLine
 	public void setIssueMethod (java.lang.String IssueMethod);
 
 	/**
-	 * Get Issue Method.
+	 * Get Zuteil Methode.
 	 * There are two methods for issue the components to Manufacturing Order
 	 *
 	 * <br>Type: List
@@ -975,7 +998,7 @@ public interface I_PP_Order_BOMLine
     public static final String COLUMNNAME_QtyReject = "QtyReject";
 
 	/**
-	 * Set Qty Requiered.
+	 * Set Menge angefragt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -984,7 +1007,7 @@ public interface I_PP_Order_BOMLine
 	public void setQtyRequiered (java.math.BigDecimal QtyRequiered);
 
 	/**
-	 * Get Qty Requiered.
+	 * Get Menge angefragt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -998,8 +1021,8 @@ public interface I_PP_Order_BOMLine
     public static final String COLUMNNAME_QtyRequiered = "QtyRequiered";
 
 	/**
-	 * Set Reservierte Menge.
-	 * Reserved Quantity
+	 * Set Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1008,8 +1031,8 @@ public interface I_PP_Order_BOMLine
 	public void setQtyReserved (java.math.BigDecimal QtyReserved);
 
 	/**
-	 * Get Reservierte Menge.
-	 * Reserved Quantity
+	 * Get Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1096,6 +1119,29 @@ public interface I_PP_Order_BOMLine
     public static final String COLUMNNAME_Scrap = "Scrap";
 
 	/**
+	 * Set Show Sub BOM Ingredients.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setShowSubBOMIngredients (boolean ShowSubBOMIngredients);
+
+	/**
+	 * Get Show Sub BOM Ingredients.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isShowSubBOMIngredients();
+
+    /** Column definition for ShowSubBOMIngredients */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ShowSubBOMIngredients = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "ShowSubBOMIngredients", null);
+    /** Column name ShowSubBOMIngredients */
+    public static final String COLUMNNAME_ShowSubBOMIngredients = "ShowSubBOMIngredients";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
@@ -1176,7 +1222,7 @@ public interface I_PP_Order_BOMLine
     public static final String COLUMNNAME_ValidTo = "ValidTo";
 
 	/**
-	 * Set VariantGroup.
+	 * Set Varianten Gruppe.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1185,7 +1231,7 @@ public interface I_PP_Order_BOMLine
 	public void setVariantGroup (java.lang.String VariantGroup);
 
 	/**
-	 * Get VariantGroup.
+	 * Get Varianten Gruppe.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false

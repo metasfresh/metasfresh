@@ -57,7 +57,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -94,6 +93,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.storage.IStorageEngine;
@@ -1016,27 +1016,20 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final boolean considerAttributes)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		// Create storage query
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
 
-		final List<I_M_Warehouse> warehouses;
-		{
-			final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
-			Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID());
+		final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
+		Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID());
 
-			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-			final WarehousePickingGroup warehouseGroup = warehousesRepo.getWarehousePickingGroupContainingWarehouseId(warehouseId);
-			if (warehouseGroup == null)
-			{
-				warehouses = ImmutableList.of(shipmentScheduleWarehouse);
-			}
-			else
-			{
-				warehouses = warehousesRepo.getByIds(warehouseGroup.getWarehouseIds());
-			}
-		}
+		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
+		final List<I_M_Warehouse> warehouses = warehouseIds
+				.stream()
+				.map(id -> InterfaceWrapperHelper.loadOutOfTrx(id, I_M_Warehouse.class))
+				.collect(ImmutableList.toImmutableList());
 
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
@@ -1056,6 +1049,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				final IAttributeSet attributeSet = storageEngine.getAttributeSet(asi);
 				storageQuery.addAttributes(attributeSet);
 			}
+		}
+
+		if (sched.getC_OrderLine_ID() > 0)
+		{
+			storageQuery.setExcludeReservedToOtherThan(OrderLineId.ofRepoId(sched.getC_OrderLine_ID()));
+		}
+		else
+		{
+			storageQuery.setExcludeReserved();
 		}
 		return storageQuery;
 	}

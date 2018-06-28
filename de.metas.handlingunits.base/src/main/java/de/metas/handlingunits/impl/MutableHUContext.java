@@ -68,7 +68,7 @@ import lombok.NonNull;
 	private CompositeHUTrxListener _trxListeners = null;
 
 	final IHUContext huCtx = null; // task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a HU context.
-	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> _destroyedHUPackingMaterialsCollector = new HUPackingMaterialsCollector(null);
+	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> _huPackingMaterialsCollector = new HUPackingMaterialsCollector(null);
 
 	private final List<EmptyHUListener> emptyHUListeners = new ArrayList<>();
 
@@ -140,7 +140,7 @@ import lombok.NonNull;
 		huContextCopy.setHUStorageFactory(getHUStorageFactory());
 		huContextCopy.setHUAttributeStorageFactory(getHUAttributeStorageFactory());
 		huContextCopy.setDate(getDate());
-		huContextCopy.setHUPackingMaterialsCollector(_destroyedHUPackingMaterialsCollector);
+		huContextCopy.setHUPackingMaterialsCollector(_huPackingMaterialsCollector.copy());
 		huContextCopy._trxListeners = getTrxListeners().copy(); // using the getter to make sure they are loaded
 
 		emptyHUListeners.forEach(l -> huContextCopy.addEmptyHUListener(l));
@@ -252,13 +252,13 @@ import lombok.NonNull;
 	public IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> getHUPackingMaterialsCollector()
 	{
 
-		return _destroyedHUPackingMaterialsCollector;
+		return _huPackingMaterialsCollector;
 	}
 
 	@Override
 	public IMutableHUContext setHUPackingMaterialsCollector(@NonNull final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> huPackingMaterialsCollector)
 	{
-		this._destroyedHUPackingMaterialsCollector = huPackingMaterialsCollector;
+		this._huPackingMaterialsCollector = huPackingMaterialsCollector;
 		return this;
 	}
 
