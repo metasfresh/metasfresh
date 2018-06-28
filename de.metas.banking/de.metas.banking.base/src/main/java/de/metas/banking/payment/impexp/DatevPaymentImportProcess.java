@@ -8,12 +8,16 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.X_C_DocType;
 
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.model.X_I_Datev_Payment;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.pricing.impexp.MDiscountSchemaImportTableSqlUpdater;
 import lombok.NonNull;
 
@@ -90,7 +94,7 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 		return schemaImportResult;
 	}
 
-	private I_C_Payment createNewPayment(I_I_Datev_Payment importRecord)
+	private I_C_Payment createNewPayment(@NonNull final I_I_Datev_Payment importRecord)
 	{
 		final I_C_Payment payment;
 		payment = InterfaceWrapperHelper.create(getCtx(), I_C_Payment.class, ITrx.TRXNAME_ThreadInherited);
@@ -100,10 +104,31 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 		payment.setDiscountAmt(importRecord.getDiscountAmt());
 		payment.setC_BPartner_ID(importRecord.getC_BPartner_ID());
 		payment.setIsReceipt(importRecord.isReceipt());
+		payment.setC_Invoice_ID(importRecord.getC_Invoice_ID());
+		payment.setC_DocType_ID(extractC_DocType_ID(importRecord));
 		InterfaceWrapperHelper.save(payment);
 		return payment;
 	}
 
+	private int extractC_DocType_ID(@NonNull final I_I_Datev_Payment importRecord)
+	{
+		if (importRecord.isReceipt())
+		{
+		return Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_ARReceipt)
+				.adClientId(importRecord.getAD_Client_ID())
+				.adOrgId(importRecord.getAD_Org_ID())
+				.build());
+		}
+		else
+		{
+			return Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(X_C_DocType.DOCBASETYPE_APPayment)
+					.adClientId(importRecord.getAD_Client_ID())
+					.adOrgId(importRecord.getAD_Org_ID())
+					.build());
+		}
+	}
 
 	@Override
 	protected void markImported(@NonNull final I_I_Datev_Payment importRecord)
