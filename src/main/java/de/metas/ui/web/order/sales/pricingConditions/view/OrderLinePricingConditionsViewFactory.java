@@ -22,7 +22,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
@@ -84,6 +84,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		final int orderLineId = ListUtils.singleElement(request.getFilterOnlyIds());
 		Check.assumeGreaterThanZero(orderLineId, "salesOrderLineId");
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId);
+
 		final I_C_Order order = orderLine.getC_Order();
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 

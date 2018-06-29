@@ -64,7 +64,10 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
-
+		if (salesOrder == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No C_Order selected");
+		}
 		if (!salesOrder.isSOTrx())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");

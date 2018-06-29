@@ -13,7 +13,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -180,7 +180,11 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 
 			orderLine.setIsManualDiscount(true);
 			orderLine.setDiscount(pricingConditionsBreak.getDiscount().getValueAsBigDecimal());
-			orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.getRepoId(pricingConditionsBreak.getPaymentTermId()));
+
+			orderLine.setIsManualPaymentTerm(true); // make sure it's not overwritten by whatever the system comes up with when we save the orderLine.
+			final int paymentTermRepoId = PaymentTermId.getRepoId(pricingConditionsBreak.getDerivedPaymentTermIdOrNull());
+			orderLine.setC_PaymentTerm_Override_ID(paymentTermRepoId);
+			orderLine.setPaymentDiscount(pricingConditionsBreak.getPaymentDiscountOverrideOrNull().getValueAsBigDecimal());
 		}
 		else
 		{
@@ -190,6 +194,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 
 			orderLine.setIsManualDiscount(false);
 			orderLine.setIsManualPrice(false);
+			orderLine.setIsManualPaymentTerm(false);
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
 					.pricingConditionsBreakOverride(pricingConditionsBreak)
 					.build());
