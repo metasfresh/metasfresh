@@ -68,8 +68,8 @@ public class CPaymentImportTableSqlUpdater
 		StringBuilder sql = new StringBuilder("UPDATE I_Datev_Payment i ")
 				.append("SET C_Invoice_ID = (SELECT C_Invoice_ID FROM C_Invoice inv ")
 				.append("WHERE i.InvoiceDocumentNo = inv.DocumentNo ")
-				.append("WHERE i.PayAmt+i.DiscountAmt = inv.GrandTotal AND i.DateTrx = inv.DateInvoiced ")
-				.append("AND i.AD_Client_ID=bp.AD_Client_ID) ")
+				.append("AND i.PayAmt+i.DiscountAmt = inv.GrandTotal AND i.DateTrx = inv.DateInvoiced ")
+				.append("AND i.AD_Client_ID=inv.AD_Client_ID) ")
 				.append("WHERE C_Invoice_ID IS NULL AND InvoiceDocumentNo IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
