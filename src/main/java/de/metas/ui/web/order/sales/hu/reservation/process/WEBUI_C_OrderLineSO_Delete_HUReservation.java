@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -41,7 +41,7 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 		implements IProcessPrecondition
 {
 	@Autowired
-	private HuReservationService huReservationService;
+	private HUReservationService huReservationService;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()

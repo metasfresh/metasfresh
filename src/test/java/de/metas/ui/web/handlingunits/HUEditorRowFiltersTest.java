@@ -15,7 +15,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.reservation.HuReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 
 /*
  * #%L
@@ -40,7 +40,7 @@ import de.metas.handlingunits.reservation.HuReservationRepository;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HuReservationRepository.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HUReservationRepository.class })
 public class HUEditorRowFiltersTest
 {
 

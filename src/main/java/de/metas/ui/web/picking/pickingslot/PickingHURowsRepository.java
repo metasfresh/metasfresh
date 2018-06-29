@@ -31,7 +31,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery.MatchingSourceHusQueryBuilder;
@@ -85,14 +85,14 @@ public class PickingHURowsRepository
 	@Autowired
 	public PickingHURowsRepository(
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
-			@NonNull final HuReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService)
 	{
 		this(createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService));
 	}
 
 	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
-			@NonNull final HuReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService)
 	{
 		return SqlHUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)

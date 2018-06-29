@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
@@ -94,7 +94,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	private DocumentDescriptorFactory documentDescriptorFactory;
 
 	@Autowired
-	private HuReservationService huReservationService;
+	private HUReservationService huReservationService;
 
 	private final ImmutableListMultimap<String, HUEditorViewCustomizer> viewCustomizersByReferencingTableName;
 	private final ImmutableMap<String, HUEditorRowIsProcessedPredicate> rowProcessedPredicateByReferencingTableName;

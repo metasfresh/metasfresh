@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
-import de.metas.handlingunits.reservation.HuReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -41,7 +41,7 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HuReservationRepository.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HUReservationRepository.class })
 public class HUIdsFilterHelperTest
 {
 	/**

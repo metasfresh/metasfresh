@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -44,7 +44,7 @@ public class PPOrderLinesViewDataSupplier
 			final int ppOrderId,
 			@Nullable final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
-			@NonNull final HuReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService)
 	{
 		this.asiAttributesProvider = asiAttributesProvider;
 		rowsSupplier = ExtendedMemorizingSupplier

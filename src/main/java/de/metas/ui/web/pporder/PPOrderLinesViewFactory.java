@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
@@ -64,7 +64,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	private DefaultHUEditorViewFactory huEditorViewFactory;
 
 	@Autowired
-	private HuReservationService huReservationService;
+	private HUReservationService huReservationService;
 
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 

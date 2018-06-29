@@ -142,6 +142,13 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final LookupValue paymentTerm;
 
+	static final String FIELDNAME_PaymentDiscount = "paymentDiscount";
+	@ViewColumn(fieldName = FIELDNAME_Discount, captionKey = "PaymentDiscount", widgetType = DocumentFieldWidgetType.Number, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 70)
+	})
+	private final BigDecimal paymentTermDiscountOverride;
+
 	@ViewColumn(captionKey = "PriceNet", widgetType = DocumentFieldWidgetType.Number, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 100)
@@ -208,12 +215,14 @@ public class PricingConditionsRow implements IViewRow
 		breakValue = pricingConditionsBreak.getMatchCriteria().getBreakValue();
 
 		paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId());
-		discount = pricingConditionsBreak.getDiscount().getValueAsBigDecimal();
+		paymentTermDiscountOverride = pricingConditionsBreak.getPaymentTermDiscountOverride().getValueAsBigDecimal();
 
 		final PriceOverride price = pricingConditionsBreak.getPriceOverride();
 		priceType = lookups.lookupPriceType(price.getType());
 		basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
 		basePriceAddAmt = price.getBasePriceAddAmt();
+
+		discount = pricingConditionsBreak.getDiscount().getValueAsBigDecimal();
 
 		this.basePricingSystemPriceCalculator = basePricingSystemPriceCalculator;
 		basePrice = calculateBasePrice(basePricingSystemPriceCalculator, BasePricingSystemPriceCalculatorRequest.builder()
