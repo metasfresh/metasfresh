@@ -23,31 +23,6 @@ public interface I_I_Datev_Payment
     /** Load Meta Data */
 
 	/**
-	 * Set Konto-Nr..
-	 * Kontonummer
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAccountNo (java.lang.String AccountNo);
-
-	/**
-	 * Get Konto-Nr..
-	 * Kontonummer
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAccountNo();
-
-    /** Column definition for AccountNo */
-    public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_AccountNo = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "AccountNo", null);
-    /** Column name AccountNo */
-    public static final String COLUMNNAME_AccountNo = "AccountNo";
-
-	/**
 	 * Get Mandant.
 	 * Mandant für diese Installation.
 	 *
@@ -146,35 +121,6 @@ public interface I_I_Datev_Payment
     public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, org.compiere.model.I_C_BPartner>(I_I_Datev_Payment.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
-	 * Set Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_DocType_ID (int C_DocType_ID);
-
-	/**
-	 * Get Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_DocType_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
-
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, org.compiere.model.I_C_DocType>(I_I_Datev_Payment.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
-    /** Column name C_DocType_ID */
-    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
 	 * Set Rechnung.
@@ -313,31 +259,6 @@ public interface I_I_Datev_Payment
     public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_DiscountAmt = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "DiscountAmt", null);
     /** Column name DiscountAmt */
     public static final String COLUMNNAME_DiscountAmt = "DiscountAmt";
-
-	/**
-	 * Set Belegart-Bezeichnung.
-	 * Name der Belegart
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDocTypeName (java.lang.String DocTypeName);
-
-	/**
-	 * Get Belegart-Bezeichnung.
-	 * Name der Belegart
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDocTypeName();
-
-    /** Column definition for DocTypeName */
-    public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_DocTypeName = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "DocTypeName", null);
-    /** Column name DocTypeName */
-    public static final String COLUMNNAME_DocTypeName = "DocTypeName";
 
 	/**
 	 * Set Datev Payment.
@@ -559,6 +480,31 @@ public interface I_I_Datev_Payment
     public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "Processing", null);
     /** Column name Processing */
     public static final String COLUMNNAME_Processing = "Processing";
+
+	/**
+	 * Set Transaction Code.
+	 * The transaction code represents the search definition
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTransactionCode (java.lang.String TransactionCode);
+
+	/**
+	 * Get Transaction Code.
+	 * The transaction code represents the search definition
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTransactionCode();
+
+    /** Column definition for TransactionCode */
+    public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_TransactionCode = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "TransactionCode", null);
+    /** Column name TransactionCode */
+    public static final String COLUMNNAME_TransactionCode = "TransactionCode";
 
 	/**
 	 * Get Aktualisiert.

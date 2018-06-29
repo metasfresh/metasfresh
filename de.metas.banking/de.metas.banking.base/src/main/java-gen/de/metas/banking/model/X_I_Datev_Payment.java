@@ -15,7 +15,7 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1168970591L;
+	private static final long serialVersionUID = -2114724819L;
 
     /** Standard Constructor */
     public X_I_Datev_Payment (Properties ctx, int I_Datev_Payment_ID, String trxName)
@@ -42,25 +42,6 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	/** Set Konto-Nr..
-		@param AccountNo 
-		Kontonummer
-	  */
-	@Override
-	public void setAccountNo (java.lang.String AccountNo)
-	{
-		set_Value (COLUMNNAME_AccountNo, AccountNo);
-	}
-
-	/** Get Konto-Nr..
-		@return Kontonummer
-	  */
-	@Override
-	public java.lang.String getAccountNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_AccountNo);
-	}
 
 	/** Set Geschäftspartner-Schlüssel.
 		@param BPartnerValue 
@@ -113,43 +94,6 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
-	}
-
-	/** Set Belegart.
-		@param C_DocType_ID 
-		Belegart oder Verarbeitungsvorgaben
-	  */
-	@Override
-	public void setC_DocType_ID (int C_DocType_ID)
-	{
-		if (C_DocType_ID < 0) 
-			set_Value (COLUMNNAME_C_DocType_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
-	}
-
-	/** Get Belegart.
-		@return Belegart oder Verarbeitungsvorgaben
-	  */
-	@Override
-	public int getC_DocType_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -268,25 +212,6 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** Set Belegart-Bezeichnung.
-		@param DocTypeName 
-		Name der Belegart
-	  */
-	@Override
-	public void setDocTypeName (java.lang.String DocTypeName)
-	{
-		set_Value (COLUMNNAME_DocTypeName, DocTypeName);
-	}
-
-	/** Get Belegart-Bezeichnung.
-		@return Name der Belegart
-	  */
-	@Override
-	public java.lang.String getDocTypeName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocTypeName);
 	}
 
 	/** Set Datev Payment.
@@ -475,5 +400,24 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Transaction Code.
+		@param TransactionCode 
+		The transaction code represents the search definition
+	  */
+	@Override
+	public void setTransactionCode (java.lang.String TransactionCode)
+	{
+		set_Value (COLUMNNAME_TransactionCode, TransactionCode);
+	}
+
+	/** Get Transaction Code.
+		@return The transaction code represents the search definition
+	  */
+	@Override
+	public java.lang.String getTransactionCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TransactionCode);
 	}
 }
