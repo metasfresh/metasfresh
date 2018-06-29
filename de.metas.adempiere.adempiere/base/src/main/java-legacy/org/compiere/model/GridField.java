@@ -192,7 +192,7 @@ public class GridField
 			return null;
 		}
 
-		log.info("Loading lookup for {}", m_vo.getColumnName());
+		log.debug("Loading lookup for {}", m_vo.getColumnName());
 
 		// If the field it's not displayed, there is no point to create the lookup
 		if (!isDisplayable())

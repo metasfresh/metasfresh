@@ -56,7 +56,8 @@ public class MSV3ServerConfigRepository
 				.firstOnly(I_MSV3_Server.class);
 		if (serverConfigRecord != null)
 		{
-			serverConfigBuilder.qtyAvailableToPromiseMin(serverConfigRecord.getQty_AvailableToPromise_Min().intValueExact());
+			final int fixedQtyAvailableToPromise = serverConfigRecord.getFixedQtyAvailableToPromise().intValueExact(); 
+			serverConfigBuilder.fixedQtyAvailableToPromise(fixedQtyAvailableToPromise);
 
 			final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 			final int warehousePickingGroupId = serverConfigRecord.getM_Warehouse_PickingGroup_ID();
