@@ -51,3 +51,9 @@ UPDATE AD_ImpFormat_Row SET DataFormat='dd.MM.yyyy',Updated=TO_TIMESTAMP('2018-0
 
 
 
+-- 2018-06-29T18:18:57.411
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataType='N',Updated=TO_TIMESTAMP('2018-06-29 18:18:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540603
+;
+
+
