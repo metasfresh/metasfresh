@@ -1,6 +1,7 @@
-package de.metas.payment.api;
+package de.metas.payment.paymentterm;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_PaymentTerm;
 
 import de.metas.lang.Percent;
 
@@ -31,4 +32,7 @@ public interface IPaymentTermRepository extends ISingletonService
 	Percent getPaymentTermDiscount(PaymentTermId paymentTermId);
 
 	PaymentTermId getDefaultPaymentTermIdOrNull();
+
+	I_C_PaymentTerm getById(PaymentTermId paymentTermId);
+
 }
