@@ -318,3 +318,18 @@ UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-06-29 18:21:4
 UPDATE AD_Column SET AD_Reference_Value_ID=138,Updated=TO_TIMESTAMP('2018-06-29 18:25:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559581
 ;
 
+-- 2018-06-29T18:28:20.025
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Menu_Trl WHERE AD_Menu_ID=541119
+;
+
+-- 2018-06-29T18:28:20.028
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Menu WHERE AD_Menu_ID=541119
+;
+
+-- 2018-06-29T18:28:20.030
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_TreeNodeMM n WHERE Node_ID=541119 AND EXISTS (SELECT * FROM AD_Tree t WHERE t.AD_Tree_ID=n.AD_Tree_ID AND t.AD_Table_ID=116)
+;
+
