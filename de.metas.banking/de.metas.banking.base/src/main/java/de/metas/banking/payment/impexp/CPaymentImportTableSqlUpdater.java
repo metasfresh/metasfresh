@@ -47,6 +47,7 @@ public class CPaymentImportTableSqlUpdater
 	public void updatePaymentImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateBPartners(whereClause);
+		dbUpdateInvoices(whereClause);
 		dbUpdateIsReceipt(whereClause);
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -57,6 +58,19 @@ public class CPaymentImportTableSqlUpdater
 				.append("SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner bp ")
 				.append(" WHERE (i.BPartnerValue=bp.DebitorId OR i.BPartnerValue=bp.CreditorId) AND i.AD_Client_ID=bp.AD_Client_ID) ")
 				.append("WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL ")
+				.append("AND I_IsImported<>'Y'  ")
+				.append(whereClause);
+		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+	
+	private void dbUpdateInvoices(@NonNull final String whereClause)
+	{
+		StringBuilder sql = new StringBuilder("UPDATE I_Datev_Payment i ")
+				.append("SET C_Invoice_ID = (SELECT C_Invoice_ID FROM C_Invoice inv ")
+				.append("WHERE i.InvoiceDocumentNo = inv.DocumentNo ")
+				.append("WHERE i.PayAmt+i.DiscountAmt = inv.GrandTotal AND i.DateTrx = inv.DateInvoiced ")
+				.append("AND i.AD_Client_ID=bp.AD_Client_ID) ")
+				.append("WHERE C_Invoice_ID IS NULL AND InvoiceDocumentNo IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -86,6 +100,17 @@ public class CPaymentImportTableSqlUpdater
 		if (no != 0)
 		{
 			logger.warn("No BPartner = {}", no);
+		}
+		
+		sql = new StringBuilder("UPDATE I_Datev_Payment ")
+				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Invoice, ' ")
+				.append("WHERE C_Invoice_ID IS NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(whereClause);
+		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		if (no != 0)
+		{
+			logger.warn("No Invoice = {}", no);
 		}
 
 	}
