@@ -101,7 +101,9 @@ export default class ShortcutProvider extends Component {
 
   // In case of different handlers using the same shortcut we can control which
   // one will be fired by returning true/false from their execution. Handlers are
-  // added in reverse order, so this way we can only call the latest in the queue
+  // added in reverse order, so this way we can only call the latest in the queue.
+  // Summarizing - if you want a handler to just pass through, return false before
+  // any other code in the function.
   fireHandlers = (event, handlers) => {
     for (let i = 0; i < handlers.length; i += 1) {
       const handler = handlers[i];
