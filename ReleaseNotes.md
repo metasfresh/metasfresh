@@ -39,6 +39,7 @@ Here come the actual release notes:
   * [#4146](https://github.com/metasfresh/metasfresh/issues/4146) Picking: Show HU Products with not exact Attribute matching
     * New Feature for Picking in WebUI, now also able to show Handling Units without perfect Attribute Matching.
   * [#4260](https://github.com/metasfresh/metasfresh/issues/4260) Appserver needs to tell SwingUI where to find RabbitMQ
+    * Feature to let the App Server know where to find RabbitMQ.
   * [#4264](https://github.com/metasfresh/metasfresh/issues/4264) Ingredients Data for Consumer Product Label
     * New Fields for Consumer Label Ingredients in BOM Line.
   * [#4265](https://github.com/metasfresh/metasfresh/issues/4265) New Window/ Tab for Product Nutrition facts
@@ -49,8 +50,11 @@ Here come the actual release notes:
   * [#4255](https://github.com/metasfresh/metasfresh/issues/4255) Contract Person in Charge not filtered by Systemuser
     * Fixed User in Charge Validation,. Now only showing Systemusers/ -contacts in the dropdown selection.
   * [#4266](https://github.com/metasfresh/metasfresh/issues/4266) user notifications are stuck in the event framework
+    * Fix for User Notifications, improving the duration between Notification trigger and delivery.
   * [#4268](https://github.com/metasfresh/metasfresh/issues/4268) contract status is set back to running after termination in some unknown cases
+    * Fixes issue in contract, having the status set back to running after termination.
   * [#4269](https://github.com/metasfresh/metasfresh/issues/4269) Can't open custom forms in swing anymore
+    * Fixes a Bug in Custom Forms. Now possible to open them again in Swing Client.
 
 * metasfresh-webui-frontend
   * [#1811](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1811) Fields are set on null when you press tab too fast
