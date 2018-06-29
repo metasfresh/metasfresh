@@ -101,8 +101,10 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 				.setC_BPartner_ID(importRecord.getC_BPartner_ID())
 				.setDocbaseType(importRecord.isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt
 						: X_C_DocType.DOCBASETYPE_APPayment)
-				.setPayAmt(importRecord.getPayAmt()).setDiscountAmt(importRecord.getDiscountAmt())
-				.setTenderType(TenderType.ACH).setDateAcct(importRecord.getDateTrx())
+				.setPayAmt(importRecord.getPayAmt())
+				.setDiscountAmt(importRecord.getDiscountAmt())
+				.setTenderType(TenderType.ACH)
+				.setDateAcct(importRecord.getDateTrx())
 				.setDateTrx(importRecord.getDateTrx())
 				.setDescription("Import for debitorId/creditorId" + importRecord.getBPartnerValue())
 				.setC_Invoice(importRecord.getC_Invoice())
