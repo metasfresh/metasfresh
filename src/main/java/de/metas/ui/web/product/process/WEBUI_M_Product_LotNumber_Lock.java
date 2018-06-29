@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
@@ -65,7 +66,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 {
 	@Autowired
 	private LotNumberLockRepository lotNoLockRepo;
-	
+
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
@@ -111,7 +112,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 	private void createQuarantineHUsByLotNoLockId(final int lotNoLockId)
 	{
 		final LotNumberLock lotNoLock = lotNoLockRepo.getById(lotNoLockId);
-		
+
 		final I_M_Attribute lotNoAttribute = lotNumberDateAttributeDAO.getLotNumberAttribute(getCtx());
 
 		if (lotNoAttribute == null)
@@ -129,7 +130,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 
 		for (final I_M_HU hu : husForAttributeStringValue)
 		{
-			if(huDDOrderDAO.existsDDOrderLineCandidateForHUId(hu.getM_HU_ID()))
+			if (huDDOrderDAO.existsDDOrderLineCandidateForHUId(hu.getM_HU_ID()))
 			{
 				// the HU is already quarantined
 				continue;
@@ -155,19 +156,23 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 		}
 
 	}
-	
-
 
 	private List<I_M_HU> retrieveHUsForAttributeStringValue(
 			final int productId,
 			final I_M_Attribute attribute,
 			final String value)
 	{
-		return Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
-				.addOnlyWithProductId(productId)
+		final IHUQueryBuilder huQueryBuilder = Services.get(IHandlingUnitsDAO.class)
+				.createHUQueryBuilder()
 				.addOnlyWithAttribute(attribute, value)
-				.addHUStatusesToInclude(ImmutableList.of(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active))
-				.list();
+				.addHUStatusesToInclude(ImmutableList.of(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active));
+
+		if (productId > 0)
+		{
+			huQueryBuilder.addOnlyWithProductId(productId);
+		}
+
+		return huQueryBuilder.list();
 	}
 
 }
