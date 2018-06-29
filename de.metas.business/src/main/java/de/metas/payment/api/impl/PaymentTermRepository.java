@@ -1,10 +1,13 @@
 package de.metas.payment.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Env;
@@ -12,6 +15,7 @@ import org.compiere.util.Env;
 import de.metas.lang.Percent;
 import de.metas.payment.api.IPaymentTermRepository;
 import de.metas.payment.api.PaymentTermId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -82,5 +86,50 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		}
 
 		return null;
+	}
+
+	@Override
+	public PaymentTermId getOrCreateDerivedPaymentTerm(
+			@NonNull final PaymentTermId basePaymentTermId,
+			@NonNull final Percent discount)
+	{
+		final I_C_PaymentTerm basePaymentTermRecord = getById(basePaymentTermId);
+
+		// see if the designed payment term already exists
+		final I_C_PaymentTerm existingDerivedPaymentTermRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_PaymentTerm.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsValid, true)
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount, discount.getValueAsBigDecimal())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Client_ID, basePaymentTermRecord.getAD_Client_ID())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Org_ID, basePaymentTermRecord.getAD_Org_ID())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount2, basePaymentTermRecord.getDiscount2())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_DiscountDays2, basePaymentTermRecord.getDiscountDays2())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AfterDelivery, basePaymentTermRecord.isAfterDelivery())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthCutoff, basePaymentTermRecord.getFixMonthCutoff())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthDay, basePaymentTermRecord.getFixMonthDay())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthOffset, basePaymentTermRecord.getFixMonthOffset())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_GraceDays, basePaymentTermRecord.getGraceDays())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsDueFixed, basePaymentTermRecord.isDueFixed())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsNextBusinessDay, basePaymentTermRecord.isNextBusinessDay())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDay, basePaymentTermRecord.getNetDay())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDays, basePaymentTermRecord.getNetDays())
+				.orderBy().addColumn(I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID).endOrderBy()
+				.create()
+				.first();
+		if (existingDerivedPaymentTermRecord != null)
+		{
+			return PaymentTermId.ofRepoId(existingDerivedPaymentTermRecord.getC_PaymentTerm_ID());
+		}
+
+		final I_C_PaymentTerm newPaymentTerm = newInstance(I_C_PaymentTerm.class);
+		InterfaceWrapperHelper.copyValues(basePaymentTermId, newPaymentTerm);
+		newPaymentTerm.setDiscount(discount.getValueAsBigDecimal());
+
+		final String newName = basePaymentTermRecord.getName() + " ( =>" + discount.getValueAsBigDecimal() + ")";
+		newPaymentTerm.setName(newName);
+		saveRecord(newPaymentTerm);
+
+		return PaymentTermId.ofRepoId(newPaymentTerm.getC_PaymentTerm_ID());
 	}
 }

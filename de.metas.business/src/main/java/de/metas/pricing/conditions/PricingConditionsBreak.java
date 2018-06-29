@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
@@ -46,7 +48,12 @@ public class PricingConditionsBreak
 	// Discount%
 	boolean bpartnerFlatDiscount;
 	Percent discount;
+
+	//
+	// PaymentTerm
 	PaymentTermId paymentTermId;
+	/** null means not specified */
+	Percent paymentTermDiscountOverride;
 
 	//
 	// Quality
@@ -63,6 +70,7 @@ public class PricingConditionsBreak
 			final boolean bpartnerFlatDiscount,
 			final Percent discount,
 			final PaymentTermId paymentTermId,
+			@Nullable final Percent paymentTermDiscountOverride,
 			final BigDecimal qualityDiscountPercentage,
 			final LocalDateTime dateCreated,
 			final boolean hasChanges)
@@ -72,8 +80,9 @@ public class PricingConditionsBreak
 		this.priceOverride = priceOverride;
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount;
 		this.discount = discount != null ? discount : Percent.ZERO;
-		this.paymentTermId = paymentTermId;
 		this.qualityDiscountPercentage = qualityDiscountPercentage;
+		this.paymentTermId = paymentTermId;
+		this.paymentTermDiscountOverride = paymentTermDiscountOverride;
 		this.dateCreated = dateCreated;
 		this.hasChanges = hasChanges;
 	}
@@ -131,5 +140,4 @@ public class PricingConditionsBreak
 
 		return toTemporaryPricingConditionsBreak();
 	}
-
 }

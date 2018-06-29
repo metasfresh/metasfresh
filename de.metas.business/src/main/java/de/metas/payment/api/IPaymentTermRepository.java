@@ -31,4 +31,7 @@ public interface IPaymentTermRepository extends ISingletonService
 	Percent getPaymentTermDiscount(PaymentTermId paymentTermId);
 
 	PaymentTermId getDefaultPaymentTermIdOrNull();
+
+	PaymentTermId getOrCreateDerivedPaymentTerm(PaymentTermId basePaymentTermId, Percent discount);
+
 }
