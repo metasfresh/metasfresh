@@ -851,8 +851,19 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public IHUQueryBuilder createHUQueryBuilder()
 	{
-		final HuReservationRepository huReservationRepository = Adempiere.getBean(HuReservationRepository.class);
+		final HuReservationRepository huReservationRepository = getHUReservationRepository();
 		return new HUQueryBuilder(huReservationRepository);
+	}
+
+	private HuReservationRepository getHUReservationRepository()
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// avoid having to annotate each test that uses HUQueryBuilder with "@RunWith(SpringRunner.class) @SpringBootTest.."
+			return new HuReservationRepository();
+		}
+		final HuReservationRepository huReservationRepository = Adempiere.getBean(HuReservationRepository.class);
+		return huReservationRepository;
 	}
 
 	@Override

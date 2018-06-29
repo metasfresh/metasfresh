@@ -234,7 +234,10 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		return createHUQueryBuilder(considerSelectedBPartner, considerSelectedBPartnerLocation, onlyAfterPickingLocator);
 	}
 
-	public final IHUQueryBuilder createHUQueryBuilder(final boolean considerSelectedBPartner, final boolean considerSelectedBPartnerLocation, final boolean onlyAfterPickingLocator)
+	public final IHUQueryBuilder createHUQueryBuilder(
+			final boolean considerSelectedBPartner,
+			final boolean considerSelectedBPartnerLocation,
+			final boolean onlyAfterPickingLocator)
 	{
 		final ITerminalContext terminalContext = getTerminalContext();
 
