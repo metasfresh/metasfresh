@@ -1,6 +1,5 @@
-package de.metas.payment.api.impl;
+package de.metas.payment.paymentterm;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -10,12 +9,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
 
 import de.metas.lang.Percent;
-import de.metas.payment.api.IPaymentTermRepository;
-import de.metas.payment.api.PaymentTermId;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -39,61 +35,29 @@ import lombok.NonNull;
  * #L%
  */
 
-public class PaymentTermRepository implements IPaymentTermRepository
+@Service
+public class PaymentTermService
 {
-	private I_C_PaymentTerm getById(final PaymentTermId paymentTermId)
-	{
-		return loadOutOfTrx(paymentTermId.getRepoId(), I_C_PaymentTerm.class);
-	}
 
-	@Override
-	public Percent getPaymentTermDiscount(@Nullable final PaymentTermId paymentTermId)
-	{
-		if (paymentTermId == null)
-		{
-			return Percent.ZERO;
-		}
-
-		final I_C_PaymentTerm paymentTerm = getById(paymentTermId);
-		if (paymentTerm == null)
-		{
-			return Percent.ZERO;
-		}
-
-		return Percent.of(paymentTerm.getDiscount());
-	}
-
-	// this method is implemented after a code block from MOrder.beforeSave()
-	@Override
-	public PaymentTermId getDefaultPaymentTermIdOrNull()
-	{
-		final int contextPaymentTerm = Env.getContextAsInt(Env.getCtx(), "#C_PaymentTerm_ID");
-		if (contextPaymentTerm > 0)
-		{
-			return PaymentTermId.ofRepoId(contextPaymentTerm);
-		}
-
-		final int dbPaymentTermId = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PaymentTerm.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsDefault, true)
-				.addOnlyContextClient(Env.getCtx())
-				.create()
-				.firstId();
-		if (dbPaymentTermId > 0)
-		{
-			return PaymentTermId.ofRepoId(dbPaymentTermId);
-		}
-
-		return null;
-	}
-
-	@Override
+	/**
+	 * @param basePaymentTermId may be null
+	 * @param discount may be null
+	 */
 	public PaymentTermId getOrCreateDerivedPaymentTerm(
-			@NonNull final PaymentTermId basePaymentTermId,
-			@NonNull final Percent discount)
+			@Nullable final PaymentTermId basePaymentTermId,
+			@Nullable final Percent discount)
 	{
-		final I_C_PaymentTerm basePaymentTermRecord = getById(basePaymentTermId);
+		if (basePaymentTermId == null)
+		{
+			return null; // the caller gave us no base to derive from
+		}
+		if (discount == null)
+		{
+			return basePaymentTermId; // the caller did not specify a change, so we return the base we got
+		}
+
+		final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+		final I_C_PaymentTerm basePaymentTermRecord = paymentTermRepository.getById(basePaymentTermId);
 
 		// see if the designed payment term already exists
 		final I_C_PaymentTerm existingDerivedPaymentTermRecord = Services.get(IQueryBL.class)
@@ -123,10 +87,10 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		}
 
 		final I_C_PaymentTerm newPaymentTerm = newInstance(I_C_PaymentTerm.class);
-		InterfaceWrapperHelper.copyValues(basePaymentTermId, newPaymentTerm);
+		InterfaceWrapperHelper.copyValues(basePaymentTermRecord, newPaymentTerm);
 		newPaymentTerm.setDiscount(discount.getValueAsBigDecimal());
 
-		final String newName = basePaymentTermRecord.getName() + " ( =>" + discount.getValueAsBigDecimal() + ")";
+		final String newName = basePaymentTermRecord.getName() + " (=>" + discount.getValueAsBigDecimal() + " %)";
 		newPaymentTerm.setName(newName);
 		saveRecord(newPaymentTerm);
 
