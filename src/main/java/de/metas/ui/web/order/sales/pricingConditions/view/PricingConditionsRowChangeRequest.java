@@ -3,8 +3,10 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import de.metas.lang.Percent;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
@@ -45,7 +47,14 @@ public class PricingConditionsRowChangeRequest
 	PricingConditionsBreakId sourcePricingConditionsBreakId;
 
 	Percent discount;
+
+	/** {@code null} means that no change is requested. Empty means "change ID to null". */
+	@Nullable
 	Optional<PaymentTermId> paymentTermId;
+
+	/** {@code null} means that no change is requested. Empty means "change value to null". */
+	@Nullable
+	Optional<Percent> paymentDiscount;
 
 	PriceChange priceChange;
 

@@ -1,5 +1,7 @@
 package de.metas.ui.web.order.sales.pricingConditions.process;
 
+import java.util.Optional;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
@@ -12,6 +14,7 @@ import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest.P
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowActions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -100,18 +103,17 @@ public class PricingConditionsView_SaveEditableRow extends PricingConditionsView
 				.build();
 	}
 
-	private static PricingConditionsBreakChangeRequestBuilder preparePricingConditionsBreakChangeRequest(final PricingConditionsBreak pricingConditionsBreak)
+	private static PricingConditionsBreakChangeRequestBuilder preparePricingConditionsBreakChangeRequest(
+			@NonNull final PricingConditionsBreak pricingConditionsBreak)
 	{
 		return PricingConditionsBreakChangeRequest.builder()
-				// .pricingConditionsId(pricingConditionsId)
 				.pricingConditionsBreakId(pricingConditionsBreak.getId())
 				.matchCriteria(pricingConditionsBreak.getMatchCriteria())
-				//
-				// .updateFromPricingConditionsBreakId(updateFromPricingConditionsBreakId)
-				//
+
 				.price(pricingConditionsBreak.getPriceOverride())
 				.discount(pricingConditionsBreak.getDiscount())
-				.paymentTermId(pricingConditionsBreak.getPaymentTermId());
-	}
 
+				.paymentTermId(Optional.ofNullable(pricingConditionsBreak.getPaymentTermIdOrNull()))
+				.paymentDiscount(Optional.ofNullable(pricingConditionsBreak.getPaymentDiscountOverrideOrNull()));
+	}
 }

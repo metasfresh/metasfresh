@@ -29,7 +29,7 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.i18n.IModelTranslationMap;
@@ -95,7 +95,7 @@ class PPOrderLinesLoader
 			final WindowId viewWindowId,
 			final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
-			@NonNull final HuReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService)
 	{
 		huEditorRepo = SqlHUEditorViewRepository.builder()
 				.windowId(viewWindowId)

@@ -45,7 +45,7 @@ import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -111,7 +111,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private final HUEditorRowAttributesProvider attributesProvider;
 	private final HUEditorRowIsProcessedPredicate rowProcessedPredicate;
-	private final HuReservationService huReservationService;
+	private final HUReservationService huReservationService;
 
 	private final boolean showBestBeforeDate;
 	private final boolean showLocator;
@@ -126,7 +126,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@NonNull final SqlViewBinding sqlViewBinding,
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
-			@NonNull final HuReservationService huReservationService,
+			@NonNull final HUReservationService huReservationService,
 			final boolean showBestBeforeDate,
 			final boolean showLocator)
 	{

@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Column;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
 import org.slf4j.Logger;
@@ -64,10 +67,31 @@ public final class LookupDataSourceFactory
 		return getLookupDataSource(lookupDescriptor);
 	}
 
-	public LookupDataSource listByReferenceId(final int adReferenceId)
+	public LookupDataSource listByAD_Reference_Value_ID(final int AD_Reference_Value_ID)
 	{
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.listByReferenceId(adReferenceId)
+		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
+				.listByAD_Reference_Value_ID(AD_Reference_Value_ID)
 				.provideForScope(LookupScope.DocumentField);
+		return getLookupDataSource(lookupDescriptor);
+	}
+
+	public LookupDataSource searchByAD_Val_Rule_ID(final int AD_Reference_Value_ID, final int AD_Val_Rule_ID)
+	{
+		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
+				.searchByAD_Val_Rule_ID(AD_Reference_Value_ID, AD_Val_Rule_ID)
+				.provideForScope(LookupScope.DocumentField);
+		return getLookupDataSource(lookupDescriptor);
+	}
+
+	public LookupDataSource searchByColumn(@NonNull final String tableName, @NonNull final String columnname)
+	{
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		final I_AD_Column column = adTableDAO.retrieveColumn(tableName, columnname);
+
+		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
+				.searchByAD_Val_Rule_ID(column.getAD_Reference_Value_ID(), column.getAD_Val_Rule_ID())
+				.provideForScope(LookupScope.DocumentField);
+
 		return getLookupDataSource(lookupDescriptor);
 	}
 
