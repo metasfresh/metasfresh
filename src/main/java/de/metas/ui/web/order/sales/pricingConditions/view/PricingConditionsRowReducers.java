@@ -7,8 +7,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.util.Util;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.lang.Percent;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
