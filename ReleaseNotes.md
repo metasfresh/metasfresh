@@ -13,19 +13,23 @@ Here come the actual release notes:
 ## Features
   * [#4224](https://github.com/metasfresh/metasfresh/issues/4224) Pharma: Additional Document/ Certificate Fields
     * New Certificate Fields for the Pharma Business Partner Widnow in WebUI.
-    
+
 
 # metasfresh 5.63 (2018-26)
 ## Features
 * metasfresh
   * [#3772](https://github.com/metasfresh/metasfresh/issues/3772) EventBus shall use RabbitMQ instead of ActiveMQ
+    * Switches the EventBus to use RabbitMQ instead of ActiveMQ from now on
   * [#4140](https://github.com/metasfresh/metasfresh/issues/4140) WebUI: Translation Window for Country
     * New Window for Country Translation maintenance.
   * [#4225](https://github.com/metasfresh/metasfresh/issues/4225) Pharma: Move Businesspartner Fields to Customer/ Vendor Tab
     * Improvement of the Pharma Business Partnmer Window in WebUI, rearranging customer and vendor Fields in their subtabs.
   * [#4237](https://github.com/metasfresh/metasfresh/issues/4237) Add UC constraints to C_Aggregation
+    * Improvement of the Aggregation Performance.
   * [#4238](https://github.com/metasfresh/metasfresh/issues/4238) Implement full text search for BPartners
+    * New Fulltext Search feature using elasticsearch.
   * [#4239](https://github.com/metasfresh/metasfresh/issues/4239) Be robust wrt priceentered with too many digits
+    * Improves the behavior of Priceentrered in documents, depending on Pricelist Price Precisions.
   * [#4240](https://github.com/metasfresh/metasfresh/issues/4240) Translate new Repack Attributes
     * Improved Translation for Repack No. Attributes.
   * [#4242](https://github.com/metasfresh/metasfresh/issues/4242) WebUI: Window Event Log
@@ -33,6 +37,7 @@ Here come the actual release notes:
   * [#4244](https://github.com/metasfresh/metasfresh/issues/4244) Purchase Candidates adjustments
     * Window Improvements for Purchase Candidates in WebUI.
   * [#4146](https://github.com/metasfresh/metasfresh/issues/4146) Picking: Show HU Products with not exact Attribute matching
+    * New Feature for Picking in WebUI, now also able to show Handling Units without perfect Attribute Matching.
   * [#4260](https://github.com/metasfresh/metasfresh/issues/4260) Appserver needs to tell SwingUI where to find RabbitMQ
   * [#4264](https://github.com/metasfresh/metasfresh/issues/4264) Ingredients Data for Consumer Product Label
     * New Fields for Consumer Label Ingredients in BOM Line.
