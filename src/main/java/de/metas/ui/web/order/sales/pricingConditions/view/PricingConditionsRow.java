@@ -215,7 +215,8 @@ public class PricingConditionsRow implements IViewRow
 		breakValue = pricingConditionsBreak.getMatchCriteria().getBreakValue();
 
 		paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId());
-		paymentTermDiscountOverride = pricingConditionsBreak.getPaymentTermDiscountOverride().getValueAsBigDecimal();
+		paymentTermDiscountOverride = null;
+		//paymentTermDiscountOverride = pricingConditionsBreak.getPaymentTermDiscountOverride().getValueAsBigDecimal();
 
 		final PriceOverride price = pricingConditionsBreak.getPriceOverride();
 		priceType = lookups.lookupPriceType(price.getType());
