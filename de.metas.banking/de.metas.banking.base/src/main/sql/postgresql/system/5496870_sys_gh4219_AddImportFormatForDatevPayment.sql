@@ -33,3 +33,21 @@ INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFo
 INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,560563,540020,540606,0,TO_TIMESTAMP('2018-06-29 17:37:11','YYYY-MM-DD HH24:MI:SS'),100,'N','.','N',0,'Y','Skonto',60,16,TO_TIMESTAMP('2018-06-29 17:37:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+-- 2018-06-29T17:52:49.263
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DecimalPoint=',',Updated=TO_TIMESTAMP('2018-06-29 17:52:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540606
+;
+
+-- 2018-06-29T17:52:59.340
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DecimalPoint=',',Updated=TO_TIMESTAMP('2018-06-29 17:52:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540601
+;
+
+-- 2018-06-29T17:54:40.083
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='dd.MM.yyyy',Updated=TO_TIMESTAMP('2018-06-29 17:54:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540605
+;
+
+
+
