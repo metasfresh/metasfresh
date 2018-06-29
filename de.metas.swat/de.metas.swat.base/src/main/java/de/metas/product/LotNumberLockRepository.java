@@ -1,11 +1,11 @@
 package de.metas.product;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import de.metas.product.model.I_M_Product_LotNumber_Lock;
 
@@ -58,10 +58,11 @@ public class LotNumberLockRepository
 				.createQueryBuilder(I_M_Product_LotNumber_Lock.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Product_LotNumber_Lock.COLUMN_M_Product_ID, productId)
+				.addInArrayFilter(I_M_Product_LotNumber_Lock.COLUMN_M_Product_ID, productId, null)
 				.addEqualsFilter(I_M_Product_LotNumber_Lock.COLUMNNAME_Lot, lotNo)
+				.orderBy(I_M_Product_LotNumber_Lock.COLUMNNAME_M_Product_ID)
 				.create()
-				.firstOnly(I_M_Product_LotNumber_Lock.class);
+				.first();
 
 		return record != null ? toLotNumberLock(record) : null;
 	}
