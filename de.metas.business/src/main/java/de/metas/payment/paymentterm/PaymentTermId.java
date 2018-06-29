@@ -1,4 +1,4 @@
-package de.metas.payment.api;
+package de.metas.payment.paymentterm;
 
 import org.adempiere.util.Check;
 

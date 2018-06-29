@@ -45,13 +45,13 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
-public class HuReservationRepositoryTests
+public class HUReservationRepositoryTests
 {
 	private static final BigDecimal ELEVEN = TEN.add(ONE);
 	private static final BigDecimal THIRTEEN = new BigDecimal("13");
 
 	private I_C_UOM uomRecord;
-	private HuReservationRepository huReservationRepository;
+	private HUReservationRepository huReservationRepository;
 
 	@Before
 	public void init()
@@ -61,7 +61,7 @@ public class HuReservationRepositoryTests
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
-		huReservationRepository = new HuReservationRepository();
+		huReservationRepository = new HUReservationRepository();
 	}
 
 	@Test
@@ -73,7 +73,7 @@ public class HuReservationRepositoryTests
 		final I_M_HU vhu2 = createHuReservationRecord(orderLineId, ONE);
 
 		// invoke the method under test
-		final HuReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
+		final HUReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
 
 		assertThat(huReservation.getSalesOrderLineId()).isEqualTo(orderLineId);
 
@@ -98,7 +98,7 @@ public class HuReservationRepositoryTests
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(20);
 
 		// invoke the method under test
-		final HuReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
+		final HUReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
 
 		assertThat(huReservation.getSalesOrderLineId()).isEqualTo(orderLineId);
 
@@ -123,7 +123,7 @@ public class HuReservationRepositoryTests
 	@Test
 	public void save()
 	{
-		final HuReservation huReservation = HuReservation.builder()
+		final HUReservation huReservation = HUReservation.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.vhuId2reservedQty(HuId.ofRepoId(10), Quantity.of(TEN, uomRecord))
 				.vhuId2reservedQty(HuId.ofRepoId(11), Quantity.of(ONE, uomRecord))
@@ -135,7 +135,7 @@ public class HuReservationRepositoryTests
 		assertThat(reservationRecords).hasSize(2);
 		assertThat(reservationRecords).allMatch(r -> r.getC_OrderLineSO_ID() == 20);
 
-		final HuReservation huReservation2 = huReservation.toBuilder()
+		final HUReservation huReservation2 = huReservation.toBuilder()
 				.vhuId2reservedQty(HuId.ofRepoId(10), Quantity.of(TEN.add(ONE), uomRecord))
 				.vhuId2reservedQty(HuId.ofRepoId(11), Quantity.of(ONE.add(ONE), uomRecord))
 				.reservedQtySum(Optional.of(Quantity.of(THIRTEEN, uomRecord)))

@@ -30,7 +30,7 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
-import de.metas.handlingunits.reservation.HuReservation.HuReservationBuilder;
+import de.metas.handlingunits.reservation.HUReservation.HUReservationBuilder;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
@@ -60,15 +60,15 @@ import lombok.Setter;
  */
 
 @Service
-public class HuReservationService
+public class HUReservationService
 {
 	/** In unit test mode, we need to use {@link HUTransformService#newInstance(de.metas.handlingunits.IMutableHUContext)} to get a new instance. */
 	@Setter
 	private Supplier<HUTransformService> huTransformServiceSupplier = () -> HUTransformService.newInstance();
 
-	private final HuReservationRepository huReservationRepository;
+	private final HUReservationRepository huReservationRepository;
 
-	public HuReservationService(@NonNull final HuReservationRepository huReservationRepository)
+	public HUReservationService(@NonNull final HUReservationRepository huReservationRepository)
 	{
 		this.huReservationRepository = huReservationRepository;
 	}
@@ -76,7 +76,7 @@ public class HuReservationService
 	/**
 	 * Creates an HU reservation record and creates dedicated reserved VHUs with HU status "reserved".
 	 */
-	public HuReservation makeReservation(@NonNull final HuReservationRequest reservationRequest)
+	public HUReservation makeReservation(@NonNull final HUReservationRequest reservationRequest)
 	{
 		final List<HuId> huIds = Check.assumeNotEmpty(reservationRequest.getHuIds(),
 				"the given request needs to have huIds; request={}", reservationRequest);
@@ -103,7 +103,7 @@ public class HuReservationService
 		final I_M_Product productRecord = loadOutOfTrx(reservationRequest.getProductId(), I_M_Product.class);
 		final I_C_UOM uomRecord = reservationRequest.getQtyToReserve().getUOM();
 
-		final HuReservationBuilder reservationBuilder = HuReservation
+		final HUReservationBuilder huReservationBuilder = HUReservation
 				.builder()
 				.salesOrderLineId(reservationRequest.getSalesOrderLineId());
 
@@ -115,14 +115,14 @@ public class HuReservationService
 					.getQuantity(productRecord, uomRecord);
 
 			reservedQtySum = reservedQtySum.add(qty);
-			reservationBuilder.vhuId2reservedQty(HuId.ofRepoId(newCU.getM_HU_ID()), qty);
+			huReservationBuilder.vhuId2reservedQty(HuId.ofRepoId(newCU.getM_HU_ID()), qty);
 
 			// note: M_HU.IsReserved is also updated via model interceptor if M_HU_Reservation changes, but for clarify and unit test purposes, we explicitly do it here as well
 			newCU.setIsReserved(true);
 			handlingUnitsDAO.saveHU(newCU);
 		}
 
-		final HuReservation huReservation = reservationBuilder
+		final HUReservation huReservation = huReservationBuilder
 				.reservedQtySum(Optional.of(reservedQtySum))
 				.build();
 

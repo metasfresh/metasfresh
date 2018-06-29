@@ -15,7 +15,7 @@ import org.junit.Test;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
 
 /*
  * #%L
