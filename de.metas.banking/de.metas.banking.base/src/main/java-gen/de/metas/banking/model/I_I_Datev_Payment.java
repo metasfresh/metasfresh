@@ -72,21 +72,21 @@ public interface I_I_Datev_Payment
 	 * Set Geschäftspartner-Schlüssel.
 	 * Key of the Business Partner
 	 *
-	 * <br>Type: String
+	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBPartnerValue (java.lang.String BPartnerValue);
+	public void setBPartnerValue (int BPartnerValue);
 
 	/**
 	 * Get Geschäftspartner-Schlüssel.
 	 * Key of the Business Partner
 	 *
-	 * <br>Type: String
+	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getBPartnerValue();
+	public int getBPartnerValue();
 
     /** Column definition for BPartnerValue */
     public static final org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object> COLUMN_BPartnerValue = new org.adempiere.model.ModelColumn<I_I_Datev_Payment, Object>(I_I_Datev_Payment.class, "BPartnerValue", null);

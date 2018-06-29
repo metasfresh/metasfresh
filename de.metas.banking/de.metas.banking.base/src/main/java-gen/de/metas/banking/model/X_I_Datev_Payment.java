@@ -15,7 +15,7 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2114724819L;
+	private static final long serialVersionUID = 1888651303L;
 
     /** Standard Constructor */
     public X_I_Datev_Payment (Properties ctx, int I_Datev_Payment_ID, String trxName)
@@ -48,18 +48,21 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 		Key of the Business Partner
 	  */
 	@Override
-	public void setBPartnerValue (java.lang.String BPartnerValue)
+	public void setBPartnerValue (int BPartnerValue)
 	{
-		set_Value (COLUMNNAME_BPartnerValue, BPartnerValue);
+		set_Value (COLUMNNAME_BPartnerValue, Integer.valueOf(BPartnerValue));
 	}
 
 	/** Get Geschäftspartner-Schlüssel.
 		@return Key of the Business Partner
 	  */
 	@Override
-	public java.lang.String getBPartnerValue () 
+	public int getBPartnerValue () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BPartnerValue);
+		Integer ii = (Integer)get_Value(COLUMNNAME_BPartnerValue);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
