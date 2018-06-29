@@ -16,9 +16,8 @@ import org.compiere.model.X_C_DocType;
 
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.model.X_I_Datev_Payment;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.pricing.impexp.MDiscountSchemaImportTableSqlUpdater;
+import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
+import de.metas.payment.api.IPaymentBL;
 import lombok.NonNull;
 
 /**
@@ -48,7 +47,7 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		MDiscountSchemaImportTableSqlUpdater.updateDiscountSchemaImportTable(getWhereClause());
+		CPaymentImportTableSqlUpdater.updatePaymentImportTable(getWhereClause());
 	}
 
 	@Override
@@ -64,7 +63,8 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_Datev_Payment importRecord) throws Exception
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state,
+			@NonNull final I_I_Datev_Payment importRecord) throws Exception
 	{
 		return importDatevPayment(importRecord);
 	}
@@ -85,7 +85,8 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 			schemaImportResult = ImportRecordResult.Updated;
 		}
 
-		ModelValidationEngine.get().fireImportValidate(this, importRecord, payment, IImportInterceptor.TIMING_AFTER_IMPORT);
+		ModelValidationEngine.get().fireImportValidate(this, importRecord, payment,
+				IImportInterceptor.TIMING_AFTER_IMPORT);
 		InterfaceWrapperHelper.save(payment);
 
 		importRecord.setC_Payment_ID(payment.getC_Payment_ID());
@@ -96,38 +97,16 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 
 	private I_C_Payment createNewPayment(@NonNull final I_I_Datev_Payment importRecord)
 	{
-		final I_C_Payment payment;
-		payment = InterfaceWrapperHelper.create(getCtx(), I_C_Payment.class, ITrx.TRXNAME_ThreadInherited);
-		payment.setAD_Org_ID(importRecord.getAD_Org_ID());
-		payment.setDescription("Import for debitorId/creditorId" + importRecord.getBPartnerValue());
-		payment.setPayAmt(importRecord.getPayAmt());
-		payment.setDiscountAmt(importRecord.getDiscountAmt());
-		payment.setC_BPartner_ID(importRecord.getC_BPartner_ID());
-		payment.setIsReceipt(importRecord.isReceipt());
-		payment.setC_Invoice_ID(importRecord.getC_Invoice_ID());
-		payment.setC_DocType_ID(extractC_DocType_ID(importRecord));
-		InterfaceWrapperHelper.save(payment);
-		return payment;
-	}
-
-	private int extractC_DocType_ID(@NonNull final I_I_Datev_Payment importRecord)
-	{
-		if (importRecord.isReceipt())
-		{
-		return Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_ARReceipt)
-				.adClientId(importRecord.getAD_Client_ID())
-				.adOrgId(importRecord.getAD_Org_ID())
-				.build());
-		}
-		else
-		{
-			return Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_APPayment)
-					.adClientId(importRecord.getAD_Client_ID())
-					.adOrgId(importRecord.getAD_Org_ID())
-					.build());
-		}
+		return Services.get(IPaymentBL.class).newBuilder(importRecord).setAD_Org_ID(importRecord.getAD_Org_ID())
+				.setC_BPartner_ID(importRecord.getC_BPartner_ID())
+				.setDocbaseType(importRecord.isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt
+						: X_C_DocType.DOCBASETYPE_APPayment)
+				.setPayAmt(importRecord.getPayAmt()).setDiscountAmt(importRecord.getDiscountAmt())
+				.setTenderType(TenderType.ACH).setDateAcct(importRecord.getDateTrx())
+				.setDateTrx(importRecord.getDateTrx())
+				.setDescription("Import for debitorId/creditorId" + importRecord.getBPartnerValue())
+				.setC_Invoice(importRecord.getC_Invoice())
+				.createAndProcess();
 	}
 
 	@Override
