@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
-import de.metas.handlingunits.reservation.HuReservation.HuReservationBuilder;
+import de.metas.handlingunits.reservation.HUReservation.HUReservationBuilder;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -44,10 +44,10 @@ import lombok.NonNull;
  */
 
 @Repository
-public class HuReservationRepository
+public class HUReservationRepository
 {
 
-	public HuReservation getBySalesOrderLineId(@NonNull final OrderLineId orderLineId)
+	public HUReservation getBySalesOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		final List<I_M_HU_Reservation> huReservationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Reservation.class)
@@ -59,13 +59,13 @@ public class HuReservationRepository
 		return ofRecords(huReservationRecords).salesOrderLineId(orderLineId).build();
 	}
 
-	private HuReservationBuilder ofRecords(@NonNull final List<I_M_HU_Reservation> huReservationRecords)
+	private HUReservationBuilder ofRecords(@NonNull final List<I_M_HU_Reservation> huReservationRecords)
 	{
 		Quantity sum = huReservationRecords.isEmpty()
 				? null
 				: Quantity.zero(huReservationRecords.get(0).getC_UOM());
 
-		final HuReservationBuilder builder = HuReservation.builder();
+		final HUReservationBuilder builder = HUReservation.builder();
 
 		for (final I_M_HU_Reservation huReservationRecord : huReservationRecords)
 		{
@@ -80,7 +80,7 @@ public class HuReservationRepository
 		return builder.reservedQtySum(Optional.ofNullable(sum));
 	}
 
-	public void save(@NonNull final HuReservation huReservation)
+	public void save(@NonNull final HUReservation huReservation)
 	{
 		final Map<HuId, Quantity> vhuId2reservedQtys = huReservation.getVhuId2reservedQtys();
 		final Set<Entry<HuId, Quantity>> entrySet = vhuId2reservedQtys.entrySet();

@@ -49,7 +49,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.reservation.HuReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.order.OrderLineId;
 
 public class HUQueryBuilderTest
@@ -93,7 +93,7 @@ public class HUQueryBuilderTest
 				createHU("otherLocator-product", otherLocator, product),
 				createHU("otherLocator-otherProduct", otherLocator, otherProduct));
 
-		huQueryBuilder = new HUQueryBuilder(new HuReservationRepository());
+		huQueryBuilder = new HUQueryBuilder(new HUReservationRepository());
 	}
 
 	private static I_M_HU createHU(

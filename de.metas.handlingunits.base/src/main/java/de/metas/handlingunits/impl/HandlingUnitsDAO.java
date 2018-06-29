@@ -88,7 +88,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.handlingunits.reservation.HuReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -851,18 +851,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public IHUQueryBuilder createHUQueryBuilder()
 	{
-		final HuReservationRepository huReservationRepository = getHUReservationRepository();
+		final HUReservationRepository huReservationRepository = getHUReservationRepository();
 		return new HUQueryBuilder(huReservationRepository);
 	}
 
-	private HuReservationRepository getHUReservationRepository()
+	private HUReservationRepository getHUReservationRepository()
 	{
 		if (Adempiere.isUnitTestMode())
 		{
 			// avoid having to annotate each test that uses HUQueryBuilder with "@RunWith(SpringRunner.class) @SpringBootTest.."
-			return new HuReservationRepository();
+			return new HUReservationRepository();
 		}
-		final HuReservationRepository huReservationRepository = Adempiere.getBean(HuReservationRepository.class);
+		final HUReservationRepository huReservationRepository = Adempiere.getBean(HUReservationRepository.class);
 		return huReservationRepository;
 	}
 
