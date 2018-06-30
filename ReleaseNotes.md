@@ -13,6 +13,8 @@ Here come the actual release notes:
 ## Features
   * [#4224](https://github.com/metasfresh/metasfresh/issues/4224) Pharma: Additional Document/ Certificate Fields
     * New Certificate Fields for the Pharma Business Partner Widnow in WebUI.
+  * [#4293](https://github.com/metasfresh/metasfresh/issues/4293) WebUI: New Window for MSV3 Customer Window
+    * New Window for Pharma MSV3 Server and Customer Configuration
 
 
 # metasfresh 5.63 (2018-26)
