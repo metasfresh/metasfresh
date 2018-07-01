@@ -8,7 +8,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -51,8 +51,8 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 {
 	public static final String VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID = "WEBUI_C_OrderLineSO_ID";
 
-	private final transient HuReservationService //
-	huReservationService = Adempiere.getBean(HuReservationService.class);
+	private final transient HUReservationService //
+	huReservationService = Adempiere.getBean(HUReservationService.class);
 
 	private final transient HUReservationDocumentFilterService //
 	huReservationDocumentFilterService = Adempiere.getBean(HUReservationDocumentFilterService.class);
@@ -64,7 +64,10 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
-
+		if (salesOrder == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No C_Order selected");
+		}
 		if (!salesOrder.isSOTrx())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");

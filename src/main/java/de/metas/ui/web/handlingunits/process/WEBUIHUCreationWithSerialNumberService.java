@@ -1,9 +1,13 @@
 package de.metas.ui.web.handlingunits.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ISerialNoDAO;
@@ -17,9 +21,6 @@ import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -48,12 +49,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -155,7 +156,15 @@ public class WEBUIHUCreationWithSerialNumberService
 			for (int i = 0; i < numberOfCUsToCreate; i++)
 			{
 				final List<I_M_HU> createdCUs = newHUTransformation().cuToNewCU(huToSplit, Quantity.of(BigDecimal.ONE, cuRow.getC_UOM()));
-				splitCUIDs.addAll(createdCUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()));
+
+				final Predicate<? super I_M_HU> //
+				newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getM_HU_ID();
+
+				splitCUIDs.addAll(createdCUs
+						.stream()
+						.filter(newCUisDifferentFromInputHU)
+						.map(I_M_HU::getM_HU_ID)
+						.collect(ImmutableSet.toImmutableSet()));
 			}
 		}
 		else

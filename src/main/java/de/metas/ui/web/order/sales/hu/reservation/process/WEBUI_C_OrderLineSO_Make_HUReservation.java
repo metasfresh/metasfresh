@@ -9,8 +9,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.reservation.HuReservationRequest;
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationRequest;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -51,7 +51,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 {
 
 	@Autowired
-	private HuReservationService huReservationService;
+	private HUReservationService huReservationService;
 
 	@Autowired
 	private SalesOrderLineRepository salesOrderLineRepository;
@@ -90,7 +90,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 
 		final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.ofAttributesetInstanceId(salesOrderLine.getAsiId());
 
-		final HuReservationRequest reservationRequest = HuReservationRequest
+		final HUReservationRequest reservationRequest = HUReservationRequest
 				.builder()
 				.huIds(selectedHuIds)
 				.qtyToReserve(salesOrderLine.getOrderedQty().setQty(qtyToReserve))

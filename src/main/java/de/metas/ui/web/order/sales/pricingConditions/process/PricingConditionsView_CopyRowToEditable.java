@@ -9,7 +9,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -83,8 +83,7 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 	private PricingConditionsRowChangeRequest createChangeRequest(@NonNull final PricingConditionsRow templateRow)
 	{
 		final PricingConditionsBreak templatePricingConditionsBreak = templateRow.getPricingConditionsBreak();
-		final Percent discount = templatePricingConditionsBreak.getDiscount();
-		final PaymentTermId paymentTermId = templatePricingConditionsBreak.getPaymentTermId();
+
 		PriceOverride price = templatePricingConditionsBreak.getPriceOverride();
 		if (price.isNoPrice())
 		{
@@ -94,10 +93,16 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 			price = createBasePricingSystemPrice(bpartnerId, soTrx);
 		}
 
+		final Percent discount = templatePricingConditionsBreak.getDiscount();
+
+		final PaymentTermId paymentTermIdOrNull = templatePricingConditionsBreak.getPaymentTermIdOrNull();
+		final Percent paymentDiscountOverrideOrNull = templatePricingConditionsBreak.getPaymentDiscountOverrideOrNull();
+
 		return PricingConditionsRowChangeRequest.builder()
 				.priceChange(CompletePriceChange.of(price))
 				.discount(discount)
-				.paymentTermId(Optional.ofNullable(paymentTermId))
+				.paymentTermId(Optional.ofNullable(paymentTermIdOrNull))
+				.paymentDiscount(Optional.ofNullable(paymentDiscountOverrideOrNull))
 				.sourcePricingConditionsBreakId(templatePricingConditionsBreak.getId())
 				.build();
 	}
