@@ -3,6 +3,7 @@ package de.metas.ui.web.pporder.process;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		extends WEBUI_PP_Order_Template
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private static final IPPOrderBOMBL ppOrderBomBL = Services.get(IPPOrderBOMBL.class);
+	private final IPPOrderBOMBL ppOrderBomBL = Services.get(IPPOrderBOMBL.class);
 
 	private static final String PARAM_QtyCU = "QtyCU";
 
@@ -100,6 +101,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 
 		final ImmutableList<I_M_HU> husThatAreFlaggedAsSource = sourceHus.stream()
 				.peek(sourceHu -> huId2SourceHu.put(sourceHu.getM_HU_ID(), sourceHu))
+				.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
 				.map(I_M_Source_HU::getM_HU)
 				.collect(ImmutableList.toImmutableList());
 
@@ -148,18 +150,36 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx());
 			final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
 
-			final I_M_HU hu = activeSourceHus.get(0).getM_HU();
+			final I_M_HU hu = activeSourceHus
+					.stream()
+					.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
+					.map(I_M_Source_HU::getM_HU)
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("@NoSelection@"));
+
 			final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
 
 			final String issueMethod = row.getIssueMethod();
 
 			if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
 			{
-				return ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getC_UOM()).getQty();
+				final BigDecimal qtyLeftToIssue = row.getQtyPlan().subtract(row.getQty());
+
+				if (qtyLeftToIssue.signum() <= 0)
+				{
+					return BigDecimal.ZERO;
+				}
+
+				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getC_UOM());
+
+				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.getAsBigDecimal());
+
 			}
 			else
 			{
-				return productStorages.get(0).getQty();
+				final BigDecimal sourceHuStorageQty = productStorages.get(0).getQty();
+
+				return sourceHuStorageQty;
 			}
 		}
 		else
