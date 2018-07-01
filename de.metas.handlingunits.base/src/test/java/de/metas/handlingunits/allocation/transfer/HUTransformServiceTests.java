@@ -116,6 +116,17 @@ public class HUTransformServiceTests
 	{
 		testsBase.testCU_To_NewCU_MaxValueNoParent_DoIt();
 	}
+	
+	
+	/**
+	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)}
+	 * and verifies that the method does nothing if the given CU has no parent and if the given qty is equal or greater than the CU's full quantity.
+	 */
+	@Test
+	public void testCU_To_NewCU_ExceedMaxValueNoParent()
+	{
+		testsBase.testCU_To_NewCU_ExceedMaxValueNoParent_DoIt();
+	}
 
 	/**
 	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)}
