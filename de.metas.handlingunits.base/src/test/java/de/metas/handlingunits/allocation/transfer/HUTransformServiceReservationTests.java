@@ -28,7 +28,7 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.quantity.Quantity;
 
 /*
@@ -54,7 +54,7 @@ import de.metas.quantity.Quantity;
  */
 
 /**
- * Tests for {@link HUTransformService} that are especially geared at the sort of use which {@link HuReservationService} makes of it.
+ * Tests for {@link HUTransformService} that are especially geared at the sort of use which {@link HUReservationService} makes of it.
  */
 public class HUTransformServiceReservationTests
 {

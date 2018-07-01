@@ -43,6 +43,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
@@ -60,7 +61,8 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
@@ -151,10 +153,19 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.build();
 	}
 
-	public static PricingConditionsBreak toPricingConditionsBreak(final I_M_DiscountSchemaBreak schemaBreakRecord)
+	public static PricingConditionsBreak toPricingConditionsBreak(@NonNull final I_M_DiscountSchemaBreak schemaBreakRecord)
 	{
 		final int discountSchemaBreakId = schemaBreakRecord.getM_DiscountSchemaBreak_ID();
 		final PricingConditionsBreakId id = discountSchemaBreakId > 0 ? PricingConditionsBreakId.of(schemaBreakRecord.getM_DiscountSchema_ID(), discountSchemaBreakId) : null;
+
+		final PaymentTermId paymentTermIdOrNull = PaymentTermId.ofRepoIdOrNull(schemaBreakRecord.getC_PaymentTerm_ID());
+
+		final Percent paymentDiscount = Percent.ofNullable(schemaBreakRecord.getPaymentDiscount());
+
+		final PaymentTermService paymentTermService = Adempiere.getBean(PaymentTermService.class);
+		final PaymentTermId derivedPaymentTermId = paymentTermService.getOrCreateDerivedPaymentTerm(
+				paymentTermIdOrNull,
+				paymentDiscount);
 
 		return PricingConditionsBreak.builder()
 				.id(id)
@@ -164,7 +175,10 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				//
 				.bpartnerFlatDiscount(schemaBreakRecord.isBPartnerFlatDiscount())
 				.discount(Percent.of(schemaBreakRecord.getBreakDiscount()))
-				.paymentTermId(PaymentTermId.ofRepoIdOrNull(schemaBreakRecord.getC_PaymentTerm_ID()))
+				//
+				.paymentTermIdOrNull(paymentTermIdOrNull)
+				.paymentDiscountOverrideOrNull(paymentDiscount)
+				.derivedPaymentTermIdOrNull(derivedPaymentTermId)
 				//
 				.qualityDiscountPercentage(schemaBreakRecord.getQualityIssuePercentage())
 				//
@@ -339,9 +353,19 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		{
 			schemaBreak.setBreakDiscount(request.getDiscount().getValueAsBigDecimal());
 		}
+
 		if (request.getPaymentTermId() != null)
 		{
-			schemaBreak.setC_PaymentTerm_ID(PaymentTermId.getRepoId(request.getPaymentTermId()));
+			final int paymentTermRepoId = PaymentTermId.getRepoId(request.getPaymentTermId().orElse(null));
+			schemaBreak.setC_PaymentTerm_ID(paymentTermRepoId);
+		}
+		if (request.getPaymentDiscount() != null)
+		{
+			final BigDecimal paymentDiscountValue = request
+					.getPaymentDiscount()
+					.map(Percent::getValueAsBigDecimal)
+					.orElse(null);
+			schemaBreak.setPaymentDiscount(paymentDiscountValue);
 		}
 
 		//

@@ -26,7 +26,7 @@ import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.reservation.HuReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.PlainLockManager;
 
@@ -65,7 +65,7 @@ import de.metas.lock.api.impl.PlainLockManager;
  *
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HuReservationRepository.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HUReservationRepository.class })
 public class HULockBL_IntegrationTest
 {
 	private IHULockBL huLockBL;

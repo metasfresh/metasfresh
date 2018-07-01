@@ -166,6 +166,22 @@ public class HUTransformTestsBase
 
 		return TestHUs.builder().input(cuToSplit).output(newCUs).build();
 	}
+	
+	
+	
+	public final TestHUs testCU_To_NewCU_ExceedMaxValueNoParent_DoIt()
+	{
+		final I_M_HU cuToSplit = data.mkRealStandAloneCuWithCuQty("3");
+		assertThat(cuToSplit).isTopLevelHU(); // this test makes no sense if the given CU has a parent
+
+		// invoke the method under test
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
+				.cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("5"), data.helper.uomKg));
+		assertThat(newCUs).hasSize(1);
+		assertThat(newCUs.get(0)).isSameAs(cuToSplit);
+
+		return TestHUs.builder().input(cuToSplit).output(newCUs).build();
+	}
 
 	public final TestHUs testCU_To_NewCU_MaxValueParent_DoIt()
 	{

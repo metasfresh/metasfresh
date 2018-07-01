@@ -1,10 +1,14 @@
 package de.metas.handlingunits.reservation;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.api.IAttributeSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,16 +38,39 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class HuReservation
+public class HUReservationRequest
 {
-	/** This optional is empty if vhuId2reservedQtys is empty */
-	@NonNull
-	Optional<Quantity> reservedQtySum;
+	/** always mandatory */
+	Quantity qtyToReserve;
 
-	@Singular
-	Map<HuId, Quantity> vhuId2reservedQtys;
-
-	@NonNull
+	/** always mandatory */
 	OrderLineId salesOrderLineId;
+
+	/** mandatory, if the given HUs contain different products. */
+	ProductId productId;
+
+	/** optional. */
+	IAttributeSet attributeSet;
+
+	/**
+	 * The HUs from which the respective {@link #qtyToReserve} shall be reserved. can be higher-level-HUs;
+	 * The actual reservation is done on VHU level.
+	 */
+	List<HuId> huIds;
+
+	@Builder
+	private HUReservationRequest(
+			@NonNull final Quantity qtyToReserve,
+			@NonNull final OrderLineId salesOrderLineId,
+			@NonNull final ProductId productId,
+			@Nullable final IAttributeSet attributeSet,
+			@Singular final List<HuId> huIds)
+	{
+		this.qtyToReserve = qtyToReserve;
+		this.salesOrderLineId = salesOrderLineId;
+		this.productId = productId;
+		this.attributeSet = attributeSet;
+		this.huIds = huIds;
+	}
+
 }

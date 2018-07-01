@@ -53,7 +53,7 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
-public class HuReservationServiceTest
+public class HUReservationServiceTest
 {
 	@Rule
 	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
@@ -62,7 +62,7 @@ public class HuReservationServiceTest
 
 	private LUTUProducerDestinationTestSupport data;
 
-	private HuReservationService huReservationService;
+	private HUReservationService huReservationService;
 
 	private IHandlingUnitsBL handlingUnitsBL;
 
@@ -70,7 +70,7 @@ public class HuReservationServiceTest
 
 	private IHandlingUnitsDAO handlingUnitsDAO;
 
-	private HuReservationRepository huReservationRepository;
+	private HUReservationRepository huReservationRepository;
 
 	@Before
 	public void init()
@@ -79,9 +79,9 @@ public class HuReservationServiceTest
 
 		data = new LUTUProducerDestinationTestSupport();
 
-		huReservationRepository = new HuReservationRepository();
+		huReservationRepository = new HUReservationRepository();
 
-		huReservationService = new HuReservationService(huReservationRepository);
+		huReservationService = new HUReservationService(huReservationRepository);
 		huReservationService.setHuTransformServiceSupplier(() -> HUTransformService.newInstance(data.helper.getHUContext()));
 
 		cuUOM = data.helper.uomKg;
@@ -96,7 +96,7 @@ public class HuReservationServiceTest
 	{
 		final I_M_HU lu = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
 
-		final HuReservationRequest request = HuReservationRequest.builder()
+		final HUReservationRequest request = HUReservationRequest.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(ONE, cuUOM))
@@ -104,7 +104,7 @@ public class HuReservationServiceTest
 				.build();
 
 		// invoke the method under test
-		final HuReservation result = huReservationService.makeReservation(request);
+		final HUReservation result = huReservationService.makeReservation(request);
 
 		assertThat(result).isNotNull();
 		assertThat(result.getReservedQtySum().get().getAsBigDecimal()).isEqualByComparingTo("1");
@@ -147,7 +147,7 @@ public class HuReservationServiceTest
 		// create one LU with 5 TUs with 40kg each
 		final I_M_HU lu = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
 
-		final HuReservationRequest firstRequest = HuReservationRequest.builder()
+		final HUReservationRequest firstRequest = HUReservationRequest.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
@@ -155,7 +155,7 @@ public class HuReservationServiceTest
 				.build();
 
 		// invoke the method under test
-		final HuReservation result = huReservationService.makeReservation(firstRequest);
+		final HUReservation result = huReservationService.makeReservation(firstRequest);
 
 		assertThat(result.getReservedQtySum().get().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET);
 
@@ -185,7 +185,7 @@ public class HuReservationServiceTest
 	{
 		final I_M_HU lu = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
 
-		final HuReservationRequest firstRequest = HuReservationRequest.builder()
+		final HUReservationRequest firstRequest = HUReservationRequest.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
@@ -193,12 +193,12 @@ public class HuReservationServiceTest
 				.build();
 
 		// invoke the method under test
-		final HuReservation firstResult = huReservationService.makeReservation(firstRequest);
+		final HUReservation firstResult = huReservationService.makeReservation(firstRequest);
 
 		assertThat(firstResult.getReservedQtySum()).isPresent();
 		assertThat(firstResult.getReservedQtySum().get().getAsBigDecimal()).isEqualByComparingTo(TWOHUNDRET); // guard
 
-		final HuReservationRequest secondRequest = HuReservationRequest.builder()
+		final HUReservationRequest secondRequest = HUReservationRequest.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
@@ -206,7 +206,7 @@ public class HuReservationServiceTest
 				.build();
 
 		// invoke the method under test
-		final HuReservation secondResult = huReservationService.makeReservation(secondRequest);
+		final HUReservation secondResult = huReservationService.makeReservation(secondRequest);
 
 		assertThat(secondResult.getReservedQtySum().get().isZero()).isTrue();
 	}

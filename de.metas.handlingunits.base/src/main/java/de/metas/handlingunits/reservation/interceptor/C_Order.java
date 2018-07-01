@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.reservation.HuReservationService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import lombok.NonNull;
 
 /*
@@ -37,9 +37,9 @@ import lombok.NonNull;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	private HuReservationService huReservationService;
+	private HUReservationService huReservationService;
 
-	public C_Order(HuReservationService huReservationService)
+	public C_Order(HUReservationService huReservationService)
 	{
 		this.huReservationService = huReservationService;
 	}

@@ -3,6 +3,8 @@ package de.metas.order.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -16,8 +18,8 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.order.PriceAndDiscount;
-import de.metas.payment.api.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -146,10 +148,13 @@ class OrderLinePriceCalculator
 		}
 	}
 
-	private void updateOrderLineFromPricingConditionsResult(final I_C_OrderLine orderLine, final PricingConditionsResult pricingConditionsResult)
+	private void updateOrderLineFromPricingConditionsResult(
+			@NonNull final I_C_OrderLine orderLine,
+			@Nullable final PricingConditionsResult pricingConditionsResult)
 	{
 		final PricingSystemId basePricingSystemId;
 		final PaymentTermId paymentTermId;
+		final BigDecimal paymentDiscount;
 		final int discountSchemaId;
 		final int discountSchemaBreakId;
 		final boolean tempPricingConditions;
@@ -159,6 +164,11 @@ class OrderLinePriceCalculator
 			paymentTermId = pricingConditionsResult.getPaymentTermId();
 
 			final PricingConditionsBreak pricingConditionsBreak = pricingConditionsResult.getPricingConditionsBreak();
+
+			paymentDiscount = pricingConditionsBreak != null
+					? pricingConditionsBreak.getPaymentDiscountOverrideOrNull().getValueAsBigDecimal()
+					: null;
+
 			if (pricingConditionsBreak != null
 					&& pricingConditionsBreak.getId() != null
 					&& hasSameValues(orderLine, pricingConditionsResult))
@@ -179,14 +189,19 @@ class OrderLinePriceCalculator
 		{
 			basePricingSystemId = null;
 			paymentTermId = null;
-
+			paymentDiscount = null;
 			discountSchemaId = -1;
 			discountSchemaBreakId = -1;
 			tempPricingConditions = false;
 		}
 
 		orderLine.setBase_PricingSystem_ID(PricingSystemId.getRepoId(basePricingSystemId));
-		orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.getRepoId(paymentTermId));
+
+		if (!orderLine.isManualPaymentTerm())
+		{
+			orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.getRepoId(paymentTermId));
+			orderLine.setPaymentDiscount(paymentDiscount);
+		}
 
 		orderLine.setM_DiscountSchema_ID(discountSchemaId);
 		orderLine.setM_DiscountSchemaBreak_ID(discountSchemaBreakId);
