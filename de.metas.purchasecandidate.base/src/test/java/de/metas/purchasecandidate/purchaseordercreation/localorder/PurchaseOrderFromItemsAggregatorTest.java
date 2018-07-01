@@ -17,6 +17,7 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_Order;
 import org.junit.Before;
@@ -29,7 +30,9 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.impl.OrderLineBL;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.purchasecandidate.DemandGroupReference;
@@ -39,6 +42,7 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
+import mockit.Expectations;
 
 /*
  * #%L
@@ -76,6 +80,15 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		this.EACH = createUOM("Ea");
 		this.TEN = Quantity.of(BigDecimal.TEN, EACH);
+
+		// mock IOrderLineBL.updatePrices() because setting up the required masterdata and testing the pricing engine is out of scope.
+		// @formatter:off
+		final OrderLineBL orderLineBL = new OrderLineBL();
+		new Expectations(OrderLineBL.class)
+		{{
+			orderLineBL.updatePrices((I_C_OrderLine)any); times = 1;
+		}};	// @formatter:on
+		Services.registerService(IOrderLineBL.class, orderLineBL);
 	}
 
 	private I_C_UOM createUOM(final String name)
@@ -90,7 +103,6 @@ public class PurchaseOrderFromItemsAggregatorTest
 	@Test
 	public void test()
 	{
-
 		// will be needed for user notification (CreatedBy)
 		final I_C_Order salesOrder = newInstance(I_C_Order.class);
 		save(salesOrder);
