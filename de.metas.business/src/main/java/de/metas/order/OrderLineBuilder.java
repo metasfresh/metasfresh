@@ -91,6 +91,7 @@ public class OrderLineBuilder
 			orderLine.setDiscount(manualDiscount);
 		}
 
+		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 		save(orderLine);
 		this.createdOrderLine = orderLine;
 	}

@@ -1,4 +1,4 @@
-package de.metas.payment.api.impl;
+package de.metas.payment.paymentterm.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -10,8 +10,9 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Env;
 
 import de.metas.lang.Percent;
-import de.metas.payment.api.IPaymentTermRepository;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,7 +38,8 @@ import de.metas.payment.api.PaymentTermId;
 
 public class PaymentTermRepository implements IPaymentTermRepository
 {
-	private I_C_PaymentTerm getById(final PaymentTermId paymentTermId)
+	@Override
+	public I_C_PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
 	{
 		return loadOutOfTrx(paymentTermId.getRepoId(), I_C_PaymentTerm.class);
 	}

@@ -1,15 +1,9 @@
-package de.metas.money.grossprofit;
+package de.metas.payment.paymentterm;
 
-import java.time.LocalDate;
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_PaymentTerm;
 
-import javax.annotation.Nullable;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.money.Money;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.Value;
+import de.metas.lang.Percent;
 
 /*
  * #%L
@@ -33,18 +27,12 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class GrossProfitComputeRequest
+public interface IPaymentTermRepository extends ISingletonService
 {
-	BPartnerId bPartnerId;
+	Percent getPaymentTermDiscount(PaymentTermId paymentTermId);
 
-	ProductId productId;
+	PaymentTermId getDefaultPaymentTermIdOrNull();
 
-	LocalDate date;
+	I_C_PaymentTerm getById(PaymentTermId paymentTermId);
 
-	@Nullable
-	PaymentTermId paymentTermId;
-
-	Money baseAmount;
 }
