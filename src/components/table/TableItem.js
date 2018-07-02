@@ -109,10 +109,10 @@ class TableItem extends PureComponent {
             );
 
             if (disabled || readonly) {
-              changeListenOnTrue();
+              this.listenOnKeysTrue();
               this.handleEditProperty(e);
             } else {
-              changeListenOnFalse();
+              this.listenOnKeysFalse();
             }
           }
         }
