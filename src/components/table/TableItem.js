@@ -82,8 +82,6 @@ class TableItem extends PureComponent {
   };
 
   editProperty = (e, property, callback, item) => {
-    const { changeListenOnTrue, changeListenOnFalse } = this.props;
-
     if (item ? !item.readonly : true) {
       if (this.state.edited === property) e.stopPropagation();
 
