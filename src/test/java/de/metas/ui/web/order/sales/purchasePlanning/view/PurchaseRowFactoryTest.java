@@ -31,7 +31,7 @@ import de.metas.money.Currency;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.pricing.conditions.PricingConditions;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
@@ -154,12 +154,11 @@ public class PurchaseRowFactoryTest
 		product.setC_UOM(uom);
 		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		save(product);
-		final ProductAndCategoryId productAndCategoryId = ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID());
 
 		return VendorProductInfo.builder()
 				.vendorId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
 				.defaultVendor(false)
-				.productAndCategoryId(productAndCategoryId)
+				.product(ProductAndCategoryAndManufacturerId.of(product.getM_Product_ID(), product.getM_Product_Category_ID(), product.getManufacturer_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")

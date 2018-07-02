@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -289,8 +290,9 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	{
 		final HUEditorRowId huRowId = HUEditorRowId.ofDocumentId(rowId);
 		final HUEditorRowId topLevelRowId = huRowId.toTopLevelRowId();
+		final HuId topLevelHUId = HuId.ofRepoId(topLevelRowId.getTopLevelHUId());
 
-		final HUEditorRow topLevelRow = cache_huRowsById.getOrLoad(topLevelRowId.toDocumentId(), () -> huEditorRepo.retrieveForHUId(topLevelRowId.getTopLevelHUId()));
+		final HUEditorRow topLevelRow = cache_huRowsById.getOrLoad(topLevelRowId.toDocumentId(), () -> huEditorRepo.retrieveForHUId(topLevelHUId));
 		if (topLevelRowId.equals(huRowId))
 		{
 			return topLevelRow;

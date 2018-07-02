@@ -3,6 +3,8 @@ package de.metas.ui.web.quickinput.orderline;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -10,10 +12,13 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
@@ -22,8 +27,13 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderLineQuickInputValidator;
+import de.metas.order.OrderLineQuickInputValidatorResults;
+import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -59,6 +69,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private static final transient Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
 	private final transient IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 
+	final Collection<IOrderLineQuickInputValidator> validators = Adempiere.getBeansOfType(IOrderLineQuickInputValidator.class);
+
 	public OrderLineQuickInputProcessor()
 	{
 		super();
@@ -70,9 +82,47 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 
+		validateInput(quickInput);
+
 		final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLineObj -> updateOrderLine(orderLineObj, quickInput));
 		final int newOrderLineId = newOrderLine.getC_OrderLine_ID();
 		return DocumentId.of(newOrderLineId);
+	}
+
+	private void validateInput(final QuickInput quickInput)
+	{
+		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+
+		if (!order.isSOTrx())
+		{
+			return;
+		}
+
+		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLineQuickInput.getM_Product_ID().getIdAsInt());
+
+		final List<ITranslatableString> validationErrorMessages = validators
+				.stream()
+				.map(validator -> {
+					final OrderLineQuickInputValidatorResults validationResults = validator.validate(bpartnerId, productId);
+
+					if (!validationResults.isValid())
+					{
+						return validationResults.getErrorMessage();
+					}
+
+					return null;
+				})
+				.filter(errorMessage -> errorMessage != null)
+				.collect(ImmutableList.toImmutableList());
+
+		if (!validationErrorMessages.isEmpty())
+		{
+			throw new AdempiereException(ITranslatableString.compose("\n", validationErrorMessages));
+		}
+
 	}
 
 	private final void updateOrderLine(final Object orderLineObj, final QuickInput fromQuickInput)

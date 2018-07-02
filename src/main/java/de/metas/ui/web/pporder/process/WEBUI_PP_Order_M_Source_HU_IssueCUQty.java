@@ -1,6 +1,9 @@
 package de.metas.ui.web.pporder.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,8 +14,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableList;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -30,6 +31,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -45,12 +47,12 @@ import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -61,7 +63,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		extends WEBUI_PP_Order_Template
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private static final IPPOrderBOMBL ppOrderBomBL = Services.get(IPPOrderBOMBL.class);
+	private final IPPOrderBOMBL ppOrderBomBL = Services.get(IPPOrderBOMBL.class);
 
 	private static final String PARAM_QtyCU = "QtyCU";
 
@@ -99,15 +101,18 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 
 		final ImmutableList<I_M_HU> husThatAreFlaggedAsSource = sourceHus.stream()
 				.peek(sourceHu -> huId2SourceHu.put(sourceHu.getM_HU_ID(), sourceHu))
+				.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
 				.map(I_M_Source_HU::getM_HU)
 				.collect(ImmutableList.toImmutableList());
 
-		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
+		final HUsToNewCUsRequest request = HUsToNewCUsRequest
+				.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
+				.productId(ProductId.ofRepoId(row.getM_Product_ID()))
 				.qtyCU(Quantity.of(qtyCU, row.getC_UOM()))
 				.build();
 
-		EmptyHUListener emptyHUListener = EmptyHUListener
+		final EmptyHUListener emptyHUListener = EmptyHUListener
 				.doBeforeDestroyed(hu -> {
 					if (huId2SourceHu.containsKey(hu.getM_HU_ID()))
 					{
@@ -145,18 +150,36 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx());
 			final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
 
-			final I_M_HU hu = activeSourceHus.get(0).getM_HU();
+			final I_M_HU hu = activeSourceHus
+					.stream()
+					.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
+					.map(I_M_Source_HU::getM_HU)
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("@NoSelection@"));
+
 			final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
 
 			final String issueMethod = row.getIssueMethod();
 
 			if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
 			{
-				return ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getC_UOM()).getQty();
+				final BigDecimal qtyLeftToIssue = row.getQtyPlan().subtract(row.getQty());
+
+				if (qtyLeftToIssue.signum() <= 0)
+				{
+					return BigDecimal.ZERO;
+				}
+
+				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getC_UOM());
+
+				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.getAsBigDecimal());
+
 			}
 			else
 			{
-				return productStorages.get(0).getQty();
+				final BigDecimal sourceHuStorageQty = productStorages.get(0).getQty();
+
+				return sourceHuStorageQty;
 			}
 		}
 		else

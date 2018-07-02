@@ -9,11 +9,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.ImmutableMultimap;
+
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.OrderLineId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -26,6 +29,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.NonNull;
 
 /* package */abstract class HUsToPickViewBasedProcess extends ViewBasedProcessTemplate
 {
@@ -40,13 +44,12 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		final Optional<HUEditorRow> anyHU = retrieveEligibleHUEditorRows().findAny();
-		if (anyHU.isPresent())
+		if (!anyHU.isPresent())
 		{
-			return ProcessPreconditionsResolution.accept();
+			final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU);
+			return ProcessPreconditionsResolution.reject(reason);
 		}
-
-		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU);
-		return ProcessPreconditionsResolution.reject(reason);
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	protected final Stream<HUEditorRow> retrieveEligibleHUEditorRows()
@@ -56,13 +59,19 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 				.filter(this::isEligible);
 	}
 
-	protected final boolean isEligible(final HUEditorRow huRow)
+	protected final boolean isEligible(@NonNull final HUEditorRow huRow)
 	{
 		if (!huRow.isTopLevel())
 		{
 			return false;
 		}
 		if (!huRow.isHUStatusActive())
+		{
+			return false;
+		}
+
+		// TODO: add clarity
+		if(!huRowReservationMatchesPackageableRow(huRow))
 		{
 			return false;
 		}
@@ -78,6 +87,43 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 			return false;
 		}
 
+		return true;
+	}
+
+	private boolean huRowReservationMatchesPackageableRow(@NonNull final HUEditorRow huRow)
+	{
+		final Optional<OrderLineId> orderLineId = Optional
+				.ofNullable(getSingleSelectedPackageableRowOrNull())
+				.flatMap(PackageableRow::getSalesOrderLineId);
+
+		final ImmutableMultimap<OrderLineId, HUEditorRow> //
+		includedOrderLineReservations = huRow.getIncludedOrderLineReservations();
+
+		if (orderLineId.isPresent())
+		{
+			final int numberOfOrderLineIds = includedOrderLineReservations.keySet().size();
+			final boolean reservedForMoreThanOneOrderLine = numberOfOrderLineIds > 1;
+			if (reservedForMoreThanOneOrderLine)
+			{
+				return false;
+			}
+			else if (numberOfOrderLineIds == 1)
+			{
+				final boolean reservedForDifferentOrderLine = !includedOrderLineReservations.containsKey(orderLineId.get());
+				if (reservedForDifferentOrderLine)
+				{
+					return false;
+				}
+			}
+		}
+		else
+		{
+			final boolean rowHasHuWithReservation = !includedOrderLineReservations.isEmpty();
+			if (rowHasHuWithReservation)
+			{
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -116,16 +162,34 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 
 	protected final PackageableRow getSingleSelectedPackageableRow()
 	{
+		return getSingleSelectedPackageableRow(false); // returnNullIfNotFound=false => throw exception if not found
+	}
+
+	protected final PackageableRow getSingleSelectedPackageableRowOrNull()
+	{
+		return getSingleSelectedPackageableRow(true); // returnNullIfNotFound=true
+	}
+
+	private final PackageableRow getSingleSelectedPackageableRow(final boolean returnNullIfNotFound)
+	{
 		final PickingSlotView pickingSlotView = getPickingSlotView();
 		final ViewId packageablesViewId = pickingSlotView.getParentViewId();
 		if (packageablesViewId == null)
 		{
+			if (returnNullIfNotFound)
+			{
+				return null;
+			}
 			throw new AdempiereException("Packageables view is not available");
 		}
 
 		final DocumentId packageableRowId = pickingSlotView.getParentRowId();
 		if (packageableRowId == null)
 		{
+			if (returnNullIfNotFound)
+			{
+				return null;
+			}
 			throw new AdempiereException("There is no single packageable row selected");
 		}
 

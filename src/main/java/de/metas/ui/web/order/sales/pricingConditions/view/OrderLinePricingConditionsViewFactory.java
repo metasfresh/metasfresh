@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -21,12 +22,12 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.PricingConditionsBreaksExtractor;
@@ -83,6 +84,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		final int orderLineId = ListUtils.singleElement(request.getFilterOnlyIds());
 		Check.assumeGreaterThanZero(orderLineId, "salesOrderLineId");
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId);
+
 		final I_C_Order order = orderLine.getC_Order();
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
@@ -110,14 +112,17 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
-		final int productId = salesOrderLine.getM_Product_ID();
-		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
-		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(salesOrderLine.getM_AttributeSetInstance_ID());
+		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
+		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
+
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(salesOrderLine.getM_AttributeSetInstance_ID());
+		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(asiId);
 		final BigDecimal qty = salesOrderLine.getQtyOrdered();
 		final BigDecimal price = salesOrderLine.getPriceActual();
+
 		return PricingConditionsBreakQuery.builder()
+				.product(product)
 				.attributeInstances(attributeInstances)
-				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
 				.qty(qty)
 				.price(price)
 				.build();

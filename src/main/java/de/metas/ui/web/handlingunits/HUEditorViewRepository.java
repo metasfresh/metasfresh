@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.adempiere.util.collections.PagedIterator.Page;
 
+import de.metas.handlingunits.HuId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
@@ -25,12 +26,12 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,15 +48,15 @@ public interface HUEditorViewRepository
 
 	void deleteSelection(ViewRowIdsOrderedSelection selection);
 
-	List<HUEditorRow> retrieveHUEditorRows(Set<Integer> huIds, HUEditorRowFilter filter);
+	List<HUEditorRow> retrieveHUEditorRows(Set<HuId> huIds, HUEditorRowFilter filter);
 
 	/**
 	 * Retrieves the {@link HUEditorRow} hierarchy for given M_HU_ID, even if that M_HU_ID is not in scope.
-	 * 
+	 *
 	 * @param huId
 	 * @return {@link HUEditorRow} or null if the huId negative or zero.
 	 */
-	HUEditorRow retrieveForHUId(int huId);
+	HUEditorRow retrieveForHUId(HuId huId);
 
 	List<Integer> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter,
 			List<DocumentFilter> filters,
@@ -72,4 +73,7 @@ public interface HUEditorViewRepository
 	String buildSqlWhereClause(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 
 	SqlViewRowIdsConverter getRowIdsConverter();
+
+	/** Caches the given {@code huIds} in one go. Advised to use this prior to repeated invocations of {@link #retrieveForHUId(HuId)}. */
+	void warmUp(Set<HuId> huIds);
 }

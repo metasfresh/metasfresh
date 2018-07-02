@@ -9,6 +9,7 @@ import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.ClientOnlyProcess;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -49,9 +50,10 @@ import lombok.NonNull;
 
 /**
  * An {@link JavaProcess} implementation template to be used by processes which are called from views.
+ * <p>
+ * Important: to check for preconditions, please implement {@link IProcessPrecondition} <b>and</b> override {@link #checkPreconditionsApplicable()}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ClientOnlyProcess
 public abstract class ViewBasedProcessTemplate extends JavaProcess

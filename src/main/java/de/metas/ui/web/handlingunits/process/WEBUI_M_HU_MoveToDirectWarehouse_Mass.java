@@ -8,6 +8,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -96,14 +97,14 @@ public class WEBUI_M_HU_MoveToDirectWarehouse_Mass extends HUEditorProcessTempla
 
 		// Only top level HUs
 		huQueryBuilder.setOnlyTopLevelHUs();
-		
+
 		// Only Active HUs
 		huQueryBuilder.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
 
 		// Only for preselected warehouse
 		if (p_M_Warehouse_ID > 0)
 		{
-			huQueryBuilder.addOnlyInWarehouseId(p_M_Warehouse_ID);
+			huQueryBuilder.addOnlyInWarehouseId(WarehouseId.ofRepoId(p_M_Warehouse_ID));
 		}
 
 		// Only for given SQL where clause
