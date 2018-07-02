@@ -333,6 +333,13 @@ class Table extends Component {
 
   changeListen = listenOnKeys => {
     this.setState({ listenOnKeys: !!listenOnKeys });
+
+    if (listenOnKeys) {
+      if (this.state.selected[0]) {
+        document.querySelector('.row-selected td').focus();
+        document.querySelector('.row-selected td').click();
+      }
+    }
   };
 
   selectProduct = (id, idFocused, idFocusedDown) => {
@@ -524,6 +531,7 @@ class Table extends Component {
       closeOverlays,
     } = this.props;
     const { selected, rows, listenOnKeys, collapsedArrayMap } = this.state;
+
     if (!listenOnKeys) {
       return;
     }
@@ -1251,7 +1259,9 @@ class Table extends Component {
                   deselect={this.deselectAllProducts}
                 />
               </thead>
-              <tbody>{this.renderTableBody()}</tbody>
+              <tbody ref={c => (this.tbody = c)}>
+                {this.renderTableBody()}
+              </tbody>
               <tfoot ref={c => (this.tfoot = c)} />
             </table>
 
