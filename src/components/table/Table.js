@@ -26,6 +26,11 @@ import TableFilter from './TableFilter';
 import TableHeader from './TableHeader';
 import TableItem from './TableItem';
 import TablePagination from './TablePagination';
+import {
+  getSizeClass,
+  handleCopy,
+  handleOpenNewTab,
+} from '../../utils/tableHelpers';
 
 export function shouldRenderColumn(column) {
   if (
@@ -779,13 +784,6 @@ class Table extends Component {
     );
   };
 
-  handleOpenNewTab = selected => {
-    const { type } = this.props;
-    for (let i = 0; i < selected.length; i++) {
-      window.open(`/window/${type}/${selected[i]}`, '_blank');
-    }
-  };
-
   handleDelete = () => {
     this.setState({
       promptOpen: true,
@@ -824,15 +822,6 @@ class Table extends Component {
     );
   };
 
-  handleCopy = e => {
-    e.preventDefault();
-
-    const cell = e.target;
-    const textValue = cell.value || cell.textContent;
-
-    e.clipboardData.setData('text/plain', textValue);
-  };
-
   handleZoomInto = fieldName => {
     const { entity, type, docId, tabid, viewId } = this.props;
     const { selected } = this.state;
@@ -854,31 +843,6 @@ class Table extends Component {
           '_blank'
         );
     });
-  };
-
-  getSizeClass = col => {
-    const { widgetType, size } = col;
-    const lg = ['List', 'Lookup', 'LongText', 'Date', 'DateTime', 'Time'];
-    const md = ['Text', 'Address', 'ProductAttributes'];
-
-    if (size) {
-      switch (size) {
-        case 'S':
-          return 'td-sm';
-        case 'M':
-          return 'td-md';
-        case 'L':
-          return 'td-lg';
-      }
-    } else {
-      if (lg.indexOf(widgetType) > -1) {
-        return 'td-lg';
-      } else if (md.indexOf(widgetType) > -1) {
-        return 'td-md';
-      } else {
-        return 'td-sm';
-      }
-    }
   };
 
   handleRowCollapse = (node, collapsed) => {
@@ -1076,7 +1040,7 @@ class Table extends Component {
           caption={item.caption ? item.caption : ''}
           colspan={item.colspan}
           notSaved={item.saveStatus && !item.saveStatus.saved}
-          getSizeClass={this.getSizeClass}
+          getSizeClass={getSizeClass}
           handleRowCollapse={() =>
             this.handleRowCollapse(
               item,
@@ -1084,7 +1048,7 @@ class Table extends Component {
             )
           }
           onItemChange={this.handleItemChange}
-          onCopy={this.handleCopy}
+          onCopy={handleCopy}
         />
       ));
   };
@@ -1186,7 +1150,7 @@ class Table extends Component {
               handleAdvancedEdit={() =>
                 this.handleAdvancedEdit(type, tabid, selected)
               }
-              handleOpenNewTab={() => this.handleOpenNewTab(selected)}
+              handleOpenNewTab={() => handleOpenNewTab(selected, type)}
               handleDelete={
                 !isModal && (tabInfo && tabInfo.allowDelete)
                   ? () => this.handleDelete()
@@ -1243,7 +1207,7 @@ class Table extends Component {
               )}
               onKeyDown={this.handleKeyDown}
               ref={c => (this.table = c)}
-              onCopy={this.handleCopy}
+              onCopy={handleCopy}
             >
               <thead>
                 <TableHeader
@@ -1255,7 +1219,7 @@ class Table extends Component {
                     indentSupported,
                     tabid,
                   }}
-                  getSizeClass={this.getSizeClass}
+                  getSizeClass={getSizeClass}
                   deselect={this.deselectAllProducts}
                 />
               </thead>
@@ -1313,7 +1277,7 @@ class Table extends Component {
             }
             handleOpenNewTab={
               selected.length > 0 && mainTable
-                ? () => this.handleOpenNewTab(selected)
+                ? () => handleOpenNewTab(selected, type)
                 : ''
             }
             handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
