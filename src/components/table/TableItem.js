@@ -9,7 +9,7 @@ import {
   VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
 } from '../../constants/Constants';
 import TableCell from './TableCell';
-import { shouldRenderColumn } from './Table';
+import { shouldRenderColumn } from '../../utils/tableHelpers';
 
 class TableItem extends PureComponent {
   constructor(props) {

@@ -32,26 +32,6 @@ import {
   handleOpenNewTab,
 } from '../../utils/tableHelpers';
 
-export function shouldRenderColumn(column) {
-  if (
-    !column.restrictToMediaTypes ||
-    column.restrictToMediaTypes.length === 0
-  ) {
-    return true;
-  }
-
-  const deviceType = currentDevice.type;
-  let mediaType = 'tablet';
-
-  if (deviceType === 'mobile') {
-    mediaType = 'phone';
-  } else if (deviceType === 'desktop') {
-    mediaType = 'screen';
-  }
-
-  return column.restrictToMediaTypes.indexOf(mediaType) !== -1;
-}
-
 class Table extends Component {
   static propTypes = {
     // from @connect
@@ -1073,9 +1053,9 @@ class Table extends Component {
           </div>
         </div>
       );
-    } else {
-      return false;
     }
+
+    return false;
   };
 
   render() {

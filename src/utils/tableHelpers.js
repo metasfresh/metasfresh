@@ -1,3 +1,5 @@
+import currentDevice from 'current-device';
+
 export function getSizeClass(col) {
   const { widgetType, size } = col;
   const lg = ['List', 'Lookup', 'LongText', 'Date', 'DateTime', 'Time'];
@@ -36,4 +38,24 @@ export function handleOpenNewTab(selected, type) {
   for (let i = 0; i < selected.length; i++) {
     window.open(`/window/${type}/${selected[i]}`, '_blank');
   }
+}
+
+export function shouldRenderColumn(column) {
+  if (
+    !column.restrictToMediaTypes ||
+    column.restrictToMediaTypes.length === 0
+  ) {
+    return true;
+  }
+
+  const deviceType = currentDevice.type;
+  let mediaType = 'tablet';
+
+  if (deviceType === 'mobile') {
+    mediaType = 'phone';
+  } else if (deviceType === 'desktop') {
+    mediaType = 'screen';
+  }
+
+  return column.restrictToMediaTypes.indexOf(mediaType) !== -1;
 }

@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 
-import { shouldRenderColumn } from './Table';
+import { shouldRenderColumn } from '../../utils/tableHelpers';
 
 class TableHeader extends PureComponent {
   constructor(props) {
