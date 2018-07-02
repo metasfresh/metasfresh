@@ -11,8 +11,27 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.64 (2018-27)
 ## Features
+  * [#3210](https://github.com/metasfresh/metasfresh/issues/3210) Manufacturing Issue action take exact qty from stock
+  * [#4212](https://github.com/metasfresh/metasfresh/issues/4212) ATP Stock indicator in Sales Orderline
+  * [#4218](https://github.com/metasfresh/metasfresh/issues/4218) Pharma: DeliveryType B disallow Sales Orderline
+  * [#4221](https://github.com/metasfresh/metasfresh/issues/4221) Recording of Payment Discount instead of Payment Term
+  * [#4222](https://github.com/metasfresh/metasfresh/issues/4222) Pricing Conditions for all Products of a Manufacturer
+  * [#4223](https://github.com/metasfresh/metasfresh/issues/4223) Ban Manufacturer Products for a Businesspartner
   * [#4224](https://github.com/metasfresh/metasfresh/issues/4224) Pharma: Additional Document/ Certificate Fields
     * New Certificate Fields for the Pharma Business Partner Widnow in WebUI.
+  * [#4248](https://github.com/metasfresh/metasfresh/issues/4248) Details about hu attributes during sales order creation
+  * [#4252](https://github.com/metasfresh/metasfresh/issues/4252) Show c_bpartner memo field of Org BP in document footer
+  * [#4270](https://github.com/metasfresh/metasfresh/issues/4270) Purchase Order Document with up to 4 digits
+  * [#4273](https://github.com/metasfresh/metasfresh/issues/4273) Copy BOM Consumer Label Fields to PP Order BOMLine
+  * [#4286](https://github.com/metasfresh/metasfresh/issues/4286) Allow repost eventlog with forcing handler to be processed again
+  * [#4293](https://github.com/metasfresh/metasfresh/issues/4293) WebUI: New Window for MSV3 Customer Window
+    * New Window for Pharma MSV3 Server and Customer Configuration
+  * [#4295](https://github.com/metasfresh/metasfresh/issues/4295) avoid polluting the console by changing log level from INFO to DEBUG
+  
+## Fixes 
+  * [#4282](https://github.com/metasfresh/metasfresh/issues/4282) Order line is flagged as Temporary Pricing Conditions when the conditions are actually missing
+  * [#4296](https://github.com/metasfresh/metasfresh/issues/4296) Only metasfresh-app shall ever start an embedded JMS broker
+  * [#4297](https://github.com/metasfresh/metasfresh/issues/4297) Exit when swing application context failed to initialize
 
 
 # metasfresh 5.63 (2018-26)

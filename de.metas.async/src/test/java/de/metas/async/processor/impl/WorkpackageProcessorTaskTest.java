@@ -22,15 +22,14 @@ import static org.junit.Assert.assertThat;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
@@ -143,8 +142,10 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		assertAfterWorkpackageProcessedInvoked(task);
 		Assert.assertEquals("Invalid Processed", false, workpackage.isProcessed());
 		Assert.assertEquals("Invalid IsError", true, workpackage.isError());
-		assertThat(workpackage.getErrorMsg()).as("Invalid ErrorMsg").startsWith(processingErrorMsg);
 		Assert.assertNotNull("Invalid AD_Issue", workpackage.getAD_Issue());
+
+		final String expectedErrorMessage = RuntimeException.class.getSimpleName() + ": " + processingErrorMsg;
+		assertThat(workpackage.getErrorMsg()).as("Invalid ErrorMsg").startsWith(expectedErrorMessage);
 	}
 
 	/**
