@@ -230,7 +230,7 @@ public class Adempiere
 					+ "@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, <further classes> })\n"
 					+ "public class YourTest ...\n"
 					+ "\n"
-					+ "Where the further configuration classes contain @ComponentScann annotations to discover spring components required by the actual tests"
+					+ "Where the further configuration classes contain @ComponentScan annotations to discover spring components required by the actual tests"
 					+ "Also see https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-testing.html";
 		}
 		else
