@@ -4,8 +4,12 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.util.Util;
 
+import de.metas.lang.Percent;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
@@ -15,6 +19,7 @@ import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PriceChange;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -27,12 +32,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,7 +47,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 class PricingConditionsRowReducers
 {
-	public static PricingConditionsRow copyAndChange(final PricingConditionsRowChangeRequest request, final PricingConditionsRow row)
+	public PricingConditionsRow copyAndChange(
+			@NonNull final PricingConditionsRowChangeRequest request,
+			@NonNull final PricingConditionsRow row)
 	{
 		row.assertEditable();
 
@@ -77,7 +84,9 @@ class PricingConditionsRowReducers
 				.build();
 	}
 
-	private static PricingConditionsBreak applyTo(final PricingConditionsRowChangeRequest request, final PricingConditionsBreak rowPricingConditionsBreak)
+	private PricingConditionsBreak applyTo(
+			@NonNull final PricingConditionsRowChangeRequest request,
+			@NonNull final PricingConditionsBreak rowPricingConditionsBreak)
 	{
 		final PricingConditionsBreak pricingConditionsBreakEffective = Util.coalesce(request.getPricingConditionsBreak(), rowPricingConditionsBreak);
 		final PricingConditionsBreakBuilder builder = pricingConditionsBreakEffective.toBuilder();
@@ -92,9 +101,28 @@ class PricingConditionsRowReducers
 
 		//
 		// Payment Term
-		if (request.getPaymentTermId() != null)
+		final boolean paymentTermChangeRequested = request.getPaymentTermId() != null;
+		final boolean paymentDiscountChangeRequested = request.getPaymentDiscount() != null;
+		if (paymentTermChangeRequested || paymentDiscountChangeRequested)
 		{
-			builder.paymentTermId(request.getPaymentTermId().orElse(null));
+			final PaymentTermId paymentTermIdOrNull;
+			if (paymentTermChangeRequested)
+			{
+				paymentTermIdOrNull = request.getPaymentTermId().orElse(null);
+				builder.paymentTermIdOrNull(paymentTermIdOrNull);
+			}
+			else
+			{
+				// if no payment term change was requested, we use the old paymentTermId to get derivedPaymentTermIdOrNull.
+				paymentTermIdOrNull = pricingConditionsBreakEffective.getPaymentTermIdOrNull();
+			}
+
+			final Percent paymentDiscountOrNull = paymentDiscountChangeRequested ? request.getPaymentDiscount().orElse(null) : null;
+			builder.paymentDiscountOverrideOrNull(paymentDiscountOrNull);
+
+			final PaymentTermService paymentTermService = Adempiere.getBean(PaymentTermService.class);
+			final PaymentTermId derivedPaymentTermIdOrNull = paymentTermService.getOrCreateDerivedPaymentTerm(paymentTermIdOrNull, paymentDiscountOrNull);
+			builder.derivedPaymentTermIdOrNull(derivedPaymentTermIdOrNull);
 		}
 
 		//
@@ -114,7 +142,7 @@ class PricingConditionsRowReducers
 		return newPricingConditionsBreak;
 	}
 
-	private static PriceOverride applyPriceChangeTo(final PriceChange priceChange, final PriceOverride price)
+	private PriceOverride applyPriceChangeTo(final PriceChange priceChange, final PriceOverride price)
 	{
 		if (priceChange == null)
 		{
@@ -136,7 +164,7 @@ class PricingConditionsRowReducers
 
 	}
 
-	private static PriceOverride applyPartialPriceChangeTo(final PartialPriceChange changes, final PriceOverride price)
+	private PriceOverride applyPartialPriceChangeTo(final PartialPriceChange changes, final PriceOverride price)
 	{
 		final PriceOverrideType priceType = changes.getPriceType() != null ? changes.getPriceType() : price.getType();
 		if (priceType == PriceOverrideType.NONE)

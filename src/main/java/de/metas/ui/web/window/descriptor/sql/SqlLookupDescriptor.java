@@ -94,15 +94,35 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				.buildProvider();
 	}
 
-	public static final LookupDescriptorProvider listByReferenceId(final int adReferenceId)
+	public static final LookupDescriptorProvider listByAD_Reference_Value_ID(final int AD_Reference_Value_ID)
 	{
-		Check.assumeGreaterThanZero(adReferenceId, "adReferenceId");
+		Check.assumeGreaterThanZero(AD_Reference_Value_ID, "AD_Reference_Value_ID");
 
 		return builder()
 				.setCtxTableName(null) // tableName
 				.setCtxColumnName(null)
 				.setDisplayType(DisplayType.List)
-				.setAD_Reference_Value_ID(adReferenceId)
+				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
+				.setReadOnlyAccess()
+				.buildProvider();
+	}
+
+	/**
+	 * @param AD_Reference_Value_ID has to be > 0
+	 * @param AD_Val_Rule_ID may be <= 0
+	 */
+	public static final LookupDescriptorProvider searchByAD_Val_Rule_ID(
+			final int AD_Reference_Value_ID,
+			final int AD_Val_Rule_ID)
+	{
+		Check.assumeGreaterThanZero(AD_Reference_Value_ID, "AD_Reference_Value_ID");
+
+		return builder()
+				.setCtxTableName(null) // tableName
+				.setCtxColumnName(null)
+				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
+				.setAD_Val_Rule_ID(AD_Val_Rule_ID)
+				.setDisplayType(DisplayType.Search)
 				.setReadOnlyAccess()
 				.buildProvider();
 	}

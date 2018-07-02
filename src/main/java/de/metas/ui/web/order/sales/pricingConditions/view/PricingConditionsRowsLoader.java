@@ -33,7 +33,7 @@ import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -253,7 +253,8 @@ class PricingConditionsRowsLoader
 						.productCategoryId(sourceDocumentLine.getProductCategoryId())
 						.build())
 				.priceOverride(PriceOverride.fixedPrice(sourceDocumentLine.getPriceEntered()))
-				.paymentTermId(sourceDocumentLine.getPaymentTermId())
+				// TODO: if we added those columns to C_OrderLine, then load them now
+				.paymentTermIdOrNull(sourceDocumentLine.getPaymentTermId())
 				.discount(sourceDocumentLine.getDiscount())
 				.dateCreated(null) // N/A
 				.build();

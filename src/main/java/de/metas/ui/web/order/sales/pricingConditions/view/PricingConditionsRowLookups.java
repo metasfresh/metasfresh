@@ -5,7 +5,7 @@ import java.awt.Color;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.CCache;
@@ -13,7 +13,7 @@ import org.compiere.util.Evaluatees;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.IOrderLinePricingConditions;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.product.ProductId;
@@ -68,9 +68,9 @@ public class PricingConditionsRowLookups
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 		bpartnerLookup = lookupFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 		productLookup = lookupFactory.searchInTableLookup(I_M_Product.Table_Name);
-		priceTypeLookup = lookupFactory.listByReferenceId(PriceOverrideType.AD_Reference_ID);
+		priceTypeLookup = lookupFactory.listByAD_Reference_Value_ID(PriceOverrideType.AD_Reference_ID);
 		pricingSystemLookup = lookupFactory.searchInTableLookup(I_M_PricingSystem.Table_Name);
-		paymentTermLookup = lookupFactory.searchInTableLookup(I_C_PaymentTerm.Table_Name);
+		paymentTermLookup = lookupFactory.searchByColumn(I_M_DiscountSchemaBreak.Table_Name, I_M_DiscountSchemaBreak.COLUMNNAME_C_PaymentTerm_ID);
 	}
 
 	public LookupValue lookupBPartner(final BPartnerId bpartnerId)

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
@@ -142,12 +144,12 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final LookupValue paymentTerm;
 
-//	static final String FIELDNAME_PaymentDiscount = "paymentDiscount";
-//	@ViewColumn(fieldName = FIELDNAME_PaymentDiscount, captionKey = "PaymentDiscount", widgetType = DocumentFieldWidgetType.Number, layouts = {
-//			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
-//			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 70)
-//	})
-//	private final BigDecimal paymentTermDiscountOverride;
+	static final String FIELDNAME_PaymentDiscount = "paymentDiscount";
+	@ViewColumn(fieldName = FIELDNAME_PaymentDiscount, captionKey = "PaymentDiscount", widgetType = DocumentFieldWidgetType.Number, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 70)
+	})
+	private final BigDecimal paymentDiscountOverride;
 
 	@ViewColumn(captionKey = "PriceNet", widgetType = DocumentFieldWidgetType.Number, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100),
@@ -214,8 +216,12 @@ public class PricingConditionsRow implements IViewRow
 		product = lookups.lookupProduct(pricingConditionsBreak.getMatchCriteria().getProductId());
 		breakValue = pricingConditionsBreak.getMatchCriteria().getBreakValue();
 
-		paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermId());
-		//paymentTermDiscountOverride = pricingConditionsBreak.getPaymentTermDiscountOverride().getValueAsBigDecimal();
+		paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermIdOrNull());
+
+		paymentDiscountOverride = Optional
+				.ofNullable(pricingConditionsBreak.getPaymentDiscountOverrideOrNull())
+				.map(Percent::getValueAsBigDecimal)
+				.orElse(null);
 
 		final PriceOverride price = pricingConditionsBreak.getPriceOverride();
 		priceType = lookups.lookupPriceType(price.getType());
@@ -274,7 +280,8 @@ public class PricingConditionsRow implements IViewRow
 
 		final ImmutableMap.Builder<String, ViewEditorRenderMode> result = ImmutableMap.<String, ViewEditorRenderMode> builder()
 				.put(FIELDNAME_Discount, ViewEditorRenderMode.ALWAYS)
-				.put(FIELDNAME_PaymentTerm, ViewEditorRenderMode.ALWAYS);
+				.put(FIELDNAME_PaymentTerm, ViewEditorRenderMode.ALWAYS)
+				.put(FIELDNAME_PaymentDiscount, ViewEditorRenderMode.ALWAYS);
 
 		//
 		result.put(FIELDNAME_PriceType, ViewEditorRenderMode.ALWAYS);
