@@ -200,7 +200,7 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 		Calculated amount of discount
 	  */
 	@Override
-	public void setDiscountAmt (java.math.BigDecimal DiscountAmt)
+	public void setDiscountAmt (BigDecimal DiscountAmt)
 	{
 		set_Value (COLUMNNAME_DiscountAmt, DiscountAmt);
 	}
@@ -209,7 +209,7 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 		@return Calculated amount of discount
 	  */
 	@Override
-	public java.math.BigDecimal getDiscountAmt () 
+	public BigDecimal getDiscountAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DiscountAmt);
 		if (bd == null)
@@ -339,7 +339,7 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 		Gezahlter Betrag
 	  */
 	@Override
-	public void setPayAmt (java.math.BigDecimal PayAmt)
+	public void setPayAmt (BigDecimal PayAmt)
 	{
 		set_Value (COLUMNNAME_PayAmt, PayAmt);
 	}
@@ -348,7 +348,7 @@ public class X_I_Datev_Payment extends org.compiere.model.PO implements I_I_Date
 		@return Gezahlter Betrag
 	  */
 	@Override
-	public java.math.BigDecimal getPayAmt () 
+	public BigDecimal getPayAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PayAmt);
 		if (bd == null)
