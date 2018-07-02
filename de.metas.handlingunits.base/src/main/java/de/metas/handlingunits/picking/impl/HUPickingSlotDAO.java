@@ -46,6 +46,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
@@ -142,7 +143,8 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	}
 
 	@Override
-	public SetMultimap<Integer, Integer> retrieveAllHUIdsIndexedByPickingSlotId(final Collection<? extends de.metas.picking.model.I_M_PickingSlot> pickingSlots)
+	public SetMultimap<Integer, HuId> retrieveAllHUIdsIndexedByPickingSlotId(
+			final Collection<? extends de.metas.picking.model.I_M_PickingSlot> pickingSlots)
 	{
 		if (pickingSlots.isEmpty())
 		{
@@ -151,13 +153,13 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 
 		final Set<Integer> pickingSlotIds = pickingSlots.stream().map(pickingSlot -> pickingSlot.getM_PickingSlot_ID()).collect(ImmutableSet.toImmutableSet());
 
-		final LinkedHashMultimap<Integer, Integer> pickingSlotId2huIds = LinkedHashMultimap.create();
+		final LinkedHashMultimap<Integer, HuId> pickingSlotId2huIds = LinkedHashMultimap.create();
 
 		// Retrieve current picking slot HUs
 		pickingSlots.stream()
 				.map(pickingSlot -> InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class))
 				.filter(pickingSlot -> pickingSlot.getM_HU_ID() > 0)
-				.forEach(pickingSlot -> pickingSlotId2huIds.put(pickingSlot.getM_PickingSlot_ID(), pickingSlot.getM_HU_ID()));
+				.forEach(pickingSlot -> pickingSlotId2huIds.put(pickingSlot.getM_PickingSlot_ID(), HuId.ofRepoId(pickingSlot.getM_HU_ID())));
 
 		// Retrieve the HUs from picking slot queue.
 		Services.get(IQueryBL.class)
@@ -167,7 +169,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 				.orderBy(I_M_PickingSlot_HU.COLUMN_M_PickingSlot_HU_ID)
 				.create()
 				.stream(I_M_PickingSlot_HU.class)
-				.forEach(pickingSlotHU -> pickingSlotId2huIds.put(pickingSlotHU.getM_PickingSlot_ID(), pickingSlotHU.getM_HU_ID()));
+				.forEach(pickingSlotHU -> pickingSlotId2huIds.put(pickingSlotHU.getM_PickingSlot_ID(), HuId.ofRepoId(pickingSlotHU.getM_HU_ID())));
 
 		return ImmutableSetMultimap.copyOf(pickingSlotId2huIds);
 	}

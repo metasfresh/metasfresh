@@ -15,7 +15,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -989610355L;
+	private static final long serialVersionUID = 1900907025L;
 
     /** Standard Constructor */
     public X_RV_HU_Quantities (Properties ctx, int RV_HU_Quantities_ID, String trxName)
@@ -110,19 +110,16 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 		return ii.intValue();
 	}
 
-	/** Set Eingekauft.
-		@param IsPurchased 
-		Die Organisation kauft dieses Produkt ein
-	  */
+	/** Set Wird Eingekauft.
+		@param IsPurchased Wird Eingekauft	  */
 	@Override
 	public void setIsPurchased (boolean IsPurchased)
 	{
 		set_Value (COLUMNNAME_IsPurchased, Boolean.valueOf(IsPurchased));
 	}
 
-	/** Get Eingekauft.
-		@return Die Organisation kauft dieses Produkt ein
-	  */
+	/** Get Wird Eingekauft.
+		@return Wird Eingekauft	  */
 	@Override
 	public boolean isPurchased () 
 	{

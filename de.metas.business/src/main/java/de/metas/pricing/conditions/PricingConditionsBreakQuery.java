@@ -7,7 +7,7 @@ import org.compiere.model.I_M_AttributeInstance;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -38,7 +38,7 @@ import lombok.Value;
 @Value
 public class PricingConditionsBreakQuery
 {
-	ProductAndCategoryId productAndCategoryId;
+	ProductAndCategoryAndManufacturerId product;
 	List<I_M_AttributeInstance> attributeInstances;
 	BigDecimal qty;
 	BigDecimal price;
@@ -46,12 +46,12 @@ public class PricingConditionsBreakQuery
 
 	@Builder
 	private PricingConditionsBreakQuery(
-			@NonNull ProductAndCategoryId productAndCategoryId,
+			@NonNull final ProductAndCategoryAndManufacturerId product,
 			@Singular final List<I_M_AttributeInstance> attributeInstances,
 			@NonNull final BigDecimal qty,
 			@NonNull final BigDecimal price)
 	{
-		this.productAndCategoryId = productAndCategoryId;
+		this.product = product;
 		this.attributeInstances = attributeInstances != null ? ImmutableList.copyOf(attributeInstances) : ImmutableList.of();
 		this.qty = qty;
 		this.price = price;

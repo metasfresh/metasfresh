@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,15 +15,14 @@ package de.metas.handlingunits.allocation.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
@@ -36,6 +37,7 @@ import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.impl.HUTransactionAttributeBuilder;
 import de.metas.handlingunits.empties.IHUEmptiesService;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import lombok.NonNull;
 
 public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
@@ -55,11 +57,8 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 	 */
 	private IHUTransactionAttributeBuilder trxAttributesBuilder;
 
-	private boolean automaticallyMovePackingMaterials = true;
-
 	public HUContextProcessorExecutor(final IHUContext huContext)
 	{
-		super();
 		Check.assumeNotNull(huContext, "huContext not null");
 		huContextInitial = huContext;
 	}
@@ -118,14 +117,16 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 
 				//
 				// Create packing material movements (if needed and required)
-				if(isAutomaticallyMovePackingMaterials())
+				final List<HUPackingMaterialDocumentLineCandidate> candidates = huContextInLocalTrx
+						.getHUPackingMaterialsCollector()
+						.getAndClearCandidates();
+				if (!candidates.isEmpty())
 				{
 					huEmptiesService.newEmptiesMovementProducer()
 							.setEmptiesMovementDirectionAuto()
-							.addCandidates(huContextInLocalTrx.getHUPackingMaterialsCollector().getAndClearCandidates())
+							.addCandidates(candidates)
 							.createMovements();
 				}
-
 				//
 				// If we reach this point it was a success
 				success = true;
@@ -167,17 +168,5 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 		});
 
 		return result[0];
-	}
-
-	@Override
-	public HUContextProcessorExecutor setAutomaticallyMovePackingMaterials(final boolean automaticallyMovePackingMaterials)
-	{
-		this.automaticallyMovePackingMaterials = automaticallyMovePackingMaterials;
-		return this;
-	}
-
-	private boolean isAutomaticallyMovePackingMaterials()
-	{
-		return automaticallyMovePackingMaterials;
 	}
 }

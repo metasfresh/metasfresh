@@ -1,6 +1,11 @@
 package org.adempiere.warehouse;
 
+import java.util.Collection;
+import java.util.Set;
+
 import org.adempiere.util.Check;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
 import lombok.Value;
@@ -45,6 +50,14 @@ public class WarehouseId implements RepoIdAware
 	public static int toRepoId(final WarehouseId warehouseId)
 	{
 		return warehouseId != null ? warehouseId.getRepoId() : -1;
+	}
+
+	public static Set<Integer> toRepoIds(final Collection<WarehouseId> warehouseIds)
+	{
+		return warehouseIds.stream()
+				.map(WarehouseId::toRepoId)
+				.filter(id -> id > 0)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private WarehouseId(final int repoId)

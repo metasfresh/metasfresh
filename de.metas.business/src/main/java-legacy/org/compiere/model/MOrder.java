@@ -53,8 +53,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
-import de.metas.payment.api.IPaymentTermRepository;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IStorageBL;
@@ -940,11 +940,6 @@ public class MOrder extends X_C_Order implements IDocument
 			setC_DocType_ID(0);
 		}
 
-		// Default Warehouse
-		if (getM_Warehouse_ID() <= 0)
-		{
-			setM_Warehouse_ID(warehouseAdvisor.getDefaulWarehouseId(getCtx()));
-		}
 		// Warehouse Org
 		if (newRecord
 				|| is_ValueChanged("AD_Org_ID") || is_ValueChanged("M_Warehouse_ID"))

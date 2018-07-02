@@ -46,8 +46,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_BannedManufacturer;
 import org.compiere.model.I_M_Product;
 
 import com.google.common.collect.ImmutableList;
@@ -56,9 +58,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.product.Product;
 import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.purchasing.api.ProductExclude;
+import de.metas.purchasing.api.ProductExclude.ProductExcludeBuilder;
 import lombok.NonNull;
 
 /**
@@ -262,32 +267,104 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ProductExclude toProductExclude(final I_C_BPartner_Product bpartnerProduct)
+	private static ProductExclude toProductExclude(@NonNull final I_C_BPartner_Product bpartnerProduct)
 	{
 		return ProductExclude.builder()
-				.productId(bpartnerProduct.getM_Product_ID())
-				.bpartnerId(bpartnerProduct.getC_BPartner_ID())
+				.productId(ProductId.ofRepoId(bpartnerProduct.getM_Product_ID()))
+				.bpartnerId(BPartnerId.ofRepoId(bpartnerProduct.getC_BPartner_ID()))
 				.reason(bpartnerProduct.getExclusionFromSaleReason())
 				.build();
 	}
 
+
 	@Override
-	public Optional<ProductExclude> getExcludedFromSaleToCustomer(final int productId, final int partnerId)
+	public Optional<ProductExclude> getExcludedFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
 	{
-		final I_C_BPartner_Product bpartnerProduct = Services.get(IQueryBL.class)
+		final Optional<ProductExclude> productExcluded = getExcludedProductFromSaleToCustomer(productId, partnerId);
+		final Optional<ProductExclude> manufacturerExcluded = getBannedManufacturerFromSaleToCustomer(productId, partnerId);
+
+		if (productExcluded.isPresent() || manufacturerExcluded.isPresent())
+		{
+			final ProductExcludeBuilder builder = ProductExclude.builder()
+					.bpartnerId(partnerId)
+					.productId(productId);
+
+			if (productExcluded.isPresent())
+			{
+				builder.reason(productExcluded.get().getReason());
+			}
+
+			if (manufacturerExcluded.isPresent())
+			{
+				builder.reason(manufacturerExcluded.get().getReason());
+			}
+
+			return Optional.of(builder.build());
+		}
+
+		return Optional.empty();
+	}
+
+
+	private Optional<ProductExclude> getExcludedProductFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_C_BPartner_Product bpartnerProduct = queryBL
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, true)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partnerId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partnerId.getRepoId())
 				.create()
 				.firstOnly(I_C_BPartner_Product.class);
-		if (bpartnerProduct == null)
+
+		if (bpartnerProduct == null )
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(toProductExclude(bpartnerProduct));
+		final ProductExclude productExclude = ProductExclude.builder()
+				.bpartnerId(partnerId)
+				.productId(productId)
+				.reason(bpartnerProduct.getExclusionFromSaleReason())
+				.build();
+
+		return Optional.of(productExclude);
+	}
+
+
+	private Optional<ProductExclude> getBannedManufacturerFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+
+		final ProductRepository productRepo = Adempiere.getBean(ProductRepository.class);
+		final Product product = productRepo.getById(productId);
+		final BPartnerId manufacturerId = product.getManufacturerId();
+
+		final I_M_BannedManufacturer bannedManufacturer = queryBL
+				.createQueryBuilderOutOfTrx(I_M_BannedManufacturer.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_C_BPartner_ID, partnerId.getRepoId())
+				.addEqualsFilter(I_M_BannedManufacturer.COLUMNNAME_Manufacturer_ID, manufacturerId == null ? -1 : manufacturerId.getRepoId())
+				.create()
+				.firstOnly(I_M_BannedManufacturer.class);
+
+
+		if (bannedManufacturer == null )
+		{
+			return Optional.empty();
+		}
+
+		final ProductExclude productExclude = ProductExclude.builder()
+				.bpartnerId(partnerId)
+				.productId(productId)
+				.reason(bannedManufacturer.getExclusionFromSaleReason())
+				.build();
+
+		return Optional.of(productExclude);
 	}
 }

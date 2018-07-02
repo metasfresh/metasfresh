@@ -90,7 +90,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	@Override
 	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Pharma_Product importRecord) throws Exception
 	{
-		final org.compiere.model.I_M_Product existentProduct = productDAO.retrieveProductByValue(getCtx(), importRecord.getA00PZN());
+		final org.compiere.model.I_M_Product existentProduct = productDAO.retrieveProductByValue(importRecord.getA00PZN());
 
 		final String operationCode = importRecord.getA00SSATZ();
 		if (DEACTIVATE_OPERATION_CODE.equals(operationCode) && existentProduct != null)

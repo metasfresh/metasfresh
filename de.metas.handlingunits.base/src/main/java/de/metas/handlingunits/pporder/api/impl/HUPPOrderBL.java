@@ -3,6 +3,7 @@ package de.metas.handlingunits.pporder.api.impl;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
@@ -61,11 +62,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsDAO
 				.createHUQueryBuilder()
-
 				.addOnlyWithProductId(ppOrderBomLine.getM_Product_ID())
-				.addOnlyInWarehouseId(ppOrderBomLine.getM_Warehouse_ID())
-
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID()))
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
+				.setExcludeReserved()
 				.setOnlyTopLevelHUs()
 				.onlyNotLocked();
 	}

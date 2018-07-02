@@ -11,6 +11,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3ServerConfigService;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService;
@@ -59,7 +61,7 @@ public class M_Product
 			return;
 		}
 
-		final int productId = product.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		runAfterCommit(() -> getStockAvailabilityService().publishProductAddedEvent(productId));
 	}
 
@@ -75,7 +77,7 @@ public class M_Product
 			return;
 		}
 
-		final int productId = product.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		if (isMSV3Product)
 		{
 			runAfterCommit(() -> getStockAvailabilityService().publishProductChangedEvent(productId));
@@ -95,7 +97,7 @@ public class M_Product
 			return;
 		}
 
-		final int productId = product.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		runAfterCommit(() -> getStockAvailabilityService().publishProductDeletedEvent(productId));
 	}
 
@@ -111,7 +113,8 @@ public class M_Product
 			return false;
 		}
 
-		if (!serverConfig.getProductCategoryIds().contains(product.getM_Product_Category_ID()))
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(product.getM_Product_Category_ID());
+		if (!serverConfig.getProductCategoryIds().contains(productCategoryId))
 		{
 			return false;
 		}

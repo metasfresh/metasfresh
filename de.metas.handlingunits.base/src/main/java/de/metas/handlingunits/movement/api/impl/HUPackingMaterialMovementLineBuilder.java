@@ -75,7 +75,7 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 	public void addHURecursively(final IQueryBuilder<I_M_HU_Assignment> huAssignments)
 	{
 
-		packingMaterialsCollector.addHURecursively(huAssignments);
+		packingMaterialsCollector.releasePackingMaterialForHURecursively(huAssignments);
 	}
 
 	public List<HUPackingMaterialDocumentLineCandidate> getAndClearCandidates()

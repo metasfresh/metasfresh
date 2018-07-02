@@ -26,7 +26,7 @@ import java.util.ArrayList;
 
 import java.util.List;
 
-import org.adempiere.ad.modelvalidator.InterceptorUtil;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -66,7 +66,7 @@ public class Fresh_QtyOnHand
 			@NonNull final I_Fresh_QtyOnHand qtyOnHand,
 			@NonNull final ModelChangeType timing)
 	{
-		final boolean createDeletedEvent = timing.isDelete() || InterceptorUtil.isJustDeactivatedOrUnProcessed(qtyOnHand);
+		final boolean createDeletedEvent = timing.isDelete() || ModelChangeUtil.isJustDeactivatedOrUnProcessed(qtyOnHand);
 
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 

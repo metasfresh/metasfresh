@@ -1,7 +1,7 @@
 package org.eevolution.model.validator;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.ad.modelvalidator.InterceptorUtil;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -37,7 +37,7 @@ public class PP_Order_PostMaterialEvent
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final ModelChangeType type)
 	{
-		final boolean newPPOrder = type.isNew() || InterceptorUtil.isJustActivated(ppOrder);
+		final boolean newPPOrder = type.isNew() || ModelChangeUtil.isJustActivated(ppOrder);
 		if (!newPPOrder)
 		{
 			return;
@@ -61,7 +61,7 @@ public class PP_Order_PostMaterialEvent
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final ModelChangeType type)
 	{
-		final boolean deletedPPOrder = type.isDelete() || InterceptorUtil.isJustDeactivated(ppOrder);
+		final boolean deletedPPOrder = type.isDelete() || ModelChangeUtil.isJustDeactivated(ppOrder);
 		if (!deletedPPOrder)
 		{
 			return;

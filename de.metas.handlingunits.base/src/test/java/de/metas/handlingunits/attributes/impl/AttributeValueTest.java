@@ -39,7 +39,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
 import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
@@ -65,7 +65,7 @@ public class AttributeValueTest extends AbstractHUTest
 		final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
 		av.setValue(new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute), "value");
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test(expected = InvalidAttributeValueException.class)
@@ -76,7 +76,7 @@ public class AttributeValueTest extends AbstractHUTest
 		final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
 		av.getValue();
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test(expected = InvalidAttributeValueException.class)
@@ -94,7 +94,7 @@ public class AttributeValueTest extends AbstractHUTest
 		// Expect exception:
 		av.setValue(new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute), null);
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test

@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -110,7 +111,7 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
 				.setOnlyTopLevelHUs()
-				.addOnlyInWarehouseId(inventory.getM_Warehouse_ID());
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(inventory.getM_Warehouse_ID()));
 
 		if (locatorId > 0)
 		{

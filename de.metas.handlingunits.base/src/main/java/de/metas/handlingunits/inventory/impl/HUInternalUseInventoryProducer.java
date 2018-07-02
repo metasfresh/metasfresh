@@ -113,7 +113,10 @@ public class HUInternalUseInventoryProducer
 		// Create and setup context
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newWithThreadInheritedTrx());
+
 		huContext.setDate(getMovementDate());
+		huContext.getHUPackingMaterialsCollector()
+				.disable(); // we assume the inventory destination will do that
 
 		// Inventory allocation destination
 		final int materialDisposalDocTypeId = getInventoryDocTypeId(warehouse);
@@ -121,9 +124,9 @@ public class HUInternalUseInventoryProducer
 
 		//
 		// Create and configure Loader
-		final HULoader loader = HULoader.of(husSource, inventoryAllocationDestination)
-				.setAllowPartialLoads(true)
-				.setAutomaticallyMovePackingMaterials(false); // we assume the inventory destination will do that
+		final HULoader loader = HULoader
+				.of(husSource, inventoryAllocationDestination)
+				.setAllowPartialLoads(true);
 
 		//
 		// Unload everything from source (our HUs)
@@ -192,7 +195,7 @@ public class HUInternalUseInventoryProducer
 
 	/**
 	 * Add the HUs to be disposed.
-	 * 
+	 *
 	 * @param hus may be empty but not null.
 	 *            This class takes care of making sure that only the top level HUs are processed to avoid issue <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/578">metasfresh/metasfresh-webui-api#578</a>.
 	 *            Included lower-level HUs are processed recursively.

@@ -16,6 +16,8 @@ import org.compiere.model.IQuery;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.log.impl.EventLogEntry;
@@ -63,6 +65,13 @@ public class EventLogService
 
 	public Event loadEventForReposting(@NonNull final I_AD_EventLog eventLogRecord)
 	{
+		return loadEventForReposting(eventLogRecord, ImmutableList.of());
+	}
+
+	public Event loadEventForReposting(
+			@NonNull final I_AD_EventLog eventLogRecord,
+			@NonNull final List<String> handlersToIgnore)
+	{
 		final String eventString = eventLogRecord.getEventData();
 		final Event eventFromStoredString = JacksonJsonEventSerializer.instance.fromString(eventString);
 
@@ -72,6 +81,7 @@ public class EventLogService
 				.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_AD_EventLog_ID, eventLogRecord.getAD_EventLog_ID())
 				.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Processed, true)
 				.addNotEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Classname, null)
+				.addNotInArrayFilter(I_AD_EventLog_Entry.COLUMN_Classname, handlersToIgnore)
 				.create()
 				.listDistinct(I_AD_EventLog_Entry.COLUMNNAME_Classname, String.class);
 

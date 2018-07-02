@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1042155202L;
+	private static final long serialVersionUID = -1253281526L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -30,6 +30,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			setIsCreateDefaultPOReference (false); // N
 			setIsCustomer (false);
 			setIsEmployee (false);
+			setIsManufacturer (false); // N
 			setIsOneTime (false);
 			setIsPOTaxExempt (false); // N
 			setIsProspect (false);
@@ -1043,6 +1044,29 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isEmployee () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsEmployee);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Manufacturer.
+		@param IsManufacturer Manufacturer	  */
+	@Override
+	public void setIsManufacturer (boolean IsManufacturer)
+	{
+		set_Value (COLUMNNAME_IsManufacturer, Boolean.valueOf(IsManufacturer));
+	}
+
+	/** Get Manufacturer.
+		@return Manufacturer	  */
+	@Override
+	public boolean isManufacturer () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsManufacturer);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

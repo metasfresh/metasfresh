@@ -10,18 +10,17 @@ package org.adempiere.util.collections;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,11 +34,13 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.Predicate;
 
+import lombok.NonNull;
+
 /**
  * Miscellaneous List utility methods
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public final class ListUtils
 {
@@ -50,7 +51,7 @@ public final class ListUtils
 
 	/**
 	 * Convert given <code>list</code> to string using given <code>separator</code>.
-	 * 
+	 *
 	 * @param list list to be converted to string
 	 * @param separator between elements separator
 	 * @return string representation
@@ -66,7 +67,7 @@ public final class ListUtils
 
 	/**
 	 * Convert given <code>list</code> to string using given <code>separator</code>.
-	 * 
+	 *
 	 * @param list list to be converted to string
 	 * @param separator between elements separator
 	 * @param elementStringConverter converter to be used when converting one list element to string
@@ -118,7 +119,7 @@ public final class ListUtils
 			return Collections.emptyList();
 		}
 
-		final List<Integer> list = new ArrayList<Integer>(arr.length);
+		final List<Integer> list = new ArrayList<>(arr.length);
 		for (int i : arr)
 		{
 			list.add(i);
@@ -129,7 +130,7 @@ public final class ListUtils
 
 	/**
 	 * Creates a copy as list of given iterable.
-	 * 
+	 *
 	 * @param iterable
 	 * @return list or null if the parameter was null
 	 */
@@ -190,9 +191,9 @@ public final class ListUtils
 
 	/**
 	 * Creates a new list having all elements from given <code>list</code> in reversed order.
-	 * 
+	 *
 	 * NOTE: returning list is not guaranteed to me modifiable.
-	 * 
+	 *
 	 * @param list
 	 * @return
 	 */
@@ -212,7 +213,7 @@ public final class ListUtils
 
 		return listCopy;
 	}
-	
+
 	/**
 	 * @param list
 	 * @param predicate
@@ -221,9 +222,8 @@ public final class ListUtils
 	public static final <E> List<E> copyAndFilter(final List<? extends E> list, final Predicate<? super E> predicate)
 	{
 		final List<E> copy = new ArrayList<>();
-		for (final Iterator<? extends E> it = list.iterator(); it.hasNext();)
+		for (final E element : list)
 		{
-			final E element = it.next();
 			if (predicate.apply(element))
 			{
 				copy.add(element);
@@ -232,12 +232,11 @@ public final class ListUtils
 		return copy;
 	}
 
-
 	/**
 	 * Assumes that only one element will be matched by filter and returns it.
-	 * 
+	 *
 	 * If there were more elements matching or no element was matching an exception will be thrown.
-	 * 
+	 *
 	 * @param collection
 	 * @param filter filter used to match the element
 	 * @return matching element; returns null ONLY if the element is null
@@ -265,24 +264,23 @@ public final class ListUtils
 
 	/**
 	 * Assumes that given collection has one element only and returns it.
-	 * 
+	 *
 	 * If the collection has more elements or no element then an exception will be thrown.
-	 * 
+	 *
 	 * @param collection
 	 * @return element; returns null ONLY if the element is null
 	 */
-	public static <T> T singleElement(final Collection<T> collection)
+	public static <T> T singleElement(@NonNull final Collection<T> collection)
 	{
-		Check.assumeNotNull(collection, "collection not null");
-		Check.assume(collection.size() == 1, "One and only one was expected for: {}", collection);
+		Check.errorUnless(collection.size() == 1, "The given collection needs to have exactly one 1 item, but has {} items; collection={}", collection);
 		return collection.iterator().next();
 	}
 
 	/**
 	 * Assumes that given collection has one element only and returns it.
-	 * 
+	 *
 	 * If the collection has more elements or no element then <code>null</code> will be returned.
-	 * 
+	 *
 	 * @param collection
 	 * @return element
 	 */
@@ -294,9 +292,9 @@ public final class ListUtils
 
 	/**
 	 * Assumes that given collection has one element only and returns it.
-	 * 
+	 *
 	 * If the collection has more elements or no element then <code>defaultValue</code> will be returned.
-	 * 
+	 *
 	 * @param collection
 	 * @param defaultValue value to be returned in case there are more then one elements or no element
 	 * @return element
@@ -322,7 +320,7 @@ public final class ListUtils
 
 	/**
 	 * Converts the element of given <code>list</code> of type <code>InputType</code> to a list of <code>OutputType</code> by using given <code>converter</code>.
-	 * 
+	 *
 	 * @param list input list (i.e. list to convert)
 	 * @param converter converter to be used to convert elements
 	 * @return list of OutputTypes.
@@ -350,9 +348,9 @@ public final class ListUtils
 
 	/**
 	 * Removes first element from {@link Set} and returns it.
-	 * 
+	 *
 	 * NOTE: this method is NOT checking if the set is null or empty.
-	 * 
+	 *
 	 * @param set
 	 * @return firt element
 	 */

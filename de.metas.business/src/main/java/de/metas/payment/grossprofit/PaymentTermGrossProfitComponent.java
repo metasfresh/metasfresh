@@ -7,8 +7,8 @@ import org.adempiere.util.Services;
 import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.money.grossprofit.GrossProfitComponent;
-import de.metas.payment.api.IPaymentTermRepository;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
 import lombok.NonNull;
 
 /*
