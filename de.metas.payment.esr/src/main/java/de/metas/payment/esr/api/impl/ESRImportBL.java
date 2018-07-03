@@ -54,12 +54,12 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.adempiere.service.IPeriodBL;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.calendar.IPeriodBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;

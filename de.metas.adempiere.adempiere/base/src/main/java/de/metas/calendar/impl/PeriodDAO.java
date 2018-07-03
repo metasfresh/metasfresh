@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.calendar.impl;
 
 /*
  * #%L
@@ -32,8 +32,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_PeriodControl;
 
-import de.metas.adempiere.service.IPeriodDAO;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.calendar.IPeriodDAO;
 
 public class PeriodDAO implements IPeriodDAO
 {

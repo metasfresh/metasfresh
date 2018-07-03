@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.calendar.impl;
 
 /*
  * #%L
@@ -32,8 +32,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 
-import de.metas.adempiere.service.ICalendarBL;
-import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.ICalendarDAO;
 
 public abstract class AbstractCalendarDAO implements ICalendarDAO
 {

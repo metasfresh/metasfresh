@@ -40,9 +40,9 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.ICalendarBL;
-import de.metas.adempiere.service.IPeriodBL;
-import de.metas.adempiere.service.IPeriodDAO;
+import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.IPeriodBL;
+import de.metas.calendar.IPeriodDAO;
 import de.metas.logging.LogManager;
 
 /**
