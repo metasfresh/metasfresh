@@ -1,10 +1,10 @@
 import Moment from 'moment';
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
+import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 import { DATE_FORMAT } from '../../constants/Constants';
 import ActionButton from './ActionButton';
@@ -21,14 +21,6 @@ import List from './List/List';
 import Lookup from './Lookup/Lookup';
 
 class RawWidget extends Component {
-  static propTypes = {
-    handleZoomInto: PropTypes.func,
-  };
-
-  static defaultProps = {
-    handleZoomInto: () => {},
-  };
-
   constructor(props) {
     super(props);
 
@@ -974,60 +966,8 @@ class RawWidget extends Component {
   }
 }
 
-RawWidget.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  autoFocus: PropTypes.bool,
-  textSelected: PropTypes.bool,
-  listenOnKeys: PropTypes.bool,
-  listenOnKeysFalse: PropTypes.func,
-  listenOnKeysTrue: PropTypes.func,
-  widgetData: PropTypes.array,
-  handleFocus: PropTypes.func,
-  handlePatch: PropTypes.func,
-  handleBlur: PropTypes.func,
-  handleProcess: PropTypes.func,
-  handleChange: PropTypes.func,
-  handleBackdropLock: PropTypes.func,
-  tabId: PropTypes.string,
-  viewId: PropTypes.string,
-  rowId: PropTypes.string,
-  dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  windowType: PropTypes.string,
-  caption: PropTypes.string,
-  gridAlign: PropTypes.string,
-  type: PropTypes.string,
-  updated: PropTypes.bool,
-  isModal: PropTypes.bool,
-  modalVisible: PropTypes.bool.isRequired,
-  filterWidget: PropTypes.bool,
-  filterId: PropTypes.string,
-  id: PropTypes.number,
-  range: PropTypes.bool,
-  onShow: PropTypes.func,
-  onHide: PropTypes.func,
-  subentity: PropTypes.string,
-  subentityId: PropTypes.string,
-  tabIndex: PropTypes.number,
-  dropdownOpenCallback: PropTypes.func,
-  fullScreen: PropTypes.string,
-  widgetType: PropTypes.string,
-  fields: PropTypes.array,
-  icon: PropTypes.string,
-  entity: PropTypes.string,
-  data: PropTypes.any,
-  closeTableField: PropTypes.func,
-  attribute: PropTypes.bool,
-  allowShowPassword: PropTypes.bool, // NOTE: looks like this wasn't used
-  buttonProcessId: PropTypes.string, // NOTE: looks like this wasn't used
-  onBlurWidget: PropTypes.func,
-  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
-  noLabel: PropTypes.bool,
-  isOpenDatePicker: PropTypes.bool,
-};
-
-RawWidget.defaultProps = {
-  tabIndex: 0,
-};
+RawWidget.propTypes = RawWidgetPropTypes;
+RawWidget.defaultProps = RawWidgetDefaultProps;
 
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
