@@ -74,10 +74,11 @@ public class BPPurchaseSchedule
 			@NonNull final Frequency frequency,
 			@Singular @NonNull final ImmutableMap<DayOfWeek, LocalTime> dailyPreparationTimes,
 			@NonNull final Duration reminderTime,
-			final Duration leadTimeOffset,
+			@NonNull final Duration leadTimeOffset,
 			@NonNull final BPartnerId bpartnerId)
 	{
 		Check.assume(!reminderTime.isNegative(), "reminderTime shall be >= 0 but it was {}", reminderTime);
+		Check.assume(!leadTimeOffset.isNegative(), "leadTimeOffset shall be >= 0 but it was {}", leadTimeOffset);
 
 		this.validFrom = validFrom != null ? validFrom : DEFAULT_VALID_FROM;
 		this.frequency = frequency;
