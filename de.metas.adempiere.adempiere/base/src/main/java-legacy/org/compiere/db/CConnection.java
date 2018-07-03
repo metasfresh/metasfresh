@@ -70,11 +70,6 @@ public final class CConnection implements Serializable, Cloneable
 		LogManager.skipIssueReportingForLoggerName(log);
 	}
 
-	/** System property flag to embed server bean in process **/
-	public final static String SERVER_EMBEDDED_PROPERTY = "de.metas.server.embedded";
-
-	public final static String SERVER_EMBEDDED_APPSERVER_HOSTNAME = "localhost";
-
 	public final static int SERVER_DEFAULT_APPSERVER_PORT = 61616;
 
 	/**
@@ -183,7 +178,7 @@ public final class CConnection implements Serializable, Cloneable
 	} 	// CConnection
 
 	/** Connection attributes */
-	private final CConnectionAttributes attrs = new CConnectionAttributes();
+	private transient final CConnectionAttributes attrs = new CConnectionAttributes();
 	/** Database */
 	private volatile AdempiereDatabase _database = null;
 	private Exception m_appsException = null;
@@ -251,11 +246,6 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public String getAppsHost()
 	{
-		if (isServerEmbedded())
-		{
-			return SERVER_EMBEDDED_APPSERVER_HOSTNAME;
-		}
-
 		return attrs.getAppsHost();
 	}
 
@@ -298,10 +288,6 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public int getAppsPort()
 	{
-		if (isServerEmbedded())
-		{
-			return SERVER_DEFAULT_APPSERVER_PORT;
-		}
 		final int appsPort = attrs.getAppsPort();
 		if (appsPort > 0)
 		{
@@ -426,10 +412,6 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public synchronized Exception testAppsServer()
 	{
-		if (CConnection.isServerEmbedded())
-		{
-			return null; // there is nothing to do
-		}
 		queryAppsServerInfo();
 		return getAppsServerException();
 	} 	// testAppsServer
@@ -1365,14 +1347,6 @@ public final class CConnection implements Serializable, Cloneable
 			return "SERIALIZABLE";
 		return "<?" + transactionIsolation + "?>";
 	}	// getTransactionIsolationInfo
-
-	/**
-	 * @return true if server is embedded in process
-	 */
-	public static boolean isServerEmbedded()
-	{
-		return Boolean.getBoolean(SERVER_EMBEDDED_PROPERTY); // return the system property
-	}
 
 	@Override
 	public Object clone() throws CloneNotSupportedException
