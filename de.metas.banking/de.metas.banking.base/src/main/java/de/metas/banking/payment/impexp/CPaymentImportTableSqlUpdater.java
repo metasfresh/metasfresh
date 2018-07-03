@@ -56,7 +56,7 @@ public class CPaymentImportTableSqlUpdater
 	{
 		StringBuilder sql = new StringBuilder("UPDATE I_Datev_Payment i ")
 				.append("SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner bp ")
-				.append(" WHERE (i.BPartnerValue=bp.Debtorid OR i.BPartnerValue=bp.CreditorId) AND i.AD_Client_ID=bp.AD_Client_ID) ")
+				.append(" WHERE (i.BPartnerValue=bp.Debtorid OR i.BPartnerValue=bp.CreditorId) AND i.AD_Client_ID=bp.AD_Client_ID AND i.AD_Org_ID=bp.AD_Org_ID ) ")
 				.append("WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
@@ -69,7 +69,7 @@ public class CPaymentImportTableSqlUpdater
 				.append("SET C_Invoice_ID = (SELECT C_Invoice_ID FROM C_Invoice inv ")
 				.append("WHERE i.InvoiceDocumentNo = inv.DocumentNo ")
 				.append("AND round((i.PayAmt+i.DiscountAmt),2) = round(inv.GrandTotal,2) AND i.DateTrx = inv.DateInvoiced ")
-				.append("AND i.AD_Client_ID=inv.AD_Client_ID) ")
+				.append("AND i.AD_Client_ID=inv.AD_Client_ID AND i.AD_Org_ID=inv.AD_Org_ID ) ")
 				.append("WHERE C_Invoice_ID IS NULL AND InvoiceDocumentNo IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
