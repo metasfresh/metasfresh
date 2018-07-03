@@ -68,13 +68,16 @@ class RawWidget extends Component {
 
   handleFocus = e => {
     const { dispatch, handleFocus, listenOnKeysFalse } = this.props;
+    const el = e.target;
 
     dispatch(disableShortcut());
 
-    this.setState({
-      isEdited: true,
-      cachedValue: e.target.value,
-    });
+    setTimeout(() => {
+      this.setState({
+        isEdited: true,
+        cachedValue: el.value,
+      });
+    }, 0);
 
     listenOnKeysFalse && listenOnKeysFalse();
     handleFocus && handleFocus();
@@ -115,10 +118,11 @@ class RawWidget extends Component {
   // and send a patch request only if date is changed
   handlePatch = (property, value, id, valueTo, isForce) => {
     const { handlePatch } = this.props;
+    const willPatch = this.willPatch(value, valueTo);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if ((isForce || this.willPatch(value, valueTo)) && handlePatch) {
+    if ((isForce || willPatch) && handlePatch) {
       this.setState({
         cachedValue: value,
         clearedFieldWarning: false,
