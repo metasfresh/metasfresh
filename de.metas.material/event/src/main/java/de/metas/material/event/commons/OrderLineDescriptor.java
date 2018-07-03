@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -33,11 +34,15 @@ import lombok.Value;
 @Value
 public class OrderLineDescriptor implements DocumentLineDescriptor
 {
+	public static OrderLineDescriptor cast(@NonNull final DocumentLineDescriptor documentLineDescriptor)
+	{
+		return (OrderLineDescriptor)documentLineDescriptor;
+	}
+
 	int orderLineId;
 	int orderId;
 	int orderBPartnerId;
 	int docTypeId;
-
 
 	@Builder
 	@JsonCreator
@@ -61,4 +66,5 @@ public class OrderLineDescriptor implements DocumentLineDescriptor
 		checkIdGreaterThanZero("orderBPartnerId", orderBPartnerId);
 		checkIdGreaterThanZero("docTypeId", docTypeId);
 	}
+
 }

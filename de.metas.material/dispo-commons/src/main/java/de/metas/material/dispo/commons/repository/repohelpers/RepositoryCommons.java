@@ -1,5 +1,8 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
+import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -18,9 +21,9 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;
@@ -117,17 +120,17 @@ public class RepositoryCommons
 			}
 		}
 
-		if (query.getParentDemandDetail() != null)
+		if (query.getParentDemandDetailsQuery() != null)
 		{
 			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter();
-			addDemandDetailToBuilder(query.getParentDemandDetail(), parentBuilder);
+			addDemandDetailToBuilder(query.getParentDemandDetailsQuery(), parentBuilder);
 			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, I_MD_Candidate.COLUMN_MD_Candidate_ID, parentBuilder.create());
 		}
 
-		if (query.getDemandDetail() != null)
+		if (query.getDemandDetailsQuery() != null)
 		{
-			addDemandDetailToBuilder(query.getDemandDetail(), builder);
+			addDemandDetailToBuilder(query.getDemandDetailsQuery(), builder);
 		}
 
 		addProductionDetailToFilter(query, builder);
@@ -245,10 +248,10 @@ public class RepositoryCommons
 	 * @param builder
 	 */
 	private void addDemandDetailToBuilder(
-			@Nullable final DemandDetail demandDetail,
+			@Nullable final DemandDetailsQuery demandDetailsQuery,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		if (demandDetail == null)
+		if (demandDetailsQuery == null)
 		{
 			return;
 		}
@@ -257,25 +260,32 @@ public class RepositoryCommons
 				.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
 				.addOnlyActiveRecordsFilter();
 
-		final boolean hasOrderLine = demandDetail.getOrderLineId() > 0;
+		final boolean hasOrderLine = demandDetailsQuery.getOrderLineId() != UNSPECIFIED_REPO_ID;
 		if (hasOrderLine)
 		{
 			demandDetailsSubQueryBuilder
-					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_C_OrderLine_ID, demandDetail.getOrderLineId());
+					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_C_OrderLine_ID, toRepoId(demandDetailsQuery.getOrderLineId()));
 		}
 
-		final boolean hasShipmentschedule = demandDetail.getShipmentScheduleId() > 0;
+		final boolean hasSubscriptionLine = demandDetailsQuery.getSubscriptionLineId() != UNSPECIFIED_REPO_ID;
+		if (hasSubscriptionLine)
+		{
+			demandDetailsSubQueryBuilder
+					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_C_SubscriptionProgress_ID, toRepoId(demandDetailsQuery.getSubscriptionLineId()));
+		}
+
+		final boolean hasShipmentschedule = demandDetailsQuery.getShipmentScheduleId() != UNSPECIFIED_REPO_ID;
 		if (hasShipmentschedule)
 		{
 			demandDetailsSubQueryBuilder
-					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMNNAME_M_ShipmentSchedule_ID, demandDetail.getShipmentScheduleId());
+					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMNNAME_M_ShipmentSchedule_ID, toRepoId(demandDetailsQuery.getShipmentScheduleId()));
 		}
 
-		final boolean hasForecastLine = demandDetail.getForecastLineId() > 0;
+		final boolean hasForecastLine = demandDetailsQuery.getForecastLineId() != UNSPECIFIED_REPO_ID;
 		if (hasForecastLine)
 		{
 			demandDetailsSubQueryBuilder
-					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_M_ForecastLine_ID, demandDetail.getForecastLineId());
+					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_M_ForecastLine_ID, toRepoId(demandDetailsQuery.getForecastLineId()));
 		}
 
 		if (hasOrderLine || hasForecastLine || hasShipmentschedule)
