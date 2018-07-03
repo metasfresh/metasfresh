@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -155,6 +156,40 @@ public class AvailableToPromiseRepositoryTest
 		assertThat(result).isEqualByComparingTo("10");
 	}
 
+	@Test
+	{
+		createStockRecord(0, BEFORE_NOW); // belongs to "any" bpartner
+		createStockRecord(BPARTNER_ID, BEFORE_NOW);
+		createStockRecord(BPARTNER_ID + 10, BEFORE_NOW); // belongs to an unrelated bPartner
+
+		final AvailableToPromiseMultiQueryBuilder multiQueryBuilder = AvailableToPromiseMultiQuery
+				.builder()
+				.addToPredefinedBuckets(false);
+		
+		final AvailableToPromiseQuery query1 = AvailableToPromiseQuery
+				.builder()
+				.productId(PRODUCT_ID)
+				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.bpartnerId(BPARTNER_ID)
+				.build();
+		multiQueryBuilder.query(query1);
+		
+		final AvailableToPromiseQuery query2 = AvailableToPromiseQuery
+				.builder()
+				.productId(PRODUCT_ID)
+				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.bpartnerId(BPARTNER_ID + 10)
+				.build();
+		multiQueryBuilder.query(query2);
+
+		final AvailableToPromiseResult result = new AvailableToPromiseRepository().retrieveAvailableStock(multiQueryBuilder.build());
+
+		assertThat(result).isNotNull();
+		assertThat(result.getResultGroups()).hasSize(2);
+		
+		System.out.println("Result: " + result);
+	}
+	
 	private int seqNoCounter;
 
 	private I_MD_Candidate_ATP_QueryResult createStockRecord(
