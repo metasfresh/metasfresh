@@ -157,6 +157,7 @@ public class AvailableToPromiseRepositoryTest
 	}
 
 	@Test
+	public void retrieveAvailableStock_UsingMultiQuery()
 	{
 		createStockRecord(0, BEFORE_NOW); // belongs to "any" bpartner
 		createStockRecord(BPARTNER_ID, BEFORE_NOW);
