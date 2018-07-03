@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -12,9 +13,17 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+
 import de.metas.material.dispo.commons.model.I_C_OrderLine;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -47,18 +56,42 @@ public class OrderAvailableToPromiseTool
 {
 	public static void updateOrderLineRecords(@NonNull final I_C_Order orderRecord)
 	{
-		final Stream<I_C_OrderLine> orderLineRecords = Services.get(IQueryBL.class)
+		// we use the date at which the order needs to be ready for shipping
+		final LocalDateTime preparationDate = TimeUtil.asLocalDateTime(orderRecord.getPreparationDate());
+
+		final List<I_C_OrderLine> orderLineRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
 				.create()
-				.stream();
+				.list();
 
-		orderLineRecords.forEach(orderLineRecord -> {
-			updateOrderLineRecordAndDoNotSave(orderLineRecord);
-			saveRecord(orderLineRecord);
-		});
-		
+		final ImmutableListMultimap<OrderLineKey, I_C_OrderLine> //
+		keys2orderLines = Multimaps.index(orderLineRecords, OrderLineKey::forOrderLineRecord);
+
+		final AvailableToPromiseMultiQueryBuilder multiQueryBuilder = AvailableToPromiseMultiQuery
+				.builder()
+				.addToPredefinedBuckets(true);
+
+		final ImmutableSet<OrderLineKey> keySet = keys2orderLines.keySet();
+		for (final OrderLineKey orderLineKey : keySet)
+		{
+			final AvailableToPromiseQuery query = createSingleQuery(preparationDate, orderLineKey);
+			multiQueryBuilder.query(query);
+		}
+
+		final AvailableToPromiseRepository stockRepository = Adempiere.getBean(AvailableToPromiseRepository.class);
+		final AvailableToPromiseResult result = stockRepository.retrieveAvailableStock(multiQueryBuilder.build());
+
+		for (final ResultGroup resultGroup : result.getResultGroups())
+		{
+			final OrderLineKey key = OrderLineKey.forResultGroup(resultGroup);
+			for (final I_C_OrderLine orderLineRecord : keys2orderLines.get(key))
+			{
+				orderLineRecord.setQty_AvailableToPromise(resultGroup.getQty());
+				saveRecord(orderLineRecord);
+			}
+		}
 	}
 
 	public static void resetQtyAvailableToPromise(@NonNull final I_C_Order orderRecord)
@@ -123,6 +156,14 @@ public class OrderAvailableToPromiseTool
 					productDescriptor.getStorageAttributesKey(),
 					orderLineRecord.getC_BPartner_ID() // this column is mandatory and always > 0.
 			);
+		}
+
+		private static OrderLineKey forResultGroup(@NonNull final ResultGroup resultGroup)
+		{
+			return new OrderLineKey(
+					resultGroup.getProductId(),
+					resultGroup.getStorageAttributesKey(),
+					resultGroup.getBpartnerId());
 		}
 
 		private OrderLineKey(
