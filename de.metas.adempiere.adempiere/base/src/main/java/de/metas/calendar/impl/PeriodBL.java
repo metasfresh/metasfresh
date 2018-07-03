@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.calendar.impl;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ import org.compiere.model.X_C_PeriodControl;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IPeriodBL;
+import de.metas.calendar.IPeriodBL;
 import de.metas.logging.LogManager;
 
 public class PeriodBL implements IPeriodBL

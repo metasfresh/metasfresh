@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.calendar.impl;
 
 /*
  * #%L
@@ -42,10 +42,10 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.X_C_Period;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.service.ICalendarBL;
-import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.calendar.ExcludeWeekendBusinessDayMatcher;
 import de.metas.calendar.IBusinessDayMatcher;
+import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.ICalendarDAO;
 
 public class CalendarBL implements ICalendarBL
 {
