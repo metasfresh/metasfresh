@@ -64,9 +64,9 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.service.IPeriodBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.IAttachmentBL;
+import de.metas.calendar.IPeriodBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.refid.api.IReferenceNoDAO;

@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.calendar.impl;
 
 /*
  * #%L

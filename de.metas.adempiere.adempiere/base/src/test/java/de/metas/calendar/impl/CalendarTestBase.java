@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.calendar.impl;
 
 /*
  * #%L
@@ -35,7 +35,8 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
-import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.impl.PlainCalendarDAO;
 
 public class CalendarTestBase
 {

@@ -34,10 +34,10 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.calendar.IBusinessDayMatcher;
+import de.metas.calendar.ICalendarBL;
 import de.metas.tourplanning.api.ITourDAO;
 import de.metas.tourplanning.api.ITourVersionRange;
 import de.metas.tourplanning.model.I_M_Tour;

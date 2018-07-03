@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.calendar.impl;
 
 /*
  * #%L
@@ -35,7 +35,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.adempiere.service.ICalendarBL;
+import de.metas.calendar.ICalendarBL;
 
 public class CalendarBLTest extends CalendarTestBase
 {
