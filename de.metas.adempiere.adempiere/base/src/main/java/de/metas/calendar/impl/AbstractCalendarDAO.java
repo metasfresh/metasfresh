@@ -37,7 +37,13 @@ import de.metas.calendar.ICalendarDAO;
 
 public abstract class AbstractCalendarDAO implements ICalendarDAO
 {
-	// private final transient Logger logger = CLogMgt.getLogger(getClass());
+//	@Override
+//	@Cached
+//	public I_C_Calendar getById(int calendarId)
+//	{
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	protected abstract List<I_C_Period> retrievePeriods(
 			final Properties ctx,
