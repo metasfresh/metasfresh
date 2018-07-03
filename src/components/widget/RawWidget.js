@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
+import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 import { DATE_FORMAT } from '../../constants/Constants';
 import ActionButton from './ActionButton';
@@ -31,6 +32,9 @@ class RawWidget extends Component {
       tooltipToggled: false,
       clearedFieldWarning: false,
     };
+
+    this.getClassNames = getClassNames.bind(this);
+    this.generateMomentObj = generateMomentObj.bind(this);
   }
 
   componentDidMount() {
@@ -166,50 +170,6 @@ class RawWidget extends Component {
     );
   };
 
-  generateMomentObj = value => {
-    if (Moment.isMoment(value)) {
-      return value;
-    }
-    return value ? Moment(value).format(DATE_FORMAT) : null;
-  };
-
-  classNames = classObject =>
-    Object.entries(classObject)
-      .filter(([, classActive]) => classActive)
-      .map(([className]) => className)
-      .join(' ');
-
-  getClassNames = ({ icon, forcedPrimary } = {}) => {
-    const { widgetData, gridAlign, type, updated, rowId, isModal } = this.props;
-    const { isEdited } = this.state;
-    const { readonly, value, mandatory, validStatus } = widgetData[0];
-
-    return this.classNames({
-      'input-block': true,
-      'input-icon-container': icon,
-      'input-disabled': readonly,
-      'input-mandatory':
-        mandatory && (value ? value.length === 0 : value !== 0),
-      'input-error':
-        validStatus &&
-        !validStatus.valid &&
-        !validStatus.initialValue &&
-        !isEdited,
-      [`text-xs-${gridAlign}`]: gridAlign,
-      [`input-${
-        type === 'primary' || forcedPrimary ? 'primary' : 'secondary'
-      }`]: true,
-      [`pulse-${updated ? 'on' : 'off'}`]: true,
-      'input-table': rowId && !isModal,
-    });
-  };
-
-  renderErrorPopup = reason => {
-    return (
-      <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
-    );
-  };
-
   clearFieldWarning = warning => {
     if (warning) {
       this.setState({
@@ -222,6 +182,12 @@ class RawWidget extends Component {
     this.setState({
       tooltipToggled: show,
     });
+  };
+
+  renderErrorPopup = reason => {
+    return (
+      <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
+    );
   };
 
   renderWidget = () => {
