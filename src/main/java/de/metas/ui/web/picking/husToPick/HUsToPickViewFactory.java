@@ -99,7 +99,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 		if (shipmentScheduleRecord.getC_OrderLine_ID() > 0)
 		{
 			final OrderLineId orderLineId = OrderLineId.ofRepoId(shipmentScheduleRecord.getC_OrderLine_ID());
-			stickyFilter = huReservationDocumentFilterService.createOrderLineDocumentFilter(orderLineId);
+			stickyFilter = huReservationDocumentFilterService.createOrderLineDocumentFilter(orderLineId, true);
 		}
 		else
 		{
