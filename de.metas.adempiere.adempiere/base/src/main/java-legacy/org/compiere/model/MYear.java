@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -24,203 +24,156 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.process.DocumentTypeVerify;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 
-
 /**
- *	Year Model
- *	
- *  @author Jorg Janke
- *  @version $Id: MYear.java,v 1.5 2006/10/11 04:12:39 jjanke Exp $
+ * Year Model
  * 
+ * @author Jorg Janke
+ * @version $Id: MYear.java,v 1.5 2006/10/11 04:12:39 jjanke Exp $
+ *
  * @author Teo Sarca, www.arhipac.ro
- * 			<li>BF [ 1761918 ] Error creating periods for a year with per. created partial
- * 			<li>BF [ 2430755 ] Year Create Periods display proper error message
+ *         <li>BF [ 1761918 ] Error creating periods for a year with per. created partial
+ *         <li>BF [ 2430755 ] Year Create Periods display proper error message
  */
+@SuppressWarnings("serial")
 public class MYear extends X_C_Year
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2110541427179611810L;
+	private static final Logger logger = LogManager.getLogger(MYear.class);
 
-	/**
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param C_Year_ID id
-	 *	@param trxName transaction
-	 */
-	public MYear (Properties ctx, int C_Year_ID, String trxName)
+	public MYear(final Properties ctx, final int C_Year_ID, final String trxName)
 	{
-		super (ctx, C_Year_ID, trxName);
-		if (C_Year_ID == 0)
+		super(ctx, C_Year_ID, trxName);
+		if (is_new())
 		{
-		//	setC_Calendar_ID (0);
-		//	setYear (null);
-			setProcessing (false);	// N
-		}		
-	}	//	MYear
+			// setC_Calendar_ID (0);
+			// setYear (null);
+			setProcessing(false);	// N
+		}
+	}
 
-	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
-	public MYear (Properties ctx, ResultSet rs, String trxName)
+	public MYear(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MYear
-	
-	/**
-	 * 	Parent Constructor
-	 *	@param calendar parent
-	 */
-	public MYear (MCalendar calendar)
+	}
+
+	private int getYearAsInt()
 	{
-		this (calendar.getCtx(), 0, calendar.get_TrxName());
-		setClientOrg(calendar);
-		setC_Calendar_ID(calendar.getC_Calendar_ID());
-		setYear();
-	}	//	MYear
-	
-	
+		return getYearAsInt(getFiscalYear());
+	}
+
 	/**
-	 * 	Set current Year
+	 * @return year as int or 0
 	 */
-	private void setYear ()
+	private static int getYearAsInt(final String year)
 	{
-		GregorianCalendar cal = new GregorianCalendar(Language.getLoginLanguage().getLocale());
-		String Year = String.valueOf(cal.get(Calendar.YEAR));
-		super.setFiscalYear(Year);
-	}	//	setYear
-	
-	/**
-	 * 	Get Year As Int
-	 *	@return year as int or 0
-	 */
-	public int getYearAsInt()
-	{
-		String year = getFiscalYear();
 		try
 		{
 			return Integer.parseInt(year);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			StringTokenizer st = new StringTokenizer(year, "/-, \t\n\r\f");
+			final StringTokenizer st = new StringTokenizer(year, "/-, \t\n\r\f");
 			if (st.hasMoreTokens())
 			{
-				String year2 = st.nextToken();
+				final String year2 = st.nextToken();
 				try
 				{
 					return Integer.parseInt(year2);
 				}
-				catch (Exception e2)
+				catch (final Exception e2)
 				{
-					log.warn(year + "->" + year2 + " - " + e2.toString());
+					logger.warn(year + "->" + year2 + " - " + e2.toString());
 				}
 			}
 			else
-				log.warn(year + " - " + e.toString());
+			{
+				logger.warn(year + " - " + e.toString());
+			}
 		}
 		return 0;
-	}	//	getYearAsInt
-	
-	/**
-	 * 	Get last two characters of year
-	 *	@return 01
-	 */
-	public String getYY()
-	{
-		int yy = getYearAsInt();
-		String year = String.valueOf(yy);
-		if (year.length() == 4)
-			return year.substring(2, 4);
-		return getFiscalYear();
-	}	//	getYY
-	
-	/**
-	 * 	String Representation
-	 *	@return info
-	 */
-	public String toString ()
-	{
-		StringBuffer sb = new StringBuffer ("MYear[");
-		sb.append(get_ID()).append("-")
-			.append(getFiscalYear())
-			.append ("]");
-		return sb.toString ();
-	}	//	toString
-	
-	
+	}	// getYearAsInt
+
 	@Override
-	protected boolean beforeSave (boolean newRecord)
+	public String toString()
 	{
-		int yy = getYearAsInt();
-		if (yy == 0)
+		final StringBuilder sb = new StringBuilder("MYear[");
+		sb.append(get_ID()).append("-")
+				.append(getFiscalYear())
+				.append("]");
+		return sb.toString();
+	}	// toString
+
+	@Override
+	protected boolean beforeSave(final boolean newRecord)
+	{
+		final int yy = getYearAsInt();
+		if (yy <= 0)
 		{
 			throw new FillMandatoryException(COLUMNNAME_FiscalYear);
 		}
 		return true;
-	}	//	beforeSave
-	
-		/**
-	 * 	Create 12 Standard (Jan-Dec) Periods.
-	 * 	Creates also Period Control from DocType.
-	 * 	@see DocumentTypeVerify#createPeriodControls(Properties, int, JavaProcess, String)
-	 * 	@param locale locale 
-	 *	@return true if created
-	 */
-	public void createStdPeriods(Locale locale)
-	{
-		createStdPeriods(locale, null, null);
-		
-	}	//	createStdPeriods
-	
+	}	// beforeSave
+
 	/**
-	 * 	Create 12 Standard Periods from the specified start date.
-	 * 	Creates also Period Control from DocType.
-	 * 	@see DocumentTypeVerify#createPeriodControls(Properties, int, JavaProcess, String)
-	 * 	@param locale locale
-	 *	@param startDate first day of the calendar year
-     *  @param dateFormat SimpleDateFormat pattern for generating the period names.
-	 *	@return true if created
+	 * Create 12 Standard Periods from the specified start date.
+	 * Creates also Period Control from DocType.
+	 * 
+	 * @see DocumentTypeVerify#createPeriodControls(Properties, int, JavaProcess, String)
+	 * @param locale locale
+	 * @param startDate first day of the calendar year
+	 * @param dateFormat SimpleDateFormat pattern for generating the period names.
 	 */
-	public boolean createStdPeriods(Locale locale, Timestamp startDate, String dateFormat)
+	public static void createStdPeriods(final I_C_Year yearRecord, Locale locale, final Timestamp startDate, String dateFormat)
 	{
+		final Properties ctx = Env.getCtx();
+		final int calendarId = yearRecord.getC_Calendar_ID();
+		final int yearId = yearRecord.getC_Year_ID();
+
 		if (locale == null)
 		{
-			MClient client = MClient.get(getCtx());
+			final MClient client = MClient.get(ctx);
 			locale = client.getLocale();
 		}
-		
+
 		if (locale == null && Language.getLoginLanguage() != null)
+		{
 			locale = Language.getLoginLanguage().getLocale();
+		}
 		if (locale == null)
-			locale = Env.getLanguage(getCtx()).getLocale();
+		{
+			locale = Env.getLanguage(ctx).getLocale();
+		}
 		//
 		SimpleDateFormat formatter;
-		if ( dateFormat == null || dateFormat.equals("") )
+		if (dateFormat == null || dateFormat.equals(""))
+		{
 			dateFormat = "MMM-yy";
+		}
 		formatter = new SimpleDateFormat(dateFormat, locale);
-		
+
 		//
-		int year = getYearAsInt();
-		GregorianCalendar cal = new GregorianCalendar(locale);
-		if ( startDate != null )
+		int year = getYearAsInt(yearRecord.getFiscalYear());
+		final GregorianCalendar cal = new GregorianCalendar(locale);
+		if (startDate != null)
 		{
 			cal.setTime(startDate);
-			if ( cal.get(Calendar.YEAR) != year)     // specified start date takes precedence in setting year
+			if (cal.get(Calendar.YEAR) != year)
+			{
 				year = cal.get(Calendar.YEAR);
-		
+			}
+
 		}
-		else 
+		else
 		{
 			cal.set(Calendar.YEAR, year);
 			cal.set(Calendar.MONTH, 0);
@@ -234,34 +187,30 @@ public class MYear extends X_C_Year
 		//
 		for (int month = 0; month < 12; month++)
 		{
-			
-			Timestamp start = new Timestamp(cal.getTimeInMillis());
-			String name = formatter.format(start);
+
+			final Timestamp start = new Timestamp(cal.getTimeInMillis());
+			final String name = formatter.format(start);
 			// get last day of same month
 			cal.add(Calendar.MONTH, 1);
 			cal.add(Calendar.DAY_OF_YEAR, -1);
-			Timestamp end = new Timestamp(cal.getTimeInMillis());
+			final Timestamp end = new Timestamp(cal.getTimeInMillis());
 			//
-			MPeriod period = MPeriod.findByCalendar(getCtx(), start, getC_Calendar_ID(), get_TrxName());
+			MPeriod period = MPeriod.findByCalendar(ctx, start, calendarId, ITrx.TRXNAME_ThreadInherited);
 			if (period == null)
 			{
-				period = new MPeriod (this, month+1, name, start, end);
+				period = new MPeriod(yearRecord, month + 1, name, start, end);
 			}
 			else
 			{
-				period.setC_Year_ID(this.getC_Year_ID());
-				period.setPeriodNo(month+1);
+				period.setC_Year_ID(yearId);
+				period.setPeriodNo(month + 1);
 				period.setName(name);
 				period.setStartDate(start);
 				period.setEndDate(end);
 			}
-			period.saveEx(get_TrxName());	//	Creates Period Control
+			period.saveEx(ITrx.TRXNAME_ThreadInherited);	// Creates Period Control
 			// get first day of next month
 			cal.add(Calendar.DAY_OF_YEAR, 1);
 		}
-		
-		return true;
-		
-	}	//	createStdPeriods
-	
-}	//	MYear
+	}
+}
