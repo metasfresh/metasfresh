@@ -66,6 +66,11 @@ public class OrderAvailableToPromiseTool
 				.create()
 				.list();
 
+		if(orderLineRecords.isEmpty())
+		{
+			return; // nothing to update
+		}
+
 		final ImmutableListMultimap<OrderLineKey, I_C_OrderLine> //
 		keys2orderLines = Multimaps.index(orderLineRecords, OrderLineKey::forOrderLineRecord);
 
