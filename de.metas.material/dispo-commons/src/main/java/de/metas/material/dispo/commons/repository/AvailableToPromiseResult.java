@@ -1,19 +1,17 @@
 package de.metas.material.dispo.commons.repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -21,10 +19,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -58,9 +53,10 @@ public class AvailableToPromiseResult
 	}
 
 	@NonNull
-	public static AvailableToPromiseResult createEmptyWithPredefinedBuckets(@NonNull final AvailableToPromiseMultiQuery multiQuery)
+	public static AvailableToPromiseResult createEmptyWithPredefinedBuckets(
+			@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
-		final ImmutableList.Builder<ResultGroup> resultBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<AvailableToPromiseResultGroup> resultBuilder = ImmutableList.builder();
 
 		for (final AvailableToPromiseQuery query : multiQuery.getQueries())
 		{
@@ -69,7 +65,7 @@ public class AvailableToPromiseResult
 			Set<Integer> warehouseIds = query.getWarehouseIds();
 			if (warehouseIds.isEmpty())
 			{
-				warehouseIds = ImmutableSet.of(ResultGroup.WAREHOUSE_ID_ANY);
+				warehouseIds = ImmutableSet.of(AvailableToPromiseResultGroup.WAREHOUSE_ID_ANY);
 			}
 
 			final int bpartnerId = query.getBpartnerId();
@@ -81,7 +77,7 @@ public class AvailableToPromiseResult
 				{
 					for (final IPair<AttributesKey, Predicate<AttributesKey>> storageAttributesKeyAndMatcher : storageAttributesKeysAndMatchers)
 					{
-						resultBuilder.add(ResultGroup.builder()
+						resultBuilder.add(AvailableToPromiseResultGroup.builder()
 								.productId(productId)
 								.storageAttributesKey(storageAttributesKeyAndMatcher.getLeft())
 								.storageAttributesKeyMatcher(storageAttributesKeyAndMatcher.getRight())
@@ -134,7 +130,7 @@ public class AvailableToPromiseResult
 		}
 	}
 
-	private static Predicate<AttributesKey> createStorageAttributesKeyMatcher(@NonNull final AttributesKey attributesKey)
+	static Predicate<AttributesKey> createStorageAttributesKeyMatcher(@NonNull final AttributesKey attributesKey)
 	{
 		if (AttributesKey.ALL.equals(attributesKey))
 		{
@@ -150,110 +146,18 @@ public class AvailableToPromiseResult
 		}
 	}
 
-	private final List<ResultGroup> resultGroups;
-
-	@ToString(exclude = "storageAttributesKeyMatcher" /* because it's just gibberish most of the time */)
-	@EqualsAndHashCode
-	@Getter
-	public static final class ResultGroup
-	{
-		private static final int WAREHOUSE_ID_ANY = -1;
-
-		private final int warehouseId;
-		private final int productId;
-		private final AttributesKey storageAttributesKey;
-		private final Predicate<AttributesKey> storageAttributesKeyMatcher;
-		private final int bpartnerId;
-		private BigDecimal qty;
-
-		@Builder
-		public ResultGroup(
-				final int warehouseId,
-				final int productId,
-				@NonNull final AttributesKey storageAttributesKey,
-				@Nullable final Predicate<AttributesKey> storageAttributesKeyMatcher,
-				final int bpartnerId,
-				@Nullable final BigDecimal qty)
-		{
-			Check.assume(productId > 0, "productId > 0");
-
-			this.warehouseId = warehouseId > 0 ? warehouseId : WAREHOUSE_ID_ANY;
-			this.productId = productId;
-			this.storageAttributesKey = storageAttributesKey;
-			this.storageAttributesKeyMatcher = storageAttributesKeyMatcher != null
-					? storageAttributesKeyMatcher
-					: createStorageAttributesKeyMatcher(storageAttributesKey);
-
-			this.qty = qty == null ? BigDecimal.ZERO : qty;
-
-			if (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY
-					|| bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE
-					|| bpartnerId > 0)
-			{
-				this.bpartnerId = bpartnerId;
-			}
-			else
-			{
-				throw new AdempiereException("Invalid bpartnerId: " + bpartnerId);
-			}
-		}
-
-		@VisibleForTesting
-		boolean matches(final AddToResultGroupRequest request)
-		{
-			if (productId != request.getProductId())
-			{
-				return false;
-			}
-
-			if (!isWarehouseMatching(request.getWarehouseId()))
-			{
-				return false;
-			}
-
-			if (!isBPartnerMatching(request.getBpartnerId()))
-			{
-				return false;
-			}
-
-			if (!isStorageAttributesKeyMatching(request.getStorageAttributesKey()))
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		private void addQty(final BigDecimal qtyToAdd)
-		{
-			qty = qty.add(qtyToAdd);
-		}
-
-		private boolean isWarehouseMatching(final int warehouseIdToMatch)
-		{
-			return warehouseId == WAREHOUSE_ID_ANY
-					|| warehouseId == warehouseIdToMatch;
-		}
-
-		private boolean isBPartnerMatching(final int bpartnerIdToMatch)
-		{
-			return AvailableToPromiseQuery.isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
-		}
-
-		private boolean isStorageAttributesKeyMatching(final AttributesKey storageAttributesKeyToMatch)
-		{
-			return storageAttributesKeyMatcher.test(storageAttributesKeyToMatch);
-		}
-	}
+	private final List<AvailableToPromiseResultGroup> resultGroups;
 
 	@Value
 	public static final class AddToResultGroupRequest
 	{
-		private final int warehouseId;
-		private final int productId;
-		private final AttributesKey storageAttributesKey;
-		private final int bpartnerId;
-		private BigDecimal qty;
+		int warehouseId;
+		int productId;
+		AttributesKey storageAttributesKey;
+		int bpartnerId;
+		BigDecimal qty;
+		LocalDateTime date;
+		int seqNo; // needed to disambiguated requests with the same date
 
 		@Builder
 		public AddToResultGroupRequest(
@@ -261,42 +165,48 @@ public class AvailableToPromiseResult
 				final int productId,
 				@NonNull final AttributesKey storageAttributesKey,
 				final int bpartnerId,
-				@NonNull final BigDecimal qty)
+				@NonNull final BigDecimal qty,
+				@NonNull final LocalDateTime date,
+				final int seqNo)
 		{
-			Check.assume(productId > 0, "productId > 0");
-			Check.assume(warehouseId > 0, "warehouseId > 0");
+			this.warehouseId = Check.assumeGreaterThanZero(warehouseId, "warehouseId");
+			this.productId = Check.assumeGreaterThanZero(productId, "productId");
 
-			this.warehouseId = warehouseId;
-			this.productId = productId;
 			this.storageAttributesKey = storageAttributesKey;
-			// if (bpartnerId > 0 || bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY)
-			// {
+
 			this.bpartnerId = bpartnerId;
-			// }
-			// else
-			// {
-			// // i.e. BPARTNER_ID_ANY shall not be accepted,
-			// // because this is actual data and not grouping/aggregation data
-			// throw new AdempiereException("Invalid bpartnerId: " + bpartnerId);
-			// }
 			this.qty = qty;
+			this.date = date;
+			this.seqNo = Check.assumeGreaterThanZero(seqNo, "seqNo");
 		}
 	}
 
 	public void addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
 	{
-		boolean added = false;
-		for (final ResultGroup group : resultGroups)
+		boolean stillNeedsToBeAdded = true;
+		for (final AvailableToPromiseResultGroup group : resultGroups)
 		{
-			final boolean matchers = group.matches(request);
-			if (matchers)
+			if (!group.isMatchting(request))
 			{
-				group.addQty(request.getQty());
-				added = true; // don't break; a request might be added to >1 groups
+				continue;
+			}
+			if (!group.isMatchting(request) && !group.isAlreadyIncluded(request))
+			{
+				continue;
+			}
+
+			if (group.isAlreadyIncluded(request))
+			{
+				stillNeedsToBeAdded = false; // btw: don't break; a request might be added to >1 groups
+			}
+			else
+			{
+				group.addQty(request);
+				stillNeedsToBeAdded = false;
 			}
 		}
 
-		if (!added)
+		if (stillNeedsToBeAdded)
 		{
 			throw new AdempiereException("No matching group found for AddToResultGroupRequest")
 					.appendParametersToMessage()
@@ -306,14 +216,44 @@ public class AvailableToPromiseResult
 		}
 	}
 
-	public void addToNewGroupGroup(@NonNull final AddToResultGroupRequest request)
+	public void addToNewGroupIfFeasible(@NonNull final AddToResultGroupRequest request)
 	{
-		final ResultGroup group = ResultGroup.builder()
+		boolean alreadyIncludedInMatchingGroup = false;
+
+		if (request.getBpartnerId() <= 0)
+		{
+			for (final AvailableToPromiseResultGroup resultGroup : resultGroups)
+			{
+				if (!resultGroup.isMatchting(request))
+				{
+					continue;
+				}
+				if (resultGroup.isAlreadyIncluded(request))
+				{
+					alreadyIncludedInMatchingGroup = true;
+				}
+				else
+				{
+					resultGroup.addQty(request);
+					alreadyIncludedInMatchingGroup = true;
+				}
+			}
+		}
+
+		if (alreadyIncludedInMatchingGroup)
+		{
+			return;
+		}
+
+		final AvailableToPromiseResultGroup group = AvailableToPromiseResultGroup.builder()
 				.productId(request.getProductId())
 				.storageAttributesKey(request.getStorageAttributesKey())
 				.warehouseId(request.getWarehouseId())
 				.bpartnerId(request.getBpartnerId())
 				.qty(request.getQty())
+				.date(request.getDate())
+				.seqNo(request.getSeqNo())
+				.empty(false)
 				.build();
 
 		resultGroups.add(group);

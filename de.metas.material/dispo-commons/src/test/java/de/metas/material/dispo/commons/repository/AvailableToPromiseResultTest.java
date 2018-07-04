@@ -1,7 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -10,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 
@@ -52,6 +51,8 @@ public class AvailableToPromiseResultTest
 {
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofAttributeValueIds(1, 2, 3);
+
+	private static final LocalDateTime NOW = LocalDateTime.now();
 
 	@Before
 	public void init()
@@ -84,26 +85,26 @@ public class AvailableToPromiseResultTest
 						.date(TimeUtil.asLocalDateTime(NOW))
 						.build());
 
-		final List<ResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
+		final List<AvailableToPromiseResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
 
 		assertThat(emptyResults).hasSize(4);
 
-		final ResultGroup firstResult = emptyResults.get(0);
+		final AvailableToPromiseResultGroup firstResult = emptyResults.get(0);
 		assertThat(firstResult.getProductId()).isEqualTo(20);
 		assertThat(firstResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
 		assertThat(firstResult.getQty()).isEqualByComparingTo("0");
 
-		final ResultGroup secondResult = emptyResults.get(1);
+		final AvailableToPromiseResultGroup secondResult = emptyResults.get(1);
 		assertThat(secondResult.getProductId()).isEqualTo(20);
 		assertThat(secondResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY_OTHER);
 		assertThat(secondResult.getQty()).isEqualByComparingTo("0");
 
-		final ResultGroup thirdResult = emptyResults.get(2);
+		final AvailableToPromiseResultGroup thirdResult = emptyResults.get(2);
 		assertThat(thirdResult.getProductId()).isEqualTo(10);
 		assertThat(thirdResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
 		assertThat(thirdResult.getQty()).isEqualByComparingTo("0");
 
-		final ResultGroup fourthResult = emptyResults.get(3);
+		final AvailableToPromiseResultGroup fourthResult = emptyResults.get(3);
 		assertThat(fourthResult.getProductId()).isEqualTo(10);
 		assertThat(fourthResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY_OTHER);
 		assertThat(fourthResult.getQty()).isEqualByComparingTo("0");
@@ -117,11 +118,11 @@ public class AvailableToPromiseResultTest
 				.date(TimeUtil.asLocalDateTime(NOW))
 				.build());
 
-		final List<ResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
+		final List<AvailableToPromiseResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
 
 		assertThat(emptyResults).hasSize(1);
 
-		final ResultGroup firstResult = emptyResults.get(0);
+		final AvailableToPromiseResultGroup firstResult = emptyResults.get(0);
 		assertThat(firstResult.getProductId()).isEqualTo(10);
 		assertThat(firstResult.getStorageAttributesKey()).isSameAs(AttributesKey.ALL);
 		assertThat(firstResult.getQty()).isEqualByComparingTo("0");
@@ -131,13 +132,13 @@ public class AvailableToPromiseResultTest
 	@Test
 	public void addQtyToMatchedGroups()
 	{
-		final ResultGroup emptyResult1 = ResultGroup.builder()
+		final AvailableToPromiseResultGroup emptyResult1 = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
 				.warehouseId(100)
 				.bpartnerId(200)
 				.build();
-		final ResultGroup emptyResult2 = ResultGroup.builder()
+		final AvailableToPromiseResultGroup emptyResult2 = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(2))
 				.warehouseId(100)
@@ -149,13 +150,14 @@ public class AvailableToPromiseResultTest
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
 				.bpartnerId(200)
-				.qty(BigDecimal.ONE);
+				.qty(BigDecimal.ONE)
+				.date(NOW);
 
 		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 2)).build());
 		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 2)).build());
 		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(2)).build());
 
-		final List<ResultGroup> resultGroups = stockResult.getResultGroups();
+		final List<AvailableToPromiseResultGroup> resultGroups = stockResult.getResultGroups();
 		assertThat(resultGroups).hasSize(2);
 
 		assertThat(resultGroups.get(0).getProductId()).isEqualTo(PRODUCT_ID);
@@ -170,7 +172,7 @@ public class AvailableToPromiseResultTest
 	@Test
 	public void ResultGroup_matches_with_single_storageAttributesKey()
 	{
-		final ResultGroup group = ResultGroup.builder()
+		final AvailableToPromiseResultGroup group = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
 				.bpartnerId(200)
@@ -181,42 +183,45 @@ public class AvailableToPromiseResultTest
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
 				.bpartnerId(200)
-				.qty(BigDecimal.ONE);
+				.qty(BigDecimal.ONE)
+				.date(NOW);
 
-		assertThat(group.matches(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isTrue();
-		assertThat(group.matches(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(11)).build())).isFalse();
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isTrue();
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(11)).build())).isFalse();
 
-		assertThat(group.matches(requestBuilder.storageAttributesKey(STORAGE_ATTRIBUTES_KEY).build()))
-				.as("Should match because the ResultGroup's storageAttributesKey <%s> is included in the given storageAttributesKeyToMatch <%s>",
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(STORAGE_ATTRIBUTES_KEY).build()))
+				.as("Should match because the AvailableToPromiseResultGroup's storageAttributesKey <%s> is included in the given storageAttributesKeyToMatch <%s>",
 						group.getStorageAttributesKey(),
 						STORAGE_ATTRIBUTES_KEY)
 				.isTrue();
 	}
 
 	@Test
-	public void ResultGroup_matches_with_two_storageAttributesKeys()
+	public void isMatchting_with_two_storageAttributesKeys()
 	{
-		final ResultGroup group = ResultGroup.builder()
+		final AvailableToPromiseResultGroup group = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
 				.bpartnerId(200)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3))
+				.date(NOW)
 				.build();
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
 				.bpartnerId(200)
-				.qty(BigDecimal.ONE);
+				.qty(BigDecimal.ONE)
+				.date(NOW);
 
-		assertThat(group.matches(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3)).build())).isTrue();
-		assertThat(group.matches(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isFalse();
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3)).build())).isTrue();
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isFalse();
 
-		assertThat(group.matches(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(10, 1, 3)).build())).isTrue();
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(10, 1, 3)).build())).isTrue();
 
 		final AttributesKey keyWithOtherElementInTheMiddle = AttributesKey.ofAttributeValueIds(1, 2, 3);
-		assertThat(group.matches(requestBuilder.storageAttributesKey(keyWithOtherElementInTheMiddle).build()))
-				.as("Shall match because the elements of the ResultGroup's storageAttributesKey <%s> contain every element of the given storageAttributesKeyToMatch <%s>",
+		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(keyWithOtherElementInTheMiddle).build()))
+				.as("Shall match because the elements of the AvailableToPromiseResultGroup's storageAttributesKey <%s> contain every element of the given storageAttributesKeyToMatch <%s>",
 						group.getStorageAttributesKey(), keyWithOtherElementInTheMiddle)
 				.isTrue();
 	}
@@ -227,7 +232,7 @@ public class AvailableToPromiseResultTest
 		final I_MD_Candidate_ATP_QueryResult stockRecord = createStockRecord(WAREHOUSE_ID);
 
 		final AvailableToPromiseResult result = new AvailableToPromiseResult(ImmutableList.of(
-				ResultGroup.builder()
+				AvailableToPromiseResultGroup.builder()
 						.productId(PRODUCT_ID)
 						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 						.bpartnerId(AvailableToPromiseQuery.BPARTNER_ID_ANY)
@@ -236,7 +241,7 @@ public class AvailableToPromiseResultTest
 		final AddToResultGroupRequest resultAddRequest = AvailableToPromiseRepository.createAddToResultGroupRequest(stockRecord);
 		result.addQtyToAllMatchingGroups(resultAddRequest);
 
-		final ResultGroup singleElement = ListUtils.singleElement(result.getResultGroups());
+		final AvailableToPromiseResultGroup singleElement = ListUtils.singleElement(result.getResultGroups());
 		assertThat(singleElement.getProductId()).isEqualTo(stockRecord.getM_Product_ID());
 		assertThat(singleElement.getQty()).isEqualByComparingTo(stockRecord.getQty());
 		assertThat(singleElement.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);

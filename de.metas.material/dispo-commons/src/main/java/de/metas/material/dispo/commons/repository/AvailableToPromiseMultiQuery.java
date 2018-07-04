@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons.repository;
 import java.util.Set;
 
 import org.adempiere.util.Check;
+import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -81,6 +82,6 @@ public class AvailableToPromiseMultiQuery
 	{
 		Check.assumeNotEmpty(queries, "queries is not empty");
 		this.queries = queries;
-		this.addToPredefinedBuckets = addToPredefinedBuckets != null ? addToPredefinedBuckets : DEFAULT_addToPredefinedBuckets;
+		this.addToPredefinedBuckets = Util.coalesce(addToPredefinedBuckets, DEFAULT_addToPredefinedBuckets);
 	}
 }
