@@ -11,6 +11,7 @@ import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
@@ -84,6 +85,7 @@ public class OrderLineRepository
 				.asiId(AttributeSetInstanceId.ofRepoId(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
 				.PaymentTermId(PaymentTermId.ofRepoId(paymentTermId))
+				.soTrx(SOTrx.ofBoolean(orderLineRecord.getC_Order().isSOTrx()))
 				.build();
 	}
 
