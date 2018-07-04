@@ -31,6 +31,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
@@ -220,14 +221,11 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			@NonNull final AbstractTransactionEvent event,
 			@NonNull final Entry<Integer, BigDecimal> shipmentScheduleId2Qty)
 	{
-		final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(
-				shipmentScheduleId2Qty.getKey(),
-				-1,
-				-1,
-				shipmentScheduleId2Qty.getValue());
+
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofShipmentScheduleId(shipmentScheduleId2Qty.getKey());
 
 		final CandidatesQuery query = CandidatesQuery.builder().type(CandidateType.DEMAND)
-				.demandDetail(demandDetail) // only search via demand detail ..the product and warehouse will also match, but e.g. the date probably won't!
+				.demandDetailsQuery(demandDetailsQuery) // only search via demand detail ..the product and warehouse will also match, but e.g. the date probably won't!
 				.build();
 
 		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
@@ -236,6 +234,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
 		if (unrelatedNewTransaction)
 		{
+			final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(
+					shipmentScheduleId2Qty.getKey(),
+					-1,
+					-1,
+					shipmentScheduleId2Qty.getValue());
+
 			final CandidateBuilder builder = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
 					shipmentScheduleId2Qty.getValue());
@@ -255,7 +259,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			throw createExceptionForUnexpectedEvent(event);
 		}
-
 		return candidate;
 	}
 
@@ -289,7 +292,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.type(CandidateType.SUPPLY) // without it we might get stock candidates which we don't want
 				.purchaseDetailsQuery(purchaseDetailsQuery)
 				.build();
-
 
 		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
 

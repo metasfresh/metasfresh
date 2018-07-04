@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event.handler;
+package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
 import java.util.Collection;
 
@@ -9,9 +9,13 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
@@ -43,10 +47,14 @@ import lombok.NonNull;
 public class ShipmentScheduleCreatedHandler implements MaterialEventHandler<ShipmentScheduleCreatedEvent>
 {
 	private final CandidateChangeService candidateChangeHandler;
+	private final CandidateRepositoryRetrieval candidateRepository;
 
-	public ShipmentScheduleCreatedHandler(@NonNull final CandidateChangeService candidateChangeHandler)
+	public ShipmentScheduleCreatedHandler(
+			@NonNull final CandidateChangeService candidateChangeHandler,
+			@NonNull final CandidateRepositoryRetrieval candidateRepository)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
+		this.candidateRepository = candidateRepository;
 	}
 
 	@Override
@@ -55,20 +63,40 @@ public class ShipmentScheduleCreatedHandler implements MaterialEventHandler<Ship
 		return ImmutableList.of(ShipmentScheduleCreatedEvent.class);
 	}
 
+	/**
+	 * Checks for an existing candidate that might have been left over after a shipment schedule deletion, and creates/updates the dispo.
+	 */
 	@Override
 	public void handleEvent(@NonNull final ShipmentScheduleCreatedEvent event)
 	{
-		final DemandDetail demandDetail = DemandDetail.forDocumentDescriptor(
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.forDocumentLine(event.getDocumentLineDescriptor());
+
+		final CandidatesQuery candidatesQuery = CandidatesQuery
+				.builder()
+				.type(CandidateType.DEMAND)
+				.businessCase(CandidateBusinessCase.SHIPMENT)
+				.demandDetailsQuery(demandDetailsQuery)
+				.build();
+
+		final DemandDetail demandDetail = DemandDetail.forDocumentLine(
 				event.getShipmentScheduleId(),
 				event.getDocumentLineDescriptor(),
 				event.getMaterialDescriptor().getQuantity());
 
-		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescriptor())
+		final CandidateBuilder candidateBuilder = Candidate
+				.builderForEventDescr(event.getEventDescriptor())
 				.materialDescriptor(event.getMaterialDescriptor())
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
-				.businessCaseDetail(demandDetail)
-				.build();
+				.businessCaseDetail(demandDetail);
+
+		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(candidatesQuery);
+		if (existingCandidate != null)
+		{
+			candidateBuilder.id(existingCandidate.getId());
+		}
+
+		final Candidate candidate = candidateBuilder.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 }

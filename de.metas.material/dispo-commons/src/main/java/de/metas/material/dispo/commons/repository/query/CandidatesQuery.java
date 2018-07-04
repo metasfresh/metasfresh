@@ -76,10 +76,13 @@ public final class CandidatesQuery
 		final PurchaseDetailsQuery purchaseDetailsQuery = PurchaseDetailsQuery
 				.ofPurchaseDetailOrNull(PurchaseDetail.castOrNull(candidate.getBusinessCaseDetail()));
 
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery
+				.ofDemandDetailOrNull(DemandDetail.castOrNull(candidate.getBusinessCaseDetail()));
+
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))
 				.matchExactStorageAttributesKey(true)
-				.demandDetail(candidate.getDemandDetail())
+				.demandDetailsQuery(demandDetailsQuery)
 				.distributionDetailsQuery(distributionDetailsQuery)
 				.productionDetailsQuery(productionDetailsQuery)
 				.purchaseDetailsQuery(purchaseDetailsQuery)
@@ -114,7 +117,7 @@ public final class CandidatesQuery
 	 */
 	MaterialDescriptorQuery parentMaterialDescriptorQuery;
 
-	DemandDetail parentDemandDetail;
+	DemandDetailsQuery parentDemandDetailsQuery;
 
 	int orgId;
 
@@ -159,7 +162,7 @@ public final class CandidatesQuery
 	/**
 	 * Used for additional infos if this candidate relates to particular demand
 	 */
-	DemandDetail demandDetail;
+	DemandDetailsQuery demandDetailsQuery;
 
 	/**
 	 * If multiple transactionDetails are specified here, then a matching candidate needs to have matching transactionDetails for all of them.
@@ -169,7 +172,7 @@ public final class CandidatesQuery
 	@Builder
 	public CandidatesQuery(
 			final MaterialDescriptorQuery parentMaterialDescriptorQuery,
-			final DemandDetail parentDemandDetail,
+			final DemandDetailsQuery parentDemandDetailsQuery,
 			final int orgId,
 			final CandidateType type,
 			final CandidateBusinessCase businessCase,
@@ -182,11 +185,11 @@ public final class CandidatesQuery
 			final ProductionDetailsQuery productionDetailsQuery,
 			final DistributionDetailsQuery distributionDetailsQuery,
 			final PurchaseDetailsQuery purchaseDetailsQuery,
-			final DemandDetail demandDetail,
+			final DemandDetailsQuery demandDetailsQuery,
 			@Singular final List<TransactionDetail> transactionDetails)
 	{
 		this.parentMaterialDescriptorQuery = parentMaterialDescriptorQuery;
-		this.parentDemandDetail = parentDemandDetail;
+		this.parentDemandDetailsQuery = parentDemandDetailsQuery;
 
 		this.matchExactStorageAttributesKey = matchExactStorageAttributesKey;
 		this.orgId = orgId;
@@ -202,7 +205,7 @@ public final class CandidatesQuery
 		this.distributionDetailsQuery = distributionDetailsQuery;
 		this.purchaseDetailsQuery = purchaseDetailsQuery;
 
-		this.demandDetail = demandDetail;
+		this.demandDetailsQuery = demandDetailsQuery;
 		this.transactionDetails = transactionDetails;
 	}
 
