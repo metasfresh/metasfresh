@@ -23,7 +23,7 @@ import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery.A
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResultGroup;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -74,9 +74,7 @@ public class OrderAvailableToPromiseTool
 		final ImmutableListMultimap<OrderLineKey, I_C_OrderLine> //
 		keys2orderLines = Multimaps.index(orderLineRecords, OrderLineKey::forOrderLineRecord);
 
-		final AvailableToPromiseMultiQueryBuilder multiQueryBuilder = AvailableToPromiseMultiQuery
-				.builder()
-				.addToPredefinedBuckets(false);
+		final AvailableToPromiseMultiQueryBuilder multiQueryBuilder = AvailableToPromiseMultiQuery.builder();
 
 		final ImmutableSet<OrderLineKey> keySet = keys2orderLines.keySet();
 		for (final OrderLineKey orderLineKey : keySet)
@@ -88,7 +86,7 @@ public class OrderAvailableToPromiseTool
 		final AvailableToPromiseRepository stockRepository = Adempiere.getBean(AvailableToPromiseRepository.class);
 		final AvailableToPromiseResult result = stockRepository.retrieveAvailableStock(multiQueryBuilder.build());
 
-		for (final ResultGroup resultGroup : result.getResultGroups())
+		for (final AvailableToPromiseResultGroup resultGroup : result.getResultGroups())
 		{
 			final OrderLineKey key = OrderLineKey.forResultGroup(resultGroup);
 			for (final I_C_OrderLine orderLineRecord : keys2orderLines.get(key))
@@ -163,7 +161,7 @@ public class OrderAvailableToPromiseTool
 			);
 		}
 
-		private static OrderLineKey forResultGroup(@NonNull final ResultGroup resultGroup)
+		private static OrderLineKey forResultGroup(@NonNull final AvailableToPromiseResultGroup resultGroup)
 		{
 			return new OrderLineKey(
 					resultGroup.getProductId(),
