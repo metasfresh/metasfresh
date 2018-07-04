@@ -62,14 +62,12 @@ public class JmsEmbeddedBrokerConfig
 	private void startEmbeddedBrokerIfRequired()
 	{
 		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND;
-		if ((serverMode && JmsConstants.isUseEmbeddedBroker())
-				|| CConnection.isServerEmbedded())
+		if (serverMode && JmsConstants.isUseEmbeddedBroker())
 		{
 			logger.warn(
-					"RunMode={}, IsUseEmbeddedBroker={}, IsServerEmbedded={}. Starting embedded JMS broker",
+					"RunMode={}, IsUseEmbeddedBroker={}. Starting embedded JMS broker",
 					Ini.getRunMode(),
-					JmsConstants.isUseEmbeddedBroker(),
-					CConnection.isServerEmbedded());
+					JmsConstants.isUseEmbeddedBroker());
 
 			EmbeddedActiveMQBrokerService.INSTANCE.startEmbeddedBroker();
 		}

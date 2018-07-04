@@ -112,11 +112,12 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			return EMPTY;
 		}
 
-		final ImmutableMap.Builder<Integer, I_M_Attribute> attributes = ImmutableMap.builder();
-		final ImmutableMap.Builder<String, I_M_Attribute> attributesByKey = ImmutableMap.builder();
-		final ImmutableMap.Builder<String, Object> valuesByAttributeKey = ImmutableMap.builder();
+		final HashMap<Integer, I_M_Attribute> attributes = new HashMap<Integer, I_M_Attribute>();
+		final HashMap<String, I_M_Attribute> attributesByKey = new HashMap<String, I_M_Attribute>();
+		final HashMap<String, Object> valuesByAttributeKey = new HashMap<String, Object>();
 
 		valuesByAttributeIdObj.forEach((attributeIdObj, value) -> {
+
 			final int attributeId = Integer.parseInt(attributeIdObj.toString());
 			final I_M_Attribute attribute = load(attributeId, I_M_Attribute.class);
 			final String attributeKey = attribute.getValue();
@@ -126,7 +127,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			valuesByAttributeKey.put(attributeKey, value);
 		});
 
-		return new ImmutableAttributeSet(attributes.build(), attributesByKey.build(), valuesByAttributeKey.build());
+		return new ImmutableAttributeSet(attributes, attributesByKey, valuesByAttributeKey);
 	}
 
 	public static ImmutableAttributeSet createSubSet(
@@ -148,14 +149,14 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 	public static final ImmutableAttributeSet EMPTY = new ImmutableAttributeSet();
 
-	private final ImmutableMap<Integer, I_M_Attribute> attributes;
-	private final ImmutableMap<String, I_M_Attribute> attributesByKey;
-	private final ImmutableMap<String, Object> valuesByAttributeKey;
+	private final Map<Integer, I_M_Attribute> attributes;
+	private final Map<String, I_M_Attribute> attributesByKey;
+	private final Map<String, Object> valuesByAttributeKey;
 
 	private ImmutableAttributeSet(
-			@NonNull final ImmutableMap<Integer, I_M_Attribute> attributes,
-			@NonNull final ImmutableMap<String, I_M_Attribute> attributesByKey,
-			@NonNull final ImmutableMap<String, Object> valuesByAttributeKey)
+			@NonNull final Map<Integer, I_M_Attribute> attributes,
+			@NonNull final Map<String, I_M_Attribute> attributesByKey,
+			@NonNull final Map<String, Object> valuesByAttributeKey)
 	{
 		this.attributes = attributes;
 		this.attributesByKey = attributesByKey;
