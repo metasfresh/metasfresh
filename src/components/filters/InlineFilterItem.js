@@ -124,7 +124,6 @@ class InlineFilterItem extends Component {
 
   render() {
     const { data, id, windowType, onShow, onHide, viewId } = this.props;
-
     const { filter } = this.state;
 
     return (
@@ -135,13 +134,13 @@ class InlineFilterItem extends Component {
         handlePatch={this.handleApply}
         handleChange={this.setValue}
         widgetType={data.widgetType}
-        fields={[data]}
+        fields={[{ ...data, emptyText: data.caption }]}
         type={data.type}
         widgetData={[data]}
         id={id}
         range={data.range}
         caption={data.caption}
-        noLabel={false}
+        noLabel={true}
         filterWidget={true}
         {...{
           viewId,

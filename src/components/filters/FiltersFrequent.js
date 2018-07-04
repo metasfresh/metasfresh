@@ -152,7 +152,7 @@ class FiltersFrequent extends PureComponent {
                     captionValue={filter.captionValue}
                     key={idx}
                     id={idx}
-                    filter={item}
+                    parentFilter={item}
                     windowType={windowType}
                     data={filter}
                     clearFilters={clearFilters}
