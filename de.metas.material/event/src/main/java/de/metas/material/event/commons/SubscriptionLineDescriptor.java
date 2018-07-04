@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -34,9 +35,13 @@ import lombok.Value;
 @Builder
 public class SubscriptionLineDescriptor  implements DocumentLineDescriptor
 {
+	public static SubscriptionLineDescriptor cast(@NonNull final DocumentLineDescriptor documentLineDescriptor)
+	{
+		return (SubscriptionLineDescriptor)documentLineDescriptor;
+	}
+
 	int subscriptionProgressId;
 	int flatrateTermId;
-
 	int subscriptionBillBPartnerId;
 
 	@Builder

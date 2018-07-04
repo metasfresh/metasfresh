@@ -39,6 +39,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
@@ -588,7 +589,7 @@ public class CandiateRepositoryRetrievalTests
 		createCandiateRecordWithShipmentScheduleId(35);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(25, -1, -1, TEN))
+				.demandDetailsQuery(DemandDetailsQuery.ofShipmentScheduleId(25))
 				.build();
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
@@ -613,10 +614,10 @@ public class CandiateRepositoryRetrievalTests
 	public void retrieveMatches_by_forecastLineId()
 	{
 		final I_MD_Candidate candidateRecord = createCandiateRecordWithForecastLineId(25, 26);
-		createCandiateRecordWithForecastLineId(35, 36);
+		createCandiateRecordWithForecastLineId(35, 36); // create another one
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.demandDetail(DemandDetail.forForecastLineId(25, 35, TEN))
+				.demandDetailsQuery(DemandDetailsQuery.ofForecastLineId(25))
 				.build();
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
