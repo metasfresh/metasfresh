@@ -2,9 +2,12 @@ package de.metas.vertical.pharma.model.interceptor;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +44,10 @@ import de.metas.vertical.pharma.PharmaOrderLineInputValidator;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
-@Component
-public class C_OrderLine_PharmaInterceptor
+@Interceptor(I_C_OrderLine.class)
+@Component("de.metas.vertical.pharma.model.interceptor.C_OrderLine")
+public class C_OrderLine
 {
 	@Autowired
 	PharmaBPartnerRepository pharmaBPartnerRepo;
@@ -55,13 +58,20 @@ public class C_OrderLine_PharmaInterceptor
 	@Autowired
 	OrderLineRepository orderLineRepository;
 
+	@Init
+	public void registerCallout()
+	{
+		// this class serves as both model validator an callout
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_C_BPartner_ID,
 			I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	@CalloutMethod(columnNames = {I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void validatePrescriptionProduct(final I_C_OrderLine orderLineRecord)
 	{
 		final OrderLine orderLine = orderLineRepository.ofRecord(orderLineRecord);
