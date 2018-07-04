@@ -18,6 +18,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -133,11 +134,7 @@ public class DDOrderAdvisedHandler
 				DemandDetail.forSupplyRequiredDescriptorOrNull(ddOrderEvent.getSupplyRequiredDescriptor());
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ddOrderAdvisedEvent);
 
-		final DDOrder ddOrder = ddOrderAdvisedEvent.getDdOrder();
-		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery.builder()
-				.productPlanningId(ddOrder.getProductPlanningId())
-				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
-				.build();
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
 
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(ddOrderLine.getProductDescriptor().getProductId())
@@ -146,10 +143,16 @@ public class DDOrderAdvisedHandler
 				.date(computeDate(ddOrderEvent, ddOrderLine, candidateType))
 				.build();
 
+		final DDOrder ddOrder = ddOrderAdvisedEvent.getDdOrder();
+		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery.builder()
+				.productPlanningId(ddOrder.getProductPlanningId())
+				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
+				.build();
+
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.demandDetail(demandDetail)
+				.demandDetailsQuery(demandDetailsQuery)
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.distributionDetailsQuery(distributionDetailsQuery)
 				.build();

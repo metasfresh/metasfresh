@@ -1,26 +1,19 @@
-package de.metas.material.dispo.service.event.handler;
+package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
-import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -31,16 +24,14 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import mockit.Mocked;
 
 /*
  * #%L
  * metasfresh-material-dispo-service
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -58,24 +49,15 @@ import mockit.Mocked;
  * #L%
  */
 
-public class ShipmentScheduleCreatedHandlerTests
+public class ShipmentScheduleDeletedHandlerTests
 {
-	private static final int shipmentScheduleId = 76;
-
-	private static final int orderLineId = 86;
-
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	private static final int toWarehouseId = 30;
-
 	@Mocked
 	private PostMaterialEventService postMaterialEventService;
 
-	private ShipmentScheduleCreatedHandler shipmentScheduleEventHandler;
+	private AvailableToPromiseRepository atpRepository;
+	private ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler;
 
-	private AvailableToPromiseRepository stockRepository;
+	private ShipmentScheduleDeletedHandler shipmentScheduleDeletedHandler;
 
 	@Before
 	public void init()
@@ -86,32 +68,40 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		stockRepository = new AvailableToPromiseRepository();
+		atpRepository = new AvailableToPromiseRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
 						postMaterialEventService,
-						stockRepository,
+						atpRepository,
 						new StockCandidateService(
 								candidateRepositoryRetrieval,
 								candidateRepositoryCommands))));
 
-		shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
+		shipmentScheduleCreatedHandler = new ShipmentScheduleCreatedHandler(
+				candidateChangeHandler,
+				candidateRepositoryRetrieval);
+		atpRepository = new AvailableToPromiseRepository();
+
+		shipmentScheduleDeletedHandler = new ShipmentScheduleDeletedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
 	}
 
 	@Test
-	public void testShipmentScheduleEvent()
+	public void handleEvent()
 	{
-		final ShipmentScheduleCreatedEvent event = createShipmentScheduleTestEvent();
+		final int shipmentScheduleId = ShipmentScheduleCreatedHandlerTests.performTest(shipmentScheduleCreatedHandler, atpRepository);
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
-				stockRepository,
-				event.getMaterialDescriptor(),
-				"0");
+		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID);
+		final ShipmentScheduleDeletedEvent shipmentScheduleDeletedEvent = ShipmentScheduleDeletedEvent
+				.builder()
+				.eventDescriptor(eventDescriptor)
+				.shipmentScheduleId(shipmentScheduleId)
+				.build();
 
-		shipmentScheduleEventHandler.handleEvent(event);
+		shipmentScheduleDeletedHandler.handleEvent(shipmentScheduleDeletedEvent);
+
 
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
@@ -122,33 +112,7 @@ public class ShipmentScheduleCreatedHandlerTests
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
 		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
 
-		assertThat(demandRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() - 1); // the demand record shall be displayed first
-		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
-
-		assertThat(demandRecord.getQty()).isEqualByComparingTo("10");
-		assertThat(stockRecord.getQty()).isEqualByComparingTo("-10"); // the stock is unbalanced, because there is no existing stock and no supply
-
-		assertThat(allRecords).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID));
-	}
-
-	public static ShipmentScheduleCreatedEvent createShipmentScheduleTestEvent()
-	{
-		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
-				.materialDescriptor(MaterialDescriptor.builder()
-						.date(NOW)
-						.productDescriptor(createProductDescriptor())
-						.customerId(BPARTNER_ID)
-						.quantity(BigDecimal.TEN)
-						.warehouseId(toWarehouseId)
-						.build())
-				.reservedQuantity(new BigDecimal("20"))
-				.shipmentScheduleId(shipmentScheduleId)
-				.documentLineDescriptor(OrderLineDescriptor.builder()
-						.orderLineId(orderLineId)
-						.orderId(30)
-						.build())
-				.build();
-		return event;
+		assertThat(demandRecord.getQty()).isEqualByComparingTo(ZERO);
+		assertThat(stockRecord.getQty()).isEqualByComparingTo(ZERO);
 	}
 }

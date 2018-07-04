@@ -5,7 +5,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Loggables;
 import org.compiere.Adempiere;
-import org.compiere.db.CConnection;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -53,11 +52,7 @@ public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTa
 			Loggables.get().withLogger(logger, Level.WARN).addLog("Not signing the database build with our version={}, because it makes no sense", lastBuildInfo);
 			return;
 		}
-		if (CConnection.isServerEmbedded())
-		{
-			Loggables.get().withLogger(logger, Level.WARN).addLog("Not signing the database build with our version, because we run in embedded server mode");
-			return;
-		}
+
 		try
 		{
 			final String sql = "UPDATE AD_System SET LastBuildInfo = ?";

@@ -8,6 +8,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import lombok.Builder;
 import lombok.NonNull;
@@ -59,7 +60,7 @@ public class SupplyProposalEvaluator
 		final CandidatesQuery proposedDemandExistsQuery = CandidatesQuery
 				.builder()
 				.type(CandidateType.DEMAND)
-				.demandDetail(proposal.getDemandDetail())
+				.demandDetailsQuery(DemandDetailsQuery.ofDemandDetailOrNull(proposal.getDemandDetail()))
 				.materialDescriptorQuery(MaterialDescriptorQuery
 						.builder()
 						.warehouseId(proposal.getDemandWarehouseId())
@@ -74,7 +75,7 @@ public class SupplyProposalEvaluator
 		final CandidatesQuery proposedSupplyExistsQuery = CandidatesQuery
 				.builder()
 				.type(CandidateType.SUPPLY)
-				.demandDetail(proposal.getDemandDetail())
+				.demandDetailsQuery(DemandDetailsQuery.ofDemandDetailOrNull(proposal.getDemandDetail()))
 				.materialDescriptorQuery(MaterialDescriptorQuery
 						.builder()
 						.warehouseId(proposal.getSupplyWarehouseId())
