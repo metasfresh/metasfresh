@@ -8,6 +8,7 @@ import currentDevice from 'current-device';
 
 import FiltersDateStepper from './FiltersDateStepper';
 import FiltersItem from './FiltersItem';
+import RawWidget from '../widget/RawWidget';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 
 const classes = 'btn btn-filter btn-meta-outline-secondary btn-sm';
@@ -74,70 +75,103 @@ class FiltersFrequent extends PureComponent {
             DATE_FIELD_TYPES.includes(filterType) &&
             !TIME_FIELD_TYPES.includes(filterType);
 
-          return (
-            <div className="filter-wrapper" key={index}>
-              {dateStepper && (
-                <FiltersDateStepper
-                  active={this.findActiveFilter(item.filterId)}
-                  applyFilters={applyFilters}
-                  filter={item}
-                />
-              )}
-
-              <button
-                onClick={() => this.toggleFilter(item.filterId)}
-                className={cx(classes, {
-                  ['btn-select']: openFilterId === index,
-                  ['btn-active']: item.isActive,
-                  ['btn-distance']: !dateStepper,
-                })}
-                tabIndex={modalVisible ? -1 : 0}
-              >
-                <i className="meta-icon-preview" />
-                {item.isActive &&
-                item.parameters &&
-                item.parameters.length === 1 &&
-                item.captionValue ? (
-                  <Fragment>
-                    {`${item.caption}: `}
-                    {item.captionValue}
-                  </Fragment>
-                ) : (
-                  `${
-                    this.deviceType === 'desktop'
-                      ? counterpart.translate('window.filters.caption2')
-                      : ''
-                  }: ${item.caption}`
+          if (item.inlineRenderMode === 'button') {
+            return (
+              <div className="filter-wrapper" key={index}>
+                {dateStepper && (
+                  <FiltersDateStepper
+                    active={this.findActiveFilter(item.filterId)}
+                    applyFilters={applyFilters}
+                    filter={item}
+                  />
                 )}
-              </button>
 
-              {dateStepper && (
-                <FiltersDateStepper
-                  active={this.findActiveFilter(item.filterId)}
-                  applyFilters={applyFilters}
-                  filter={item}
-                  next
-                />
-              )}
+                <button
+                  onClick={() => this.toggleFilter(item.filterId)}
+                  className={cx(classes, {
+                    ['btn-select']: openFilterId === index,
+                    ['btn-active']: item.isActive,
+                    ['btn-distance']: !dateStepper,
+                  })}
+                  tabIndex={modalVisible ? -1 : 0}
+                >
+                  <i className="meta-icon-preview" />
+                  {item.isActive &&
+                  item.parameters &&
+                  item.parameters.length === 1 &&
+                  item.captionValue ? (
+                    <Fragment>
+                      {`${item.caption}: `}
+                      {item.captionValue}
+                    </Fragment>
+                  ) : (
+                    `${
+                      this.deviceType === 'desktop'
+                        ? counterpart.translate('window.filters.caption2')
+                        : ''
+                    }: ${item.caption}`
+                  )}
+                </button>
 
-              {openFilterId === item.filterId && (
-                <FiltersItem
-                  captionValue={item.captionValue}
-                  key={index}
-                  windowType={windowType}
-                  data={item}
-                  closeFilterMenu={() => this.toggleFilter()}
-                  clearFilters={clearFilters}
-                  applyFilters={applyFilters}
-                  notValidFields={notValidFields}
-                  isActive={item.isActive}
-                  active={active}
-                  onShow={() => handleShow(true)}
-                  onHide={() => handleShow(false)}
-                  viewId={viewId}
-                  outsideClick={this.outsideClick}
-                />
-              )}
+                {dateStepper && (
+                  <FiltersDateStepper
+                    active={this.findActiveFilter(item.filterId)}
+                    applyFilters={applyFilters}
+                    filter={item}
+                    next
+                  />
+                )}
+
+                {openFilterId === item.filterId && (
+                  <FiltersItem
+                    captionValue={item.captionValue}
+                    key={index}
+                    windowType={windowType}
+                    data={item}
+                    closeFilterMenu={() => this.toggleFilter()}
+                    clearFilters={clearFilters}
+                    applyFilters={applyFilters}
+                    notValidFields={notValidFields}
+                    isActive={item.isActive}
+                    active={active}
+                    onShow={() => handleShow(true)}
+                    onHide={() => handleShow(false)}
+                    viewId={viewId}
+                    outsideClick={this.outsideClick}
+                  />
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <div key={index} className="inline-filters">
+              {item.parameters &&
+                item.parameters.map((filter, idx) => (
+                  <RawWidget
+                    entity="documentView"
+                    subentity="filter"
+                    subentityId={item.filterId}
+                    handlePatch={applyFilters}
+                    handleChange={this.setValue}
+                    widgetType={filter.widgetType}
+                    fields={[filter]}
+                    type={filter.type}
+                    widgetData={[filter]}
+                    key={idx}
+                    id={idx}
+                    range={filter.range}
+                    caption={filter.caption}
+                    noLabel={false}
+                    filterWidget={true}
+                    onShow={() => handleShow(true)}
+                    onHide={() => handleShow(false)}
+                    {...{
+                      viewId,
+                      windowType,
+                    }}
+                  />
+                ))}
             </div>
           );
         })}
