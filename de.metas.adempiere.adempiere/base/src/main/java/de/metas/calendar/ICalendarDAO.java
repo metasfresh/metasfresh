@@ -34,6 +34,7 @@ import org.compiere.model.I_C_Year;
 
 public interface ICalendarDAO extends ISingletonService
 {
+//	I_C_Calendar getById(final int calendarId);
 
 	/**
 	 * Periods of the year, ordered by startDate
