@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -112,9 +113,9 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			return EMPTY;
 		}
 
-		final HashMap<Integer, I_M_Attribute> attributes = new HashMap<Integer, I_M_Attribute>();
-		final HashMap<String, I_M_Attribute> attributesByKey = new HashMap<String, I_M_Attribute>();
-		final HashMap<String, Object> valuesByAttributeKey = new HashMap<String, Object>();
+		final ImmutableMap.Builder<Integer, I_M_Attribute> attributes = ImmutableMap.builder();
+		final ImmutableMap.Builder<String, I_M_Attribute> attributesByKey = ImmutableMap.builder();
+		final HashMap<String, Object> valuesByAttributeKey = new HashMap<>();
 
 		valuesByAttributeIdObj.forEach((attributeIdObj, value) -> {
 
@@ -127,7 +128,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			valuesByAttributeKey.put(attributeKey, value);
 		});
 
-		return new ImmutableAttributeSet(attributes, attributesByKey, valuesByAttributeKey);
+		return new ImmutableAttributeSet(attributes.build(), attributesByKey.build(), valuesByAttributeKey);
 	}
 
 	public static ImmutableAttributeSet createSubSet(
@@ -149,13 +150,13 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 	public static final ImmutableAttributeSet EMPTY = new ImmutableAttributeSet();
 
-	private final Map<Integer, I_M_Attribute> attributes;
-	private final Map<String, I_M_Attribute> attributesByKey;
+	private final ImmutableMap<Integer, I_M_Attribute> attributes;
+	private final ImmutableMap<String, I_M_Attribute> attributesByKey;
 	private final Map<String, Object> valuesByAttributeKey;
 
 	private ImmutableAttributeSet(
-			@NonNull final Map<Integer, I_M_Attribute> attributes,
-			@NonNull final Map<String, I_M_Attribute> attributesByKey,
+			@NonNull final ImmutableMap<Integer, I_M_Attribute> attributes,
+			@NonNull final ImmutableMap<String, I_M_Attribute> attributesByKey,
 			@NonNull final Map<String, Object> valuesByAttributeKey)
 	{
 		this.attributes = attributes;
@@ -167,7 +168,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	{
 		attributes = ImmutableMap.of();
 		attributesByKey = ImmutableMap.of();
-		valuesByAttributeKey = ImmutableMap.of();
+		valuesByAttributeKey = Collections.emptyMap();
 	}
 
 	@Override
