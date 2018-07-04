@@ -8,7 +8,7 @@ import currentDevice from 'current-device';
 
 import FiltersDateStepper from './FiltersDateStepper';
 import FiltersItem from './FiltersItem';
-import RawWidget from '../widget/RawWidget';
+import InlineFilterItem from './InlineFilterItem';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 
 const classes = 'btn btn-filter btn-meta-outline-secondary btn-sm';
@@ -148,28 +148,22 @@ class FiltersFrequent extends PureComponent {
             <div key={index} className="inline-filters">
               {item.parameters &&
                 item.parameters.map((filter, idx) => (
-                  <RawWidget
-                    entity="documentView"
-                    subentity="filter"
-                    subentityId={item.filterId}
-                    handlePatch={applyFilters}
-                    handleChange={this.setValue}
-                    widgetType={filter.widgetType}
-                    fields={[filter]}
-                    type={filter.type}
-                    widgetData={[filter]}
+                  <InlineFilterItem
+                    captionValue={filter.captionValue}
                     key={idx}
                     id={idx}
-                    range={filter.range}
-                    caption={filter.caption}
-                    noLabel={false}
-                    filterWidget={true}
+                    filter={item}
+                    windowType={windowType}
+                    data={filter}
+                    clearFilters={clearFilters}
+                    applyFilters={applyFilters}
+                    notValidFields={notValidFields}
+                    isActive={filter.isActive}
+                    active={active}
                     onShow={() => handleShow(true)}
                     onHide={() => handleShow(false)}
-                    {...{
-                      viewId,
-                      windowType,
-                    }}
+                    viewId={viewId}
+                    outsideClick={this.outsideClick}
                   />
                 ))}
             </div>
