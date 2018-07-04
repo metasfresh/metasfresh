@@ -68,8 +68,9 @@ public class AvailableToPromiseResultTest
 		viewRecord.setDateProjected(new Timestamp(BEFORE_NOW.getTime()));
 		viewRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		viewRecord.setQty(BigDecimal.TEN);
-
+		viewRecord.setSeqNo(1);
 		save(viewRecord);
+
 		return viewRecord;
 	}
 
@@ -151,6 +152,7 @@ public class AvailableToPromiseResultTest
 				.warehouseId(100)
 				.bpartnerId(200)
 				.qty(BigDecimal.ONE)
+				.seqNo(1)
 				.date(NOW);
 
 		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 2)).build());
@@ -184,6 +186,7 @@ public class AvailableToPromiseResultTest
 				.warehouseId(100)
 				.bpartnerId(200)
 				.qty(BigDecimal.ONE)
+				.seqNo(1)
 				.date(NOW);
 
 		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isTrue();
@@ -212,6 +215,7 @@ public class AvailableToPromiseResultTest
 				.warehouseId(100)
 				.bpartnerId(200)
 				.qty(BigDecimal.ONE)
+				.seqNo(1)
 				.date(NOW);
 
 		assertThat(group.isMatchting(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3)).build())).isTrue();
