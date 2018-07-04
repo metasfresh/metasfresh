@@ -1,9 +1,10 @@
 package org.adempiere.util.time.generator;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Collection;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 
@@ -47,7 +48,7 @@ public class DaysOfWeekExploder implements IDateSequenceExploder
 	 * @return all dates which are in same week as <code>date</code> and are equal or after it
 	 */
 	@Override
-	public Collection<LocalDate> explodeForward(final LocalDate date)
+	public Set<LocalDateTime> explodeForward(final LocalDateTime date)
 	{
 		final DayOfWeek currentDayOfWeek = date.getDayOfWeek();
 
@@ -61,7 +62,7 @@ public class DaysOfWeekExploder implements IDateSequenceExploder
 	 * @return all dates which are in one week range from <code>date</code>
 	 */
 	@Override
-	public Collection<LocalDate> explodeBackward(final LocalDate date)
+	public Set<LocalDateTime> explodeBackward(final LocalDateTime date)
 	{
 		return weekDays.stream()
 				.map(dayOfWeek -> date.with(TemporalAdjusters.previousOrSame(dayOfWeek)))

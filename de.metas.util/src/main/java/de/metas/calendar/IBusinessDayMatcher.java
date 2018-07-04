@@ -59,4 +59,29 @@ public interface IBusinessDayMatcher
 		}
 		return currentDate;
 	}
+
+	default int calculateBusinessDaysBetween(@NonNull final LocalDate dateFrom, @NonNull final LocalDate dateTo)
+	{
+		if (dateFrom.equals(dateTo))
+		{
+			return 0;
+		}
+		else if (dateFrom.compareTo(dateTo) < 0)
+		{
+			int days = 0;
+			for (LocalDate date = dateFrom; date.compareTo(dateTo) < 0; date = date.plusDays(1))
+			{
+				if (isBusinessDay(date))
+				{
+					days++;
+				}
+			}
+			return days;
+		}
+		else
+		{
+			return calculateBusinessDaysBetween(dateTo, dateFrom);
+		}
+	}
+
 }

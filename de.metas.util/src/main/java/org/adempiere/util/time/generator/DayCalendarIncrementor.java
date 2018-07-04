@@ -1,6 +1,6 @@
 package org.adempiere.util.time.generator;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.adempiere.util.Check;
 
@@ -26,13 +26,13 @@ final class DayCalendarIncrementor implements ICalendarIncrementor
 	}
 
 	@Override
-	public LocalDate increment(final LocalDate date)
+	public LocalDateTime increment(final LocalDateTime date)
 	{
 		return date.plusDays(daysToAdd);
 	}
 
 	@Override
-	public LocalDate decrement(final LocalDate date)
+	public LocalDateTime decrement(final LocalDateTime date)
 	{
 		return date.minusDays(daysToAdd);
 	}

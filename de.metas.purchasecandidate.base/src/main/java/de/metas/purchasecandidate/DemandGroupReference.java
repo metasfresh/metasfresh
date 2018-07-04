@@ -30,7 +30,7 @@ import lombok.Value;
  */
 
 /**
- * Purchase candidates with the same reference belong to the same sales order line or the some other.
+ * Purchase candidates with the same reference belong to the same document line (e.g. sales order line).
  */
 @Value
 public class DemandGroupReference

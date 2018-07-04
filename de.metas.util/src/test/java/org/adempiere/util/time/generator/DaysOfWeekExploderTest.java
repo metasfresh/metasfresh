@@ -8,6 +8,8 @@ import java.time.Month;
 
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableSet;
+
 /*
  * #%L
  * de.metas.util
@@ -30,29 +32,37 @@ import org.junit.Test;
  * #L%
  */
 
-public class WeekDayCalendarIncrementorTest
+public class DaysOfWeekExploderTest
 {
 	@Test
-	public void test_increment_1week_monday()
+	public void test_StandardCases()
 	{
-		final WeekDayCalendarIncrementor incrementor = new WeekDayCalendarIncrementor(1, DayOfWeek.MONDAY);
-		assertThat(incrementor.increment(may2018(6))).isEqualTo(may2018(7));
-		assertThat(incrementor.increment(may2018(7))).isEqualTo(may2018(14));
-		assertThat(incrementor.increment(may2018(8))).isEqualTo(may2018(14));
+		final DaysOfWeekExploder exploder = DaysOfWeekExploder.of(DayOfWeek.MONDAY, DayOfWeek.THURSDAY);
+
+		//
+		// Forward:
+		assertThat(exploder.explodeForward(_2018_July(2)))
+				.isEqualTo(ImmutableSet.of(_2018_July(2), _2018_July(5)));
+
+		assertThat(exploder.explodeForward(_2018_July(3)))
+				.isEqualTo(ImmutableSet.of(_2018_July(5)));
+
+		//
+		// Backward:
+		assertThat(exploder.explodeBackward(_2018_July(8)))
+				.isEqualTo(ImmutableSet.of(_2018_July(2), _2018_July(5)));
+
+		assertThat(exploder.explodeBackward(_2018_July(4)))
+				.isEqualTo(ImmutableSet.of(_2018_July(2), _2018_June(28)));
 	}
 
-	@Test
-	public void test_decrement_1week_monday()
+	private static LocalDateTime _2018_June(final int day)
 	{
-		final WeekDayCalendarIncrementor incrementor = new WeekDayCalendarIncrementor(1, DayOfWeek.MONDAY);
-		assertThat(incrementor.decrement(may2018(15))).isEqualTo(may2018(14));
-		assertThat(incrementor.decrement(may2018(14))).isEqualTo(may2018(7));
-		assertThat(incrementor.decrement(may2018(13))).isEqualTo(may2018(7));
+		return LocalDateTime.of(2018, Month.JUNE, day, 0, 0);
 	}
 
-	private static final LocalDateTime may2018(final int dayOfMonth)
+	private static LocalDateTime _2018_July(final int day)
 	{
-		return LocalDateTime.of(2018, Month.MAY, dayOfMonth, 0, 0);
+		return LocalDateTime.of(2018, Month.JULY, day, 0, 0);
 	}
-
 }

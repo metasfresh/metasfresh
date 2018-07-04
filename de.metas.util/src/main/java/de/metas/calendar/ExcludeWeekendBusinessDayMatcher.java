@@ -36,21 +36,21 @@ import lombok.Value;
 @Value
 public class ExcludeWeekendBusinessDayMatcher implements IBusinessDayMatcher
 {
-	public static final ExcludeWeekendBusinessDayMatcher DEFAULT = ExcludeWeekendBusinessDayMatcher.builder().build();
-
 	private static final ImmutableSet<DayOfWeek> DEFAULT_WEEKEND_DAYS = ImmutableSet.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
+
+	public static final ExcludeWeekendBusinessDayMatcher DEFAULT = ExcludeWeekendBusinessDayMatcher.builder().build();
 
 	private final ImmutableSet<DayOfWeek> weekendDays;
 
 	@Builder
-	private ExcludeWeekendBusinessDayMatcher(@NonNull final Set<DayOfWeek> excludeWeekendDays)
+	private ExcludeWeekendBusinessDayMatcher(final Set<DayOfWeek> excludeWeekendDays)
 	{
 		weekendDays = buildWeekendDays(excludeWeekendDays);
 	}
 
 	private static ImmutableSet<DayOfWeek> buildWeekendDays(final Set<DayOfWeek> excludeWeekendDays)
 	{
-		if (excludeWeekendDays.isEmpty())
+		if (excludeWeekendDays == null || excludeWeekendDays.isEmpty())
 		{
 			return DEFAULT_WEEKEND_DAYS;
 		}

@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1429097903L;
+	private static final long serialVersionUID = -1248710727L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -222,7 +222,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set VK Netto.
+	/** Set Kd-Rohertragspreis.
 		@param CustomerPriceGrossProfit 
 		Effektiver Verkaufspreis minus Skonto und Rückerstattung
 	  */
@@ -232,7 +232,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_CustomerPriceGrossProfit, CustomerPriceGrossProfit);
 	}
 
-	/** Get VK Netto.
+	/** Get Kd-Rohertragspreis.
 		@return Effektiver Verkaufspreis minus Skonto und Rückerstattung
 	  */
 	@Override
@@ -503,9 +503,9 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** Set EK Netto.
+	/** Set VK Preis netto.
 		@param PurchasePriceActual 
-		Effektiver Einkaufspreis
+		Effektiver Verkaufspreis
 	  */
 	@Override
 	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual)
@@ -513,8 +513,8 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_PurchasePriceActual, PurchasePriceActual);
 	}
 
-	/** Get EK Netto.
-		@return Effektiver Einkaufspreis
+	/** Get VK Preis netto.
+		@return Effektiver Verkaufspreis
 	  */
 	@Override
 	public java.math.BigDecimal getPurchasePriceActual () 
