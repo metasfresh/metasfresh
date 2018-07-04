@@ -7,6 +7,7 @@ import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,7 +41,7 @@ public class AvailableToPromiseMultiQuery
 {
 	/**
 	 * Creates a multi-query with one query for the given {@code materialDescriptor}
-	 * and  - if that descriptor has a specific partner - another one for ATP stuff that has no specific partner.
+	 * and - if that descriptor has a specific partner - another one for ATP stuff that has no specific partner.
 	 */
 	public static AvailableToPromiseMultiQuery forDescriptorAndAllPossibleBPartnerIds(@NonNull final MaterialDescriptor materialDescriptor)
 	{
@@ -83,5 +84,16 @@ public class AvailableToPromiseMultiQuery
 		Check.assumeNotEmpty(queries, "queries is not empty");
 		this.queries = queries;
 		this.addToPredefinedBuckets = Util.coalesce(addToPredefinedBuckets, DEFAULT_addToPredefinedBuckets);
+	}
+
+	/**
+	 * {@code true} means that the system will initially create one empty result group for the {@link AttributesKey}s of each included {@link AvailableToPromiseQuery}.
+	 * ATP quantity that are retrieved may be added to multiple result groups, depending on those groups attributes keys
+	 * If no ATP quantity matches a particular group, it will remain empty.<br>
+	 * {@code false} means that the system will create result groups on the fly for the respective ATP records that it finds.
+	 */
+	public boolean isAddToPredefinedBuckets()
+	{
+		return addToPredefinedBuckets;
 	}
 }
