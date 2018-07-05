@@ -118,6 +118,11 @@ class Table extends Component {
       onRowEdited,
     } = this.props;
     const { selected, rows } = this.state;
+    const selectedEqual = _.isEqual(prevState.selected, selected);
+    const defaultSelectedEqual = _.isEqual(
+      prevProps.defaultSelected,
+      defaultSelected
+    );
 
     if (!this._isMounted) {
       return;
@@ -133,7 +138,7 @@ class Table extends Component {
               this.showSelectedIncludedView([firstRow.id]);
             }
 
-            if (firstRow.id && !_.isEqual(prevState.selected, selected)) {
+            if (firstRow.id && !selectedEqual) {
               this.selectOneProduct(firstRow.id);
             }
           }
@@ -146,17 +151,13 @@ class Table extends Component {
     }
 
     if (
-      (!_.isEqual(prevProps.defaultSelected, defaultSelected) &&
-        !_.isEqual(prevState.selected, selected)) ||
+      (!defaultSelectedEqual && !selectedEqual) ||
       (refreshSelection && prevProps.refreshSelection !== refreshSelection)
     ) {
       this.setState({
         selected: defaultSelected,
       });
-    } else if (
-      !disconnectFromState &&
-      !_.isEqual(prevState.selected, selected)
-    ) {
+    } else if (!disconnectFromState && !selectedEqual) {
       dispatch(
         selectTableItems({
           windowType: type,
@@ -180,7 +181,14 @@ class Table extends Component {
     }
 
     if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
-      this.getIndentData(true);
+      this.setState(
+        {
+          selected: defaultSelected,
+        },
+        () => {
+          this.getIndentData(true);
+        }
+      );
     }
   }
 
@@ -233,7 +241,6 @@ class Table extends Component {
       keyProperty,
     } = this.props;
     const { selected } = this.state;
-
     let rowsData = [];
 
     if (indentSupported && rowData.get(`${tabid}`)) {
