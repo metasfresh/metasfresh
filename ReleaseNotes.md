@@ -16,6 +16,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1467](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1467) Advanced Edit shortcut not working correctly
     * Improvement of the Handling of shortcuts.
+  * [#1850](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1850) Initial Setup Wizard window's layout is distorted
+    * Fixes the Layout of the Initial Setup Wizard
 
 
 # metasfresh 5.64 (2018-27)
