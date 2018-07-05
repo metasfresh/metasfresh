@@ -58,6 +58,7 @@ input {
 .form-group {
     position: relative;
     margin-bottom: 0.3rem;
+    flex: 1 1 auto;
 }
 
 .form-control {
