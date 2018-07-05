@@ -232,6 +232,11 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 						'dist/target/docker/app') // workDir
 		dockerBuildAndPush(appDockerConf)
 
+		final DockerConf reportDockerConf = appDockerConf
+						.withArtifactName('metasfresh-report')
+						.withWorkDir('dist/target/docker/report')
+		dockerBuildAndPush(reportDockerConf)				
+
 		final DockerConf dbInitDockerConf = appDockerConf
 						.withArtifactName('metasfresh-db-init-pg-10-3')
 						.withWorkDir('dist/target/docker/db-init')
