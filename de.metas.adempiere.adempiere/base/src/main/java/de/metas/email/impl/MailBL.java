@@ -114,7 +114,7 @@ public class MailBL implements IMailBL
 		{
 			final String messageString = StringUtils.formatMessage(
 					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
-							+ "AD_MailConfig search parameters AD_Client_ID={}; AD_Org_ID={}, AD_Process_ID={}, C_DocType={}, CustomType={}",
+							+ "AD_MailConfig search parameters: AD_Client_ID={}; AD_Org_ID={}; AD_Process_ID={}; C_DocType={}; CustomType={}",
 					client.getAD_Client_ID(), adOrgId, processID, docType, customType);
 
 			throw new MailboxNotFoundException(ImmutableTranslatableString.constant(messageString));

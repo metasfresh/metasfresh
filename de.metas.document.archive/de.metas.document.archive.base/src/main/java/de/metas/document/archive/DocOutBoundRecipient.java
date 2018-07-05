@@ -3,6 +3,7 @@ package de.metas.document.archive;
 import javax.annotation.Nullable;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -31,6 +32,7 @@ import lombok.Value;
 @Builder
 public class DocOutBoundRecipient
 {
+	@NonNull
 	DocOutBoundRecipientId id;
 
 	@Nullable
