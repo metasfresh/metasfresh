@@ -1,7 +1,8 @@
 package de.metas.order;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
+import de.metas.i18n.ITranslatableString;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -24,13 +25,12 @@ import de.metas.product.ProductId;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-public interface IOrderLineQuickInputValidator
+@Value
+@Builder
+public class OrderLineInputValidatorResults
 {
-	/**
-	 * @param bpartnerId
-	 * @param productId
-	 * @return OrderLineQuickInputValidatorResults entry, containing a flag that specifies if the quick input was valid. If it was not valid ( flag is false) a reason for invalidity is also provided for it (in de.metas.order.OrderLineQuickInputValidatorResults.errorMessage).
-	 */
-	OrderLineQuickInputValidatorResults validate(BPartnerId bpartnerId, ProductId productId);
+	private final boolean isValid;
+
+	private final ITranslatableString errorMessage;
+
 }

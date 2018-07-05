@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.order.IOrderLineQuickInputValidator;
-import de.metas.order.OrderLineQuickInputValidatorResults;
-import de.metas.order.OrderLineQuickInputValidatorResults.OrderLineQuickInputValidatorResultsBuilder;
+import de.metas.order.IOrderLineInputValidator;
+import de.metas.order.OrderLineInputValidatorResults;
+import de.metas.order.OrderLineInputValidatorResults.OrderLineInputValidatorResultsBuilder;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -26,12 +26,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,7 @@ import lombok.NonNull;
  */
 
 @Component
-public class PharmaOrderLineQuickInputValidator implements IOrderLineQuickInputValidator
+public class PharmaOrderLineInputValidator implements IOrderLineInputValidator
 {
 	private final static String MSG_NoPrescriptionPermission = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPrescriptionPermission";
 	private final static String MSG_NoPharmaShipmentPermission = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPharmaShipmentPermissions";
@@ -47,7 +47,7 @@ public class PharmaOrderLineQuickInputValidator implements IOrderLineQuickInputV
 	private final PharmaBPartnerRepository pharmaBPartnerRepo;
 	private final PharmaProductRepository pharmaProductRepo;
 
-	public PharmaOrderLineQuickInputValidator(
+	public PharmaOrderLineInputValidator(
 			@NonNull PharmaBPartnerRepository pharmaBPartnerRepo,
 			@NonNull PharmaProductRepository pharmaProductRepo)
 	{
@@ -56,16 +56,16 @@ public class PharmaOrderLineQuickInputValidator implements IOrderLineQuickInputV
 	}
 
 	@Override
-	public OrderLineQuickInputValidatorResults validate(final @NonNull BPartnerId bpartnerId, final @NonNull ProductId productId)
+	public OrderLineInputValidatorResults validate(final @NonNull BPartnerId bpartnerId, final @NonNull ProductId productId)
 	{
 		return evaluatePrescriptionPermission(bpartnerId, productId);
 	}
 
-	private OrderLineQuickInputValidatorResults evaluatePrescriptionPermission(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId)
+	private OrderLineInputValidatorResults evaluatePrescriptionPermission(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		final OrderLineQuickInputValidatorResultsBuilder resultBuilder = OrderLineQuickInputValidatorResults.builder();
+		final OrderLineInputValidatorResultsBuilder resultBuilder = OrderLineInputValidatorResults.builder();
 
 		final PharmaBPartner bpartner = pharmaBPartnerRepo.getById(bpartnerId);
 		if (bpartner.isHasAtLeastOnePermission())
