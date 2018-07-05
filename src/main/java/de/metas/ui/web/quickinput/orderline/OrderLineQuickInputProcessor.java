@@ -31,8 +31,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderLineQuickInputValidator;
-import de.metas.order.OrderLineQuickInputValidatorResults;
+import de.metas.order.IOrderLineInputValidator;
+import de.metas.order.OrderLineInputValidatorResults;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
@@ -69,7 +69,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private static final transient Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
 	private final transient IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 
-	final Collection<IOrderLineQuickInputValidator> validators = Adempiere.getBeansOfType(IOrderLineQuickInputValidator.class);
+	final Collection<IOrderLineInputValidator> validators = Adempiere.getBeansOfType(IOrderLineInputValidator.class);
 
 	public OrderLineQuickInputProcessor()
 	{
@@ -106,7 +106,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final List<ITranslatableString> validationErrorMessages = validators
 				.stream()
 				.map(validator -> {
-					final OrderLineQuickInputValidatorResults validationResults = validator.validate(bpartnerId, productId);
+					final OrderLineInputValidatorResults validationResults = validator.validate(bpartnerId, productId);
 
 					if (!validationResults.isValid())
 					{
