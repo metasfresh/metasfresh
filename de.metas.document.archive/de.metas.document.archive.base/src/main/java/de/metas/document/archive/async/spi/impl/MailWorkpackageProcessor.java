@@ -31,6 +31,7 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
@@ -43,7 +44,6 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
@@ -71,7 +71,6 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
-	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
@@ -93,9 +92,16 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final I_AD_Archive archive = logLine.getAD_Archive();
 			Check.assumeNotNull(archive, "archive not null for C_Doc_Outbound_Log_Line={}", logLine);
 
-			final I_C_Doc_Outbound_Log log = logLine.getC_Doc_Outbound_Log();
+			final I_C_Doc_Outbound_Log docOutboundLogRecord = logLine.getC_Doc_Outbound_Log();
+			if (Check.isEmpty(docOutboundLogRecord.getCurrentEMailAddress(), true))
+			{
+				// maybe this was changed since the WP's encqueuing
+				Loggables.get()
+						.addLog("Skip C_Doc_Outbound_Log_Line_ID={} which has a C_Doc_Outbound_Log with an empty CurrentEMailAddress value; C_Doc_Outbound_Log={} ",
+								logLine.getC_Doc_Outbound_Log_Line_ID(), docOutboundLogRecord);
+			}
 
-			sendEMail(action, log, archive, workpackage.getAD_PInstance(), localTrxName);
+			sendEMail(action, docOutboundLogRecord, archive, workpackage.getAD_PInstance(), localTrxName);
 		}
 
 		return Result.SUCCESS;
@@ -103,14 +109,14 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 	private void sendEMail(
 			final String action,
-			final I_C_Doc_Outbound_Log log,
+			final I_C_Doc_Outbound_Log docOutboundLogRecord,
 			final I_AD_Archive archive,
 			final I_AD_PInstance pInstance,
 			final String trxName)
 	{
 		try
 		{
-			sendEMail0(action, log, archive, pInstance, trxName);
+			sendEMail0(action, docOutboundLogRecord, archive, pInstance, trxName);
 		}
 		catch (final Exception e)
 		{
@@ -124,7 +130,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 	private void sendEMail0(
 			final String action,
-			final I_C_Doc_Outbound_Log log,
+			final I_C_Doc_Outbound_Log docOutboundLogRecord,
 			final I_AD_Archive archive,
 			final I_AD_PInstance pInstance,
 			final String trxName) throws Exception
@@ -139,8 +145,8 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			ctx.setProperty(Env.CTXNAME_AD_Language, archiveLanguage);
 		}
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(log.getC_BPartner(), I_C_BPartner.class);
-		Check.assumeNotNull(partner, "partner not null for {}", log);
+		final I_C_BPartner partner = InterfaceWrapperHelper.create(docOutboundLogRecord.getC_BPartner(), I_C_BPartner.class);
+		Check.assumeNotNull(partner, "partner not null for {}", docOutboundLogRecord);
 
 		final I_AD_Client client = InterfaceWrapperHelper.create(ctx, partner.getAD_Client_ID(), I_AD_Client.class, trxName);
 
@@ -150,43 +156,13 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final int orgID = pInstance == null ? ProcessExecutor.getCurrentOrgId() : pInstance.getAD_Org_ID();
 		final I_AD_User userFrom = null; // no user - this mailbox is the AD_Client's mailbox
 
-		final I_C_DocType docType = log.getC_DocType();
+		final I_C_DocType docType = docOutboundLogRecord.getC_DocType();
 
 		final Mailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType, mailCustomType, userFrom);
 
-		I_AD_User userTo = null;
+		// note that we verified this earlier
+		final String mailTo = Check.assumeNotEmpty(docOutboundLogRecord.getCurrentEMailAddress(), "C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log={}", docOutboundLogRecord);
 
-		// check if the column for the user is specified
-		if (!Check.isEmpty(mailbox.getColumnUserTo(), true))
-		{
-			final String tableName = adTableDAO.retrieveTableName(log.getAD_Table_ID());
-
-			// check if the column exists
-			final boolean existsColumn = adTableDAO.hasColumnName(tableName, mailbox.getColumnUserTo());
-			if (existsColumn)
-			{
-				// load the column content
-				final Object po = InterfaceWrapperHelper.create(ctx, tableName, log.getRecord_ID(), Object.class, trxName);
-				final Integer userToID = InterfaceWrapperHelper.getValueOrNull(po, mailbox.getColumnUserTo());
-				if (userToID != null)
-				{
-					userTo = InterfaceWrapperHelper.create(ctx, I_AD_User.Table_Name, userToID, I_AD_User.class, trxName);
-				}
-			}
-		}
-
-		//
-		// fallback to old logic
-		if (userTo == null)
-		{
-			userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
-			Check.assumeNotNull(userTo, "userTo not null for {}", log);
-		}
-
-		final String mailTo = userTo.getEMail();
-		Check.assumeNotEmpty(mailTo, "email not empty for {}", log);
-
-		//
 		// Create and send email
 		final String status;
 		{
