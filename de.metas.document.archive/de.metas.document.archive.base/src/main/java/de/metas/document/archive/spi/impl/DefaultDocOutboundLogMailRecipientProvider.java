@@ -6,9 +6,6 @@ import java.util.Optional;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.user.User;
-import org.adempiere.user.UserId;
-import org.adempiere.user.UserRepository;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -16,6 +13,9 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
+import de.metas.document.archive.DocOutBoundRecipient;
+import de.metas.document.archive.DocOutBoundRecipientId;
+import de.metas.document.archive.DocOutBoundRecipientRepository;
 import de.metas.document.archive.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.email.IMailBL;
@@ -49,11 +49,11 @@ import lombok.NonNull;
 public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLogMailRecipientProvider
 {
 
-	private final UserRepository userRepository;
+	private final DocOutBoundRecipientRepository docOutBoundRecipientRepository;
 
-	public DefaultDocOutboundLogMailRecipientProvider(@NonNull final UserRepository userRepository)
+	public DefaultDocOutboundLogMailRecipientProvider(@NonNull final DocOutBoundRecipientRepository userRepository)
 	{
-		this.userRepository = userRepository;
+		this.docOutBoundRecipientRepository = userRepository;
 	}
 
 	/** returns {@code true}. */
@@ -71,7 +71,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 	}
 
 	@Override
-	public Optional<User> provideMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		if (docOutboundLogRecord.getRecord_ID() <= 0 || docOutboundLogRecord.getAD_Table_ID() <= 0)
 		{
@@ -98,13 +98,13 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 				final Object referencedModel = TableRecordReference.ofReferenced(docOutboundLogRecord).getModel(context);
 
 				// load the column content
-				final Integer userToID = getValueOrNull(referencedModel, mailbox.getColumnUserTo());
-				if (userToID == null)
+				final Integer userRepoId = getValueOrNull(referencedModel, mailbox.getColumnUserTo());
+				if (userRepoId == null)
 				{
 					return Optional.empty();
 				}
-				final UserId userId = UserId.ofRepoId(userToID);
-				final User user  = userRepository.getById(userId);
+				final DocOutBoundRecipientId docOutBoundRecipientId = DocOutBoundRecipientId.ofRepoId(userRepoId);
+				final DocOutBoundRecipient user  = docOutBoundRecipientRepository.getById(docOutBoundRecipientId);
 				if (Check.isEmpty(user.getEmailAddress(), true))
 				{
 					return Optional.empty();

@@ -34,10 +34,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 
 import de.metas.async.api.IQueueDAO;
@@ -52,7 +50,6 @@ import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.i18n.IMsgBL;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.ProcessExecutor;
 
 /**
@@ -95,7 +92,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final I_C_Doc_Outbound_Log docOutboundLogRecord = logLine.getC_Doc_Outbound_Log();
 			if (Check.isEmpty(docOutboundLogRecord.getCurrentEMailAddress(), true))
 			{
-				// maybe this was changed since the WP's encqueuing
+				// maybe this was changed since the WP's enqueuing
 				Loggables.get()
 						.addLog("Skip C_Doc_Outbound_Log_Line_ID={} which has a C_Doc_Outbound_Log with an empty CurrentEMailAddress value; C_Doc_Outbound_Log={} ",
 								logLine.getC_Doc_Outbound_Log_Line_ID(), docOutboundLogRecord);
@@ -145,23 +142,22 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			ctx.setProperty(Env.CTXNAME_AD_Language, archiveLanguage);
 		}
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(docOutboundLogRecord.getC_BPartner(), I_C_BPartner.class);
-		Check.assumeNotNull(partner, "partner not null for {}", docOutboundLogRecord);
-
-		final I_AD_Client client = InterfaceWrapperHelper.create(ctx, partner.getAD_Client_ID(), I_AD_Client.class, trxName);
-
-		final String mailCustomType = null;
-
 		final int processID = pInstance == null ? ProcessExecutor.getCurrentProcessId() : pInstance.getAD_Process_ID();
-		final int orgID = pInstance == null ? ProcessExecutor.getCurrentOrgId() : pInstance.getAD_Org_ID();
+
 		final I_AD_User userFrom = null; // no user - this mailbox is the AD_Client's mailbox
 
-		final I_C_DocType docType = docOutboundLogRecord.getC_DocType();
-
-		final Mailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType, mailCustomType, userFrom);
+		final Mailbox mailbox = mailBL.findMailBox(
+				docOutboundLogRecord.getAD_Client(),
+				docOutboundLogRecord.getAD_Org_ID(),
+				processID,
+				docOutboundLogRecord.getC_DocType(),
+				null, // mailCustomType
+				userFrom  	);
 
 		// note that we verified this earlier
-		final String mailTo = Check.assumeNotEmpty(docOutboundLogRecord.getCurrentEMailAddress(), "C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log={}", docOutboundLogRecord);
+		final String mailTo = Check.assumeNotEmpty(
+				docOutboundLogRecord.getCurrentEMailAddress(),
+				"C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log={}", docOutboundLogRecord);
 
 		// Create and send email
 		final String status;

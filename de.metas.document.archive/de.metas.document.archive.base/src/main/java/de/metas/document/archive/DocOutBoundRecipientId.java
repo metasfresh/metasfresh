@@ -1,8 +1,9 @@
 package de.metas.document.archive;
 
-import java.util.Optional;
+import org.adempiere.util.Check;
 
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
@@ -26,20 +27,27 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
  * #L%
  */
 
-public interface DocOutboundLogMailRecipientProvider
+@Value
+public class DocOutBoundRecipientId implements RepoIdAware
 {
-	/** *One* registered provider may return {@code true}. */
-	public boolean isDefault();
+	int repoId;
 
-	/**
-	 *
-	 * Will return null if {@link #isDefault()}, otherwise will never return null;
-	 * Feel free to add other discriminatory methods like isSOTrx(), getDocBaseType() etc, if and when needed.
-	 */
-	public String getTableName();
+	public static DocOutBoundRecipientId ofRepoId(final int repoId)
+	{
+		return new DocOutBoundRecipientId(repoId);
+	}
 
-	/**
-	 * Unless the implementor has {@link #isDefault()} {@code == true}, it can safely assume that the docOutboundLogRecord's {@code AD_Table_ID}'s name is {@link #getTableName()}.
-	 */
-	public Optional<DocOutBoundRecipient> provideMailRecipient(I_C_Doc_Outbound_Log docOutboundLogRecord);
+	public static DocOutBoundRecipientId ofRepoIdOrNull(int repoId)
+	{
+		if (repoId <= 0)
+		{
+			return null;
+		}
+		return new DocOutBoundRecipientId(repoId);
+	}
+
+	private DocOutBoundRecipientId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 }

@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -22,8 +23,8 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessInfo;
-import de.metas.process.ProcessInfoParameter;
 import lombok.NonNull;
 
 /**
@@ -33,11 +34,7 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 {
 	private static final String MSG_No_DocOutboundLog_Selection = "C_Doc_Outbound_Log.No_DocOutboundLog_Selection";
 
-	private static final String MSG_EMPTY_C_Doc_Outbound_Log_Line_ID = "SendMailsForSelection.EMPTY_C_Doc_Outbound_Log_Line_ID";
 	private static final String MSG_EMPTY_AD_Archive_ID = "SendMailsForSelection.EMPTY_AD_Archive_ID";
-	private static final String MSG_EMPTY_C_BPartner_ID = "SendMailsForSelection.EMPTY_C_BPartner_ID";
-	private static final String MSG_EMPTY_AD_User_To_ID = "SendMailsForSelection.EMPTY_AD_User_To_ID";
-	private static final String MSG_EMPTY_MailTo = "SendMailsForSelection.EMPTY_MailTo";
 
 	private static final String PARA_OnlyNotSentMails = "OnlyNotSentMails";
 
@@ -46,25 +43,12 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@Param(parameterName = PARA_OnlyNotSentMails, mandatory=true)
 	private boolean p_OnlyNotSentMails = false;
 
 	@Override
 	protected final void prepare()
 	{
-		// Init parameters first
-		for (final ProcessInfoParameter para : getParametersAsArray())
-		{
-			final String name = para.getParameterName();
-			if (para.getParameter() == null)
-			{
-				// do nothing
-			}
-			else if (PARA_OnlyNotSentMails.equals(name))
-			{
-				p_OnlyNotSentMails = "Y".equals(para.getParameter());
-			}
-		}
-
 		final IQueryFilter<I_C_Doc_Outbound_Log> filter = getFilter();
 		final int pInstanceId = getAD_PInstance_ID();
 
@@ -86,7 +70,7 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 	protected IQueryFilter<I_C_Doc_Outbound_Log> getFilter()
 	{
 		final ProcessInfo pi = getProcessInfo();
-		final IQueryFilter<I_C_Doc_Outbound_Log> selectedRecordsFilter = pi.getQueryFilter();
+		final IQueryFilter<I_C_Doc_Outbound_Log> selectedRecordsFilter = pi.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
 		return queryBL
 				.createCompositeQueryFilter(I_C_Doc_Outbound_Log.class)
@@ -113,9 +97,8 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 					.newBlock()
 					.setAD_PInstance_Creator_ID(pInstanceId)
 					.newWorkpackage()
-					// .bindToThreadInheritedTrx() let's start as soon as the workpackage is created
+					// .bindToThreadInheritedTrx() // let's start as soon as the workpackage is created
 					.addElement(docOutboundLogLine)
-					.end()
 					.build();
 
 			counter.setValue(counter.getValue() + 1);

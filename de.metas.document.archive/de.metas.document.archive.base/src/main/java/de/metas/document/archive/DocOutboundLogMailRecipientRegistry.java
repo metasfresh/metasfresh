@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
@@ -71,7 +70,7 @@ public class DocOutboundLogMailRecipientRegistry
 		this.tableName2provider = mapBuilder.build();
 	}
 
-	public Optional<User> invokeProvider(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	public Optional<DocOutBoundRecipient> invokeProvider(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		if (docOutboundLogRecord.getAD_Table_ID() <= 0)
 		{
@@ -91,7 +90,7 @@ public class DocOutboundLogMailRecipientRegistry
 				.provideMailRecipient(docOutboundLogRecord);
 	}
 
-	private Optional<User> invokeDefaultProviderIfPossible(final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	private Optional<DocOutBoundRecipient> invokeDefaultProviderIfPossible(final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		if (defaultProvider == null)
 		{

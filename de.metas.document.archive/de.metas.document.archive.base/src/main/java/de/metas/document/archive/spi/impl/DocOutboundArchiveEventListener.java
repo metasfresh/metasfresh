@@ -33,9 +33,9 @@ import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.ArchiveEventListenerAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
@@ -44,6 +44,7 @@ import org.compiere.model.I_AD_User;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.archive.DocOutBoundRecipient;
 import de.metas.document.archive.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.api.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
@@ -221,30 +222,6 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
 		docOutboundLogRecord.setC_DocType_ID(doctypeID);
 
-		//
-		// set isInvoiceEmailEnabled
-		final Object archiveReferencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
-		if (archiveReferencedModel != null)
-		{
-			final boolean isInvoiceDocument = InterfaceWrapperHelper.isInstanceOf(archiveReferencedModel, I_C_Invoice.class);
-			final Boolean matchingisInvoiceEmailEnabled;
-			// in case of invoice document, enable email only if is enabled in partner
-			if (isInvoiceDocument)
-			{
-				final I_C_Invoice invoice = InterfaceWrapperHelper.create(archiveReferencedModel, I_C_Invoice.class);
-				final I_C_BPartner bpartner = InterfaceWrapperHelper.create(invoice.getC_BPartner(), I_C_BPartner.class);
-				final de.metas.document.archive.model.I_AD_User user = InterfaceWrapperHelper.create(invoice.getAD_User(), de.metas.document.archive.model.I_AD_User.class);
-
-				matchingisInvoiceEmailEnabled = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
-			}
-			else
-			{
-				// set by default on Y for all other documents
-				matchingisInvoiceEmailEnabled = Boolean.TRUE;
-			}
-
-			docOutboundLogRecord.setIsInvoiceEmailEnabled(matchingisInvoiceEmailEnabled);
-		}
 
 		docOutboundLogRecord.setDateLastEMail(null);
 		docOutboundLogRecord.setDateLastPrint(null);
@@ -268,15 +245,24 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 	{
 		final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = Adempiere.getBean(DocOutboundLogMailRecipientRegistry.class);
 
-		final Optional<User> mailRecipient = docOutboundLogMailRecipientRegistry.invokeProvider(docOutboundLogRecord);
+		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.invokeProvider(docOutboundLogRecord);
 		if (!mailRecipient.isPresent())
 		{
 			return;
 		}
 
-		mailRecipient.ifPresent(user -> {
-			docOutboundLogRecord.setCurrentEMailRecipient_ID(user.getId().getRepoId());
-			docOutboundLogRecord.setCurrentEMailAddress(user.getEmailAddress());
-		});
+		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
+	}
+
+	private void updateRecordWithRecipient(
+			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord,
+			@NonNull final DocOutBoundRecipient recipient)
+	{
+		final String tableName = TableRecordReference.ofReferenced(docOutboundLogRecord).getTableName();
+		final boolean isInvoiceEmailEnabled = I_C_Invoice.Table_Name.equals(tableName) && recipient.isInvoiceAsEmail();
+		docOutboundLogRecord.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
+
+		docOutboundLogRecord.setCurrentEMailRecipient_ID(recipient.getId().getRepoId());
+		docOutboundLogRecord.setCurrentEMailAddress(recipient.getEmailAddress());
 	}
 }

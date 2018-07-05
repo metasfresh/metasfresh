@@ -1,8 +1,9 @@
 package de.metas.document.archive;
 
-import java.util.Optional;
+import javax.annotation.Nullable;
 
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -26,20 +27,14 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
  * #L%
  */
 
-public interface DocOutboundLogMailRecipientProvider
+@Value
+@Builder
+public class DocOutBoundRecipient
 {
-	/** *One* registered provider may return {@code true}. */
-	public boolean isDefault();
+	DocOutBoundRecipientId id;
 
-	/**
-	 *
-	 * Will return null if {@link #isDefault()}, otherwise will never return null;
-	 * Feel free to add other discriminatory methods like isSOTrx(), getDocBaseType() etc, if and when needed.
-	 */
-	public String getTableName();
+	@Nullable
+	String emailAddress;
 
-	/**
-	 * Unless the implementor has {@link #isDefault()} {@code == true}, it can safely assume that the docOutboundLogRecord's {@code AD_Table_ID}'s name is {@link #getTableName()}.
-	 */
-	public Optional<DocOutBoundRecipient> provideMailRecipient(I_C_Doc_Outbound_Log docOutboundLogRecord);
+	boolean invoiceAsEmail;
 }

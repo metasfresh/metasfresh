@@ -1,14 +1,21 @@
 package de.metas.document.archive.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.user.User;
-import org.adempiere.user.UserId;
-import org.adempiere.user.UserRepository;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
+import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.document.archive.DocOutBoundRecipient;
+import de.metas.document.archive.DocOutBoundRecipientId;
+import de.metas.document.archive.DocOutBoundRecipientRepository;
+import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import lombok.NonNull;
 
@@ -35,27 +42,52 @@ import lombok.NonNull;
  */
 
 @Callout(I_C_Doc_Outbound_Log.class)
+@Interceptor(I_C_Doc_Outbound_Log.class)
 @Component
 public class C_Doc_Outbound_Log
 {
-	private final UserRepository userRepository;
+	private final DocOutBoundRecipientRepository docOutBoundRecipientRepository;
 
-	public C_Doc_Outbound_Log(@NonNull final UserRepository userRepository)
+	public C_Doc_Outbound_Log(@NonNull final DocOutBoundRecipientRepository docOutBoundRecipientRepository)
 	{
-		this.userRepository = userRepository;
+		this.docOutBoundRecipientRepository = docOutBoundRecipientRepository;
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
 	@CalloutMethod(columnNames = I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailRecipient_ID)
-	public void updateMailAddress(I_C_Doc_Outbound_Log docOutboundlogRecord)
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailRecipient_ID)
+	public void updateFromRecipientId(I_C_Doc_Outbound_Log docOutboundlogRecord)
 	{
-		final UserId userId = UserId.ofRepoIdOrNull(docOutboundlogRecord.getCurrentEMailRecipient_ID());
+		final DocOutBoundRecipientId userId = DocOutBoundRecipientId.ofRepoIdOrNull(docOutboundlogRecord.getCurrentEMailRecipient_ID());
 		if (userId == null)
 		{
 			docOutboundlogRecord.setCurrentEMailAddress(null);
 			return;
 		}
-		final User user = userRepository.getById(userId);
+
+		final DocOutBoundRecipient user = docOutBoundRecipientRepository.getById(userId);
 		docOutboundlogRecord.setCurrentEMailAddress(user.getEmailAddress());
+		docOutboundlogRecord.setIsInvoiceEmailEnabled(user.isInvoiceAsEmail());
+	}
+
+	// this column is not user-editable, so we don't need it to be a callout
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = I_C_Doc_Outbound_Log.COLUMNNAME_C_BPartner_ID)
+	public void updateFromBPartnerId(I_C_Doc_Outbound_Log docOutboundlogRecord)
+	{
+		if (docOutboundlogRecord.getC_BPartner_ID() <= 0)
+		{
+			// reset everything
+			docOutboundlogRecord.setCurrentEMailRecipient(null);
+			docOutboundlogRecord.setCurrentEMailAddress(null);
+			docOutboundlogRecord.setIsInvoiceEmailEnabled(false);
+			return;
+		}
+
+		final I_C_BPartner bpartnerRecord = loadOutOfTrx(docOutboundlogRecord.getC_BPartner_ID(), I_C_BPartner.class);
+		docOutboundlogRecord.setIsInvoiceEmailEnabled(StringUtils.toBoolean(bpartnerRecord));
 	}
 }

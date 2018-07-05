@@ -3,9 +3,6 @@ package de.metas.document.archive.spi.impl;
 import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.user.User;
-import org.adempiere.user.UserId;
-import org.adempiere.user.UserRepository;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -15,6 +12,9 @@ import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.archive.DocOutBoundRecipient;
+import de.metas.document.archive.DocOutBoundRecipientId;
+import de.metas.document.archive.DocOutBoundRecipientRepository;
 import de.metas.document.archive.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import lombok.NonNull;
@@ -46,9 +46,9 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		implements DocOutboundLogMailRecipientProvider
 {
 
-	private final UserRepository userRepository;
+	private final DocOutBoundRecipientRepository userRepository;
 
-	public InvoiceDocOutboundLogMailRecipientProvider(@NonNull final UserRepository userRepository)
+	public InvoiceDocOutboundLogMailRecipientProvider(@NonNull final DocOutBoundRecipientRepository userRepository)
 	{
 		this.userRepository = userRepository;
 	}
@@ -66,14 +66,14 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 	}
 
 	@Override
-	public Optional<User> provideMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final I_C_Invoice invoiceRecord = TableRecordReference
 				.ofReferenced(docOutboundLogRecord)
 				.getModel(I_C_Invoice.class);
 		if (invoiceRecord.getAD_User_ID() > 0)
 		{
-			final User invoiceUser = userRepository.getById(UserId.ofRepoId(invoiceRecord.getAD_User_ID()));
+			final DocOutBoundRecipient invoiceUser = userRepository.getById(DocOutBoundRecipientId.ofRepoId(invoiceRecord.getAD_User_ID()));
 			if (!Check.isEmpty(invoiceUser.getEmailAddress(), true))
 			{
 				return Optional.of(invoiceUser);
@@ -84,7 +84,7 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		final I_AD_User userRecord = bpartnerBL.retrieveBillContact(Env.getCtx(), invoiceRecord.getC_BPartner_ID(), ITrx.TRXNAME_ThreadInherited);
 		if (userRecord.getAD_User_ID() > 0)
 		{
-			final User billUser = userRepository.getById(UserId.ofRepoId(invoiceRecord.getAD_User_ID()));
+			final DocOutBoundRecipient billUser = userRepository.getById(DocOutBoundRecipientId.ofRepoId(invoiceRecord.getAD_User_ID()));
 			if (!Check.isEmpty(billUser.getEmailAddress(), true))
 			{
 				return Optional.of(billUser);
