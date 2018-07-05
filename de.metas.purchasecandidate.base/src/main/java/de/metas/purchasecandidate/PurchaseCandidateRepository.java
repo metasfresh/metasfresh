@@ -216,7 +216,7 @@ public class PurchaseCandidateRepository
 
 				purchaseItemRepository.saveAll(purchaseCandidate.getPurchaseOrderItems());
 				purchaseItemRepository.saveAll(purchaseCandidate.getPurchaseErrorItems());
-			} ;
+			}
 		}
 		finally
 		{
