@@ -225,6 +225,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 
 	stage('Build&Push docker images')
 	{
+		// app
 		final DockerConf appDockerConf = new DockerConf(
 						'metasfresh-dist-app', // artifactName
 						MF_UPSTREAM_BRANCH, // branchName
@@ -232,11 +233,18 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 						'dist/target/docker/app') // workDir
 		dockerBuildAndPush(appDockerConf)
 
+		// report
+		final String dockerBaseImageRepo = 'metasfresh-report-dev'
+		final String dockerBaseImageTag = misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_ARTIFACT_VERSIONS['metasfresh']}")
+		final String additionalBuildArgs = "--build-arg BASE_IMAGE_REPO=${dockerBaseImageRepo} --build-arg BASE_IMAGE_VERSION=${dockerBaseImageTag}"
+
 		final DockerConf reportDockerConf = appDockerConf
 						.withArtifactName('metasfresh-dist-report')
 						.withWorkDir('dist/target/docker/report')
+						.withAdditionalBuildArgs(additionalBuildArgs)
 		dockerBuildAndPush(reportDockerConf)				
 
+		// postgres DB init container
 		final DockerConf dbInitDockerConf = appDockerConf
 						.withArtifactName('metasfresh-db-init-pg-10-3')
 						.withWorkDir('dist/target/docker/db-init')
