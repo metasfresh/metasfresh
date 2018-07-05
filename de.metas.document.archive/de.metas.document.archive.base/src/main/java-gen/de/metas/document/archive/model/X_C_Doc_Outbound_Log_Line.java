@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.document.archive.model;
 
@@ -30,7 +14,7 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -844667228L;
+	private static final long serialVersionUID = -1674843117L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Log_Line (Properties ctx, int C_Doc_Outbound_Log_Line_ID, String trxName)
@@ -184,7 +168,7 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -333,7 +317,9 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	}
 
 	/** Set Kopien.
-		@param Copies Kopien	  */
+		@param Copies 
+		Anzahl der zu erstellenden/zu druckenden Exemplare
+	  */
 	@Override
 	public void setCopies (int Copies)
 	{
@@ -341,7 +327,8 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	}
 
 	/** Get Kopien.
-		@return Kopien	  */
+		@return Anzahl der zu erstellenden/zu druckenden Exemplare
+	  */
 	@Override
 	public int getCopies () 
 	{
@@ -400,7 +387,7 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -410,7 +397,7 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
