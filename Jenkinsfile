@@ -30,7 +30,7 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			description: '''Tag/version of the metasfresh-report base image. Note: the image does not contain jasper files, so there is no need to have a particual base image for that.
 <p>
 Backouground: if you e.g. specify gh47 as MF_UPSTREAM_BRANCH and a particular artifact doesn exist in that maven repo, then the maven repo at nexus is set to fall back to "master". 
-For docker we currently don not have such an arrangement.'''
+For docker we currently don not have such an arrangement.''',
 			name: 'MF_METASFRESH_REPORT_DOCKER_BASE_IMAGE_VERSION'),
 
 		string(defaultValue: '',

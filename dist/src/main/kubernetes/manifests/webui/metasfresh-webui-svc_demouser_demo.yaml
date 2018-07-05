@@ -13,10 +13,12 @@ spec:
     port: 80
     protocol: TCP
     targetPort: 80
+    nodePort: 30080
   - name: webui-https
     port: 443
     protocol: TCP
     targetPort: 443
+    nodePort: 30081
   selector:
     de.metas.deployment.stage: "demo"
     de.metas.deployment.type: metasfresh-webui
