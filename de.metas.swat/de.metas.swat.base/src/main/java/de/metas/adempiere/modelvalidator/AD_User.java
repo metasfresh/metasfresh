@@ -7,6 +7,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.user.api.IUserBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
@@ -18,7 +19,7 @@ import de.metas.adempiere.model.I_AD_User;
  * <li>sets AD_User.Name from AD_User.FirstName and AD_User.LastName</li>
  * <li>Checks if the password contains no spaces and has at least a length of <code>org.compiere.util.Login.MinPasswordLength</code> (AD_AsyConfig) characters</li>
  * </ul>
- * 
+ *
  */
 @Interceptor(I_AD_User.class)
 @Callout(value = I_AD_User.class)
@@ -40,15 +41,15 @@ public class AD_User
 		{
 			return;
 		}
-		
+
 		final String password = user.getPassword();
-		
-		// NOTE: Allow empty passwords because in webui we are not showing the password field so, initially it will be empty  
+
+		// NOTE: Allow empty passwords because in webui we are not showing the password field so, initially it will be empty
 		if(password == null || password.isEmpty())
 		{
 			return;
 		}
-		
+
 		Services.get(IUserBL.class).assertValidPassword(password);
 	}
 
@@ -59,6 +60,10 @@ public class AD_User
 	public void setName(final I_AD_User user)
 	{
 		final String contactName = Services.get(IUserBL.class).buildContactName(user.getFirstname(), user.getLastname());
+		if(Check.isEmpty(contactName))
+		{
+			return; // make sure not to overwrite an existing name with an empty string!
+		}
 		user.setName(contactName);
 	}
 }

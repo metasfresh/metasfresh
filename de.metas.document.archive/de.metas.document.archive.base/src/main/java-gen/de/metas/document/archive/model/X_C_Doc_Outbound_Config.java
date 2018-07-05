@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.document.archive.model;
 
@@ -30,7 +14,7 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -227964890L;
+	private static final long serialVersionUID = -419460548L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Config (Properties ctx, int C_Doc_Outbound_Config_ID, String trxName)
@@ -40,8 +24,6 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
         {
 			setAD_Table_ID (0);
 			setC_Doc_Outbound_Config_ID (0);
-			setIsDirectEnqueue (true);
-// Y
         } */
     }
 
@@ -134,16 +116,16 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	/** Set CC Path.
-		@param CCPath CC Path	  */
+	/** Set CC Pfad.
+		@param CCPath CC Pfad	  */
 	@Override
 	public void setCCPath (java.lang.String CCPath)
 	{
 		set_Value (COLUMNNAME_CCPath, CCPath);
 	}
 
-	/** Get CC Path.
-		@return CC Path	  */
+	/** Get CC Pfad.
+		@return CC Pfad	  */
 	@Override
 	public java.lang.String getCCPath () 
 	{
@@ -177,63 +159,61 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	 * Reference name: C_DocType DocBaseType
 	 */
 	public static final int DOCBASETYPE_AD_Reference_ID=183;
-	/** Hauptbuch - Journal = GLJ */
-	public static final String DOCBASETYPE_Hauptbuch_Journal = "GLJ";
-	/** Hauptbuchbeleg = GLD */
-	public static final String DOCBASETYPE_Hauptbuchbeleg = "GLD";
-	/** Rechnung (Kreditorenkonten) = API */
-	public static final String DOCBASETYPE_RechnungKreditorenkonten = "API";
-	/** Zahlung (Kreditorenkonten) = APP */
-	public static final String DOCBASETYPE_ZahlungKreditorenkonten = "APP";
-	/** Rechnung (Debitorenkonten) = ARI */
-	public static final String DOCBASETYPE_RechnungDebitorenkonten = "ARI";
-	/** Zahlungseingang (Debitorenkonten) = ARR */
-	public static final String DOCBASETYPE_ZahlungseingangDebitorenkonten = "ARR";
-	/** Auftrag = SOO */
-	public static final String DOCBASETYPE_Auftrag = "SOO";
-	/** ProForma-Rechnung (Debitorenkonten) = ARF */
-	public static final String DOCBASETYPE_ProForma_RechnungDebitorenkonten = "ARF";
-	/** Warenllieferung = MMS */
-	public static final String DOCBASETYPE_Warenllieferung = "MMS";
-	/** Wareneingang = MMR */
-	public static final String DOCBASETYPE_Wareneingang = "MMR";
-	/** Warenbewegung = MMM */
-	public static final String DOCBASETYPE_Warenbewegung = "MMM";
-	/** Bestellung = POO */
-	public static final String DOCBASETYPE_Bestellung = "POO";
-	/** Bestell-Bedarf = POR */
-	public static final String DOCBASETYPE_Bestell_Bedarf = "POR";
-	/** Physischer Warenbestand = MMI */
-	public static final String DOCBASETYPE_PhysischerWarenbestand = "MMI";
-	/** Gutschrift (Lieferant) = APC */
-	public static final String DOCBASETYPE_GutschriftLieferant = "APC";
-	/** Gutschrift (Debitorenkonten) = ARC */
-	public static final String DOCBASETYPE_GutschriftDebitorenkonten = "ARC";
-	/** Bankauszug = CMB */
-	public static final String DOCBASETYPE_Bankauszug = "CMB";
-	/** Kassenjournal = CMC */
-	public static final String DOCBASETYPE_Kassenjournal = "CMC";
-	/** Zahlung-Zuordnung = CMA */
-	public static final String DOCBASETYPE_Zahlung_Zuordnung = "CMA";
-	/** Warenproduktion = MMP */
-	public static final String DOCBASETYPE_Warenproduktion = "MMP";
-	/** Abgleich Rechnung = MXI */
-	public static final String DOCBASETYPE_AbgleichRechnung = "MXI";
-	/** Abgleich Bestellung = MXP */
-	public static final String DOCBASETYPE_AbgleichBestellung = "MXP";
-	/** Projekt-Problem = PJI */
-	public static final String DOCBASETYPE_Projekt_Problem = "PJI";
-	/** Maintenance Order = MOF */
+	/** GLJournal = GLJ */
+	public static final String DOCBASETYPE_GLJournal = "GLJ";
+	/** GLDocument = GLD */
+	public static final String DOCBASETYPE_GLDocument = "GLD";
+	/** APInvoice = API */
+	public static final String DOCBASETYPE_APInvoice = "API";
+	/** APPayment = APP */
+	public static final String DOCBASETYPE_APPayment = "APP";
+	/** ARInvoice = ARI */
+	public static final String DOCBASETYPE_ARInvoice = "ARI";
+	/** ARReceipt = ARR */
+	public static final String DOCBASETYPE_ARReceipt = "ARR";
+	/** SalesOrder = SOO */
+	public static final String DOCBASETYPE_SalesOrder = "SOO";
+	/** ARProFormaInvoice = ARF */
+	public static final String DOCBASETYPE_ARProFormaInvoice = "ARF";
+	/** MaterialDelivery = MMS */
+	public static final String DOCBASETYPE_MaterialDelivery = "MMS";
+	/** MaterialReceipt = MMR */
+	public static final String DOCBASETYPE_MaterialReceipt = "MMR";
+	/** MaterialMovement = MMM */
+	public static final String DOCBASETYPE_MaterialMovement = "MMM";
+	/** PurchaseOrder = POO */
+	public static final String DOCBASETYPE_PurchaseOrder = "POO";
+	/** PurchaseRequisition = POR */
+	public static final String DOCBASETYPE_PurchaseRequisition = "POR";
+	/** MaterialPhysicalInventory = MMI */
+	public static final String DOCBASETYPE_MaterialPhysicalInventory = "MMI";
+	/** APCreditMemo = APC */
+	public static final String DOCBASETYPE_APCreditMemo = "APC";
+	/** ARCreditMemo = ARC */
+	public static final String DOCBASETYPE_ARCreditMemo = "ARC";
+	/** BankStatement = CMB */
+	public static final String DOCBASETYPE_BankStatement = "CMB";
+	/** CashJournal = CMC */
+	public static final String DOCBASETYPE_CashJournal = "CMC";
+	/** PaymentAllocation = CMA */
+	public static final String DOCBASETYPE_PaymentAllocation = "CMA";
+	/** MatchInvoice = MXI */
+	public static final String DOCBASETYPE_MatchInvoice = "MXI";
+	/** MatchPO = MXP */
+	public static final String DOCBASETYPE_MatchPO = "MXP";
+	/** ProjectIssue = PJI */
+	public static final String DOCBASETYPE_ProjectIssue = "PJI";
+	/** MaintenanceOrder = MOF */
 	public static final String DOCBASETYPE_MaintenanceOrder = "MOF";
-	/** Manufacturing Order = MOP */
+	/** ManufacturingOrder = MOP */
 	public static final String DOCBASETYPE_ManufacturingOrder = "MOP";
-	/** Quality Order = MQO */
+	/** QualityOrder = MQO */
 	public static final String DOCBASETYPE_QualityOrder = "MQO";
 	/** Payroll = HRP */
 	public static final String DOCBASETYPE_Payroll = "HRP";
-	/** Distribution Order = DOO */
+	/** DistributionOrder = DOO */
 	public static final String DOCBASETYPE_DistributionOrder = "DOO";
-	/** Manufacturing Cost Collector = MCC */
+	/** ManufacturingCostCollector = MCC */
 	public static final String DOCBASETYPE_ManufacturingCostCollector = "MCC";
 	/** Gehaltsrechnung (Angestellter) = AEI */
 	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
@@ -243,10 +223,8 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
-	/** Set Document BaseType.
-		@param DocBaseType 
-		Logical type of document
-	  */
+	/** Set Dokument Basis Typ.
+		@param DocBaseType Dokument Basis Typ	  */
 	@Override
 	public void setDocBaseType (java.lang.String DocBaseType)
 	{
@@ -254,9 +232,8 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
 	}
 
-	/** Get Document BaseType.
-		@return Logical type of document
-	  */
+	/** Get Dokument Basis Typ.
+		@return Dokument Basis Typ	  */
 	@Override
 	public java.lang.String getDocBaseType () 
 	{

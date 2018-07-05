@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.document.archive.model;
 
 
@@ -32,7 +16,7 @@ public interface I_C_Doc_Outbound_Config
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -143,7 +127,7 @@ public interface I_C_Doc_Outbound_Config
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set CC Path.
+	 * Set CC Pfad.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -152,7 +136,7 @@ public interface I_C_Doc_Outbound_Config
 	public void setCCPath (java.lang.String CCPath);
 
 	/**
-	 * Get CC Path.
+	 * Get CC Pfad.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -219,8 +203,7 @@ public interface I_C_Doc_Outbound_Config
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Document BaseType.
-	 * Logical type of document
+	 * Set Dokument Basis Typ.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -229,8 +212,7 @@ public interface I_C_Doc_Outbound_Config
 	public void setDocBaseType (java.lang.String DocBaseType);
 
 	/**
-	 * Get Document BaseType.
-	 * Logical type of document
+	 * Get Dokument Basis Typ.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false

@@ -13,15 +13,14 @@ package de.metas.document.archive.async.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.util.List;
@@ -32,19 +31,17 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
@@ -53,13 +50,15 @@ import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.i18n.IMsgBL;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.ProcessExecutor;
 
 /**
- * Workpackage processor for mails
+ * Async processor that sends the PDFs of {@link I_C_Doc_Outbound_Log_Line}s' {@link I_AD_Archive}s as Email.
+ * The recipient's email address is taken from {@link I_C_Doc_Outbound_Log#getCurrentEMailAddress()}.
+ * Where this column is empty, no mail is send.
  *
- * @author al
+ * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public class MailWorkpackageProcessor implements IWorkpackageProcessor
 {
@@ -69,7 +68,6 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
-	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
@@ -91,9 +89,16 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final I_AD_Archive archive = logLine.getAD_Archive();
 			Check.assumeNotNull(archive, "archive not null for C_Doc_Outbound_Log_Line={}", logLine);
 
-			final I_C_Doc_Outbound_Log log = logLine.getC_Doc_Outbound_Log();
+			final I_C_Doc_Outbound_Log docOutboundLogRecord = logLine.getC_Doc_Outbound_Log();
+			if (Check.isEmpty(docOutboundLogRecord.getCurrentEMailAddress(), true))
+			{
+				// maybe this was changed since the WP's enqueuing
+				Loggables.get()
+						.addLog("Skip C_Doc_Outbound_Log_Line_ID={} which has a C_Doc_Outbound_Log with an empty CurrentEMailAddress value; C_Doc_Outbound_Log={} ",
+								logLine.getC_Doc_Outbound_Log_Line_ID(), docOutboundLogRecord);
+			}
 
-			sendEMail(action, log, archive, workpackage.getAD_PInstance(), localTrxName);
+			sendEMail(action, docOutboundLogRecord, archive, workpackage.getAD_PInstance(), localTrxName);
 		}
 
 		return Result.SUCCESS;
@@ -101,14 +106,14 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 	private void sendEMail(
 			final String action,
-			final I_C_Doc_Outbound_Log log,
+			final I_C_Doc_Outbound_Log docOutboundLogRecord,
 			final I_AD_Archive archive,
 			final I_AD_PInstance pInstance,
 			final String trxName)
 	{
 		try
 		{
-			sendEMail0(action, log, archive, pInstance, trxName);
+			sendEMail0(action, docOutboundLogRecord, archive, pInstance, trxName);
 		}
 		catch (final Exception e)
 		{
@@ -116,20 +121,13 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			{
 				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(e.getLocalizedMessage(), DEFAULT_SkipTimeoutOnConnectionError, e);
 			}
-			else if (e instanceof RuntimeException)
-			{
-				throw (RuntimeException)e;
-			}
-			else
-			{
-				throw new AdempiereException(e);
-			}
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
 
 	private void sendEMail0(
 			final String action,
-			final I_C_Doc_Outbound_Log log,
+			final I_C_Doc_Outbound_Log docOutboundLogRecord,
 			final I_AD_Archive archive,
 			final I_AD_PInstance pInstance,
 			final String trxName) throws Exception
@@ -139,59 +137,28 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		// task FRESH-218
 		// set the archive language in the mailing context. This ensures us that the mail will be sent in this language.
 		final String archiveLanguage = archive.getAD_Language();
-		if(archiveLanguage != null)
+		if (archiveLanguage != null)
 		{
 			ctx.setProperty(Env.CTXNAME_AD_Language, archiveLanguage);
 		}
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(log.getC_BPartner(), I_C_BPartner.class);
-		Check.assumeNotNull(partner, "partner not null for {}", log);
-
-		final I_AD_Client client = InterfaceWrapperHelper.create(ctx, partner.getAD_Client_ID(), I_AD_Client.class, trxName);
-
-		final String mailCustomType = null;
-
 		final int processID = pInstance == null ? ProcessExecutor.getCurrentProcessId() : pInstance.getAD_Process_ID();
-		final int orgID = pInstance == null ? ProcessExecutor.getCurrentOrgId() : pInstance.getAD_Org_ID();
+
 		final I_AD_User userFrom = null; // no user - this mailbox is the AD_Client's mailbox
 
-		final I_C_DocType docType = log.getC_DocType();
+		final Mailbox mailbox = mailBL.findMailBox(
+				docOutboundLogRecord.getAD_Client(),
+				docOutboundLogRecord.getAD_Org_ID(),
+				processID,
+				docOutboundLogRecord.getC_DocType(),
+				null, // mailCustomType
+				userFrom  	);
 
-		final Mailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType,  mailCustomType, userFrom);
+		// note that we verified this earlier
+		final String mailTo = Check.assumeNotEmpty(
+				docOutboundLogRecord.getCurrentEMailAddress(),
+				"C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log={}", docOutboundLogRecord);
 
-		I_AD_User userTo = null;
-		
-		// check if the column for the user is specified
-		if (!Check.isEmpty(mailbox.getColumnUserTo(), true))
-		{
-			final String tableName = adTableDAO.retrieveTableName(log.getAD_Table_ID());
-			
-			// chekc if the column exists
-			final boolean existsColumn = adTableDAO.hasColumnName(tableName, mailbox.getColumnUserTo());
-			if (existsColumn)
-			{
-				// load the column content
-				final Object po = InterfaceWrapperHelper.create(ctx, tableName, log.getRecord_ID(), Object.class, trxName);
-				final Integer userToID = InterfaceWrapperHelper.getValueOrNull(po, mailbox.getColumnUserTo());
-				if (userToID != null)
-				{
-					userTo = InterfaceWrapperHelper.create(ctx, I_AD_User.Table_Name, userToID, I_AD_User.class, trxName);
-				}
-			}
-		}
-		
-		//
-		// fallback to old logic
-		if (userTo == null)
-		{
-			userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
-			Check.assumeNotNull(userTo, "userTo not null for {}", log);
-		}
-
-		final String mailTo = userTo.getEMail();
-		Check.assumeNotEmpty(mailTo, "email not empty for {}", log);
-
-		//
 		// Create and send email
 		final String status;
 		{
@@ -233,12 +200,12 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 	private boolean isHTMLMessage(final String message)
 	{
-		if(Check.isEmpty(message))
+		if (Check.isEmpty(message))
 		{
 			// no message => no html
 			return false;
 		}
-		
+
 		return message.toLowerCase().indexOf("<html>") >= 0;
 	}
 
