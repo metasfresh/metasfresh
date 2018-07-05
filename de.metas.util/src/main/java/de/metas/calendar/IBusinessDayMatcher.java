@@ -2,6 +2,8 @@ package de.metas.calendar;
 
 import java.time.LocalDate;
 
+import org.adempiere.util.Check;
+
 import lombok.NonNull;
 
 /**
@@ -28,9 +30,6 @@ public interface IBusinessDayMatcher
 	 * Gets next business day.
 	 * 
 	 * If given date is a business day then that date will be returned.
-	 * 
-	 * @param date
-	 * @return next business day
 	 */
 	default LocalDate getNextBusinessDay(@NonNull final LocalDate date)
 	{
@@ -46,18 +45,45 @@ public interface IBusinessDayMatcher
 	 * Gets previous business day.
 	 * 
 	 * If given date is a business day then that date will be returned.
-	 * 
-	 * @param date
-	 * @return next business day
 	 */
 	default LocalDate getPreviousBusinessDay(@NonNull final LocalDate date)
 	{
+		final int targetWorkingDays = 0;
+		return getPreviousBusinessDay(date, targetWorkingDays);
+	}
+
+	default LocalDate getPreviousBusinessDay(@NonNull final LocalDate date, final int targetWorkingDays)
+	{
+		Check.assumeGreaterOrEqualToZero(targetWorkingDays, "targetWorkingDays");
+
 		LocalDate currentDate = date;
+
+		// Skip until we find the first business day
 		while (!isBusinessDay(currentDate))
 		{
 			currentDate = currentDate.minusDays(1);
 		}
-		return currentDate;
+
+		if (targetWorkingDays == 0)
+		{
+			return currentDate;
+		}
+
+		int workingDays = 0;
+		while (true)
+		{
+			currentDate = currentDate.minusDays(1);
+			final boolean isBusinessDay = isBusinessDay(currentDate);
+			if (isBusinessDay)
+			{
+				workingDays++;
+			}
+
+			if (workingDays >= targetWorkingDays && isBusinessDay)
+			{
+				return currentDate;
+			}
+		}
 	}
 
 	default int calculateBusinessDaysBetween(@NonNull final LocalDate dateFrom, @NonNull final LocalDate dateTo)
@@ -83,5 +109,4 @@ public interface IBusinessDayMatcher
 			return calculateBusinessDaysBetween(dateTo, dateFrom);
 		}
 	}
-
 }
