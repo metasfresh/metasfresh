@@ -1297,12 +1297,12 @@ class Table extends Component {
         {allowShortcut && (
           <DocumentListContextShortcuts
             handleAdvancedEdit={
-              selected.length > 0
+              selected.length > 0 && selected[0]
                 ? () => this.handleAdvancedEdit(type, tabid, selected)
                 : ''
             }
             handleOpenNewTab={
-              selected.length > 0 && mainTable
+              selected.length > 0 && selected[0] && mainTable
                 ? () => this.handleOpenNewTab(selected)
                 : ''
             }

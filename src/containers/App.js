@@ -187,15 +187,15 @@ export default class App extends Component {
     }
 
     return (
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
-        <Provider store={store}>
+      <Provider store={store}>
+        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
           <Translation>
             <NotificationHandler>
               <CustomRouter store={store} history={history} auth={this.auth} />
             </NotificationHandler>
           </Translation>
-        </Provider>
-      </ShortcutProvider>
+        </ShortcutProvider>
+      </Provider>
     );
   }
 }
