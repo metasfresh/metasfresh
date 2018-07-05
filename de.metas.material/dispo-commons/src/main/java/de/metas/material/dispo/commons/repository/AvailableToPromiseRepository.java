@@ -2,7 +2,6 @@ package de.metas.material.dispo.commons.repository;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -11,7 +10,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
-import org.compiere.util.Util.ArrayKey;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -21,7 +20,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
@@ -59,7 +57,7 @@ public class AvailableToPromiseRepository
 	{
 		return retrieveAvailableStock(multiQuery)
 				.getResultGroups()
-				.stream().map(ResultGroup::getQty).reduce(BigDecimal.ZERO, BigDecimal::add);
+				.stream().map(AvailableToPromiseResultGroup::getQty).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	@NonNull
@@ -81,11 +79,14 @@ public class AvailableToPromiseRepository
 			return result;
 		}
 
+		final Function<I_MD_Candidate_ATP_QueryResult, Boolean> recordHasBPartnerId = record -> record.getC_BPartner_Customer_ID() > 0;
+
 		final List<I_MD_Candidate_ATP_QueryResult> atpRecords = dbQuery
 				.stream()
 				.sorted(Comparator
-						.comparing(I_MD_Candidate_ATP_QueryResult::getDateProjected)
-						.thenComparing(I_MD_Candidate_ATP_QueryResult::getSeqNo)
+						.comparing(recordHasBPartnerId) // note that true > false
+						.thenComparing(I_MD_Candidate_ATP_QueryResult::getDateProjected)
+						.thenComparing(I_MD_Candidate_ATP_QueryResult::getSeqNo) // if dateProjected is equal, then SeqNo makes the difference
 						.reversed())
 				.collect(ImmutableList.toImmutableList());
 
@@ -95,9 +96,7 @@ public class AvailableToPromiseRepository
 				.map(AvailableToPromiseRepository::createAddToResultGroupRequest)
 				.collect(ImmutableList.toImmutableList());
 
-		final List<AddToResultGroupRequest> filteredRequests = filterOutRedundantQuantities(requests);
-
-		for (final AddToResultGroupRequest request : filteredRequests)
+		for (final AddToResultGroupRequest request : requests)
 		{
 			if (multiQuery.isAddToPredefinedBuckets())
 			{
@@ -105,50 +104,10 @@ public class AvailableToPromiseRepository
 			}
 			else
 			{
-				result.addToNewGroupGroup(request);
+				result.addToNewGroupIfFeasible(request);
 			}
 		}
 		return result;
-	}
-
-	/**
-	 * The result does not contain requests that have not bPartnerID (i.e. are applicable to) all partners,
-	 * if there is a later requests for the same product, warehouse etc.
-	 * That's because those "bpartner-unspecific" requests' quantities are already in the respective later specific requests.
-	 * <p>
-	 * Also see the service in materialdispo-services that is responsible for updating stock-candidates
-	 *
-	 * @param requests need to be ordered "chronologically", latest first.
-	 */
-	private List<AddToResultGroupRequest> filterOutRedundantQuantities(@NonNull final List<AddToResultGroupRequest> requests)
-	{
-		final Set<ArrayKey> keysOfRequestsWithSpecificBPartnerId = new HashSet<>();
-
-		final ImmutableList.Builder<AddToResultGroupRequest> result = ImmutableList.builder();
-
-		for (final AddToResultGroupRequest request : requests)
-		{
-			final ArrayKey key = ArrayKey.builder() // note that we *do not* add the bpartnerId
-					.append(request.getProductId())
-					.append(request.getStorageAttributesKey())
-					.append(request.getWarehouseId()).build();
-
-			final boolean requestHasBPartnerId = request.getBpartnerId() > 0;
-			if (requestHasBPartnerId)
-			{
-				keysOfRequestsWithSpecificBPartnerId.add(key);
-			}
-			else
-			{
-				final boolean qtyOfrequestWasAlreadyAdded = keysOfRequestsWithSpecificBPartnerId.contains(key);
-				if (qtyOfrequestWasAlreadyAdded)
-				{
-					continue;
-				}
-			}
-			result.add(request);
-		}
-		return result.build();
 	}
 
 	public AvailableToPromiseResult retrieveAvailableStock(@NonNull AvailableToPromiseQuery query)
@@ -185,6 +144,8 @@ public class AvailableToPromiseRepository
 				.warehouseId(stockRecord.getM_Warehouse_ID())
 				.storageAttributesKey(AttributesKey.ofString(stockRecord.getStorageAttributesKey()))
 				.qty(stockRecord.getQty())
+				.date(TimeUtil.asLocalDateTime(stockRecord.getDateProjected()))
+				.seqNo(stockRecord.getSeqNo())
 				.build();
 	}
 
