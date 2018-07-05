@@ -81,10 +81,10 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		}
 
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		final I_AD_User userRecord = bpartnerBL.retrieveBillContact(Env.getCtx(), invoiceRecord.getC_BPartner_ID(), ITrx.TRXNAME_ThreadInherited);
-		if (userRecord.getAD_User_ID() > 0)
+		final I_AD_User billUserRecord = bpartnerBL.retrieveBillContact(Env.getCtx(), invoiceRecord.getC_BPartner_ID(), ITrx.TRXNAME_ThreadInherited);
+		if (billUserRecord != null && billUserRecord.getAD_User_ID() > 0)
 		{
-			final DocOutBoundRecipient billUser = userRepository.getById(DocOutBoundRecipientId.ofRepoId(invoiceRecord.getAD_User_ID()));
+			final DocOutBoundRecipient billUser = userRepository.getById(DocOutBoundRecipientId.ofRepoId(billUserRecord.getAD_User_ID()));
 			if (!Check.isEmpty(billUser.getEmailAddress(), true))
 			{
 				return Optional.of(billUser);

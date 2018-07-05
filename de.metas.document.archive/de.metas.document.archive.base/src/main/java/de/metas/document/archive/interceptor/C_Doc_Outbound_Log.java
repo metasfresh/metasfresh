@@ -7,8 +7,10 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -87,7 +89,14 @@ public class C_Doc_Outbound_Log
 			return;
 		}
 
+		final int invoiceTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name);
+		if (docOutboundlogRecord.getAD_Table_ID() != invoiceTableId)
+		{
+			docOutboundlogRecord.setIsInvoiceEmailEnabled(false);
+			return;
+		}
+
 		final I_C_BPartner bpartnerRecord = loadOutOfTrx(docOutboundlogRecord.getC_BPartner_ID(), I_C_BPartner.class);
-		docOutboundlogRecord.setIsInvoiceEmailEnabled(StringUtils.toBoolean(bpartnerRecord));
+		docOutboundlogRecord.setIsInvoiceEmailEnabled(StringUtils.toBoolean(bpartnerRecord.getIsInvoiceEmailEnabled()));
 	}
 }

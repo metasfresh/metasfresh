@@ -10,12 +10,12 @@ package de.metas.document.archive.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,6 +42,9 @@ import de.metas.process.JavaProcess;
  */
 public class C_Doc_Outbound_CreatePDF extends JavaProcess
 {
+	private final transient IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final transient IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
+
 	@Override
 	protected void prepare()
 	{
@@ -53,8 +56,8 @@ public class C_Doc_Outbound_CreatePDF extends JavaProcess
 	{
 		final Properties ctx = getCtx();
 
-		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, DocOutboundWorkpackageProcessor.class);
-		final IQueueProcessor queueProcessor = Services.get(IQueueProcessorFactory.class).createSynchronousQueueProcessor(workpackageQueue);
+		final IWorkPackageQueue workpackageQueue = workPackageQueueFactory.getQueueForEnqueuing(ctx, DocOutboundWorkpackageProcessor.class);
+		final IQueueProcessor queueProcessor = queueProcessorFactory.createSynchronousQueueProcessor(workpackageQueue);
 
 		queueProcessor.run();
 
