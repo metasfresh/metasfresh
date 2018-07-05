@@ -33,26 +33,6 @@ public class BusinessDayMatcherTest
 	private ExcludeWeekendBusinessDayMatcher businessDayMatcher;
 
 	@Test
-	public void test_calculateBusinessDaysBetween()
-	{
-		businessDayMatcher = ExcludeWeekendBusinessDayMatcher.DEFAULT;
-
-		assertBusinessDaysBetween(0, "2018-07-07", "2018-07-08"); // Saturday -> Sunday
-
-		assertBusinessDaysBetween(5, "2018-07-02", "2018-07-07");
-		assertBusinessDaysBetween(5, "2018-07-02", "2018-07-08");
-		assertBusinessDaysBetween(5, "2018-07-02", "2018-07-09");
-	}
-
-	private void assertBusinessDaysBetween(final int expectedDays, final String fromStr, final String toStr)
-	{
-		final LocalDate from = LocalDate.parse(fromStr);
-		final LocalDate to = LocalDate.parse(toStr);
-		final int days = businessDayMatcher.calculateBusinessDaysBetween(from, to);
-		assertThat(days).isEqualTo(expectedDays);
-	}
-
-	@Test
 	public void test_getPreviousBusinessDay_withTargetWorkingDays()
 	{
 		this.businessDayMatcher = ExcludeWeekendBusinessDayMatcher.DEFAULT;
