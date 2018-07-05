@@ -44,9 +44,9 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.async.spi.impl.MailWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.i18n.IMsgBL;
@@ -91,7 +91,6 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 			}
 		}
 
-		
 		final IQueryFilter<I_C_Doc_Outbound_Log> filter = getFilter();
 		final int pInstanceId = getAD_PInstance_ID();
 
@@ -115,14 +114,14 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 		final ProcessInfo pi = getProcessInfo();
 		return pi.getQueryFilter();
 	}
-	
+
 	@Override
 	protected final String doIt() throws Exception
 	{
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();
 
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, getWorkpackageProcessor());
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, MailWorkpackageProcessor.class);
 
 		//
 		// Enqueue selected archives as workpackages
@@ -137,10 +136,8 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 
 			queue.markReadyForProcessingAfterTrxCommit(workpackage, trxName);
 		}
-		return Services.get(IMsgBL.class).getMsg(getCtx(), Async_Constants.MSG_WORKPACKAGES_CREATED, new Object[] {docOutboundLines.size()});
+		return Services.get(IMsgBL.class).getMsg(getCtx(), Async_Constants.MSG_WORKPACKAGES_CREATED, new Object[] { docOutboundLines.size() });
 	}
-
-	protected abstract Class<? extends IWorkpackageProcessor> getWorkpackageProcessor();
 
 	private final List<I_C_Doc_Outbound_Log_Line> getPDFArchiveDocOutboundLinesForSelection(final Properties ctx, final int pInstanceId, final String trxName)
 	{
@@ -202,7 +199,7 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 		// No document archive log line found; skipping
 		if (logLine == null)
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_C_Doc_Outbound_Log_Line_ID, new Object[]{ log.getDocumentNo() }));
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_C_Doc_Outbound_Log_Line_ID, new Object[] { log.getDocumentNo() }));
 			collector.collectException(MSG_EMPTY_C_Doc_Outbound_Log_Line_ID, log.getDocumentNo());
 			return false;
 		}
@@ -211,7 +208,7 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 		// Log line must have an archive to be viable
 		if (logLine.getAD_Archive_ID() <= 0)
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_AD_Archive_ID, new Object[]{ log.getDocumentNo() }));
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_AD_Archive_ID, new Object[] { log.getDocumentNo() }));
 			collector.collectException(MSG_EMPTY_AD_Archive_ID, log.getDocumentNo());
 			return false;
 		}
@@ -228,7 +225,7 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(log.getC_BPartner(), I_C_BPartner.class);
 		if (partner == null)
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_C_BPartner_ID, new Object[]{ log.getDocumentNo() }));
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_C_BPartner_ID, new Object[] { log.getDocumentNo() }));
 			collector.collectException(MSG_EMPTY_C_BPartner_ID, log.getDocumentNo());
 			return false;
 		}
@@ -238,7 +235,7 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 		final I_AD_User userTo = Services.get(IBPartnerBL.class).retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
 		if (userTo == null)
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_AD_User_To_ID, new Object[]{ partner.getName() }));
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_AD_User_To_ID, new Object[] { partner.getName() }));
 			collector.collectException(MSG_EMPTY_AD_User_To_ID, partner.getName());
 			return false;
 		}
@@ -248,7 +245,7 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 		final String mailTo = userTo.getEMail();
 		if (Check.isEmpty(mailTo))
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_MailTo, new Object[]{ userTo.getName() }));
+			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_EMPTY_MailTo, new Object[] { userTo.getName() }));
 			collector.collectException(MSG_EMPTY_MailTo, userTo.getName());
 			return false;
 		}
@@ -263,7 +260,11 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 		return true;
 	}
 
-	protected abstract boolean isSentAtLeastOnce(final I_C_Doc_Outbound_Log_Line docOutboundLine);
+	private boolean isSentAtLeastOnce(final I_C_Doc_Outbound_Log_Line docOutboundLine)
+	{
+		final I_C_Doc_Outbound_Log log = docOutboundLine.getC_Doc_Outbound_Log();
+		return log.getEMailCount() > 0;
+	}
 
 	protected Map<String, List<Object>> assertSendable(final Properties ctx,
 			final I_C_Doc_Outbound_Log log,

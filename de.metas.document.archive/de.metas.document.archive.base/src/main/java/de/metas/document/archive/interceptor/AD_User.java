@@ -1,9 +1,9 @@
-package de.metas.document.archive.model.validator;
+package de.metas.document.archive.interceptor;
 
 import java.util.Properties;
 
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -23,7 +23,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
  * @author cg
  *
  */
-@Validator(I_AD_User.class)
+@Interceptor(I_AD_User.class)
 class AD_User
 {
 

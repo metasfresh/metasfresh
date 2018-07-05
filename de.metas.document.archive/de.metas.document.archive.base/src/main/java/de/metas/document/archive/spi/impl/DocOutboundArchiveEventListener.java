@@ -1,5 +1,8 @@
 package de.metas.document.archive.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.document.archive.base
@@ -13,30 +16,35 @@ package de.metas.document.archive.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.ArchiveEventListenerAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.archive.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.api.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_BPartner;
@@ -44,137 +52,13 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.IDocumentBL;
+import lombok.NonNull;
 
 public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 {
-	/**
-	 * Creates and saves {@link I_C_Doc_Outbound_Log}
-	 *
-	 * @param archive
-	 * @return {@link I_C_Doc_Outbound_Log}
-	 */
-	private I_C_Doc_Outbound_Log createLog(final I_AD_Archive archive)
-	{
-		// Services
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
-		final int adTableId = archive.getAD_Table_ID();
-		final int recordId = archive.getRecord_ID();
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
-		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
-
-		final I_C_Doc_Outbound_Log docExchange = InterfaceWrapperHelper.create(ctx, I_C_Doc_Outbound_Log.class, trxName);
-		docExchange.setAD_Org_ID(archive.getAD_Org_ID());
-		docExchange.setAD_Table_ID(adTableId);
-		docExchange.setRecord_ID(recordId);
-		docExchange.setC_BPartner_ID(archive.getC_BPartner_ID());
-
-		//
-		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
-		docExchange.setC_DocType_ID(doctypeID);
-
-		//
-		// set isInvoiceEmailEnabled
-		final Object archiveReferencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
-		if (archiveReferencedModel != null)
-		{
-			final boolean isInvoiceDocument = InterfaceWrapperHelper.isInstanceOf(archiveReferencedModel, I_C_Invoice.class);
-			final Boolean matchingisInvoiceEmailEnabled;
-			// in case of invoice document, enable email only if is enabled in partner
-			if (isInvoiceDocument)
-			{
-				final I_C_Invoice invoice = InterfaceWrapperHelper.create(archiveReferencedModel, I_C_Invoice.class);
-				final I_C_BPartner bpartner = InterfaceWrapperHelper.create(invoice.getC_BPartner(), I_C_BPartner.class);
-				final de.metas.document.archive.model.I_AD_User user = InterfaceWrapperHelper.create(invoice.getAD_User(), de.metas.document.archive.model.I_AD_User.class);
-
-				matchingisInvoiceEmailEnabled = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
-			}
-			else
-			{
-				// set by defualt on Y for all other documents
-				matchingisInvoiceEmailEnabled = Boolean.TRUE;
-			}
-
-			docExchange.setIsInvoiceEmailEnabled(matchingisInvoiceEmailEnabled);
-		}
-
-
-
-		docExchange.setDateLastEMail(null);
-		docExchange.setDateLastPrint(null);
-
-		final String docStatus = docActionBL.getDocStatusOrNull(ctx, adTableId, recordId);
-		docExchange.setDocStatus(docStatus);
-
-		docExchange.setDocumentNo(archive.getName());
-
-		final Timestamp documentDate = docActionBL.getDocumentDate(ctx, adTableId, recordId);
-		docExchange.setDateDoc(documentDate); // task 08905: Also set the the documentDate
-
-		InterfaceWrapperHelper.save(docExchange);
-
-		return docExchange;
-	}
-
-	/**
-	 * Creates {@link I_C_Doc_Outbound_Log_Line}.
-	 *
-	 * NOTE: it is not saving the created log line
-	 *
-	 * @param archive
-	 * @return {@link I_C_Doc_Outbound_Log_Line}
-	 */
-	// tsa: protected to be unit tested
-	protected I_C_Doc_Outbound_Log_Line createLogLine(final I_AD_Archive archive)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
-		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
-
-		I_C_Doc_Outbound_Log docExchange = Services.get(IDocOutboundDAO.class).retrieveLog(archive);
-
-		if (docExchange == null)
-		{
-			// no log found, create a new one
-			docExchange = createLog(archive);
-		}
-
-		final I_C_Doc_Outbound_Log_Line docExchangeLine = InterfaceWrapperHelper.create(ctx, I_C_Doc_Outbound_Log_Line.class, trxName);
-		docExchangeLine.setC_Doc_Outbound_Log_ID(docExchange.getC_Doc_Outbound_Log_ID());
-		docExchangeLine.setAD_Archive_ID(archive.getAD_Archive_ID());
-		docExchangeLine.setAD_Org_ID(archive.getAD_Org_ID());
-		docExchangeLine.setAD_Table_ID(archive.getAD_Table_ID());
-		docExchangeLine.setRecord_ID(archive.getRecord_ID());
-
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-
-		// We need to use DocumentNo if possible, else fallback to archive's name
-		// see http://dewiki908/mediawiki/index.php/03918_Massendruck_f%C3%BCr_Mahnungen_%282013021410000132%29#IT2_-_G01_-_Mass_Printing
-		String documentNo = documentBL.getDocumentNo(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
-		if (Check.isEmpty(documentNo, true))
-		{
-			documentNo = archive.getName();
-		}
-		docExchangeLine.setDocumentNo(documentNo);
-
-		final String docStatus = documentBL.getDocStatusOrNull(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
-		docExchangeLine.setDocStatus(docStatus);
-
-		final int doctypeID = documentBL.getC_DocType_ID(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
-		docExchangeLine.setC_DocType_ID(doctypeID);
-
-		// docExchangeLine.setCopies(Copies);
-		// docExchangeLine.setAD_User_ID(AD_User_ID);
-		// docExchangeLine.setC_BPartner_ID(archive.getC_BPartner_ID());
-
-		return docExchangeLine;
-	}
-
 	@Override
-	public void onPdfUpdate(final I_AD_Archive archive, final I_AD_User user, final String action)
+	public void onPdfUpdate(@NonNull final I_AD_Archive archive, final I_AD_User user, final String action)
 	{
-		Check.assumeNotNull(archive, "archive not null");
-
 		if (!isLoggableArchive(archive))
 		{
 			return;
@@ -184,14 +68,20 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 		docExchangeLine.setAction(action);
 		docExchangeLine.setAD_User(user);
 
-		InterfaceWrapperHelper.save(docExchangeLine);
+		save(docExchangeLine);
 	}
 
 	@Override
-	public void onEmailSent(final I_AD_Archive archive, final String action, final I_AD_User user, final String from, final String to, final String cc, final String bcc, final String status)
+	public void onEmailSent(
+			@NonNull final I_AD_Archive archive,
+			final String action,
+			final I_AD_User user,
+			final String from,
+			final String to,
+			final String cc,
+			final String bcc,
+			final String status)
 	{
-		Check.assumeNotNull(archive, "archive not null");
-
 		if (!isLoggableArchive(archive))
 		{
 			return;
@@ -206,11 +96,11 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 		docExchangeLine.setStatus(status);
 		docExchangeLine.setAD_User(user);
 
-		InterfaceWrapperHelper.save(docExchangeLine);
+		save(docExchangeLine);
 
 		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
 		log.setDateLastEMail(SystemTime.asTimestamp());
-		InterfaceWrapperHelper.save(log);
+		save(log);
 	}
 
 	@Override
@@ -233,7 +123,7 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 		docExchangeLine.setAD_User(user);
 		docExchangeLine.setStatus(status);
 
-		InterfaceWrapperHelper.save(docExchangeLine);
+		save(docExchangeLine);
 	}
 
 	/**
@@ -244,12 +134,149 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 	 */
 	private boolean isLoggableArchive(final I_AD_Archive archive)
 	{
-		// task 05334: be robust agains archive==null
+		// task 05334: be robust against archive==null
 		if (archive == null || archive.getAD_Table_ID() <= 0)
 		{
 			return false;
 		}
 
 		return true;
+	}
+
+	/**
+	 * Creates {@link I_C_Doc_Outbound_Log_Line}.
+	 *
+	 * NOTE: it is not saving the created log line
+	 *
+	 * @param archive
+	 * @return {@link I_C_Doc_Outbound_Log_Line}
+	 */
+	@VisibleForTesting
+	I_C_Doc_Outbound_Log_Line createLogLine(@NonNull final I_AD_Archive archive)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
+
+		I_C_Doc_Outbound_Log docOutboundLog = Services.get(IDocOutboundDAO.class).retrieveLog(archive);
+
+		if (docOutboundLog == null)
+		{
+			// no log found, create a new one
+			docOutboundLog = createLog(archive);
+		}
+
+		final I_C_Doc_Outbound_Log_Line docOutboundLogLineRecord = newInstance(I_C_Doc_Outbound_Log_Line.class);
+
+		docOutboundLogLineRecord.setC_Doc_Outbound_Log_ID(docOutboundLog.getC_Doc_Outbound_Log_ID());
+		docOutboundLogLineRecord.setAD_Archive_ID(archive.getAD_Archive_ID());
+		docOutboundLogLineRecord.setAD_Org_ID(archive.getAD_Org_ID());
+		docOutboundLogLineRecord.setAD_Table_ID(archive.getAD_Table_ID());
+		docOutboundLogLineRecord.setRecord_ID(archive.getRecord_ID());
+
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+		// We need to use DocumentNo if possible, else fallback to archive's name
+		// see http://dewiki908/mediawiki/index.php/03918_Massendruck_f%C3%BCr_Mahnungen_%282013021410000132%29#IT2_-_G01_-_Mass_Printing
+		String documentNo = documentBL.getDocumentNo(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
+		if (Check.isEmpty(documentNo, true))
+		{
+			documentNo = archive.getName();
+		}
+		docOutboundLogLineRecord.setDocumentNo(documentNo);
+
+		final String docStatus = documentBL.getDocStatusOrNull(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
+		docOutboundLogLineRecord.setDocStatus(docStatus);
+
+		final int doctypeID = documentBL.getC_DocType_ID(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
+		docOutboundLogLineRecord.setC_DocType_ID(doctypeID);
+
+		// docExchangeLine.setCopies(Copies);
+		// docExchangeLine.setAD_User_ID(AD_User_ID);
+		// docExchangeLine.setC_BPartner_ID(archive.getC_BPartner_ID());
+
+		return docOutboundLogLineRecord;
+	}
+
+	/**
+	 * Creates and saves {@link I_C_Doc_Outbound_Log}
+	 *
+	 * @param archive
+	 * @return {@link I_C_Doc_Outbound_Log}
+	 */
+	private I_C_Doc_Outbound_Log createLog(final I_AD_Archive archive)
+	{
+		// Services
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+
+		final int adTableId = archive.getAD_Table_ID();
+		final int recordId = archive.getRecord_ID();
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
+
+		final I_C_Doc_Outbound_Log docOutboundLogRecord = newInstance(I_C_Doc_Outbound_Log.class);
+		docOutboundLogRecord.setAD_Org_ID(archive.getAD_Org_ID());
+		docOutboundLogRecord.setAD_Table_ID(adTableId);
+		docOutboundLogRecord.setRecord_ID(recordId);
+		docOutboundLogRecord.setC_BPartner_ID(archive.getC_BPartner_ID());
+
+		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
+		docOutboundLogRecord.setC_DocType_ID(doctypeID);
+
+		//
+		// set isInvoiceEmailEnabled
+		final Object archiveReferencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
+		if (archiveReferencedModel != null)
+		{
+			final boolean isInvoiceDocument = InterfaceWrapperHelper.isInstanceOf(archiveReferencedModel, I_C_Invoice.class);
+			final Boolean matchingisInvoiceEmailEnabled;
+			// in case of invoice document, enable email only if is enabled in partner
+			if (isInvoiceDocument)
+			{
+				final I_C_Invoice invoice = InterfaceWrapperHelper.create(archiveReferencedModel, I_C_Invoice.class);
+				final I_C_BPartner bpartner = InterfaceWrapperHelper.create(invoice.getC_BPartner(), I_C_BPartner.class);
+				final de.metas.document.archive.model.I_AD_User user = InterfaceWrapperHelper.create(invoice.getAD_User(), de.metas.document.archive.model.I_AD_User.class);
+
+				matchingisInvoiceEmailEnabled = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
+			}
+			else
+			{
+				// set by default on Y for all other documents
+				matchingisInvoiceEmailEnabled = Boolean.TRUE;
+			}
+
+			docOutboundLogRecord.setIsInvoiceEmailEnabled(matchingisInvoiceEmailEnabled);
+		}
+
+		docOutboundLogRecord.setDateLastEMail(null);
+		docOutboundLogRecord.setDateLastPrint(null);
+
+		final String docStatus = docActionBL.getDocStatusOrNull(ctx, adTableId, recordId);
+		docOutboundLogRecord.setDocStatus(docStatus);
+
+		docOutboundLogRecord.setDocumentNo(archive.getName());
+
+		final Timestamp documentDate = docActionBL.getDocumentDate(ctx, adTableId, recordId);
+		docOutboundLogRecord.setDateDoc(documentDate); // task 08905: Also set the the documentDate
+
+		setMailRecipient(docOutboundLogRecord);
+
+		save(docOutboundLogRecord);
+
+		return docOutboundLogRecord;
+	}
+
+	private void setMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = Adempiere.getBean(DocOutboundLogMailRecipientRegistry.class);
+
+		final Optional<User> mailRecipient = docOutboundLogMailRecipientRegistry.invokeProvider(docOutboundLogRecord);
+		if (!mailRecipient.isPresent())
+		{
+			return;
+		}
+
+		mailRecipient.ifPresent(user -> {
+			docOutboundLogRecord.setCurrentEMailRecipient_ID(user.getId().getRepoId());
+			docOutboundLogRecord.setCurrentEMailAddress(user.getEmailAddress());
+		});
 	}
 }

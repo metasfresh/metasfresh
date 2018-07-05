@@ -1,4 +1,4 @@
-package de.metas.document.archive.model.validator;
+package de.metas.document.archive.interceptor;
 
 import java.util.Properties;
 

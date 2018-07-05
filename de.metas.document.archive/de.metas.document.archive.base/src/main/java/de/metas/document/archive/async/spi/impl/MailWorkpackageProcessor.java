@@ -13,15 +13,14 @@ package de.metas.document.archive.async.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.util.List;
@@ -57,9 +56,12 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.ProcessExecutor;
 
 /**
- * Workpackage processor for mails
+ * Async processor that sends the PDFs of {@link I_C_Doc_Outbound_Log_Line}s' {@link I_AD_Archive}s as Email.
+ * The recipient's email address is taken from {@link I_C_Doc_Outbound_Log#getCurrentEMailAddress()}.
+ * Where this column is empty, no mail is send.
  *
- * @author al
+ * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public class MailWorkpackageProcessor implements IWorkpackageProcessor
 {
@@ -116,14 +118,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			{
 				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(e.getLocalizedMessage(), DEFAULT_SkipTimeoutOnConnectionError, e);
 			}
-			else if (e instanceof RuntimeException)
-			{
-				throw (RuntimeException)e;
-			}
-			else
-			{
-				throw new AdempiereException(e);
-			}
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
 
@@ -139,7 +134,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		// task FRESH-218
 		// set the archive language in the mailing context. This ensures us that the mail will be sent in this language.
 		final String archiveLanguage = archive.getAD_Language();
-		if(archiveLanguage != null)
+		if (archiveLanguage != null)
 		{
 			ctx.setProperty(Env.CTXNAME_AD_Language, archiveLanguage);
 		}
@@ -157,16 +152,16 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		final I_C_DocType docType = log.getC_DocType();
 
-		final Mailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType,  mailCustomType, userFrom);
+		final Mailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType, mailCustomType, userFrom);
 
 		I_AD_User userTo = null;
-		
+
 		// check if the column for the user is specified
 		if (!Check.isEmpty(mailbox.getColumnUserTo(), true))
 		{
 			final String tableName = adTableDAO.retrieveTableName(log.getAD_Table_ID());
-			
-			// chekc if the column exists
+
+			// check if the column exists
 			final boolean existsColumn = adTableDAO.hasColumnName(tableName, mailbox.getColumnUserTo());
 			if (existsColumn)
 			{
@@ -179,7 +174,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				}
 			}
 		}
-		
+
 		//
 		// fallback to old logic
 		if (userTo == null)
@@ -233,12 +228,12 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 	private boolean isHTMLMessage(final String message)
 	{
-		if(Check.isEmpty(message))
+		if (Check.isEmpty(message))
 		{
 			// no message => no html
 			return false;
 		}
-		
+
 		return message.toLowerCase().indexOf("<html>") >= 0;
 	}
 
