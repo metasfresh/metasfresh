@@ -863,9 +863,9 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 					
-					<!-- copy the jasper files that were prepared by the maven-dependency-plugin -->
+					<!-- copy the jasper files that were prepared by the maven-dependency-plugin, so they become part of the metasfresh-app docker image -->
 					<execution>
-						<id>copy-jasper-folder-for-docker-build</id>
+						<id>copy-jasper-folder-for-app-docker-build</id>
 						<phase>package</phase>
 						<goals>
 							<goal>copy-resources</goal>
@@ -881,6 +881,24 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
+					<!-- copy the jasper files that were prepared by the maven-dependency-plugin, so they become part of the metasfresh-dist-report docker image -->
+					<execution>
+						<id>copy-jasper-folder-for-report-docker-build</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${docker.build.directory}/report/reports</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/dist/deploy/reports</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					
 					<!-- copy the metasfresh_server.jar that was prepared by the 
 					     maven-dependency-plugin with <id>copy-main-deployables</id>-->
 					<execution>
