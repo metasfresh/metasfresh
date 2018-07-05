@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { Component } from 'react';
+
 import { disabledWithFocus } from '../../shortcuts/keymap';
 
 const codeToKey = {
@@ -98,6 +99,22 @@ export default class ShortcutProvider extends Component {
     window.removeEventListener('blur', this.handleBlur);
   }
 
+  // In case of different handlers using the same shortcut we can control which
+  // one will be fired by returning true/false from their execution. Handlers are
+  // added in reverse order, so this way we can only call the latest in the queue.
+  // Summarizing - if you want a handler to just pass through, return false before
+  // any other code in the function.
+  fireHandlers = (event, handlers) => {
+    for (let i = 0; i < handlers.length; i += 1) {
+      const handler = handlers[i];
+      const result = handler(event);
+
+      if (result) {
+        break;
+      }
+    }
+  };
+
   handleKeyDown = event => {
     const _key = codeToKey[event.keyCode];
     const key = _key && _key.toUpperCase();
@@ -144,16 +161,20 @@ export default class ShortcutProvider extends Component {
     }
 
     const bucket = hotkeys[serializedSequence];
-    const handler = bucket[bucket.length - 1];
+    const validHandlers = bucket.filter(handler => {
+      if (typeof handler === 'function') {
+        return true;
+      }
+      return false;
+    });
 
-    if (typeof handler === 'function') {
-      return handler(event);
+    if (validHandlers.length) {
+      return this.fireHandlers(event, validHandlers);
     }
 
     // eslint-disable-next-line no-console
     console.warn(
-      `Handler defined for key sequence "${serializedSequence}" is not a function.`,
-      handler
+      `Handler defined for key sequence "${serializedSequence}" is not a function.`
     );
   };
 
@@ -189,10 +210,14 @@ export default class ShortcutProvider extends Component {
       return;
     }
 
+    if (!handler) {
+      return;
+    }
+
     const key = keymap[name].toUpperCase();
     const bucket = hotkeys[key];
 
-    hotkeys[key] = [...bucket, handler];
+    hotkeys[key] = [handler, ...bucket];
   };
 
   unsubscribe = (name, handler) => {
@@ -202,6 +227,10 @@ export default class ShortcutProvider extends Component {
       // eslint-disable-next-line no-console
       console.warn(`There are no hotkeys defined for "${name}".`);
 
+      return;
+    }
+
+    if (!handler) {
       return;
     }
 

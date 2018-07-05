@@ -639,26 +639,28 @@ class Header extends Component {
             dataId
               ? () =>
                   this.openModal(windowType, 'window', 'Advanced edit', true)
-              : ''
+              : undefined
           }
           handlePrint={
             dataId
               ? () => this.handlePrint(windowType, dataId, docNoData.value)
-              : ''
+              : undefined
           }
           handleEmail={this.handleEmail}
           handleLetter={this.handleLetter}
-          handleDelete={dataId ? this.handleDelete : ''}
-          handleClone={dataId ? () => this.handleClone(windowType, dataId) : ''}
+          handleDelete={dataId ? this.handleDelete : undefined}
+          handleClone={
+            dataId ? () => this.handleClone(windowType, dataId) : undefined
+          }
           redirect={
             windowType
               ? () => this.redirect('/window/' + windowType + '/new')
-              : ''
+              : undefined
           }
           handleDocStatusToggle={
             document.getElementsByClassName('js-dropdown-toggler')[0]
               ? this.handleDocStatusToggle
-              : ''
+              : undefined
           }
           handleEditModeToggle={handleEditModeToggle}
           closeOverlays={this.closeOverlays}

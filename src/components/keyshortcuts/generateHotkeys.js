@@ -23,8 +23,7 @@ export default ({ keymap = {}, blacklist = {} } = {}) => {
       );
     }
 
-    const bucket = [];
-    hotkeys[hotkey] = bucket;
+    hotkeys[hotkey] = [];
   }
 
   return hotkeys;
