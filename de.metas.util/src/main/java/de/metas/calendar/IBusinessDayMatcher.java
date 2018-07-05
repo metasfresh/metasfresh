@@ -1,6 +1,7 @@
 package de.metas.calendar;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.adempiere.util.Check;
 
@@ -50,6 +51,12 @@ public interface IBusinessDayMatcher
 	{
 		final int targetWorkingDays = 0;
 		return getPreviousBusinessDay(date, targetWorkingDays);
+	}
+
+	default LocalDateTime getPreviousBusinessDay(@NonNull final LocalDateTime dateTime, final int targetWorkingDays)
+	{
+		final LocalDate previousDate = getPreviousBusinessDay(dateTime.toLocalDate(), targetWorkingDays);
+		return LocalDateTime.of(previousDate, dateTime.toLocalTime());
 	}
 
 	default LocalDate getPreviousBusinessDay(@NonNull final LocalDate date, final int targetWorkingDays)
