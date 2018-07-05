@@ -38,6 +38,7 @@ public class ExcludeWeekendBusinessDayMatcher implements IBusinessDayMatcher
 {
 	private static final ImmutableSet<DayOfWeek> DEFAULT_WEEKEND_DAYS = ImmutableSet.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
 
+	/** Matcher with Saturday and Sunday as non working days */
 	public static final ExcludeWeekendBusinessDayMatcher DEFAULT = ExcludeWeekendBusinessDayMatcher.builder().build();
 
 	private final ImmutableSet<DayOfWeek> weekendDays;
