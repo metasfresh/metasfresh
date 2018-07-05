@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.material.interceptor;
 
-import org.adempiere.ad.modelvalidator.InterceptorUtil;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -76,7 +76,7 @@ public class C_PurchaseCandidate_PostEvents
 			return;
 		}
 
-		final boolean isNewPurchaseCandidateRecord = type.isNew() || InterceptorUtil.isJustActivated(purchaseCandidateRecord);
+		final boolean isNewPurchaseCandidateRecord = type.isNew() || ModelChangeUtil.isJustActivated(purchaseCandidateRecord);
 		if (!isNewPurchaseCandidateRecord)
 		{
 			return;
@@ -111,7 +111,7 @@ public class C_PurchaseCandidate_PostEvents
 			@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord,
 			@NonNull final ModelChangeType type)
 	{
-		final boolean isNewPurchaseCandidateRecord = type.isNew() || InterceptorUtil.isJustActivated(purchaseCandidateRecord);
+		final boolean isNewPurchaseCandidateRecord = type.isNew() || ModelChangeUtil.isJustActivated(purchaseCandidateRecord);
 		if (isNewPurchaseCandidateRecord)
 		{
 			return;

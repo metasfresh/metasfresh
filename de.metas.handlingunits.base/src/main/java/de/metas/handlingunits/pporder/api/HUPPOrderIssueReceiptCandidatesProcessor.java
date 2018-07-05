@@ -247,7 +247,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		// Update candidate's qty to issue
 		// NOTE: in case of "IssueOnlyReceived" issue method the qty to issue is calculated just in time. We assume it's saved by caller
-		candidate.setQty(qtyToIssue.getQty());
+		candidate.setQty(qtyToIssue.getAsBigDecimal());
 		//
 		if (qtyToIssue.isZero())
 		{
@@ -636,10 +636,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 						+ "\n@PP_Order_BOMLine_ID@: " + orderBOMLine);
 			}
 
-			final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
+			final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product.getM_Product_ID());
 			final Quantity qtyToIssueToAddConv = uomConversionBL.convertQuantityTo(qtyToIssueToAdd, uomConversionCtx, uom);
 
-			qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv.getQty());
+			qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv.getAsBigDecimal());
 			husToAssign.add(huToAssign);
 		}
 

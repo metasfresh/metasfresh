@@ -1,5 +1,7 @@
 package de.metas.material.dispo.commons.repository;
 
+import static de.metas.material.dispo.commons.candidate.IdConstants.NULL_REPO_ID;
+import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -22,6 +24,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
@@ -214,7 +217,7 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setQty(stripZerosAfterTheDigit(quantity));
 		candidateRecord.setDateProjected(new Timestamp(materialDescriptor.getDate().getTime()));
 
-		updatRecordFromDemandDetail(candidateRecord, candidate.getDemandDetail());
+		updatCandidateRecordFromDemandDetail(candidateRecord, candidate.getDemandDetail());
 
 		if (candidate.getBusinessCase() != null)
 		{
@@ -247,10 +250,12 @@ public class CandidateRepositoryWriteService
 	}
 
 	/**
-	 * Update the demand related reference columns, but don't reset them to zero.
+	 * Update the demand related reference columns, but don't reset them to zero, unless the respective ID is {@link IdConstants#NULL_REPO_ID}.
+	 * <p>
 	 * Note that we have them as physical columns for performance reasons.
+	 *
 	 */
-	private void updatRecordFromDemandDetail(
+	private void updatCandidateRecordFromDemandDetail(
 			@NonNull final I_MD_Candidate candidateRecord,
 			@Nullable final DemandDetail demandDetail)
 	{
@@ -264,17 +269,32 @@ public class CandidateRepositoryWriteService
 		{
 			candidateRecord.setC_OrderSO_ID(demandDetail.getOrderId());
 		}
+		final boolean orderLineIdShallBeSetToZero = demandDetail.getOrderId() == NULL_REPO_ID;
+		if (orderLineIdShallBeSetToZero)
+		{
+			candidateRecord.setC_OrderSO_ID(0);
+		}
 
 		final boolean demandDetailWouldResetForecastId = demandDetail.getForecastId() == 0 && candidateRecord.getM_Forecast_ID() > 0;
 		if (!demandDetailWouldResetForecastId)
 		{
 			candidateRecord.setM_Forecast_ID(demandDetail.getForecastId());
 		}
+		final boolean forecastLineIdShallBeSetToZero = demandDetail.getForecastId() == NULL_REPO_ID;
+		if (forecastLineIdShallBeSetToZero)
+		{
+			candidateRecord.setM_Forecast_ID(0);
+		}
 
 		final boolean demandDetailWouldResetShipmentScheduleId = demandDetail.getShipmentScheduleId() == 0 && candidateRecord.getM_ShipmentSchedule_ID() > 0;
 		if (!demandDetailWouldResetShipmentScheduleId)
 		{
 			candidateRecord.setM_ShipmentSchedule_ID(demandDetail.getShipmentScheduleId());
+		}
+		final boolean shipmentScheduleIdShallBeSetToZero = demandDetail.getShipmentScheduleId() == NULL_REPO_ID;
+		if (shipmentScheduleIdShallBeSetToZero)
+		{
+			candidateRecord.setM_ShipmentSchedule_ID(0);
 		}
 	}
 
@@ -411,10 +431,11 @@ public class CandidateRepositoryWriteService
 		}
 
 		final DemandDetail demandDetail = candidate.getDemandDetail();
-		detailRecordToUpdate.setM_ForecastLine_ID(demandDetail.getForecastLineId());
-		detailRecordToUpdate.setM_ShipmentSchedule_ID(demandDetail.getShipmentScheduleId());
-		detailRecordToUpdate.setC_OrderLine_ID(demandDetail.getOrderLineId());
-		detailRecordToUpdate.setC_SubscriptionProgress_ID(demandDetail.getSubscriptionProgressId());
+		detailRecordToUpdate.setM_ForecastLine_ID(toRepoId(demandDetail.getForecastLineId()));
+		detailRecordToUpdate.setM_ShipmentSchedule_ID(toRepoId(demandDetail.getShipmentScheduleId()));
+		detailRecordToUpdate.setC_OrderLine_ID(toRepoId(demandDetail.getOrderLineId()));
+		detailRecordToUpdate.setC_SubscriptionProgress_ID(toRepoId(demandDetail.getSubscriptionProgressId()));
+
 		detailRecordToUpdate.setPlannedQty(demandDetail.getPlannedQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 

@@ -488,7 +488,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		DefaultTableModel model = (DefaultTableModel)dialog.getMiniTable().getModel();
 		// Lookup UPC
 		{
-			final I_M_Product product = Services.get(IProductDAO.class).retrieveProductByUPC(Env.getCtx(), upc);
+			final I_M_Product product = Services.get(IProductDAO.class).retrieveProductByValue(upc);
 			int row = findProductRow(product.getM_Product_ID());
 			if (row >= 0)
 			{

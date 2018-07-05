@@ -3,7 +3,7 @@ package de.metas.purchasecandidate.material.interceptor;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.ad.modelvalidator.InterceptorUtil;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -104,13 +104,13 @@ public class M_ReceiptSchedule_PostEvents
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
 			@NonNull final ModelChangeType timing)
 	{
-		final boolean created = timing.isNew() || InterceptorUtil.isJustActivated(receiptSchedule);
+		final boolean created = timing.isNew() || ModelChangeUtil.isJustActivated(receiptSchedule);
 		if (created)
 		{
 			return createCreatedEvent(receiptSchedule);
 		}
 
-		final boolean deleted = timing.isDelete() || InterceptorUtil.isJustDeactivated(receiptSchedule);
+		final boolean deleted = timing.isDelete() || ModelChangeUtil.isJustDeactivated(receiptSchedule);
 		if (deleted)
 		{
 			return createDeletedEvent(receiptSchedule);

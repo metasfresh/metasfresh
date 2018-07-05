@@ -89,7 +89,7 @@ public class HUStorageEngine implements IStorageEngine
 
 	@Override
 	public Set<IStorageRecord> retrieveStorageRecords(
-			@NonNull final IContextAware context, 
+			@NonNull final IContextAware context,
 			@NonNull final Set<IStorageQuery> storageQueries)
 	{
 		Check.assumeNotEmpty(storageQueries, "storageQueries not empty");
@@ -191,9 +191,8 @@ public class HUStorageEngine implements IStorageEngine
 	}
 
 	@Override
-	public IAttributeSet getAttributeSet(final I_M_AttributeSetInstance asi)
+	public IAttributeSet getAttributeSet(@NonNull final I_M_AttributeSetInstance asi)
 	{
-		Check.assumeNotNull(asi, "asi not null");
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(asi);

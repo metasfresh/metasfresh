@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.trace.HUTraceEvent;
@@ -30,12 +31,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,7 +44,7 @@ import lombok.NonNull;
  */
 
 /**
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -59,7 +60,7 @@ public class HuId2SourceHUsService
 
 	/**
 	 * Uses HU-tracing to identify and return the (top-level) HUs that are the given {@code huIds}' source HUs.
-	 * 
+	 *
 	 * @param huIds
 	 * @return
 	 */
@@ -94,7 +95,7 @@ public class HuId2SourceHUsService
 
 	/**
 	 * Don't use Services.get(IHandlingUnitsBL.class).getTopLevelHUs() because the sourceHUs might already be destroyed.f
-	 * 
+	 *
 	 * @param vhuSourceIds
 	 * @return
 	 */
@@ -117,7 +118,7 @@ public class HuId2SourceHUsService
 		return topLevelSourceHus;
 	}
 
-	public Collection<Integer> retrieveMatchingSourceHUIds(final int huId)
+	public Collection<HuId> retrieveMatchingSourceHUIds(final HuId huId)
 	{
 		final MatchingSourceHusQuery query = MatchingSourceHusQuery.fromHuId(huId);
 

@@ -1,5 +1,8 @@
 package de.metas.material.dispo.commons.candidate.businesscase;
 
+import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.material.dispo.commons.candidate.IdConstants.toUnspecifiedIfZero;
+
 import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
@@ -40,7 +43,7 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class DemandDetail implements BusinessCaseDetail
 {
-	public static DemandDetail forDocumentDescriptor(
+	public static DemandDetail forDocumentLine(
 			final int shipmentScheduleId,
 			@NonNull final DocumentLineDescriptor documentDescriptor,
 			@NonNull final BigDecimal plannedQty)
@@ -48,17 +51,19 @@ public class DemandDetail implements BusinessCaseDetail
 		final int orderId;
 		final int orderLineId;
 		final int subscriptionProgressId;
+		final int forecastId = UNSPECIFIED_REPO_ID;
+		final int forecastLineId = UNSPECIFIED_REPO_ID;
 		if (documentDescriptor instanceof OrderLineDescriptor)
 		{
 			final OrderLineDescriptor orderLineDescriptor = (OrderLineDescriptor)documentDescriptor;
 			orderLineId = orderLineDescriptor.getOrderLineId();
 			orderId = orderLineDescriptor.getOrderId();
-			subscriptionProgressId = -1;
+			subscriptionProgressId = UNSPECIFIED_REPO_ID;
 		}
 		else if (documentDescriptor instanceof SubscriptionLineDescriptor)
 		{
-			orderLineId = 0;
-			orderId = 0;
+			orderLineId = UNSPECIFIED_REPO_ID;
+			orderId = UNSPECIFIED_REPO_ID;
 			subscriptionProgressId = ((SubscriptionLineDescriptor)documentDescriptor).getSubscriptionProgressId();
 		}
 		else
@@ -72,6 +77,8 @@ public class DemandDetail implements BusinessCaseDetail
 				.shipmentScheduleId(shipmentScheduleId)
 				.orderLineId(orderLineId)
 				.orderId(orderId)
+				.forecastLineId(forecastLineId)
+				.forecastId(forecastId)
 				.subscriptionProgressId(subscriptionProgressId)
 				.plannedQty(plannedQty).build();
 	}
@@ -84,13 +91,13 @@ public class DemandDetail implements BusinessCaseDetail
 			return null;
 		}
 		return DemandDetail.builder()
-				.demandCandidateId(supplyRequiredDescriptor.getDemandCandidateId())
-				.forecastId(supplyRequiredDescriptor.getForecastId())
-				.forecastLineId(supplyRequiredDescriptor.getForecastLineId())
-				.orderId(supplyRequiredDescriptor.getOrderId())
-				.orderLineId(supplyRequiredDescriptor.getOrderLineId())
-				.shipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
-				.subscriptionProgressId(supplyRequiredDescriptor.getSubscriptionProgressId())
+				.demandCandidateId(toUnspecifiedIfZero(supplyRequiredDescriptor.getDemandCandidateId()))
+				.forecastId(toUnspecifiedIfZero(supplyRequiredDescriptor.getForecastId()))
+				.forecastLineId(toUnspecifiedIfZero(supplyRequiredDescriptor.getForecastLineId()))
+				.orderId(toUnspecifiedIfZero(supplyRequiredDescriptor.getOrderId()))
+				.orderLineId(toUnspecifiedIfZero(supplyRequiredDescriptor.getOrderLineId()))
+				.shipmentScheduleId(toUnspecifiedIfZero(supplyRequiredDescriptor.getShipmentScheduleId()))
+				.subscriptionProgressId(toUnspecifiedIfZero(supplyRequiredDescriptor.getSubscriptionProgressId()))
 				.plannedQty(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
 				.build();
 	}

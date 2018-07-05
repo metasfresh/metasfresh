@@ -1,5 +1,9 @@
 package org.adempiere.warehouse.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
+
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -62,6 +66,11 @@ import lombok.NonNull;
 
 public class WarehouseDAO implements IWarehouseDAO
 {
+	@Override
+	public List<I_M_Warehouse> getByIds(final Collection<WarehouseId> warehouseIds)
+	{
+		return loadByIdsOutOfTrx(WarehouseId.toRepoIds(warehouseIds), I_M_Warehouse.class);
+	}
 
 	@Override
 	public boolean hasAvailableDocTypes(final Properties ctx, final int warehouseId, final String trxName)
@@ -266,14 +275,14 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final ImmutableSetMultimap<Integer, Integer> warehouseIdsByPickingGroupId = queryBL.createQueryBuilder(I_M_Warehouse.class)
+		final ImmutableSetMultimap<Integer, WarehouseId> warehouseIdsByPickingGroupId = queryBL.createQueryBuilder(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_M_Warehouse.COLUMNNAME_M_Warehouse_PickingGroup_ID)
 				.create()
 				.listDistinct(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, I_M_Warehouse.COLUMNNAME_M_Warehouse_PickingGroup_ID)
 				.stream()
 				.map(record -> {
-					final int warehouseId = (int)record.get(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID);
+					final WarehouseId warehouseId = WarehouseId.ofRepoId((int)record.get(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID));
 					final int warehousePickingGroupId = (int)record.get(I_M_Warehouse.COLUMNNAME_M_Warehouse_PickingGroup_ID);
 					return GuavaCollectors.entry(warehousePickingGroupId, warehouseId);
 				})
@@ -303,12 +312,19 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(final int warehouseId)
+	public List<WarehouseId> getWarehouseIdsOfSamePickingGroup(@NonNull final WarehouseId warehouseId)
 	{
-		return retrieveWarehouseGroups()
+		final ImmutableList<WarehouseId> result = retrieveWarehouseGroups()
 				.stream()
 				.filter(warehousePickingGroup -> warehousePickingGroup.containsWarehouseId(warehouseId))
-				.findFirst().orElse(null);
+				.flatMap(group -> group.getWarehouseIds().stream())
+				.collect(ImmutableList.toImmutableList());
+
+		if (result.isEmpty())
+		{
+			return ImmutableList.of(warehouseId);
+		}
+		return result;
 	}
 
 	@Override
@@ -339,7 +355,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 	
 	@Override
-	@Cached(cacheName = I_M_Locator.Table_Name + "#By#" + I_M_Locator.COLUMNNAME_M_Warehouse_ID+"#"+I_M_Locator.COLUMNNAME_Value)
+	@Cached(cacheName = I_M_Locator.Table_Name + "#By#" + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "#" + I_M_Locator.COLUMNNAME_Value)
 	public int retrieveLocatorIdByValueAndWarehouseId(@NonNull final String locatorvalue, final int warehouseId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class)

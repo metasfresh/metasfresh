@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -149,21 +150,24 @@ public class AttributeDAO implements IAttributeDAO
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID());
 		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
-		final int asiId = attributeSetInstance.getM_AttributeSetInstance_ID();
+
 		return retrieveAttributeInstances(ctx, asiId, trxName);
 	}
 
-
 	@Override
-	public List<I_M_AttributeInstance> retrieveAttributeInstances(int asiId)
+	public List<I_M_AttributeInstance> retrieveAttributeInstances(@NonNull final AttributeSetInstanceId asiId)
 	{
 		return retrieveAttributeInstances(Env.getCtx(), asiId, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private List<I_M_AttributeInstance> retrieveAttributeInstances(final Properties ctx, final int asiId, final String trxName)
+	private List<I_M_AttributeInstance> retrieveAttributeInstances(
+			final Properties ctx,
+			@NonNull final AttributeSetInstanceId asiId,
+			final String trxName)
 	{
-		if (asiId <= 0)
+		if (asiId.getRepoId() <= 0)
 		{
 			return ImmutableList.of();
 		}

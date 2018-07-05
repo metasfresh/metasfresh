@@ -34,6 +34,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
@@ -68,11 +69,6 @@ public final class CConnection implements Serializable, Cloneable
 	{
 		LogManager.skipIssueReportingForLoggerName(log);
 	}
-
-	/** System property flag to embed server bean in process **/
-	public final static String SERVER_EMBEDDED_PROPERTY = "de.metas.server.embedded";
-
-	public final static String SERVER_EMBEDDED_APPSERVER_HOSTNAME = "localhost";
 
 	public final static int SERVER_DEFAULT_APPSERVER_PORT = 61616;
 
@@ -182,7 +178,7 @@ public final class CConnection implements Serializable, Cloneable
 	} 	// CConnection
 
 	/** Connection attributes */
-	private final CConnectionAttributes attrs = new CConnectionAttributes();
+	private transient final CConnectionAttributes attrs = new CConnectionAttributes();
 	/** Database */
 	private volatile AdempiereDatabase _database = null;
 	private Exception m_appsException = null;
@@ -250,11 +246,6 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public String getAppsHost()
 	{
-		if (isServerEmbedded())
-		{
-			return SERVER_EMBEDDED_APPSERVER_HOSTNAME;
-		}
-
 		return attrs.getAppsHost();
 	}
 
@@ -297,10 +288,6 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public int getAppsPort()
 	{
-		if (isServerEmbedded())
-		{
-			return SERVER_DEFAULT_APPSERVER_PORT;
-		}
 		final int appsPort = attrs.getAppsPort();
 		if (appsPort > 0)
 		{
@@ -399,7 +386,7 @@ public final class CConnection implements Serializable, Cloneable
 				connect = getAppsHost() + ":" + getAppsPort();
 			}
 			log.error("Caught this while trying to connect to application server {}: {}", connect, t.toString());
-			Services.get(IClientUI.class).error(0, MSG_APPSERVER_CONNECTION_PROBLEM, t.getLocalizedMessage());
+			Services.get(IClientUI.class).error(Env.WINDOW_MAIN, MSG_APPSERVER_CONNECTION_PROBLEM, t.getLocalizedMessage());
 			t.printStackTrace();
 		}
 		return m_okApps;
@@ -425,10 +412,6 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public synchronized Exception testAppsServer()
 	{
-		if (CConnection.isServerEmbedded())
-		{
-			return null; // there is nothing to do
-		}
 		queryAppsServerInfo();
 		return getAppsServerException();
 	} 	// testAppsServer
@@ -1365,14 +1348,6 @@ public final class CConnection implements Serializable, Cloneable
 		return "<?" + transactionIsolation + "?>";
 	}	// getTransactionIsolationInfo
 
-	/**
-	 * @return true if server is embedded in process
-	 */
-	public static boolean isServerEmbedded()
-	{
-		return Boolean.getBoolean(SERVER_EMBEDDED_PROPERTY); // return the system property
-	}
-
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
@@ -1411,7 +1386,7 @@ public final class CConnection implements Serializable, Cloneable
 
 		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
 		{
-			Services.get(IClientUI.class).error(0, MSG_RABBITMQ_CONNECTION_PROBLEM);
+			Services.get(IClientUI.class).error(Env.WINDOW_MAIN, MSG_RABBITMQ_CONNECTION_PROBLEM);
 			return rabbitMqProperties;
 		}
 

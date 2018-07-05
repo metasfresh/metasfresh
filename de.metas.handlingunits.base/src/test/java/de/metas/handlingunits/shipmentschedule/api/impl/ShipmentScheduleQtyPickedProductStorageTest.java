@@ -28,7 +28,7 @@ import java.math.BigDecimal;
 import org.junit.Assume;
 import org.junit.Test;
 
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.AbstractProductStorageTest;
@@ -52,7 +52,7 @@ public class ShipmentScheduleQtyPickedProductStorageTest extends AbstractProduct
 		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, new BigDecimal("100"), new BigDecimal("7"));
 
 		final ShipmentScheduleQtyPickedProductStorage storage = new ShipmentScheduleQtyPickedProductStorage(schedule);
-		HUAssert.assertStorageLevels(storage,
+		StaticHUAssert.assertStorageLevels(storage,
 				"100", // Qty Total
 				"93", // Qty
 				"7" // Qty Free

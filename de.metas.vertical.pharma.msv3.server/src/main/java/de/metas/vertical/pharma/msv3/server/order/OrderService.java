@@ -129,10 +129,18 @@ public class OrderService
 
 	private JpaOrder createJpaOrder(final OrderResponse order)
 	{
+		final String documentNo = order.getOrderId().getValueAsString();
+		final int bpartnerId = order.getBpartnerId().getBpartnerId();
+
+		if (jpaOrdersRepo.existsByDocumentNoAndBpartnerId(documentNo, bpartnerId))
+		{
+			throw new RuntimeException("An order with same documentNo (" + documentNo + ") was already recorded");
+		}
+
 		final JpaOrder jpaOrder = new JpaOrder();
-		jpaOrder.setBpartnerId(order.getBpartnerId().getBpartnerId());
+		jpaOrder.setBpartnerId(bpartnerId);
 		jpaOrder.setBpartnerLocationId(order.getBpartnerId().getBpartnerLocationId());
-		jpaOrder.setDocumentNo(order.getOrderId().getValueAsString());
+		jpaOrder.setDocumentNo(documentNo);
 		jpaOrder.setSupportId(order.getSupportId().getValueAsInt());
 		jpaOrder.setOrderStatus(OrderStatus.UNKNOWN_ID);
 		jpaOrder.setNightOperation(false);
@@ -198,11 +206,17 @@ public class OrderService
 		final PZN pzn = requestPackageItem.getPzn();
 		final Quantity qtyAvailable = stockAvailabilityService.getQtyAvailable(pzn, bpartner)
 				.orElseThrow(() -> new RuntimeException("PZN not found: " + pzn));
-		final Quantity qty = qtyAvailable.min(requestPackageItem.getQty());
+
+		final Quantity qtyRequired = requestPackageItem.getQty();
+		if (qtyRequired.compareTo(qtyAvailable) > 0)
+		{
+			throw new RuntimeException("Not available: PZN=" + pzn.getValueAsString() + ", Qty=" + qtyRequired.toJson());
+		}
+
 		return OrderResponsePackageItem.builder()
 				.id(requestPackageItem.getId())
 				.pzn(pzn)
-				.qty(qty)
+				.qty(qtyRequired)
 				.deliverySpecifications(requestPackageItem.getDeliverySpecifications())
 				.build();
 	}

@@ -40,7 +40,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.calendar.ICalendarDAO;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;

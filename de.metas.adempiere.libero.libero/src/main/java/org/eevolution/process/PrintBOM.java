@@ -59,8 +59,8 @@ import org.eevolution.model.X_T_BOMLine;
 
 import de.metas.i18n.Language;
 import de.metas.logging.MetasfreshLastError;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Multi-Level BOM & Formula Detail
@@ -174,7 +174,13 @@ public class PrintBOM extends JavaProcess
 		// records are deleted when process ends 
 		while (re.getView().isDisplayable()) 
 		{
-			Env.sleep(1);
+			try
+			{
+				Thread.sleep(1000);
+			}
+			catch(Exception ex)
+			{
+			}
 		}	
 	}
 

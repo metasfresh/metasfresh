@@ -169,7 +169,7 @@ public interface IProductBL extends ISingletonService
 	 */
 	boolean isInstanceAttribute(I_M_Product product);
 
-	boolean isProductInCategory(int productId, int expectedProductCategoryId);
+	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
 	String getProductValueAndName(int productId);
 

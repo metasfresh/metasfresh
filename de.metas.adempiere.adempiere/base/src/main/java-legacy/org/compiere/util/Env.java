@@ -18,24 +18,17 @@ package org.compiere.util;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Graphics;
 import java.awt.Window;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.RepaintManager;
-import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -46,7 +39,6 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IWindowNoAware;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
@@ -154,7 +146,10 @@ public final class Env
 		//
 
 		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
-		SpringApplication.exit(springApplicationContext, () -> 0);
+		if (springApplicationContext != null) // don't fail if we exit before swing-client's login was done
+		{
+			SpringApplication.exit(springApplicationContext, () -> 0);
+		}
 
 		// should not be required anymore since we make sure that all non-demon threads are stopped
 		// works in my debugging-session (without system.exit), but doesn't (always!) works on lx-term01 (x2go)
@@ -174,27 +169,8 @@ public final class Env
 		s_log.info("Reseting environment (finalCall={})", finalCall);
 		if (Ini.isClient())
 		{
-			closeWindows();
-
-			// Dismantle windows
-			/**
-			 * for (int i = 0; i < s_windows.size(); i++) { Container win = (Container)s_windows.get(i); if (win.getClass().getName().endsWith("AMenu")) // Null pointer ; else if (win instanceof
-			 * Window) ((Window)win).dispose(); else win.removeAll(); }
-			 **/
-			// bug [ 1574630 ]
-			if (s_windows.size() > 0)
-			{
-				if (!finalCall)
-				{
-					final Container c = s_windows.get(0);
-					s_windows.clear();
-					createWindowNo(c);
-				}
-				else
-				{
-					s_windows.clear();
-				}
-			}
+			final boolean preserveMainWindow = !finalCall;
+			windows.closeAll(preserveMainWindow);
 		}
 
 		// Clear all Context
@@ -1640,117 +1616,47 @@ public final class Env
 
 	/*************************************************************************/
 
-	// Array of active Windows
-	private static ArrayList<Container> s_windows = new ArrayList<>(20);
+	private static WindowsIndex windows = new WindowsIndex();
 
 	/**
 	 * Add Container and return WindowNo. The container is a APanel, AWindow or JFrame/JDialog
 	 *
-	 * @param win window
+	 * @param window window
 	 * @return WindowNo used for context
 	 */
-	public static int createWindowNo(final Container win)
+	public static int createWindowNo(final Container window)
 	{
-		final int retValue = s_windows.size();
-		s_windows.add(win);
-		return retValue;
-	}	// createWindowNo
+		return windows.addWindow(window);
+	}
+
+	public static void addWindow(final int windowNo, final Container window)
+	{
+		windows.addWindow(windowNo, window);
+	}
 
 	/**
-	 * Search Window by comparing the Frames
-	 *
-	 * @param container container or <code>null</code>
 	 * @return WindowNo of container or {@link #WINDOW_MAIN} if no WindowNo found for container.
 	 */
-	public static int getWindowNo(final Component container)
+	public static int getWindowNo(@Nullable final Component container)
 	{
-		if (container == null)
-		{
-			return WINDOW_MAIN;
-		}
-
-		JFrame winFrame = null;
-
-		//
-		// Navigate up-stream
-		{
-			Component element = container;
-			while (element != null)
-			{
-				if (element instanceof IWindowNoAware)
-				{
-					return ((IWindowNoAware)element).getWindowNo();
-				}
-				if (element instanceof JFrame)
-				{
-					winFrame = (JFrame)element;
-					break;
-				}
-				element = element.getParent();
-			}
-		}
-
-		if (winFrame == null)
-		{
-			return WINDOW_MAIN;
-		}
-
-		// loop through windows
-		for (int i = 0; i < s_windows.size(); i++)
-		{
-			final Container cmp = s_windows.get(i);
-			if (cmp != null)
-			{
-				final JFrame cmpFrame = getFrame(cmp);
-				if (winFrame.equals(cmpFrame))
-					return i;
-			}
-		}
-		return WINDOW_MAIN;
+		return windows.getWindowNo(container);
 	}	// getWindowNo
 
 	/**
-	 * Return the JFrame pointer of WindowNo.
-	 *
-	 * @param WindowNo window
 	 * @return JFrame of WindowNo or <code>null</code> if not found or windowNo is invalid
 	 */
-	public static JFrame getWindow(int WindowNo)
+	public static JFrame getWindow(final int windowNo)
 	{
-		if (WindowNo < 0)
-		{
-			return null;
-		}
-
-		if (WindowNo == 0)
-		{
-			s_log.warn("Env.getWindow() called with wrong parameter; If you want obtain the main window (AMenu), then please use the constant Env.WINDOW_MAIN instead of 0 (and btw, it's 1 now)");
-
-			Check.assume(WINDOW_MAIN != 0, "WINDOW_MAIN was changed from 0 to 1"); // avoid StackoverFlow if it's ever changed back to 0
-			return getWindow(WINDOW_MAIN);
-		}
-		try
-		{
-			return getFrame(s_windows.get(WindowNo));
-		}
-		catch (final Exception e)
-		{
-			s_log.error("Failed getting frame for windowNo={}", WindowNo, e);
-		}
-
-		return null;
+		return windows.getFrameByWindowNo(windowNo);
 	}
 
 	/**
 	 * Remove window from active list
-	 *
-	 * @param WindowNo window
 	 */
-	private static void removeWindow(final int WindowNo)
+	private static void removeWindow(final int windowNo)
 	{
-		if (WindowNo >= 0 && WindowNo < s_windows.size())
-			s_windows.set(WindowNo, null);
-	}	// removeWindow
+		windows.removeWindow(windowNo);
+	}
 
 	/**
 	 * @return true if given windowNo is a valid windowNo and is for a regular window (not the main window)
@@ -1780,63 +1686,6 @@ public final class Env
 	{
 		clearWinContext(getCtx(), WindowNo);
 	}	// clearWinContext
-
-	/**************************************************************************
-	 * Get Frame of Window
-	 *
-	 * @param component AWT component
-	 * @return JFrame of component or null
-	 */
-	public static JFrame getFrame(final Component component)
-	{
-		Component element = component;
-		while (element != null)
-		{
-			if (element instanceof JFrame)
-				return (JFrame)element;
-			element = element.getParent();
-		}
-		return null;
-	}	// getFrame
-
-	/**
-	 * Get Graphics of container or its parent. The element may not have a Graphic if not displayed yet, but the parent might have.
-	 *
-	 * @param container Container
-	 * @return Graphics of container or null
-	 */
-	public static Graphics getGraphics(Container container)
-	{
-		Container element = container;
-		while (element != null)
-		{
-			final Graphics g = element.getGraphics();
-			if (g != null)
-				return g;
-			element = element.getParent();
-		}
-		return null;
-	}	// getFrame
-
-	/**
-	 * Return JDialog or JFrame Parent
-	 *
-	 * @param container Container
-	 * @return JDialog or JFrame of container
-	 */
-	public static Window getParent(final Component container)
-	{
-		Component element = container;
-		while (element != null)
-		{
-			if (element instanceof JDialog || element instanceof JFrame)
-				return (Window)element;
-			if (element instanceof Window)
-				return (Window)element;
-			element = element.getParent();
-		}
-		return null;
-	}   // getParent
 
 	/**
 	 * Start Browser
@@ -1874,54 +1723,16 @@ public final class Env
 		return osName.indexOf("windows") != -1;
 	}	// isWindows
 
-	/** Array of hidden Windows */
-	private static ArrayList<CFrame> s_hiddenWindows = new ArrayList<>();
-	/** Closing Window Indicator */
-	private static boolean s_closingWindows = false;
-
 	/**
 	 * Hide Window
 	 *
 	 * @param window window
 	 * @return true if window is hidden, otherwise close it
 	 */
-	static public boolean hideWindow(CFrame window)
+	static public boolean hideWindow(final CFrame window)
 	{
-		if (!Ini.isCacheWindow() || s_closingWindows)
-			return false;
-		for (int i = 0; i < s_hiddenWindows.size(); i++)
-		{
-			final CFrame hidden = s_hiddenWindows.get(i);
-			s_log.info("Checking hidden window {}: {}", i, hidden);
-			if (hidden.getAD_Window_ID() == window.getAD_Window_ID())
-				return false;	// already there
-		}
-
-		if (window.getAD_Window_ID() > 0)         	// workbench
-		{
-			if (s_hiddenWindows.add(window))
-			{
-				window.setVisible(false);
-				s_log.info("Added to hidden windows list: {}", window);
-				// window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_ICONIFIED));
-				if (s_hiddenWindows.size() > 10)
-				{
-					final CFrame toClose = s_hiddenWindows.remove(0);		// sort of lru
-					try
-					{
-						s_closingWindows = true;
-						toClose.dispose();
-					}
-					finally
-					{
-						s_closingWindows = false;
-					}
-				}
-				return true;
-			}
-		}
-		return false;
-	}	// hideWindow
+		return windows.hideWindow(window);
+	}
 
 	/**
 	 * Show Window
@@ -1931,59 +1742,8 @@ public final class Env
 	 */
 	public static CFrame showWindow(final int AD_Window_ID)
 	{
-		for (int i = 0; i < s_hiddenWindows.size(); i++)
-		{
-			final CFrame hidden = s_hiddenWindows.get(i);
-			if (hidden.getAD_Window_ID() == AD_Window_ID)
-			{
-				s_hiddenWindows.remove(i); // NOTE: we can safely remove here because we are also returning (no future iterations)
-				s_log.info("Showing window: {}", hidden);
-				hidden.setVisible(true);
-				// De-iconify window - teo_sarca [ 1707221 ]
-				final int state = hidden.getExtendedState();
-				if ((state & CFrame.ICONIFIED) > 0)
-					hidden.setExtendedState(state & ~CFrame.ICONIFIED);
-				//
-				hidden.toFront();
-				return hidden;
-			}
-		}
-		return null;
-	}	// showWindow
-
-	/**
-	 * Clode Windows.
-	 */
-	static void closeWindows()
-	{
-		s_closingWindows = true;
-		for (int i = 0; i < s_hiddenWindows.size(); i++)
-		{
-			final CFrame hidden = s_hiddenWindows.get(i);
-			hidden.dispose();
-		}
-		s_hiddenWindows.clear();
-		s_closingWindows = false;
-	}	// closeWindows
-
-	/**
-	 * Sleep
-	 *
-	 * @param sec seconds
-	 */
-	public static void sleep(final int sec)
-	{
-		s_log.debug("Sleeping for {} seconds", sec);
-		try
-		{
-			Thread.sleep(sec * 1000);
-		}
-		catch (final Exception e)
-		{
-			s_log.warn("Failed sleeping for {} seconds", sec, e);
-		}
-		s_log.debug("Sleeping done");
-	}	// sleep
+		return windows.showWindowByWindowId(AD_Window_ID);
+	}
 
 	/**
 	 * Update all windows after look and feel changes.
@@ -1992,43 +1752,7 @@ public final class Env
 	 */
 	public static Set<Window> updateUI()
 	{
-		final Set<Window> updated = new HashSet<>();
-		for (final Container c : s_windows)
-		{
-			final Window w = getFrame(c);
-			if (w == null)
-				continue;
-			if (updated.contains(w))
-				continue;
-			SwingUtilities.updateComponentTreeUI(w);
-			w.validate();
-			final RepaintManager mgr = RepaintManager.currentManager(w);
-			final Component childs[] = w.getComponents();
-			for (final Component child : childs)
-			{
-				if (child instanceof JComponent)
-					mgr.markCompletelyDirty((JComponent)child);
-			}
-			w.repaint();
-			updated.add(w);
-		}
-		for (final Window w : s_hiddenWindows)
-		{
-			if (updated.contains(w))
-				continue;
-			SwingUtilities.updateComponentTreeUI(w);
-			w.validate();
-			final RepaintManager mgr = RepaintManager.currentManager(w);
-			final Component childs[] = w.getComponents();
-			for (final Component child : childs)
-			{
-				if (child instanceof JComponent)
-					mgr.markCompletelyDirty((JComponent)child);
-			}
-			w.repaint();
-			updated.add(w);
-		}
-		return updated;
+		return windows.updateUI();
 	}
 
 	/**

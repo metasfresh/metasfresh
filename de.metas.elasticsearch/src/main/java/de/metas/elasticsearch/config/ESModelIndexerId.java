@@ -9,7 +9,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -35,8 +37,8 @@ import lombok.Value;
  * #L%
  */
 
-@Builder
 @Value
+@Builder(toBuilder = true)
 public class ESModelIndexerId
 {
 	private static final String SEPARATOR = "#";
@@ -44,40 +46,45 @@ public class ESModelIndexerId
 	@NonNull
 	String indexName;
 	@NonNull
-	String modelTableName;
+	String indexType;
 	@NonNull
 	ESModelIndexerProfile profile;
+	@Getter(AccessLevel.PRIVATE)
+	String includedAttributeName;
 
 	@JsonCreator
 	public static ESModelIndexerId fromJson(final String str)
 	{
 		final List<String> parts = Splitter.on(SEPARATOR).splitToList(str);
-		if (parts.size() != 3)
+		final int partsCount = parts.size();
+		if (partsCount < 3)
 		{
 			throw new AdempiereException("Cannot convert string '" + str + "' to " + ESModelIndexerId.class.getSimpleName());
 		}
 
-		return builder()
+		final ESModelIndexerIdBuilder builder = builder()
 				.indexName(parts.get(0))
-				.modelTableName(parts.get(1))
-				.profile(ESModelIndexerProfile.valueOf(parts.get(2)))
-				.build();
+				.indexType(parts.get(1))
+				.profile(ESModelIndexerProfile.valueOf(parts.get(2)));
+
+		if (partsCount >= 4)
+		{
+			builder.includedAttributeName(parts.get(3));
+		}
+
+		return builder.build();
 	}
 
 	@JsonValue
 	public String toJson()
 	{
-		return Joiner.on(SEPARATOR).join(indexName, modelTableName, profile.name());
+		return Joiner.on(SEPARATOR)
+				.skipNulls()
+				.join(indexName, indexType, profile.name(), includedAttributeName);
 	}
 
-	public ESModelIndexerId includedModel(final String includedAttributeName)
+	public ESModelIndexerId includedModel(@NonNull final String includedAttributeName)
 	{
-		// FIXME: derive a new ID. for now, it's OK to return this
-		return this;
-	}
-
-	public String getIndexType()
-	{
-		return getModelTableName();
+		return toBuilder().includedAttributeName(includedAttributeName).build();
 	}
 }

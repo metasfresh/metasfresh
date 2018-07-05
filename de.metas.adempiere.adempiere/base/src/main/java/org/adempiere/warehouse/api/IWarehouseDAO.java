@@ -1,5 +1,7 @@
 package org.adempiere.warehouse.api;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -35,6 +37,8 @@ import org.compiere.model.I_M_Warehouse;
 
 public interface IWarehouseDAO extends ISingletonService
 {
+	List<I_M_Warehouse> getByIds(Collection<WarehouseId> warehouseIds);
+	
 	/**
 	 * Checks if the warehouse is covered in M_Warehouse_Routing as specific to one or more doc types
 	 *
@@ -115,7 +119,7 @@ public interface IWarehouseDAO extends ISingletonService
 	 */
 	List<I_M_Warehouse> retrieveWarehousesForCtx(Properties ctx);
 
-	WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(int warehouseId);
+	List<WarehouseId> getWarehouseIdsOfSamePickingGroup(WarehouseId warehouseId);
 
 	WarehousePickingGroup getWarehousePickingGroupById(int warehousePickingGroupId);
 

@@ -2009,7 +2009,7 @@ public abstract class PO
 		{
 			if (!load(get_TrxName()))
 			{
-				throw new AdempiereException();
+				Check.fail("Loading this PO failed; trxName={}; this={}", get_TrxName(), this);
 			}
 		}
 		else
@@ -4662,8 +4662,9 @@ public abstract class PO
 		}
 		catch (final Exception e)
 		{
-			log.error("", e);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
+
 		// Root
 		final Element root = document.createElement(get_TableName());
 		root.setAttribute(XML_ATTRIBUTE_AD_Table_ID, String.valueOf(get_Table_ID()));

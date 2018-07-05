@@ -34,7 +34,7 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class Quantity
+public class Quantity implements Comparable<Quantity>
 {
 	@JsonCreator
 	public static Quantity of(final int value)
@@ -95,5 +95,11 @@ public class Quantity
 	public boolean isZero()
 	{
 		return valueAsInt == 0;
+	}
+
+	@Override
+	public int compareTo(@NonNull final Quantity other)
+	{
+		return this.valueAsInt - other.valueAsInt;
 	}
 }

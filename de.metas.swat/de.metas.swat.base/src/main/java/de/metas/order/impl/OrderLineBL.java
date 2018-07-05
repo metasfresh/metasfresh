@@ -325,7 +325,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updatePrices(final org.compiere.model.I_C_OrderLine orderLine)
+	public void updatePrices(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		updatePrices(OrderLinePriceUpdateRequest.ofOrderLine(orderLine));
 	}

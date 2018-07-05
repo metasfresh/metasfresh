@@ -13,14 +13,20 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.PlainLockManager;
 
@@ -58,6 +64,8 @@ import de.metas.lock.api.impl.PlainLockManager;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HUReservationRepository.class })
 public class HULockBL_IntegrationTest
 {
 	private IHULockBL huLockBL;

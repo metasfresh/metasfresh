@@ -10,12 +10,12 @@ package de.metas.handlingunits.receiptschedule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,6 +41,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
+import de.metas.quantity.Quantity;
 
 /**
  *
@@ -64,7 +65,7 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 	 * if that line's referenced object is a receipt schedule.
 	 * <p>
 	 * Will not delete pre-existing allocations in the process.
-	 * 
+	 *
 	 */
 	@Override
 	public void trxLineProcessed(final IHUContext huContext, final I_M_HU_Trx_Line trxLine)
@@ -132,7 +133,7 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		//
 		// 07698: do not delete old allocations when creating them from transaction line
 		final boolean deleteOldTUAllocations = false;
-		huAllocations.allocate(luHU, tuHU, vhu, qtyToAllocateOnHU, uom, deleteOldTUAllocations);
+		huAllocations.allocate(luHU, tuHU, vhu, Quantity.of(qtyToAllocateOnHU, uom), deleteOldTUAllocations);
 	}
 
 	/**

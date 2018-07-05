@@ -186,6 +186,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			final I_M_AttributeSetInstance asiCopy = Services.get(IAttributeDAO.class).copy(asi);
 			orderBOMLine.setM_AttributeSetInstance(asiCopy);
 		}
+		
+		orderBOMLine.setCULabelQuanitity(bomLine.getCULabelQuanitity());
+		orderBOMLine.setShowSubBOMIngredients(bomLine.isShowSubBOMIngredients());
 	}
 
 	@Override

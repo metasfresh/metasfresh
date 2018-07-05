@@ -50,6 +50,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import lombok.NonNull;
 
 /**
  * Class responsible for loading {@link PO}.
@@ -126,7 +127,11 @@ public final class TableModelLoader
 		return po;
 	}
 
-	public List<PO> getPOs(final Properties ctx, final String tableName, final Set<Integer> recordIds, final String trxName)
+	public List<PO> getPOs(
+			final Properties ctx,
+			@NonNull final String tableName,
+			@NonNull final Set<Integer> recordIds,
+			final String trxName)
 	{
 		if (recordIds.isEmpty())
 		{
@@ -202,7 +207,7 @@ public final class TableModelLoader
 	/**
 	 * Creates/Loads the PO from database.
 	 * In case some errors were encountered, they will be logged and <code>null</code> will be returned.
-	 * 
+	 *
 	 * @return PO or null
 	 */
 	private final PO createOrLoadPO(final Properties ctx, final String tableName, final int recordId, final String trxName)

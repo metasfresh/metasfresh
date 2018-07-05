@@ -20,7 +20,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
-import de.metas.payment.api.IPaymentTermRepository;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -43,12 +43,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -114,7 +114,12 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 					.forcePricingConditionsBreak(vendorPricingConditionsBreak)
 					.bpartnerFlatDiscount(vendorFlatDiscount)
 					.pricingCtx(createPricingContext(vendorPricingConditionsBreak, vendorId))
-					.build());
+					.build())
+					.orElse(null);
+			if(vendorPricingConditionsResult == null)
+			{
+				return null;
+			}
 
 			final BigDecimal purchaseBasePriceValue = vendorPricingConditionsResult.getPriceStdOverride();
 			final CurrencyId currencyId = vendorPricingConditionsResult.getCurrencyId();
@@ -142,11 +147,10 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 		// Subtract paymentTerm discount if any
 		if (purchaseNetPrice != null
 				&& purchaseNetPrice.signum() != 0
-				&& vendorPricingConditionsBreak.getPaymentTermId() != null)
+				&& vendorPricingConditionsBreak.getPaymentTermIdOrNull() != null)
 		{
-			final Percent discount = paymentTermRepo.getPaymentTermDiscount(vendorPricingConditionsBreak.getPaymentTermId());
+			final Percent discount = paymentTermRepo.getPaymentTermDiscount(vendorPricingConditionsBreak.getDerivedPaymentTermIdOrNull());
 			purchaseNetPrice = purchaseNetPrice.subtract(discount);
-
 		}
 
 		//
