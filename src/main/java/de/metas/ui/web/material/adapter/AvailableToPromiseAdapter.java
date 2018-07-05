@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResultGroup;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
@@ -69,8 +69,8 @@ public class AvailableToPromiseAdapter
 
 		final AvailableToPromiseResultForWebuiBuilder clientResultBuilder = AvailableToPromiseResultForWebui.builder();
 
-		final List<ResultGroup> commonsResultGroups = commonsAvailableStock.getResultGroups();
-		for (final ResultGroup commonsResultGroup : commonsResultGroups)
+		final List<AvailableToPromiseResultGroup> commonsResultGroups = commonsAvailableStock.getResultGroups();
+		for (final AvailableToPromiseResultGroup commonsResultGroup : commonsResultGroups)
 		{
 			final Group clientResultGroup = createClientResultGroup(commonsResultGroup);
 			clientResultBuilder.group(clientResultGroup);
@@ -78,7 +78,7 @@ public class AvailableToPromiseAdapter
 		return clientResultBuilder.build();
 	}
 
-	private Group createClientResultGroup(@NonNull final ResultGroup commonsResultGroup)
+	private Group createClientResultGroup(@NonNull final AvailableToPromiseResultGroup commonsResultGroup)
 	{
 		try
 		{
@@ -91,7 +91,7 @@ public class AvailableToPromiseAdapter
 		}
 	}
 
-	private Group createClientResultGroup0(final ResultGroup commonsResultGroup)
+	private Group createClientResultGroup0(final AvailableToPromiseResultGroup commonsResultGroup)
 	{
 		final GroupBuilder groupBuilder = Group.builder()
 				.productId(commonsResultGroup.getProductId());
