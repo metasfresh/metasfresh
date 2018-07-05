@@ -107,6 +107,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("SET DateLastInventory=(SELECT DateLastInventory FROM I_Inventory i ")
 				.append("WHERE i.LocatorValue=l.Value AND i.AD_Client_ID=l.AD_Client_ID ")
 				.append("AND I_IsImported<>'Y') ")
+				.append(" WHERE 1=1  ")
 				.append(whereClause);
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
