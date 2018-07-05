@@ -31,6 +31,7 @@ import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseResult;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResultGroup;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 
@@ -168,7 +169,7 @@ public class ShipmentScheduleQtyOnHandStorage
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ShipmentScheduleAvailableStockDetail createStockDetail(final AvailableToPromiseResult.ResultGroup result)
+	private static ShipmentScheduleAvailableStockDetail createStockDetail(final AvailableToPromiseResultGroup result)
 	{
 		return ShipmentScheduleAvailableStockDetail.builder()
 				.productId(result.getProductId())
