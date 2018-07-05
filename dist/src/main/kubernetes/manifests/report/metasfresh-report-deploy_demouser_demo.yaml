@@ -20,6 +20,7 @@ spec:
       containers:
       - env:
         - name: DB_HOST
+          # this is usually the IP of your local host as seen from within virtualbox
           value: '10.0.2.2'
 #          value: "metasfresh-postgresql-demouser-demo"
         - name: DB_PORT
@@ -38,7 +39,7 @@ spec:
         - name: DEBUG_PORT
           value: '8791'
         name: print
-        image: docker.metasfresh.com/metasfresh/metasfresh-report:master_LATEST
+        image: docker.metasfresh.com/metasfresh/metasfresh-dist-report:master_LATEST
         imagePullPolicy: Always
         ports:
           - containerPort: 8183

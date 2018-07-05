@@ -226,14 +226,14 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 	stage('Build&Push docker images')
 	{
 		final DockerConf appDockerConf = new DockerConf(
-						'metasfresh-app-dev', // artifactName
+						'metasfresh-dist-app', // artifactName
 						MF_UPSTREAM_BRANCH, // branchName
 						MF_VERSION, // versionSuffix
 						'dist/target/docker/app') // workDir
 		dockerBuildAndPush(appDockerConf)
 
 		final DockerConf reportDockerConf = appDockerConf
-						.withArtifactName('metasfresh-report')
+						.withArtifactName('metasfresh-dist-report')
 						.withWorkDir('dist/target/docker/report')
 		dockerBuildAndPush(reportDockerConf)				
 

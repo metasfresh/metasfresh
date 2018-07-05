@@ -42,7 +42,7 @@ spec:
         - name: ADMIN_PORT
           value: '9090'
         name: app
-        image: docker.metasfresh.com/metasfresh/metasfresh-app-dev:master_LATEST
+        image: docker.metasfresh.com/metasfresh/metasfresh-dist-app:master_LATEST
         imagePullPolicy: Always
         ports:
           - containerPort: 61616 # activemq
