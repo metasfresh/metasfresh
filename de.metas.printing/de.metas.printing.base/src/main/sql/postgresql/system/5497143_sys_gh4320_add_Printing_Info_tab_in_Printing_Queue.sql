@@ -30,7 +30,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2018-07-04T15:24:23.167
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560638,565074,0,541163,TO_TIMESTAMP('2018-07-04 15:24:23','YYYY-MM-DD HH24:MI:SS'),100,'Archiv für Belege und Berichte',10,'de.metas.printing','In Abhängigkeit des Grades der Archivierungsautomatik des Mandanten werden Dokumente und Berichte archiviert und stehen zur Ansicht zur Verfügung.','Y','Y','N','N','N','N','N','Archiv',TO_TIMESTAMP('2018-07-04 15:24:23','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560638,565074,0,541163,TO_TIMESTAMP('2018-07-04 15:24:23','YYYY-MM-DD HH24:MI:SS'),100,'Archiv fÃ¼r Belege und Berichte',10,'de.metas.printing','In AbhÃ¤ngigkeit des Grades der Archivierungsautomatik des Mandanten werden Dokumente und Berichte archiviert und stehen zur Ansicht zur VerfÃ¼gung.','Y','Y','N','N','N','N','N','Archiv',TO_TIMESTAMP('2018-07-04 15:24:23','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2018-07-04T15:24:23.170
