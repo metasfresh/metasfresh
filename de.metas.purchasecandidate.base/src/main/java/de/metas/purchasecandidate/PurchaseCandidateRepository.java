@@ -38,6 +38,10 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.CalendarId;
+import de.metas.calendar.IBusinessDayMatcher;
+import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.NullBusinessDayMatcher;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -86,6 +90,8 @@ public class PurchaseCandidateRepository
 	private final PurchaseItemRepository purchaseItemRepository;
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final BPPurchaseScheduleService bpPurchaseScheduleService;
+
 	private final transient IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	private final ReferenceGenerator referenceGenerator;
@@ -95,11 +101,13 @@ public class PurchaseCandidateRepository
 	public PurchaseCandidateRepository(
 			@NonNull final PurchaseItemRepository purchaseItemRepository,
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final ReferenceGenerator referenceGenerator)
+			@NonNull final ReferenceGenerator referenceGenerator,
+			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService)
 	{
 		this.purchaseItemRepository = purchaseItemRepository;
 		this.currencyRepository = currencyRepository;
 		this.referenceGenerator = referenceGenerator;
+		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
 	}
 
 	public ImmutableMultimap<DemandGroupReference, PurchaseCandidate> getAllByDemandIds(
@@ -292,8 +300,10 @@ public class PurchaseCandidateRepository
 		record.setC_UOM_ID(qtyToPurchase.getUOMId());
 		record.setQtyToPurchase(qtyToPurchase.getAsBigDecimal());
 
-		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getPurchaseDatePromised()));
-		record.setReminderDate(TimeUtil.asTimestamp(purchaseCandidate.getReminderDate()));
+		final LocalDateTime purchaseDateOrdered = calculatePurchaseDateOrdered(purchaseCandidate);
+		record.setPurchaseDatePromised(TimeUtil.asTimestamp(purchaseCandidate.getPurchaseDatePromised()));
+		record.setPurchaseDateOrdered(TimeUtil.asTimestamp(purchaseDateOrdered));
+		record.setReminderDate(TimeUtil.asTimestamp(calculateReminderDate(purchaseDateOrdered, purchaseCandidate)));
 
 		final BPartnerId vendorId = purchaseCandidate.getVendorId();
 		record.setVendor_ID(vendorId != null ? vendorId.getRepoId() : -1);
@@ -309,6 +319,45 @@ public class PurchaseCandidateRepository
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
 
 		return record;
+	}
+
+	private LocalDateTime calculatePurchaseDateOrdered(final PurchaseCandidate candidate)
+	{
+		final LocalDateTime purchaseDatePromised = candidate.getPurchaseDatePromised();
+		final BPartnerId vendorId = candidate.getVendorId();
+		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService
+				.getBPPurchaseSchedule(vendorId, purchaseDatePromised.toLocalDate())
+				.orElse(null);
+		if (bpPurchaseSchedule == null)
+		{
+			return purchaseDatePromised;
+		}
+
+		final IBusinessDayMatcher calendarNonBusinessDays;
+		final CalendarId nonBusinessDaysCalendarId = bpPurchaseSchedule.getNonBusinessDaysCalendarId();
+		if (nonBusinessDaysCalendarId != null)
+		{
+			final ICalendarDAO calendarsRepo = Services.get(ICalendarDAO.class);
+			calendarNonBusinessDays = calendarsRepo.getCalendarNonBusinessDays(nonBusinessDaysCalendarId);
+		}
+		else
+		{
+			calendarNonBusinessDays = NullBusinessDayMatcher.instance;
+		}
+
+		final Duration leadTimeOffset = bpPurchaseSchedule.getLeadTimeOffset();
+		return calendarNonBusinessDays.getPreviousBusinessDay(purchaseDatePromised, (int)leadTimeOffset.toDays());
+	}
+
+	private static LocalDateTime calculateReminderDate(final LocalDateTime purchaseDateOrdered, final PurchaseCandidate candidate)
+	{
+		final Duration reminderTime = candidate.getReminderTime();
+		if (reminderTime == null || purchaseDateOrdered == null)
+		{
+			return null;
+		}
+
+		return purchaseDateOrdered.minus(reminderTime);
 	}
 
 	public PurchaseCandidate getById(@NonNull final PurchaseCandidateId purchaseCandidateId)
@@ -328,7 +377,7 @@ public class PurchaseCandidateRepository
 
 		final boolean locked = lockManager.isLocked(record);
 
-		final LocalDateTime purchaseDatePromised = TimeUtil.asLocalDateTime(record.getDateRequired());
+		final LocalDateTime purchaseDatePromised = TimeUtil.asLocalDateTime(record.getPurchaseDatePromised());
 		final LocalDateTime dateReminder = TimeUtil.asLocalDateTime(record.getReminderDate());
 		final Duration reminderTime = purchaseDatePromised != null && dateReminder != null ? Duration.between(purchaseDatePromised, dateReminder) : null;
 

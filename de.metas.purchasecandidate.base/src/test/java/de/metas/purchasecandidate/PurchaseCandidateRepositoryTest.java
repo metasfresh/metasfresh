@@ -65,7 +65,8 @@ public class PurchaseCandidateRepositoryTest
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				new CurrencyRepository(),
-				referenceGenerator);
+				referenceGenerator,
+				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()));
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(0, Quantity.of(TEN, uom));

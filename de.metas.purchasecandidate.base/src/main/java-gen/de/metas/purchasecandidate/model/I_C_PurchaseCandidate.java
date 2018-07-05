@@ -263,29 +263,6 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_CustomerPriceGrossProfit = "CustomerPriceGrossProfit";
 
 	/**
-	 * Set Zieldatum.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDateRequired (java.sql.Timestamp DateRequired);
-
-	/**
-	 * Get Zieldatum.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDateRequired();
-
-    /** Column definition for DateRequired */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DateRequired = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "DateRequired", null);
-    /** Column name DateRequired */
-    public static final String COLUMNNAME_DateRequired = "DateRequired";
-
-	/**
 	 * Set Referenz.
 	 * Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
 	 *
@@ -517,6 +494,52 @@ public interface I_C_PurchaseCandidate
     public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Bestelldatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPurchaseDateOrdered (java.sql.Timestamp PurchaseDateOrdered);
+
+	/**
+	 * Get Bestelldatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPurchaseDateOrdered();
+
+    /** Column definition for PurchaseDateOrdered */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchaseDateOrdered = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchaseDateOrdered", null);
+    /** Column name PurchaseDateOrdered */
+    public static final String COLUMNNAME_PurchaseDateOrdered = "PurchaseDateOrdered";
+
+	/**
+	 * Set Liefer-Zusagedatum.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPurchaseDatePromised (java.sql.Timestamp PurchaseDatePromised);
+
+	/**
+	 * Get Liefer-Zusagedatum.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPurchaseDatePromised();
+
+    /** Column definition for PurchaseDatePromised */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchaseDatePromised = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchaseDatePromised", null);
+    /** Column name PurchaseDatePromised */
+    public static final String COLUMNNAME_PurchaseDatePromised = "PurchaseDatePromised";
 
 	/**
 	 * Set Bestellte Menge.
