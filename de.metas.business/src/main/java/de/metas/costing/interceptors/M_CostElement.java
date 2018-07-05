@@ -2,16 +2,17 @@ package de.metas.costing.interceptors;
 
 import java.util.stream.Collectors;
 
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
@@ -110,10 +111,9 @@ public class M_CostElement
 		}
 
 		// Costing Methods on AS level
-		final MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(Env.getCtx(), costElement.getAD_Client_ID());
-		for (int i = 0; i < ass.length; i++)
+		for (final I_C_AcctSchema as : Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(Env.getCtx(), costElement.getAD_Client_ID()))
 		{
-			if (ass[i].getCostingMethod().equals(costElement.getCostingMethod()))
+			if (as.getCostingMethod().equals(costElement.getCostingMethod()))
 			{
 				throw new AdempiereException("@CannotDeleteUsed@ @C_AcctSchema_ID@");
 			}
