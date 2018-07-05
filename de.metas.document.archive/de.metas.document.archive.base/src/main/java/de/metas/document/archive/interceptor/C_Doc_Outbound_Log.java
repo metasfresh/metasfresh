@@ -70,8 +70,8 @@ public class C_Doc_Outbound_Log
 		}
 
 		final DocOutBoundRecipient user = docOutBoundRecipientRepository.getById(userId);
-		docOutboundlogRecord.setCurrentEMailAddress(user.getEmailAddress());
-		docOutboundlogRecord.setIsInvoiceEmailEnabled(user.isInvoiceAsEmail());
+		docOutboundlogRecord.setCurrentEMailAddress(user.getEmailAddress()); // might be empty!
+		docOutboundlogRecord.setIsInvoiceEmailEnabled(user.isInvoiceAsEmail()); // might be true even if the mailaddress is empty!
 	}
 
 	// this column is not user-editable, so we don't need it to be a callout
