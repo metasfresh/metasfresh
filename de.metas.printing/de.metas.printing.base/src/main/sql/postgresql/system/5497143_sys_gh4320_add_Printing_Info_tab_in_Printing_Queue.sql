@@ -1,4 +1,4 @@
-﻿-- 2018-07-04T15:24:07.240
+-- 2018-07-04T15:24:07.240
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Tab (Created,HasTree,AD_Window_ID,SeqNo,IsSingleRow,AD_Client_ID,Updated,IsActive,CreatedBy,UpdatedBy,IsInfoTab,IsTranslationTab,IsReadOnly,Processing,IsSortTab,ImportFields,TabLevel,IsInsertRecord,IsAdvancedTab,IsRefreshAllOnActivate,IsSearchActive,IsSearchCollapsed,IsQueryOnLoad,IsGridModeOnly,AD_Table_ID,AD_Tab_ID,IsGenericZoomTarget,IsCheckParentsChanged,MaxQueryRecords,AD_Org_ID,Name,EntityType) VALUES (TO_TIMESTAMP('2018-07-04 15:24:07','YYYY-MM-DD HH24:MI:SS'),'N',540165,30,'N',0,TO_TIMESTAMP('2018-07-04 15:24:07','YYYY-MM-DD HH24:MI:SS'),'Y',100,100,'N','N','Y','N','N','N',1,'N','N','N','Y','Y','Y','N',541002,541163,'N','Y',0,0,'Printing Info','de.metas.printing')
 ;
