@@ -9,6 +9,15 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.65 (2018-28)
+## Features
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1467](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1467) Advanced Edit shortcut not working correctly
+    * Improvement of the Handling of shortcuts.
+
+
 # metasfresh 5.64 (2018-27)
 ## Features
   * [#3210](https://github.com/metasfresh/metasfresh/issues/3210) Manufacturing Issue action take exact qty from stock
