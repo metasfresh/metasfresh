@@ -41,14 +41,20 @@ Here come the actual release notes:
     * Possibility to Ban all Products of a Manufacturer for a given Business Partner.
   * [#4224](https://github.com/metasfresh/metasfresh/issues/4224) Pharma: Additional Document/ Certificate Fields
     * New Certificate Fields for the Pharma Business Partner Widnow in WebUI.
-  * [#4248](https://github.com/metasfresh/metasfresh/issues/4248) Details about hu attributes during sales order creation
+  * [#4248](https://github.com/metasfresh/metasfresh/issues/4248) Details about HU attributes during sales order creation
+    * New Feature that allows to see reserve Handling Units during Sales Orderline creation. The Handling Units are reserved in the needed Quanitity and provided in Picking as initial selection.
   * [#4252](https://github.com/metasfresh/metasfresh/issues/4252) Show c_bpartner memo field of Org BP in document footer
+    * Enlarging the Business Partner Description to allow more Company Information in Document Footers.
   * [#4270](https://github.com/metasfresh/metasfresh/issues/4270) Purchase Order Document with up to 4 digits
+    * Improveing the Purchase Order Document, allowing to use upt to 4 digits for purchase prices.
   * [#4273](https://github.com/metasfresh/metasfresh/issues/4273) Copy BOM Consumer Label Fields to PP Order BOMLine
+    * Copying the BOM Consumer Label Fields to the Manufacturing Order Bill of Material Line during Order complete.
   * [#4286](https://github.com/metasfresh/metasfresh/issues/4286) Allow repost eventlog with forcing handler to be processed again
+    * New Feature that allows to report an event via the Window event log.
   * [#4293](https://github.com/metasfresh/metasfresh/issues/4293) WebUI: New Window for MSV3 Customer Window
     * New Window for Pharma MSV3 Server and Customer Configuration
-  * [#4295](https://github.com/metasfresh/metasfresh/issues/4295) avoid polluting the console by changing log level from INFO to DEBUG
+  * [#4295](https://github.com/metasfresh/metasfresh/issues/4295) Avoid polluting the console by changing log level from INFO to DEBUG
+    * Internal Housekeeping improvement, changing Info Level logging to debug level, reducing the amount of logging infomration in the console, when not needed.
   
 ## Fixes 
   * [#4282](https://github.com/metasfresh/metasfresh/issues/4282) Order line is flagged as Temporary Pricing Conditions when the conditions are actually missing
