@@ -12,6 +12,7 @@ import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -34,6 +35,7 @@ import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
+@Service
 public class EventBusFactory implements IEventBusFactory
 {
 
