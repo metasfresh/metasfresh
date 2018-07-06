@@ -26,6 +26,8 @@ import java.util.Collection;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 
@@ -150,7 +152,7 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
-	public boolean isStatusActive(final I_M_HU huRecord)
+	public boolean isStatusActive(@Nullable final I_M_HU huRecord)
 	{
 		if (huRecord == null)
 		{
@@ -160,12 +162,22 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
-	public boolean isStatusIssued(final I_M_HU huRecord)
+	public boolean isStatusIssued(@Nullable final I_M_HU huRecord)
 	{
 		if (huRecord == null)
 		{
 			return false;
 		}
 		return X_M_HU.HUSTATUS_Issued.equals(huRecord.getHUStatus());
+	}
+
+	@Override
+	public boolean isStatusDestroyed(@Nullable I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Destroyed.equals(huRecord.getHUStatus());
 	}
 }

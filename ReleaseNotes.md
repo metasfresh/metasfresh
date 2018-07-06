@@ -9,29 +9,60 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.65 (2018-28)
+## Features
+* metasfresh-webui-frontend
+  * [#1857](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1857) Readonly next and previous page buttons
+    * Pagination Improvement. Now deactivating previous/ next buttons in pagination on fist/ last page.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1467](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1467) Advanced Edit shortcut not working correctly
+    * Improvement of the Handling of shortcuts.
+  * [#1850](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1850) Initial Setup Wizard window's layout is distorted
+    * Fixes the Layout of the Initial Setup Wizard
+  * [#1858](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1858) Moving to next page in modal removes filters
+    * Fixes the Pagination behavior in modal overlays.
+
+
 # metasfresh 5.64 (2018-27)
 ## Features
   * [#3210](https://github.com/metasfresh/metasfresh/issues/3210) Manufacturing Issue action take exact qty from stock
+    * New Feature in WebUI manufacturing, allowing to issue the based on planned Quantities.
   * [#4212](https://github.com/metasfresh/metasfresh/issues/4212) ATP Stock indicator in Sales Orderline
+    * New Field in Sales Orderline that shows the ATP Stock.
   * [#4218](https://github.com/metasfresh/metasfresh/issues/4218) Pharma: DeliveryType B disallow Sales Orderline
+    * New Feature for Pharma that restricts the Orderline creation for RX Products if the Customer does not have the permission to buy.
   * [#4221](https://github.com/metasfresh/metasfresh/issues/4221) Recording of Payment Discount instead of Payment Term
+    * Possibility to record Payment Discounts instead of Payment Termns in Priving Conditions.
   * [#4222](https://github.com/metasfresh/metasfresh/issues/4222) Pricing Conditions for all Products of a Manufacturer
+    * New Feature that allows the recording or Pricing Conditions on all Products of a Manufacturer.
   * [#4223](https://github.com/metasfresh/metasfresh/issues/4223) Ban Manufacturer Products for a Businesspartner
+    * Possibility to Ban all Products of a Manufacturer for a given Business Partner.
   * [#4224](https://github.com/metasfresh/metasfresh/issues/4224) Pharma: Additional Document/ Certificate Fields
     * New Certificate Fields for the Pharma Business Partner Widnow in WebUI.
-  * [#4248](https://github.com/metasfresh/metasfresh/issues/4248) Details about hu attributes during sales order creation
+  * [#4248](https://github.com/metasfresh/metasfresh/issues/4248) Details about HU attributes during sales order creation
+    * New Feature that allows to see reserve Handling Units during Sales Orderline creation. The Handling Units are reserved in the needed Quanitity and provided in Picking as initial selection.
   * [#4252](https://github.com/metasfresh/metasfresh/issues/4252) Show c_bpartner memo field of Org BP in document footer
+    * Enlarging the Business Partner Description to allow more Company Information in Document Footers.
   * [#4270](https://github.com/metasfresh/metasfresh/issues/4270) Purchase Order Document with up to 4 digits
+    * Improveing the Purchase Order Document, allowing to use upt to 4 digits for purchase prices.
   * [#4273](https://github.com/metasfresh/metasfresh/issues/4273) Copy BOM Consumer Label Fields to PP Order BOMLine
+    * Copying the BOM Consumer Label Fields to the Manufacturing Order Bill of Material Line during Order complete.
   * [#4286](https://github.com/metasfresh/metasfresh/issues/4286) Allow repost eventlog with forcing handler to be processed again
+    * New Feature that allows to report an event via the Window event log.
   * [#4293](https://github.com/metasfresh/metasfresh/issues/4293) WebUI: New Window for MSV3 Customer Window
     * New Window for Pharma MSV3 Server and Customer Configuration
-  * [#4295](https://github.com/metasfresh/metasfresh/issues/4295) avoid polluting the console by changing log level from INFO to DEBUG
+  * [#4295](https://github.com/metasfresh/metasfresh/issues/4295) Avoid polluting the console by changing log level from INFO to DEBUG
+    * Internal Housekeeping improvement, changing Info Level logging to debug level, reducing the amount of logging infomration in the console, when not needed.
   
 ## Fixes 
   * [#4282](https://github.com/metasfresh/metasfresh/issues/4282) Order line is flagged as Temporary Pricing Conditions when the conditions are actually missing
+    * Fixes the setting of pricing conditions in Orderlines and introducing a new Flag for temporary pricing conditions.
   * [#4296](https://github.com/metasfresh/metasfresh/issues/4296) Only metasfresh-app shall ever start an embedded JMS broker
+    * Internal improvement of starting embedded JMS broker, now only done by metasfresh-app.
   * [#4297](https://github.com/metasfresh/metasfresh/issues/4297) Exit when swing application context failed to initialize
+    * Internal optimization, now exiting when the swing applicaiton fails to initialize the context.
 
 
 # metasfresh 5.63 (2018-26)

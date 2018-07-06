@@ -13,12 +13,14 @@ SELECT
 	pji.Updated AS Updated_Print_Job_Instructions,
 	pji.UpdatedBy AS UpdatedBy_Print_Job_Instructions,
 	pp.C_Print_Package_ID,
-	ppi.C_Print_PackageInfo_ID
+	ppi.C_Print_PackageInfo_ID,
 	ppi.AD_PrinterHW_ID,
 	pwh.Name AS PrintServiceName,
 	ppi.AD_PrinterHW_MediaTray_ID,
 	phwt.TrayNumber AS TrayNumber,
-	phwt.Name AS PrintServiceTray
+	phwt.Name AS PrintServiceTray,
+	pq.Created, 
+	pq.AD_Client_ID
 
 FROM C_Printing_Queue pq
 	LEFT JOIN C_Print_Job_Line pjl ON pjl.C_Printing_Queue_ID=pq.C_Printing_Queue_ID

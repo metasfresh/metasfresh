@@ -1,12 +1,18 @@
-package org.adempiere.util.time.generator;
+package de.metas.calendar;
 
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
- * de.metas.util
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,29 +30,20 @@ import java.time.LocalDate;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Collections;
-
-import lombok.Value;
-
 @Value
-public final class NullDateSequenceExploder implements IDateSequenceExploder
+@Builder
+public class FixedNonBusinessDay implements NonBusinessDay
 {
-	public static final NullDateSequenceExploder instance = new NullDateSequenceExploder();
+	@NonNull
+	LocalDate fixedDate;
 
-	private NullDateSequenceExploder()
-	{
-	}
-
-	@Override
-	public Collection<LocalDate> explodeForward(final LocalDate date)
-	{
-		return Collections.singleton(date);
-	}
+	@Nullable
+	String name;
 
 	@Override
-	public Collection<LocalDate> explodeBackward(final LocalDate date)
+	public boolean isMatching(@NonNull final LocalDate date)
 	{
-		return Collections.singleton(date);
+		return fixedDate.equals(date);
 	}
+
 }

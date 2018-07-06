@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -454,16 +455,24 @@ public class HUTraceEventsService
 	 * @param builder a pre fabricated builder. {@code huId}s and {@code eventTime} will be set by this method.
 	 * @param models stream of objects that might be associated with HUs (e.g. inout lines).
 	 */
-	public void createAndAddEvents(
+	@VisibleForTesting
+	void createAndAddEvents(
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final List<?> models)
 	{
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
 		for (final Object model : models)
 		{
 			final List<I_M_HU_Assignment> huAssignments = huAccessService.retrieveHuAssignments(model);
 
 			for (final I_M_HU_Assignment huAssignment : huAssignments)
 			{
+				if (huStatusBL.isStatusDestroyed(huAssignment.getM_HU()))
+				{
+					continue; // particular HU of the given model was destroyed. It's up to other parts of huTracing to keep track of such events
+				}
+
 				final int topLevelHuId = huAccessService.retrieveTopLevelHuId(huAssignment.getM_HU());
 				Check.errorIf(topLevelHuId <= 0, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
 
