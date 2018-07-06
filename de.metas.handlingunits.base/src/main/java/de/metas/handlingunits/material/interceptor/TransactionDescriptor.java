@@ -2,13 +2,14 @@ package de.metas.handlingunits.material.interceptor;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import org.compiere.model.I_M_Transaction;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.material.event.commons.EventDescriptor;
-import lombok.NonNull;
+import de.metas.material.event.commons.HUDescriptor;
+import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -40,23 +41,6 @@ import lombok.Value;
 @Value
 public class TransactionDescriptor
 {
-	@VisibleForTesting
-	public static TransactionDescriptor ofRecord(@NonNull final I_M_Transaction record)
-	{
-		return new TransactionDescriptor(
-				EventDescriptor.createNew(record),
-				record.getM_Product_ID(),
-				record.getM_Transaction_ID(),
-				record.getM_Locator().getM_Warehouse_ID(),
-				record.getMovementDate(),
-				record.getMovementQty(),
-				record.getPP_Cost_Collector_ID(),
-				record.getM_InOutLine_ID(),
-				record.getM_MovementLine_ID(),
-				record.getM_InventoryLine_ID(),
-				record.getMovementType());
-	}
-
 	EventDescriptor eventDescriptor;
 
 	int productId;
@@ -70,6 +54,9 @@ public class TransactionDescriptor
 	BigDecimal movementQty;
 	String movementType;
 
+	List<HUDescriptor> huDescriptors;
+
+	@Builder
 	private TransactionDescriptor(
 			EventDescriptor eventDescriptor,
 			int productId,
@@ -81,7 +68,8 @@ public class TransactionDescriptor
 			int inoutLineId,
 			int movementLineId,
 			int inventoryLineId,
-			String movementType)
+			String movementType,
+			@Singular List<HUDescriptor> huDescriptors)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.productId = productId;
@@ -94,5 +82,6 @@ public class TransactionDescriptor
 		this.movementLineId = movementLineId;
 		this.inventoryLineId = inventoryLineId;
 		this.movementType = movementType;
+		this.huDescriptors = huDescriptors;
 	}
 }

@@ -84,6 +84,7 @@ public class M_InOut
 		else
 		{
 			final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+			huInOutBL.copyAssignmentsToReversal(inout);
 			huInOutBL.destroyHUs(inout);
 		}
 	}

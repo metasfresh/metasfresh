@@ -14,12 +14,12 @@ import java.util.List;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -74,7 +74,7 @@ public interface IHUInOutBL extends ISingletonService
 
 	/**
 	 * Create an instance <code>of de.metas.handlingunits.inout.impl.EmptiesInOutProducer</code>
-	 * 
+	 *
 	 * @param ctx
 	 * @return
 	 */
@@ -104,7 +104,7 @@ public interface IHUInOutBL extends ISingletonService
 
 	/**
 	 * Create vendor return inouts for products of precarious quality based on the details of the given HUs
-	 * 
+	 *
 	 * @param hus
 	 * @param movementDate
 	 * @return
@@ -129,7 +129,7 @@ public interface IHUInOutBL extends ISingletonService
 
 	/**
 	 * Create HUs for manual customer return inout.
-	 * 
+	 *
 	 * @param customerReturn
 	 * @return
 	 */
@@ -137,7 +137,7 @@ public interface IHUInOutBL extends ISingletonService
 
 	/**
 	 * Create Return From Vendor documents for the given HUs
-	 * 
+	 *
 	 * @param hus
 	 * @return
 	 */
@@ -145,10 +145,12 @@ public interface IHUInOutBL extends ISingletonService
 
 	/**
 	 * Create movements to QualityIssue warehouse for the given hus
-	 * 
+	 *
 	 * @param ctx
 	 * @param husToReturn
 	 */
 	void moveHUsForCustomerReturn(Properties ctx, List<I_M_HU> husToReturn);
+
+	void copyAssignmentsToReversal(I_M_InOut inoutRecord);
 
 }
