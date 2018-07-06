@@ -71,7 +71,7 @@ public class C_PurchaseCandidate_PostEventsTest
 		purchaseCandidateRecord.setM_Product(productRecord);
 		purchaseCandidateRecord.setC_UOM(uomRecord);
 		purchaseCandidateRecord.setM_WarehousePO_ID(20);
-		purchaseCandidateRecord.setDateRequired(SystemTime.asTimestamp());
+		purchaseCandidateRecord.setPurchaseDatePromised(SystemTime.asTimestamp());
 		purchaseCandidateRecord.setVendor_ID(30);
 		save(purchaseCandidateRecord);
 
