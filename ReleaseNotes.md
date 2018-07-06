@@ -11,6 +11,9 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.65 (2018-28)
 ## Features
+* metasfresh-webui-frontend
+  * [#1857](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1857) Readonly next and previous page buttons
+    * Pagination Improvement. Now deactivating previous/ next buttons in pagination on fist/ last page.
 
 ## Fixes
 * metasfresh-webui-frontend
