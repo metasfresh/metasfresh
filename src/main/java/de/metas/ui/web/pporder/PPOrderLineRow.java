@@ -60,7 +60,7 @@ import lombok.ToString;
 public class PPOrderLineRow implements IViewRow
 {
 	private final DocumentPath documentPath;
-	private final DocumentId rowId;
+	private final PPOrderLineRowId rowId;
 
 	@Nullable
 	private final Supplier<? extends IViewRowAttributes> attributesSupplier;
@@ -112,7 +112,7 @@ public class PPOrderLineRow implements IViewRow
 
 	@lombok.Builder(builderMethodName = "builderForIssuedOrReceivedHU", builderClassName = "BuilderForIssuedOrReceivedHU")
 	private PPOrderLineRow(
-			@NonNull final DocumentId rowId,
+			@NonNull final PPOrderLineRowId rowId,
 			@NonNull final PPOrderLineType type,
 			@NonNull final I_PP_Order_Qty ppOrderQty,
 			@NonNull final Boolean processed,
@@ -166,7 +166,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final IViewRowAttributesProvider attributesProvider,
 			@NonNull final List<PPOrderLineRow> includedRows)
 	{
-		this.rowId = DocumentId.of(I_PP_Order.Table_Name + "_" + ppOrder.getPP_Order_ID());
+		this.rowId = PPOrderLineRowId.ofPPOrderId(ppOrder.getPP_Order_ID());
 		this.type = PPOrderLineType.MainProduct;
 
 		this.ppOrderId = ppOrder.getPP_Order_ID();
@@ -188,7 +188,7 @@ public class PPOrderLineRow implements IViewRow
 		this.qtyPlan = ppOrder.getQtyOrdered();
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
-				rowId,
+				rowId.toDocumentId(),
 				ppOrder.getM_AttributeSetInstance_ID());
 
 		this.includedDocuments = includedRows;
@@ -213,7 +213,8 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final IViewRowAttributesProvider attributesProvider,
 			@NonNull final List<PPOrderLineRow> includedRows)
 	{
-		this.rowId = DocumentId.of(I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBomLine.getPP_Order_BOMLine_ID());
+		this.rowId = PPOrderLineRowId.ofPPOrderBomLineId(ppOrderBomLine.getPP_Order_BOMLine_ID());
+
 		this.type = type;
 
 		this.ppOrderId = ppOrderBomLine.getPP_Order_ID();
@@ -236,7 +237,7 @@ public class PPOrderLineRow implements IViewRow
 		this.qtyPlan = qtyPlan;
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
-				rowId,
+				rowId.toDocumentId(),
 				ppOrderBomLine.getM_AttributeSetInstance_ID());
 
 		this.includedDocuments = includedRows;
@@ -252,7 +253,7 @@ public class PPOrderLineRow implements IViewRow
 
 	@lombok.Builder(builderMethodName = "builderForSourceHU", builderClassName = "BuilderForSourceHU")
 	private PPOrderLineRow(
-			@NonNull final DocumentId rowId,
+			@NonNull final PPOrderLineRowId rowId,
 			@NonNull final PPOrderLineType type,
 			@NonNull final Integer huId,
 			@Nullable final Supplier<? extends IViewRowAttributes> attributesSupplier,
@@ -351,7 +352,7 @@ public class PPOrderLineRow implements IViewRow
 	@Override
 	public DocumentId getId()
 	{
-		return rowId;
+		return rowId.toDocumentId();
 	}
 
 	@Override

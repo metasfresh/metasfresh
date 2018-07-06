@@ -333,8 +333,10 @@ class PPOrderLinesLoader
 						readonly))
 				.collect(ImmutableList.toImmutableList());
 
+		final PPOrderLineRowId rowId = PPOrderLineRowId.ofIssuedOrReceivedHU(huEditorRow.getId(), huEditorRow.getM_HU_ID());
+
 		return PPOrderLineRow.builderForIssuedOrReceivedHU()
-				.rowId(huEditorRow.getId())
+				.rowId(rowId)
 				.type(PPOrderLineType.ofHUEditorRowType(huEditorRow.getType()))
 				.ppOrderQty(ppOrderQty)
 				.processed(readonly || ppOrderQty.isProcessed())
@@ -387,8 +389,10 @@ class PPOrderLinesLoader
 
 	private PPOrderLineRow createRowForSourceHU(@NonNull final HUEditorRow huEditorRow)
 	{
+		final PPOrderLineRowId rowId = PPOrderLineRowId.ofSourceHU(huEditorRow.getId(), huEditorRow.getM_HU_ID());
+
 		return PPOrderLineRow.builderForSourceHU()
-				.rowId(huEditorRow.getId())
+				.rowId(rowId)
 				.type(PPOrderLineType.ofHUEditorRowType(huEditorRow.getType()))
 				.huId(huEditorRow.getM_HU_ID())
 				.attributesSupplier(huEditorRow.getAttributesSupplier())

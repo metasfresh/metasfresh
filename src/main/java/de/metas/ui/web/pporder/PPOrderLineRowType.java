@@ -1,0 +1,58 @@
+package de.metas.ui.web.pporder;
+
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import de.metas.handlingunits.model.I_M_Source_HU;
+import lombok.Getter;
+import lombok.NonNull;
+
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2018 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+public enum PPOrderLineRowType
+{
+	IssuedOrReceivedHU("I", "IssuedOrReceivedHU"), //
+	PP_Order("O", I_PP_Order.Table_Name), //
+	PP_OrderBomLine("L", I_PP_Order_BOMLine.Table_Name), //
+	Source_HU("S", I_M_Source_HU.Table_Name);
+
+	PPOrderLineRowType(@NonNull final String code, @NonNull final String iconName)
+	{
+		this.code = code;
+		this.iconName = iconName;
+	}
+
+	@Getter
+	private final String code;
+	private final String iconName;
+
+	public String getName()
+	{
+		return iconName;
+	}
+
+	public String getIconName()
+	{
+		return iconName;
+	}
+}

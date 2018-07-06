@@ -54,8 +54,8 @@ import lombok.NonNull;
 	private final ImmutableMap<DocumentId, PPOrderLineRow> allRecordsById;
 
 	PPOrderLinesViewData(
-			@NonNull final ITranslatableString description, 
-			@NonNull final String planningStatus, 
+			@NonNull final ITranslatableString description,
+			@NonNull final String planningStatus,
 			@NonNull final List<PPOrderLineRow> records)
 	{
 		this.description = description;
@@ -64,7 +64,7 @@ import lombok.NonNull;
 
 		allRecordsById = buildRecordsByIdMap(this.records);
 	}
-	
+
 	public ITranslatableString getDescription()
 	{
 		return description;
@@ -77,12 +77,12 @@ import lombok.NonNull;
 
 	public PPOrderLineRow getById(final DocumentId documentId)
 	{
-		final PPOrderLineRow record = allRecordsById.get(documentId);
-		if (record == null)
+		final PPOrderLineRow row = allRecordsById.get(documentId);
+		if (row == null)
 		{
 			throw new EntityNotFoundException("No document found for documentId=" + documentId);
 		}
-		return record;
+		return row;
 	}
 
 	public Stream<PPOrderLineRow> streamByIds(final DocumentIdsSelection documentIds)
@@ -129,22 +129,22 @@ import lombok.NonNull;
 		return records.size();
 	}
 
-	private static ImmutableMap<DocumentId, PPOrderLineRow> buildRecordsByIdMap(final List<PPOrderLineRow> records)
+	private static ImmutableMap<DocumentId, PPOrderLineRow> buildRecordsByIdMap(final List<PPOrderLineRow> rows)
 	{
-		if (records.isEmpty())
+		if (rows.isEmpty())
 		{
 			return ImmutableMap.of();
 		}
 
-		final ImmutableMap.Builder<DocumentId, PPOrderLineRow> recordsById = ImmutableMap.builder();
-		records.forEach(record -> indexByIdRecursively(recordsById, record));
-		return recordsById.build();
+		final ImmutableMap.Builder<DocumentId, PPOrderLineRow> rowsById = ImmutableMap.builder();
+		rows.forEach(row -> indexByIdRecursively(rowsById, row));
+		return rowsById.build();
 	}
 
-	private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, PPOrderLineRow> collector, final PPOrderLineRow record)
+	private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, PPOrderLineRow> collector, final PPOrderLineRow row)
 	{
-		collector.put(record.getId(), record);
-		record.getIncludedRows()
-				.forEach(includedRecord -> indexByIdRecursively(collector, includedRecord));
+		collector.put(row.getId(), row);
+		row.getIncludedRows()
+				.forEach(includedRow -> indexByIdRecursively(collector, includedRow));
 	}
 }
