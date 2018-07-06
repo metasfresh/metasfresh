@@ -162,7 +162,8 @@ public class PurchaseRowsLoaderTest
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				currencyRepository,
-				new ReferenceGenerator());
+				new ReferenceGenerator(),
+				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()));
 
 		final DoNothingPurchaseProfitInfoServiceImpl purchaseProfitInfoService = new DoNothingPurchaseProfitInfoServiceImpl();
 
