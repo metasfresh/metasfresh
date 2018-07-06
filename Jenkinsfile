@@ -265,12 +265,13 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 	{
 		if(params.MF_SKIP_SQL_MIGRATION_TEST)
 		{
-			echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
+			echo "We skip applying the migration scripts because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
 		}
 		else
 		{
-			sh "docker run -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\" ${dbInitDockerImageName}"
-			//sh "docker rmi ${dbInitDockerImageName}"
+			// run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards
+			sh "docker run --rm -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\" ${dbInitDockerImageName}"
+			sh "docker rmi ${dbInitDockerImageName}"
 		}
 	}
 } // node
