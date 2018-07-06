@@ -21,6 +21,8 @@ Here come the actual release notes:
     * Improvement of the Handling of shortcuts.
   * [#1850](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1850) Initial Setup Wizard window's layout is distorted
     * Fixes the Layout of the Initial Setup Wizard
+  * [#1858](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1858) Moving to next page in modal removes filters
+    * Fixes the Pagination behavior in modal overlays.
 
 
 # metasfresh 5.64 (2018-27)
