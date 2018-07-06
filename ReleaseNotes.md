@@ -28,11 +28,17 @@ Here come the actual release notes:
 # metasfresh 5.64 (2018-27)
 ## Features
   * [#3210](https://github.com/metasfresh/metasfresh/issues/3210) Manufacturing Issue action take exact qty from stock
+    * New Feature in WebUI manufacturing, allowing to issue the based on planned Quantities.
   * [#4212](https://github.com/metasfresh/metasfresh/issues/4212) ATP Stock indicator in Sales Orderline
+    * New Field in Sales Orderline that shows the ATP Stock.
   * [#4218](https://github.com/metasfresh/metasfresh/issues/4218) Pharma: DeliveryType B disallow Sales Orderline
+    * New Feature for Pharma that restricts the Orderline creation for RX Products if the Customer does not have the permission to buy.
   * [#4221](https://github.com/metasfresh/metasfresh/issues/4221) Recording of Payment Discount instead of Payment Term
+    * Possibility to record Payment Discounts instead of Payment Termns in Priving Conditions.
   * [#4222](https://github.com/metasfresh/metasfresh/issues/4222) Pricing Conditions for all Products of a Manufacturer
+    * New Feature that allows the recording or Pricing Conditions on all Products of a Manufacturer.
   * [#4223](https://github.com/metasfresh/metasfresh/issues/4223) Ban Manufacturer Products for a Businesspartner
+    * Possibility to Ban all Products of a Manufacturer for a given Business Partner.
   * [#4224](https://github.com/metasfresh/metasfresh/issues/4224) Pharma: Additional Document/ Certificate Fields
     * New Certificate Fields for the Pharma Business Partner Widnow in WebUI.
   * [#4248](https://github.com/metasfresh/metasfresh/issues/4248) Details about hu attributes during sales order creation
