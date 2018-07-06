@@ -1,12 +1,17 @@
 package de.metas.material.dispo.commons.repository;
 
-import org.junit.Test;
+import java.time.LocalDateTime;
+
+import javax.annotation.Nullable;
+
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
  * metasfresh-material-dispo-commons
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,13 +29,32 @@ import org.junit.Test;
  * #L%
  */
 
-public class AvailableToPromiseQueryTest
+@Value
+public class DateAndSeqNo
 {
+	LocalDateTime date;
+	int seqNo;
 
-	@Test(expected = RuntimeException.class)
-	public void builder_throw_ex_if_not_complete()
+	public boolean isBefore(@NonNull final DateAndSeqNo other)
 	{
-		AvailableToPromiseQuery.builder().build();
+		final boolean beforeDate = date.isBefore(other.getDate());
+
+		final boolean sameDateDateAndSmallerSeqNo = date.equals(other.getDate()) && seqNo < other.getSeqNo();
+
+		return beforeDate || sameDateDateAndSmallerSeqNo;
 	}
 
+	public DateAndSeqNo latest(@Nullable final DateAndSeqNo other)
+	{
+		if (other == null)
+		{
+			return this;
+		}
+		if (other.isBefore(this))
+		{
+			return this;
+		}
+
+		return other;
+	}
 }

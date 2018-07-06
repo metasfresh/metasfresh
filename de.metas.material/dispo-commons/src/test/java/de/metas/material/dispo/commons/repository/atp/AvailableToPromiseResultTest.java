@@ -1,4 +1,4 @@
-package de.metas.material.dispo.commons.repository;
+package de.metas.material.dispo.commons.repository.atp;
 
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
@@ -20,8 +20,13 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
+import de.metas.material.dispo.commons.repository.atp.AddToResultGroupRequest;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
+import de.metas.material.dispo.commons.repository.atp.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 
@@ -207,7 +212,6 @@ public class AvailableToPromiseResultTest
 				.warehouseId(100)
 				.bpartnerId(200)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3))
-				.date(NOW)
 				.build();
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()

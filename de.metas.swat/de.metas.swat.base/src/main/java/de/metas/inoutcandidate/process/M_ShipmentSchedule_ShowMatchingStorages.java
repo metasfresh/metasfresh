@@ -32,7 +32,7 @@ import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.process.JavaProcess;
 
 public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess

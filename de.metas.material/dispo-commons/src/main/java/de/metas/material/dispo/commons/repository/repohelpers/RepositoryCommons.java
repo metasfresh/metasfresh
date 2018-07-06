@@ -21,7 +21,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
