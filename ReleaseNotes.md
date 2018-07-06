@@ -58,8 +58,11 @@ Here come the actual release notes:
   
 ## Fixes 
   * [#4282](https://github.com/metasfresh/metasfresh/issues/4282) Order line is flagged as Temporary Pricing Conditions when the conditions are actually missing
+    * Fixes the setting of pricing conditions in Orderlines and introducing a new Flag for temporary pricing conditions.
   * [#4296](https://github.com/metasfresh/metasfresh/issues/4296) Only metasfresh-app shall ever start an embedded JMS broker
+    * Internal improvement of starting embedded JMS broker, now only done by metasfresh-app.
   * [#4297](https://github.com/metasfresh/metasfresh/issues/4297) Exit when swing application context failed to initialize
+    * Internal optimization, now exiting when the swing applicaiton fails to initialize the context.
 
 
 # metasfresh 5.63 (2018-26)
