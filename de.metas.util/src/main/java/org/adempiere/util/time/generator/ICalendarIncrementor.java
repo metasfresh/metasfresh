@@ -1,10 +1,10 @@
 package org.adempiere.util.time.generator;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface ICalendarIncrementor
 {
-	LocalDate increment(LocalDate date);
+	LocalDateTime increment(LocalDateTime date);
 
-	LocalDate decrement(LocalDate date);
+	LocalDateTime decrement(LocalDateTime date);
 }
