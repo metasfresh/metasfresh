@@ -20,6 +20,10 @@ import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -35,6 +39,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
@@ -91,7 +96,7 @@ public final class MSetup
 	private String  		AD_User_Name;
 	private int     		AD_User_U_ID;
 	private String  		AD_User_U_Name;
-	private MCalendar		m_calendar;
+	private I_C_Calendar	m_calendar;
 	private int     		m_AD_Tree_Account_ID;
 	private int     		C_Cycle_ID;
 	//
@@ -351,21 +356,12 @@ public final class MSetup
 		/**
 		 *  Create Calendar
 		 */
-		m_calendar = new MCalendar(m_client);
-		if (!m_calendar.save())
-		{
-			final String err = "Calendar NOT inserted";
-			log.error(err);
-			m_info.append(err);
-			m_trx.rollback();
-			m_trx.close();
-			return false;
-		}
+		m_calendar = createCalendar(m_client);
+		InterfaceWrapperHelper.save(m_calendar);
 		//  Info
 		m_info.append(Msg.translate(m_lang, "C_Calendar_ID")).append("=").append(m_calendar.getName()).append("\n");
 
-		if (m_calendar.createYear(m_client.getLocale()) == null)
-			log.error("Year NOT inserted");
+		createYear(m_calendar, m_client.getLocale());
 
 		//	Create Account Elements
 		name = m_clientName + " " + Msg.translate(m_lang, "Account_ID");
@@ -693,6 +689,31 @@ public final class MSetup
 		log.info("fini");
 		return true;
 	}   //  createAccounting
+	
+	private I_C_Calendar createCalendar(MClient client)
+	{
+		final I_C_Calendar calendar = InterfaceWrapperHelper.newInstance(I_C_Calendar.class, client);
+		InterfaceWrapperHelper.setValue(calendar, I_C_Calendar.COLUMNNAME_AD_Client_ID, client.getAD_Client_ID());
+		calendar.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
+		calendar.setName(client.getName() + " " + Msg.translate(client.getCtx(), "C_Calendar_ID"));
+		return calendar;
+	}
+
+	private void createYear(final I_C_Calendar calendar, final Locale locale)
+	{
+		final I_C_Year year = InterfaceWrapperHelper.newInstance(I_C_Year.class, calendar);
+		year.setC_Calendar_ID(calendar.getC_Calendar_ID());
+		
+		final GregorianCalendar cal = new GregorianCalendar(Language.getLoginLanguage().getLocale());
+		year.setFiscalYear(String.valueOf(cal.get(Calendar.YEAR)));
+		
+		InterfaceWrapperHelper.save(year);
+
+		final Timestamp startDate = null;
+		final String dateFormat = null;
+		MYear.createStdPeriods(year, locale, startDate, dateFormat);
+	}	
+
 
 	private void createAccountingRecord(String tableName) throws Exception
 	{

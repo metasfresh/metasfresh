@@ -299,7 +299,7 @@ public class TransactionCreatedHandlerTests
 	private static void assertDemandDetailQuery(final CandidatesQuery query)
 	{
 		assertThat(query).isNotNull();
-		assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
+		assertThat(query.getDemandDetailsQuery().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
 		assertThat(query.getMaterialDescriptorQuery())
 				.as("If we have a demand detail, then only query via that demand detail")
 				.isNull();

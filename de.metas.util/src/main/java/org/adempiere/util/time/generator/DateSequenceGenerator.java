@@ -2,11 +2,15 @@ package org.adempiere.util.time.generator;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -32,32 +36,28 @@ public class DateSequenceGenerator
 	private final ICalendarIncrementor incrementor;
 	private final IDateSequenceExploder exploder;
 	private final IDateShifter shifter;
-	private final boolean enforceDateToAfterShift;
 
 	@Builder(toBuilder = true)
 	private DateSequenceGenerator(
-			@NonNull final LocalDate dateFrom,
-			@NonNull final LocalDate dateTo,
+			final LocalDate dateFrom,
+			final LocalDate dateTo,
 			final ICalendarIncrementor incrementor,
 			final IDateSequenceExploder exploder,
-			final IDateShifter shifter,
-			final Boolean enforceDateToAfterShift)
+			final IDateShifter shifter)
 	{
-		this.dateFrom = dateFrom;
-		this.dateTo = dateTo;
+		this.dateFrom = dateFrom != null ? dateFrom : LocalDate.MIN;
+		this.dateTo = dateTo != null ? dateTo : LocalDate.MAX;
 		this.incrementor = incrementor != null ? incrementor : CalendarIncrementors.dayByDay();
-		this.exploder = exploder != null ? exploder : NullDateSequenceExploder.instance;
-		this.shifter = shifter != null ? shifter : NullDateShifter.instance;
-		this.enforceDateToAfterShift = enforceDateToAfterShift != null ? enforceDateToAfterShift : true;
-
+		this.exploder = exploder != null ? exploder : SameDateSequenceExploder.instance;
+		this.shifter = shifter != null ? shifter : SameDateShifter.instance;
 	}
 
-	public SortedSet<LocalDate> generate()
+	public Set<LocalDate> generate()
 	{
-		final SortedSet<LocalDate> result = newSortedSet(ImmutableSet.of());
+		final SortedSet<LocalDateTime> result = newSortedSet(ImmutableSet.of());
 
-		LocalDate currentDate = dateFrom;
-		while (currentDate.compareTo(dateTo) <= 0)
+		LocalDateTime currentDate = dateFrom.atStartOfDay();
+		while (currentDate.toLocalDate().compareTo(dateTo) <= 0)
 		{
 			//
 			// Explode current date using the converter and then shift each exploded date
@@ -68,71 +68,52 @@ public class DateSequenceGenerator
 			currentDate = incrementor.increment(currentDate);
 		}
 
-		return result;
+		return result
+				.stream()
+				.map(LocalDateTime::toLocalDate)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public Optional<LocalDate> generateNext()
+	public Optional<LocalDate> calculatePrevious(@NonNull final LocalDate date)
 	{
-		LocalDate currentDate = dateFrom;
-		while (currentDate.compareTo(dateTo) <= 0)
-		{
-			//
-			// Explode current date using the converter and then shift each exploded date
-			final SortedSet<LocalDate> result = newSortedSet(ImmutableSet.of());
-			doExplodeAndShiftForward(result, currentDate);
-
-			if (!result.isEmpty())
-			{
-				return Optional.of(result.first());
-			}
-
-			//
-			// Increment to next date
-			currentDate = incrementor.increment(currentDate);
-		}
-
-		return Optional.empty();
+		return calculatePrevious(date.atStartOfDay())
+				.map(LocalDateTime::toLocalDate);
 	}
 
-	public Optional<LocalDate> generatePrevious()
-	{
-		return generateCurrentPrevious(dateTo);
-	}
-
-	public Optional<LocalDate> generateCurrentPrevious(final LocalDate dateTo)
+	public Optional<LocalDateTime> calculatePrevious(@NonNull final LocalDateTime date)
 	{
 		final int MAX_ITERATIONS = 100;
 
 		int iterationNo = 0;
-		LocalDate currentDate = dateTo;
-		while (currentDate.compareTo(dateFrom) >= 0)
+		LocalDateTime currentDate = date;
+		while (currentDate.toLocalDate().compareTo(dateFrom) >= 0)
 		{
 			iterationNo++;
 			if (iterationNo > MAX_ITERATIONS)
 			{
-				throw new IllegalStateException("Maximum number of iterations(" + MAX_ITERATIONS + ") reached while trying to find a current/previous date for " + dateTo + " using " + this + "."
+				throw new IllegalStateException("Maximum number of iterations(" + MAX_ITERATIONS + ") reached while trying to find a current/previous date for " + date + " using " + this + "."
 						+ "\nCurrent date: " + currentDate);
 			}
 
 			//
 			// Explode current date using the converter and then shift each exploded date
-			final SortedSet<LocalDate> result = newReverseSortedSet(ImmutableSet.of());
-			doExplodeAndShiftBackward(result, currentDate);
+			final Set<LocalDateTime> currentDateExploded = doExplodeAndShiftBackward(currentDate);
 
-			if (!result.isEmpty())
+			if (!currentDateExploded.isEmpty())
 			{
-				return Optional.of(result.first());
+				final LocalDateTime maxDate = max(currentDateExploded);
+				return Optional.of(maxDate);
 			}
 
 			//
-			// Increment to next date
+			// Decrement to previous date
 			currentDate = incrementor.decrement(currentDate);
 		}
 
 		return Optional.empty();
 	}
 
-	private final void doExplodeAndShiftForward(final SortedSet<LocalDate> result, final LocalDate dateToExplode)
+	private final void doExplodeAndShiftForward(final SortedSet<LocalDateTime> result, final LocalDateTime dateToExplode)
 	{
 		// Check: if current date to explode is before or equal to the last (and maximum) date we generated
 		// ... then skip it
@@ -144,11 +125,11 @@ public class DateSequenceGenerator
 			return;
 		}
 
-		final Collection<LocalDate> datesExploded = exploder.explodeForward(dateToExplode);
+		final Collection<LocalDateTime> datesExploded = exploder.explodeForward(dateToExplode);
 		if (datesExploded != null && !datesExploded.isEmpty())
 		{
-			LocalDate lastDateConsidered = dateToExplode;
-			for (final LocalDate dateExploded : newSortedSet(datesExploded))
+			LocalDateTime lastDateConsidered = dateToExplode;
+			for (final LocalDateTime dateExploded : newSortedSet(datesExploded))
 			{
 				// Skip null dates... shall not happen
 				if (dateExploded == null)
@@ -163,13 +144,13 @@ public class DateSequenceGenerator
 					continue;
 				}
 				// Skip dates which are after our date generation interval
-				if (dateExploded.isAfter(dateTo))
+				if (dateExploded.toLocalDate().isAfter(dateTo))
 				{
 					continue;
 				}
 
 				// Shift exploded date
-				final LocalDate dateExplodedAndShifted = shifter.shiftForward(dateExploded);
+				final LocalDateTime dateExplodedAndShifted = shifter.shiftForward(dateExploded);
 				// Skip dates on which shifter is telling us to exclude
 				if (dateExplodedAndShifted == null)
 				{
@@ -183,7 +164,7 @@ public class DateSequenceGenerator
 				}
 
 				// Skip shifted dates which are after generation interval
-				if (enforceDateToAfterShift && dateExplodedAndShifted.isAfter(dateTo))
+				if (dateExplodedAndShifted.toLocalDate().isAfter(dateTo))
 				{
 					// Even if we exclude this date, we want to consider it for next dates
 					if (lastDateConsidered.isBefore(dateExplodedAndShifted))
@@ -201,23 +182,15 @@ public class DateSequenceGenerator
 		}
 	}
 
-	private final void doExplodeAndShiftBackward(final SortedSet<LocalDate> result, final LocalDate dateToExplode)
+	private final Set<LocalDateTime> doExplodeAndShiftBackward(final LocalDateTime dateToExplode)
 	{
-		// Check: if current date to explode is after or equal to the last (and minimum) date we generated
-		// ... then skip it
-		//
-		// NOTE: maybe in future we can make this configurable.
-		// The reason why we have it now here is because we want to support shifters which are shifting dates to previous business day, but we want to skip the days in between.
-		if (!result.isEmpty() && result.last().isBefore(dateToExplode))
-		{
-			return;
-		}
+		final SortedSet<LocalDateTime> result = newReverseSortedSet(ImmutableSet.of());
 
-		final Collection<LocalDate> datesExploded = exploder.explodeBackward(dateToExplode);
+		final Collection<LocalDateTime> datesExploded = exploder.explodeBackward(dateToExplode);
 		if (datesExploded != null && !datesExploded.isEmpty())
 		{
-			LocalDate lastDateConsidered = dateToExplode;
-			for (final LocalDate dateExploded : newReverseSortedSet(datesExploded))
+			LocalDateTime lastDateConsidered = dateToExplode;
+			for (final LocalDateTime dateExploded : newReverseSortedSet(datesExploded))
 			{
 				// Skip null dates... shall not happen
 				if (dateExploded == null)
@@ -232,13 +205,13 @@ public class DateSequenceGenerator
 					continue;
 				}
 				// Skip dates which are before our date generation interval
-				if (dateExploded.isBefore(dateFrom))
+				if (dateExploded.toLocalDate().isBefore(dateFrom))
 				{
 					continue;
 				}
 
 				// Shift exploded date
-				final LocalDate dateExplodedAndShifted = shifter.shiftBackward(dateExploded);
+				final LocalDateTime dateExplodedAndShifted = shifter.shiftBackward(dateExploded);
 				// Skip dates on which shifter is telling us to exclude
 				if (dateExplodedAndShifted == null)
 				{
@@ -252,7 +225,7 @@ public class DateSequenceGenerator
 				}
 
 				// Skip shifted dates which are before generation interval
-				if (enforceDateToAfterShift && dateExplodedAndShifted.isBefore(dateFrom))
+				if (dateExplodedAndShifted.toLocalDate().isBefore(dateFrom))
 				{
 					// Even if we exclude this date, we want to consider it for next dates
 					if (lastDateConsidered.isAfter(dateExplodedAndShifted))
@@ -268,9 +241,11 @@ public class DateSequenceGenerator
 				lastDateConsidered = dateExplodedAndShifted;
 			}
 		}
+		
+		return result;
 	}
 
-	private static SortedSet<LocalDate> newSortedSet(final Collection<LocalDate> values)
+	private static SortedSet<LocalDateTime> newSortedSet(final Collection<LocalDateTime> values)
 	{
 		if (values == null || values.isEmpty())
 		{
@@ -282,15 +257,21 @@ public class DateSequenceGenerator
 		}
 	}
 
-	private static SortedSet<LocalDate> newReverseSortedSet(final Collection<LocalDate> values)
+	private static SortedSet<LocalDateTime> newReverseSortedSet(final Collection<LocalDateTime> values)
 	{
-		final TreeSet<LocalDate> sortedSet = new TreeSet<>(Comparator.<LocalDate> naturalOrder().reversed());
+		final TreeSet<LocalDateTime> sortedSet = new TreeSet<>(Comparator.<LocalDateTime> naturalOrder().reversed());
 		if (values != null && !values.isEmpty())
 		{
 			sortedSet.addAll(values);
 		}
 
 		return sortedSet;
+	}
+	
+	private static LocalDateTime max(final Collection<LocalDateTime> dates)
+	{
+		Check.assumeNotEmpty(dates, "dates is not empty");
+		return dates.stream().max(Comparator.naturalOrder()).get();
 	}
 
 	//

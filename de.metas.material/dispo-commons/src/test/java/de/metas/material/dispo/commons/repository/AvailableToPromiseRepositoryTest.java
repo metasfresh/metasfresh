@@ -5,6 +5,7 @@ import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -20,6 +22,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -56,6 +59,10 @@ public class AvailableToPromiseRepositoryTest
 
 	public static final Date BEFORE_BEFORE_NOW = TimeUtil.addMinutes(BEFORE_NOW, -10);
 
+	public static final BigDecimal TWENTY = new BigDecimal("20");
+
+	private AvailableToPromiseRepository availableToPromiseRepository;
+
 	@Rule
 	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
 
@@ -63,6 +70,8 @@ public class AvailableToPromiseRepositoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		availableToPromiseRepository = new AvailableToPromiseRepository();
 	}
 
 	private MaterialDescriptor createMaterialDescriptor()
@@ -93,9 +102,9 @@ public class AvailableToPromiseRepositoryTest
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 		assertThat(query.getQueries()).hasSize(2); // guard
 
-		final BigDecimal result = new AvailableToPromiseRepository().retrieveAvailableStockQtySum(query);
+		final BigDecimal result = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
-		assertThat(result).isEqualByComparingTo("20");
+		assertThat(result).isEqualByComparingTo(TWENTY);
 	}
 
 	/**
@@ -113,13 +122,13 @@ public class AvailableToPromiseRepositoryTest
 
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 
-		final BigDecimal result = new AvailableToPromiseRepository().retrieveAvailableStockQtySum(query);
+		final BigDecimal result = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
-		assertThat(result).isEqualByComparingTo("20");
+		assertThat(result).isEqualByComparingTo(TWENTY);
 	}
 
 	/**
-	 * he stock record without bpartnerId is created first, so it's qty is already included in the stop record with bpartner.
+	 * The stock record without bpartnerId is created first, so it's qty is already included in the stock record with bpartner.
 	 * Therefore we only count the stock record with bpartner.
 	 */
 	@Test
@@ -132,9 +141,9 @@ public class AvailableToPromiseRepositoryTest
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 
-		final BigDecimal result = new AvailableToPromiseRepository().retrieveAvailableStockQtySum(query);
+		final BigDecimal result = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
-		assertThat(result).isEqualByComparingTo("10");
+		assertThat(result).isEqualByComparingTo(TEN);
 	}
 
 	/**
@@ -150,12 +159,79 @@ public class AvailableToPromiseRepositoryTest
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor().withCustomerId(0);
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.of(AvailableToPromiseQuery.forMaterialDescriptor(materialDescriptor));
 
-		final BigDecimal result = new AvailableToPromiseRepository().retrieveAvailableStockQtySum(query);
+		final BigDecimal result = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
-		assertThat(result).isEqualByComparingTo("10");
+		assertThat(result).isEqualByComparingTo(TEN);
 	}
 
-	private int seqNoCounter;
+	/**
+	 * The stock record "for any bpartner" is created first, but it's date is after the one with {@code BPARTNER_ID}.
+	 * So its qty is not contained within the stock record with {@code {@code BPARTNER_ID}}.
+	 * Therefore for {@code BPARTNER_ID} we count both.
+	 * However, for {@code BPARTNER_ID + 10}, we do not count the "for any bpartner"-record, because it's assumed to be included in {@code BPARTNER_ID + 10}'s record.
+	 */
+	@Test
+	public void retrieveAvailableStock_differentBPartners_addToPredefinedBuckets()
+	{
+		retrieveAvailableStock_differentBPartners_performTest(true);
+	}
+
+	@Test
+	public void retrieveAvailableStock_differentBPartners_doNot_addToPredefinedBuckets()
+	{
+		retrieveAvailableStock_differentBPartners_performTest(false);
+	}
+
+	private void retrieveAvailableStock_differentBPartners_performTest(final boolean addToPredefinedBuckets)
+	{
+		createStockRecord(0, BEFORE_NOW); // belongs to "any" bpartner
+		createStockRecord(BPARTNER_ID, BEFORE_BEFORE_NOW);
+		createStockRecord(BPARTNER_ID + 10, BEFORE_NOW);
+
+		final AvailableToPromiseMultiQueryBuilder multiQueryBuilder = AvailableToPromiseMultiQuery
+				.builder()
+				.addToPredefinedBuckets(addToPredefinedBuckets);
+
+		final AvailableToPromiseQuery query1 = AvailableToPromiseQuery
+				.builder()
+				.productId(PRODUCT_ID)
+				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.bpartnerId(BPARTNER_ID)
+				.build();
+		multiQueryBuilder.query(query1);
+
+		final AvailableToPromiseQuery query2 = AvailableToPromiseQuery
+				.builder()
+				.productId(PRODUCT_ID)
+				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.bpartnerId(BPARTNER_ID + 10)
+				.build();
+		multiQueryBuilder.query(query2);
+
+		final AvailableToPromiseMultiQuery multipQuery = multiQueryBuilder.build();
+
+		final AvailableToPromiseResult result = availableToPromiseRepository.retrieveAvailableStock(multipQuery);
+
+		assertThat(result).isNotNull();
+
+		final List<AvailableToPromiseResultGroup> resultGroups = result.getResultGroups();
+		assertThat(resultGroups).hasSize(2);
+
+		assertThat(resultGroups)
+				.allSatisfy(group -> assertThat(group.getProductId()).isEqualTo(PRODUCT_ID));
+
+		assertThat(resultGroups)
+				.filteredOn(group -> group.getBpartnerId() == BPARTNER_ID)
+				.hasSize(1)
+				.allSatisfy(group -> assertThat(group.getQty()).isEqualByComparingTo(TWENTY));
+
+		assertThat(resultGroups)
+				.filteredOn(group -> group.getBpartnerId() == BPARTNER_ID + 10)
+				.hasSize(1)
+				.allSatisfy(group -> assertThat(group.getQty()).isEqualByComparingTo(TEN));
+	}
+
+	private int seqNoCounter = 1; // we start with one, because 0 is not considered valid by the code under test
 
 	private I_MD_Candidate_ATP_QueryResult createStockRecord(
 			final int bPartnerId,

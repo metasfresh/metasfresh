@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMDAO;
@@ -339,7 +341,9 @@ public class PurchaseDemandWithCandidatesService
 		return PurchaseCandidatesGroup.of(purchaseDemand.getId(), purchaseCandidate, vendorProductInfo);
 	}
 
-	private LocalDateTime calculatePurchaseDatePromised(final LocalDateTime salesDatePromised, final BPPurchaseSchedule bpPurchaseSchedule)
+	private LocalDateTime calculatePurchaseDatePromised(
+			@NonNull final LocalDateTime salesDatePromised,
+			@Nullable final BPPurchaseSchedule bpPurchaseSchedule)
 	{
 		if (bpPurchaseSchedule != null)
 		{
