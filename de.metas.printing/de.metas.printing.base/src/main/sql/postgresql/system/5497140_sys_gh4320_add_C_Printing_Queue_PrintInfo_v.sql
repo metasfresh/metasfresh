@@ -1,4 +1,4 @@
-DROP VIEW IF EXISTS C_Printing_Queue_PrintInfo_v;
+﻿DROP VIEW IF EXISTS C_Printing_Queue_PrintInfo_v;
 
 CREATE OR REPLACE VIEW C_Printing_Queue_PrintInfo_v AS
 SELECT
