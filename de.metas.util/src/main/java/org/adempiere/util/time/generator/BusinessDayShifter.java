@@ -1,6 +1,7 @@
 package org.adempiere.util.time.generator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.adempiere.util.Check;
@@ -10,6 +11,7 @@ import de.metas.calendar.IBusinessDayMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 
 /*
  * #%L
@@ -33,6 +35,7 @@ import lombok.Singular;
  * #L%
  */
 
+@ToString
 public class BusinessDayShifter implements IDateShifter
 {
 	public static enum OnNonBussinessDay
@@ -53,26 +56,26 @@ public class BusinessDayShifter implements IDateShifter
 	}
 
 	@Override
-	public LocalDate shiftForward(final LocalDate deliveryDate)
+	public LocalDateTime shiftForward(final LocalDateTime date)
 	{
 		final boolean forward = true;
-		return shift(deliveryDate, forward);
+		return shift(date, forward);
 	}
 
 	@Override
-	public LocalDate shiftBackward(final LocalDate deliveryDate)
+	public LocalDateTime shiftBackward(final LocalDateTime date)
 	{
 		final boolean forward = false;
-		return shift(deliveryDate, forward);
+		return shift(date, forward);
 	}
 
-	private LocalDate shift(final LocalDate deliveryDate, final boolean forward)
+	private LocalDateTime shift(final LocalDateTime date, final boolean forward)
 	{
 		//
 		// Case: we deal with a delivery date which is in a business day
-		if (businessDayMatcher.isBusinessDay(deliveryDate))
+		if (businessDayMatcher.isBusinessDay(date.toLocalDate()))
 		{
-			return deliveryDate;
+			return date;
 		}
 		//
 		// Case: our delivery date is not in a business day
@@ -91,11 +94,13 @@ public class BusinessDayShifter implements IDateShifter
 			{
 				if (forward)
 				{
-					return businessDayMatcher.getNextBusinessDay(deliveryDate);
+					final LocalDate nextBusinessDay = businessDayMatcher.getNextBusinessDay(date.toLocalDate());
+					return LocalDateTime.of(nextBusinessDay, date.toLocalTime());
 				}
 				else
 				{
-					return businessDayMatcher.getPreviousBusinessDay(deliveryDate);
+					final LocalDate previousBusinessDay = businessDayMatcher.getPreviousBusinessDay(date.toLocalDate());
+					return LocalDateTime.of(previousBusinessDay, date.toLocalTime());
 				}
 			}
 			else
