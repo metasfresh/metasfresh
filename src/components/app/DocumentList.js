@@ -198,6 +198,7 @@ class DocumentList extends Component {
 
     if (nextDefaultViewId !== viewId) {
       dispatch(removeSelectedTableItems({ viewId: viewId, windowType }));
+
       stateChanges.viewId = nextDefaultViewId;
       stateChanges.refreshSelection = true;
     }
@@ -207,9 +208,11 @@ class DocumentList extends Component {
       stateChanges.hasShowIncluded = false;
     }
 
-    this.setState({
-      ...stateChanges,
-    });
+    if (Object.keys(stateChanges).length) {
+      this.setState({
+        ...stateChanges,
+      });
+    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -458,17 +461,24 @@ class DocumentList extends Component {
   };
 
   filterView = () => {
-    const { windowType } = this.props;
+    const { windowType, isIncluded, dispatch } = this.props;
     const { page, sort, filters, viewId } = this.state;
 
     filterViewRequest(windowType, viewId, filters).then(response => {
+      const viewId = response.data.viewId;
+
+      if (isIncluded) {
+        dispatch(setListIncludedView({ windowType, viewId }));
+      }
+
       this.mounted &&
         this.setState(
           {
             data: response.data,
+            viewId: viewId,
           },
           () => {
-            this.getData(response.data.viewId, page, sort);
+            this.getData(viewId, page, sort);
           }
         );
     });

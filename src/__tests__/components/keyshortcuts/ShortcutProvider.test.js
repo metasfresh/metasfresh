@@ -247,16 +247,42 @@ describe('ShortcutProvider', () => {
       const handler1 = jest.fn();
       const handler2 = jest.fn();
       const handler3 = jest.fn();
+      handler3.mockReturnValue(true);
+      handler2.mockReturnValue(true);
+      handler1.mockReturnValue(true);
 
       shortcutProvider.props = {
         hotkeys: {
-          A: [handler1, handler2, handler3],
+          A: [handler3, handler2, handler1],
         },
       };
 
       shortcutProvider.handleKeyDown({ keyCode });
 
+      expect(handler3).toHaveBeenCalled();
+      expect(handler2).not.toHaveBeenCalled();
       expect(handler1).not.toHaveBeenCalled();
+    });
+
+    it('should call the latest valid handler registered for that hotkey', () => {
+      const shortcutProvider = new ShortcutProvider();
+      const keyCode = 65; // 'a'
+      const handler1 = jest.fn();
+      const handler2 = jest.fn();
+      const handler3 = jest.fn();
+      handler3.mockReturnValue(false);
+      handler2.mockReturnValue(true);
+      handler1.mockReturnValue(false);
+
+      shortcutProvider.props = {
+        hotkeys: {
+          A: [handler3, handler2, handler1],
+        },
+      };
+
+      shortcutProvider.handleKeyDown({ keyCode });
+
+      expect(handler2).toHaveBeenCalled();
       expect(handler1).not.toHaveBeenCalled();
       expect(handler3).toHaveBeenCalled();
     });

@@ -10,6 +10,7 @@ import {
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
   CLOSE_MODAL,
+  CLOSE_PLUGIN_MODAL,
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
@@ -20,6 +21,7 @@ import {
   INIT_LAYOUT_SUCCESS,
   NO_CONNECTION,
   OPEN_MODAL,
+  OPEN_PLUGIN_MODAL,
   OPEN_RAW_MODAL,
   OPEN_FILTER_BOX,
   PATCH_FAILURE,
@@ -71,6 +73,10 @@ const initialState = {
     visible: false,
     windowType: null,
     viewId: null,
+  },
+  pluginModal: {
+    visible: true,
+    type: '',
   },
   master: {
     layout: {
@@ -143,6 +149,14 @@ export default function windowHandler(state = initialState, action) {
           childViewSelectedIds: action.childViewSelectedIds,
         },
       };
+    case OPEN_PLUGIN_MODAL:
+      return {
+        ...state,
+        pluginModal: {
+          visible: true,
+          type: action.payload.type,
+        },
+      };
     case UPDATE_MODAL:
       return {
         ...state,
@@ -169,6 +183,14 @@ export default function windowHandler(state = initialState, action) {
         modal: {
           ...state.modal,
           ...initialState.modal,
+        },
+      };
+    case CLOSE_PLUGIN_MODAL:
+      return {
+        ...state,
+        pluginModal: {
+          visible: false,
+          type: '',
         },
       };
 

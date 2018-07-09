@@ -254,17 +254,32 @@ class TablePagination extends PureComponent {
     );
   };
 
-  renderArrow = left => {
+  renderArrow = (left, pages, page) => {
     const { compressed, handleChangePage } = this.props;
+    let disabled = false;
+
+    if (left) {
+      disabled = page === 1 ? true : false;
+    } else {
+      disabled = page === pages ? true : false;
+    }
+
     return (
-      <li className="page-item">
+      <li
+        className={classnames('page-item', {
+          inactive: disabled,
+        })}
+      >
         <a
           className={classnames('page-link', {
             'page-link-compressed': compressed,
+            disabled: disabled,
           })}
           onClick={() => {
-            this.resetGoToPage();
-            handleChangePage(left ? 'down' : 'up');
+            if (!disabled) {
+              this.resetGoToPage();
+              handleChangePage(left ? 'down' : 'up');
+            }
           }}
         >
           <span>{left ? '«' : '»'}</span>
@@ -297,9 +312,7 @@ class TablePagination extends PureComponent {
 
   render() {
     const { size, pageLength, page, compressed } = this.props;
-
     const pages = size ? Math.ceil(size / pageLength) : 0;
-
     let pagination = [];
 
     if (pages < 8) {
@@ -333,9 +346,9 @@ class TablePagination extends PureComponent {
             <div>
               <nav>
                 <ul className="pagination pointer">
-                  {this.renderArrow(true)}
+                  {this.renderArrow(true, pages, page)}
                   {pagination}
-                  {this.renderArrow(false)}
+                  {this.renderArrow(false, pages, page)}
                 </ul>
               </nav>
             </div>

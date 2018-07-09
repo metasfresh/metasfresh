@@ -15,17 +15,19 @@ export class Process extends Component {
     return elements.map((elem, id) => {
       const widgetData = elem.fields.map(item => data[item.field] || -1);
       return (
-        <MasterWidget
-          entity="process"
-          key={'element' + id}
-          windowType={type}
-          dataId={layout.pinstanceId}
-          widgetData={widgetData}
-          isModal={true}
-          disabled={disabled}
-          autoFocus={id === 0}
-          {...elem}
-        />
+        <div key={layout.pinstanceId}>
+          <MasterWidget
+            entity="process"
+            key={'element' + id}
+            windowType={type}
+            dataId={layout.pinstanceId}
+            widgetData={widgetData}
+            isModal={true}
+            disabled={disabled}
+            autoFocus={id === 0}
+            {...elem}
+          />
+        </div>
       );
     });
   };
