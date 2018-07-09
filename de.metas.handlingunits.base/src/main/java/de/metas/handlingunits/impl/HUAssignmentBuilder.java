@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,12 +12,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,6 +35,7 @@ import org.adempiere.util.Check;
 import de.metas.handlingunits.IHUAssignmentBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import lombok.NonNull;
 
 /**
  * Default HU Assignment builder
@@ -55,15 +58,9 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 
 	private I_M_HU_Assignment assignment = null;
 
-	public HUAssignmentBuilder()
-	{
-		super();
-	}
-
 	@Override
-	public IHUAssignmentBuilder setModel(final Object model)
+	public IHUAssignmentBuilder setModel(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		this.model = model;
 		return this;
 	}
@@ -71,7 +68,6 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 	@Override
 	public IHUAssignmentBuilder setTopLevelHU(final I_M_HU topLevelHU)
 	{
-		// Check.assumeNotNull(topLevelHU, "topLevelHU not null");
 		this.topLevelHU = topLevelHU;
 		return this;
 	}
@@ -140,25 +136,34 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 	public IHUAssignmentBuilder initializeAssignment(final Properties ctx, final String trxName)
 	{
 		final I_M_HU_Assignment assignment = InterfaceWrapperHelper.create(ctx, I_M_HU_Assignment.class, trxName);
-		initializeAssignment(assignment);
+		setAssignmentRecordToUpdate(assignment);
 		return this;
 	}
 
 	@Override
-	public IHUAssignmentBuilder initializeAssignment(final I_M_HU_Assignment assignment)
+	public IHUAssignmentBuilder setTemplateForNewRecord(final I_M_HU_Assignment assignmentRecord)
 	{
-		Check.assumeNotNull(assignment, "assignment template not null");
-		// Check.assumeNull(assignment, "assignment can only be initialized once per builder");
+		this.assignment = newInstance(I_M_HU_Assignment.class);
+		return updateFromRecord(assignmentRecord);
 
-		this.assignment = assignment;
+	}
 
-		setTopLevelHU(assignment.getM_HU());
-		setM_LU_HU(assignment.getM_LU_HU());
-		setM_TU_HU(assignment.getM_TU_HU());
-		setVHU(assignment.getVHU());
-		setQty(assignment.getQty());
-		setIsTransferPackingMaterials(assignment.isTransferPackingMaterials());
-		setIsActive(assignment.isActive());
+	@Override
+	public IHUAssignmentBuilder setAssignmentRecordToUpdate(@NonNull final I_M_HU_Assignment assignmentRecord)
+	{
+		this.assignment = assignmentRecord;
+		return updateFromRecord(assignmentRecord);
+	}
+
+	private IHUAssignmentBuilder updateFromRecord(final I_M_HU_Assignment assignmentRecord)
+	{
+		setTopLevelHU(assignmentRecord.getM_HU());
+		setM_LU_HU(assignmentRecord.getM_LU_HU());
+		setM_TU_HU(assignmentRecord.getM_TU_HU());
+		setVHU(assignmentRecord.getVHU());
+		setQty(assignmentRecord.getQty());
+		setIsTransferPackingMaterials(assignmentRecord.isTransferPackingMaterials());
+		setIsActive(assignmentRecord.isActive());
 
 		return this;
 	}

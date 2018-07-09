@@ -415,6 +415,16 @@ public final class Check
 		}
 		return valueLong;
 	}
+	
+	public static BigDecimal assumeGreaterThanZero(final BigDecimal valueBD, final String valueName)
+	{
+		assumeNotNull(valueName, "" + valueName + " is not null");
+		if (valueBD == null || valueBD.signum() <= 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueBD);
+		}
+		return valueBD;
+	}
 
 	public static int assumeGreaterOrEqualToZero(final int valueInt, final String valueName)
 	{

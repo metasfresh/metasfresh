@@ -10,12 +10,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.compiere.db.CConnection;
 import org.compiere.util.Ini;
 
 import de.metas.adempiere.service.IGlobalLockSystem;
@@ -40,7 +39,7 @@ import de.metas.adempiere.util.GlobalLock;
  * Global Locking System.
  * Used to synchronize ADempiere processes across multiple instances.
  * @author tsa
- * 
+ *
  */
 public class GlobalLockSystem implements IGlobalLockSystem
 {
@@ -68,11 +67,11 @@ public class GlobalLockSystem implements IGlobalLockSystem
 	public boolean acquire(GlobalLock lock, long timeoutMillis) throws InterruptedException
 	{
 		// TODO: this functionality is supported only in server mode
-		if (Ini.isClient() && !CConnection.isServerEmbedded())
+		if (Ini.isClient())
 		{
 			throw new IllegalStateException("GlobalLockSystem is supported only in server mode");
 		}
-		
+
 		Semaphore s = s_localLocks.get(lock);
 		if (s == null)
 		{
@@ -89,7 +88,7 @@ public class GlobalLockSystem implements IGlobalLockSystem
 			return s.tryAcquire(timeoutMillis, TimeUnit.MILLISECONDS);
 		}
 	}
-	
+
 	@Override
 	public void release(GlobalLock lock)
 	{
@@ -111,7 +110,7 @@ public class GlobalLockSystem implements IGlobalLockSystem
 		Semaphore s = s_localLocks.get(lock);
 		return s != null && s.availablePermits() == 0;
 	}
-	
+
 	public Set<GlobalLock> getLocalLocks()
 	{
 		return s_localLocks.keySet();

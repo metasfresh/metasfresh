@@ -35,19 +35,15 @@ import lombok.Value;
 @ToString(doNotUseGetters = true)
 public class CandidateId implements RepoIdAware
 {
-	private static final int UNSPECIFIED_REPO_ID = Integer.MAX_VALUE - 10;
-
 	/**
 	 * Use this constant in a {@link CandidatesQuery} to indicate that the ID shall not be considered.
 	 */
-	public static final CandidateId UNSPECIFIED = CandidateId.ofRepoId(UNSPECIFIED_REPO_ID);
-
-	private static final int NULL_REPO_ID = Integer.MAX_VALUE - 20;
+	public static final CandidateId UNSPECIFIED = CandidateId.ofRepoId(IdConstants.UNSPECIFIED_REPO_ID);
 
 	/**
 	 * Use this constant in a {@link CandidatesQuery} to indicate that the ID be null (makes sense for parent-ID).
 	 */
-	public static final CandidateId NULL = CandidateId.ofRepoId(NULL_REPO_ID);
+	public static final CandidateId NULL = CandidateId.ofRepoId(IdConstants.NULL_REPO_ID);
 
 	int repoId;
 
@@ -83,11 +79,11 @@ public class CandidateId implements RepoIdAware
 
 	public boolean isNull()
 	{
-		return repoId == NULL_REPO_ID;
+		return repoId == IdConstants.NULL_REPO_ID;
 	}
 
 	public boolean isUnspecified()
 	{
-		return repoId == UNSPECIFIED_REPO_ID;
+		return repoId == IdConstants.UNSPECIFIED_REPO_ID;
 	}
 }

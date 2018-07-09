@@ -1,6 +1,6 @@
 package org.adempiere.util.time.generator;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 
 import org.adempiere.util.Check;
@@ -39,10 +39,10 @@ import lombok.Value;
 	}
 
 	@Override
-	public LocalDate increment(final LocalDate date)
+	public LocalDateTime increment(final LocalDateTime date)
 	{
 		// Set Day of Month
-		LocalDate nextDate = withDayOfMonth(date);
+		LocalDateTime nextDate = withDayOfMonth(date);
 
 		// If we actually moved back or we did not move at all, we need to increment also
 		if (date.compareTo(nextDate) >= 0)
@@ -58,10 +58,10 @@ import lombok.Value;
 	}
 
 	@Override
-	public LocalDate decrement(final LocalDate date)
+	public LocalDateTime decrement(final LocalDateTime date)
 	{
 		// Set Day of Month
-		LocalDate prevDate = withDayOfMonth(date);
+		LocalDateTime prevDate = withDayOfMonth(date);
 
 		// If we actually moved forward or we did not move at all, we need to decrement also
 		if (date.compareTo(prevDate) <= 0)
@@ -76,14 +76,14 @@ import lombok.Value;
 		return prevDate;
 	}
 
-	private final LocalDate withDayOfMonth(final LocalDate date)
+	private final LocalDateTime withDayOfMonth(final LocalDateTime date)
 	{
 		final int lastDayOfMonth = getLastDayOfMonth(date);
 		final int dayOfMonthEffective = Math.min(dayOfMonth, lastDayOfMonth);
 		return date.withDayOfMonth(dayOfMonthEffective);
 	}
 
-	private static int getLastDayOfMonth(final LocalDate date)
+	private static int getLastDayOfMonth(final LocalDateTime date)
 	{
 		return date.with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
 	}

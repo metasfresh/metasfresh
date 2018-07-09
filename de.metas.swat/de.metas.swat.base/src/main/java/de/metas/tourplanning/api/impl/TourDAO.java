@@ -34,10 +34,10 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.calendar.IBusinessDayMatcher;
+import de.metas.calendar.ICalendarBL;
 import de.metas.tourplanning.api.ITourDAO;
 import de.metas.tourplanning.api.ITourVersionRange;
 import de.metas.tourplanning.model.I_M_Tour;
@@ -281,7 +281,10 @@ public class TourDAO implements ITourDAO
 				.build();
 	}
 
-	private static DateSequenceGenerator createDateSequenceGenerator(final I_M_TourVersion tourVersion, final LocalDate validFrom, final LocalDate validTo)
+	private static DateSequenceGenerator createDateSequenceGenerator(
+			@NonNull final I_M_TourVersion tourVersion,
+			@NonNull final LocalDate validFrom,
+			@NonNull final LocalDate validTo)
 	{
 		final Frequency frequency = extractFrequency(tourVersion);
 		if (frequency == null)
@@ -295,8 +298,6 @@ public class TourDAO implements ITourDAO
 				.dateFrom(validFrom)
 				.dateTo(validTo)
 				.shifter(createDateShifter(frequency, onNonBusinessDay))
-				// task 08252: don't shift beyond getValidTo(), because there will probably be another version to create it's own delivery days at that date
-				.enforceDateToAfterShift(true)
 				.frequency(frequency)
 				.build();
 	}

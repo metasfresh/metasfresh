@@ -72,9 +72,9 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.service.ICalendarBL;
-import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;

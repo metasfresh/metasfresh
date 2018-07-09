@@ -28,21 +28,21 @@ import de.metas.event.log.EventLogUserService.InvokeHandlerandLogRequest;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
-import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
-import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandler;
+import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.MaterialEventHandlerRegistry;
@@ -159,7 +159,9 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryRetrieval,
 				postMaterialEventService);
 
-		final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
+		final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(
+				candidateChangeHandler,
+				candidateRepositoryRetrieval);
 
 		@SuppressWarnings("rawtypes")
 		final Optional<Collection<MaterialEventHandler>> handlers = Optional.of(ImmutableList.of(

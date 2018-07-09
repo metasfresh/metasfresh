@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons.candidate;
 
+import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
@@ -55,13 +56,13 @@ public class DemandDetailTest
 				.orderId(50)
 				.orderLineId(60)
 				.build();
-		final DemandDetail demandDetail = DemandDetail.forDocumentDescriptor(20, orderLineDescriptor, TEN);
+		final DemandDetail demandDetail = DemandDetail.forDocumentLine(20, orderLineDescriptor, TEN);
 		assertThat(demandDetail.getShipmentScheduleId()).isEqualTo(20);
 
-		assertThat(demandDetail.getForecastId()).isLessThanOrEqualTo(0);
-		assertThat(demandDetail.getForecastLineId()).isLessThanOrEqualTo(0);
+		assertThat(demandDetail.getForecastId()).isEqualTo(UNSPECIFIED_REPO_ID);
+		assertThat(demandDetail.getForecastLineId()).isEqualTo(UNSPECIFIED_REPO_ID);
 
-		assertThat(demandDetail.getSubscriptionProgressId()).isLessThanOrEqualTo(0);
+		assertThat(demandDetail.getSubscriptionProgressId()).isEqualTo(UNSPECIFIED_REPO_ID);
 
 		assertThat(demandDetail.getOrderId()).isEqualTo(50);
 		assertThat(demandDetail.getOrderLineId()).isEqualTo(60);
@@ -77,17 +78,17 @@ public class DemandDetailTest
 				.subscriptionProgressId(20)
 				.subscriptionBillBPartnerId(30).build();
 
-		final DemandDetail demandDetail = DemandDetail.forDocumentDescriptor(20, subscriptionLineDescriptor, TEN);
+		final DemandDetail demandDetail = DemandDetail.forDocumentLine(20, subscriptionLineDescriptor, TEN);
 
 		assertThat(demandDetail.getShipmentScheduleId()).isEqualTo(20);
 
-		assertThat(demandDetail.getForecastId()).isLessThanOrEqualTo(0);
-		assertThat(demandDetail.getForecastLineId()).isLessThanOrEqualTo(0);
+		assertThat(demandDetail.getForecastId()).isEqualTo(UNSPECIFIED_REPO_ID);
+		assertThat(demandDetail.getForecastLineId()).isEqualTo(UNSPECIFIED_REPO_ID);
 
-		assertThat(demandDetail.getSubscriptionProgressId()).isLessThanOrEqualTo(20);
+		assertThat(demandDetail.getSubscriptionProgressId()).isEqualTo(20);
 
-		assertThat(demandDetail.getOrderId()).isLessThanOrEqualTo(0);
-		assertThat(demandDetail.getOrderLineId()).isLessThanOrEqualTo(0);
+		assertThat(demandDetail.getOrderId()).isEqualTo(UNSPECIFIED_REPO_ID);
+		assertThat(demandDetail.getOrderLineId()).isEqualTo(UNSPECIFIED_REPO_ID);
 
 		assertThat(demandDetail.getPlannedQty()).isEqualByComparingTo(TEN);
 	}

@@ -10,22 +10,20 @@ package de.metas.async.processor.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.DelayedRunnableExecutor;
-import org.compiere.db.CConnection;
 import org.compiere.util.Ini;
 
 import de.metas.async.api.IQueueDAO;
@@ -58,16 +56,7 @@ class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 
 	public QueueProcessorExecutorService()
 	{
-
-		// if (Services.get(IDeveloperModeBL.class).isEnabled())
-		if (CConnection.isServerEmbedded())
-		{
-			// If we are in DeveloperMode we always want to start the actual Queue Processor Executor because the developers needs to check/test his/her enqueings.
-			// => I think using "ServerEmbedded" for the decision to start an actual executor is better..being in developer mode does not always mean that there is not actual app-server to communicate
-			// with.
-			executor = new QueueProcessorsExecutor();
-		}
-		else if (Ini.isClient())
+		if (Ini.isClient())
 		{
 			// NOTE: later, here we can implement and add a ProxyQueueProcessorExecutorService which will contact the server
 			executor = NullQueueProcessorsExecutor.instance;
@@ -99,7 +88,7 @@ class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 
 	/**
 	 * Initialize executors now.
-	 * 
+	 *
 	 * NOTE: never ever call this method directly. It's supposed to be called from {@link #delayedInit}.
 	 */
 	private void initNow()
