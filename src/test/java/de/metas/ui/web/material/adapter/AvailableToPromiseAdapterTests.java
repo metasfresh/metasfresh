@@ -16,7 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.Type;
