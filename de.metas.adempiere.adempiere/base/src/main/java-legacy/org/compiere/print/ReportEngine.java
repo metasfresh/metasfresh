@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.print;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.awt.print.PrinterJob;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -49,7 +51,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pdf.Document;
 import org.adempiere.print.export.PrintDataExcelExporter;
 import org.adempiere.util.Check;
@@ -116,7 +117,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 {
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param pf Print Format
 	 * @param query Optional Query
@@ -129,7 +130,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param pf Print Format
 	 * @param query Optional Query
@@ -185,7 +186,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	/**
 	 * Set PrintFormat.
 	 * If Layout was created, re-create layout
-	 * 
+	 *
 	 * @param pf print format
 	 */
 	public void setPrintFormat(MPrintFormat pf)
@@ -204,7 +205,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	/**
 	 * Set Query and generate PrintData.
 	 * If Layout was created, re-create layout
-	 * 
+	 *
 	 * @param query query
 	 */
 	public void setQuery(MQuery query)
@@ -218,7 +219,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get Query
-	 * 
+	 *
 	 * @return query
 	 */
 	public MQuery getQuery()
@@ -250,7 +251,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get PrintData
-	 * 
+	 *
 	 * @return print data
 	 */
 	public PrintData getPrintData()
@@ -264,7 +265,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Set PrintData
-	 * 
+	 *
 	 * @param printData printData
 	 */
 	public void setPrintData(PrintData printData)
@@ -290,7 +291,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get Layout
-	 * 
+	 *
 	 * @return Layout
 	 */
 	public LayoutEngine getLayout()
@@ -302,7 +303,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get PrintFormat (Report) Name
-	 * 
+	 *
 	 * @return name
 	 */
 	public String getName()
@@ -312,7 +313,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get PrintFormat
-	 * 
+	 *
 	 * @return print format
 	 */
 	public MPrintFormat getPrintFormat()
@@ -322,7 +323,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get Print Info
-	 * 
+	 *
 	 * @return info
 	 */
 	public PrintInfo getPrintInfo()
@@ -332,7 +333,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get PrintLayout (Report) Context
-	 * 
+	 *
 	 * @return context
 	 */
 	public Properties getCtx()
@@ -342,7 +343,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get Row Count
-	 * 
+	 *
 	 * @return row count
 	 */
 	public int getRowCount()
@@ -352,7 +353,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get Column Count
-	 * 
+	 *
 	 * @return column count
 	 */
 	public int getColumnCount()
@@ -364,7 +365,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**************************************************************************
 	 * Get View Panel
-	 * 
+	 *
 	 * @return view panel
 	 */
 	public View getView()
@@ -440,7 +441,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Print Service Attribute Listener.
-	 * 
+	 *
 	 * @param psae event
 	 */
 	@Override
@@ -464,7 +465,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get PrinterJob based on PrinterName
-	 * 
+	 *
 	 * @param printerName optional Printer Name
 	 * @return PrinterJob
 	 */
@@ -490,7 +491,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Set Printer (name)
-	 * 
+	 *
 	 * @param printerName valid printer name
 	 */
 	public void setPrinterName(String printerName)
@@ -504,7 +505,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Get Printer (name)
-	 * 
+	 *
 	 * @return printer name
 	 */
 	public String getPrinterName()
@@ -514,7 +515,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**************************************************************************
 	 * Create HTML File
-	 * 
+	 *
 	 * @param file file
 	 * @param onlyTable if false create complete HTML document
 	 * @param language optional language - if null the default language is used to format nubers/dates
@@ -527,7 +528,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**************************************************************************
 	 * Create HTML File
-	 * 
+	 *
 	 * @param file file
 	 * @param onlyTable if false create complete HTML document
 	 * @param language optional language - if null the default language is used to format nubers/dates
@@ -559,7 +560,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Write HTML to writer
-	 * 
+	 *
 	 * @param writer writer
 	 * @param onlyTable if false create complete HTML document
 	 * @param language optional language - if null nubers/dates are not formatted
@@ -572,7 +573,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Write HTML to writer
-	 * 
+	 *
 	 * @param writer writer
 	 * @param onlyTable if false create complete HTML document
 	 * @param language optional language - if null numbers/dates are not formatted
@@ -702,7 +703,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**************************************************************************
 	 * Create CSV File
-	 * 
+	 *
 	 * @param file file
 	 * @param delimiter delimiter, e.g. comma, tab
 	 * @param language translation language
@@ -728,7 +729,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Write CSV to writer
-	 * 
+	 *
 	 * @param writer writer
 	 * @param delimiter delimiter, e.g. comma, tab
 	 * @param language translation language
@@ -805,7 +806,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	/**
 	 * Add Content to CSV string.
 	 * Encapsulate/mask content in " if required
-	 * 
+	 *
 	 * @param sb StringBuffer to add to
 	 * @param delimiter delimiter
 	 * @param content column value
@@ -819,9 +820,9 @@ public class ReportEngine implements PrintServiceAttributeListener
 		boolean needMask = false;
 		StringBuffer buff = new StringBuffer();
 		char chars[] = content.toCharArray();
-		for (int i = 0; i < chars.length; i++)
+		for (char d : chars)
 		{
-			char c = chars[i];
+			char c = d;
 			if (c == '"')
 			{
 				needMask = true;
@@ -841,7 +842,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**************************************************************************
 	 * Create XML File
-	 * 
+	 *
 	 * @param file file
 	 * @return true if success
 	 */
@@ -865,7 +866,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Write XML to writer
-	 * 
+	 *
 	 * @param writer writer
 	 * @return true if success
 	 */
@@ -890,7 +891,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	/**************************************************************************
 	 * Create PDF file.
 	 * (created in temporary storage)
-	 * 
+	 *
 	 * @return PDF file
 	 */
 	public File getPDF()
@@ -900,7 +901,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Create PDF file.
-	 * 
+	 *
 	 * @param file file
 	 * @return PDF file
 	 */
@@ -922,7 +923,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Create PDF File
-	 * 
+	 *
 	 * @param file file
 	 * @return true if success
 	 */
@@ -979,7 +980,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Create PDF as Data array
-	 * 
+	 *
 	 * @return pdf data
 	 */
 	public byte[] createPDFData()
@@ -1010,7 +1011,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**************************************************************************
 	 * Create PostScript File
-	 * 
+	 *
 	 * @param file file
 	 * @return true if success
 	 */
@@ -1033,7 +1034,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Write PostScript to writer
-	 * 
+	 *
 	 * @param os output stream
 	 * @return true if success
 	 */
@@ -1073,7 +1074,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Create Excel file
-	 * 
+	 *
 	 * @param outFile output file
 	 * @param language
 	 * @throws Exception if error
@@ -1087,7 +1088,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**************************************************************************
 	 * Get Report Engine for process info
-	 * 
+	 *
 	 * @param ctx context
 	 * @param pi process info with AD_PInstance_ID
 	 * @return report engine or null
@@ -1274,14 +1275,17 @@ public class ReportEngine implements PrintServiceAttributeListener
 			"C_Order_ID", "M_InOut_ID", "C_Invoice_ID", "C_Project_ID",
 			"C_DunningRunEntry_ID", "PP_Order_ID", "DD_Order_ID" };
 	private static final int[] DOC_TABLE_ID = new int[] {
-			I_C_Order.Table_ID, I_M_InOut.Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class), I_C_Project.Table_ID,
+			I_C_Order.Table_ID,
+			I_M_InOut.Table_ID,
+			getTableId(I_C_Invoice.class),
+			getTableId(I_C_Project.class),
 			I_C_DunningRunEntry.Table_ID,
 			Services.get(IADTableDAO.class).retrieveTableId(I_PP_Order.Table_Name),
 			Services.get(IADTableDAO.class).retrieveTableId(I_DD_Order.Table_Name) };
 
 	/**************************************************************************
 	 * Get Document Print Engine for Document Type.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param type document type
 	 * @param Record_ID id
@@ -1294,7 +1298,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**************************************************************************
 	 * Get Document Print Engine for Document Type.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param type document type
 	 * @param Record_ID id
@@ -1605,7 +1609,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Determine what Order document to print.
-	 * 
+	 *
 	 * @param C_Order_ID id
 	 * @return int Array with [printWhat, ID]
 	 */
@@ -1730,7 +1734,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	/**
 	 * Print Confirm.
 	 * Update Date Printed
-	 * 
+	 *
 	 * @param type document type
 	 * @param Record_ID record id
 	 */
@@ -1783,7 +1787,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	/**
 	 * Gets type (e.g. {@link #ORDER}, {@link #INVOICE} etc) for given tableId
-	 * 
+	 *
 	 * @param tableId
 	 * @return type or -1 if not found
 	 */

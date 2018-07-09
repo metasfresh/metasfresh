@@ -1,4 +1,4 @@
-package de.metas.document.documentNo.impl;
+package de.metas.document.sequence.impl;
 
 import java.util.Date;
 import java.util.Properties;

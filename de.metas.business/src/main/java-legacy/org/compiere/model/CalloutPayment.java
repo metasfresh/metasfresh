@@ -29,8 +29,8 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IDocumentNoInfo;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.payment.api.IPaymentBL;
 
 /**

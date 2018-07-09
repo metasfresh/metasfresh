@@ -159,11 +159,11 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		MBPartnerLocation[] locs = bp.getLocations(false);
 		if (locs != null)
 		{
-			for (int i = 0; i < locs.length; i++)
+			for (MBPartnerLocation loc : locs)
 			{
-				if (locs[i].isShipTo())
+				if (loc.isShipTo())
 				{
-					super.setC_BPartner_Location_ID(locs[i].getC_BPartner_Location_ID());
+					super.setC_BPartner_Location_ID(loc.getC_BPartner_Location_ID());
 				}
 			}
 			// set to first
@@ -325,7 +325,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 		if (getAD_Client_ID() <= 0)
 		{
-			throw new FillMandatoryException(COLUMNNAME_AD_Client_ID);
+			throw new FillMandatoryException(I_DD_Order.COLUMNNAME_AD_Client_ID);
 		}
 
 		// New Record Doc Type - make sure DocType set to 0
@@ -532,9 +532,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		BigDecimal Weight = BigDecimal.ZERO;
 
 		// Always check and (un) Reserve Inventory
-		for (int i = 0; i < lines.length; i++)
+		for (MDDOrderLine line2 : lines)
 		{
-			MDDOrderLine line = lines[i];
+			MDDOrderLine line = line2;
 			MLocator locator_from = MLocator.get(getCtx(), line.getM_Locator_ID());
 			MLocator locator_to = MLocator.get(getCtx(), line.getM_LocatorTo_ID());
 			BigDecimal reserved_ordered = line.getQtyOrdered()
@@ -682,9 +682,8 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		final MDDOrderLine[] lines = getLines(true, I_DD_OrderLine.COLUMNNAME_M_Product_ID);
-		for (int i = 0; i < lines.length; i++)
+		for (MDDOrderLine line : lines)
 		{
-			MDDOrderLine line = lines[i];
 			BigDecimal old = line.getQtyOrdered();
 			if (old.signum() != 0)
 			{
@@ -719,9 +718,8 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 		// Close Not delivered Qty - SO/PO
 		final MDDOrderLine[] lines = getLines(true, "M_Product_ID");
-		for (int i = 0; i < lines.length; i++)
+		for (final MDDOrderLine line : lines)
 		{
-			final MDDOrderLine line = lines[i];
 			final BigDecimal qtyOrderedOld = line.getQtyOrdered();
 			if (qtyOrderedOld.compareTo(line.getQtyDelivered()) != 0)
 			{

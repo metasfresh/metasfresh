@@ -29,7 +29,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.util.Services;
 
-import de.metas.document.documentNo.IDocumentNoBL;
+import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.order.document.documentNo.OrderPOReferenceListener;
 
 /**

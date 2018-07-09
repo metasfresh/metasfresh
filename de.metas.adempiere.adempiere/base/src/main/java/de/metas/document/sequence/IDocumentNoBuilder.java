@@ -1,19 +1,18 @@
 /**
  *
  */
-package de.metas.document.documentNo;
-
-import org.compiere.model.MSequence;
+package de.metas.document.sequence;
 
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
-import de.metas.document.documentNo.impl.IPreliminaryDocumentNoBuilder;
+import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
 
 public interface IDocumentNoBuilder
 {
 	public static final String NO_DOCUMENTNO = null;
 
-	public static final String PREFIX_DOCSEQ = MSequence.PREFIX_DOCSEQ;
+	/** Sequence name prefix for Table Document Nos (also used for Value) */
+	public static final String PREFIX_DOCSEQ = "DocumentNo_";
 
 	/**
 	 * Builds the DocumentNo string.
@@ -27,16 +26,13 @@ public interface IDocumentNoBuilder
 
 	IDocumentNoBuilder setDocumentSequenceInfo(DocumentSequenceInfo documentSeqInfo);
 
-	IDocumentNoBuilder setDocumentSequenceInfoByTableName(String tableName, int adClientId, int adOrgId);
-
-	IDocumentNoBuilder setDocumentSequenceByDocTypeId(int C_DocType_ID, boolean useDefiniteSequence);
-
 	IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(int AD_Sequence_ID);
 
 	IDocumentNoBuilder setFailOnError(boolean failOnError);
 
 	/**
 	 * Sets the document/model for which we are building the DocumentNo.
+	 * The builder can use is to get {@code AD_Client_ID}, {@code AD_Org_ID}, {@code DocumentDate} and maybe more, in future.
 	 *
 	 * @param documentModel document/model or null
 	 */
@@ -48,15 +44,6 @@ public interface IDocumentNoBuilder
 	 * @param sequenceNo
 	 */
 	IDocumentNoBuilder setSequenceNo(int sequenceNo);
-
-	/**
-	 * Does nothing!
-	 * We are keeping this method here just to keep the old logic (in case we want to turn on trxName usage).
-	 *
-	 * @param trxName
-	 * @return
-	 */
-	IDocumentNoBuilder setTrxName(String trxName);
 
 	/**
 	 * Advises the builder to use a preliminary DocumentNo.

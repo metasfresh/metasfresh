@@ -1,4 +1,4 @@
-package de.metas.document.documentNo.impl;
+package de.metas.document.sequence.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,9 +6,9 @@ import java.util.Map;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 
-import de.metas.document.documentNo.IDocumentNoBL;
-import de.metas.document.documentNo.spi.IDocumentNoAware;
-import de.metas.document.documentNo.spi.IDocumentNoListener;
+import de.metas.document.sequence.IDocumentNoBL;
+import de.metas.document.sequence.spi.IDocumentNoAware;
+import de.metas.document.sequence.spi.IDocumentNoListener;
 
 /*
  * #%L

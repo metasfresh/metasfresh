@@ -10,12 +10,12 @@ package de.metas.dpd.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -63,7 +63,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.IPrintingService;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.dpd.exception.DPDException;
 import de.metas.dpd.model.MDPDCountry;
 import de.metas.dpd.model.MDPDDepot;
@@ -89,7 +89,7 @@ import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 
 /**
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
@@ -101,17 +101,17 @@ public class DPDRoutingService implements IDPDRoutingService
 	public static final String SEQ_PACKAGENO_TABLENAME = "DPD_PackageNumber";
 
 	public static final String AD_SYSCONFIG_DPD_VERSANDDEPOT = "DPD-Versanddepot";
-	
+
 	public static final String AD_MESSAGE_DPDFILE = "de.metas.dpd.service.RoutingService.retrieveData";
 	public static final String AD_MESSAGE_DPDDepot = "de.metas.dpd.service.RoutingService.retrieveData_DPDDepot";
 	public static final String AD_MESSAGE_DPDService = "de.metas.dpd.service.RoutingService.retrieveData_DPDService";
-	
+
 	public static final String DPD_SERVICE_STANDARD = "101";
 	public static final String DPD_SERVICE_KLEINPAKET = "136";
 
 	// needs to excecute "de/metas/docs/sales/dpdlabel/report.jasper"
 	public static final String JasperProcess_Label = "DPD_Label_InOut";
-	public static final String JasperProcess_Package = "DPD_Label_Package"; 
+	public static final String JasperProcess_Package = "DPD_Label_Package";
 
 	// public static final String REPORT_RESOURCE = "de/metas/docs/sales/dpdlabel/report.jasper";
 	// public static final String REPORT_RESOURCE1 = "de/metas/docs/sales/dpdlabel/report1.jasper";
@@ -150,39 +150,39 @@ public class DPDRoutingService implements IDPDRoutingService
 				MDPDFileInfo.retrieve(ctx, "ROUTES", query.date, trxName);
 		String msg = Msg.getMsg(ctx, AD_MESSAGE_DPDFILE, new Object[]{"ROUTES"});
 		Check.assumeNotNull(routeFileInfo, msg, query.date);
-		
+
 		final MDPDRoute route =
 				MDPDRoute.retrieve(ctx, query.dCountry, query.dPostCode, query.service, query.rDepot, routeFileInfo.get_ID(), query.date, trxName);
-		
+
 		msg = Msg.getMsg(ctx, AD_MESSAGE_DPDFILE, new Object[]{"ROUTE"});
 		Check.assumeNotNull(route, msg, query.date);
-		
+
 		final MDPDFileInfo serviceFileInfo =
 				MDPDFileInfo.retrieve(ctx, "SERVICE", query.date, trxName);
 		msg = Msg.getMsg(ctx, AD_MESSAGE_DPDFILE, new Object[]{"SERVICE"});
 		Check.assumeNotNull(serviceFileInfo, msg, query.date);
-		
+
 		final MDPDService service =	MDPDService.retrieve(ctx, query.service, serviceFileInfo.get_ID(), trxName);
 		msg = Msg.getMsg(ctx, AD_MESSAGE_DPDService, new Object[]{query.service, serviceFileInfo.get_ID()});
-		Check.assumeNotNull(service, msg, query.date); 
+		Check.assumeNotNull(service, msg, query.date);
 
 		final MDPDFileInfo serviceInfoFileInfo =
 				MDPDFileInfo.retrieve(ctx, "SERVICEINFO.DE", query.date, trxName);
 		msg = Msg.getMsg(ctx, AD_MESSAGE_DPDFILE, new Object[]{"SERVICEINFO.DE"});
 		Check.assumeNotNull(serviceInfoFileInfo, msg, query.date);
-		
+
 		final MDPDServiceInfo serviceInfo =
 				MDPDServiceInfo.retrieve(ctx, query.service, serviceInfoFileInfo.get_ID(), trxName);
-		
+
 		final MDPDFileInfo depotsFileInfo =
 				MDPDFileInfo.retrieve(ctx, "DEPOTS", query.date, trxName);
 		msg = Msg.getMsg(ctx, AD_MESSAGE_DPDFILE, new Object[]{"DEPOTS"});
 		Check.assumeNotNull(depotsFileInfo, msg, query.date);
-		
+
 		final MDPDDepot depot = MDPDDepot.retrieve(ctx, route.getD_Depot(), depotsFileInfo.get_ID(), trxName);
 		msg = Msg.getMsg(ctx, AD_MESSAGE_DPDService, new Object[]{route.getD_Depot(), depotsFileInfo.get_ID()});
-		Check.assumeNotNull(depot, msg, query.date); 
-		
+		Check.assumeNotNull(depot, msg, query.date);
+
 		final String countryCode;
 		if (depot.getCountryCode() == null)
 		{
@@ -196,7 +196,7 @@ public class DPDRoutingService implements IDPDRoutingService
 		final MDPDFileInfo countryFileInfo = MDPDFileInfo.retrieve(ctx, "COUNTRY", query.date, trxName);
 		msg = Msg.getMsg(ctx, AD_MESSAGE_DPDFILE, new Object[]{"COUNTRY"});
 		Check.assumeNotNull(countryFileInfo, msg, query.date);
-		
+
 		final MDPDCountry country = MDPDCountry.retrieve(ctx, countryCode, countryFileInfo.get_ID(), trxName);
 
 		final String groupingPriority = mkEmptyIfNull(route.getGroupingPriority());
@@ -266,7 +266,7 @@ public class DPDRoutingService implements IDPDRoutingService
 
 	public RoutingQuery mkRoutingQuery(
 			final Properties ctx,
-			final I_M_InOut inOut, 
+			final I_M_InOut inOut,
 			final I_M_Package pack,
 			final String serviceOverride)
 	{
@@ -320,7 +320,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			throw DPDException.invalidPackage(pack, "Verpackungsabmessungen fehlen");
 		}
 
-		final I_M_PackagingContainer container = InterfaceWrapperHelper.newInstance(I_M_PackagingContainer.class); 
+		final I_M_PackagingContainer container = InterfaceWrapperHelper.newInstance(I_M_PackagingContainer.class);
 		BigDecimal lengthAmt = container.getLength();
 		BigDecimal widthAmt = container.getWidth();
 		BigDecimal heightAmt = container.getHeight();
@@ -361,7 +361,7 @@ public class DPDRoutingService implements IDPDRoutingService
 	@Override
 	public void createPackageInfo(
 			final I_M_Package pack,
-			final RoutingResult result, 
+			final RoutingResult result,
 			final RoutingQuery query)
 	{
 
@@ -449,11 +449,10 @@ public class DPDRoutingService implements IDPDRoutingService
 				.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx)));
 
 		// TT TTTT TT
-		
+
 		// FIXME: tsa: SEQ_PACKAGENO_TABLENAME table does not exist in !?!?
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 		final String packageNo = documentNoFactory.forTableName(SEQ_PACKAGENO_TABLENAME, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx))
-				.setTrxName(trxName)
 				.build();
 		assert packageNo.length() == 8;
 
@@ -470,7 +469,7 @@ public class DPDRoutingService implements IDPDRoutingService
 	}
 
 	/**
-	 * 
+	 *
 	 * @param inOut
 	 * @param serviceOverride
 	 * @param packg
@@ -506,9 +505,9 @@ public class DPDRoutingService implements IDPDRoutingService
 
 	@Override
 	public void createPackageInfo(
-			final Properties ctx, 
-			final I_M_Package pack, 
-			final I_M_InOut inOut, 
+			final Properties ctx,
+			final I_M_Package pack,
+			final I_M_InOut inOut,
 			final String serviceOverride,
 			final String trxName)
 	{
@@ -549,14 +548,14 @@ public class DPDRoutingService implements IDPDRoutingService
 			throw new AdempiereException(e);
 		}
 	}
-	
+
 	@Override
 	public boolean printLabel(
 			final Properties ctx,
 			final I_M_InOut inOut,
 			I_M_Package pack,
 			BigDecimal M_Shipper_ID,
-			final String trxName) 
+			final String trxName)
 	{
 		return printPackageLabel(ctx, inOut, pack, M_Shipper_ID, trxName);
 	}
@@ -651,7 +650,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			final String msg = "Error printing the report - " + e.getMessage();
 			throw new AdempiereException(msg, e);
 		}
-		
+
 		return true;
 	}
 
@@ -716,7 +715,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			return sp.getM_ShipperTransportation().getDocumentNo();
 		return null;
 	}
-	
+
 	private List<I_M_Package> retrievePackagesForInOut(
 			final Properties ctx,
 			final I_M_InOut inOut,

@@ -38,8 +38,8 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IDocumentNoInfo;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;

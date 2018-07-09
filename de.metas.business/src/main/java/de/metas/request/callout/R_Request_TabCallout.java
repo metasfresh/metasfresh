@@ -5,8 +5,8 @@ import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.util.Services;
 import org.compiere.model.I_R_Request;
 
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 
 /*
  * #%L

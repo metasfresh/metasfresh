@@ -1,6 +1,6 @@
-package de.metas.document.documentNo.spi;
+package de.metas.document.sequence.spi;
 
-import de.metas.document.documentNo.IDocumentNoBL;
+import de.metas.document.sequence.IDocumentNoBL;
 
 /*
  * #%L
