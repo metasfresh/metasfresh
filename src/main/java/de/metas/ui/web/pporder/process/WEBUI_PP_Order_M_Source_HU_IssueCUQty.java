@@ -21,6 +21,7 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
@@ -103,6 +104,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				.peek(sourceHu -> huId2SourceHu.put(sourceHu.getM_HU_ID(), sourceHu))
 				.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
 				.map(I_M_Source_HU::getM_HU)
+				.filter(hu -> X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
 				.collect(ImmutableList.toImmutableList());
 
 		final HUsToNewCUsRequest request = HUsToNewCUsRequest
