@@ -333,7 +333,8 @@ class PPOrderLinesLoader
 						readonly))
 				.collect(ImmutableList.toImmutableList());
 
-		final PPOrderLineRowId rowId = PPOrderLineRowId.ofIssuedOrReceivedHU(huEditorRow.getId(), huEditorRow.getM_HU_ID());
+
+		final PPOrderLineRowId rowId = PPOrderLineRowId.ofIssuedOrReceivedHU(parentHUEditorRow != null ? parentHUEditorRow.getId() : null, huEditorRow.getM_HU_ID());
 
 		return PPOrderLineRow.builderForIssuedOrReceivedHU()
 				.rowId(rowId)

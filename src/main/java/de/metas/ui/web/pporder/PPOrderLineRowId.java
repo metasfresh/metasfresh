@@ -120,7 +120,7 @@ public class PPOrderLineRowId
 		return new PPOrderLineRowId(PPOrderLineRowType.PP_Order, null, ppOrderId);
 	}
 
-	public static PPOrderLineRowId ofIssuedOrReceivedHU(@NonNull DocumentId parentRowId, int huId)
+	public static PPOrderLineRowId ofIssuedOrReceivedHU(@Nullable DocumentId parentRowId, int huId)
 	{
 		Preconditions.checkArgument(huId > 0, "huId > 0");
 		return new PPOrderLineRowId(PPOrderLineRowType.IssuedOrReceivedHU, parentRowId, huId);
