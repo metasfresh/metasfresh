@@ -17,14 +17,14 @@ public interface IEventBusFactory extends ISingletonService
 	 */
 	public IEventBus getEventBus(Topic topic);
 
-	/** 
+	/**
 	 * @return event bus or null
 	 */
 	IEventBus getEventBusIfExists(Topic topic);
 
 	/**
 	 * Create an remotely bind all {@link IEventBus}es for which we have global listeners registered.
-	 * 
+	 *
 	 * @see #registerGlobalEventListener(Topic, IEventListener)
 	 */
 	public void initEventBussesWithGlobalListeners();
@@ -36,11 +36,11 @@ public interface IEventBusFactory extends ISingletonService
 
 	/**
 	 * Register a global {@link IEventListener}.
-	 * 
+	 *
 	 * Global event listeners will be automatically registered when the {@link IEventBus} is created. Also, the listener will be registered to event bus.
-	 * 
+	 *
 	 * The advantage of using this method instead of {@link IEventBus#subscribe(IEventListener)} is that those listeners will survive also after an reset (i.e. {@link #destroyAllEventBusses()}).
-	 * 
+	 *
 	 * @param topic
 	 * @param listener
 	 * @see #initEventBussesWithGlobalListeners()
@@ -49,7 +49,7 @@ public interface IEventBusFactory extends ISingletonService
 
 	/**
 	 * Adds a topic on which currently login user shall subscribe for UI notifications.
-	 * 
+	 *
 	 * @param topic
 	 */
 	void addAvailableUserNotificationsTopic(final Topic topic);
@@ -60,7 +60,7 @@ public interface IEventBusFactory extends ISingletonService
 
 	/**
 	 * Check remote endpoint connection status and send notifications in case it's down.
-	 * 
+	 *
 	 * @return true if remote endpoint connection is up
 	 */
 	boolean checkRemoteEndpointStatus();

@@ -102,10 +102,8 @@ public final class CacheMgt
 	private final AtomicLong lastCacheReset = new AtomicLong();
 
 	/**
-	 * Enable caches for the given table to be invalidated by remote events. Example: if a user somewhere else opens/closes a period, we can allow the system to invalidate the local cache to avoid it
-	 * becoming stale.
-	 *
-	 * @param tableName
+	 * Enable caches for the given table to be invalidated by remote events.<br>
+	 * Example: if a user somewhere else opens/closes a period, we can allow the system to invalidate all the local caches to avoid it becoming stale.
 	 */
 	public final void enableRemoteCacheInvalidationForTableName(final String tableName)
 	{
