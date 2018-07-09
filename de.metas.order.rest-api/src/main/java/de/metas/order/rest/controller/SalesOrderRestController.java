@@ -6,10 +6,13 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +30,8 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.order.OrderFactory;
 import de.metas.order.rest.model.JsonSalesOrder;
 import de.metas.order.rest.model.JsonSalesOrderAttachment;
@@ -80,6 +85,16 @@ public class SalesOrderRestController
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
 		final OrderFactory salesOrderFactory = OrderFactory.newSalesOrder();
+
+		if (!Check.isEmpty(request.getDocTypeName(), true))
+		{
+			final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+					.adClientId(Env.getAD_Client_ID())
+					.name(request.getDocTypeName())
+					.build());
+			salesOrderFactory.docType(docTypeId);
+		}
 
 		final BPartnerId shipBPartnerId = bpartnersRepo.getBPartnerIdByValue(request.getShipBPartnerCode());
 		salesOrderFactory.shipBPartner(shipBPartnerId);

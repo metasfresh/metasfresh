@@ -3,6 +3,8 @@ package de.metas.order.rest.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -42,6 +44,9 @@ import lombok.Value;
 @Value
 public class JsonSalesOrderCreateRequest
 {
+	@JsonProperty("docTypeName")
+	String docTypeName;
+
 	@JsonProperty("shipBPartnerCode")
 	String shipBPartnerCode;
 
@@ -54,6 +59,7 @@ public class JsonSalesOrderCreateRequest
 	@Builder
 	@JsonCreator
 	private JsonSalesOrderCreateRequest(
+			@JsonProperty("docTypeName") @Nullable final String docTypeName,
 			@JsonProperty("shipBPartnerCode") @NonNull final String shipBPartnerCode,
 			@JsonProperty("datePromised") @NonNull final LocalDateTime datePromised,
 			@JsonProperty("lines") @NonNull @Singular final List<JsonSalesOrderLine> lines)
@@ -61,6 +67,7 @@ public class JsonSalesOrderCreateRequest
 		Check.assumeNotEmpty(shipBPartnerCode, "shipBPartnerCode is not empty");
 		Check.assumeNotEmpty(lines, "lines is not empty");
 
+		this.docTypeName = docTypeName;
 		this.shipBPartnerCode = shipBPartnerCode;
 		this.datePromised = datePromised;
 		this.lines = ImmutableList.copyOf(lines);
