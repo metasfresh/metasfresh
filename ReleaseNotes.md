@@ -9,13 +9,41 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.66 (2018-29)
+## Features
+
+## Fixes
+
 # metasfresh 5.65 (2018-28)
 ## Features
+* metasfresh
+  * [#4217](https://github.com/metasfresh/metasfresh/issues/4217) IFA Product Fields in Pharma Product readonly
+  * [#4219](https://github.com/metasfresh/metasfresh/issues/4219) Import Datev Primanota for Payments, Allocations
+  * [#4220](https://github.com/metasfresh/metasfresh/issues/4220) Lot No. Control without mandatory Product ID
+  * [#4285](https://github.com/metasfresh/metasfresh/issues/4285) Invoice Document Outbound eMail enqueing
+  * [#4308](https://github.com/metasfresh/metasfresh/issues/4308) Zoom from sales order to material dispo should open all referencing records
+  * [#4311](https://github.com/metasfresh/metasfresh/issues/4311) Purchase schedules date: consider vendor lead time and non business days
+  * [#4318](https://github.com/metasfresh/metasfresh/issues/4318) Split the current M_ShipmentSchedule_Update async queue processor
+  * [#4320](https://github.com/metasfresh/metasfresh/issues/4320) improve mass print oversight
+  * [#4340](https://github.com/metasfresh/metasfresh/issues/4340) REST API for creating sales orders and attaching files to them
+
 * metasfresh-webui-frontend
   * [#1857](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1857) Readonly next and previous page buttons
     * Pagination Improvement. Now deactivating previous/ next buttons in pagination on fist/ last page.
 
+* metasfresh-dist
+  * [#47](https://github.com/metasfresh/metasfresh-dist/issues/47) provide standalone metasfresh-dist-report docker image
+  * [#48](https://github.com/metasfresh/metasfresh-dist/issues/48) provide standalone metasfresh-webui-frontend k8s dev deployment
+
 ## Fixes
+* metasfresh
+  * [#4271](https://github.com/metasfresh/metasfresh/issues/4271) Reactivated and completed sales order is considered as new sales order in Material Dispo
+  * [#4276](https://github.com/metasfresh/metasfresh/issues/4276) HU Editor in picking terminal shows all HUs: not filtered for product, and HUs with status: Shipped
+  * [#4284](https://github.com/metasfresh/metasfresh/issues/4284) Document Outbound eMail action
+  * [#4307](https://github.com/metasfresh/metasfresh/issues/4307) Reversed material receipt not considered correctly in Material Cockpit
+  * [#4314](https://github.com/metasfresh/metasfresh/issues/4314) metasfresh-app server startup stalls if no activeMQ broker is available
+  * [#4342](https://github.com/metasfresh/metasfresh/issues/4342) ATP in batch entry is wrong after attributes are added
+
 * metasfresh-webui-frontend
   * [#1467](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1467) Advanced Edit shortcut not working correctly
     * Improvement of the Handling of shortcuts.
