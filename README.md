@@ -8,11 +8,11 @@ This repo contains the API service of our webui. The frontend can be found in it
 
 # Some notes for developers:
 
-* one can run it from eclipse
-* the `main` method is located at `/metasfresh-webui-api/src/main/java/de/metas/ui/web/WebRestApiApplication.java`
-  * if running it for the first time, you probably need to run with `-Dwebui-api-run-headless=false` so that the swing dialog to set the DB connection can be displayed
-  * if you also run metasfresh-admin locally on port 9090, you might also want to run the this API with `-Dspring.boot.admin.url=http://localhost:9090 -Dmanagement.security.enabled=false`
-* by default, it listens on port 8080
-* swagger UI url: http://localhost:8080/swagger-ui.html
-* you might also add this property when run the API `-Delastic_enable=false` , so that the console to not be flooded with elastic search issues
+* This can be run from from eclipse
+* The `main` method is located at `/metasfresh-webui-api/src/main/java/de/metas/ui/web/WebRestApiApplication.java`
+  * When running the API for the first time, you probably need to run it with `-Dwebui-api-run-headless=false` so that the swing dialog to set the DB connection can be displayed
+  * If you also run metasfresh-admin locally on port 9090, you might also want to run the this API with `-Dspring.boot.admin.url=http://localhost:9090 -Dmanagement.security.enabled=false`
+* By default, this listens on port 8080
+* Swagger UI url: http://localhost:8080/swagger-ui.html
+* You might also add the property `-Delastic_enable=false` when running the API so that the console will not be flooded with elastic search issues
 
