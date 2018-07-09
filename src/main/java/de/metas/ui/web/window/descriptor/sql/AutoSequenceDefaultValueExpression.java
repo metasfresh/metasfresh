@@ -14,7 +14,7 @@ import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.ui.web.window.WindowConstants;
 import lombok.NonNull;
 
