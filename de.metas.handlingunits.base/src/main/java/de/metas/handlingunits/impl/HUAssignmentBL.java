@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -101,15 +103,14 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		return assignHU0(model, hu, isTransferPackingMaterials, trxName);
 	}
 
-	private I_M_HU_Assignment assignHU0(final Object model, final I_M_HU hu, final Boolean isTransferPackingMaterials, final String trxName)
+	private I_M_HU_Assignment assignHU0(
+			@NonNull final Object model,
+			@NonNull final I_M_HU hu,
+			@Nullable final Boolean isTransferPackingMaterials,
+			final String trxName)
 	{
-		Check.assumeNotNull(model, "model not null");
-		Check.assumeNotNull(hu, "hu not null");
-
-		//
 		// Validate the HU
-		final int huId = hu.getM_HU_ID();
-		Check.assume(huId > 0, "huId > 0");
+		final int huId = Check.assumeGreaterThanZero(hu.getM_HU_ID(), "hu.getM_HU_ID()");
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
@@ -126,7 +127,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		}
 		else
 		{
-			builder.initializeAssignment(assignment); // going to update the existing I_M_HU_Assignment
+			builder.setAssignmentRecordToUpdate(assignment); // going to update the existing I_M_HU_Assignment
 		}
 
 		updateHUAssignment(builder, hu, model, isTransferPackingMaterials, trxName);
@@ -273,7 +274,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 
 		//
 		// Build the HU to assign map (M_HU_ID -> M_HU)
-		final Map<Integer, I_M_HU> huId2hu = new HashMap<Integer, I_M_HU>(handlingUnits.size());
+		final Map<Integer, I_M_HU> huId2hu = new HashMap<>(handlingUnits.size());
 		for (final I_M_HU hu : handlingUnits)
 		{
 			final int huId = hu.getM_HU_ID();
@@ -297,7 +298,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			{
 				// existing assignment, keep it but update it (just in case)
 				final IHUAssignmentBuilder builder = createHUAssignmentBuilder();
-				builder.initializeAssignment(assignment);
+				builder.setAssignmentRecordToUpdate(assignment);
 
 				updateHUAssignment(builder, hu, model, IsTransferPackingMaterials_DoNotChange, trxName);
 			}
@@ -350,5 +351,24 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	public IHUAssignmentBuilder createHUAssignmentBuilder()
 	{
 		return new HUAssignmentBuilder();
+	}
+
+	@Override
+	public void copyHUAssignments(
+			@NonNull final Object sourceModel,
+			@NonNull final Object targetModel)
+	{
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+
+		final List<I_M_HU_Assignment> //
+		huAssignmentsForSource = huAssignmentDAO.retrieveHUAssignmentsForModel(sourceModel);
+
+		for (final I_M_HU_Assignment huAssignment : huAssignmentsForSource)
+		{
+			createHUAssignmentBuilder()
+					.setTemplateForNewRecord(huAssignment)
+					.setModel(targetModel)
+					.build();
+		}
 	}
 }

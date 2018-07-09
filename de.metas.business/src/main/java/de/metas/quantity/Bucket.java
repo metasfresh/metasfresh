@@ -10,12 +10,12 @@ package de.metas.quantity;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,8 +33,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /**
- * This is {@link CapacityInterface} that also has "level", i.e. a quantity that already occupates a part of it.
- * 
+ * This is {@link CapacityInterface} that also has "level", i.e. it contains a quantity that already occupates a part of it.
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -72,7 +72,7 @@ public class Bucket
 				+ ", capacity=" + capacity
 				+ "]";
 	}
-	
+
 	public final boolean isInfiniteCapacity()
 	{
 		return capacity.isInfiniteCapacity();
@@ -154,12 +154,13 @@ public class Bucket
 		return addQty(qtyToAdd, allowCapacityOverload);
 	}
 
-	public Quantity addQty(final Quantity qtyToAdd, final Boolean allowCapacityOverload)
+	public Quantity addQty(
+			@NonNull final Quantity qtyToAdd,
+			final Boolean allowCapacityOverload)
 	{
-		Check.assumeNotNull(qtyToAdd, "qtyToAdd not null");
 		Check.assume(qtyToAdd.signum() >= 0, "qtyToAdd({}) >= 0", qtyToAdd);
 
-		final BigDecimal qtyToAdd_Qty = qtyToAdd.getQty();
+		final BigDecimal qtyToAdd_Qty = qtyToAdd.getAsBigDecimal();
 		final I_C_UOM qtyToAdd_UOM = qtyToAdd.getUOM();
 		final I_C_UOM baseUOM = getC_UOM();
 
@@ -230,7 +231,7 @@ public class Bucket
 		Check.assumeNotNull(qtyToRemove, "qtyToRemove not null");
 		Check.assume(qtyToRemove.signum() >= 0, "qtyToRemove({}) >= 0", qtyToRemove);
 
-		final BigDecimal qtyToRemove_Qty = qtyToRemove.getQty();
+		final BigDecimal qtyToRemove_Qty = qtyToRemove.getAsBigDecimal();
 		final I_C_UOM qtyToRemove_UOM = qtyToRemove.getUOM();
 		final I_C_UOM baseUOM = getC_UOM();
 

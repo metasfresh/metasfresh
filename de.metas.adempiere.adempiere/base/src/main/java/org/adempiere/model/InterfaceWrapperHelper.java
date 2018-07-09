@@ -70,9 +70,11 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
+import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -336,6 +338,11 @@ public class InterfaceWrapperHelper
 		return bean;
 	}
 
+	public static <T> T loadOutOfTrx(@NonNull final RepoIdAware id, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(id.getRepoId(), modelClass);
+	}
+
 	/**
 	 * Loads given model, out of transaction.
 	 * NOTE: to be used, mainly for loading master data models.
@@ -347,6 +354,11 @@ public class InterfaceWrapperHelper
 	public static <T> T loadOutOfTrx(final int id, final Class<T> modelClass)
 	{
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_None);
+	}
+
+	public static <T> T load(final RepoIdAware id, final Class<T> modelClass)
+	{
+		return load(id.getRepoId(), modelClass);
 	}
 
 	/**
@@ -363,6 +375,16 @@ public class InterfaceWrapperHelper
 
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
 	{
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	public static <T> List<T> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
+	{
+		final ImmutableSet<Integer> ids = repoIdAwares
+				.stream()
+				.map(RepoIdAware::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
 

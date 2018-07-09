@@ -98,6 +98,35 @@ public interface I_C_Doc_Outbound_Log
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BPartner>(I_C_Doc_Outbound_Log.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
 	 * Set Geschäftspartnergruppe.
 	 * Geschäftspartnergruppe
 	 *
@@ -130,35 +159,6 @@ public interface I_C_Doc_Outbound_Log
     public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BPartner>(I_C_Doc_Outbound_Log.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
 	 * Set C_Doc_Outbound_Log.
 	 *
 	 * <br>Type: ID
@@ -185,7 +185,7 @@ public interface I_C_Doc_Outbound_Log
 	 * Set Belegart.
 	 * Belegart oder Verarbeitungsvorgaben
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -195,7 +195,7 @@ public interface I_C_Doc_Outbound_Log
 	 * Get Belegart.
 	 * Belegart oder Verarbeitungsvorgaben
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -229,7 +229,7 @@ public interface I_C_Doc_Outbound_Log
 	 * Get Erstellt durch.
 	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -239,6 +239,56 @@ public interface I_C_Doc_Outbound_Log
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_User>(I_C_Doc_Outbound_Log.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Derzeitige Mailadresse.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCurrentEMailAddress (java.lang.String CurrentEMailAddress);
+
+	/**
+	 * Get Derzeitige Mailadresse.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCurrentEMailAddress();
+
+    /** Column definition for CurrentEMailAddress */
+    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_CurrentEMailAddress = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "CurrentEMailAddress", null);
+    /** Column name CurrentEMailAddress */
+    public static final String COLUMNNAME_CurrentEMailAddress = "CurrentEMailAddress";
+
+	/**
+	 * Set Derzeitiger Mailempfänger.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCurrentEMailRecipient_ID (int CurrentEMailRecipient_ID);
+
+	/**
+	 * Get Derzeitiger Mailempfänger.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCurrentEMailRecipient_ID();
+
+	public org.compiere.model.I_AD_User getCurrentEMailRecipient();
+
+	public void setCurrentEMailRecipient(org.compiere.model.I_AD_User CurrentEMailRecipient);
+
+    /** Column definition for CurrentEMailRecipient_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_User> COLUMN_CurrentEMailRecipient_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_User>(I_C_Doc_Outbound_Log.class, "CurrentEMailRecipient_ID", org.compiere.model.I_AD_User.class);
+    /** Column name CurrentEMailRecipient_ID */
+    public static final String COLUMNNAME_CurrentEMailRecipient_ID = "CurrentEMailRecipient_ID";
 
 	/**
 	 * Set Belegdatum.
@@ -337,7 +387,7 @@ public interface I_C_Doc_Outbound_Log
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -347,7 +397,7 @@ public interface I_C_Doc_Outbound_Log
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -437,19 +487,19 @@ public interface I_C_Doc_Outbound_Log
     public static final String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
 
 	/**
-	 * Set Invoice Email Enabled.
+	 * Set Rechnung per eMail.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setIsInvoiceEmailEnabled (boolean IsInvoiceEmailEnabled);
 
 	/**
-	 * Get Invoice Email Enabled.
+	 * Get Rechnung per eMail.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public boolean isInvoiceEmailEnabled();

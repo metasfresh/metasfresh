@@ -55,10 +55,16 @@ import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.lang.Percent;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
@@ -67,8 +73,10 @@ import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PaymentTermService.class })
 public class PricingConditionsTest
 {
 	@Rule
@@ -349,7 +357,7 @@ public class PricingConditionsTest
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(id(schema1))
 				.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
-						.productAndCategoryId(productAndCategoryId(product1))
+						.product(productAndCategoryId(product1))
 						.qty(new BigDecimal(100))
 						.price(price)
 						.build())
@@ -399,7 +407,7 @@ public class PricingConditionsTest
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(id(schema1))
 				.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
-						.productAndCategoryId(productAndCategoryId(product1))
+						.product(productAndCategoryId(product1))
 						.qty(new BigDecimal(100))
 						.price(price)
 						.attributeInstance(createAttributeInstance(attr1, attrValue1))
@@ -429,9 +437,9 @@ public class PricingConditionsTest
 		return PricingConditionsBreakId.of(record.getM_DiscountSchema_ID(), record.getM_DiscountSchemaBreak_ID());
 	}
 
-	private static final ProductAndCategoryId productAndCategoryId(final I_M_Product product)
+	private static final ProductAndCategoryAndManufacturerId productAndCategoryId(final I_M_Product product)
 	{
-		return ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID());
+		return ProductAndCategoryAndManufacturerId.of(product.getM_Product_ID(), product.getM_Product_Category_ID(), product.getManufacturer_ID());
 	}
 
 	private BigDecimal calculatePrice(final BigDecimal price, final CalculatePricingConditionsRequest request)

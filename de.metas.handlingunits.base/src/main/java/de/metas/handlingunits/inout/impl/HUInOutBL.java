@@ -46,6 +46,7 @@ import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUWarehouseDAO;
@@ -175,10 +176,8 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void destroyHUs(final org.compiere.model.I_M_InOut inout)
+	public void destroyHUs(@NonNull final org.compiere.model.I_M_InOut inout)
 	{
-		Check.assumeNotNull(inout, "inout not null");
-
 		// services
 		final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -372,4 +371,20 @@ public class HUInOutBL implements IHUInOutBL
 
 	}
 
+	@Override
+	public void copyAssignmentsToReversal(@NonNull final org.compiere.model.I_M_InOut inOutRecord)
+	{
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+
+		final List<I_M_InOutLine> lineRecords = inOutDAO.retrieveLines(inOutRecord, I_M_InOutLine.class);
+		for (final I_M_InOutLine lineRecord : lineRecords)
+		{
+			Check.errorIf(lineRecord.getReversalLine_ID() <= 0,
+					"copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
+					lineRecord.getM_InOutLine_ID(), inOutRecord);
+
+			huAssignmentBL.copyHUAssignments(lineRecord, lineRecord.getReversalLine());
+		}
+	}
 }

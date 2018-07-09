@@ -125,14 +125,14 @@ public final class StringUtils
 	 */
 	public static int toIntegerOrZero(final String str)
 	{
-		if (str == null || str.isEmpty())
+		if (Check.isEmpty(str, true))
 		{
 			return 0;
 		}
 
 		try
 		{
-			return Integer.valueOf(str);
+			return Integer.valueOf(str.trim());
 		}
 		catch (final NumberFormatException e)
 		{

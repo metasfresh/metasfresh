@@ -1,14 +1,14 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -45,10 +45,10 @@ public class Callout_AD_Column extends CalloutEngine
 		if (column.getAD_Element_ID() <= 0)
 			return "";
 		I_AD_Element element = column.getAD_Element();
-		
+
 		final String elementColumnName = element.getColumnName();
 		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
-		
+
 		column.setColumnName(elementColumnName);
 		column.setName(element.getName());
 		column.setDescription(element.getDescription());
@@ -59,11 +59,11 @@ public class Callout_AD_Column extends CalloutEngine
 		String entityType = table.getEntityType();
 		if (ENTITYTYPE_Dictionary.equals(entityType))
 			entityType = element.getEntityType();
-		
+
 		column.setEntityType(entityType);
 		setTypeAndLength(column);
-		
-		if("DocumentNo".equals(elementColumnName)
+
+		if ("DocumentNo".equals(elementColumnName)
 				|| "Value".equals(elementColumnName))
 		{
 			column.setIsUseDocSequence(true);
@@ -81,6 +81,7 @@ public class Callout_AD_Column extends CalloutEngine
 	public static void setTypeAndLength(I_AD_Column column)
 	{
 		final String columnName = column.getColumnName();
+		final int previousDisplayType = column.getAD_Reference_ID();
 		final I_AD_Table table = column.getAD_Table();
 		final String tableName = table.getTableName();
 		// Key
@@ -125,11 +126,7 @@ public class Callout_AD_Column extends CalloutEngine
 			column.setFieldLength(10);
 		}
 		// Date
-		else if (
-		// dataType == Types.DATE || dataType == Types.TIME
-		// || dataType == Types.TIMESTAMP
-		// || columnName.toUpperCase().indexOf("DATE") != -1
-		columnName.equalsIgnoreCase("Created")
+		else if (columnName.equalsIgnoreCase("Created")
 				|| columnName.equalsIgnoreCase("Updated"))
 		{
 			column.setAD_Reference_ID(DisplayType.DateTime);
@@ -137,7 +134,10 @@ public class Callout_AD_Column extends CalloutEngine
 		}
 		else if (columnName.indexOf("Date") >= 0)
 		{
-			column.setAD_Reference_ID(DisplayType.Date);
+			if (!DisplayType.isDate(previousDisplayType))
+			{
+				column.setAD_Reference_ID(DisplayType.Date);
+			}
 			column.setFieldLength(7);
 		}
 		// CreatedBy/UpdatedBy (=User)

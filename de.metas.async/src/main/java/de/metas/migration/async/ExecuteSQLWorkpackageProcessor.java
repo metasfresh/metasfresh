@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
@@ -20,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,11 +36,11 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -52,7 +54,8 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
  */
 public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
-	static final String PARAM_Code = "Code";
+	static final String PARAM_WORKPACKAGE_SQL = "WorkPackageSQL";
+	static final String PARAM_AFTER_FINISH_SQL = "AfterFinishSQL";
 	static final String PARAM_ReEnqueue = "ReEnqueue";
 	static final boolean DEFAULT_ReEnqueue = true;
 
@@ -64,10 +67,10 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 		//
 		// Extract param: SQL code to execute (and normalize it)
-		final String sqlRaw = params.getParameterAsString(PARAM_Code);
-		Check.assumeNotEmpty(sqlRaw, "Missing parameter: {}", PARAM_Code);
-		final String sql = parseSql(sqlRaw, workPackage);
-		loggable.addLog("SQL to execute: {0}", sql);
+		final String workPackageSqlRaw = params.getParameterAsString(PARAM_WORKPACKAGE_SQL);
+		Check.assumeNotEmpty(workPackageSqlRaw, "Missing parameter: {}", PARAM_WORKPACKAGE_SQL);
+		final String workPackageSql = parseSql(workPackageSqlRaw, workPackage);
+		loggable.addLog("SQL to execute: {0}", workPackageSql);
 
 		//
 		// Extract param: ReEnqueue
@@ -75,7 +78,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 		//
 		// Execute the SQL update
-		final int updateCount = executeSql(sql, localTrxName);
+		final int updateCount = executeSql(workPackageSql);
 		loggable.addLog("Updated {0} records", updateCount);
 
 		//
@@ -85,18 +88,18 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 			if (isReEnqueue)
 			{
 				final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
+
 				final I_C_Queue_WorkPackage nextWorkpackage = Services.get(IWorkPackageQueueFactory.class)
 						.getQueueForEnqueuing(ctx, getClass())
 						.newBlock()
 						.setContext(ctx)
 						.newWorkpackage()
 						.bindToTrxName(localTrxName)
-						//
 						// Workpackage Parameters
 						.parameters()
-						.setParameter(PARAM_Code, sql)
+						.setParameter(PARAM_WORKPACKAGE_SQL, workPackageSqlRaw)
+						.setParameter(PARAM_AFTER_FINISH_SQL, params.getParameterAsString(PARAM_AFTER_FINISH_SQL))
 						.end()
-						//
 						// Build & enqueue
 						.build();
 
@@ -105,20 +108,37 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 			else
 			{
 				loggable.addLog("No new workpackages will be reenqueued because parameter {0} is false", PARAM_ReEnqueue);
+				executeAfterFinishSql(workPackage);
 			}
 		}
 		else
 		{
 			loggable.addLog("No new workpackages will be reenqueued because there was nothing updated in this run");
+			executeAfterFinishSql(workPackage);
 		}
 
 		return Result.SUCCESS;
 	}
 
-	@VisibleForTesting
-	int executeSql(final String sql, final String trxName)
+	private void executeAfterFinishSql(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
-		return DB.executeUpdateEx(sql, trxName);
+		final String afterFinishSqlRaw = getParameters().getParameterAsString(PARAM_AFTER_FINISH_SQL);
+		if (Check.isEmpty(afterFinishSqlRaw, true))
+		{
+			return;
+		}
+
+		final String afterFinishSql = parseSql(afterFinishSqlRaw, workPackage);
+		Loggables.get().addLog("SQL to execute: {0}", afterFinishSql);
+
+		final int updateCount = executeSql(afterFinishSql);
+		Loggables.get().addLog("Updated {0} records", updateCount);
+	}
+
+	@VisibleForTesting
+	int executeSql(final String sql)
+	{
+		return DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private static final String parseSql(final String sqlRaw, final I_C_Queue_WorkPackage workpackage)

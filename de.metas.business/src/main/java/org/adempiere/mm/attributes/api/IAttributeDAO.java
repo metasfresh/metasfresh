@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -64,8 +65,8 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by {@code M_Attribute_ID}. Never {@code null}
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
-	
-	List<I_M_AttributeInstance> retrieveAttributeInstances(int asiId);
+
+	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId asiId);
 
 
 	/**

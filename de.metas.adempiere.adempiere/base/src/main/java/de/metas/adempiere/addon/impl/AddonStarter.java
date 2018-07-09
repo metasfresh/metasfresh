@@ -31,10 +31,10 @@ import java.util.Properties;
 
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.addon.IAddOn;
 import de.metas.adempiere.addon.IAddonStarter;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 public final class AddonStarter implements IAddonStarter
@@ -52,8 +52,6 @@ public final class AddonStarter implements IAddonStarter
 
 	public AddonStarter()
 	{
-		super();
-
 		props = new Properties();
 		try
 		{

@@ -88,6 +88,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
+import org.compiere.util.SwingUtils;
 import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
@@ -1113,7 +1114,7 @@ public class VLookup extends JComponent
 
 	private void actionButton0(String queryValue)
 	{
-		Frame frame = Env.getFrame(this);
+		Frame frame = SwingUtils.getFrame(this);
 
 		/**
 		 * Three return options:
@@ -1176,7 +1177,7 @@ public class VLookup extends JComponent
 			{
 				final int AD_Table_ID = m_mField.getAD_Table_ID();
 				multipleSelection = (InterfaceWrapperHelper.getTableId(I_C_OrderLine.class) == AD_Table_ID)
-						|| (MInvoiceLine.Table_ID == AD_Table_ID) || (I_PP_Product_BOMLine.Table_ID == AD_Table_ID)
+						|| (MInvoiceLine.Table_ID == AD_Table_ID) || (InterfaceWrapperHelper.getTableId(I_PP_Product_BOMLine.class) == AD_Table_ID)
 						|| (I_M_ProductPrice.Table_Name.equals(m_mField.getTableName()));
 			}
 

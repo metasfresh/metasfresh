@@ -14,7 +14,7 @@ import org.compiere.model.I_M_AttributeInstance;
 import com.google.common.base.Predicates;
 
 import de.metas.lang.Percent;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -121,17 +121,17 @@ public class PricingConditions
 
 		final PricingConditionsBreakMatchCriteria matchCriteria = schemaBreak.getMatchCriteria();
 		return matchCriteria.breakValueMatches(breakValue)
-				&& matchCriteria.productMatches(query.getProductAndCategoryId())
+				&& matchCriteria.productMatches(query.getProduct())
 				&& matchCriteria.attributeMatches(attributeValueId);
 	}
 
-	public Stream<PricingConditionsBreak> streamBreaksMatchingAnyOfProducts(final Set<ProductAndCategoryId> productAndCategoryIds)
+	public Stream<PricingConditionsBreak> streamBreaksMatchingAnyOfProducts(final Set<ProductAndCategoryAndManufacturerId> products)
 	{
-		Check.assumeNotEmpty(productAndCategoryIds, "productAndCategoryIds is not empty");
+		Check.assumeNotEmpty(products, "products is not empty");
 
 		return getBreaks()
 				.stream()
-				.filter(schemaBreak -> schemaBreak.getMatchCriteria().productMatchesAnyOf(productAndCategoryIds));
+				.filter(schemaBreak -> schemaBreak.getMatchCriteria().productMatchesAnyOf(products));
 	}
 
 	public PricingConditionsBreak getBreakById(@NonNull final PricingConditionsBreakId breakId)

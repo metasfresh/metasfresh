@@ -26,6 +26,8 @@ import java.util.Collection;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 
@@ -64,7 +66,7 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Picked)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Issued)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Destroyed)
-			// active => shipped transition is used in vendor returns
+			// active => shipped state-transition is used in vendor returns
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Shipped)
 
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active)
@@ -138,12 +140,44 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
-	public void assertLocatorChangeIsAllowed(@NonNull final String huStatus)
+	public void assertLocatorChangeIsAllowed(
+			@NonNull final I_M_HU huRecord,
+			@NonNull final String huStatus)
 	{
 		if (ALLOWED_STATUSES_FOR_LOCATOR_CHANGE.contains(huStatus))
 		{
 			return;
 		}
-		throw new HUException(StringUtils.formatMessage("A HU's locator cannot be changed if the M_HU.HUStatus is {}", huStatus));
+		throw new HUException(StringUtils.formatMessage("A HU's locator cannot be changed if the M_HU.HUStatus is {}; hu={}", huStatus, huRecord));
+	}
+
+	@Override
+	public boolean isStatusActive(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Active.equals(huRecord.getHUStatus());
+	}
+
+	@Override
+	public boolean isStatusIssued(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Issued.equals(huRecord.getHUStatus());
+	}
+
+	@Override
+	public boolean isStatusDestroyed(@Nullable I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Destroyed.equals(huRecord.getHUStatus());
 	}
 }

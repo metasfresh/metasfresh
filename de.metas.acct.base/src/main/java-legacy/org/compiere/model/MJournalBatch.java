@@ -31,10 +31,10 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 
 /**
@@ -44,8 +44,8 @@ import de.metas.i18n.IMsgBL;
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  * 			<li>FR [ 1948157  ]  Is necessary the reference for document reverse
  *  		@see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
- * 			<li> FR [ 2520591 ] Support multiples calendar for Org 
- *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 	
+ * 			<li> FR [ 2520591 ] Support multiples calendar for Org
+ *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *  @author Teo Sarca, www.arhipac.ro
  * 			<li>FR [ 1776045 ] Add ReActivate action to GL Journal
  *	@version $Id: MJournalBatch.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
@@ -53,7 +53,7 @@ import de.metas.i18n.IMsgBL;
 public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2494833602067696046L;
 
@@ -65,7 +65,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	 *	@param trxName transaction
 	 *	@return Journal Batch
 	 */
-	public static MJournalBatch copyFrom (Properties ctx, int GL_JournalBatch_ID, 
+	public static MJournalBatch copyFrom (Properties ctx, int GL_JournalBatch_ID,
 		Timestamp dateDoc, String trxName)
 	{
 		MJournalBatch from = new MJournalBatch (ctx, GL_JournalBatch_ID, trxName);
@@ -90,8 +90,8 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 
 		return to;
 	}	//	copyFrom
-	
-	
+
+
 	/**************************************************************************
 	 * 	Standard Construvtore
 	 *	@param ctx context
@@ -151,13 +151,13 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		setC_Currency_ID(original.getC_Currency_ID());
 	//	setC_ConversionType_ID(original.getC_ConversionType_ID());
 	//	setCurrencyRate(original.getCurrencyRate());
-		
+
 	//	setDateDoc(original.getDateDoc());
 	//	setDateAcct(original.getDateAcct());
 	}	//	MJournal
-	
-	
-	
+
+
+
 	/**
 	 * 	Overwrite Client/Org if required
 	 * 	@param AD_Client_ID client
@@ -234,10 +234,10 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		int count = 0;
 		int lineCount = 0;
 		MJournal[] fromJournals = jb.getJournals(false);
-		for (int i = 0; i < fromJournals.length; i++)
+		for (MJournal fromJournal : fromJournals)
 		{
 			MJournal toJournal = new MJournal (getCtx(), 0, jb.get_TrxName());
-			PO.copyValues(fromJournals[i], toJournal, getAD_Client_ID(), getAD_Org_ID());
+			PO.copyValues(fromJournal, toJournal, getAD_Client_ID(), getAD_Org_ID());
 			toJournal.setGL_JournalBatch_ID(getGL_JournalBatch_ID());
 			toJournal.set_ValueNoCheck ("DocumentNo", null);	//	create new
 			toJournal.setDateDoc(getDateDoc());		//	dates from this Batch
@@ -253,7 +253,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			if (toJournal.save())
 			{
 				count++;
-				lineCount += toJournal.copyLinesFrom(fromJournals[i], getDateAcct(), 'x');
+				lineCount += toJournal.copyLinesFrom(fromJournal, getDateAcct(), 'x');
 			}
 		}
 		if (fromJournals.length != count)
@@ -262,14 +262,14 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		return count + lineCount;
 	}	//	copyLinesFrom
 
-	
+
 	@Override
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
-	
+
 	/**	Process Message 			*/
 	private String		m_processMsg = null;
 	/**	Just Prepared Flag			*/
@@ -277,7 +277,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 
 	/**
 	 * 	Unlock Document.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean unlockIt()
@@ -286,10 +286,10 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		setProcessing(false);
 		return true;
 	}	//	unlockIt
-	
+
 	/**
 	 * 	Invalidate Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean invalidateIt()
@@ -297,10 +297,10 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		log.info("invalidateIt - " + toString());
 		return true;
 	}	//	invalidateIt
-	
+
 	/**
 	 *	Prepare Document
-	 * 	@return new status (In Progress or Invalid) 
+	 * 	@return new status (In Progress or Invalid)
 	 */
 	@Override
 	public String prepareIt()
@@ -317,7 +317,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
 		}
-		
+
 		//	Add up Amounts & prepare them
 		MJournal[] journals = getJournals(false);
 		if (journals.length == 0)
@@ -325,12 +325,12 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			m_processMsg = "@NoLines@";
 			return IDocument.STATUS_Invalid;
 		}
-		
+
 		BigDecimal TotalDr = Env.ZERO;
-		BigDecimal TotalCr = Env.ZERO;		
-		for (int i = 0; i < journals.length; i++)
+		BigDecimal TotalCr = Env.ZERO;
+		for (MJournal journal2 : journals)
 		{
-			MJournal journal = journals[i];
+			MJournal journal = journal2;
 			if (!journal.isActive())
 				continue;
 			//	Prepare if not closed
@@ -358,7 +358,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		}
 		setTotalDr(TotalDr);
 		setTotalCr(TotalCr);
-		
+
 		//	Control Amount
 		if (Env.ZERO.compareTo(getControlAmt()) != 0
 			&& getControlAmt().compareTo(getTotalDr()) != 0)
@@ -368,19 +368,19 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		}
 
 		// NOTE: don't copy C_ConversionType_ID, CurrencyRate from GL_Journal to GL_JournalLine because it's OK to have different currencies on each line
-		
+
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
-		
+
 		//	Add up Amounts
 		m_justPrepared = true;
 		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
-	
+
 	/**
 	 * 	Approve Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean  approveIt()
@@ -389,10 +389,10 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		setIsApproved(true);
 		return true;
 	}	//	approveIt
-	
+
 	/**
 	 * 	Reject Approval
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean rejectIt()
@@ -401,7 +401,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		setIsApproved(false);
 		return true;
 	}	//	rejectIt
-	
+
 	/**
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
@@ -417,21 +417,21 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
-		
+
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
-		
+
 		//	Implicit Approval
 		approveIt();
 
 		//	Add up Amounts & complete them
 		MJournal[] journals = getJournals(true);
 		BigDecimal TotalDr = Env.ZERO;
-		BigDecimal TotalCr = Env.ZERO;		
-		for (int i = 0; i < journals.length; i++)
+		BigDecimal TotalCr = Env.ZERO;
+		for (MJournal journal2 : journals)
 		{
-			MJournal journal = journals[i];
+			MJournal journal = journal2;
 			if (!journal.isActive())
 			{
 				journal.setProcessed(true);
@@ -481,7 +481,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		setDocAction(DOCACTION_Close);
 		return IDocument.STATUS_Completed;
 	}	//	completeIt
-	
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -490,11 +490,10 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (dt.isOverwriteDateOnComplete()) {
 			setDateDoc(new Timestamp (System.currentTimeMillis()));
 		}
-		if (dt.isOverwriteSeqOnComplete()) 
+		if (dt.isOverwriteSeqOnComplete())
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
-					.setTrxName(get_TrxName())
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
@@ -505,7 +504,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 
 	/**
 	 * 	Void Document.
-	 * 	@return false 
+	 * 	@return false
 	 */
 	@Override
 	public boolean voidIt()
@@ -519,13 +518,13 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return false;
 	}	//	voidIt
-	
+
 	/**
 	 * 	Close Document.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean closeIt()
@@ -535,11 +534,11 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
 			return false;
-		
+
 		MJournal[] journals = getJournals(true);
-		for (int i = 0; i < journals.length; i++)
+		for (MJournal journal2 : journals)
 		{
-			MJournal journal = journals[i];
+			MJournal journal = journal2;
 			if (!journal.isActive() && !journal.isProcessed())
 			{
 				journal.setProcessed(true);
@@ -555,7 +554,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 				m_processMsg = "Journal not Completed: " + journal.getSummary();
 				return false;
 			}
-			
+
 			//	Close if not closed
 			if (DOCSTATUS_Closed.equals(journal.getDocStatus())
 				|| DOCSTATUS_Voided.equals(journal.getDocStatus())
@@ -575,14 +574,14 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return true;
 	}	//	closeIt
-	
+
 	/**
 	 * 	Reverse Correction.
 	 * 	As if nothing happened - same date
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean reverseCorrectIt()
@@ -592,12 +591,12 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
 			return false;
-				
+
 		MJournal[] journals = getJournals(true);
 		//	check prerequisites
-		for (int i = 0; i < journals.length; i++)
+		for (MJournal journal2 : journals)
 		{
-			MJournal journal = journals[i];
+			MJournal journal = journal2;
 			if (!journal.isActive())
 				continue;
 			//	All need to be closed/Completed
@@ -609,7 +608,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 				return false;
 			}
 		}
-		
+
 		//	Reverse it
 		final MJournalBatch reverse = new MJournalBatch (this);
 		reverse.setDateDoc(getDateDoc());
@@ -620,16 +619,16 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			description = "** " + getDocumentNo() + " **";
 		else
 			description += " ** " + getDocumentNo() + " **";
-		reverse.setDescription(description);		
+		reverse.setDescription(description);
 		reverse.setReversal_ID(getGL_JournalBatch_ID()); //[ 1948157  ]
-		reverse.setControlAmt(this.getControlAmt().negate());		
+		reverse.setControlAmt(this.getControlAmt().negate());
 		InterfaceWrapperHelper.save(reverse);
 		//
-		
+
 		//	Reverse Journals
-		for (int i = 0; i < journals.length; i++)
+		for (MJournal journal2 : journals)
 		{
-			final MJournal journal = journals[i];
+			final MJournal journal = journal2;
 			if (!journal.isActive())
 				continue;
 			if (journal.reverseCorrectIt(reverse.getGL_JournalBatch_ID()) == null)
@@ -638,7 +637,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			}
 			InterfaceWrapperHelper.save(journal);
 		}
-		
+
 		//
 		// Mark the reversal journal batch as reversed
 		reverse.setProcessed(true);
@@ -646,26 +645,26 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		reverse.setDocStatus(DOCSTATUS_Reversed);
 		reverse.setDocAction(DOCACTION_None);
 		InterfaceWrapperHelper.save(reverse);
-		
+
 		//
 		// Update this Journal Batch
 		setReversal_ID(reverse.getGL_JournalBatch_ID()); //[ 1948157  ]
 		setDocStatus(DOCSTATUS_Reversed);
 		setDocAction(DOCACTION_None);
 		saveEx();
-		
+
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return true;
 	}	//	reverseCorrectionIt
-	
+
 	/**
 	 * 	Reverse Accrual.
 	 * 	Flip Dr/Cr - Use Today's date
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean reverseAccrualIt()
@@ -675,12 +674,12 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
 			return false;
-		
+
 		MJournal[] journals = getJournals(true);
 		//	check prerequisites
-		for (int i = 0; i < journals.length; i++)
+		for (MJournal journal2 : journals)
 		{
-			MJournal journal = journals[i];
+			MJournal journal = journal2;
 			if (!journal.isActive())
 				continue;
 			//	All need to be closed/Completed
@@ -704,11 +703,11 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			description += " ** " + getDocumentNo() + " **";
 		reverse.setDescription(description);
 		reverse.save();
-		
+
 		//	Reverse Journals
-		for (int i = 0; i < journals.length; i++)
+		for (MJournal journal2 : journals)
 		{
-			MJournal journal = journals[i];
+			MJournal journal = journal2;
 			if (!journal.isActive())
 				continue;
 			if (journal.reverseAccrualIt(reverse.getGL_JournalBatch_ID()) == null)
@@ -722,24 +721,24 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		if (m_processMsg != null)
 			return false;
-				
+
 		return true;
 	}	//	reverseAccrualIt
-	
-	/** 
+
+	/**
 	 * 	Re-activate - same as reverse correct
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
-		
+
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
-			return false;	
-		
+			return false;
+
 		for (MJournal journal : getJournals(true))
 		{
 			if (DOCSTATUS_Completed.equals(journal.getDocStatus()))
@@ -761,10 +760,10 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
 			return false;
-				
+
 		return true;
 	}	//	reActivateIt
-	
+
 
 	/*************************************************************************
 	 * 	Get Summary
@@ -774,7 +773,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	public String getSummary()
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append(getDocumentNo());
 		//	: Total Lines = 123.00 (#1)
@@ -803,7 +802,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			.append ("]");
 		return sb.toString ();
 	}	//	toString
-	
+
 	/**
 	 * 	Get Document Info
 	 *	@return document info (untranslated)
@@ -847,7 +846,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	//	return re.getPDF(file);
 	}	//	createPDF
 
-	
+
 	/**
 	 * 	Get Process Message
 	 *	@return clear text error message
@@ -857,7 +856,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	{
 		return m_processMsg;
 	}	//	getProcessMsg
-	
+
 	/**
 	 * 	Get Document Owner (Responsible)
 	 *	@return AD_User_ID (Created By)
@@ -877,5 +876,5 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	{
 		return getTotalDr();
 	}	//	getApprovalAmt
-	
+
 }	//	MJournalBatch

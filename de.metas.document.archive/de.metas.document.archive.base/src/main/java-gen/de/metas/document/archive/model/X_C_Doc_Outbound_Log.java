@@ -14,7 +14,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1842671222L;
+	private static final long serialVersionUID = 677554816L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Log (Properties ctx, int C_Doc_Outbound_Log_ID, String trxName)
@@ -24,8 +24,6 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
         {
 			setAD_Table_ID (0);
 			setC_Doc_Outbound_Log_ID (0);
-			setIsInvoiceEmailEnabled (true);
-// Y
 			setRecord_ID (0);
         } */
     }
@@ -83,39 +81,6 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_Group getC_BP_Group() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
-	}
-
-	@Override
-	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
-	}
-
-	/** Set Geschäftspartnergruppe.
-		@param C_BP_Group_ID 
-		Geschäftspartnergruppe
-	  */
-	@Override
-	public void setC_BP_Group_ID (int C_BP_Group_ID)
-	{
-		throw new IllegalArgumentException ("C_BP_Group_ID is virtual column");	}
-
-	/** Get Geschäftspartnergruppe.
-		@return Geschäftspartnergruppe
-	  */
-	@Override
-	public int getC_BP_Group_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
@@ -147,6 +112,39 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_Group getC_BP_Group() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
+	}
+
+	@Override
+	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
+	}
+
+	/** Set Geschäftspartnergruppe.
+		@param C_BP_Group_ID 
+		Geschäftspartnergruppe
+	  */
+	@Override
+	public void setC_BP_Group_ID (int C_BP_Group_ID)
+	{
+		throw new IllegalArgumentException ("C_BP_Group_ID is virtual column");	}
+
+	/** Get Geschäftspartnergruppe.
+		@return Geschäftspartnergruppe
+	  */
+	@Override
+	public int getC_BP_Group_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -206,6 +204,56 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	public int getC_DocType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Derzeitige Mailadresse.
+		@param CurrentEMailAddress Derzeitige Mailadresse	  */
+	@Override
+	public void setCurrentEMailAddress (java.lang.String CurrentEMailAddress)
+	{
+		set_Value (COLUMNNAME_CurrentEMailAddress, CurrentEMailAddress);
+	}
+
+	/** Get Derzeitige Mailadresse.
+		@return Derzeitige Mailadresse	  */
+	@Override
+	public java.lang.String getCurrentEMailAddress () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CurrentEMailAddress);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getCurrentEMailRecipient() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_CurrentEMailRecipient_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setCurrentEMailRecipient(org.compiere.model.I_AD_User CurrentEMailRecipient)
+	{
+		set_ValueFromPO(COLUMNNAME_CurrentEMailRecipient_ID, org.compiere.model.I_AD_User.class, CurrentEMailRecipient);
+	}
+
+	/** Set Derzeitiger Mailempfänger.
+		@param CurrentEMailRecipient_ID Derzeitiger Mailempfänger	  */
+	@Override
+	public void setCurrentEMailRecipient_ID (int CurrentEMailRecipient_ID)
+	{
+		if (CurrentEMailRecipient_ID < 1) 
+			set_Value (COLUMNNAME_CurrentEMailRecipient_ID, null);
+		else 
+			set_Value (COLUMNNAME_CurrentEMailRecipient_ID, Integer.valueOf(CurrentEMailRecipient_ID));
+	}
+
+	/** Get Derzeitiger Mailempfänger.
+		@return Derzeitiger Mailempfänger	  */
+	@Override
+	public int getCurrentEMailRecipient_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CurrentEMailRecipient_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -311,7 +359,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -321,7 +369,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -370,16 +418,16 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		return false;
 	}
 
-	/** Set Invoice Email Enabled.
-		@param IsInvoiceEmailEnabled Invoice Email Enabled	  */
+	/** Set Rechnung per eMail.
+		@param IsInvoiceEmailEnabled Rechnung per eMail	  */
 	@Override
 	public void setIsInvoiceEmailEnabled (boolean IsInvoiceEmailEnabled)
 	{
 		set_Value (COLUMNNAME_IsInvoiceEmailEnabled, Boolean.valueOf(IsInvoiceEmailEnabled));
 	}
 
-	/** Get Invoice Email Enabled.
-		@return Invoice Email Enabled	  */
+	/** Get Rechnung per eMail.
+		@return Rechnung per eMail	  */
 	@Override
 	public boolean isInvoiceEmailEnabled () 
 	{

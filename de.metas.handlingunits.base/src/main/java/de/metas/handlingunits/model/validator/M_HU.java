@@ -81,7 +81,7 @@ public class M_HU
 	public void validateLocatorChange(@NonNull final I_M_HU hu)
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		huStatusBL.assertLocatorChangeIsAllowed(hu.getHUStatus());
+		huStatusBL.assertLocatorChangeIsAllowed(hu, hu.getHUStatus());
 	}
 
 	/**

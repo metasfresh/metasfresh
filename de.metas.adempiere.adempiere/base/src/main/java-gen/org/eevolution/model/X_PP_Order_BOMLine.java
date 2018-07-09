@@ -4,7 +4,6 @@ package org.eevolution.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for PP_Order_BOMLine
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1648371520L;
+	private static final long serialVersionUID = -1183984800L;
 
     /** Standard Constructor */
     public X_PP_Order_BOMLine (Properties ctx, int PP_Order_BOMLine_ID, String trxName)
@@ -26,31 +25,25 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
         {
 			setC_UOM_ID (0);
 			setIsCritical (false);
-			setLine (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM PP_Order_BOMLine WHERE PP_Order_ID=@PP_Order_ID@
+			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM PP_Order_BOMLine WHERE PP_Order_ID=@PP_Order_ID@
 			setM_Product_ID (0);
 			setM_Warehouse_ID (0);
 			setPP_Order_BOM_ID (0);
 			setPP_Order_BOMLine_ID (0);
 			setPP_Order_ID (0);
-			setProcessed (false);
-// N
+			setProcessed (false); // N
 			setQtyBatch (BigDecimal.ZERO);
-			setQtyBeforeClose (BigDecimal.ZERO);
-// 0
+			setQtyBeforeClose (BigDecimal.ZERO); // 0
 			setQtyBOM (BigDecimal.ZERO);
 			setQtyDelivered (BigDecimal.ZERO);
-			setQtyDeliveredActual (BigDecimal.ZERO);
-// 0
+			setQtyDeliveredActual (BigDecimal.ZERO); // 0
 			setQtyPost (BigDecimal.ZERO);
 			setQtyReject (BigDecimal.ZERO);
 			setQtyRequiered (BigDecimal.ZERO);
 			setQtyReserved (BigDecimal.ZERO);
 			setQtyScrap (BigDecimal.ZERO);
-			setQtyUsageVariance (BigDecimal.ZERO);
-// 0
-			setValidFrom (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setQtyUsageVariance (BigDecimal.ZERO); // 0
+			setValidFrom (new Timestamp( System.currentTimeMillis() )); // @#Date@
         } */
     }
 
@@ -106,7 +99,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		return ii.intValue();
 	}
 
-	/** Set Quantity Assay.
+	/** Set Mengen Probe.
 		@param Assay 
 		Indicated the Quantity Assay to use into Quality Order
 	  */
@@ -116,7 +109,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		set_ValueNoCheck (COLUMNNAME_Assay, Assay);
 	}
 
-	/** Get Quantity Assay.
+	/** Get Mengen Probe.
 		@return Indicated the Quantity Assay to use into Quality Order
 	  */
 	@Override
@@ -128,7 +121,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		return bd;
 	}
 
-	/** Set Backflush Group.
+	/** Set Retrograde Gruppe.
 		@param BackflushGroup 
 		The Grouping Components to the Backflush
 	  */
@@ -138,7 +131,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		set_ValueNoCheck (COLUMNNAME_BackflushGroup, BackflushGroup);
 	}
 
-	/** Get Backflush Group.
+	/** Get Retrograde Gruppe.
 		@return The Grouping Components to the Backflush
 	  */
 	@Override
@@ -229,6 +222,22 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	public java.lang.String getComponentType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ComponentType);
+	}
+
+	/** Set CU Label Qty.
+		@param CULabelQuanitity CU Label Qty	  */
+	@Override
+	public void setCULabelQuanitity (java.lang.String CULabelQuanitity)
+	{
+		set_Value (COLUMNNAME_CULabelQuanitity, CULabelQuanitity);
+	}
+
+	/** Get CU Label Qty.
+		@return CU Label Qty	  */
+	@Override
+	public java.lang.String getCULabelQuanitity () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CULabelQuanitity);
 	}
 
 	/** Set Lieferdatum.
@@ -391,7 +400,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	public static final String ISSUEMETHOD_FloorStock = "2";
 	/** IssueOnlyForReceived = 9 */
 	public static final String ISSUEMETHOD_IssueOnlyForReceived = "9";
-	/** Set Issue Method.
+	/** Set Zuteil Methode.
 		@param IssueMethod 
 		There are two methods for issue the components to Manufacturing Order
 	  */
@@ -402,7 +411,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		set_Value (COLUMNNAME_IssueMethod, IssueMethod);
 	}
 
-	/** Get Issue Method.
+	/** Get Zuteil Methode.
 		@return There are two methods for issue the components to Manufacturing Order
 	  */
 	@Override
@@ -960,16 +969,16 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		return bd;
 	}
 
-	/** Set Qty Requiered.
-		@param QtyRequiered Qty Requiered	  */
+	/** Set Menge angefragt.
+		@param QtyRequiered Menge angefragt	  */
 	@Override
 	public void setQtyRequiered (java.math.BigDecimal QtyRequiered)
 	{
 		set_Value (COLUMNNAME_QtyRequiered, QtyRequiered);
 	}
 
-	/** Get Qty Requiered.
-		@return Qty Requiered	  */
+	/** Get Menge angefragt.
+		@return Menge angefragt	  */
 	@Override
 	public java.math.BigDecimal getQtyRequiered () 
 	{
@@ -979,9 +988,9 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		return bd;
 	}
 
-	/** Set Reservierte Menge.
+	/** Set Offen.
 		@param QtyReserved 
-		Reserved Quantity
+		Offene Menge
 	  */
 	@Override
 	public void setQtyReserved (java.math.BigDecimal QtyReserved)
@@ -989,8 +998,8 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		set_ValueNoCheck (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
-	/** Get Reservierte Menge.
-		@return Reserved Quantity
+	/** Get Offen.
+		@return Offene Menge
 	  */
 	@Override
 	public java.math.BigDecimal getQtyReserved () 
@@ -1064,6 +1073,29 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		return bd;
 	}
 
+	/** Set Show Sub BOM Ingredients.
+		@param ShowSubBOMIngredients Show Sub BOM Ingredients	  */
+	@Override
+	public void setShowSubBOMIngredients (boolean ShowSubBOMIngredients)
+	{
+		set_Value (COLUMNNAME_ShowSubBOMIngredients, Boolean.valueOf(ShowSubBOMIngredients));
+	}
+
+	/** Get Show Sub BOM Ingredients.
+		@return Show Sub BOM Ingredients	  */
+	@Override
+	public boolean isShowSubBOMIngredients () 
+	{
+		Object oo = get_Value(COLUMNNAME_ShowSubBOMIngredients);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Gültig ab.
 		@param ValidFrom 
 		Valid from including this date (first day)
@@ -1125,8 +1157,8 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	public static final String VARIANTGROUP_08 = "08";
 	/** 09 = 09 */
 	public static final String VARIANTGROUP_09 = "09";
-	/** Set VariantGroup.
-		@param VariantGroup VariantGroup	  */
+	/** Set Varianten Gruppe.
+		@param VariantGroup Varianten Gruppe	  */
 	@Override
 	public void setVariantGroup (java.lang.String VariantGroup)
 	{
@@ -1134,8 +1166,8 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		set_Value (COLUMNNAME_VariantGroup, VariantGroup);
 	}
 
-	/** Get VariantGroup.
-		@return VariantGroup	  */
+	/** Get Varianten Gruppe.
+		@return Varianten Gruppe	  */
 	@Override
 	public java.lang.String getVariantGroup () 
 	{

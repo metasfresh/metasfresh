@@ -9,8 +9,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;

@@ -26,7 +26,6 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -38,7 +37,7 @@ import lombok.NonNull;
 /**
  * This class is used by {@link HUSplitBuilder} but can also be called from others. It does the "generic" splitting work while HUSplitBuilder has a lot of setters that can help callers in setting up a particular {@link IHUProducerAllocationDestination} which is then passed to this class.
  * If you have your own {@link IAllocationSource}, {@link IAllocationDestination} etc, you can call this class directly.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -60,6 +59,8 @@ public class HUSplitBuilderCoreEngine
 
 	private IHUDocumentLine documentLine;
 	private boolean allowPartialUnloads;
+
+	private boolean automaticallyMovePackingMaterials = true;
 
 	/**
 	 * @param huContextInitital an initial HU context. the {@link #performSplit()} method will create and run a {@link IHUContextProcessor} which will internally work with a mutable copy of the given context.
@@ -86,9 +87,9 @@ public class HUSplitBuilderCoreEngine
 	 * Otherwise this method does nothing.
 	 * <p>
 	 * Note that this is <b>not</b> about attribute propagation.
-	 * 
+	 *
 	 * @return
-	 * 
+	 *
 	 * @task 06902: Make sure the split keys inherit the status and locator.
 	 */
 	public HUSplitBuilderCoreEngine withPropagateHUValues()
@@ -116,7 +117,7 @@ public class HUSplitBuilderCoreEngine
 
 	/**
 	 * This method only has an impact if this instance's {@link #destination} is {@link IHUProducerAllocationDestination}.
-	 * 
+	 *
 	 * @param documentLine
 	 * @return
 	 */
@@ -128,7 +129,7 @@ public class HUSplitBuilderCoreEngine
 
 	/**
 	 * Optional; if set, then it will be used to find a {@link I_M_HU_PI_Item_Product} (using the request's partner and product) and recursively set it in the resulting HU hierarchy.
-	 * 
+	 *
 	 * @param tuPIItem
 	 * @return
 	 */
@@ -139,11 +140,8 @@ public class HUSplitBuilderCoreEngine
 	}
 
 	/**
-	 * Set a value to be passed to the {@link HULoader#setAllowPartialUnloads(boolean)} when {@link #performSplit()} is done.<br>
+	 * Set a value to be passed to the {@link HULoader#setAllowPartialUnloads(boolean)} when {@link #performSplit()} is invoked.<br>
 	 * The default is {@code false} because of backwards compatibility.
-	 * 
-	 * @param allowPartialUnloads
-	 * @return
 	 */
 	public HUSplitBuilderCoreEngine withAllowPartialUnloads(final boolean allowPartialUnloads)
 	{
@@ -152,10 +150,24 @@ public class HUSplitBuilderCoreEngine
 	}
 
 	/**
+	 * Set a value to be passed to {@link HULoader#setAutomaticallyMovePackingMaterials(boolean)} when {@link #performSplit()} is invoked.
+	 * <p>
+	 * The default is {@code true}. Set to falls if you split a "real" TU from and aggregate HU, because in that case, additional package material is needed.
+	 *
+	 * @param automaticallyMovePackingMaterials
+	 * @return
+	 */
+	public HUSplitBuilderCoreEngine withAutomaticallyMovePackingMaterials(final boolean automaticallyMovePackingMaterials)
+	{
+		this.automaticallyMovePackingMaterials = automaticallyMovePackingMaterials;
+		return this;
+	}
+
+	/**
 	 * Performs the actual split. Also see {@link #of(IHUContext, I_M_HU, Function, IAllocationDestination)}.
 	 * <p>
 	 * Note: if this instance's {@link #destination} is not {@code instanceof} {@link IHUProducerAllocationDestination}, then this method will always return an empty list.
-	 * 
+	 *
 	 * @return
 	 */
 	public List<I_M_HU> performSplit()
@@ -163,30 +175,29 @@ public class HUSplitBuilderCoreEngine
 		final List<I_M_HU> splitHUs = new ArrayList<>();
 
 		huTrxBL.createHUContextProcessorExecutor(huContextInitital)
-				.run(new IHUContextProcessor()
-				{
-					@Override
-					public IMutableAllocationResult process(final IHUContext localHuContext)
+				.run((IHUContextProcessor)localHuContext -> {
+					// Make a copy of the processing context, we will need to modify it
+					final IMutableHUContext localHuContextCopy = localHuContext.copyAsMutable();
+					if(!automaticallyMovePackingMaterials)
 					{
-						// Make a copy of the processing context, we will need to modify it
-						final IMutableHUContext localHuContextCopy = localHuContext.copyAsMutable();
-
-						// Register our split HUTrxListener so that the other listeners' onSplit() methods will be called
-						localHuContextCopy.getTrxListeners().addListener(HUSplitBuilderTrxListener.instance);
-
-						// Perform the actual split
-						final List<I_M_HU> splitHUsInTrx = performSplit0(localHuContextCopy);
-
-						//
-						// Make created HUs to be out-of-transaction to be used elsewhere
-						for (final I_M_HU splitHU : splitHUsInTrx)
-						{
-							InterfaceWrapperHelper.setTrxName(splitHU, ITrx.TRXNAME_None);
-							splitHUs.add(splitHU);
-						}
-
-						return NULL_RESULT; // we don't care about the result
+						localHuContextCopy.getHUPackingMaterialsCollector().disable();
 					}
+
+					// Register our split HUTrxListener so that the other listeners' onSplit() methods will be called
+					localHuContextCopy.getTrxListeners().addListener(HUSplitBuilderTrxListener.instance);
+
+					// Perform the actual split
+					final List<I_M_HU> splitHUsInTrx = performSplit0(localHuContextCopy);
+
+					//
+					// Make created HUs to be out-of-transaction to be used elsewhere
+					for (final I_M_HU splitHU : splitHUsInTrx)
+					{
+						InterfaceWrapperHelper.setTrxName(splitHU, ITrx.TRXNAME_None);
+						splitHUs.add(splitHU);
+					}
+
+					return IHUContextProcessor.NULL_RESULT; // we don't care about the result
 				});
 
 		return splitHUs;

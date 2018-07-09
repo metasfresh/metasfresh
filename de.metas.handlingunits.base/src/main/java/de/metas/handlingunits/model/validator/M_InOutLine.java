@@ -98,10 +98,10 @@ public class M_InOutLine
 		{
 			// NOTE: instead of deleting the assignments, it's better to fail
 			// because if we delete the assignment which is for an HU which is also assigned on other shipment,
-			// that patial HU we will not be able to see it again (as a user).
+			// that partial HU we will not be able to see it again (as a user).
 			if (Services.get(IHUAssignmentDAO.class).hasHUAssignmentsForModel(inoutLine))
 			{
-				throw new HUException("Cannot delete an shipment line which have HUs assigned to it");
+				throw new HUException("Cannot delete an shipment line I_M_InOutLine_ID=" + inoutLine.getM_InOutLine_ID() + " because has HUs assigned to it");
 			}
 			// Services.get(IHUShipmentAssignmentBL.class).removeHUAssignments(inoutLine);
 		}

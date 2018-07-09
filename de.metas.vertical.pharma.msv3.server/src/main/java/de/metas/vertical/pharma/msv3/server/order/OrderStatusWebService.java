@@ -2,6 +2,8 @@ package de.metas.vertical.pharma.msv3.server.order;
 
 import javax.xml.bind.JAXBElement;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
@@ -13,6 +15,7 @@ import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
+import de.metas.vertical.pharma.msv3.server.util.JAXBUtils;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellstatusAbfragen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellstatusAbfragenResponse;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
@@ -45,6 +48,8 @@ public class OrderStatusWebService
 {
 	public static final String WSDL_BEAN_NAME = "Msv3BestellstatusAbfragenService";
 
+	private static final Logger logger = LoggerFactory.getLogger(OrderStatusWebService.class);
+
 	private final MSV3ServerAuthenticationService authService;
 	private final OrderJAXBConverters jaxbConverters;
 	private final OrderService orderService;
@@ -62,6 +67,8 @@ public class OrderStatusWebService
 	@PayloadRoot(localPart = "bestellstatusAbfragen", namespace = MSV3ServerConstants.SOAP_NAMESPACE)
 	public @ResponsePayload JAXBElement<BestellstatusAbfragenResponse> getOrderStatus(@RequestPayload final JAXBElement<BestellstatusAbfragen> jaxbRequest)
 	{
+		logXML("getOrderStatus - request", jaxbRequest);
+
 		final BestellstatusAbfragen soapRequest = jaxbRequest.getValue();
 		authService.assertValidClientSoftwareId(soapRequest.getClientSoftwareKennung());
 
@@ -69,7 +76,18 @@ public class OrderStatusWebService
 		final BPartnerId bpartner = authService.getCurrentBPartner();
 		final OrderStatusResponse response = orderService.getOrderStatus(orderId, bpartner);
 
-		return jaxbConverters.toJAXB(response);
+		final JAXBElement<BestellstatusAbfragenResponse> jaxbResponse = jaxbConverters.toJAXB(response);
+		logXML("getOrderStatus - response", jaxbResponse);
+		return jaxbResponse;
 	}
 
+	private void logXML(final String name, final JAXBElement<?> element)
+	{
+		if (!logger.isDebugEnabled())
+		{
+			return;
+		}
+
+		logger.debug("{}: {}", name, JAXBUtils.toXml(element));
+	}
 }

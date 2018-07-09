@@ -94,16 +94,17 @@ public interface IHUAssignmentBuilder
 	/**
 	 * Initialize this builder with values from the given pre-existing {@code assignment}.
 	 *
-	 * @param assignment this instance's assignment. The builder will operate on this instance and probably change it.
+	 * @param assignmentRecord this instance's assignment. The builder will operate on this instance and probably change it.
 	 */
-	IHUAssignmentBuilder initializeAssignment(I_M_HU_Assignment assignment);
+	IHUAssignmentBuilder setAssignmentRecordToUpdate(I_M_HU_Assignment assignmentRecord);
+
+	IHUAssignmentBuilder setTemplateForNewRecord(I_M_HU_Assignment assignmentRecord);
 
 	/**
 	 * Create/modify and save assignment
-	 *
-	 * @return
 	 */
 	I_M_HU_Assignment build();
 
 	I_M_HU_Assignment getM_HU_Assignment();
+
 }

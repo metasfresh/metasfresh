@@ -40,6 +40,7 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -684,7 +685,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		// add/override the with the more specific bpartner-result onto the more general bpGroup-result
 		final ImmutableSet<Entry<BPartnerId, Integer>> entrySet = partnerIdWithoutGroup2DiscountId.entrySet();
-		for(final Entry<BPartnerId, Integer> entry: entrySet)
+		for (final Entry<BPartnerId, Integer> entry : entrySet)
 		{
 			bPartnerId2DiscountId.put(entry.getKey(), entry.getValue());
 		}
@@ -719,7 +720,25 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public String getBPartnerNameById(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId.getRepoId(), I_C_BPartner.class);
+		final I_C_BPartner bpartner = getById(bpartnerId);
 		return bpartner.getName();
+	}
+
+	@Override
+	public BPartnerId getBPartnerIdByValue(@NonNull final String bpartnerValue)
+	{
+		final int bpartnerRepoId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_Value, bpartnerValue)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstIdOnly();
+
+		if (bpartnerRepoId <= 0)
+		{
+			throw new AdempiereException("@NotFound@ @C_BPartner_ID@: @Value@=" + bpartnerValue);
+		}
+
+		return BPartnerId.ofRepoId(bpartnerRepoId);
 	}
 }

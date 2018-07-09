@@ -166,11 +166,11 @@ public interface Evaluatee
 			return defaultValue;
 		}
 	}
-	
+
 	default Optional<Object> get_ValueIfExists(final String variableName, final Class<?> targetType)
 	{
 		if (Integer.class.equals(targetType)
-				|| int.class.equals(variableName))
+				|| int.class.equals(targetType))
 		{
 			final Integer valueInt = get_ValueAsInt(variableName, null);
 			return Optional.ofNullable(valueInt);
@@ -185,7 +185,7 @@ public interface Evaluatee
 			final Timestamp valueDate = TimeUtil.asTimestamp(get_ValueAsDate(variableName, null));
 			return Optional.ofNullable(valueDate);
 		}
-		else if (Boolean.class.equals(variableName))
+		else if (Boolean.class.equals(targetType))
 		{
 			final Boolean valueBoolean = get_ValueAsBoolean(variableName, null);
 			return Optional.ofNullable(valueBoolean);

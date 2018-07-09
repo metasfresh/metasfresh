@@ -60,7 +60,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
  * <li>Use the CU-per-TU qty that was computed earlier and was stored in the {@link IHUContext} (see {@link #mkItemCuQtyPropertyKey(I_M_HU_Item)}) and update the HA item's {@code Qty} column.
  * <li>Update the item storage's <b>tare</b> value using business logic from {@link WeightTareAttributeValueCallout} and pushing up the change
  * <li>Preserve the original CU-per-TU qty by splitting off partial quantities from the aggregate HU into a "real" HU.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh/issues/460
  */
@@ -75,7 +75,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 	/**
 	 * Creates a key used to put and get the CU quantity per HA item.
-	 * 
+	 *
 	 * @param haItem
 	 * @return
 	 */
@@ -89,7 +89,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 	}
 
 	/**
-	 * Performs the steps described in that class javadoc.
+	 * Performs the steps described in the class-javadoc.
 	 */
 	@Override
 	public void afterLoad(final IHUContext huContext, final List<IAllocationResult> loadResults)
@@ -203,11 +203,11 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 	/**
 	 * Returns the quantity that needs to be split off the current storage quantity in order to achieve the same CU-per-TU quantity which the aggregate HU in question used to have before the loading operation which lead to this listener being called.
-	 * 
+	 *
 	 * @param storageQty the current qty re have in the storage
 	 * @param cuQtyBeforeLoad the former CU-per-TU qty, before the loading took place
 	 * @return
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1203
 	 */
 	@VisibleForTesting

@@ -6,6 +6,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
+import de.metas.product.ProductCategoryId;
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Server;
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Server_Product_Category;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
@@ -55,7 +56,8 @@ public class MSV3ServerConfigRepository
 				.firstOnly(I_MSV3_Server.class);
 		if (serverConfigRecord != null)
 		{
-			serverConfigBuilder.qtyAvailableToPromiseMin(serverConfigRecord.getQty_AvailableToPromise_Min().intValueExact());
+			final int fixedQtyAvailableToPromise = serverConfigRecord.getFixedQtyAvailableToPromise().intValueExact(); 
+			serverConfigBuilder.fixedQtyAvailableToPromise(fixedQtyAvailableToPromise);
 
 			final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 			final int warehousePickingGroupId = serverConfigRecord.getM_Warehouse_PickingGroup_ID();
@@ -67,7 +69,7 @@ public class MSV3ServerConfigRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_MSV3_Server_Product_Category.class)
-				.forEach(productCategoryRecord -> serverConfigBuilder.productCategoryId(productCategoryRecord.getM_Product_Category_ID()));
+				.forEach(productCategoryRecord -> serverConfigBuilder.productCategoryId(ProductCategoryId.ofRepoId(productCategoryRecord.getM_Product_Category_ID())));
 
 		return serverConfigBuilder.build();
 	}

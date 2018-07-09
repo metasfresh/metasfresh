@@ -148,7 +148,7 @@ import lombok.NonNull;
 
 		final PricingConditionsResultBuilder result = PricingConditionsResult.builder()
 				.pricingConditionsBreak(breakApplied)
-				.paymentTermId(breakApplied.getPaymentTermId());
+				.paymentTermId(breakApplied.getDerivedPaymentTermIdOrNull());
 
 		computePriceForPricingConditionsBreak(result, breakApplied.getPriceOverride());
 		computeDiscountForPricingConditionsBreak(result, breakApplied);
