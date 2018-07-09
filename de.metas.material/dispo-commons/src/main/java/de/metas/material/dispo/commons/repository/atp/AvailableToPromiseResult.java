@@ -1,14 +1,11 @@
-package de.metas.material.dispo.commons.repository;
+package de.metas.material.dispo.commons.repository.atp;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 
@@ -17,10 +14,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.event.commons.AttributesKey;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -148,39 +143,6 @@ public class AvailableToPromiseResult
 
 	private final List<AvailableToPromiseResultGroup> resultGroups;
 
-	@Value
-	public static final class AddToResultGroupRequest
-	{
-		int warehouseId;
-		int productId;
-		AttributesKey storageAttributesKey;
-		int bpartnerId;
-		BigDecimal qty;
-		LocalDateTime date;
-		int seqNo; // needed to disambiguated requests with the same date
-
-		@Builder
-		public AddToResultGroupRequest(
-				final int warehouseId,
-				final int productId,
-				@NonNull final AttributesKey storageAttributesKey,
-				final int bpartnerId,
-				@NonNull final BigDecimal qty,
-				@NonNull final LocalDateTime date,
-				final int seqNo)
-		{
-			this.warehouseId = Check.assumeGreaterThanZero(warehouseId, "warehouseId");
-			this.productId = Check.assumeGreaterThanZero(productId, "productId");
-
-			this.storageAttributesKey = storageAttributesKey;
-
-			this.bpartnerId = bpartnerId;
-			this.qty = qty;
-			this.date = date;
-			this.seqNo = Check.assumeGreaterThanZero(seqNo, "seqNo");
-		}
-	}
-
 	public void addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
 	{
 		boolean stillNeedsToBeAdded = true;
@@ -250,11 +212,13 @@ public class AvailableToPromiseResult
 				.storageAttributesKey(request.getStorageAttributesKey())
 				.warehouseId(request.getWarehouseId())
 				.bpartnerId(request.getBpartnerId())
-				.qty(request.getQty())
-				.date(request.getDate())
-				.seqNo(request.getSeqNo())
-				.empty(false)
+//				.qty(request.getQty())
+//				.date(request.getDate())
+//				.seqNo(request.getSeqNo())
+//				.empty(false)
 				.build();
+
+		group.addQty(request);
 
 		resultGroups.add(group);
 	}
