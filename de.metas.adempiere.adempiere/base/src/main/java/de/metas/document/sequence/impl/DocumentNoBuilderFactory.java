@@ -14,6 +14,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.DocumentNoBuilderException;
@@ -30,6 +31,12 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 {
 
 	private final List<ValueSequenceInfoProvider> additionalProviders;
+
+	@VisibleForTesting
+	public DocumentNoBuilderFactory()
+	{
+		this(Optional.empty());
+	}
 
 	public DocumentNoBuilderFactory(@NonNull final Optional<List<ValueSequenceInfoProvider>> providers)
 	{
