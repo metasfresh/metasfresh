@@ -10,7 +10,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
-import org.compiere.Adempiere;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -69,14 +68,13 @@ public class EventBusFactory implements IEventBusFactory
 
 	private final Set<Topic> availableUserNotificationsTopic = ConcurrentHashMap.newKeySet(10);
 
-	public EventBusFactory()
+	public EventBusFactory(@NonNull final IEventBusRemoteEndpoint remoteEndpoint)
 	{
-		remoteEndpoint = Adempiere.getBean(IEventBusRemoteEndpoint.class);
+		this.remoteEndpoint = remoteEndpoint;
 		logger.info("Using remote endpoint: {}", remoteEndpoint);
 
 		JMXRegistry.get().registerJMX(new JMXEventBusManager(remoteEndpoint), OnJMXAlreadyExistsPolicy.Replace);
 
-		//
 		// Setup default user notification topics
 		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotifications);
 		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotificationsLocal);

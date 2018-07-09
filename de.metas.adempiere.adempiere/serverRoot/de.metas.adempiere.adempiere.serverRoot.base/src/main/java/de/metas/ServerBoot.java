@@ -91,7 +91,7 @@ public class ServerBoot implements InitializingBean
 	{
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
-			// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
+			// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 			Ini.setRunMode(RunMode.BACKEND);
 			Adempiere.instance.startup(RunMode.BACKEND);
 
