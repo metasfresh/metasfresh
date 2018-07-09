@@ -148,7 +148,7 @@ public final class Env
 		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
 		if (springApplicationContext != null) // don't fail if we exit before swing-client's login was done
 		{
-			SpringApplication.exit(springApplicationContext, () -> 0);
+		SpringApplication.exit(springApplicationContext, () -> 0);
 		}
 
 		// should not be required anymore since we make sure that all non-demon threads are stopped
@@ -1628,7 +1628,7 @@ public final class Env
 	{
 		return windows.addWindow(window);
 	}
-
+	
 	public static void addWindow(final int windowNo, final Container window)
 	{
 		windows.addWindow(windowNo, window);
