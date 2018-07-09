@@ -18,12 +18,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
 import de.metas.material.dispo.commons.model.I_C_OrderLine;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResult;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResultGroup;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;

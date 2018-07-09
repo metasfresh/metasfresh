@@ -1,4 +1,4 @@
-package de.metas.material.dispo.commons.repository;
+package de.metas.material.dispo.commons.repository.atp;
 
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
@@ -19,6 +19,8 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseSqlHelper;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.AttributesKey;
@@ -49,7 +51,7 @@ import lombok.NonNull;
  */
 
 @SuppressWarnings({ "rawtypes" })
-public class StockRepositorySqlHelperTest
+public class AvailableToPromiseSqlHelperTest
 {
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 

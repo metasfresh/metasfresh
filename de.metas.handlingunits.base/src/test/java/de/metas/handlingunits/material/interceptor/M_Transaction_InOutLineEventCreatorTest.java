@@ -46,7 +46,6 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import lombok.NonNull;
 import mockit.Expectations;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -73,7 +72,7 @@ import mockit.Mocked;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
-public class M_Transaction_TransactionEventCreatorTest
+public class M_Transaction_InOutLineEventCreatorTest
 {
 
 	private static final BigDecimal SEVEN = new BigDecimal("7");;
@@ -92,8 +91,7 @@ public class M_Transaction_TransactionEventCreatorTest
 	private Timestamp movementDate;
 	private I_M_InOutLine inoutLine;
 
-	@Mocked
-	M_Transaction_HuDescriptor huDescriptorCreator;
+	private TransactionDescriptorFactory transactionDescriptorFactory;
 
 	@Before
 	public void init()
@@ -117,6 +115,7 @@ public class M_Transaction_TransactionEventCreatorTest
 		inoutLine.setM_InOut(inout);
 		save(inoutLine);
 
+		transactionDescriptorFactory = new TransactionDescriptorFactory();
 	}
 
 	@Test
@@ -128,7 +127,7 @@ public class M_Transaction_TransactionEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
-				.createEventsForTransaction(TransactionDescriptor.ofRecord(transaction), false);
+				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
@@ -154,8 +153,9 @@ public class M_Transaction_TransactionEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
-				.createEventsForTransaction(TransactionDescriptor.ofRecord(transaction), false);
+				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
+		assertThat(events).hasSize(1);
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_SEVEN);
@@ -184,7 +184,7 @@ public class M_Transaction_TransactionEventCreatorTest
 		//
 		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
-				.createEventsForTransaction(TransactionDescriptor.ofRecord(transaction), false);
+				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
 
@@ -212,8 +212,10 @@ public class M_Transaction_TransactionEventCreatorTest
 				.build();
 
 		// @formatter:off
-		new Expectations()
+		final M_Transaction_HuDescriptor huDescriptorCreator = M_Transaction_HuDescriptor.INSTANCE;
+		new Expectations(M_Transaction_HuDescriptor.class)
 		{{
+			// partial mocking - we only want to mock this one method
 			huDescriptorCreator.createHuDescriptorsForInOutLine(inoutLine, false);
 			result = ImmutableList.of(huDescriptor);
 		}}; // @formatter:on
@@ -249,7 +251,7 @@ public class M_Transaction_TransactionEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
-				.createEventsForTransaction(TransactionDescriptor.ofRecord(transaction), false);
+				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
@@ -276,7 +278,7 @@ public class M_Transaction_TransactionEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
-				.createEventsForTransaction(TransactionDescriptor.ofRecord(transaction), false);
+				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
@@ -335,15 +337,15 @@ public class M_Transaction_TransactionEventCreatorTest
 				.build();
 
 		final I_M_Transaction transaction = createReceiptTransaction();
-		final TransactionDescriptor transactionDescriptor = TransactionDescriptor.ofRecord(transaction);
+		final TransactionDescriptor transactionDescriptor = transactionDescriptorFactory.ofRecord(transaction);
 
 		//
 		// invoke the method under test
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = M_Transaction_TransactionEventCreator
-				.createMaterialDescriptors(
-						transactionDescriptor,
-						0, // bPartnerId
-						ImmutableList.of(huDescriptor1, huDescriptor2));
+		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
+				transactionDescriptor,
+				0, // bPartnerId
+				ImmutableList.of(huDescriptor1, huDescriptor2));
 
 		final Set<Entry<MaterialDescriptor, Collection<HUDescriptor>>> entrySet = materialDescriptors.entrySet();
 		assertThat(entrySet).hasSize(2);
@@ -390,11 +392,11 @@ public class M_Transaction_TransactionEventCreatorTest
 				.build();
 
 		final I_M_Transaction transaction = createReceiptTransaction();
-		final TransactionDescriptor transactionDescriptor = TransactionDescriptor.ofRecord(transaction);
+		final TransactionDescriptor transactionDescriptor = transactionDescriptorFactory.ofRecord(transaction);
 
 		// invoke the method under test
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = M_Transaction_TransactionEventCreator
-				.createMaterialDescriptors(
+		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
 						transactionDescriptor,
 						0, // bpartnerId
 						ImmutableList.of(huDescriptor1, huDescriptor2));

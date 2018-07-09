@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 
 import org.junit.Test;
 
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.event.commons.AttributesKey;

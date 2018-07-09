@@ -8,34 +8,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_MovementLine;
-import org.compiere.model.X_M_Transaction;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
@@ -80,7 +70,9 @@ public class M_Transaction_TransactionEventCreator
 
 		if (transaction.getInoutLineId() > 0)
 		{
-			result.addAll(createEventsForInOutLine(transaction, deleted));
+			final List<MaterialEvent> //
+			eventsForInOutLine = M_Transaction_InOutLineEventCreator.createEventsForInOutLine(transaction, deleted);
+			result.addAll(eventsForInOutLine);
 		}
 		else if (transaction.getCostCollectorId() > 0)
 		{
@@ -97,12 +89,6 @@ public class M_Transaction_TransactionEventCreator
 		return result.build();
 	}
 
-	private static boolean isDirectMovementWarehouse(final int warehouseId)
-	{
-		final int intValue = Services.get(ISysConfigBL.class).getIntValue(IHUMovementBL.SYSCONFIG_DirectMove_Warehouse_ID, -1);
-		return intValue == warehouseId;
-	}
-
 	private List<MaterialEvent> createEventForCostCollector(
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
@@ -112,7 +98,8 @@ public class M_Transaction_TransactionEventCreator
 		final List<HUDescriptor> huDescriptors = //
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForCostCollector(costCollector, deleted);
 
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
+		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
 				transaction,
 				0, // don't provide the ppOrder's bPartnerId unless we clarified that it's the customer for which the produced goods are reserved
 				huDescriptors);
@@ -152,19 +139,29 @@ public class M_Transaction_TransactionEventCreator
 		return events.build();
 	}
 
-	private List<MaterialEvent> createEventsForInOutLine(
-			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted)
+	private static void assertSignumsOfQuantitiesMatch(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
+			@NonNull final TransactionDescriptor transaction)
 	{
+		final BigDecimal qtyPicked = shipmentScheduleQtyPicked.getQtyPicked();
+		final BigDecimal movementQty = transaction.getMovementQty();
 
-		final boolean shipment = X_M_Transaction.MOVEMENTTYPE_CustomerReturns.equals(transaction.getMovementType())
-				|| X_M_Transaction.MOVEMENTTYPE_CustomerShipment.equals(transaction.getMovementType());
-
-		if (shipment)
+		if (qtyPicked.signum() == 0 || movementQty.signum() == 0)
 		{
-			return createEventsForShipment(transaction, deleted);
+			return; // at least one of them is zero
 		}
-		return createEventsForReceipt(transaction, deleted);
+		if (qtyPicked.signum() != movementQty.signum())
+		{
+			return;
+		}
+
+		throw new AdempiereException(
+				"For the given shipmentScheduleQtyPicked and transaction, one needs to be positive and one needs to be negative")
+						.appendParametersToMessage()
+						.setParameter("qtyPicked", qtyPicked)
+						.setParameter("movementQty", movementQty)
+						.setParameter("shipmentScheduleQtyPicked", shipmentScheduleQtyPicked)
+						.setParameter("transaction", transaction);
 	}
 
 	@VisibleForTesting
@@ -201,145 +198,6 @@ public class M_Transaction_TransactionEventCreator
 		return shipmentScheduleId2quantity;
 	}
 
-	private static void assertSignumsOfQuantitiesMatch(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
-			@NonNull final TransactionDescriptor transaction)
-	{
-		final BigDecimal qtyPicked = shipmentScheduleQtyPicked.getQtyPicked();
-		final BigDecimal movementQty = transaction.getMovementQty();
-
-		if (qtyPicked.signum() == 0 || movementQty.signum() == 0)
-		{
-			return; // at least one of them is zero
-		}
-		if (qtyPicked.signum() != movementQty.signum())
-		{
-			return;
-		}
-
-		throw new AdempiereException(
-				"For the given shipmentScheduleQtyPicked and transaction, one needs to be positive and one needs to be negative")
-						.appendParametersToMessage()
-						.setParameter("qtyPicked", qtyPicked)
-						.setParameter("movementQty", movementQty)
-						.setParameter("shipmentScheduleQtyPicked", shipmentScheduleQtyPicked)
-						.setParameter("transaction", transaction);
-	}
-
-	private static List<MaterialEvent> createEventsForShipment(
-			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted)
-	{
-		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = retrieveShipmentScheduleId2Qty(transaction);
-
-		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
-
-		final I_M_InOutLine inOutLine = load(transaction.getInoutLineId(), I_M_InOutLine.class);
-
-		final List<HUDescriptor> huDescriptors = //
-				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInOutLine(inOutLine, deleted);
-
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
-				transaction,
-				inOutLine.getM_InOut().getC_BPartner_ID(), // customerId
-				huDescriptors);
-
-		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
-		for (final Entry<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptor : materialDescriptors.entrySet())
-		{
-			final AbstractTransactionEvent event;
-			if (deleted)
-			{
-				event = TransactionDeletedEvent.builder()
-						.eventDescriptor(transaction.getEventDescriptor())
-						.transactionId(transaction.getTransactionId())
-						.materialDescriptor(materialDescriptor.getKey())
-						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
-						.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
-						.inOutId(inOutLine.getM_InOut_ID())
-						.inOutLineId(inOutLine.getM_InOutLine_ID())
-						.directMovementWarehouse(directMovementWarehouse)
-						.build();
-			}
-			else
-			{
-				event = TransactionCreatedEvent.builder()
-						.eventDescriptor(transaction.getEventDescriptor())
-						.transactionId(transaction.getTransactionId())
-						.materialDescriptor(materialDescriptor.getKey())
-						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
-						.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
-						.inOutId(inOutLine.getM_InOut_ID())
-						.inOutLineId(inOutLine.getM_InOutLine_ID())
-						.directMovementWarehouse(directMovementWarehouse)
-						.build();
-			}
-			events.add(event);
-		}
-		return events.build();
-	}
-
-	private List<MaterialEvent> createEventsForReceipt(
-			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted)
-	{
-		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
-		final I_M_InOutLine inOutLine = load(transaction.getInoutLineId(), I_M_InOutLine.class);
-
-		final Map<Integer, BigDecimal> receiptScheduleIds2Qtys = Services
-				.get(IReceiptScheduleDAO.class)
-				.retrieveRsaForInOutLine(inOutLine)
-				.stream()
-				.collect(Collectors.groupingBy(
-						I_M_ReceiptSchedule_Alloc::getM_ReceiptSchedule_ID,
-						Collectors.reducing(
-								BigDecimal.ZERO,
-								I_M_ReceiptSchedule_Alloc::getQtyAllocated,
-								BigDecimal::add)));
-
-		final List<HUDescriptor> huDescriptors = //
-				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInOutLine(inOutLine, deleted);
-
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
-				transaction,
-				0, // receipts's bpartner is not a customer
-				huDescriptors);
-
-		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
-		for (final Entry<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptor : materialDescriptors.entrySet())
-		{
-			final AbstractTransactionEvent event;
-			if (deleted)
-			{
-				event = TransactionDeletedEvent.builder()
-						.eventDescriptor(transaction.getEventDescriptor())
-						.transactionId(transaction.getTransactionId())
-						.materialDescriptor(materialDescriptor.getKey())
-						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
-						.receiptScheduleIdsQtys(receiptScheduleIds2Qtys)
-						.inOutId(inOutLine.getM_InOut_ID())
-						.inOutLineId(inOutLine.getM_InOutLine_ID())
-						.directMovementWarehouse(directMovementWarehouse)
-						.build();
-			}
-			else
-			{
-				event = TransactionCreatedEvent.builder()
-						.eventDescriptor(transaction.getEventDescriptor())
-						.transactionId(transaction.getTransactionId())
-						.materialDescriptor(materialDescriptor.getKey())
-						.receiptScheduleIdsQtys(receiptScheduleIds2Qtys)
-						.inOutId(inOutLine.getM_InOut_ID())
-						.inOutLineId(inOutLine.getM_InOutLine_ID())
-						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
-						.directMovementWarehouse(directMovementWarehouse)
-						.build();
-			}
-			events.add(event);
-		}
-		return events.build();
-	}
-
 	private List<MaterialEvent> createEventForMovementLine(
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
@@ -351,7 +209,8 @@ public class M_Transaction_TransactionEventCreator
 		final List<HUDescriptor> huDescriptors = //
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForMovementLine(movementLine, deleted);
 
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
+		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
 				transaction,
 				0, // the movement's bpartner (if set at all) is not the customer, but probably a shipper
 				huDescriptors);
@@ -404,7 +263,8 @@ public class M_Transaction_TransactionEventCreator
 		final List<HUDescriptor> huDescriptors = //
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInventoryLine(inventoryLine, deleted);
 
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = createMaterialDescriptors(
+		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
 				transaction,
 				0, // customerId
 				huDescriptors);
@@ -438,37 +298,9 @@ public class M_Transaction_TransactionEventCreator
 		return events.build();
 	}
 
-	@VisibleForTesting
-	static Map<MaterialDescriptor, Collection<HUDescriptor>> createMaterialDescriptors(
-			@NonNull final TransactionDescriptor transaction,
-			final int customerId,
-			@NonNull final Collection<HUDescriptor> huDescriptors)
+	private static boolean isDirectMovementWarehouse(final int warehouseId)
 	{
-		final ImmutableListMultimap<ProductDescriptor, HUDescriptor> productDescriptor2huDescriptor = //
-				Multimaps.index(huDescriptors, HUDescriptor::getProductDescriptor);
-
-		final ImmutableSet<Entry<ProductDescriptor, Collection<HUDescriptor>>> entrySet = productDescriptor2huDescriptor.asMap().entrySet();
-
-		final ImmutableMap.Builder<MaterialDescriptor, Collection<HUDescriptor>> result = ImmutableMap.builder();
-
-		for (final Entry<ProductDescriptor, Collection<HUDescriptor>> entry : entrySet)
-		{
-			final BigDecimal quantity = entry.getValue()
-					.stream()
-					.map(HUDescriptor::getQuantity)
-					.map(qty -> transaction.getMovementQty().signum() >= 0 ? qty : qty.negate()) // set signum according to transaction.movementQty
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-
-			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-					.warehouseId(transaction.getWarehouseId())
-					.date(transaction.getMovementDate())
-					.productDescriptor(entry.getKey())
-					.customerId(customerId)
-					.quantity(quantity)
-					.build();
-
-			result.put(materialDescriptor, entry.getValue());
-		}
-		return result.build();
+		final int intValue = Services.get(ISysConfigBL.class).getIntValue(IHUMovementBL.SYSCONFIG_DirectMove_Warehouse_ID, -1);
+		return intValue == warehouseId;
 	}
 }

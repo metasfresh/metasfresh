@@ -1,16 +1,18 @@
-package de.metas.material.dispo.commons.repository;
+package de.metas.material.dispo.commons.repository.atp;
+
+import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
 
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -56,10 +58,11 @@ public final class AvailableToPromiseResultGroup
 
 	private boolean empty;
 
-	/** Date of the latest underlying data record, less or equal than the query's date; never null, unless this result is empty. */
-	private LocalDateTime date;
-
-	private int seqNo;
+	/**
+	 * Date of the latest underlying data record, less or equal than the query's date; never null, unless this result is empty.
+	 * Analog to , required because multiple records can have the same date.
+	 */
+	final HashMap<ArrayKey, DateAndSeqNo> includedRequestKeys = new HashMap<>();
 
 	@Builder
 	public AvailableToPromiseResultGroup(
@@ -67,11 +70,7 @@ public final class AvailableToPromiseResultGroup
 			final int productId,
 			@NonNull final AttributesKey storageAttributesKey,
 			@Nullable final Predicate<AttributesKey> storageAttributesKeyMatcher,
-			final int bpartnerId,
-			@Nullable final BigDecimal qty,
-			@Nullable final LocalDateTime date,
-			final int seqNo,
-			@Nullable final Boolean empty)
+			final int bpartnerId)
 	{
 		this.warehouseId = warehouseId > 0 ? warehouseId : WAREHOUSE_ID_ANY;
 		this.productId = Check.assumeGreaterThanZero(productId, "productId");
@@ -80,11 +79,7 @@ public final class AvailableToPromiseResultGroup
 				? storageAttributesKeyMatcher
 				: AvailableToPromiseResult.createStorageAttributesKeyMatcher(storageAttributesKey);
 
-		this.qty = qty == null ? BigDecimal.ZERO : qty;
-
-		this.date = date;
-		this.seqNo = seqNo;
-		this.empty = Util.coalesce(empty, true);
+		this.qty = ZERO;
 
 		if (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY
 				|| bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE
@@ -130,8 +125,8 @@ public final class AvailableToPromiseResultGroup
 	 * <p>
 	 * Returns true if the given {@code request}
 	 * <li>has no bPartnerID (i.e. are applicable to) all partners,
-	 * <li>has the same product, warehouse etc.
-	 * <li>has a date not after this result group's date.
+	 * <li>and has the same product, attributes and warehouse
+	 * <li>and has a date not after this result group's date.
 	 *
 	 * That's because those "bpartner-unspecific" requests' quantities are already in the respective later specific requests.
 	 * <p>
@@ -141,7 +136,7 @@ public final class AvailableToPromiseResultGroup
 	{
 		if (!isMatchting(request))
 		{
-			return false;
+			return false; // only matching requests were ever included
 		}
 
 		final boolean requestHasBPartnerId = request.getBpartnerId() > 0;
@@ -150,56 +145,28 @@ public final class AvailableToPromiseResultGroup
 			return false;
 		}
 
-		return isRequestEarlier(request);
-	}
-
-	private boolean isRequestHasEqualDateAndLaterSeqNo(@NonNull final AddToResultGroupRequest request)
-	{
-		return date != null && date.equals(request.getDate()) && seqNo < request.getSeqNo();
-	}
-
-	private boolean isRequestHasLaterDate(@NonNull final AddToResultGroupRequest request)
-	{
-		return date == null || date.isBefore(request.getDate());
-	}
-
-	private boolean isRequestEarlier(@NonNull final AddToResultGroupRequest request)
-	{
-		return isRequestHasEarlierDate(request) || isRequestHasEqualDateAndEarlierSeqNo(request);
-	}
-
-	private boolean isRequestHasEarlierDate(@NonNull final AddToResultGroupRequest request)
-	{
-		if (empty)
+		final ArrayKey key = request.computeKey();
+		if (!includedRequestKeys.containsKey(key))
 		{
-			return false; // empty == true means that nothing was yet added to this instance, so the request does *not* have an earlier date
+			return false;
 		}
-		return date != null && request.getDate().isBefore(date);
-	}
 
-	private boolean isRequestHasEqualDateAndEarlierSeqNo(@NonNull final AddToResultGroupRequest request)
-	{
-		if (empty)
-		{
-			return false; // empty == true means that nothing was yet added to this instance, so the request does *not* have an earlier seqno
-		}
-		return date != null && date.equals(request.getDate()) && request.getSeqNo() < seqNo;
+		final DateAndSeqNo dateAndSeq = includedRequestKeys.get(key);
+
+		// if our bpartnerless request is "earlier" than the latest request (with same key) that we already added, then the quantity of the bpartnerless request is contained within that other request which we already added
+		return request.getDateAndSeqNo().isBefore(dateAndSeq);
 	}
 
 	public void addQty(@NonNull final AddToResultGroupRequest request)
 	{
 		qty = qty.add(request.getQty());
 
-		if (isRequestHasLaterDate(request))
-		{
-			date = request.getDate();
-			seqNo = request.getSeqNo();
-		}
-		else if (isRequestHasEqualDateAndLaterSeqNo(request))
-		{
-			seqNo = request.getSeqNo();
-		}
-		empty = false;
+		final ArrayKey computeKey = request.computeKey();
+
+		final DateAndSeqNo oldTimeAndSeqNo = includedRequestKeys.get(computeKey);
+		final DateAndSeqNo latest = request.getDateAndSeqNo().latest(oldTimeAndSeqNo);
+
+		includedRequestKeys.put(computeKey, latest);
 	}
 
 	private boolean isWarehouseMatching(final int warehouseIdToMatch)
