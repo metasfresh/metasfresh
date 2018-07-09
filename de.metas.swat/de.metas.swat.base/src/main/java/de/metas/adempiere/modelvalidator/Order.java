@@ -17,7 +17,7 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.IDocumentLocationBL;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
@@ -25,7 +25,7 @@ import de.metas.order.impl.OrderBL;
 
 /**
  * This model validator checks for each new invoice line if there needs to be an additional invoice line for freight cost.
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Versandkostenermittlung/_-berechnung_(2009_0027_G28)'>DV-Konzept (2009_0027_G28)</a>"
  * @deprecated the code form this class shall be moved to {@link de.metas.order.model.interceptor.C_Order} and a new MV de.metas.modelvalidator.C_OrderLine.
@@ -76,7 +76,7 @@ public class Order implements ModelValidator
 
 			final boolean isQuotation = Services.get(IOrderBL.class).isQuotation(order);
 			final boolean convertToCustomer = order.isSOTrx() && !isQuotation;
-			
+
 			if (bpartner.isProspect() && convertToCustomer)
 			{
 				bpartner.setIsCustomer(true);
@@ -89,7 +89,6 @@ public class Order implements ModelValidator
 				{
 					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 					final String value = documentNoFactory.forTableName(I_C_BPartner.Table_Name, client_id, org_id)
-							.setTrxName(po.get_TrxName())
 							.build();
 					bpartner.setValue(value);
 				}
