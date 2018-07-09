@@ -38,7 +38,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.NumberTranslatableString;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.model.I_M_Product;
@@ -496,7 +496,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			return productLookupValues;
 		}
-
+//Services.get(IWarehouseDAO.class).
 		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(AvailableToPromiseQuery.builder()
 				.productIds(productLookupValues.getKeysAsInt())
 				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
@@ -572,7 +572,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final Group availableStockGroup)
 	{
 		final Quantity qtyOnHand = availableStockGroup.getQty();
-		final ITranslatableString qtyValueStr = NumberTranslatableString.of(qtyOnHand.getQty(), DisplayType.Quantity);
+		final ITranslatableString qtyValueStr = NumberTranslatableString.of(qtyOnHand.getAsBigDecimal(), DisplayType.Quantity);
 
 		final ITranslatableString uomSymbolStr = availableStockGroup.getUomSymbolStr();
 

@@ -17,9 +17,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResultGroup;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
@@ -64,7 +64,7 @@ public class AvailableToPromiseAdapter
 	@NonNull
 	public AvailableToPromiseResultForWebui retrieveAvailableStock(@NonNull final AvailableToPromiseQuery query)
 	{
-		final de.metas.material.dispo.commons.repository.AvailableToPromiseResult //
+		final de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult //
 		commonsAvailableStock = stockRepository.retrieveAvailableStock(query);
 
 		final AvailableToPromiseResultForWebuiBuilder clientResultBuilder = AvailableToPromiseResultForWebui.builder();
