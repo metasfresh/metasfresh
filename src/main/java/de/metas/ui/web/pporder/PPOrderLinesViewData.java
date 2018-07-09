@@ -75,12 +75,15 @@ import lombok.NonNull;
 		return planningStatus;
 	}
 
-	public PPOrderLineRow getById(final DocumentId documentId)
+	public PPOrderLineRow getById(final PPOrderLineRowId rowId)
 	{
+
+		final DocumentId documentId = rowId.toDocumentId();
+
 		final PPOrderLineRow row = allRecordsById.get(documentId);
 		if (row == null)
 		{
-			throw new EntityNotFoundException("No document found for documentId=" + documentId);
+			throw new EntityNotFoundException("No document found for rowId=" + rowId);
 		}
 		return row;
 	}
@@ -143,7 +146,7 @@ import lombok.NonNull;
 
 	private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, PPOrderLineRow> collector, final PPOrderLineRow row)
 	{
-		collector.put(row.getId(), row);
+		collector.put(row.getRowId().toDocumentId(), row);
 		row.getIncludedRows()
 				.forEach(includedRow -> indexByIdRecursively(collector, includedRow));
 	}

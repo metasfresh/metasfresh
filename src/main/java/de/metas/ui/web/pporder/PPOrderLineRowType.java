@@ -1,5 +1,10 @@
 package de.metas.ui.web.pporder;
 
+import java.util.Map;
+import java.util.stream.Stream;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.GuavaCollectors;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -31,28 +36,30 @@ import lombok.NonNull;
 
 public enum PPOrderLineRowType
 {
-	IssuedOrReceivedHU("I", "IssuedOrReceivedHU"), //
-	PP_Order("O", I_PP_Order.Table_Name), //
-	PP_OrderBomLine("L", I_PP_Order_BOMLine.Table_Name), //
-	Source_HU("S", I_M_Source_HU.Table_Name);
-
-	PPOrderLineRowType(@NonNull final String code, @NonNull final String iconName)
-	{
-		this.code = code;
-		this.iconName = iconName;
-	}
+	IssuedOrReceivedHU("IssuedOrReceivedHU"), //
+	PP_Order(I_PP_Order.Table_Name), //
+	PP_OrderBomLine(I_PP_Order_BOMLine.Table_Name), //
+	Source_HU(I_M_Source_HU.Table_Name);
 
 	@Getter
 	private final String code;
-	private final String iconName;
 
-	public String getName()
+	private PPOrderLineRowType(@NonNull final String code)
 	{
-		return iconName;
+		this.code = code;
 	}
 
-	public String getIconName()
+	public static PPOrderLineRowType forCode(@NonNull final String code)
 	{
-		return iconName;
+		PPOrderLineRowType type = code2type.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + PPOrderLineRowType.class + " found for code: " + code);
+		}
+		return type;
 	}
+
+	private static final Map<String, PPOrderLineRowType> code2type = Stream.of(values())
+			.collect(GuavaCollectors.toImmutableMapByKey(PPOrderLineRowType::getCode));
+
 }

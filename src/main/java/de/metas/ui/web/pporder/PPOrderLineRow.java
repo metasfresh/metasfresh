@@ -31,6 +31,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -60,6 +61,8 @@ import lombok.ToString;
 public class PPOrderLineRow implements IViewRow
 {
 	private final DocumentPath documentPath;
+
+	@Getter
 	private final PPOrderLineRowId rowId;
 
 	@Nullable

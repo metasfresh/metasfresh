@@ -83,7 +83,7 @@ public class PPOrderLinesView implements IView
 	{
 		return (PPOrderLinesView)view;
 	}
-	
+
 	@Builder
 	private PPOrderLinesView(
 			final ViewId parentViewId,
@@ -92,7 +92,7 @@ public class PPOrderLinesView implements IView
 			@NonNull final JSONViewDataType viewType,
 			final Set<DocumentPath> referencingDocumentPaths,
 			final int ppOrderId,
-			final PPOrderLinesViewDataSupplier dataSupplier, 
+			final PPOrderLinesViewDataSupplier dataSupplier,
 			@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
 		this.parentViewId = parentViewId; // might be null
@@ -185,7 +185,7 @@ public class PPOrderLinesView implements IView
 	{
 		return ppOrderId;
 	}
-	
+
 	public int getSalesOrderLineId()
 	{
 		return salesOrderLineId;
@@ -230,7 +230,8 @@ public class PPOrderLinesView implements IView
 	@Override
 	public PPOrderLineRow getById(final DocumentId documentId) throws EntityNotFoundException
 	{
-		return getData().getById(documentId);
+		final PPOrderLineRowId ppOrderLineRowId = PPOrderLineRowId.fromDocumentId(documentId);
+		return getData().getById(ppOrderLineRowId);
 	}
 
 	@Override
@@ -289,7 +290,7 @@ public class PPOrderLinesView implements IView
 
 	/**
 	 * loads and returns the given {@code ppOrderLineRow}'s {@code PP_Order} or {@code P_Order_BOMLine}, if available.
-	 * 
+	 *
 	 * @param ppOrderLineRow
 	 * @param modelClass
 	 * @return
@@ -361,5 +362,5 @@ public class PPOrderLinesView implements IView
 	{
 		return dataSupplier.getData();
 	}
-	
+
 }

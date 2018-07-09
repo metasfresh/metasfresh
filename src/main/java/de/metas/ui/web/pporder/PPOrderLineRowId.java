@@ -1,8 +1,13 @@
 package de.metas.ui.web.pporder;
 
-import org.adempiere.exceptions.AdempiereException;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.util.Check;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
@@ -39,16 +44,7 @@ public class PPOrderLineRowId
 {
 
 	@Getter
-	private final int ppOrderBomLineId;
-
-	@Getter
-	private final int ppOrderId;
-
-	@Getter
-	private final int huSourceId;
-
-	@Getter
-	private final int issuedOrReceivedHUId;
+	private final int recordId;
 
 	@Getter
 	private final PPOrderLineRowType type;
@@ -60,79 +56,80 @@ public class PPOrderLineRowId
 
 	@Builder
 	private PPOrderLineRowId(
-			final PPOrderLineRowType type,
-			final DocumentId parentRowId,
-			final int ppOrderBomLineId,
-			final int ppOrderId,
-			final int huSourceId,
-			final int issuedOrReceivedHUId)
+			@NonNull final PPOrderLineRowType type,
+			@Nullable final DocumentId parentRowId,
+			final int recordId)
 	{
+		Check.assumeGreaterThanZero(recordId, "RecordId");
+
 		this.type = type;
 		this.parentRowId = parentRowId;
-		this.ppOrderBomLineId = ppOrderBomLineId > 0 ? ppOrderBomLineId : -1;
-		this.ppOrderId = ppOrderId > 0 ? ppOrderId : -1;
-		this.huSourceId = huSourceId > 0 ? huSourceId : -1;
-		this.issuedOrReceivedHUId = issuedOrReceivedHUId > 0 ? issuedOrReceivedHUId : -1;
+		this.recordId = recordId;
 	}
 
 	static final String PARTS_SEPARATOR = "-";
+	private static final Splitter PARTS_SPLITTER = Splitter.on(PARTS_SEPARATOR).omitEmptyStrings();
 
 	public DocumentId toDocumentId()
 	{
-		DocumentId id = _documentId;
-		if (id == null)
+		DocumentId documentId = _documentId;
+		if (documentId == null)
 		{
 			final StringBuilder sb = new StringBuilder();
 			sb.append(type.getCode());
 
-			if (type == PPOrderLineRowType.IssuedOrReceivedHU)
-			{
-				sb.append(PARTS_SEPARATOR).append(issuedOrReceivedHUId);
-			}
-			else if (type == PPOrderLineRowType.PP_Order)
-			{
-				sb.append(PARTS_SEPARATOR).append(ppOrderId);
-			}
-			else if (type == PPOrderLineRowType.PP_OrderBomLine)
-			{
-				sb.append(PARTS_SEPARATOR).append(ppOrderBomLineId);
-			}
-			else if (type == PPOrderLineRowType.Source_HU)
-			{
-				sb.append(PARTS_SEPARATOR).append(huSourceId);
-			}
-			else
-			{
-				throw new AdempiereException("Type " + type + " is not supported");
-			}
+			sb.append(PARTS_SEPARATOR).append(parentRowId);
 
-			id = DocumentId.ofString(sb.toString());
+			sb.append(PARTS_SEPARATOR).append(recordId);
+
+			documentId = DocumentId.ofString(sb.toString());
 		}
-		return id;
+		return documentId;
+	}
+
+	public static final PPOrderLineRowId fromDocumentId(final DocumentId documentId)
+	{
+		final List<String> parts = PARTS_SPLITTER.splitToList(documentId.toJson());
+		return fromStringPartsList(parts);
+	}
+
+	private static final PPOrderLineRowId fromStringPartsList(final List<String> parts)
+	{
+		final int partsCount = parts.size();
+		if (partsCount < 1)
+		{
+			throw new IllegalArgumentException("Invalid id: " + parts);
+		}
+
+		final PPOrderLineRowType type = PPOrderLineRowType.forCode(parts.get(0));
+		final DocumentId parentRowId = !Check.isEmpty(parts.get(1), true) ? DocumentId.of(parts.get(1)) : null;
+		final int recordId = Integer.parseInt(parts.get(2));
+
+		return new PPOrderLineRowId(type, parentRowId, recordId);
 	}
 
 	public static final PPOrderLineRowId ofPPOrderBomLineId(int ppOrderBomLineId)
 	{
 		Preconditions.checkArgument(ppOrderBomLineId > 0, "ppOrderBomLineId > 0");
-		return new PPOrderLineRowId(PPOrderLineRowType.PP_OrderBomLine, null, ppOrderBomLineId, -1, -1, -1);
+		return new PPOrderLineRowId(PPOrderLineRowType.PP_OrderBomLine, null, ppOrderBomLineId);
 	}
 
 	public static PPOrderLineRowId ofPPOrderId(int ppOrderId)
 	{
 		Preconditions.checkArgument(ppOrderId > 0, "ppOrderId > 0");
-		return new PPOrderLineRowId(PPOrderLineRowType.PP_Order, null, -1, ppOrderId, -1, -1);
+		return new PPOrderLineRowId(PPOrderLineRowType.PP_Order, null, ppOrderId);
 	}
 
 	public static PPOrderLineRowId ofIssuedOrReceivedHU(@NonNull DocumentId parentRowId, int huId)
 	{
 		Preconditions.checkArgument(huId > 0, "huId > 0");
-		return new PPOrderLineRowId(PPOrderLineRowType.IssuedOrReceivedHU, parentRowId, -1, -1, -1, huId);
+		return new PPOrderLineRowId(PPOrderLineRowType.IssuedOrReceivedHU, parentRowId, huId);
 	}
 
 	public static PPOrderLineRowId ofSourceHU(@NonNull DocumentId parentRowId, int sourceHuId)
 	{
 		Preconditions.checkArgument(sourceHuId > 0, "huId > 0");
-		return new PPOrderLineRowId(PPOrderLineRowType.Source_HU, parentRowId, -1, -1, sourceHuId, -1);
+		return new PPOrderLineRowId(PPOrderLineRowType.Source_HU, parentRowId, sourceHuId);
 	}
 
 }
