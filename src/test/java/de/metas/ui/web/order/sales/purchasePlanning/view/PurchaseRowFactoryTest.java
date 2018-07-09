@@ -26,7 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.money.Currency;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;

@@ -34,7 +34,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyRepository;
 import de.metas.order.OrderAndLineId;
@@ -162,7 +162,8 @@ public class PurchaseRowsLoaderTest
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				currencyRepository,
-				new ReferenceGenerator());
+				new ReferenceGenerator(),
+				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()));
 
 		final DoNothingPurchaseProfitInfoServiceImpl purchaseProfitInfoService = new DoNothingPurchaseProfitInfoServiceImpl();
 
