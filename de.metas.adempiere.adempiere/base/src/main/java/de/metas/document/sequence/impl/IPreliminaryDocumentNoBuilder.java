@@ -1,10 +1,10 @@
-package de.metas.document.documentNo.impl;
+package de.metas.document.sequence.impl;
 
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Util;
 
 import de.metas.document.DocumentNoBuilderException;
-import de.metas.document.documentNo.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilder;
 
 /*
  * #%L

@@ -7,8 +7,8 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.util.Services;
 import org.compiere.model.I_GL_JournalBatch;
 
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IDocumentNoInfo;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
 
 /*
  * #%L

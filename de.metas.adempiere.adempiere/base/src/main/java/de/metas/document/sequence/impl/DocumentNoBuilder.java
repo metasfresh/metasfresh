@@ -1,4 +1,4 @@
-package de.metas.document.documentNo.impl;
+package de.metas.document.sequence.impl;
 
 /*
  * #%L
@@ -13,11 +13,11 @@ package de.metas.document.documentNo.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,6 +28,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -44,16 +45,16 @@ import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Increment and builds document numbers. Use {@link IDocumentNoBuilderFactory} to get an instance.
@@ -113,7 +114,6 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 	private final String build0() throws Exception
 	{
-		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
 
 		//
 		// Get the sequence number that we shall use
@@ -129,6 +129,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		//
 		// DocumentNo - Prefix
+		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
 		final String prefix = docSeqInfo.getPrefix();
 		if (!Check.isEmpty(prefix, true))
 		{
@@ -298,17 +299,8 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 	}
 
-	@Override
-	public DocumentNoBuilder setTrxName(final String trxName)
+	private String getTrxName()
 	{
-		// FIXME: 08240 because we had big issues with AD_Sequence getting locked, we decided to acquire next sequence out of transaction (as a workaround)
-		// NOTE: we are keeping this method here just to keep the old logic (in case we want to turn on trxName usage)
-		return this;
-	}
-
-	private final String getTrxName()
-	{
-		// FIXME: 08240 because we had big issues with AD_Sequence getting locked, we decided to acquire next sequence out of transaction (as a workaround)
 		return ITrx.TRXNAME_None;
 	}
 
@@ -372,14 +364,9 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	{
 		Check.assumeNotNull(_documentSeqInfoSupplier, DocumentNoBuilderException.class, "DocumentSequenceInfo supplier shall be set");
 		final DocumentSequenceInfo documentSeqInfo = _documentSeqInfoSupplier.get();
+
 		Check.assumeNotNull(documentSeqInfo, DocumentNoBuilderException.class, "documentSeqInfo not null");
 		return documentSeqInfo;
-	}
-
-	private DocumentNoBuilder setDocumentSequenceInfo(final Supplier<DocumentSequenceInfo> documentSeqInfoSupplier)
-	{
-		_documentSeqInfoSupplier = Suppliers.memoize(documentSeqInfoSupplier);
-		return this;
 	}
 
 	@Override
@@ -389,28 +376,23 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return this;
 	}
 
-	@Override
-	public DocumentNoBuilder setDocumentSequenceInfoByTableName(final String tableName, final int adClientId, final int adOrgId)
-	{
-		Check.assumeNotEmpty(tableName, DocumentNoBuilderException.class, "tableName not empty");
-		final String sequenceName = PREFIX_DOCSEQ + tableName;
-		setDocumentSequenceInfo(() -> documentSequenceDAO.retriveDocumentSequenceInfo(sequenceName, adClientId, adOrgId));
-		return this;
-	}
-
-	@Override
 	public DocumentNoBuilder setDocumentSequenceByDocTypeId(final int C_DocType_ID, final boolean useDefiniteSequence)
 	{
 		setDocumentSequenceInfo(() -> retrieveDocumentSequenceInfoByDocTypeId(C_DocType_ID, useDefiniteSequence));
 		return this;
 	}
 
-
 	@Override
 	public IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(int AD_Sequence_ID)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		setDocumentSequenceInfo(() -> documentSequenceDAO.retriveDocumentSequenceInfo(AD_Sequence_ID));
+		return this;
+	}
+
+	private DocumentNoBuilder setDocumentSequenceInfo(@NonNull final Supplier<DocumentSequenceInfo> documentSeqInfoSupplier)
+	{
+		_documentSeqInfoSupplier = documentSeqInfoSupplier;
+		return this;
 	}
 
 	private DocumentSequenceInfo retrieveDocumentSequenceInfoByDocTypeId(final int C_DocType_ID, final boolean useDefiniteSequence)
