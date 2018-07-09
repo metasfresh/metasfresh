@@ -82,6 +82,10 @@ public class DocTypeNotFoundException extends AdempiereException
 		{
 			sb.append(", @IsSOTrx@: " + query.getIsSOTrx());
 		}
+		if (!Check.isEmpty(query.getName(), true))
+		{
+			sb.append(", @Name@: ").append(query.getName());
+		}
 
 		return sb.toString();
 	}
