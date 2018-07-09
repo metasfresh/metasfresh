@@ -25,7 +25,7 @@ package org.adempiere.inout.util;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResultGroup;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.Builder;
 import lombok.Getter;

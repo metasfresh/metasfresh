@@ -7,7 +7,7 @@ import org.compiere.util.Util;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;

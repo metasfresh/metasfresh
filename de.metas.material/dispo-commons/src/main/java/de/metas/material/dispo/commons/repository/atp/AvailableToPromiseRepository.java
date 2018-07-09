@@ -1,4 +1,4 @@
-package de.metas.material.dispo.commons.repository;
+package de.metas.material.dispo.commons.repository.atp;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -19,7 +19,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
