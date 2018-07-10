@@ -1,5 +1,7 @@
 package de.metas.ui.web.pporder;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -13,9 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
@@ -35,12 +34,12 @@ import mockit.Mocked;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -112,7 +111,7 @@ public class PPOrderLineRowTest
 				.packingInfo("packingInfo")
 				.product(JSONLookupValue.of(35, "product"))
 				.qty(BigDecimal.TEN)
-				.rowId(DocumentId.of(40))
+				.rowId(PPOrderLineRowId.ofSourceHU(DocumentId.of(40), 30))
 				.type(PPOrderLineType.HU_TU)
 				.uom(JSONLookupValue.of(50, "uom"))
 				.attributesSupplier(() -> null)
@@ -141,7 +140,7 @@ public class PPOrderLineRowTest
 				.processed(true)
 				.product(JSONLookupValue.of(35, "product"))
 				.quantity(new Quantity(BigDecimal.TEN, uom))
-				.rowId(DocumentId.of(40))
+				.rowId(PPOrderLineRowId.ofIssuedOrReceivedHU(DocumentId.of(40), 10))
 				.type(PPOrderLineType.HU_TU)
 				.topLevelHU(true)
 				.huStatus(JSONLookupValue.of(X_M_HU.HUSTATUS_Active, "Active"))
