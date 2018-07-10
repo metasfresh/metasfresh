@@ -1,7 +1,10 @@
 package de.metas.ui.web;
 
+import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
@@ -26,7 +29,9 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import de.metas.Profiles;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.session.WebRestApiContextProvider;
+import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
 /*
  * #%L
@@ -88,8 +93,6 @@ public class WebRestApiApplication
 					.run(args);
 		}
 
-		AdempiereException.enableCaptureLanguageOnConstructionTime(); // because usually at the time the message is (lazy) parsed the user session context is no longer available.
-
 		// now init the model validation engine
 		ModelValidationEngine.get();
 	}
@@ -98,6 +101,12 @@ public class WebRestApiApplication
 	public Adempiere adempiere(final WebRestApiContextProvider webuiContextProvider)
 	{
 		Env.setContextProvider(webuiContextProvider);
+
+		AdempiereException.enableCaptureLanguageOnConstructionTime(); // because usually at the time the message is (lazy) parsed the user session context is no longer available.
+
+		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
+
+		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
 
 		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		return adempiere;
