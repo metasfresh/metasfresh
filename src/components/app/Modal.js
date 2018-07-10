@@ -21,15 +21,6 @@ import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 
-const mapStateToProps = (state, props) => ({
-  parentSelection: getSelection({
-    state,
-    windowType: props.parentType,
-    viewId: props.viewId,
-  }),
-  activeTabId: state.windowHandler.master.layout.activeTab,
-});
-
 class Modal extends Component {
   mounted = false;
 
@@ -534,5 +525,14 @@ class Modal extends Component {
     );
   }
 }
+
+const mapStateToProps = (state, props) => ({
+  parentSelection: getSelection({
+    state,
+    windowType: props.parentType,
+    viewId: props.viewId,
+  }),
+  activeTabId: state.windowHandler.master.layout.activeTab,
+});
 
 export default connect(mapStateToProps)(Modal);
