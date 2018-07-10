@@ -104,11 +104,7 @@ class InlineFilterItem extends Component {
     const { applyFilters } = this.props;
     const { filter } = this.state;
 
-    if (
-      filter &&
-      filter.parametersLayoutType === 'singleOverlayField' &&
-      !filter.parameters[0].value
-    ) {
+    if (filter && !filter.parameters[0].value) {
       return this.handleClear();
     }
 
