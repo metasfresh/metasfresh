@@ -84,7 +84,7 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private LocalDateTime purchaseDatePromisedInitial;
 
-	@Getter(AccessLevel.NONE)
+	// @Getter(AccessLevel.NONE)
 	private final Duration reminderTime;
 
 	@Getter(AccessLevel.PRIVATE)
@@ -430,15 +430,5 @@ public class PurchaseCandidate
 	public List<PurchaseErrorItem> getPurchaseErrorItems()
 	{
 		return ImmutableList.copyOf(purchaseErrorItems);
-	}
-
-	public LocalDateTime getReminderDate()
-	{
-		if (reminderTime == null || purchaseDatePromised == null)
-		{
-			return null;
-		}
-
-		return purchaseDatePromised.minus(reminderTime);
 	}
 }

@@ -375,8 +375,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * NOTE: this method is not saving the HU.
 	 *
 	 * @param huContext mandatory, because depending on the given {@code huStatus}, we might need the context's {@link IHUContext#getHUPackingMaterialsCollector()}.
-	 * @param hu
-	 * @param huStatus
 	 */
 	void setHUStatus(IHUContext huContext, I_M_HU hu, String huStatus);
 
@@ -427,7 +425,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI getPI(I_M_HU hu);
 
 	I_M_HU_PI_Version getPIVersion(I_M_HU hu);
-	
+
 	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
 
 	/**

@@ -14,7 +14,7 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2035991312L;
+	private static final long serialVersionUID = -1055385350L;
 
     /** Standard Constructor */
     public X_C_BP_PurchaseSchedule (Properties ctx, int C_BP_PurchaseSchedule_ID, String trxName)
@@ -22,8 +22,8 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
       super (ctx, C_BP_PurchaseSchedule_ID, trxName);
       /** if (C_BP_PurchaseSchedule_ID == 0)
         {
-			setC_BPartner_ID (0);
 			setC_BP_PurchaseSchedule_ID (0);
+			setC_BPartner_ID (0);
 			setFrequency (0); // 1
 			setFrequencyType (null); // W
 			setReminderTimeInMin (0); // 0
@@ -45,6 +45,28 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set BPartner's purchase schedule.
+		@param C_BP_PurchaseSchedule_ID BPartner's purchase schedule	  */
+	@Override
+	public void setC_BP_PurchaseSchedule_ID (int C_BP_PurchaseSchedule_ID)
+	{
+		if (C_BP_PurchaseSchedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BP_PurchaseSchedule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BP_PurchaseSchedule_ID, Integer.valueOf(C_BP_PurchaseSchedule_ID));
+	}
+
+	/** Get BPartner's purchase schedule.
+		@return BPartner's purchase schedule	  */
+	@Override
+	public int getC_BP_PurchaseSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_PurchaseSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
@@ -83,23 +105,38 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	/** Set BPartner's purchase schedule.
-		@param C_BP_PurchaseSchedule_ID BPartner's purchase schedule	  */
 	@Override
-	public void setC_BP_PurchaseSchedule_ID (int C_BP_PurchaseSchedule_ID)
+	public org.compiere.model.I_C_Calendar getC_Calendar() throws RuntimeException
 	{
-		if (C_BP_PurchaseSchedule_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BP_PurchaseSchedule_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_BP_PurchaseSchedule_ID, Integer.valueOf(C_BP_PurchaseSchedule_ID));
+		return get_ValueAsPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class);
 	}
 
-	/** Get BPartner's purchase schedule.
-		@return BPartner's purchase schedule	  */
 	@Override
-	public int getC_BP_PurchaseSchedule_ID () 
+	public void setC_Calendar(org.compiere.model.I_C_Calendar C_Calendar)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_PurchaseSchedule_ID);
+		set_ValueFromPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Calendar);
+	}
+
+	/** Set Kalender.
+		@param C_Calendar_ID 
+		Bezeichnung des Buchführungs-Kalenders
+	  */
+	@Override
+	public void setC_Calendar_ID (int C_Calendar_ID)
+	{
+		if (C_Calendar_ID < 1) 
+			set_Value (COLUMNNAME_C_Calendar_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Calendar_ID, Integer.valueOf(C_Calendar_ID));
+	}
+
+	/** Get Kalender.
+		@return Bezeichnung des Buchführungs-Kalenders
+	  */
+	@Override
+	public int getC_Calendar_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Calendar_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

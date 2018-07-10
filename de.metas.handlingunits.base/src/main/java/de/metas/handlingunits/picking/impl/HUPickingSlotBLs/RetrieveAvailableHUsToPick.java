@@ -13,14 +13,13 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Locator;
 
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.storage.IStorageEngine;
@@ -41,12 +40,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,7 +56,7 @@ import lombok.experimental.UtilityClass;
  * Contains methods used to support
  * {@link HUPickingSlotBL#retrieveAvailableHUsToPick(de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery)} and
  * {@link HUPickingSlotBL#retrieveAvailableSourceHUs(de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery)}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -95,7 +94,6 @@ public class RetrieveAvailableHUsToPick
 	{
 		//
 		// Create storage queries from shipment schedules
-
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		final Set<IStorageQuery> storageQueries = new HashSet<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
@@ -121,14 +119,18 @@ public class RetrieveAvailableHUsToPick
 		return vhus;
 	}
 
-	private void addToVhusIfValid(@NonNull final IStorageRecord storageRecord, @NonNull final List<I_M_HU> vhus)
+	private void addToVhusIfValid(
+			@NonNull final IStorageRecord storageRecord,
+			@NonNull final List<I_M_HU> vhus)
 	{
+
 		final HUStorageRecord huStorageRecord = HUStorageRecord.cast(storageRecord);
 		final I_M_HU vhu = huStorageRecord.getVHU();
 
-		// Skip those VHUs which are not about Active HUs
+		// Skip those VHUs which are not about active HUs
 		// (i.e. we are skipping things which were already picked)
-		if (!X_M_HU.HUSTATUS_Active.equals(vhu.getHUStatus()))
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		if (!(huStatusBL.isStatusActive(vhu)))
 		{
 			return;
 		}
@@ -145,11 +147,14 @@ public class RetrieveAvailableHUsToPick
 			return;
 		}
 
-		final SourceHUsService sourceHuService = SourceHUsService.get();
-		if (sourceHuService.isSourceHu(vhu.getM_HU_ID()))
-		{
-			return;
-		}
+		// What was the purpose if this check?
+		// At any rate, it caused the problem that if you selected a top-level VHU as source-HU,
+		// you could never pick from it because it was not added to 'vhus'.
+		// final SourceHUsService sourceHuService = SourceHUsService.get();
+		// if (sourceHuService.isSourceHu(vhu.getM_HU_ID()))
+		// {
+		// return;
+		// }
 
 		vhus.add(vhu);
 	}

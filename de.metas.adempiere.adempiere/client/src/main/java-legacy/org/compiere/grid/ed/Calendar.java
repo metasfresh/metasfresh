@@ -39,11 +39,6 @@ import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -71,13 +66,17 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.ListComboBoxModel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.SwingUtils;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
 
 /**
  * Calendar Date & Time picker.
@@ -878,7 +877,7 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 		
 		private final Frame getParentFrame()
 		{
-			return parentComp == null ? null : Env.getFrame(parentComp);
+			return parentComp == null ? null : SwingUtils.getFrame(parentComp);
 		}
 		
 		public Builder setDialogTitle(final String dialogTitle)

@@ -185,7 +185,7 @@ public class M_Movement
 		final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 		final Date movementDate = movement.getMovementDate();
 
-		try (ITemporaryDateTrx dateTrx = IHUContext.DateTrxProvider.temporarySet(movementDate))
+		try (final ITemporaryDateTrx dateTrx = IHUContext.DateTrxProvider.temporarySet(movementDate))
 		{
 			for (final I_M_MovementLine movementLine : movementDAO.retrieveLines(movement, I_M_MovementLine.class))
 			{
@@ -238,22 +238,25 @@ public class M_Movement
 		}
 
 		//
-		// Activate HU (not needed, but we want to be sure)
-		// (even if we do reversals)
-
-		// NOTE: as far as we know, HUContext won't be used by setHUStatus, because the status active doesn't
-		// trigger a movement to/from gebindelager. In this case a movement is already created from a lager to another.
-		// So no HU leftovers.
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		Services.get(IHandlingUnitsBL.class).setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
-
-		//
 		// Update HU's Locator
 		// FIXME: refactor this and have a common way of setting HU's locator
 		hu.setM_Locator_ID(locatorToId);
 
+		// Activate HU (not needed, but we want to be sure)
+		// (even if we do reversals)
+
+		// NOTE: as far as we know, HUContext won't be used by setHUStatus, because the status "active" doesn't
+		// trigger a movement to/from empties warehouse. In this case a movement is already created from a lager to another.
+		// So no HU leftovers.
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
+		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+
 		// Save changed HU
-		Services.get(IHandlingUnitsDAO.class).saveHU(hu);
+		handlingUnitsDAO.saveHU(hu);
 	}
 
 }

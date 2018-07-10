@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for PP_Product_BOMLine
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -57429791L;
+	private static final long serialVersionUID = 1699901692L;
 
     /** Standard Constructor */
     public X_PP_Product_BOMLine (Properties ctx, int PP_Product_BOMLine_ID, String trxName)
@@ -40,15 +23,12 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
       super (ctx, PP_Product_BOMLine_ID, trxName);
       /** if (PP_Product_BOMLine_ID == 0)
         {
-			setIssueMethod (null);
-// 1
-			setLine (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM PP_Product_BOMLine WHERE PP_Product_BOM_ID=@PP_Product_BOM_ID@
+			setIssueMethod (null); // 1
+			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM PP_Product_BOMLine WHERE PP_Product_BOM_ID=@PP_Product_BOM_ID@
 			setM_Product_ID (0);
 			setPP_Product_BOM_ID (0);
 			setPP_Product_BOMLine_ID (0);
-			setValidFrom (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setValidFrom (new Timestamp( System.currentTimeMillis() )); // @#Date@
         } */
     }
 
@@ -67,15 +47,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
       return poi;
     }
 
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_PP_Product_BOMLine[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Quantity Assay.
+	/** Set Mengen Probe.
 		@param Assay 
 		Indicated the Quantity Assay to use into Quality Order
 	  */
@@ -85,7 +57,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 		set_Value (COLUMNNAME_Assay, Assay);
 	}
 
-	/** Get Quantity Assay.
+	/** Get Mengen Probe.
 		@return Indicated the Quantity Assay to use into Quality Order
 	  */
 	@Override
@@ -93,11 +65,11 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Assay);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Backflush Group.
+	/** Set Retrograde Gruppe.
 		@param BackflushGroup 
 		The Grouping Components to the Backflush
 	  */
@@ -107,7 +79,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 		set_Value (COLUMNNAME_BackflushGroup, BackflushGroup);
 	}
 
-	/** Get Backflush Group.
+	/** Get Retrograde Gruppe.
 		@return The Grouping Components to the Backflush
 	  */
 	@Override
@@ -200,6 +172,22 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 		return (java.lang.String)get_Value(COLUMNNAME_ComponentType);
 	}
 
+	/** Set CU Label Qty.
+		@param CULabelQuanitity CU Label Qty	  */
+	@Override
+	public void setCULabelQuanitity (java.lang.String CULabelQuanitity)
+	{
+		set_Value (COLUMNNAME_CULabelQuanitity, CULabelQuanitity);
+	}
+
+	/** Get CU Label Qty.
+		@return CU Label Qty	  */
+	@Override
+	public java.lang.String getCULabelQuanitity () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CULabelQuanitity);
+	}
+
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -214,6 +202,25 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Erwartetes Ergebnis.
+		@param expectedResult Erwartetes Ergebnis	  */
+	@Override
+	public void setexpectedResult (java.math.BigDecimal expectedResult)
+	{
+		set_Value (COLUMNNAME_expectedResult, expectedResult);
+	}
+
+	/** Get Erwartetes Ergebnis.
+		@return Erwartetes Ergebnis	  */
+	@Override
+	public java.math.BigDecimal getexpectedResult () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_expectedResult);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Feature.
@@ -253,7 +260,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Forecast);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -341,7 +348,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public static final String ISSUEMETHOD_FloorStock = "2";
 	/** IssueOnlyForReceived = 9 */
 	public static final String ISSUEMETHOD_IssueOnlyForReceived = "9";
-	/** Set Issue Method.
+	/** Set Zuteil Methode.
 		@param IssueMethod 
 		There are two methods for issue the components to Manufacturing Order
 	  */
@@ -352,7 +359,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 		set_Value (COLUMNNAME_IssueMethod, IssueMethod);
 	}
 
-	/** Get Issue Method.
+	/** Get Zuteil Methode.
 		@return There are two methods for issue the components to Manufacturing Order
 	  */
 	@Override
@@ -417,9 +424,9 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -430,8 +437,8 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -516,6 +523,28 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 		return ii.intValue();
 	}
 
+	/** Set % oldScrap.
+		@param oldScrap 
+		Indicate the % Scrap  for calculate the Scrap Quantity
+	  */
+	@Override
+	public void setoldScrap (java.math.BigDecimal oldScrap)
+	{
+		set_Value (COLUMNNAME_oldScrap, oldScrap);
+	}
+
+	/** Get % oldScrap.
+		@return Indicate the % Scrap  for calculate the Scrap Quantity
+	  */
+	@Override
+	public java.math.BigDecimal getoldScrap () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_oldScrap);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	@Override
 	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM() throws RuntimeException
 	{
@@ -596,7 +625,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBatch);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -618,7 +647,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBOM);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -640,8 +669,31 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Scrap);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Show Sub BOM Ingredients.
+		@param ShowSubBOMIngredients Show Sub BOM Ingredients	  */
+	@Override
+	public void setShowSubBOMIngredients (boolean ShowSubBOMIngredients)
+	{
+		set_Value (COLUMNNAME_ShowSubBOMIngredients, Boolean.valueOf(ShowSubBOMIngredients));
+	}
+
+	/** Get Show Sub BOM Ingredients.
+		@return Show Sub BOM Ingredients	  */
+	@Override
+	public boolean isShowSubBOMIngredients () 
+	{
+		Object oo = get_Value(COLUMNNAME_ShowSubBOMIngredients);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Gültig ab.
@@ -705,8 +757,8 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public static final String VARIANTGROUP_08 = "08";
 	/** 09 = 09 */
 	public static final String VARIANTGROUP_09 = "09";
-	/** Set VariantGroup.
-		@param VariantGroup VariantGroup	  */
+	/** Set Varianten Gruppe.
+		@param VariantGroup Varianten Gruppe	  */
 	@Override
 	public void setVariantGroup (java.lang.String VariantGroup)
 	{
@@ -714,8 +766,8 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 		set_Value (COLUMNNAME_VariantGroup, VariantGroup);
 	}
 
-	/** Get VariantGroup.
-		@return VariantGroup	  */
+	/** Get Varianten Gruppe.
+		@return Varianten Gruppe	  */
 	@Override
 	public java.lang.String getVariantGroup () 
 	{

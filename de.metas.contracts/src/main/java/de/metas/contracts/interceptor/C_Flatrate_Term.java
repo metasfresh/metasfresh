@@ -52,7 +52,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;

@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.CalendarId;
 import de.metas.purchasecandidate.model.I_C_BP_PurchaseSchedule;
 import de.metas.purchasecandidate.model.X_C_BP_PurchaseSchedule;
 import lombok.Builder;
@@ -121,6 +122,7 @@ public class BPPurchaseScheduleRepository
 				.reminderTime(Duration.ofMinutes(scheduleRecord.getReminderTimeInMin()))
 				.leadTimeOffset(Duration.ofDays(scheduleRecord.getLeadTimeOffset()))
 				.bpartnerId(BPartnerId.ofRepoId(scheduleRecord.getC_BPartner_ID()))
+				.nonBusinessDaysCalendarId(CalendarId.ofRepoIdOrNull(scheduleRecord.getC_Calendar_ID()))
 				.build();
 	}
 
@@ -328,7 +330,6 @@ public class BPPurchaseScheduleRepository
 
 		return scheduleRecord;
 	}
-
 
 	private static void setDaysOfWeek(@NonNull final I_C_BP_PurchaseSchedule scheduleRecord, @NonNull final ImmutableSet<DayOfWeek> daysOfWeek)
 	{

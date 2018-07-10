@@ -98,6 +98,38 @@ public interface I_M_Shipment_Constraint
     public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
+	 * Set Rechnung.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_Invoice_ID (int C_Invoice_ID);
+
+	/**
+	 * Get Rechnung.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getC_Invoice_ID();
+
+	public org.compiere.model.I_C_Invoice getC_Invoice();
+
+	@Deprecated
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
+
+    /** Column definition for C_Invoice_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, org.compiere.model.I_C_Invoice>(I_M_Shipment_Constraint.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -174,6 +206,33 @@ public interface I_M_Shipment_Constraint
     public static final org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, Object> COLUMN_IsDeliveryStop = new org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, Object>(I_M_Shipment_Constraint.class, "IsDeliveryStop", null);
     /** Column name IsDeliveryStop */
     public static final String COLUMNNAME_IsDeliveryStop = "IsDeliveryStop";
+
+	/**
+	 * Set Gezahlt.
+	 * Der Beleg ist bezahlt
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setIsPaid (boolean IsPaid);
+
+	/**
+	 * Get Gezahlt.
+	 * Der Beleg ist bezahlt
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public boolean isPaid();
+
+    /** Column definition for IsPaid */
+    public static final org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, Object> COLUMN_IsPaid = new org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, Object>(I_M_Shipment_Constraint.class, "IsPaid", null);
+    /** Column name IsPaid */
+    public static final String COLUMNNAME_IsPaid = "IsPaid";
 
 	/**
 	 * Set Shipment constraint.

@@ -38,7 +38,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -282,7 +282,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 
 		Services.get(IHUAttributePropagatorFactory.class).getPropagator(attributeSet, attr_InvalidPropagation);
 
-		HUAssert.assertMock("mock");
+		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test

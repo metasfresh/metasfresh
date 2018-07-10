@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import javax.swing.ImageIcon;
 
-import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.service.impl.DeveloperModeBL;
@@ -43,8 +42,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.DefaultServiceNamePolicy;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.adempiere.warehouse.spi.impl.WarehouseAdvisor;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.MLanguage;
@@ -232,7 +229,7 @@ public class Adempiere
 					+ "@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, <further classes> })\n"
 					+ "public class YourTest ...\n"
 					+ "\n"
-					+ "Where the further configuration classes contain @ComponentScann annotations to discover spring components required by the actual tests"
+					+ "Where the further configuration classes contain @ComponentScan annotations to discover spring components required by the actual tests"
 					+ "Also see https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-testing.html";
 		}
 		else
@@ -828,15 +825,7 @@ public class Adempiere
 
 		// metas: begin
 		Services.registerService(IProcessingService.class, ProcessingService.get());
-		Services.registerService(IWarehouseAdvisor.class, new WarehouseAdvisor());
 		// metas: end
-
-		// task 06295
-		if (runMode == RunMode.BACKEND)
-		{
-			// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
-			Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
-		}
 
 		return true;
 	}	// startupEnvironment

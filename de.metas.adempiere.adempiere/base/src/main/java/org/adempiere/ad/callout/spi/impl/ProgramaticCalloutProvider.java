@@ -14,11 +14,11 @@ import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramaticCalloutProvider
 {
@@ -34,13 +34,12 @@ public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramati
 	}
 
 	@Override
-	public boolean registerCallout(final String tableName, final String columnName, final ICalloutInstance callout)
+	public boolean registerCallout(
+			@NonNull final String tableName,
+			@NonNull final String columnName,
+			@NonNull final ICalloutInstance callout)
 	{
-		Check.assumeNotNull(tableName, "TableName not null");
-		Check.assumeNotNull(columnName, "ColumnName not null");
-		Check.assumeNotNull(callout, "callout not null");
-
-		String tableNameToUse = tableName.toLowerCase();
+		final String tableNameToUse = tableName.toLowerCase();
 
 		//
 		// Add the new callout to our internal map

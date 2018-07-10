@@ -1,7 +1,7 @@
 package org.adempiere.util.time.generator;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 
 import org.adempiere.util.Check;
@@ -30,7 +30,7 @@ public class WeekDayCalendarIncrementor implements ICalendarIncrementor
 	}
 
 	@Override
-	public LocalDate increment(final LocalDate date)
+	public LocalDateTime increment(final LocalDateTime date)
 	{
 		if (date.getDayOfWeek().getValue() >= dayOfWeek.getValue())
 		{
@@ -43,7 +43,7 @@ public class WeekDayCalendarIncrementor implements ICalendarIncrementor
 	}
 
 	@Override
-	public LocalDate decrement(final LocalDate date)
+	public LocalDateTime decrement(final LocalDateTime date)
 	{
 		if (weeksToAdd > 1)
 		{

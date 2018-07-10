@@ -202,6 +202,11 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, query.getIsSOTrx());
 		}
+		
+		if(!Check.isEmpty(query.getName(), true))
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMN_Name, query.getName());
+		}
 
 		queryBuilder.orderBy()
 				.addColumn(I_C_DocType.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last)

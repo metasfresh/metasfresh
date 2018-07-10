@@ -3,8 +3,8 @@ package de.metas.handlingunits.material.interceptor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.modelvalidator.InterceptorUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -63,8 +63,9 @@ public class M_Transaction
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final ModelChangeType type)
 	{
-		final TransactionDescriptor transactionDescriptor = TransactionDescriptor.ofRecord(transaction);
-		final boolean deleted = type.isDelete() || InterceptorUtil.isJustDeactivated(transaction);
+		final TransactionDescriptorFactory transactionDescriptorFactory = new TransactionDescriptorFactory();
+		final TransactionDescriptor transactionDescriptor = transactionDescriptorFactory.ofRecord(transaction);
+		final boolean deleted = type.isDelete() || ModelChangeUtil.isJustDeactivated(transaction);
 
 		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()

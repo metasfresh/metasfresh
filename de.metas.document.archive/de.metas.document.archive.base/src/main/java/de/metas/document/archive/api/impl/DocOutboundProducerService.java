@@ -10,12 +10,12 @@ package de.metas.document.archive.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,12 +34,13 @@ import org.adempiere.util.Check;
 import de.metas.document.archive.api.IDocOutboundProducer;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import lombok.NonNull;
 
 /**
  * Default implementation of {@link IDocOutboundProducerService}
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class DocOutboundProducerService implements IDocOutboundProducerService
 {
@@ -48,7 +49,7 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 	/**
 	 * Map of Doc Outbound Producers (C_Doc_Outbound_Config_ID -> DocOutboundProducerValidator)
 	 */
-	private final Map<Integer, IDocOutboundProducer> outboundProducers = new HashMap<Integer, IDocOutboundProducer>();
+	private final Map<Integer, IDocOutboundProducer> outboundProducers = new HashMap<>();
 	private final ReentrantLock outboundProducersLock = new ReentrantLock();
 
 	public DocOutboundProducerService()
@@ -70,10 +71,8 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 		}
 	}
 
-	private void registerProducer0(final IDocOutboundProducer producer)
+	private void registerProducer0(@NonNull final IDocOutboundProducer producer)
 	{
-		Check.assumeNotNull(producer, "producer not null");
-
 		final I_C_Doc_Outbound_Config config = producer.getC_Doc_Outbound_Config();
 		Check.assumeNotNull(config, "Producer {} shall have a config", producer);
 
@@ -114,7 +113,7 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 
 	private List<IDocOutboundProducer> getProducersList()
 	{
-		final List<IDocOutboundProducer> producersList = new ArrayList<IDocOutboundProducer>(outboundProducers.values());
+		final List<IDocOutboundProducer> producersList = new ArrayList<>(outboundProducers.values());
 		return producersList;
 	}
 

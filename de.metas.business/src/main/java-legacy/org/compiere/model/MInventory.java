@@ -32,10 +32,10 @@ import org.compiere.util.DB;
 
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
@@ -58,7 +58,7 @@ import de.metas.quantity.Quantity;
 public class MInventory extends X_M_Inventory implements IDocument
 {
 	private static final long serialVersionUID = -8161913729477113301L;
-	
+
 	/** Just Prepared Flag */
 	private boolean m_justPrepared = false;
 
@@ -232,7 +232,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 
 		setDocAction(DOCACTION_Complete);
 		m_justPrepared = true;
-		
+
 		return IDocument.STATUS_InProgress;
 	}
 
@@ -339,7 +339,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
-					.setTrxName(get_TrxName())
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
@@ -567,10 +566,8 @@ public class MInventory extends X_M_Inventory implements IDocument
 	{
 		// Get Account Schemas to create MCostDetail
 		final MAcctSchema[] acctschemas = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
-		for (int asn = 0; asn < acctschemas.length; asn++)
+		for (final MAcctSchema as : acctschemas)
 		{
-			final MAcctSchema as = acctschemas[asn];
-
 			if (as.isSkipOrg(getAD_Org_ID()) || as.isSkipOrg(line.getAD_Org_ID()))
 			{
 				continue;

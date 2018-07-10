@@ -179,6 +179,35 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_C_PurchaseCandidate_ID = "C_PurchaseCandidate_ID";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_UOM>(I_C_PurchaseCandidate.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -209,36 +238,7 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_UOM>(I_C_PurchaseCandidate.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set VK Netto.
+	 * Set Kd-Rohertragspreis.
 	 * Effektiver Verkaufspreis minus Skonto und Rückerstattung
 	 *
 	 * <br>Type: Amount
@@ -248,7 +248,7 @@ public interface I_C_PurchaseCandidate
 	public void setCustomerPriceGrossProfit (java.math.BigDecimal CustomerPriceGrossProfit);
 
 	/**
-	 * Get VK Netto.
+	 * Get Kd-Rohertragspreis.
 	 * Effektiver Verkaufspreis minus Skonto und Rückerstattung
 	 *
 	 * <br>Type: Amount
@@ -261,29 +261,6 @@ public interface I_C_PurchaseCandidate
     public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_CustomerPriceGrossProfit = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "CustomerPriceGrossProfit", null);
     /** Column name CustomerPriceGrossProfit */
     public static final String COLUMNNAME_CustomerPriceGrossProfit = "CustomerPriceGrossProfit";
-
-	/**
-	 * Set Zieldatum.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDateRequired (java.sql.Timestamp DateRequired);
-
-	/**
-	 * Get Zieldatum.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDateRequired();
-
-    /** Column definition for DateRequired */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DateRequired = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "DateRequired", null);
-    /** Column name DateRequired */
-    public static final String COLUMNNAME_DateRequired = "DateRequired";
 
 	/**
 	 * Set Referenz.
@@ -519,6 +496,52 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Bestelldatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPurchaseDateOrdered (java.sql.Timestamp PurchaseDateOrdered);
+
+	/**
+	 * Get Bestelldatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPurchaseDateOrdered();
+
+    /** Column definition for PurchaseDateOrdered */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchaseDateOrdered = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchaseDateOrdered", null);
+    /** Column name PurchaseDateOrdered */
+    public static final String COLUMNNAME_PurchaseDateOrdered = "PurchaseDateOrdered";
+
+	/**
+	 * Set Liefer-Zusagedatum.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPurchaseDatePromised (java.sql.Timestamp PurchaseDatePromised);
+
+	/**
+	 * Get Liefer-Zusagedatum.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPurchaseDatePromised();
+
+    /** Column definition for PurchaseDatePromised */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchaseDatePromised = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchaseDatePromised", null);
+    /** Column name PurchaseDatePromised */
+    public static final String COLUMNNAME_PurchaseDatePromised = "PurchaseDatePromised";
+
+	/**
 	 * Set Bestellte Menge.
 	 *
 	 * <br>Type: Quantity
@@ -542,8 +565,8 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_PurchasedQty = "PurchasedQty";
 
 	/**
-	 * Set EK Netto.
-	 * Effektiver Einkaufspreis
+	 * Set VK Preis netto.
+	 * Effektiver Verkaufspreis
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -552,8 +575,8 @@ public interface I_C_PurchaseCandidate
 	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual);
 
 	/**
-	 * Get EK Netto.
-	 * Effektiver Einkaufspreis
+	 * Get VK Preis netto.
+	 * Effektiver Verkaufspreis
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false

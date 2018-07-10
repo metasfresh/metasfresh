@@ -53,7 +53,9 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -68,6 +70,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -85,6 +88,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -814,7 +818,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU> retrieveHUsForWarehouse(final Properties ctx, final int warehouseId, final String trxName)
+	public List<I_M_HU> retrieveHUsForWarehouse(final Properties ctx, final WarehouseId warehouseId, final String trxName)
 	{
 		return createHUQueryBuilder()
 				.setContext(ctx, trxName)
@@ -824,7 +828,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU> retrieveHUsForWarehouses(final Properties ctx, final Collection<Integer> warehouseIds, final String trxName)
+	public List<I_M_HU> retrieveHUsForWarehouses(final Properties ctx, final Collection<WarehouseId> warehouseIds, final String trxName)
 	{
 		return createHUQueryBuilder()
 				.setContext(ctx, trxName)
@@ -834,7 +838,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU> retrieveHUsForWarehousesAndProductId(final Properties ctx, final Collection<Integer> warehouseIds, final int productId, final String trxName)
+	public List<I_M_HU> retrieveHUsForWarehousesAndProductId(final Properties ctx, final Collection<WarehouseId> warehouseIds, final int productId, final String trxName)
 	{
 		return createHUQueryBuilder()
 				.setContext(ctx, trxName)
@@ -847,7 +851,19 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public IHUQueryBuilder createHUQueryBuilder()
 	{
-		return new HUQueryBuilder();
+		final HUReservationRepository huReservationRepository = getHUReservationRepository();
+		return new HUQueryBuilder(huReservationRepository);
+	}
+
+	private HUReservationRepository getHUReservationRepository()
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// avoid having to annotate each test that uses HUQueryBuilder with "@RunWith(SpringRunner.class) @SpringBootTest.."
+			return new HUReservationRepository();
+		}
+		final HUReservationRepository huReservationRepository = Adempiere.getBean(HUReservationRepository.class);
+		return huReservationRepository;
 	}
 
 	@Override
@@ -990,7 +1006,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU> retrieveByIds(@NonNull final Collection<Integer> huIds)
+	public List<I_M_HU> retrieveByIds(@NonNull final Collection<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{

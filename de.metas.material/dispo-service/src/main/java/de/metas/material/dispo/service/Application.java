@@ -2,6 +2,7 @@ package de.metas.material.dispo.service;
 
 import java.util.Collections;
 
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
@@ -59,32 +60,30 @@ public class Application
 
 	public static void main(final String[] args)
 	{
-		Ini.setRunMode(RunMode.BACKEND);
+		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
+		{
+			Ini.setRunMode(RunMode.BACKEND);
 
-		new SpringApplicationBuilder(Application.class)
-				.headless(true)
-				.web(true)
-				.profiles(Profiles.PROFILE_MaterialDispo)
-				.run(args);
-	}
+			// as of right now, we are not interested in loading any model validator whatsoever within this service
+			// therefore we don't e.g. have to deal with the async-processor. It just won't be started.
+			ModelValidationEngine.setInitEntityTypes(Collections.emptyList());
 
-	@Bean(name=Adempiere.BEAN_NAME)
-	@Profile("!test")
-	public Adempiere adempiere()
-	{
-		// as of right now, we are not interested in loading any model validator whatsoever within this service
-		// therefore we don't e.g. have to deal with the async-processor. It just won't be started.
-		ModelValidationEngine.setInitEntityTypes(Collections.emptyList());
+			Adempiere.instance.startup(RunMode.BACKEND);
 
-		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		adempiere.startup(RunMode.BACKEND);
+			new SpringApplicationBuilder(Application.class)
+					.headless(true)
+					.web(true)
+					.profiles(Profiles.PROFILE_MaterialDispo)
+					.run(args);
+		}
+
+		// now init the model validation engine
+		ModelValidationEngine.get();
 
 		enableCacheEventsForDispoTables();
-
-		return adempiere;
 	}
 
-	private void enableCacheEventsForDispoTables()
+	private static void enableCacheEventsForDispoTables()
 	{
 		final CacheMgt cacheMgt = CacheMgt.get();
 
@@ -94,4 +93,14 @@ public class Application
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_MD_Candidate_Prod_Detail.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_MD_Candidate_Transaction_Detail.Table_Name);
 	}
+
+	@Bean(name = Adempiere.BEAN_NAME)
+	@Profile("!test")
+	public Adempiere adempiere()
+	{
+		// when this is done, Adempiere.getBean(...) is ready to use
+		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
+		return adempiere;
+	}
+
 }

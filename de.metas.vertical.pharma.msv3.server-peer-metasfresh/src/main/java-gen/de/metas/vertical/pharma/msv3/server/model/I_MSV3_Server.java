@@ -99,6 +99,29 @@ public interface I_MSV3_Server
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Konst. Zusagbar (ATP) Wert.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setFixedQtyAvailableToPromise (java.math.BigDecimal FixedQtyAvailableToPromise);
+
+	/**
+	 * Get Konst. Zusagbar (ATP) Wert.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getFixedQtyAvailableToPromise();
+
+    /** Column definition for FixedQtyAvailableToPromise */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_Server, Object> COLUMN_FixedQtyAvailableToPromise = new org.adempiere.model.ModelColumn<I_MSV3_Server, Object>(I_MSV3_Server.class, "FixedQtyAvailableToPromise", null);
+    /** Column name FixedQtyAvailableToPromise */
+    public static final String COLUMNNAME_FixedQtyAvailableToPromise = "FixedQtyAvailableToPromise";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -172,29 +195,6 @@ public interface I_MSV3_Server
     public static final org.adempiere.model.ModelColumn<I_MSV3_Server, Object> COLUMN_MSV3_Server_ID = new org.adempiere.model.ModelColumn<I_MSV3_Server, Object>(I_MSV3_Server.class, "MSV3_Server_ID", null);
     /** Column name MSV3_Server_ID */
     public static final String COLUMNNAME_MSV3_Server_ID = "MSV3_Server_ID";
-
-	/**
-	 * Set Min. Zusagbar (ATP).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setQty_AvailableToPromise_Min (java.math.BigDecimal Qty_AvailableToPromise_Min);
-
-	/**
-	 * Get Min. Zusagbar (ATP).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQty_AvailableToPromise_Min();
-
-    /** Column definition for Qty_AvailableToPromise_Min */
-    public static final org.adempiere.model.ModelColumn<I_MSV3_Server, Object> COLUMN_Qty_AvailableToPromise_Min = new org.adempiere.model.ModelColumn<I_MSV3_Server, Object>(I_MSV3_Server.class, "Qty_AvailableToPromise_Min", null);
-    /** Column name Qty_AvailableToPromise_Min */
-    public static final String COLUMNNAME_Qty_AvailableToPromise_Min = "Qty_AvailableToPromise_Min";
 
 	/**
 	 * Get Aktualisiert.

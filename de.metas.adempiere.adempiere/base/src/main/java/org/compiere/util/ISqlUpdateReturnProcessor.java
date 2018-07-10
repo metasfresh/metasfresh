@@ -37,6 +37,8 @@ import org.compiere.model.PO;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+
+@FunctionalInterface
 public interface ISqlUpdateReturnProcessor
 {
 	void process(ResultSet rs) throws SQLException;

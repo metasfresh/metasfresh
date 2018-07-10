@@ -35,10 +35,10 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 
 /**
@@ -46,7 +46,7 @@ import de.metas.i18n.IMsgBL;
  *
  * @author Jorg Janke
  * @version $Id: MJournal.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1619150 ] Usability/Consistency: reversed gl journal description <li>BF [ 1775358 ] GL Journal DateAcct/C_Period_ID issue <li>FR [ 1776045 ] Add
  *         ReActivate action to GL Journal
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 1948157 ] Is necessary the reference for document reverse
@@ -57,7 +57,7 @@ import de.metas.i18n.IMsgBL;
 public class MJournal extends X_GL_Journal implements IDocument
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -364132249042527640L;
 
@@ -156,7 +156,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Overwrite Client/Org if required
-	 * 
+	 *
 	 * @param AD_Client_ID client
 	 * @param AD_Org_ID org
 	 */
@@ -198,7 +198,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Add to Description
-	 * 
+	 *
 	 * @param description text
 	 * @since 3.1.4
 	 */
@@ -213,7 +213,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**************************************************************************
 	 * Get Journal Lines
-	 * 
+	 *
 	 * @param requery requery
 	 * @return Array of lines
 	 */
@@ -237,10 +237,8 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return 0;
 		int count = 0;
 		MJournalLine[] fromLines = fromJournal.getLines(false);
-		for (int i = 0; i < fromLines.length; i++)
+		for (final MJournalLine fromLine : fromLines)
 		{
-			final MJournalLine fromLine = fromLines[i];
-			
 			MJournalLine toLine = new MJournalLine(getCtx(), 0, fromJournal.get_TrxName());
 			PO.copyValues(fromLine, toLine, getAD_Client_ID(), getAD_Org_ID());
 			toLine.setGL_Journal(this);
@@ -271,7 +269,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			{
 				toLine.setAmtSourceDr(fromLine.getAmtSourceCr());
 				toLine.setAmtSourceCr(fromLine.getAmtSourceDr());
-				
+
 				if (fromLine.isDR_AutoTaxAccount() || fromLine.isCR_AutoTaxAccount())
 				{
 					throw new AdempiereException("Reverse accrual not supported for tax bookings");
@@ -356,9 +354,9 @@ public class MJournal extends X_GL_Journal implements IDocument
 	{
 		if (!success)
 			return success;
-		
+
 		updateBatch();
-		
+
 		return true;
 	}	// afterSave
 
@@ -373,9 +371,9 @@ public class MJournal extends X_GL_Journal implements IDocument
 	{
 		if (!success)
 			return success;
-		
+
 		updateBatch();
-		
+
 		return true;
 	}	// afterDelete
 
@@ -389,7 +387,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		{
 			return;
 		}
-		
+
 		final String sql = DB.convertSqlToNative("UPDATE " + I_GL_JournalBatch.Table_Name + " jb"
 				+ " SET (TotalDr, TotalCr) = (SELECT COALESCE(SUM(TotalDr),0), COALESCE(SUM(TotalCr),0)"
 				+ " FROM GL_Journal j WHERE j.IsActive='Y' AND jb.GL_JournalBatch_ID=j.GL_JournalBatch_ID) "
@@ -415,7 +413,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -428,7 +426,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Invalidate Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -440,7 +438,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -522,7 +520,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Approve Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -535,7 +533,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Reject Approval
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -548,7 +546,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Complete Document
-	 * 
+	 *
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	@Override
@@ -601,7 +599,6 @@ public class MJournal extends X_GL_Journal implements IDocument
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
-					.setTrxName(get_TrxName())
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
@@ -612,7 +609,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Void Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -647,7 +644,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Close Document. Cancel not delivered Qunatities
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -681,7 +678,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Reverse Correction (in same batch). As if nothing happened - same date
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -707,14 +704,14 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Reverse Correction. As if nothing happened - same date
-	 * 
+	 *
 	 * @param GL_JournalBatch_ID reversal batch
 	 * @return reversed Journal or null
 	 */
 	MJournal reverseCorrectIt(final int GL_JournalBatch_ID)
 	{
 		log.info("{}", this);
-		
+
 		// Journal
 		final MJournal reverse = new MJournal(this);
 		reverse.setGL_JournalBatch_ID(GL_JournalBatch_ID);
@@ -725,12 +722,12 @@ public class MJournal extends X_GL_Journal implements IDocument
 		reverse.setReversal_ID(getGL_Journal_ID()); // FR [ 1948157 ]
 		InterfaceWrapperHelper.save(reverse);
 		addDescription("(" + reverse.getDocumentNo() + "<-)");
-		
+
 		reverse.setControlAmt(this.getControlAmt().negate());
 
 		// Lines
 		reverse.copyLinesFrom(this, null, 'C');
-		
+
 		// Complete the reversal and set it's status to Reversed
 		if (!reverse.processIt(IDocument.ACTION_Complete))
 		{
@@ -739,7 +736,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		reverse.setDocStatus(DOCSTATUS_Reversed);
 		reverse.setDocAction(DOCACTION_None);
 		InterfaceWrapperHelper.save(reverse);
-		
+
 		//
 		// Update this journal
 		setProcessed(true);
@@ -747,13 +744,13 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setDocStatus(DOCSTATUS_Reversed);
 		setDocAction(DOCACTION_None);
 		saveEx();
-		
+
 		return reverse;
 	}	// reverseCorrectionIt
 
 	/**
 	 * Reverse Accrual (sane batch). Flip Dr/Cr - Use Today's date
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -779,7 +776,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Reverse Accrual. Flip Dr/Cr - Use Today's date
-	 * 
+	 *
 	 * @param GL_JournalBatch_ID reversal batch
 	 * @return reversed journal or null
 	 */
@@ -812,7 +809,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 	/**
 	 * Re-activate
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override

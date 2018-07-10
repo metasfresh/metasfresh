@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1429097903L;
+	private static final long serialVersionUID = 1878894589L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -25,13 +25,13 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
         {
 			setC_PurchaseCandidate_ID (0);
 			setC_UOM_ID (0);
-			setDateRequired (new Timestamp( System.currentTimeMillis() ));
 			setDemandReference (null);
 			setIsAggregatePO (false); // N
 			setIsPrepared (false); // N
 			setM_Product_ID (0);
 			setM_WarehousePO_ID (0);
 			setProcessed (false); // N
+			setPurchaseDatePromised (new Timestamp( System.currentTimeMillis() ));
 			setQtyToPurchase (BigDecimal.ZERO);
 			setVendor_ID (0);
         } */
@@ -222,7 +222,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set VK Netto.
+	/** Set Kd-Rohertragspreis.
 		@param CustomerPriceGrossProfit 
 		Effektiver Verkaufspreis minus Skonto und Rückerstattung
 	  */
@@ -232,7 +232,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_CustomerPriceGrossProfit, CustomerPriceGrossProfit);
 	}
 
-	/** Get VK Netto.
+	/** Get Kd-Rohertragspreis.
 		@return Effektiver Verkaufspreis minus Skonto und Rückerstattung
 	  */
 	@Override
@@ -242,22 +242,6 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** Set Zieldatum.
-		@param DateRequired Zieldatum	  */
-	@Override
-	public void setDateRequired (java.sql.Timestamp DateRequired)
-	{
-		set_Value (COLUMNNAME_DateRequired, DateRequired);
-	}
-
-	/** Get Zieldatum.
-		@return Zieldatum	  */
-	@Override
-	public java.sql.Timestamp getDateRequired () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateRequired);
 	}
 
 	/** Set Referenz.
@@ -484,6 +468,38 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
+	/** Set Bestelldatum.
+		@param PurchaseDateOrdered Bestelldatum	  */
+	@Override
+	public void setPurchaseDateOrdered (java.sql.Timestamp PurchaseDateOrdered)
+	{
+		set_Value (COLUMNNAME_PurchaseDateOrdered, PurchaseDateOrdered);
+	}
+
+	/** Get Bestelldatum.
+		@return Bestelldatum	  */
+	@Override
+	public java.sql.Timestamp getPurchaseDateOrdered () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PurchaseDateOrdered);
+	}
+
+	/** Set Liefer-Zusagedatum.
+		@param PurchaseDatePromised Liefer-Zusagedatum	  */
+	@Override
+	public void setPurchaseDatePromised (java.sql.Timestamp PurchaseDatePromised)
+	{
+		set_Value (COLUMNNAME_PurchaseDatePromised, PurchaseDatePromised);
+	}
+
+	/** Get Liefer-Zusagedatum.
+		@return Liefer-Zusagedatum	  */
+	@Override
+	public java.sql.Timestamp getPurchaseDatePromised () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PurchaseDatePromised);
+	}
+
 	/** Set Bestellte Menge.
 		@param PurchasedQty Bestellte Menge	  */
 	@Override
@@ -503,9 +519,9 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** Set EK Netto.
+	/** Set VK Preis netto.
 		@param PurchasePriceActual 
-		Effektiver Einkaufspreis
+		Effektiver Verkaufspreis
 	  */
 	@Override
 	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual)
@@ -513,8 +529,8 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_PurchasePriceActual, PurchasePriceActual);
 	}
 
-	/** Get EK Netto.
-		@return Effektiver Einkaufspreis
+	/** Get VK Preis netto.
+		@return Effektiver Verkaufspreis
 	  */
 	@Override
 	public java.math.BigDecimal getPurchasePriceActual () 

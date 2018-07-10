@@ -59,11 +59,6 @@ public class JMSService implements IJMSService
 			brokerURL = getJmsURL(null);
 		}
 
-		if (CConnection.isServerEmbedded())
-		{
-			return EmbeddedActiveMQBrokerService.INSTANCE.createFactoryForEmbeddedBroker();
-		}
-
 		final String user = JmsConstants.getJmsUser();
 		final String password = JmsConstants.getJmsPassword();
 		final ActiveMQConnectionFactory jmsConnectionFactory = new ActiveMQConnectionFactory(user, password, brokerURL);
@@ -92,12 +87,12 @@ public class JMSService implements IJMSService
 		final String appsHost;
 		final int appsPort;
 
-		if (CConnection.isServerEmbedded() || Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			// CConnection is not yet up, when this method is first called in embedded-server-mode,
 			// and we would run into a cyclic problem when we tried to invoke CConnection.get().
 			// Also, in unit test mode, we don't want to get in the way of CConnection.get either.
-			appsHost = CConnection.SERVER_EMBEDDED_APPSERVER_HOSTNAME;
+			appsHost = "localhost";
 			appsPort = CConnection.SERVER_DEFAULT_APPSERVER_PORT;
 		}
 		else

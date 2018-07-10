@@ -35,7 +35,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
-import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 
@@ -74,12 +73,12 @@ public class Main extends AbstractModuleInterceptor
 
 		super.onInit(engine, client);
 
-		// task 04585: start queue processors only if we are running on the backend server, or in SeverEmbedded mode.
+		// task 04585: start queue processors only if we are running on the backend server.
 		// =>why not always run them?
 		// if we have two adempiere wars/ears (one backend, one webUI), JMX names will collide
 		// if we start it on clients without having a central monitoring-gathering point we never know what's going on
 		// => it can all be solved, but as of now isn't
-		if (Ini.getRunMode() == RunMode.BACKEND || CConnection.isServerEmbedded())
+		if (Ini.getRunMode() == RunMode.BACKEND)
 		{
 			final int initDelayMillis = getInitDelayMillis();
 			Services.get(IQueueProcessorExecutorService.class).init(initDelayMillis);

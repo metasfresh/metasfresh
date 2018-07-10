@@ -1,9 +1,10 @@
 package org.adempiere.util.time.generator;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 
@@ -36,16 +37,16 @@ public class DaysOfMonthExploder implements IDateSequenceExploder
 	}
 
 	@Override
-	public Collection<LocalDate> explodeForward(final LocalDate date)
+	public Set<LocalDateTime> explodeForward(final LocalDateTime date)
 	{
 		return days.stream()
 				.map(day -> withDayOfMonth(date, day))
 				.filter(dayDate -> dayDate.compareTo(date) >= 0) // Skip all dates which are before our given date
 				.collect(ImmutableSet.toImmutableSet());
 	}
-	
+
 	@Override
-	public Collection<LocalDate> explodeBackward(final LocalDate date)
+	public Set<LocalDateTime> explodeBackward(final LocalDateTime date)
 	{
 		return days.stream()
 				.map(day -> withDayOfMonth(date, day))
@@ -53,8 +54,7 @@ public class DaysOfMonthExploder implements IDateSequenceExploder
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-
-	private static final LocalDate withDayOfMonth(final LocalDate date, final int dayOfMonth)
+	private static final LocalDateTime withDayOfMonth(final LocalDateTime date, final int dayOfMonth)
 	{
 		if (dayOfMonth >= 31)
 		{

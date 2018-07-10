@@ -33,7 +33,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -102,7 +102,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	{
 		final IHUContext huContext = helper.getHUContext();
 		final BigDecimal qtyExpected = BigDecimal.valueOf(qtyExpectedInt);
-		HUAssert.assertStorageLevel(huContext, hu, pTomato, qtyExpected);
+		StaticHUAssert.assertStorageLevel(huContext, hu, pTomato, qtyExpected);
 	}
 
 	@Test

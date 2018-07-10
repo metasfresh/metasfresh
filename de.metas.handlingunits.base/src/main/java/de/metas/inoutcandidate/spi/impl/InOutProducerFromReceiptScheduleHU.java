@@ -603,11 +603,11 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			// 08162: Only collect them if the owner is not us. Otherwise, take them from the Gebinde Lager
 			if (!tuHU.isHUPlanningReceiptOwnerPM())
 			{
-				packingMaterialsCollector.addTU(tuHU, receiptLineSource);
+				packingMaterialsCollector.releasePackingMaterialForTU(tuHU, receiptLineSource);
 			}
 			else
 			{
-				destroyedHUPackingMaterialsCollector.removeTU(tuHU);
+				destroyedHUPackingMaterialsCollector.requirePackingMaterialForTU(tuHU);
 			}
 
 			if (luHUId > 0)
@@ -615,11 +615,11 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				final I_M_HU luHU = rsa.getM_LU_HU();
 				if (!luHU.isHUPlanningReceiptOwnerPM())
 				{
-					packingMaterialsCollector.addLU(luHU, receiptLineSource);
+					packingMaterialsCollector.releasePackingMaterialForLU(luHU, receiptLineSource);
 				}
 				else
 				{
-					destroyedHUPackingMaterialsCollector.removeLU(luHU);
+					destroyedHUPackingMaterialsCollector.requirePackingMaterialForLU(luHU);
 				}
 			}
 

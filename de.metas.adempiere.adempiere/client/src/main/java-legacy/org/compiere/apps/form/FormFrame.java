@@ -45,6 +45,7 @@ import org.compiere.model.I_AD_Form;
 import org.compiere.model.MTreeNode;
 import org.compiere.swing.CFrame;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -373,7 +374,7 @@ public class FormFrame extends CFrame
 			sb.append("<h2>").append(m_Description).append("</h2>");
 		if (m_Help != null && m_Help.length() > 0)
 			sb.append("<p>").append(m_Help);
-		Help hlp = new Help (Env.getFrame(this), this.getTitle(), sb.toString());
+		Help hlp = new Help (SwingUtils.getFrame(this), this.getTitle(), sb.toString());
 		hlp.setVisible(true);
 	}	//	actionHelp
 

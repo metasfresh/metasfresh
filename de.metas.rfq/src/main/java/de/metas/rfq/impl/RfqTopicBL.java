@@ -5,6 +5,8 @@ import java.util.List;
 import org.adempiere.util.Services;
 
 import de.metas.product.IProductBL;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.rfq.IRfqTopicBL;
 import de.metas.rfq.IRfqTopicDAO;
 import de.metas.rfq.model.I_C_RfQ_TopicSubscriber;
@@ -23,11 +25,11 @@ import de.metas.rfq.model.I_C_RfQ_TopicSubscriberOnly;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,37 +37,37 @@ import de.metas.rfq.model.I_C_RfQ_TopicSubscriberOnly;
 public class RfqTopicBL implements IRfqTopicBL
 {
 	@Override
-	public boolean isProductIncluded (final I_C_RfQ_TopicSubscriber subscriber, final int M_Product_ID)
+	public boolean isProductIncluded(final I_C_RfQ_TopicSubscriber subscriber, final int M_Product_ID)
 	{
 		final List<I_C_RfQ_TopicSubscriberOnly> restrictions = Services.get(IRfqTopicDAO.class).retrieveRestrictions(subscriber);
-		//	No restrictions
+		// No restrictions
 		if (restrictions.isEmpty())
 		{
 			return true;
 		}
-		
+
 		for (final I_C_RfQ_TopicSubscriberOnly restriction : restrictions)
 		{
 			if (!restriction.isActive())
 			{
 				continue;
 			}
-			
-			//	Product
+
+			// Product
 			if (restriction.getM_Product_ID() == M_Product_ID)
 			{
 				return true;
 			}
-			
-			//	Product Category
-			if(Services.get(IProductBL.class).isProductInCategory(M_Product_ID, restriction.getM_Product_Category_ID()))
+
+			// Product Category
+			if (Services.get(IProductBL.class).isProductInCategory(ProductId.ofRepoIdOrNull(M_Product_ID), ProductCategoryId.ofRepoIdOrNull(restriction.getM_Product_Category_ID())))
 			{
 				return true;
 			}
 		}
-		
-		//	must be on "positive" list
+
+		// must be on "positive" list
 		return false;
-	}	//	isIncluded
+	}	// isIncluded
 
 }

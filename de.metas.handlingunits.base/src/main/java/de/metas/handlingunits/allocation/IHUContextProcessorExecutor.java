@@ -6,8 +6,6 @@ import java.util.function.Function;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
 
-import com.google.common.base.Preconditions;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -18,12 +16,12 @@ import com.google.common.base.Preconditions;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +37,7 @@ import lombok.NonNull;
 
 /**
  * Executor responsible for running {@link IHUContextProcessor}. Use one of the methods in {@link IHUTrxBL} to get an instance.
- * 
+ *
  * When you are about to process something related to HUs it is HIGHLY recommended to run your code snippet using this executor.
  *
  * This executor will do
@@ -56,7 +54,7 @@ public interface IHUContextProcessorExecutor
 {
 	/**
 	 * Execute the processor and take care of everything (see interface documentation). Run the processor within a {@link TrxRunnable}, but <b>do not</b> commit on successful execution.
-	 * 
+	 *
 	 * @param processor
 	 * @return result or {@link IHUContextProcessor#NULL_RESULT} if the result is not relevant for that processing.
 	 */
@@ -64,24 +62,18 @@ public interface IHUContextProcessorExecutor
 
 	/**
 	 * Execute the processor and take care of everything (see interface documentation). Run the processor within a {@link TrxRunnable}, but <b>do not</b> commit on successful execution.
-	 * 
+	 *
 	 * @param processor
 	 * @see #run(IHUContextProcessor)
 	 */
 	default void run(@NonNull final Consumer<IHUContext> processor)
 	{
-		Preconditions.checkNotNull(processor, "processor is null");
-		run(new IHUContextProcessor()
-		{
-			@Override
-			public IMutableAllocationResult process(final IHUContext huContext)
-			{
-				processor.accept(huContext);
-				return NULL_RESULT;
-			}
+		run((IHUContextProcessor)huContext -> {
+			processor.accept(huContext);
+			return IHUContextProcessor.NULL_RESULT;
 		});
 	}
-	
+
 	default <T> T call(@NonNull final Function<IHUContext, T> callable)
 	{
 		final Mutable<T> resultHolder = new Mutable<>();
@@ -94,21 +86,13 @@ public interface IHUContextProcessorExecutor
 
 	/**
 	 * Gets current {@link IHUTransactionAttributeBuilder}.
-	 * 
+	 *
 	 * NOTE: the {@link IHUTransactionAttributeBuilder} is available only while {@link #run(IHUContextProcessor)} is running.
 	 * Not before and not after that.
 	 * It shall be accessed only from {@link IHUContextProcessor#process(IHUContext)}.
 	 * If you are accessing it outside of that scope, an exception will be thrown.
-	 * 
+	 *
 	 * @return current {@link IHUTransactionAttributeBuilder}; never return null.
 	 */
 	IHUTransactionAttributeBuilder getTrxAttributesBuilder();
-
-	/**
-	 * If enabled, the packing materials involved will be collected and will be transferred to/from empties warehouse.
-	 * This flag is enabled by default.
-	 * 
-	 * @param automaticallyMovePackingMaterials
-	 */
-	IHUContextProcessorExecutor setAutomaticallyMovePackingMaterials(boolean automaticallyMovePackingMaterials);
 }

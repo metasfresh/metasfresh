@@ -3,7 +3,7 @@ package org.adempiere.util.time.generator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 
 import org.junit.Test;
@@ -36,18 +36,23 @@ public class WeekDayCalendarIncrementorTest
 	public void test_increment_1week_monday()
 	{
 		final WeekDayCalendarIncrementor incrementor = new WeekDayCalendarIncrementor(1, DayOfWeek.MONDAY);
-		assertThat(incrementor.increment(LocalDate.of(2018, Month.MAY, 6))).isEqualTo(LocalDate.of(2018, Month.MAY, 7));
-		assertThat(incrementor.increment(LocalDate.of(2018, Month.MAY, 7))).isEqualTo(LocalDate.of(2018, Month.MAY, 14));
-		assertThat(incrementor.increment(LocalDate.of(2018, Month.MAY, 8))).isEqualTo(LocalDate.of(2018, Month.MAY, 14));
+		assertThat(incrementor.increment(may2018(6))).isEqualTo(may2018(7));
+		assertThat(incrementor.increment(may2018(7))).isEqualTo(may2018(14));
+		assertThat(incrementor.increment(may2018(8))).isEqualTo(may2018(14));
 	}
 
 	@Test
 	public void test_decrement_1week_monday()
 	{
 		final WeekDayCalendarIncrementor incrementor = new WeekDayCalendarIncrementor(1, DayOfWeek.MONDAY);
-		assertThat(incrementor.decrement(LocalDate.of(2018, Month.MAY, 15))).isEqualTo(LocalDate.of(2018, Month.MAY, 14));
-		assertThat(incrementor.decrement(LocalDate.of(2018, Month.MAY, 14))).isEqualTo(LocalDate.of(2018, Month.MAY, 7));
-		assertThat(incrementor.decrement(LocalDate.of(2018, Month.MAY, 13))).isEqualTo(LocalDate.of(2018, Month.MAY, 7));
+		assertThat(incrementor.decrement(may2018(15))).isEqualTo(may2018(14));
+		assertThat(incrementor.decrement(may2018(14))).isEqualTo(may2018(7));
+		assertThat(incrementor.decrement(may2018(13))).isEqualTo(may2018(7));
+	}
+
+	private static final LocalDateTime may2018(final int dayOfMonth)
+	{
+		return LocalDateTime.of(2018, Month.MAY, dayOfMonth, 0, 0);
 	}
 
 }

@@ -293,4 +293,11 @@ public class DefaultPaymentBuilder implements IBuilder
 
 		return this;
 	}
+	
+	public final DefaultPaymentBuilder setDescription(final String description)
+	{
+		assertNotBuilt();
+		payment.setDescription(description);
+		return this;
+	}
 }

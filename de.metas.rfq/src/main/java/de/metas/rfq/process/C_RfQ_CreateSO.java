@@ -107,8 +107,8 @@ public class C_RfQ_CreateSO extends JavaProcess
 						price = qty.getBestResponseAmt();
 						if (price == null || price.signum() == 0)
 						{
-							price = Env.ZERO;
-							log.warn(" - BestResponse=0 - " + qty);
+							price = BigDecimal.ZERO;
+							log.warn(" - BestResponse=0 - {}", qty);
 						}
 						else
 						{

@@ -1,5 +1,7 @@
 package de.metas.letters.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -318,7 +320,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setAD_User_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_C_Project.Table_ID)
+		else if (parent_table_id == getTableId(I_C_Project.class))
 		{
 			rq.setC_Project_ID(parent_record_id);
 		}

@@ -29,12 +29,12 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.order.OrderLineId;
+
 /**
  * Used to retrieve {@link IStorageRecord}s. Use {@link IStorageEngine#newStorageQuery()} to get an instance.
  * <p>
  * Also see {@link IStorageSegment}.
- *
- *
  */
 public interface IStorageQuery
 {
@@ -51,11 +51,6 @@ public interface IStorageQuery
 
 	/**
 	 * Add another attribute filter, <b>if</b> the given <code>attribute</code> is relevant according to the respective storage engine implementation.
-	 *
-	 * @param attribute
-	 * @param attributeValueType
-	 * @param attributeValue
-	 * @return
 	 */
 	IStorageQuery addAttribute(I_M_Attribute attribute, String attributeValueType, Object attributeValue);
 
@@ -63,9 +58,6 @@ public interface IStorageQuery
 	 * Add all attributes (that are allowed to be used in storage querying) from given attribute set.
 	 *
 	 * NOTE: depends on implementation, it could be that not all attributes will be added but only the considered ones.
-	 *
-	 * @param attributeSet
-	 * @return this
 	 */
 	IStorageQuery addAttributes(IAttributeSet attributeSet);
 
@@ -79,9 +71,13 @@ public interface IStorageQuery
 	/**
 	 * Set if we shall exclude the after picking locators (i.e. where {@link I_M_Locator#isAfterPickingLocator()} returns <code>true</code>).<br>
 	 * By default, after picking locators are excluded
-	 *
-	 * @param excludeAfterPickingLocator
-	 * @return this
 	 */
 	IStorageQuery setExcludeAfterPickingLocator(boolean excludeAfterPickingLocator);
+
+	/**
+	 * Set if we shall only include storages that are not reserved, or are reserved to the particular given orderLine.
+	 */
+	IStorageQuery setExcludeReservedToOtherThan(OrderLineId orderLineId);
+
+	IStorageQuery setExcludeReserved();
 }

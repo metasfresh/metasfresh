@@ -15,8 +15,8 @@ import org.eevolution.model.I_DD_Order;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IDocumentNoInfo;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
 
 /*
  * #%L

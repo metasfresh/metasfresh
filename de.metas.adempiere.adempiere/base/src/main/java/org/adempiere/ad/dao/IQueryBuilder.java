@@ -30,6 +30,8 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
+import de.metas.lang.RepoIdAware;
+
 /**
  *
  * @author tsa
@@ -210,18 +212,21 @@ public interface IQueryBuilder<T>
 	/**
 	 * Filters those rows for whom the columnName's value is in given collection.
 	 * If no values were provided the record is rejected.
+	 * Note: also works with {@link RepoIdAware} values.
 	 */
 	<V> IQueryBuilder<T> addInArrayFilter(String columnName, Collection<V> values);
 
 	/**
 	 * Filters those rows for whom the columnName's value is in given collection.
 	 * If no values were provided the record is accepted.
+	 * Note: also works with {@link RepoIdAware} values.
 	 */
 	<V> IQueryBuilder<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**
 	 * Filters those rows for whom the columnName's value is in given collection.
 	 * If no values were provided the record is rejected.
+	 * Note: also works with {@link RepoIdAware} values.
 	 */
 	<V> IQueryBuilder<T> addInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
@@ -229,6 +234,7 @@ public interface IQueryBuilder<T>
 	 * Notes:
 	 * <li>This filter <b>will not</b> match {@code null} column values.</li>
 	 * <li>If {@code values} is empty, then this filter will return {@code true} (as intuitively expected).</li>
+	 * <li>Also works with {@link RepoIdAware} values.</li>
 	 */
 	<V> IQueryBuilder<T> addNotInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 

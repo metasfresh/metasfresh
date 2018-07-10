@@ -25,6 +25,9 @@ package de.metas.pricing.rules;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -50,7 +53,9 @@ import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest.Cal
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /**
  * Discount Calculations
@@ -111,7 +116,7 @@ public class Discount implements IPricingRule
 		}
 
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
-		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
+		final PricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request).orElse(null);
 
 		result.setUsesDiscountSchema(true);
 		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
@@ -122,17 +127,20 @@ public class Discount implements IPricingRule
 		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
 		final SOTrx soTrx = pricingCtx.getSoTrx();
 
-		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
 		final Percent bpartnerFlatDiscount = Percent.of(bpartner.getFlatDiscount());
 
-		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(bpartner, soTrx);
-		if (discountSchemaId <= 0)
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaIdOrNull(bpartnerBL.getDiscountSchemaId(bpartner, soTrx));
+		if (pricingConditionsId == null)
 		{
 			return null;
 		}
 
 		final CalculatePricingConditionsRequestBuilder builder = CalculatePricingConditionsRequest.builder()
-				.pricingConditionsId(PricingConditionsId.ofDiscountSchemaId(discountSchemaId))
+				.pricingConditionsId(pricingConditionsId)
 				.bpartnerFlatDiscount(bpartnerFlatDiscount)
 				.pricingCtx(pricingCtx);
 
@@ -142,13 +150,15 @@ public class Discount implements IPricingRule
 		}
 		else
 		{
-			final int productId = pricingCtx.getM_Product_ID();
-			final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+			final IProductDAO productsRepo = Services.get(IProductDAO.class);
+			
+			final ProductId productId = ProductId.ofRepoId(pricingCtx.getM_Product_ID());
+			final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 			builder.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
 					.qty(pricingCtx.getQty())
 					.price(result.getPriceStd())
-					.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
+					.product(product)
 					.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
 					.build());
 		}
@@ -170,17 +180,22 @@ public class Discount implements IPricingRule
 			return ImmutableList.of();
 		}
 
-		final int asiId = asiAware.getM_AttributeSetInstance_ID();
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asiAware.getM_AttributeSetInstance_ID());
 		final List<I_M_AttributeInstance> attributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asiId);
 		return attributeInstances;
 	}
 
 	private static void updatePricingResultFromPricingConditionsResult(
-			final IPricingResult pricingResult,
-			final PricingConditionsResult pricingConditionsResult)
+			@NonNull final IPricingResult pricingResult,
+			@Nullable final PricingConditionsResult pricingConditionsResult)
 	{
 		pricingResult.setPricingConditions(pricingConditionsResult);
-		
+
+		if (pricingConditionsResult == null)
+		{
+			return;
+		}
+
 		pricingResult.setDiscount(pricingConditionsResult.getDiscount());
 
 		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();

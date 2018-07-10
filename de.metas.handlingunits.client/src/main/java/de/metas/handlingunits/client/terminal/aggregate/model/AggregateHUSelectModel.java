@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.aggregate.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -95,7 +95,7 @@ public class AggregateHUSelectModel extends InventoryHUSelectModel
 
 	/**
 	 * @see de.metas.handlingunits.client.terminal.inventory.model.InventoryHUSelectModel#createHUQueryBuilder()
-	 * 
+	 *
 	 * Overrode the method here, so in case it is called from the Aggregation (Verdichtung) POS we have only the HUs from locator that are AfterPicking
 	 */
 	@Override
@@ -105,7 +105,10 @@ public class AggregateHUSelectModel extends InventoryHUSelectModel
 		final boolean considerSelectedBPartnerLocation = true;
 		final boolean onlyAfterPickingLocator = true;
 
-		IHUQueryBuilder huQueryBuilder = createHUQueryBuilder(considerSelectedBPartner, considerSelectedBPartnerLocation, onlyAfterPickingLocator);
+		final IHUQueryBuilder huQueryBuilder = createHUQueryBuilder(
+				considerSelectedBPartner,
+				considerSelectedBPartnerLocation,
+				onlyAfterPickingLocator);
 
 		return huQueryBuilder;
 	}
@@ -214,7 +217,7 @@ public class AggregateHUSelectModel extends InventoryHUSelectModel
 
 		//
 		// Count HUs to close and display warning message to the user
-		final List<I_M_PickingSlot> pickingSlotsToFree = new ArrayList<I_M_PickingSlot>();
+		final List<I_M_PickingSlot> pickingSlotsToFree = new ArrayList<>();
 		for (final I_M_PickingSlot pickingSlot : pickingSlots)
 		{
 			final I_M_HU currentHU = pickingSlot.getM_HU();

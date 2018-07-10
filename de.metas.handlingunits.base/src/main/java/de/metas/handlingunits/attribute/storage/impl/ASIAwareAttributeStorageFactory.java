@@ -38,7 +38,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
  * @author tsa
  *
  */
-public class ASIAwareAttributeStorageFactory extends AbstractModelAttributeStorageFactory<I_M_AttributeSetInstance, ASIWithPackingItemTemplesAttributeStorage>
+public class ASIAwareAttributeStorageFactory extends AbstractModelAttributeStorageFactory<I_M_AttributeSetInstance, ASIWithPackingItemTemplateAttributeStorage>
 {
 	private final IAttributeSetInstanceAwareFactoryService asiAwareFactory = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 
@@ -101,9 +101,9 @@ public class ASIAwareAttributeStorageFactory extends AbstractModelAttributeStora
 	}
 
 	@Override
-	protected ASIWithPackingItemTemplesAttributeStorage createAttributeStorage(final I_M_AttributeSetInstance model)
+	protected ASIWithPackingItemTemplateAttributeStorage createAttributeStorage(final I_M_AttributeSetInstance model)
 	{
-		return new ASIWithPackingItemTemplesAttributeStorage(this, model);
+		return new ASIWithPackingItemTemplateAttributeStorage(this, model);
 	}
 
 	@Override

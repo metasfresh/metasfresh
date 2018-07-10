@@ -171,7 +171,7 @@ public class Scheduler extends AdempiereServer
 		pLog.setAD_Scheduler_ID(m_model.getAD_Scheduler_ID());
 		pLog.setSummary(m_summary.toString());
 		pLog.setIsError(!m_success);
-		pLog.setReference("#" + String.valueOf(p_runCount) + " - " + TimeUtil.formatElapsed(new Timestamp(p_startWork)));
+		pLog.setReference("#" + getRunCount() + " - " + TimeUtil.formatElapsed(getStartWork()));
 
 		if (adPInstanceId > 0)
 		{
@@ -636,7 +636,7 @@ public class Scheduler extends AdempiereServer
 	@Override
 	public String getServerInfo()
 	{
-		return "#" + p_runCount + " - Last=" + m_summary.toString();
+		return "#" + getRunCount() + " - Last=" + m_summary.toString();
 	}	// getServerInfo
 
 	/**

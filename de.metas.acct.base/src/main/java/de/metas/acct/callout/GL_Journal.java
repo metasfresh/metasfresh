@@ -11,8 +11,8 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_GL_Journal;
 
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IDocumentNoInfo;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
 
 /*
  * #%L

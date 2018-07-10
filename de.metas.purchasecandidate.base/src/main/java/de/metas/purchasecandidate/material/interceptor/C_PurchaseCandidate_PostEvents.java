@@ -1,7 +1,7 @@
 package de.metas.purchasecandidate.material.interceptor;
 
-import org.adempiere.ad.modelvalidator.InterceptorUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -76,7 +76,7 @@ public class C_PurchaseCandidate_PostEvents
 			return;
 		}
 
-		final boolean isNewPurchaseCandidateRecord = type.isNew() || InterceptorUtil.isJustActivated(purchaseCandidateRecord);
+		final boolean isNewPurchaseCandidateRecord = type.isNew() || ModelChangeUtil.isJustActivated(purchaseCandidateRecord);
 		if (!isNewPurchaseCandidateRecord)
 		{
 			return;
@@ -111,7 +111,7 @@ public class C_PurchaseCandidate_PostEvents
 			@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord,
 			@NonNull final ModelChangeType type)
 	{
-		final boolean isNewPurchaseCandidateRecord = type.isNew() || InterceptorUtil.isJustActivated(purchaseCandidateRecord);
+		final boolean isNewPurchaseCandidateRecord = type.isNew() || ModelChangeUtil.isJustActivated(purchaseCandidateRecord);
 		if (isNewPurchaseCandidateRecord)
 		{
 			return;
@@ -145,11 +145,11 @@ public class C_PurchaseCandidate_PostEvents
 						purchaseCandidateRecord.getM_Product_ID());
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.date(purchaseCandidateRecord.getDateRequired())
+				.date(purchaseCandidateRecord.getPurchaseDatePromised())
 				.warehouseId(purchaseCandidateRecord.getM_WarehousePO_ID())
 				.productDescriptor(productDescriptor)
 				// .customerId() we don't have a customer
-				.quantity(purchaseQty.getQty())
+				.quantity(purchaseQty.getAsBigDecimal())
 				.build();
 		return materialDescriptor;
 	}
