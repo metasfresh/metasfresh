@@ -13,8 +13,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
@@ -87,22 +89,37 @@ public class ServerBoot implements InitializingBean
 
 	public static void main(final String[] args)
 	{
-		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
-		Ini.setRunMode(RunMode.BACKEND);
+		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
+		{
+			// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
+			Ini.setRunMode(RunMode.BACKEND);
+			Adempiere.instance.startup(RunMode.BACKEND);
 
-		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
+			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
+			new SpringApplicationBuilder(ServerBoot.class)
+					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
+					.web(true)
+					// consider removing the jasper profile
+					// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
+					// same goes for PrintService
+					.profiles(
+							Profiles.PROFILE_App,
+							Profiles.PROFILE_JasperService,
+							Profiles.PROFILE_PrintService)
+					.run(args);
+		}
 
-		new SpringApplicationBuilder(ServerBoot.class)
-				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
-				.web(true)
-				// consider removing the jasper profile
-				// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
-				// same goes for PrintService
-				.profiles(
-						Profiles.PROFILE_App,
-						Profiles.PROFILE_JasperService,
-						Profiles.PROFILE_PrintService)
-				.run(args);
+		final IHouseKeepingBL houseKeepingRegistry = Services.get(IHouseKeepingBL.class);
+		houseKeepingRegistry.registerStartupHouseKeepingTask(new SignDatabaseBuildHouseKeepingTask());
+		houseKeepingRegistry.registerStartupHouseKeepingTask(new SequenceCheckHouseKeepingTask());
+		houseKeepingRegistry.registerStartupHouseKeepingTask(new RoleAccessUpdateHouseKeepingTask());
+		houseKeepingRegistry.registerStartupHouseKeepingTask(new MissingTranslationHouseKeepingTask());
+
+		// now init the model validation engine
+		ModelValidationEngine.get();
+
+		// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
+		Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
 	}
 
 	@Configuration
@@ -157,14 +174,8 @@ public class ServerBoot implements InitializingBean
 	@Bean(Adempiere.BEAN_NAME)
 	public Adempiere adempiere()
 	{
-		final IHouseKeepingBL houseKeepingRegistry = Services.get(IHouseKeepingBL.class);
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new SignDatabaseBuildHouseKeepingTask());
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new SequenceCheckHouseKeepingTask());
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new RoleAccessUpdateHouseKeepingTask());
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new MissingTranslationHouseKeepingTask());
-
+		// when this is done, Adempiere.getBean(...) is ready to use
 		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		adempiere.startup(RunMode.BACKEND);
 		return adempiere;
 	}
 

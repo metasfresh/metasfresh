@@ -36,6 +36,7 @@ import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import lombok.NonNull;
 
 /**
  * Intercepter which listens to a a table specified in {@link I_C_Doc_Outbound_Config} and enqueues the documents to {@link DocOutboundWorkpackageProcessor}.
@@ -149,7 +150,7 @@ import de.metas.document.engine.IDocumentBL;
 	}
 
 	@Override
-	public String docValidate(final PO po, final int timing)
+	public String docValidate(@NonNull final PO po, final int timing)
 	{
 		Check.assume(isDocument(), "PO '{}' is a document", po);
 

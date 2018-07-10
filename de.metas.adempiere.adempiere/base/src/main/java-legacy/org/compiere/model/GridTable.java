@@ -61,7 +61,7 @@ import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.translation.api.IElementTranslationBL;

@@ -15,7 +15,7 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1997853992L;
+	private static final long serialVersionUID = 1990843336L;
 
     /** Standard Constructor */
     public X_M_Product_Category (Properties ctx, int M_Product_Category_ID, String trxName)
@@ -26,8 +26,8 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 			setIsDefault (false);
 			setIsPackagingMaterial (false); // N
 			setIsSelfService (true); // Y
-			setM_Product_Category_ID (0);
 			setMMPolicy (null); // F
+			setM_Product_Category_ID (0);
 			setName (null);
 			setPlannedMargin (BigDecimal.ZERO);
 			setValue (null);
@@ -118,6 +118,43 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 	public int getAD_PrintColor_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintColor_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Sequence getAD_Sequence_ProductValue() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Sequence_ProductValue_ID, org.compiere.model.I_AD_Sequence.class);
+	}
+
+	@Override
+	public void setAD_Sequence_ProductValue(org.compiere.model.I_AD_Sequence AD_Sequence_ProductValue)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Sequence_ProductValue_ID, org.compiere.model.I_AD_Sequence.class, AD_Sequence_ProductValue);
+	}
+
+	/** Set Produkt-Nummerfolge.
+		@param AD_Sequence_ProductValue_ID 
+		Nummerfolge für Produkt-Suchschlüssel
+	  */
+	@Override
+	public void setAD_Sequence_ProductValue_ID (int AD_Sequence_ProductValue_ID)
+	{
+		if (AD_Sequence_ProductValue_ID < 1) 
+			set_Value (COLUMNNAME_AD_Sequence_ProductValue_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Sequence_ProductValue_ID, Integer.valueOf(AD_Sequence_ProductValue_ID));
+	}
+
+	/** Get Produkt-Nummerfolge.
+		@return Nummerfolge für Produkt-Suchschlüssel
+	  */
+	@Override
+	public int getAD_Sequence_ProductValue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Sequence_ProductValue_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -370,6 +407,35 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 		return ii.intValue();
 	}
 
+	/** 
+	 * MMPolicy AD_Reference_ID=335
+	 * Reference name: _MMPolicy
+	 */
+	public static final int MMPOLICY_AD_Reference_ID=335;
+	/** LiFo = L */
+	public static final String MMPOLICY_LiFo = "L";
+	/** FiFo = F */
+	public static final String MMPOLICY_FiFo = "F";
+	/** Set Materialfluß.
+		@param MMPolicy 
+		Material Movement Policy
+	  */
+	@Override
+	public void setMMPolicy (java.lang.String MMPolicy)
+	{
+
+		set_Value (COLUMNNAME_MMPolicy, MMPolicy);
+	}
+
+	/** Get Materialfluß.
+		@return Material Movement Policy
+	  */
+	@Override
+	public java.lang.String getMMPolicy () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MMPolicy);
+	}
+
 	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
 		Kategorie eines Produktes
@@ -427,35 +493,6 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** 
-	 * MMPolicy AD_Reference_ID=335
-	 * Reference name: _MMPolicy
-	 */
-	public static final int MMPOLICY_AD_Reference_ID=335;
-	/** LiFo = L */
-	public static final String MMPOLICY_LiFo = "L";
-	/** FiFo = F */
-	public static final String MMPOLICY_FiFo = "F";
-	/** Set Materialfluß.
-		@param MMPolicy 
-		Material Movement Policy
-	  */
-	@Override
-	public void setMMPolicy (java.lang.String MMPolicy)
-	{
-
-		set_Value (COLUMNNAME_MMPolicy, MMPolicy);
-	}
-
-	/** Get Materialfluß.
-		@return Material Movement Policy
-	  */
-	@Override
-	public java.lang.String getMMPolicy () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MMPolicy);
 	}
 
 	/** 

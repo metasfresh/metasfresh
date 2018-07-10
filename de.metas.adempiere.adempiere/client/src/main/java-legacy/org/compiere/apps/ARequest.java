@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.apps;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
@@ -34,6 +36,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MAsset;
 import org.compiere.model.MCampaign;
@@ -41,7 +44,6 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPayment;
-import org.compiere.model.MProject;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRequest;
@@ -122,6 +124,7 @@ public class ARequest implements ActionListener
 			.append(" AND Record_ID=").append(m_Record_ID)
 			.append(")");
 		//
+
 		if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_AD_User.class))
 		{
 			m_where.append(" OR AD_User_ID=").append(m_Record_ID)
@@ -147,7 +150,7 @@ public class ARequest implements ActionListener
 		{
 			m_where.append(" OR M_Product_ID=").append(m_Record_ID);
 		}
-		else if (m_AD_Table_ID == MProject.Table_ID)
+		else if (m_AD_Table_ID == getTableId(I_C_Project.class))
 		{
 			m_where.append(" OR C_Project_ID=").append(m_Record_ID);
 		}
@@ -260,7 +263,7 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("AD_User_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == MProject.Table_ID)
+			else if (m_AD_Table_ID == getTableId(I_C_Project.class))
 			{
 				tab.setValue("C_Project_ID", new Integer(m_Record_ID));
 			}

@@ -1,8 +1,8 @@
-package de.metas.document.documentNo;
+package de.metas.document.sequence;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.document.documentNo.spi.IDocumentNoListener;
+import de.metas.document.sequence.spi.IDocumentNoListener;
 
 /*
  * #%L
