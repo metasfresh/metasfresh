@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
 import org.compiere.model.MAcctSchema;
@@ -41,16 +42,10 @@ import org.compiere.model.MAcctSchema;
 public interface IDocFactory extends ISingletonService
 {
 	/**
-	 * Create Accountable document
-	 *
-	 * @param ass accounting schemas
-	 * @param AD_Table_ID document's AD_Table_ID
-	 * @param Record_ID document's ID
-	 * @param trxName transaction name
 	 * @return Document or <code>null</code> if there is no such accountable document for given AD_Table_ID/Record_ID
 	 * @throws PostingExecutionException if the document could not be created
 	 */
-	Doc getOrNull(final Properties ctx, MAcctSchema[] ass, int AD_Table_ID, int Record_ID, String trxName);
+	Doc getOrNull(Properties ctx, MAcctSchema[] ass, TableRecordReference documentRef);
 
 	/**
 	 * Create Accountable document
