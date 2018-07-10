@@ -44,7 +44,6 @@ public class LotNumberLock
 			final String description)
 	{
 		Check.assumeGreaterThanZero(id, "id");
-		Check.assumeGreaterThanZero(productId, "productId");
 		Check.assumeNotEmpty(lotNo, "lotNo is not empty");
 
 		this.id = id;
