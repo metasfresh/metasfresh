@@ -838,9 +838,10 @@ export function attachFileAction(windowType, docId, data) {
           dispatch(
             addNotification(
               titleError,
-              'Upload terminated by user',
+              'Upload terminated by the user',
               5000,
-              'warning'
+              'warning',
+              'disableMouse'
             )
           );
         } else {

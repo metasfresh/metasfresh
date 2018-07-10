@@ -22,3 +22,4 @@ package-lock.json
 test_setup 
 src/__tests__  
 cypress
+yarn-error.log

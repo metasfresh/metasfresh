@@ -24,7 +24,11 @@ export default class DocumentListContextShortcuts extends Component {
 
       if (this.props.handleAdvancedEdit) {
         this.props.handleAdvancedEdit();
+
+        return true;
       }
+
+      return false;
     },
     SELECT_ALL_LEAFS: event => {
       event.preventDefault();

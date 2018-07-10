@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import classnames from 'classnames';
 
 import { deleteNotification } from '../../actions/AppActions';
 
@@ -13,7 +14,7 @@ class Notification extends Component {
     };
 
     this.closing = null;
-    this.allowMouse = false;
+    this.allowMouse = props.item.shortMsg === 'disableMouse' ? false : true;
   }
 
   componentDidMount() {
@@ -95,27 +96,35 @@ class Notification extends Component {
   render() {
     const { item } = this.props;
     const { isClosing, isDisplayedMore } = this.state;
+    const { notifType, msg, title, count } = item;
+    let { shortMsg } = item;
     let progress = item.progress;
+
+    if (shortMsg === 'disableMouse') {
+      shortMsg = null;
+    }
 
     return (
       <div
-        className={
-          'notification-item ' +
-          (item.notifType ? item.notifType + ' ' : 'error ')
-        }
+        className={classnames(
+          'notification-item',
+          { [`${notifType}`]: notifType },
+          { error: !notifType }
+        )}
         onMouseEnter={() => this.handleClosing(false)}
         onMouseLeave={() => this.handleClosing(true)}
       >
         <div className="notification-header">
-          {item.title}{' '}
-          {item.count > 1 && (
+          {title}{' '}
+          {count > 1 && (
             <span
-              className={
-                'tag tag-sm tag-default ' +
-                ('tag-' + (item.notifType ? item.notifType : 'error '))
-              }
+              className={classnames(
+                'tag tag-sm tag-default',
+                { [`tag-${notifType}`]: notifType },
+                { 'tag-error': !notifType }
+              )}
             >
-              {item.count}
+              {count}
             </span>
           )}
           <i
@@ -124,9 +133,9 @@ class Notification extends Component {
           />
         </div>
         <div className="notification-content">
-          {item.shortMsg ? item.shortMsg + ' ' : item.msg}
-          {item.shortMsg &&
-            item.msg &&
+          {shortMsg ? shortMsg + ' ' : msg}
+          {shortMsg &&
+            msg &&
             !isDisplayedMore && (
               <u
                 className="text-right text-small pointer"
@@ -135,12 +144,14 @@ class Notification extends Component {
                 (read more)
               </u>
             )}
-          {isDisplayedMore ? <p>{item.msg}</p> : ''}
+          {isDisplayedMore ? <p>{msg}</p> : ''}
         </div>
         <div
-          className={
-            'progress-bar ' + (item.notifType ? item.notifType : 'error')
-          }
+          className={classnames(
+            'progress-bar',
+            { [`${notifType}`]: notifType },
+            { error: !notifType }
+          )}
           style={
             typeof progress === 'number'
               ? { width: `${progress}%`, transition: 'width 0s' }
