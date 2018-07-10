@@ -61,7 +61,11 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 		@Override
 		public MenuTree load(final MenuTreeKey key)
 		{
-			return MenuTreeLoader.newInstance().setUserRolePermissionsKey(key.getUserRolePermissionsKey()).setAD_Language(key.getAD_Language()).load();
+			return MenuTreeLoader
+					.newInstance()
+					.setUserRolePermissionsKey(key.getUserRolePermissionsKey())
+					.setAD_Language(key.getAD_Language())
+					.load();
 		}
 	});
 
@@ -183,7 +187,6 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 
 		private MenuTreeKey(final UserRolePermissionsKey userRolePermissionsKey, final String adLanguage)
 		{
-			super();
 			this.userRolePermissionsKey = userRolePermissionsKey;
 			this.adLanguage = adLanguage;
 		}

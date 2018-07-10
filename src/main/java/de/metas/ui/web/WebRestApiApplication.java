@@ -1,14 +1,13 @@
 package de.metas.ui.web;
 
-import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +26,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import de.metas.Profiles;
-import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.session.WebRestApiContextProvider;
-import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
 /*
  * #%L
@@ -59,12 +56,15 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 public class WebRestApiApplication
 {
 	public static final String BEANNAME_WebuiTaskScheduler = "webuiTaskScheduler";
-	
+
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
 	 * The only known use of that is that metasfresh can open the initial license & connection dialog to store the initial properties file.
 	 */
 	private static final String SYSTEM_PROPERTY_HEADLESS = "webui-api-run-headless";
+
+	@Autowired
+	private ApplicationContext applicationContext;
 
 	public static void main(final String[] args)
 	{
@@ -73,36 +73,33 @@ public class WebRestApiApplication
 			System.setProperty("PropertyFile", "./metasfresh.properties");
 		}
 
+		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
+		{
+			// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
+			Ini.setRunMode(RunMode.WEBUI);
+			Adempiere.instance.startup(RunMode.BACKEND);
+
+			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
+
+			new SpringApplicationBuilder(WebRestApiApplication.class)
+					.headless(Boolean.parseBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
+					.web(true)
+					.profiles(Profiles.PROFILE_Webui)
+					.run(args);
+		}
+
 		AdempiereException.enableCaptureLanguageOnConstructionTime(); // because usually at the time the message is (lazy) parsed the user session context is no longer available.
 
-		// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
-		Ini.setRunMode(RunMode.WEBUI);
-
-		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
-
-		new SpringApplicationBuilder(WebRestApiApplication.class)
-				.headless(Boolean.parseBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
-				.web(true)
-				.profiles(Profiles.PROFILE_Webui)
-				.run(args);
-
+		// now init the model validation engine
+		ModelValidationEngine.get();
 	}
-
-	@Autowired
-	private ApplicationContext applicationContext;
 
 	@Bean(Adempiere.BEAN_NAME)
 	public Adempiere adempiere(final WebRestApiContextProvider webuiContextProvider)
 	{
 		Env.setContextProvider(webuiContextProvider);
 
-		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
-
 		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		adempiere.startup(RunMode.WEBUI);
-
-		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
-
 		return adempiere;
 	}
 
