@@ -453,7 +453,7 @@ public final class Attachment extends CDialog implements ActionListener
 		for (final File file : files)
 		{
 			final I_AD_Attachment attachment = attachmentsBL.getAttachment(getRecord());
-			final AttachmentEntry existingEntry = attachmentsBL.getEntryByFilename(attachment, file.getName());
+			final AttachmentEntry existingEntry = attachmentsBL.getEntryByFilenameOrNull(attachment, file.getName());
 			if (existingEntry != null)
 			{
 				final byte[] data = Util.readBytes(file);

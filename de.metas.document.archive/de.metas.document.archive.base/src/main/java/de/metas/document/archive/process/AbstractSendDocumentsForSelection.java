@@ -39,9 +39,9 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 	private static final String PARA_OnlyNotSentMails = "OnlyNotSentMails";
 
 	// services
-	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final transient IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final transient IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Param(parameterName = PARA_OnlyNotSentMails, mandatory=true)
 	private boolean p_OnlyNotSentMails = false;
@@ -82,7 +82,6 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 	@Override
 	protected final String doIt() throws Exception
 	{
-
 		final int pInstanceId = getAD_PInstance_ID();
 
 		// Enqueue selected archives as workpackages
