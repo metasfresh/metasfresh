@@ -3,6 +3,9 @@
 # Uncomment this option to disable the client from comparing its own version with the version stored in the AD_System database table
 #METASFRESH_CLIENT_CHECK_OPTS="-Dde.metas.clientcheck.Enabled=false"
 
+# Uncomment this option to have the client post documents immetiately using its own business logic, rather than asking the app server to do it
+#METASFRESH_CLIENT_ACCOUNTING_OPTS="-DCLIENT_ACCOUNTING=I"
+
 if [ $METASFRESH_HOME ]; then
 	echo "Using environment variable METASFRESH_HOME = $METASFRESH_HOME"
 elif [ $ADEMPIERE_HOME ]; then
@@ -81,8 +84,8 @@ echo "PATH=$PATH"
 
 echo "================================"
 echo "about to execute"
-echo "$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DMETASFRESH_HOME=$METASFRESH_HOME $METASFRESH_CLIENT_CHECK_OPTS -Dlogging.path=$LOG_DIR $PROP $SECURE -classpath \"$CLASSPATH\" $MAIN_CLASSNAME"
+echo "$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DMETASFRESH_HOME=$METASFRESH_HOME $METASFRESH_CLIENT_CHECK_OPTS $METASFRESH_CLIENT_ACCOUNTING_OPTS -Dlogging.path=$LOG_DIR $PROP $SECURE -classpath \"$CLASSPATH\" $MAIN_CLASSNAME"
 echo "================================"
 
-$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DMETASFRESH_HOME=$METASFRESH_HOME $METASFRESH_CLIENT_CHECK_OPTS -Dlogging.path=$LOG_DIR $PROP $SECURE -classpath "$CLASSPATH" $MAIN_CLASSNAME
+$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DMETASFRESH_HOME=$METASFRESH_HOME $METASFRESH_CLIENT_CHECK_OPTS $METASFRESH_CLIENT_ACCOUNTING_OPTS -Dlogging.path=$LOG_DIR $PROP $SECURE -classpath "$CLASSPATH" $MAIN_CLASSNAME
 

@@ -17,6 +17,10 @@
 @REM Uncomment this option to disable the client from comparing its own version with the version stored in the AD_System database table
 @REM SET METASFRESH_CLIENT_CHECK_OPTS="-Dde.metas.clientcheck.Enabled=false"
 
+@REM Uncomment this option to have the client post documents immetiately using its own business logic, rather than asking the app server to do it
+@REM METASFRESH_CLIENT_ACCOUNTING_OPTS="-DCLIENT_ACCOUNTING=I"
+
+
 :METASFRESH_DEBUG_PORTS
 @SET /a DBG_PORT=10000
 @SET /a MAX_DBG_PORT=10100
@@ -119,10 +123,12 @@ SET PATH=%PATH%;%userprofile%\.metasfresh\userlib-x64
 @Echo CLASSPATH=%CLASSPATH%
 @Echo LOADER_PATH=%LOADER_PATH%
 @Echo MAIN_CLASSNAME=%MAIN_CLASSNAME%
+@Echo METASFRESH_CLIENT_CHECK_OPTS=%METASFRESH_CLIENT_CHECK_OPTS%
+@Echo METASFRESH_CLIENT_ACCOUNTING_OPTS=%METASFRESH_CLIENT_ACCOUNTING_OPTS%
 
 :START
 SET JAVA_OPTS=-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true
-"%JAVA%" %JAVA_OPTS% -DMETASFRESH_HOME=%METASFRESH_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% %METASFRESH_CLIENT_CHECK_OPTS% "-Dlogging.path=%LOG_DIR%" %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
+"%JAVA%" %JAVA_OPTS% -DMETASFRESH_HOME=%METASFRESH_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% %METASFRESH_CLIENT_CHECK_OPTS% %METASFRESH_CLIENT_ACCOUNTING_OPTS% "-Dlogging.path=%LOG_DIR%" %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
 
 @Rem @sleep 15
 @CHOICE /C YN /T 15 /D N > NUL
