@@ -1,4 +1,4 @@
-package de.metas.document.documentNo.spi;
+package de.metas.document.sequence.spi;
 
 /*
  * #%L

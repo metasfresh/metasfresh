@@ -32,10 +32,10 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
@@ -369,9 +369,9 @@ public class MMovement extends X_M_Movement implements IDocument
 
 		//	Outstanding (not processed) Incoming Confirmations ?
 		MMovementConfirm[] confirmations = getConfirmations(true);
-		for (int i = 0; i < confirmations.length; i++)
+		for (MMovementConfirm confirmation : confirmations)
 		{
-			MMovementConfirm confirm = confirmations[i];
+			MMovementConfirm confirm = confirmation;
 			if (!confirm.isProcessed())
 			{
 				m_processMsg = "Open: @M_MovementConfirm_ID@ - "
@@ -387,9 +387,9 @@ public class MMovement extends X_M_Movement implements IDocument
 
 		//
 		MMovementLine[] lines = getLines(true); // NOTE: we need to load the lines again in case some model validator created/changed some lines
-		for (int i = 0; i < lines.length; i++)
+		for (MMovementLine line2 : lines)
 		{
-			MMovementLine line = lines[i];
+			MMovementLine line = line2;
 			MTransaction trxFrom = null;
 
 			//Stock Movement - Counterpart MOrder.reserveStock
@@ -407,9 +407,9 @@ public class MMovement extends X_M_Movement implements IDocument
 				if (line.getM_AttributeSetInstance_ID() == 0)
 				{
 					MMovementLineMA mas[] = MMovementLineMA.get(getCtx(), line.getM_MovementLine_ID(), get_TrxName());
-					for (int j = 0; j < mas.length; j++)
+					for (MMovementLineMA ma2 : mas)
 					{
-						MMovementLineMA ma = mas[j];
+						MMovementLineMA ma = ma2;
 						//
 						MLocator locator = new MLocator (getCtx(), line.getM_Locator_ID(), get_TrxName());
 						//Update Storage
@@ -571,7 +571,6 @@ public class MMovement extends X_M_Movement implements IDocument
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
-					.setTrxName(get_TrxName())
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
@@ -635,9 +634,8 @@ public class MMovement extends X_M_Movement implements IDocument
 		{
 			//	Set lines to 0
 			MMovementLine[] lines = getLines(true);
-			for (int i = 0; i < lines.length; i++)
+			for (MMovementLine line : lines)
 			{
-				MMovementLine line = lines[i];
 				BigDecimal old = line.getMovementQty();
 				if (old.compareTo(BigDecimal.ZERO) != 0)
 				{
@@ -719,9 +717,8 @@ public class MMovement extends X_M_Movement implements IDocument
 
 		//	Reverse Line Qty
 		final MMovementLine[] oLines = getLines(true);
-		for (int i = 0; i < oLines.length; i++)
+		for (MMovementLine oLine : oLines)
 		{
-			MMovementLine oLine = oLines[i];
 			MMovementLine rLine = new MMovementLine(getCtx(), 0, get_TrxName());
 			copyValues(oLine, rLine, oLine.getAD_Client_ID(), oLine.getAD_Org_ID());
 			rLine.setM_Movement_ID(reversal.getM_Movement_ID());

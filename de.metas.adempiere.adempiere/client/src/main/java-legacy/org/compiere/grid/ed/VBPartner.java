@@ -52,7 +52,7 @@ import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
