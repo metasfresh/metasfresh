@@ -31,12 +31,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_DocType;
 
-/**
- * Note the the implementation of this
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 public interface IDocumentBL extends ISingletonService
 {
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";

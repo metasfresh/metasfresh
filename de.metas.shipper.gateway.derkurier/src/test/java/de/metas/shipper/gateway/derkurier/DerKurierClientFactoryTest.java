@@ -7,14 +7,13 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import java.time.LocalTime;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 
 import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
@@ -49,11 +48,6 @@ public class DerKurierClientFactoryTest
 
 	private static final ClassPathResource ROUTING_RESPONSE_JSON = new ClassPathResource("/RoutingResponse.json");
 
-	@Before
-	public void init()
-	{
-	}
-
 	@Test
 	public void postRoutingRequest()
 	{
@@ -62,8 +56,8 @@ public class DerKurierClientFactoryTest
 
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
 				derKurierShipperConfigRepository,
+				new DerKurierDeliveryOrderService(),
 				new DerKurierDeliveryOrderRepository(converters),
-				new DerKurierDeliveryOrderEmailer(derKurierShipperConfigRepository),
 				converters);
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()

@@ -28,10 +28,10 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.order.IOrderBL;
 
@@ -329,7 +329,7 @@ public class MRMA extends X_M_RMA implements IDocument
 			m_processMsg = "@NoLines@";
 			return IDocument.STATUS_Invalid;
 		}
-		
+
 		for (MRMALine line : lines)
 		{
 			if (!line.checkQty())
@@ -439,11 +439,10 @@ public class MRMA extends X_M_RMA implements IDocument
 			setDate???(new Timestamp (System.currentTimeMillis()));
 		}
 		*/
-		if (dt.isOverwriteSeqOnComplete()) 
+		if (dt.isOverwriteSeqOnComplete())
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
-					.setTrxName(get_TrxName())
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
@@ -501,9 +500,8 @@ public class MRMA extends X_M_RMA implements IDocument
 
 		//	Update copied lines
 		MRMALine[] counterLines = counter.getLines(true);
-		for (int i = 0; i < counterLines.length; i++)
+		for (MRMALine counterLine : counterLines)
 		{
-			MRMALine counterLine = counterLines[i];
 			counterLine.setClientOrg(counter);
 			//
 			counterLine.saveEx(get_TrxName());
@@ -594,10 +592,9 @@ public class MRMA extends X_M_RMA implements IDocument
 			return 0;
 		MRMALine[] fromLines = otherRMA.getLines(false);
 		int count = 0;
-		for (int i = 0; i < fromLines.length; i++)
+		for (MRMALine fromLine : fromLines)
 		{
 			MRMALine line = new MRMALine(getCtx(), 0, null);
-			MRMALine fromLine = fromLines[i];
 			line.set_TrxName(get_TrxName());
 			if (counter)	//	header
 				PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID());
@@ -842,9 +839,9 @@ public class MRMA extends X_M_RMA implements IDocument
 
         ArrayList<MRMALine> chargeLineList = new ArrayList<>();
 
-        for (int i = 0; i < rmaLineIds.length; i++)
-        {
-            MRMALine rmaLine = new MRMALine(getCtx(), rmaLineIds[i], get_TrxName());
+        for (int rmaLineId : rmaLineIds)
+		{
+            MRMALine rmaLine = new MRMALine(getCtx(), rmaLineId, get_TrxName());
             chargeLineList.add(rmaLine);
         }
 

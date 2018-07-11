@@ -19,7 +19,6 @@ package org.compiere.server;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -84,8 +83,7 @@ public class RequestProcessor extends AdempiereServer
 		m_summary.append("Logs deleted=").append(no);
 		//
 		MRequestProcessorLog pLog = new MRequestProcessorLog(m_model, m_summary.toString());
-		pLog.setReference("#" + String.valueOf(p_runCount) 
-			+ " - " + TimeUtil.formatElapsed(new Timestamp(p_startWork)));
+		pLog.setReference("#" + getRunCount() + " - " + TimeUtil.formatElapsed(getStartWork()));
 		pLog.save();
 	}	//	doWork
 
@@ -648,7 +646,7 @@ public class RequestProcessor extends AdempiereServer
 	@Override
 	public String getServerInfo()
 	{
-		return "#" + p_runCount + " - Last=" + m_summary.toString();
+		return "#" + getRunCount() + " - Last=" + m_summary.toString();
 	}	//	getServerInfo
 	
 }	//	RequestProcessor

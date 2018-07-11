@@ -35,6 +35,9 @@ import org.compiere.model.I_AD_User;
  */
 public interface IArchiveEventManager extends ISingletonService
 {
+	String STATUS_MESSAGE_SENT = "MessageSent";
+	String STATUS_MESSAGE_NOT_SENT = "MessageNotSent";
+
 	String STATUS_Success = "Success";
 	String STATUS_Failure = "Failure";
 

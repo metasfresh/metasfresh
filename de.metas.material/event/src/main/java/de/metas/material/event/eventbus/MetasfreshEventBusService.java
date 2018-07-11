@@ -1,6 +1,5 @@
 package de.metas.material.event.eventbus;
 
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.event.Event;
@@ -44,11 +43,14 @@ public final class MetasfreshEventBusService
 
 	private final MaterialEventConverter materialEventConverter;
 
+	private final IEventBusFactory eventBusFactory;
+
 	public static MetasfreshEventBusService createLocalServiceThatIsReadyToUse(
-			@NonNull final MaterialEventConverter materialEventConverter)
+			@NonNull final MaterialEventConverter materialEventConverter,
+			@NonNull final IEventBusFactory eventBusFactory)
 	{
 		logger.info("Creating MaterialEventBusService for local-only event dispatching");
-		return new MetasfreshEventBusService(Type.LOCAL, materialEventConverter);
+		return new MetasfreshEventBusService(Type.LOCAL, materialEventConverter, eventBusFactory);
 	}
 
 	/**
@@ -57,10 +59,11 @@ public final class MetasfreshEventBusService
 	 * @return
 	 */
 	public static MetasfreshEventBusService createDistributedServiceThatNeedsToSubscribe(
-			@NonNull final MaterialEventConverter materialEventConverter)
+			@NonNull final MaterialEventConverter materialEventConverter,
+			@NonNull final IEventBusFactory eventBusFactory)
 	{
 		logger.info("Creating MaterialEventBusService for distributed event dispatching");
-		return new MetasfreshEventBusService(Type.REMOTE, materialEventConverter);
+		return new MetasfreshEventBusService(Type.REMOTE, materialEventConverter, eventBusFactory);
 	}
 
 	/**
@@ -70,8 +73,10 @@ public final class MetasfreshEventBusService
 	 *
 	 * @param eventType
 	 */
-	private MetasfreshEventBusService(@NonNull final Type eventType,
-			@NonNull final MaterialEventConverter materialEventConverter)
+	private MetasfreshEventBusService(
+			@NonNull final Type eventType,
+			@NonNull final MaterialEventConverter materialEventConverter,
+			@NonNull final IEventBusFactory eventBusFactory)
 	{
 		this.eventBusTopic = Topic.builder()
 				.name("de.metas.material")
@@ -79,12 +84,11 @@ public final class MetasfreshEventBusService
 				.build();
 
 		this.materialEventConverter = materialEventConverter;
+		this.eventBusFactory = eventBusFactory;
 	}
 
 	private IEventBus getEventBus()
 	{
-		final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-
 		final IEventBus eventBus = eventBusFactory.getEventBus(eventBusTopic);
 		return eventBus;
 	}

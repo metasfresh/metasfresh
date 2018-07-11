@@ -94,10 +94,10 @@ import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import de.metas.document.documentNo.IDocumentNoBL;
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IPreliminaryDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
@@ -148,8 +148,6 @@ public abstract class PO
 	private static final String USE_TIMEOUT_FOR_UPDATE = "org.adempiere.po.useTimeoutForUpdate";
 
 	private static final int QUERY_TIME_OUT = 10;
-
-	final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 
 	/**
 	 * Set Document Value Workflow Manager
@@ -2009,7 +2007,7 @@ public abstract class PO
 		{
 			if (!load(get_TrxName()))
 			{
-				throw new AdempiereException();
+				Check.fail("Loading this PO failed; trxName={}; this={}", get_TrxName(), this);
 			}
 		}
 		else
@@ -3148,11 +3146,13 @@ public abstract class PO
 					{
 						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
+
+					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
 						final int docTypeId = get_ValueAsInt(docTypeIndex);
 						value = documentNoFactory.forDocType(docTypeId, false) // useDefiniteSequence=false
-								.setTrxName(m_trxName)
 								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
@@ -3160,7 +3160,6 @@ public abstract class PO
 					if (value == null) 	// not overwritten by DocType and not manually entered
 					{
 						value = documentNoFactory.forTableName(p_info.getTableName(), getAD_Client_ID(), getAD_Org_ID())
-								.setTrxName(m_trxName)
 								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
@@ -3414,10 +3413,12 @@ public abstract class PO
 					{
 						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
+
+					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
 						value = documentNoFactory.forDocType(get_ValueAsInt(docTypeIndex), false) // useDefiniteSequence=false
-								.setTrxName(m_trxName)
 								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
@@ -3425,7 +3426,6 @@ public abstract class PO
 					if (value == null || value == IDocumentNoBuilder.NO_DOCUMENTNO) 	// not overwritten by DocType and not manually entered
 					{
 						value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
-								.setTrxName(m_trxName)
 								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
@@ -3454,12 +3454,11 @@ public abstract class PO
 					value = null;
 				}
 
-				if (value == null || value.isEmpty())
+				if (Check.isEmpty(value))
 				{
-					// metas: using AD_Org_ID as additional parameter
-					value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
-							.setTrxName(m_trxName)
-							.setDocumentModel(this)
+					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+
+					value = documentNoFactory.createValueBuilderFor(this)
 							.setFailOnError(true) // backward compatiblity: initially here an DBException was thrown
 							.build();
 					set_ValueNoCheck(index, value);
@@ -4662,8 +4661,9 @@ public abstract class PO
 		}
 		catch (final Exception e)
 		{
-			log.error("", e);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
+
 		// Root
 		final Element root = document.createElement(get_TableName());
 		root.setAttribute(XML_ATTRIBUTE_AD_Table_ID, String.valueOf(get_Table_ID()));

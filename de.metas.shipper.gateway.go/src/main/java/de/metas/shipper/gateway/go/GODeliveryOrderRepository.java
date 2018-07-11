@@ -20,6 +20,7 @@ import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
 import de.metas.shipper.gateway.go.schema.GOServiceType;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.HWBNumber;
@@ -171,11 +172,10 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	}
 
 	@Override
-	public DeliveryOrder getByRepoId(final int deliveryOrderRepoId)
+	public DeliveryOrder getByRepoId(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
-		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0");
-		final I_GO_DeliveryOrder orderPO = InterfaceWrapperHelper.load(deliveryOrderRepoId, I_GO_DeliveryOrder.class);
-		Check.assumeNotNull(orderPO, "GO delivery order shall exist for GO_DeliveryOrder_ID={}", deliveryOrderRepoId);
+		final I_GO_DeliveryOrder orderPO = InterfaceWrapperHelper.load(deliveryOrderId, I_GO_DeliveryOrder.class);
+		Check.assumeNotNull(orderPO, "GO delivery order shall exist for GO_DeliveryOrder_ID={}", deliveryOrderId);
 
 		final DeliveryOrder deliveryOrder = toDeliveryOrder(orderPO);
 		return deliveryOrder;

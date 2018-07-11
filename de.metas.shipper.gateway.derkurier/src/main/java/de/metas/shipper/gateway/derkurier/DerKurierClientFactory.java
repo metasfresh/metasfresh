@@ -11,7 +11,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
@@ -44,19 +44,19 @@ import lombok.NonNull;
 public class DerKurierClientFactory implements ShipperGatewayClientFactory
 {
 	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
+	private final DerKurierDeliveryOrderService derKurierDeliveryOrderService;
 	private final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
-	private final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer;
 	private final Converters converters;
 
 	public DerKurierClientFactory(
 			@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository,
+			@NonNull final DerKurierDeliveryOrderService derKurierDeliveryOrderService,
 			@NonNull final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository,
-			@NonNull final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer,
 			@NonNull final Converters converters)
 	{
 		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
 		this.derKurierDeliveryOrderRepository = derKurierDeliveryOrderRepository;
-		this.derKurierDeliveryOrderEmailer = derKurierDeliveryOrderEmailer;
+		this.derKurierDeliveryOrderService = derKurierDeliveryOrderService;
 		this.converters = converters;
 	}
 
@@ -87,8 +87,8 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 		return new DerKurierClient(
 				restTemplate,
 				converters,
-				derKurierDeliveryOrderRepository,
-				derKurierDeliveryOrderEmailer);
+				derKurierDeliveryOrderService,
+				derKurierDeliveryOrderRepository);
 	}
 
 	/**

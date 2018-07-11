@@ -74,4 +74,6 @@ public interface IHUStatusBL extends ISingletonService
 	boolean isStatusActive(I_M_HU huRecord);
 
 	boolean isStatusIssued(I_M_HU huRecord);
+
+	boolean isStatusDestroyed(I_M_HU huRecord);
 }

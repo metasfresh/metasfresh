@@ -25,10 +25,13 @@ package de.metas.banking.model.validator;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.acct.api.IDocumentRepostingBL;
+import de.metas.banking.model.I_I_Datev_Payment;
+import de.metas.banking.payment.impexp.DatevPaymentImportProcess;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingHandler;
 
@@ -48,6 +51,8 @@ public class Banking extends AbstractModuleInterceptor
 		//
 		// Register default bank statement listeners
 		Services.get(IBankStatementListenerService.class).addListener(PaySelectionBankStatementListener.instance);
+		
+		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Datev_Payment.class, DatevPaymentImportProcess.class);
 	}
 
 	@Override

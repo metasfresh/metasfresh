@@ -2,7 +2,6 @@ package de.metas.jax.rs;
 
 import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
-import org.compiere.db.CConnection;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
@@ -13,7 +12,6 @@ import de.metas.Profiles;
 import de.metas.jms.JmsEmbeddedBrokerConfig;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
-
 
 /*
  * #%L
@@ -51,11 +49,17 @@ public class JaxRsConfig
 		final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
 
 		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND;
-		if (serverMode || CConnection.isServerEmbedded())
+		if (serverMode)
 		{
 			// in ServerEmbedded mode, we assume that a local JMS broker was already started by this module's AddOn implementation.
 			logger.info("Creating JAX-RS server endpoints");
-			jaxRsBL.createServerEndPoints();
+
+			// run in a dedicated thread,
+			// because if no JMS broker is running because de.metas.jms.UseEmbeddedBroker='N' and no external broker is running,
+			// then this method doesn't return
+			final Thread thread = new Thread(() -> jaxRsBL.createServerEndPoints());
+			thread.setName("IJaxRsBL.createServerEndPoints");
+			thread.start();
 		}
 
 		if (!serverMode)

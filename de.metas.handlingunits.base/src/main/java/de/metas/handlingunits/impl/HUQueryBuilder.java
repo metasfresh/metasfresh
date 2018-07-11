@@ -72,7 +72,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
-import de.metas.handlingunits.reservation.HuReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.order.OrderLineId;
 import lombok.NonNull;
 
@@ -97,7 +97,7 @@ import lombok.NonNull;
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-	private final transient HuReservationRepository huReservationRepository;
+	private final transient HUReservationRepository huReservationRepository;
 
 	@ToStringBuilder(skip = true)
 	private Object _contextProvider;
@@ -179,7 +179,7 @@ import lombok.NonNull;
 	private boolean _errorIfNoHUs = false;
 	private String _errorIfNoHUs_ADMessage = null;
 
-	public HUQueryBuilder(@NonNull final HuReservationRepository huReservationRepository)
+	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository)
 	{
 		this.huReservationRepository = huReservationRepository;
 	}

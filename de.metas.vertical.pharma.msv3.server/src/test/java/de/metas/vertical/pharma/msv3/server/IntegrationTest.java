@@ -51,8 +51,11 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungPosition;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnfragen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnfragenResponse;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnteil;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitRueckmeldungTyp;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne.Artikel;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsantwortArtikel;
 
 /*
  * #%L
@@ -144,7 +147,7 @@ public class IntegrationTest
 		createOrUpdateStockAvailability(PZN_1, 33);
 		testStockAvailability(PZN_1, 10, 10);
 		testStockAvailability(PZN_1, 33, 33);
-		testStockAvailability(PZN_1, 100, 33);
+		testStockAvailability(PZN_1, 100, 0);
 
 		createOrUpdateStockAvailability(PZN_1, 200);
 		testStockAvailability(PZN_1, 100, 100);
@@ -164,7 +167,9 @@ public class IntegrationTest
 		setupDummyCurrentUserForBPartnerId(1234);
 
 		createOrUpdateStockAvailability(PZN_1, 100);
-		testStockAvailability(PZN_1, 150, 100);
+		testStockAvailability(PZN_1, 90, 90);
+		testStockAvailability(PZN_1, 100, 100);
+		testStockAvailability(PZN_1, 110, 0);
 
 		excludeProduct(PZN_1, 1234);
 		testStockAvailability(PZN_1, 150, 0);
@@ -249,8 +254,21 @@ public class IntegrationTest
 	private void testStockAvailability(final PZN pzn, final int qtyRequired, final int qtyExpected)
 	{
 		final VerfuegbarkeitAnfragenResponse soapResponse = stockAvailabilityWebService.getStockAvailability(createStockAvailabilityQuery(pzn, qtyRequired)).getValue();
-		assertThat(soapResponse.getReturn().getArtikel().get(0).getAnfragePzn()).isEqualTo(pzn.getValueAsLong());
-		assertThat(soapResponse.getReturn().getArtikel().get(0).getAnfrageMenge()).isEqualTo(qtyExpected);
+		final VerfuegbarkeitsantwortArtikel item = soapResponse.getReturn().getArtikel().get(0);
+		assertThat(item.getAnfragePzn()).isEqualTo(pzn.getValueAsLong());
+		assertThat(item.getAnfrageMenge()).isEqualTo(qtyRequired);
+
+		final VerfuegbarkeitAnteil itemPart = item.getAnteile().get(0);
+		if (qtyExpected == 0)
+		{
+			assertThat(itemPart.getMenge()).isEqualTo(qtyRequired);
+			assertThat(itemPart.getTyp()).isEqualTo(VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR);
+		}
+		else
+		{
+			assertThat(itemPart.getMenge()).isEqualTo(qtyExpected);
+			assertThat(itemPart.getTyp()).isEqualTo(VerfuegbarkeitRueckmeldungTyp.NORMAL);
+		}
 	}
 
 	private final JAXBElement<VerfuegbarkeitAnfragen> createStockAvailabilityQuery(final PZN pzn, final int qtyRequired)

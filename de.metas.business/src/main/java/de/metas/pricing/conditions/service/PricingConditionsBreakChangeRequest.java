@@ -1,7 +1,11 @@
 package de.metas.pricing.conditions.service;
 
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import de.metas.lang.Percent;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
@@ -19,12 +23,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,5 +52,11 @@ public class PricingConditionsBreakChangeRequest
 
 	// Discount
 	Percent discount;
-	PaymentTermId paymentTermId;
+
+	/** {@code null} means that no change is requested. Empty means "change ID to null". */
+	@Nullable
+	Optional<PaymentTermId> paymentTermId;
+	/** {@code null} means that no change is requested. Empty means "change value to null" */
+	@Nullable
+	Optional<Percent> paymentDiscount;
 }

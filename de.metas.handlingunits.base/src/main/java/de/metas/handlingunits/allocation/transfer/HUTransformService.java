@@ -229,7 +229,7 @@ public class HUTransformService
 	}
 
 	/**
-	 * @return the now-standalone CUs
+	 * @return the now-standalone CUs, also if they were already standalone to start with.
 	 */
 	private List<I_M_HU> cuToNewCU0(
 			@NonNull final I_M_HU cuHU,
@@ -1164,7 +1164,7 @@ public class HUTransformService
 					.getStorageFactory()
 					.getStorage(cu)
 					.getProductStorageOrNull(singleSourceTuRequest.getProductId().getRepoId());
-			if(productStorageOrNull == null)
+			if (productStorageOrNull == null)
 			{
 				continue; // cu doesn't have the product we are looking for
 			}

@@ -18,6 +18,7 @@ import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
@@ -89,7 +90,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 		assertThat(headerRecord.getDK_DesiredPickupTime_From()).isNull();
 
 		// reload the saved order and verify that it's still the same
-		final DeliveryOrder loadedDeliveryOrder = derKurierDeliveryOrderRepository.getByRepoId(savedDeliveryOrder.getRepoId());
+		final DeliveryOrder loadedDeliveryOrder = derKurierDeliveryOrderRepository.getByRepoId(DeliveryOrderId.ofRepoId(savedDeliveryOrder.getRepoId()));
 		assertThat(loadedDeliveryOrder).isEqualTo(savedDeliveryOrder);
 	}
 

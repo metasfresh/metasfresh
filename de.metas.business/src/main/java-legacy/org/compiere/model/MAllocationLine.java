@@ -193,11 +193,13 @@ public class MAllocationLine extends X_C_AllocationLine
 		{
 			throw new AdempiereException("@ParentComplete@ @C_AllocationLine_ID@");
 		}
-		if (!newRecord
-			&& (is_ValueChanged("C_BPartner_ID") || is_ValueChanged("C_Invoice_ID")))
-		{
-			throw new AdempiereException("Cannot Change Business Partner or Invoice");
-		}
+		
+		// allow editing the BPartner/Invoice fields (see https://github.com/metasfresh/metasfresh/issues/4326)
+//		if (!newRecord
+//			&& (is_ValueChanged("C_BPartner_ID") || is_ValueChanged("C_Invoice_ID")))
+//		{
+//			throw new AdempiereException("Cannot Change Business Partner or Invoice");
+//		}
 
 		//	Set BPartner/Order from Invoice
 		if (getC_BPartner_ID() == 0 && getInvoice() != null)
