@@ -15,9 +15,6 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 import org.compiere.util.LoginContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
-import org.springframework.session.events.SessionDestroyedEvent;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -310,26 +307,6 @@ public class LoginRestController
 
 		final Login loginService = getLoginService();
 		destroyMFSession(loginService);
-	}
-
-	@Component
-	public static class SessionDestroyedListener implements ApplicationListener<SessionDestroyedEvent>
-	{
-		@Autowired
-		private UserNotificationsService userNotificationsService;
-
-		public SessionDestroyedListener()
-		{
-			super();
-		}
-
-		@Override
-		public void onApplicationEvent(final SessionDestroyedEvent event)
-		{
-			final String sessionId = event.getSessionId();
-			userNotificationsService.disableForSession(sessionId);
-		}
-
 	}
 
 }
