@@ -1,5 +1,6 @@
 package de.metas.ui.web.login;
 
+import java.util.Objects;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -8,17 +9,23 @@ import javax.servlet.http.HttpSession;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.api.IUserBL;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 import org.compiere.util.LoginContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -33,9 +40,13 @@ import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
 import de.metas.ui.web.login.json.JSONLoginRole;
+import de.metas.ui.web.login.json.JSONResetPassword;
+import de.metas.ui.web.login.json.JSONResetPasswordCompleteRequest;
+import de.metas.ui.web.login.json.JSONResetPasswordRequest;
 import de.metas.ui.web.notification.UserNotificationsService;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.session.UserSessionRepository;
+import de.metas.ui.web.upload.WebuiImageService;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 
@@ -75,6 +86,9 @@ public class LoginRestController
 
 	@Autowired
 	private UserNotificationsService userNotificationsService;
+
+	@Autowired
+	private WebuiImageService imageService;
 
 	private Login getLoginService()
 	{
@@ -215,7 +229,7 @@ public class LoginRestController
 		}
 	}
 
-	@RequestMapping(value = "/loginComplete", method = RequestMethod.POST)
+	@PostMapping("/loginComplete")
 	public void loginComplete(@RequestBody final JSONLoginRole loginRole)
 	{
 		assertAuthenticated();
@@ -283,13 +297,13 @@ public class LoginRestController
 		userNotificationsService.enableForSession(userSession.getSessionId(), userSession.getAD_User_ID(), userSession.getAD_Language());
 	}
 
-	@RequestMapping(value = "/isLoggedIn", method = RequestMethod.GET)
+	@GetMapping("/isLoggedIn")
 	public boolean isLoggedIn()
 	{
 		return userSession.isLoggedIn();
 	}
 
-	@RequestMapping(value = "/availableLanguages", method = RequestMethod.GET)
+	@GetMapping("/availableLanguages")
 	public JSONLookupValuesList getAvailableLanguages()
 	{
 		return Services.get(ILanguageBL.class).getAvailableLanguages()
@@ -300,7 +314,7 @@ public class LoginRestController
 				.setDefaultValue(userSession.getAD_Language());
 	}
 
-	@RequestMapping(value = "/logout", method = RequestMethod.GET)
+	@GetMapping("/logout")
 	public void logout(final HttpServletRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -309,4 +323,65 @@ public class LoginRestController
 		destroyMFSession(loginService);
 	}
 
+	@PostMapping("/resetPassword")
+	public void resetPasswordRequest(@RequestBody final JSONResetPasswordRequest request)
+	{
+		userSession.assertNotLoggedIn();
+
+		final IUserBL usersService = Services.get(IUserBL.class);
+		usersService.createResetPasswordByEMailRequest(request.getEmail());
+	}
+
+	@GetMapping("/resetPassword/{token}")
+	public JSONResetPassword getResetPasswordInfo(@PathVariable("token") final String token)
+	{
+		final IUserDAO usersRepo = Services.get(IUserDAO.class);
+		final I_AD_User user = usersRepo.getByPasswordResetCode(token);
+
+		return JSONResetPassword.builder()
+				.fullname(user.getName())
+				.email(user.getEMail())
+				.token(token)
+				.build();
+	}
+
+	@GetMapping("/resetPassword/{token}/avatar")
+	public ResponseEntity<byte[]> getUserAvatar(
+			@PathVariable("token") final String token,
+			@RequestParam(name = "maxWidth", required = false, defaultValue = "-1") final int maxWidth,
+			@RequestParam(name = "maxHeight", required = false, defaultValue = "-1") final int maxHeight)
+	{
+		final IUserDAO usersRepo = Services.get(IUserDAO.class);
+		final I_AD_User user = usersRepo.getByPasswordResetCode(token);
+
+		final int avatarId = user.getAvatar_ID();
+		if (avatarId <= 0)
+		{
+			return ResponseEntity.notFound().build();
+		}
+
+		return imageService.getWebuiImage(avatarId, maxWidth, maxHeight)
+				.toResponseEntity();
+	}
+
+	@PostMapping("/resetPassword/{token}")
+	public JSONLoginAuthResponse resetPasswordComplete(
+			@PathVariable("token") final String token,
+			@RequestBody final JSONResetPasswordCompleteRequest request)
+	{
+		userSession.assertNotLoggedIn();
+
+		if (!Objects.equals(token, request.getToken()))
+		{
+			throw new AdempiereException("@Invalid@ @PasswordResetCode@");
+		}
+
+		final IUserBL usersService = Services.get(IUserBL.class);
+		final I_AD_User user = usersService.resetPassword(token, request.getPassword());
+
+		return authenticate(JSONLoginAuthRequest.builder()
+				.username(user.getEMail())
+				.password(user.getPassword())
+				.build());
+	}
 }
