@@ -22,10 +22,9 @@ import org.springframework.web.client.RestTemplate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.attachments.AttachmentEntry;
 import de.metas.process.ProcessInfo;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
@@ -38,6 +37,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.api.ShipperTransportationId;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -74,19 +74,18 @@ public class DerKurierClient implements ShipperGatewayClient
 	private final Converters converters;
 
 	private final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
-
-	private final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer;
+	private final DerKurierDeliveryOrderService derKurierDeliveryOrderService;
 
 	public DerKurierClient(
 			@NonNull final RestTemplate restTemplate,
 			@NonNull final Converters converters,
-			@NonNull final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository,
-			@NonNull final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer)
+			@NonNull final DerKurierDeliveryOrderService derKurierDeliveryOrderService,
+			@NonNull final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository)
 	{
-		this.derKurierDeliveryOrderRepository = derKurierDeliveryOrderRepository;
 		this.restTemplate = restTemplate;
 		this.converters = converters;
-		this.derKurierDeliveryOrderEmailer = derKurierDeliveryOrderEmailer;
+		this.derKurierDeliveryOrderService = derKurierDeliveryOrderService;
+		this.derKurierDeliveryOrderRepository = derKurierDeliveryOrderRepository;
 	}
 
 	@Override
@@ -134,16 +133,17 @@ public class DerKurierClient implements ShipperGatewayClient
 
 		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(routing, deliveryOrder);
 		derKurierDeliveryOrderRepository.save(completedDeliveryOrder); // need to save the updated DeliveryOrder before we invoke jasper
-		
+
 		final List<String> csvLines = converters.createCsv(completedDeliveryOrder);
 
-		final AttachmentEntry attachmentEntry = derKurierDeliveryOrderRepository
+		derKurierDeliveryOrderService
 				.attachCsvToDeliveryOrder(deliveryOrder, csvLines);
 
-		printPackageLabels(deliveryOrder);
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(deliveryOrder.getShipperTransportationId());
+		derKurierDeliveryOrderService.attachCsvToShippertransportation(
+				shipperTransportationId, deliveryOrder, csvLines);
 
-		// we want to only send the mail after creating the CSV and creating the labels worked.
-		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(deliveryOrder.getShipperId(), attachmentEntry);
+		printPackageLabels(deliveryOrder);
 
 		return completedDeliveryOrder;
 	}

@@ -1,13 +1,16 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.util.Optional;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_MailBox;
+import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import de.metas.email.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
@@ -37,7 +40,26 @@ import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 @Repository
 public class DerKurierShipperConfigRepository
 {
+	private static CCache<Integer, Optional<DerKurierShipperConfig>> cache = CCache.newCache(
+			I_DerKurier_Shipper_Config.Table_Name + "#by#" + I_DerKurier_Shipper_Config.COLUMNNAME_M_Shipper_ID,
+			10,
+			CCache.EXPIREMINUTES_Never);
+
+	public DerKurierShipperConfig retrieveConfigForShipperIdOrNull(final int shipperId)
+	{
+		return cache
+				.getOrLoad(shipperId, () -> retrieveConfigForShipperId0(shipperId))
+				.orElse(null);
+	}
+
 	public DerKurierShipperConfig retrieveConfigForShipperId(final int shipperId)
+	{
+		final Optional<DerKurierShipperConfig> config = cache.getOrLoad(shipperId, () -> retrieveConfigForShipperId0(shipperId));
+
+		return Check.assumePresent(config, "There has to be a DerKurier_Shipper_Config record for shipperId={}", shipperId);
+	}
+
+	private Optional<DerKurierShipperConfig> retrieveConfigForShipperId0(final int shipperId)
 	{
 		Check.assumeGreaterThanZero(shipperId, "shipperId");
 
@@ -46,7 +68,10 @@ public class DerKurierShipperConfigRepository
 				.addEqualsFilter(I_DerKurier_Shipper_Config.COLUMN_M_Shipper_ID, shipperId)
 				.create()
 				.firstOnly(I_DerKurier_Shipper_Config.class);
-		Check.assumeNotNull(shipperConfigRecord, "There is a DerKurier_Shipper_Config record for shipperId={}", shipperId);
+		if (shipperConfigRecord == null)
+		{
+			Optional.empty();
+		}
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl(shipperConfigRecord.getAPIServerBaseURL())
@@ -60,7 +85,7 @@ public class DerKurierShipperConfigRepository
 				.desiredTimeTo(TimeUtil.asLocalTime(shipperConfigRecord.getDK_DesiredDeliveryTime_To()))
 				.build();
 
-		return shipperConfig;
+		return Optional.of(shipperConfig);
 	}
 
 	private Mailbox loadMailboxOrNull(final int mailBoxId)
