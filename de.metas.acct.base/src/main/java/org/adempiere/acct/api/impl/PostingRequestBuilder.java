@@ -24,7 +24,6 @@ package org.adempiere.acct.api.impl;
 
 import java.util.Properties;
 
-import org.adempiere.acct.api.ClientAccountingStatus;
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IPostingRequestBuilder;
 import org.adempiere.acct.api.IPostingService;
@@ -44,11 +43,11 @@ import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MAcctSchema;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
+import de.metas.Profiles;
 import de.metas.acct.handler.DocumentPostRequest;
 import de.metas.acct.handler.DocumentPostingBusService;
 import de.metas.adempiere.form.IClientUI;
@@ -399,19 +398,6 @@ import lombok.NonNull;
 			}
 
 			//
-			// Case: we are running on Client side
-			// => post immediate if ClientAccouting is saying so
-			final boolean isClient = Ini.isClient();
-			if (isClient)
-			{
-				final ClientAccountingStatus clientAccountingStatus = postingService.getClientAccountingStatus();
-				if (clientAccountingStatus == ClientAccountingStatus.Immediate)
-				{
-					return true;
-				}
-			}
-
-			//
 			// Check if PostImmediate is allowed by AD_Client configuration
 			final I_AD_Client client = getAD_Client();
 			final boolean allowPosting = client.isPostImmediate();
@@ -432,20 +418,8 @@ import lombok.NonNull;
 			return true;
 		}
 
-		//
-		// Case: we are running on Client side
-		// => post it only if ClientAccouting is enabled
-		final boolean isClient = Ini.isClient();
-		if (isClient)
-		{
-			return postingService.isClientAccountingEnabled();
-		}
-		// Case: we are running on Server side
-		// => always post without Server because we are THE server
-		else
-		{
-			return true;
-		}
+		// Post without server if we are running the accouting service/server
+		return Profiles.isProfileActive(Profiles.PROFILE_AccountingService);
 	}
 
 	@Override

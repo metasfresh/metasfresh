@@ -36,23 +36,4 @@ public interface IPostingService extends ISingletonService
 
 	/** @return true if the accounting module is active; false if the accounting module is COMPLETELLY off */
 	boolean isEnabled();
-
-	/** @return <code>true</code> if Client Accounting is enabled */
-	boolean isClientAccountingEnabled();
-
-	/** @return Client Accounting configuration level; never returns null */
-	ClientAccountingStatus getClientAccountingStatus();
-
-	/**
-	 * Sets Client Accounting configuration level.
-	 * 
-	 * WARNING:
-	 * <ul>
-	 * <li>this shall be used mainly for testing
-	 * <li>configuration will be directly persisted in database
-	 * </ul>
-	 * 
-	 * @param status
-	 */
-	void setClientAccountingStatus(ClientAccountingStatus status);
 }
