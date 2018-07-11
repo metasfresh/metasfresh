@@ -12,9 +12,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
@@ -23,28 +21,31 @@ import de.metas.adempiere.service.IColumnBL;
 
 /**
  * @author teo_sarca
- * 
+ *
  */
-public class Callout_AD_Column extends CalloutEngine
+@Callout(I_AD_Column.class)
+public class Callout_AD_Column
 {
 	public static final String ENTITYTYPE_Dictionary = "D";
 
-	public String onColumnName(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public void onColumnName(final I_AD_Column column)
 	{
-		I_AD_Column column = InterfaceWrapperHelper.create(mTab, I_AD_Column.class);
 		if (MColumn.isSuggestSelectionColumn(column.getColumnName(), true))
 		{
 			column.setIsSelectionColumn(true);
 		}
-		return NO_ERROR;
 	}
 
-	public String onAD_Element_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public void onAD_Element_ID(final I_AD_Column column)
 	{
-		I_AD_Column column = InterfaceWrapperHelper.create(mTab, I_AD_Column.class);
+
 		if (column.getAD_Element_ID() <= 0)
-			return "";
-		I_AD_Element element = column.getAD_Element();
+		{
+			// nothing to do
+			return;
+		}
+
+		final I_AD_Element element = column.getAD_Element();
 
 		final String elementColumnName = element.getColumnName();
 		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
@@ -55,10 +56,13 @@ public class Callout_AD_Column extends CalloutEngine
 		column.setHelp(element.getHelp());
 		column.setIsCalculated(Services.get(IColumnBL.class).getDefaultIsCalculatedByColumnName(elementColumnName));
 
-		I_AD_Table table = column.getAD_Table();
+		final I_AD_Table table = column.getAD_Table();
 		String entityType = table.getEntityType();
+
 		if (ENTITYTYPE_Dictionary.equals(entityType))
+		{
 			entityType = element.getEntityType();
+		}
 
 		column.setEntityType(entityType);
 		setTypeAndLength(column);
@@ -69,16 +73,14 @@ public class Callout_AD_Column extends CalloutEngine
 			column.setIsUseDocSequence(true);
 		}
 
-		//
-		return NO_ERROR;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param column
 	 * @see org.compiere.process.TableCreateColumns#addTableColumn
 	 */
-	public static void setTypeAndLength(I_AD_Column column)
+	public static void setTypeAndLength(final I_AD_Column column)
 	{
 		final String columnName = column.getColumnName();
 		final int previousDisplayType = column.getAD_Reference_ID();
