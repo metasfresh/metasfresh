@@ -22,7 +22,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import lombok.NonNull;
 
 /*
@@ -159,8 +158,7 @@ public class HuTraceQueryCreator
 		errorfIfNotEqualsOperator(parameter);
 		errorIfQueryValueGreaterThanZero("ProductId", query.getProductId(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withProductId(value.getIdAsInt());
+		return query.withProductId(extractInt(parameter));
 	}
 
 	private static HUTraceEventQuery updateShipmentScheduleIdFromParameter(
@@ -169,8 +167,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueGreaterThanZero("ShipmentScheduleId", query.getShipmentScheduleId(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withShipmentScheduleId(value.getIdAsInt());
+		return query.withShipmentScheduleId(extractInt(parameter));
 	}
 
 	private static HUTraceEventQuery updatePpCostCollectorIdFromParameter(
@@ -179,8 +176,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueGreaterThanZero("PpCostCollectorId", query.getPpCostCollectorId(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withPpCostCollectorId(value.getIdAsInt());
+		return query.withPpCostCollectorId(extractInt(parameter));
 	}
 
 	private static HUTraceEventQuery updatePpOrderIdFromParameter(
@@ -189,8 +185,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueGreaterThanZero("PpOrderId", query.getPpOrderId(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withPpOrderId(value.getIdAsInt());
+		return query.withPpOrderId(extractInt(parameter));
 	}
 
 	private static HUTraceEventQuery updateVhuIdFromParameter(
@@ -199,8 +194,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueGreaterThanZero("VhuId", query.getVhuId(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withVhuId(value.getIdAsInt());
+		return query.withVhuId(extractInt(parameter));
 	}
 
 	private static HUTraceEventQuery updateVhuSourceIdFromParameter(
@@ -209,8 +203,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueGreaterThanZero("VhuSourceId", query.getVhuSourceId(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withVhuSourceId(value.getIdAsInt());
+		return query.withVhuSourceId(extractInt(parameter));
 	}
 
 	private static HUTraceEventQuery updateTypeFromParameter(
@@ -219,8 +212,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueNotNull("Type", query.getType(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withType(HUTraceType.valueOf(value.getIdAsString()));
+		return query.withType(HUTraceType.valueOf(extractString(parameter)));
 	}
 
 	private static HUTraceEventQuery updateVhuStatusFromParameter(
@@ -228,8 +220,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueNotEmpty("VhuStatus", query.getVhuStatus(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withVhuStatus(value.getIdAsString());
+		return query.withVhuStatus(extractString(parameter));
 	}
 
 	private static HUTraceEventQuery updateMovementIdFromParameter(
@@ -237,8 +228,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueGreaterThanZero("MovementId", query.getMovementId(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withMovementId(value.getIdAsInt());
+		return query.withMovementId(extractInt(parameter));
 	}
 
 	private static HUTraceEventQuery updateHuTrxLineIdFromParameter(
@@ -247,8 +237,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueGreaterThanZero("TopLevelHuId", query.getHuTrxLineId(), query);
 
-		final IntegerLookupValue value = (IntegerLookupValue)parameter.getValue();
-		return query.withHuTrxLineId(value.getIdAsInt());
+		return query.withHuTrxLineId(extractInt(parameter));
 	}
 
 	private static HUTraceEventQuery updateTopLevelHuIdFromParameter(
@@ -257,8 +246,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueGreaterThanZero("TopLevelHuId", query.getTopLevelHuId(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withTopLevelHuId(value.getIdAsInt());
+		return query.withTopLevelHuId(extractInt(parameter));
 	}
 
 	private static HUTraceEventQuery updateInOutIdFromParameter(
@@ -267,8 +255,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueGreaterThanZero("InOutId", query.getInOutId(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withInOutId(value.getIdAsInt());
+		return query.withInOutId(extractInt(parameter));
 	}
 
 	private static HUTraceEventQuery updateDocStatusFromParameter(
@@ -277,8 +264,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueNotEmpty("DocStatus", query.getDocStatus(), query);
 
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withDocStatus(value.getIdAsString());
+		return query.withDocStatus(extractString(parameter));
 	}
 
 	private static HUTraceEventQuery updateDocTypeIdFromParameter(
@@ -289,8 +275,8 @@ public class HuTraceQueryCreator
 		{
 			errorIfQueryValueGreaterThanZero("DocTypeId", query.getDocTypeId().getAsInt(), query);
 		}
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withDocTypeId(OptionalInt.of(value.getIdAsInt()));
+
+		return query.withDocTypeId(OptionalInt.of(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updateHuTraceIdFromParameter(@NonNull final HUTraceEventQuery query,
@@ -300,8 +286,8 @@ public class HuTraceQueryCreator
 		{
 			errorIfQueryValueGreaterThanZero("HuTraceEventId", query.getHuTraceEventId().getAsInt(), query);
 		}
-		final LookupValue value = (LookupValue)parameter.getValue();
-		return query.withHuTraceEventId(OptionalInt.of(value.getIdAsInt()));
+
+		return query.withHuTraceEventId(OptionalInt.of(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updateOrgIdFromParameter(
@@ -310,8 +296,7 @@ public class HuTraceQueryCreator
 	{
 		errorIfQueryValueGreaterThanZero("OrgId", query.getOrgId(), query);
 
-		final IntegerLookupValue value = (IntegerLookupValue)parameter.getValue();
-		return query.withOrgId(value.getIdAsInt());
+		return query.withOrgId(extractInt(parameter));
 	}
 
 	private static void errorIfQueryValueGreaterThanZero(
@@ -357,5 +342,41 @@ public class HuTraceQueryCreator
 			final String message = StringUtils.formatMessage("The given DocumentFilterParam needs to have an EQUAL operator, but has {}", parameter.getOperator());
 			throw new AdempiereException(message).setParameter("DocumentFilterParam", parameter);
 		}
+	}
+
+	private static int extractInt(@NonNull final DocumentFilterParam parameter)
+	{
+		final Object value = Check.assumeNotNull(parameter.getValue(), "Given paramter may not have a null value; parameter={}", parameter);
+
+		if (value instanceof LookupValue)
+		{
+			final LookupValue lookupValue = (LookupValue)value;
+			return lookupValue.getIdAsInt();
+		}
+		else if (value instanceof Integer)
+		{
+			return (Integer)value;
+		}
+
+		Check.fail("Unable to extract an integer ID from parameter={}", parameter);
+		return -1; // not reached
+	}
+
+	private static String extractString(@NonNull final DocumentFilterParam parameter)
+	{
+		final Object value = Check.assumeNotNull(parameter.getValue(), "Given paramter may not have a null value; parameter={}", parameter);
+
+		if (value instanceof LookupValue)
+		{
+			final LookupValue lookupValue = (LookupValue)value;
+			return lookupValue.getIdAsString();
+		}
+		else if (value instanceof Integer)
+		{
+			return (String)value;
+		}
+
+		Check.fail("Unable to extract a String from parameter={}", parameter);
+		return null; // not reached
 	}
 }
