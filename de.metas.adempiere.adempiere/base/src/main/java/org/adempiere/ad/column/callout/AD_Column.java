@@ -120,144 +120,84 @@ public class AD_Column
 		final int previousDisplayType = column.getAD_Reference_ID();
 		final I_AD_Table table = column.getAD_Table();
 		final String tableName = table.getTableName();
-		// Key
+
 		if (columnName.equalsIgnoreCase(tableName + "_ID"))
 		{
-			column.setIsKey(true);
-			column.setAD_Reference_ID(DisplayType.ID);
-			column.setIsUpdateable(false);
-			column.setFieldLength(10);
+			updateTableIdColumn(column);
 		}
-		// Account
-		// bug [ 1637912 ]
+
 		else if (columnName.toUpperCase().endsWith("_ACCT"))
 		{
-			// && size == 10)
-			column.setAD_Reference_ID(DisplayType.Account);
-			column.setFieldLength(10);
+			updateAccountColumn(column);
 		}
-		// Account
+
 		else if (columnName.equalsIgnoreCase("C_Location_ID"))
 		{
-			column.setAD_Reference_ID(DisplayType.Location);
-			column.setFieldLength(10);
+			updateLocationColumn(column);
 		}
-		// Product Attribute
+
 		else if (columnName.equalsIgnoreCase("M_AttributeSetInstance_ID"))
 		{
-			column.setAD_Reference_ID(DisplayType.PAttribute);
-			column.setFieldLength(10);
+			updateAttributeSetInstanceColumn(column);
 		}
-		// SalesRep_ID (=User)
+
 		else if (columnName.equalsIgnoreCase("SalesRep_ID"))
 		{
-			column.setAD_Reference_ID(DisplayType.Table);
-			column.setAD_Reference_Value_ID(190);
-			column.setFieldLength(10);
+			updateSalesRepColumn(column);
 		}
-		// ID
+
 		else if (columnName.toUpperCase().endsWith("_ID"))
 		{
-			column.setAD_Reference_ID(DisplayType.TableDir);
-			column.setFieldLength(10);
+			updateIdColumn(column);
 		}
-		// Date
+
 		else if (columnName.equalsIgnoreCase("Created")
 				|| columnName.equalsIgnoreCase("Updated"))
 		{
-			column.setAD_Reference_ID(DisplayType.DateTime);
-			column.setFieldLength(7);
+			updateCreatedOrUpdatedColumn(column);
 		}
 		else if (columnName.indexOf("Date") >= 0)
 		{
-			if (!DisplayType.isDate(previousDisplayType))
-			{
-				column.setAD_Reference_ID(DisplayType.Date);
-			}
-			column.setFieldLength(7);
+			updateDateColumn(column, previousDisplayType);
 		}
-		// CreatedBy/UpdatedBy (=User)
+
 		else if (columnName.equalsIgnoreCase("CreatedBy")
 				|| columnName.equalsIgnoreCase("UpdatedBy"))
 		{
-			column.setAD_Reference_ID(DisplayType.Table);
-			column.setAD_Reference_Value_ID(110);
-			column.setIsUpdateable(false);
-			column.setFieldLength(10);
-		}
-		// Entity Type
-		else if (columnName.equalsIgnoreCase("EntityType"))
-		{
-			column.setAD_Reference_ID(DisplayType.Table);
-			column.setAD_Reference_Value_ID(389);
-		}
-		// // CLOB
-		// else if (dataType == Types.CLOB)
-		// column.setAD_Reference_ID (DisplayType.TextLong);
-		// // BLOB
-		// else if (dataType == Types.BLOB)
-		// column.setAD_Reference_ID (DisplayType.Binary);
-		// Amount
-		else if (columnName.toUpperCase().indexOf("AMT") != -1)
-		{
-			column.setAD_Reference_ID(DisplayType.Amount);
-			column.setFieldLength(10);
-			column.setIsMandatory(true);
-		}
-		// Qty
-		else if (columnName.toUpperCase().indexOf("QTY") != -1)
-		{
-			column.setAD_Reference_ID(DisplayType.Quantity);
-			column.setFieldLength(10);
-		}
-		// Boolean
-		else if (columnName.toUpperCase().startsWith("IS"))
-		{
-			column.setAD_Reference_ID(DisplayType.YesNo);
-			column.setFieldLength(1);
-			column.setIsMandatory(true);
-		}
-		// // List
-		// else if (size < 4 && dataType == Types.CHAR)
-		// column.setAD_Reference_ID (DisplayType.List);
-		// Name, DocumentNo
-		else if (columnName.equalsIgnoreCase("Name")
-				|| columnName.equals("DocumentNo"))
-		{
-			column.setAD_Reference_ID(DisplayType.String);
-			column.setIsIdentifier(true);
-			column.setSeqNo(1);
-			column.setFieldLength(40);
-		}
-		// // String, Text
-		// else if (dataType == Types.CHAR || dataType == Types.VARCHAR
-		// || typeName.startsWith ("NVAR")
-		// || typeName.startsWith ("NCHAR"))
-		// {
-		// if (typeName.startsWith("N")) // MultiByte
-		// size /= 2;
-		// if (size > 255)
-		// column.setAD_Reference_ID (DisplayType.Text);
-		// else
-		// column.setAD_Reference_ID (DisplayType.String);
-		// }
-		// // Number
-		// else if (dataType == Types.INTEGER || dataType == Types.SMALLINT
-		// || dataType == Types.DECIMAL || dataType == Types.NUMERIC)
-		// {
-		// if (size == 10)
-		// column.setAD_Reference_ID (DisplayType.Integer);
-		// else
-		// column.setAD_Reference_ID (DisplayType.Number);
-		// }
-		// ??
-		else
-		{
-			if (column.getAD_Reference_ID() <= 0)
-				column.setAD_Reference_ID(DisplayType.String);
+			updateCreatedByOrUpdatedByColumn(column);
 		}
 
-		// column.setFieldLength (size);
+		else if (columnName.equalsIgnoreCase("EntityType"))
+		{
+			updateEntityTypeColumn(column);
+		}
+
+		else if (columnName.toUpperCase().indexOf("AMT") != -1)
+		{
+			updateAmountColumn(column);
+		}
+
+		else if (columnName.toUpperCase().indexOf("QTY") != -1)
+		{
+			updateQtyColumn(column);
+		}
+
+		else if (columnName.toUpperCase().startsWith("IS"))
+		{
+			updateFlagColumn(column);
+		}
+
+		else if ("Name".equalsIgnoreCase(columnName)
+				|| "DocumentNo".equals(columnName))
+		{
+			updateNameOrDocumentNoColumn(column);
+		}
+
+		if (column.getAD_Reference_ID() <= 0)
+		{
+			column.setAD_Reference_ID(DisplayType.String);
+		}
+
 		if (column.isUpdateable()
 				&& (table.isView()
 						|| columnName.equalsIgnoreCase("AD_Client_ID")
@@ -267,6 +207,103 @@ public class AD_Column
 		{
 			column.setIsUpdateable(false);
 		}
+	}
+
+	private static void updateTableIdColumn(final I_AD_Column column)
+	{
+		column.setIsKey(true);
+		column.setAD_Reference_ID(DisplayType.ID);
+		column.setIsUpdateable(false);
+		column.setFieldLength(10);
+	}
+
+	private static void updateAccountColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Account);
+		column.setFieldLength(10);
+	}
+
+	private static void updateLocationColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Location);
+		column.setFieldLength(10);
+	}
+
+	private static void updateAttributeSetInstanceColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.PAttribute);
+		column.setFieldLength(10);
+	}
+
+	private static void updateSalesRepColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Table);
+		column.setAD_Reference_Value_ID(190);
+		column.setFieldLength(10);
+	}
+
+	private static void updateIdColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.TableDir);
+		column.setFieldLength(10);
+	}
+
+	private static void updateCreatedOrUpdatedColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.DateTime);
+		column.setFieldLength(7);
+	}
+
+	private static void updateDateColumn(final I_AD_Column column, final int previousDisplayType)
+	{
+		if (!DisplayType.isDate(previousDisplayType))
+		{
+			column.setAD_Reference_ID(DisplayType.Date);
+		}
+		column.setFieldLength(7);
+	}
+
+	private static void updateCreatedByOrUpdatedByColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Table);
+		column.setAD_Reference_Value_ID(110);
+		column.setIsUpdateable(false);
+		column.setFieldLength(10);
+	}
+
+	private static void updateEntityTypeColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Table);
+		column.setAD_Reference_Value_ID(389);
+	}
+
+	private static void updateAmountColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Amount);
+		column.setFieldLength(10);
+		column.setIsMandatory(true);
+	}
+
+	private static void updateQtyColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Quantity);
+		column.setFieldLength(10);
+
+	}
+
+	private static void updateFlagColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.YesNo);
+		column.setFieldLength(1);
+		column.setIsMandatory(true);
+	}
+
+	private static void updateNameOrDocumentNoColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.String);
+		column.setIsIdentifier(true);
+		column.setSeqNo(1);
+		column.setFieldLength(40);
 	}
 
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_AD_Reference_ID })
@@ -282,31 +319,41 @@ public class AD_Column
 
 		if (referenceId == DisplayType.Integer)
 		{
-			column.setIsMandatory(true);
-
-			column.setDefaultValue("0");
+			updateColumnForReferenceInteger(column);
 		}
 
 		else if (referenceId == DisplayType.YesNo)
 		{
+			updateColumnForYesNoReference(column);
+		}
+	}
 
-			column.setIsMandatory(true);
+	private void updateColumnForReferenceInteger(final I_AD_Column column)
+	{
+		column.setIsMandatory(true);
 
-			final String columnName = column.getColumnName();
+		column.setDefaultValue("0");
+	}
 
-			if (columnName == null)
-			{
-				// nothing to do
-			}
+	private void updateColumnForYesNoReference(final I_AD_Column column)
+	{
+		column.setIsMandatory(true);
 
-			if (I_AD_Column.COLUMNNAME_IsActive.equals(columnName))
-			{
-				column.setDefaultValue("Y");
-			}
-			else
-			{
-				column.setDefaultValue("N");
-			}
+		final String columnName = column.getColumnName();
+
+		if (columnName == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		if (I_AD_Column.COLUMNNAME_IsActive.equals(columnName))
+		{
+			column.setDefaultValue("Y");
+		}
+		else
+		{
+			column.setDefaultValue("N");
 		}
 	}
 }
