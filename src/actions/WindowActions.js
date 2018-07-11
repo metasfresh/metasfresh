@@ -581,8 +581,8 @@ export function patch(
       isEdit,
     };
 
-    await dispatch({ type: PATCH_REQUEST, symbol, options });
     await dispatch(indicatorState('pending'));
+    await dispatch({ type: PATCH_REQUEST, symbol, options });
 
     try {
       const response = await patchRequest(options);
