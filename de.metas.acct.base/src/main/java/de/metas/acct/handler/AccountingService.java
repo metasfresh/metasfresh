@@ -35,10 +35,10 @@ import de.metas.logging.LogManager;
  */
 
 @Component
-@Profile(Profiles.PROFILE_App)
-public class DocumentPostRequestHandlerImpl implements DocumentPostRequestHandler
+@Profile(Profiles.PROFILE_AccountingService)
+public class AccountingService implements DocumentPostRequestHandler
 {
-	private static final Logger logger = LogManager.getLogger(DocumentPostRequestHandlerImpl.class);
+	private static final Logger logger = LogManager.getLogger(AccountingService.class);
 
 	@Override
 	public void handleRequest(final DocumentPostRequest request)
