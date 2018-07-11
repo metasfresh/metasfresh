@@ -48,8 +48,8 @@ import org.slf4j.Logger;
 import com.google.common.base.Optional;
 
 import de.metas.Profiles;
-import de.metas.acct.handler.DocumentPostRequest;
-import de.metas.acct.handler.DocumentPostingBusService;
+import de.metas.acct.posting.DocumentPostRequest;
+import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.document.engine.IDocument;

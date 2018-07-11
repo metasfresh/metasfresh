@@ -12,7 +12,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.POInfo;
 import org.compiere.util.TimeUtil;
 
-import de.metas.acct.api.IDocumentRepostingSupplierService;
+import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.document.engine.IDocument;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;

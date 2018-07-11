@@ -47,9 +47,9 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.IDocumentRepostingSupplierService;
-import de.metas.acct.async.ScheduleFactAcctLogProcessingFactAcctListener;
+import de.metas.acct.aggregation.async.ScheduleFactAcctLogProcessingFactAcctListener;
 import de.metas.acct.model.I_C_VAT_Code;
+import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.GLJournalDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.InvoiceDocumentRepostingSupplier;

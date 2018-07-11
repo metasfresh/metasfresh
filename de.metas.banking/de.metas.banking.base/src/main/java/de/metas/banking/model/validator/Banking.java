@@ -29,7 +29,7 @@ import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
-import de.metas.acct.api.IDocumentRepostingSupplierService;
+import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.payment.impexp.DatevPaymentImportProcess;
 import de.metas.banking.service.IBankStatementListenerService;
