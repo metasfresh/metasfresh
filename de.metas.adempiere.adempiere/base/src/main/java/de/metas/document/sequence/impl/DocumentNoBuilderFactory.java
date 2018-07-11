@@ -12,6 +12,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -33,11 +34,12 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 	private final List<ValueSequenceInfoProvider> additionalProviders;
 
 	@VisibleForTesting
-	public DocumentNoBuilderFactory()
+	DocumentNoBuilderFactory()
 	{
 		this(Optional.empty());
 	}
 
+	@Autowired // spring needs to pick this constructor
 	public DocumentNoBuilderFactory(@NonNull final Optional<List<ValueSequenceInfoProvider>> providers)
 	{
 		this.additionalProviders = ImmutableList.copyOf(providers.orElse(ImmutableList.of()));

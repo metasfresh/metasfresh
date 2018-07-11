@@ -129,7 +129,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
 		final I_AD_Attachment attachment = attachmentBL.getAttachment(pLog);
 
-		final byte[] data = attachmentBL.getEntryByFilenameAsBytes(attachment, XMLATTACHMENT_NAME);
+		final byte[] data = attachmentBL.getEntryByFilenameAsBytesOrNull(attachment, XMLATTACHMENT_NAME);
 		if (data == null || data.length == 0)
 		{
 			return null;

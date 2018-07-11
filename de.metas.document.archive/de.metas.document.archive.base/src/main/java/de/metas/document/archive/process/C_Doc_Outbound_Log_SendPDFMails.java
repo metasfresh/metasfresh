@@ -8,7 +8,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 
-public class SendPDFMailsForSelection
+public class C_Doc_Outbound_Log_SendPDFMails
 		extends AbstractSendDocumentsForSelection
 		implements IProcessPrecondition
 {
