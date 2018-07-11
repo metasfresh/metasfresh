@@ -9,9 +9,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.util.CCache;
+import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
 import de.metas.lang.Percent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,6 +41,7 @@ import de.metas.lang.Percent;
 @Service
 public class PaymentTermService
 {
+	private static final CCache<ArrayKey, PaymentTermId> CACHE = CCache.newCache(I_C_PaymentTerm.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
 	/**
 	 * @param basePaymentTermId may be null
@@ -56,12 +60,20 @@ public class PaymentTermService
 			return basePaymentTermId; // the caller did not specify a change, so we return the base we got
 		}
 
+		final ArrayKey key = ArrayKey.of(basePaymentTermId, discount);
+		return CACHE.getOrLoad(key, () -> getOrCreateDerivedPaymentTerm0(basePaymentTermId, discount));
+	}
+
+	private PaymentTermId getOrCreateDerivedPaymentTerm0(
+			@NonNull final PaymentTermId basePaymentTermId,
+			@NonNull final Percent discount)
+	{
 		final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 		final I_C_PaymentTerm basePaymentTermRecord = paymentTermRepository.getById(basePaymentTermId);
 
 		// see if the designed payment term already exists
 		final I_C_PaymentTerm existingDerivedPaymentTermRecord = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PaymentTerm.class)
+				.createQueryBuilderOutOfTrx(I_C_PaymentTerm.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsValid, true)
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount, discount.getValueAsBigDecimal())

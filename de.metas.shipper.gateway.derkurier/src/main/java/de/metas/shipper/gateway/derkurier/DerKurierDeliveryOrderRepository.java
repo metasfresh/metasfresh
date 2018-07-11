@@ -17,10 +17,9 @@ import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_DesiredDeliveryTime_From;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_DesiredDeliveryTime_To;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Reference;
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -29,7 +28,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -42,23 +40,19 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
 import de.metas.adempiere.service.ICountryDAO;
-import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentBL;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine_Package;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
@@ -72,6 +66,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition.DeliveryPositionBuild
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.api.ShipperTransportationId;
 import lombok.NonNull;
 
 /*
@@ -124,12 +119,28 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	}
 
 	@Override
-	public DeliveryOrder getByRepoId(final int deliveryOrderRepoId)
+	public DeliveryOrder getByRepoId(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
-		final I_DerKurier_DeliveryOrder orderPO = loadAssumeRecordExists(deliveryOrderRepoId, I_DerKurier_DeliveryOrder.class);
+		final I_DerKurier_DeliveryOrder //
+		orderPO = loadAssumeRecordExists(deliveryOrderId.getRepoId(), I_DerKurier_DeliveryOrder.class);
 
 		final DeliveryOrder deliveryOrder = toDeliveryOrder(orderPO);
 		return deliveryOrder;
+	}
+
+	public List<DeliveryOrder> getByShipperTransportationId(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		final List<DeliveryOrder> deliveryOrders = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DerKurier_DeliveryOrder.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DerKurier_DeliveryOrder.COLUMN_M_ShipperTransportation_ID, shipperTransportationId)
+				.orderBy().addColumn(I_DerKurier_DeliveryOrder.COLUMN_DerKurier_DeliveryOrder_ID).endOrderBy()
+				.create()
+				.stream()
+				.map(this::toDeliveryOrder) // TODO: solve n+1 problem
+				.collect(ImmutableList.toImmutableList());
+
+		return deliveryOrders;
 	}
 
 	private DeliveryOrder toDeliveryOrder(@NonNull final I_DerKurier_DeliveryOrder headerRecord)
@@ -148,6 +159,9 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		final ImmutableListMultimap<Integer, I_DerKurier_DeliveryOrderLine_Package> lineId2PackageRecords = //
 				Multimaps.index(orderLinePackageRecords, I_DerKurier_DeliveryOrderLine_Package::getDerKurier_DeliveryOrderLine_ID);
 
+		final String recordId = String.valueOf(headerRecord.getDerKurier_DeliveryOrder_ID());
+		final OrderId orderId = OrderId.of(SHIPPER_GATEWAY_ID, recordId);
+
 		final DeliveryOrderBuilder deliverOrderBuilder = DeliveryOrder
 				.builder()
 				.repoId(headerRecord.getDerKurier_DeliveryOrder_ID())
@@ -156,7 +170,8 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				.serviceType(DerKurierServiceType.OVERNIGHT)
 				.pickupAddress(createPickupAddress(headerRecord))
 				.pickupDate(createPickupDate(headerRecord))
-				.orderId(OrderId.of(SHIPPER_GATEWAY_ID, String.valueOf(headerRecord.getDerKurier_DeliveryOrder_ID())));
+				.customerReference(recordId)
+				.orderId(orderId);
 
 		I_DerKurier_DeliveryOrderLine previousLineRecord = null; // used to make sure that all lineRecords have the same value when it comes to certain columns
 		for (final I_DerKurier_DeliveryOrderLine lineRecord : lineRecords)
@@ -544,45 +559,4 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 		return orderPO;
 	}
-
-	public AttachmentEntry attachCsvToDeliveryOrder(
-			@NonNull final DeliveryOrder deliveryOrder,
-			@NonNull final List<String> csvLines)
-	{
-		final I_DerKurier_DeliveryOrder record = load(
-				deliveryOrder.getRepoId(),
-				I_DerKurier_DeliveryOrder.class);
-
-		// thx to https://stackoverflow.com/a/5619144/1012103
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		final DataOutputStream out = new DataOutputStream(baos);
-		for (final String csvLine : csvLines)
-		{
-			writeLineToStream(csvLine, out);
-		}
-
-		return Services.get(IAttachmentBL.class)
-				.addEntry(
-						record,
-						"DeliveryOrder-" + deliveryOrder.getRepoId() + ".csv",
-						baos.toByteArray());
-	}
-
-	public void writeLineToStream(
-			@NonNull final String csvLine,
-			@NonNull final DataOutputStream dataOutputStream)
-	{
-		try
-		{
-			final byte[] bytes = (csvLine + "\n").getBytes(DerKurierConstants.CSV_DATA_CHARSET);
-			dataOutputStream.write(bytes);
-		}
-		catch (final IOException e)
-		{
-			throw new AdempiereException("IOException writing cvsLine to dataOutputStream", e).appendParametersToMessage()
-					.setParameter("csvLine", csvLine)
-					.setParameter("dataOutputStream", dataOutputStream);
-		}
-	}
-
 }

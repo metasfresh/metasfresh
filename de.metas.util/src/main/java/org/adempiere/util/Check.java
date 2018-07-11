@@ -33,6 +33,8 @@ import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 
+import lombok.NonNull;
+
 /**
  *
  *
@@ -155,7 +157,10 @@ public final class Check
 	 * @param errMsg
 	 * @param params
 	 */
-	public static void assume(final boolean cond, final Class<? extends RuntimeException> exceptionClass, final String errMsg, final Object... params)
+	public static void assume(final boolean cond,
+			@NonNull final Class<? extends RuntimeException> exceptionClass,
+			@NonNull final String errMsg,
+			@NonNull final Object... params)
 	{
 		if (!cond)
 		{
@@ -252,6 +257,12 @@ public final class Check
 		final boolean cond = object != null;
 		assume(cond, exceptionClass, assumptionMessage, params);
 		return object;
+	}
+
+	public static <T> T assumePresent(@NonNull final Optional<T> optional, final String assumptionMessage, final Object... params)
+	{
+		assume(optional.isPresent(), defaultExClazz, assumptionMessage, params);
+		return optional.get();
 	}
 
 	/**
@@ -415,7 +426,7 @@ public final class Check
 		}
 		return valueLong;
 	}
-	
+
 	public static BigDecimal assumeGreaterThanZero(final BigDecimal valueBD, final String valueName)
 	{
 		assumeNotNull(valueName, "" + valueName + " is not null");

@@ -16,7 +16,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<migration-sql-basedir>99-de.metas.shipper.gateway.api</migration-sql-basedir>
+		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<dependencies>

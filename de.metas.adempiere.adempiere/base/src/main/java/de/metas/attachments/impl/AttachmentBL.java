@@ -221,12 +221,14 @@ public class AttachmentBL implements IAttachmentBL
 			@NonNull final String name,
 			@NonNull final byte[] data)
 	{
-		return addEntry(model, AttachmentEntryCreateRequest.builder()
+		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
 				.type(AttachmentEntryType.Data)
 				.filename(name)
 				.contentType(MimeType.getMimeType(name))
 				.data(data)
-				.build());
+				.build();
+
+		return addEntry(model, request);
 	}
 
 	@Override
@@ -248,7 +250,7 @@ public class AttachmentBL implements IAttachmentBL
 
 		return entries;
 	}
-	
+
 	@Override
 	public List<AttachmentEntry> addEntriesFromResources(@NonNull final Object model, final Collection<Resource> resources)
 	{
@@ -269,11 +271,10 @@ public class AttachmentBL implements IAttachmentBL
 		return entries;
 	}
 
-
 	@Override
-	public byte[] getEntryByFilenameAsBytes(final Object model, final String filename)
+	public byte[] getEntryByFilenameAsBytesOrNull(final Object model, final String filename)
 	{
-		final AttachmentEntry entry = getEntryByFilename(model, filename);
+		final AttachmentEntry entry = getEntryByFilenameOrNull(model, filename);
 		if (entry == null)
 		{
 			return null;
@@ -312,7 +313,7 @@ public class AttachmentBL implements IAttachmentBL
 	}
 
 	@Override
-	public AttachmentEntry getEntryByFilename(final Object model, final String filename)
+	public AttachmentEntry getEntryByFilenameOrNull(final Object model, final String filename)
 	{
 		final int attachmentId = getAttachmentId(model);
 		if (attachmentId <= 0)
@@ -413,7 +414,7 @@ public class AttachmentBL implements IAttachmentBL
 					.data(data)
 					.build();
 		}
-		
+
 		public static AttachmentEntryCreateRequest fromResource(final Resource resource)
 		{
 			final String filename = resource.getFilename();
@@ -435,7 +436,6 @@ public class AttachmentBL implements IAttachmentBL
 					.data(data)
 					.build();
 		}
-
 
 		public static AttachmentEntryCreateRequest fromFile(final File file)
 		{
