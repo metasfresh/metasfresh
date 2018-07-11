@@ -19,6 +19,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -116,13 +117,14 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		final String shipperGatewayId = getParameters().getParameterAsString(PARAM_ShipperGatewayId);
 		final DeliveryOrderRepository deliveryOrderRepo = shipperRegistry.getDeliveryOrderRepository(shipperGatewayId);
 
-		final int deliveryOrderRepoId = getDeliveryOrderRepoId();
+		final DeliveryOrderId deliveryOrderRepoId = getDeliveryOrderRepoId();
 		return deliveryOrderRepo.getByRepoId(deliveryOrderRepoId);
 	}
 
-	public int getDeliveryOrderRepoId()
+	public DeliveryOrderId getDeliveryOrderRepoId()
 	{
-		return getParameters().getParameterAsInt(PARAM_DeliveryOrderRepoId);
+		final int repoId = getParameters().getParameterAsInt(PARAM_DeliveryOrderRepoId);
+		return DeliveryOrderId.ofRepoId(repoId);
 	}
 
 	public void printLabels(

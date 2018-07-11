@@ -26,6 +26,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -51,6 +53,7 @@ import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.ProcessExecutor;
+import lombok.NonNull;
 
 /**
  * Async processor that sends the PDFs of {@link I_C_Doc_Outbound_Log_Line}s' {@link I_AD_Archive}s as Email.
@@ -72,17 +75,12 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
 
-	private static final String STATUS_MESSAGE_SENT = "MessageSent";
-	private static final String STATUS_MESSAGE_NOT_SENT = "MessageNotSent";
-
 	private static final String MSG_EmailSubject = "MailWorkpackageProcessor.EmailSubject";
 	private static final String MSG_EmailMessage = "MailWorkpackageProcessor.EmailMessage";
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final String action = X_C_Doc_Outbound_Log_Line.ACTION_EMail;
-
 		final List<I_C_Doc_Outbound_Log_Line> logLines = queueDAO.retrieveItems(workpackage, I_C_Doc_Outbound_Log_Line.class, localTrxName);
 		for (final I_C_Doc_Outbound_Log_Line logLine : logLines)
 		{
@@ -98,22 +96,21 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 								logLine.getC_Doc_Outbound_Log_Line_ID(), docOutboundLogRecord);
 			}
 
-			sendEMail(action, docOutboundLogRecord, archive, workpackage.getAD_PInstance(), localTrxName);
+			sendEMail(docOutboundLogRecord, archive, workpackage.getAD_PInstance(), localTrxName);
 		}
 
 		return Result.SUCCESS;
 	}
 
 	private void sendEMail(
-			final String action,
-			final I_C_Doc_Outbound_Log docOutboundLogRecord,
-			final I_AD_Archive archive,
-			final I_AD_PInstance pInstance,
-			final String trxName)
+			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord,
+			@NonNull final I_AD_Archive archive,
+			@Nullable final I_AD_PInstance pInstance,
+			@Nullable final String trxName)
 	{
 		try
 		{
-			sendEMail0(action, docOutboundLogRecord, archive, pInstance, trxName);
+			sendEMail0(docOutboundLogRecord, archive, pInstance, trxName);
 		}
 		catch (final Exception e)
 		{
@@ -126,11 +123,10 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	}
 
 	private void sendEMail0(
-			final String action,
-			final I_C_Doc_Outbound_Log docOutboundLogRecord,
-			final I_AD_Archive archive,
-			final I_AD_PInstance pInstance,
-			final String trxName) throws Exception
+			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord,
+			@NonNull final I_AD_Archive archive,
+			@Nullable final I_AD_PInstance pInstance,
+			@Nullable final String trxName) throws Exception
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
 
@@ -174,14 +170,14 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final File attachment = getDocumentAttachment(ctx, archive, trxName);
 			if (attachment == null)
 			{
-				status = STATUS_MESSAGE_NOT_SENT; // TODO log or do something; do NOT send blank mails without an attachment
+				status = IArchiveEventManager.STATUS_MESSAGE_NOT_SENT; // TODO log or do something; do NOT send blank mails without an attachment
 			}
 			else
 			{
 				email.addAttachment(attachment);
 				mailBL.send(email);
 
-				status = STATUS_MESSAGE_SENT;
+				status = IArchiveEventManager.STATUS_MESSAGE_SENT;
 			}
 		}
 
@@ -194,7 +190,15 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 			final String statusText = msgBL.getMsg(ctx, status);
 
-			archiveEventManager.fireEmailSent(archive, action, userFrom, from, mailTo, cc, bcc, statusText);
+			archiveEventManager.fireEmailSent(
+					archive,
+					X_C_Doc_Outbound_Log_Line.ACTION_EMail,
+					userFrom,
+					from,
+					mailTo,
+					cc,
+					bcc,
+					statusText);
 		}
 	}
 
