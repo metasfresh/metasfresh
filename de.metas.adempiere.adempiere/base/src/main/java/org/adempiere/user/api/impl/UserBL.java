@@ -1,33 +1,10 @@
 package org.adempiere.user.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
+import java.util.UUID;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -35,7 +12,6 @@ import javax.mail.internet.InternetAddress;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
@@ -44,19 +20,19 @@ import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_Client;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.WebuiURLs;
 
 public class UserBL implements IUserBL
 {
@@ -68,7 +44,7 @@ public class UserBL implements IUserBL
 	/**
 	 * @see org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin
 	 */
-	private static final String CUSTOMTYPE_OrgCompiereUtilLogin = "L";
+	private static final String MAILCONFIG_CUSTOMTYPE_UserPasswordReset = "L";
 
 	private static final String MSG_INCORRECT_PASSWORD = "org.compiere.util.Login.IncorrectPassword";
 	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
@@ -110,7 +86,9 @@ public class UserBL implements IUserBL
 	@Override
 	public void createResetPasswordByEMailRequest(final String userId)
 	{
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveLoginUserByUserId(userId);
+		final IUserDAO usersRepo = Services.get(IUserDAO.class);
+		
+		final I_AD_User user = usersRepo.retrieveLoginUserByUserId(userId);
 		if (user.getAD_Client_ID() == Env.CTXVALUE_AD_Client_ID_System)
 		{
 			throw new AdempiereException("Reseting password for system users is not allowed");
@@ -127,21 +105,23 @@ public class UserBL implements IUserBL
 			throw new AdempiereException("@NoEMailFoundForLoginName@");
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(user);
-
-		final I_AD_Client client = InterfaceWrapperHelper.create(
-				Services.get(IClientDAO.class).retriveClient(ctx, user.getAD_Client_ID()), I_AD_Client.class);
-		if (client.getPasswordReset_MailText_ID() <= 0)
+		final IClientDAO adClientsRepo = Services.get(IClientDAO.class);
+		final int adClientId = user.getAD_Client_ID();
+		final I_AD_Client adClient = adClientsRepo.getById(adClientId);
+		if (adClient.getPasswordReset_MailText_ID() <= 0)
 		{
-			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@:" + user + ")");
+			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@:" + user + ", @AD_Client_ID@: " + adClientId + ")");
 			throw new AdempiereException("Internal Error. Please contact the System Administrator.");
 		}
 
 		final IMailBL mailService = Services.get(IMailBL.class);
-		final IMailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(client.getPasswordReset_MailText());
+
+		final IMailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(adClient.getPasswordReset_MailText());
 		final String subject = mailTextBuilder.getMailHeader();
 
-		final EMail email = mailService.createEMail(client, CUSTOMTYPE_OrgCompiereUtilLogin // mailCustomType
+		final EMail email = mailService.createEMail(
+				adClient,
+				MAILCONFIG_CUSTOMTYPE_UserPasswordReset // mailCustomType
 				, null // from email
 				, emailTo // to
 				, subject, null // message=null, we will set it later
@@ -155,7 +135,9 @@ public class UserBL implements IUserBL
 		// }
 
 		// Generate new Activation Code:
-		final String passwordResetURL = generatePasswordResetURL(user);
+		final String passwordResetCode = generateAndSetPasswordResetCode(user);
+		final String passwordResetURL = WebuiURLs.newInstance()
+				.getResetPasswordUrl(passwordResetCode);
 		mailTextBuilder.setCustomVariable("URL", passwordResetURL);
 
 		mailTextBuilder.setAD_User(user);
@@ -178,83 +160,32 @@ public class UserBL implements IUserBL
 		mailService.send(email);
 	}
 
-	private String generatePasswordResetURL(final I_AD_User user)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(user);
-		final String webURL = Services.get(ISystemBL.class).get(ctx).getWebUI_URL();
-		if (Check.isEmpty(webURL, true))
-		{
-			throw new AdempiereException("@NotFound@ @AD_System@/@WebUI_URL@");
-		}
-
-		final String passwordResetCode = generatePasswordResetCode(user);
-
-		final String url = webURL + "?"
-				+ PARAM_ACTION + "=" + ACTION_ResetPassword
-				+ "&" + PARAM_AccountPasswordResetCode + "=" + passwordResetCode;
-		return url;
-	}
-
 	/**
-	 * Generates and set {@link I_AD_User#COLUMNNAME_PasswordResetCode}.
-	 *
-	 * @param user
+	 * Generates and set user's password reset code.
+	 * 
 	 * @return generated password reset code
 	 */
-	private static String generatePasswordResetCode(final I_AD_User user)
+	private static String generateAndSetPasswordResetCode(final I_AD_User user)
 	{
-		final MessageDigest digest;
-		try
-		{
-			digest = MessageDigest.getInstance("MD5");
-		}
-		catch (final NoSuchAlgorithmException e)
-		{
-			throw new AdempiereException(e);
-		}
-		digest.reset();
-
-		final String seed = user.getName() + "#" + user.getAD_User_ID() + "#" + System.currentTimeMillis();
-		final byte[] arr = digest.digest(seed.getBytes());
-		final StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < arr.length; i++)
-		{
-			sb.append(Util.toHex(arr[i]));
-		}
-		final String passwordResetCode = sb.toString();
+		final String passwordResetCode = UUID.randomUUID().toString();
 
 		//
 		// Update user
-		final de.metas.adempiere.model.I_AD_User userExt = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
-		userExt.setPasswordResetCode(passwordResetCode);
+		user.setPasswordResetCode(passwordResetCode);
 		InterfaceWrapperHelper.save(user);
 
 		return passwordResetCode;
 	}
 
 	@Override
-	public I_AD_User resetPassword(final Properties ctx, final int adUserId, final String passwordResetCode, final String newPassword)
+	public I_AD_User resetPassword(final String passwordResetCode, final String newPassword)
 	{
 		Check.assumeNotNull(passwordResetCode, "passwordResetCode not null");
+		assertValidPassword(newPassword);
 
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
+		final IUserDAO usersRepo = Services.get(IUserDAO.class);
 
-		final de.metas.adempiere.model.I_AD_User user = InterfaceWrapperHelper.create(
-				userDAO.retrieveUserByPasswordResetCode(ctx, passwordResetCode),
-				de.metas.adempiere.model.I_AD_User.class);
-
-		if (user == null)
-		{
-			throw new AdempiereException("@PasswordResetCodeNoLongerValid@");
-		}
-		if (adUserId != user.getAD_User_ID())
-		{
-			throw new AdempiereException("@PasswordResetCodeNoLongerValid@");
-		}
-		if (!passwordResetCode.equals(user.getPasswordResetCode()))
-		{
-			throw new AdempiereException("@PasswordResetCodeNoLongerValid@");
-		}
+		final I_AD_User user = usersRepo.getByPasswordResetCode(passwordResetCode);
 
 		user.setPassword(newPassword);
 		user.setPasswordResetCode(null);
@@ -295,8 +226,8 @@ public class UserBL implements IUserBL
 		}
 
 		assertValidPassword(newPassword);
-
 		user.setPassword(newPassword);
+		
 		InterfaceWrapperHelper.save(user);
 	}
 

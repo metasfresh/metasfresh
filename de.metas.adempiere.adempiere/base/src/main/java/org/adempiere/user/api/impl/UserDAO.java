@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class UserDAO implements IUserDAO
 {
@@ -69,7 +70,7 @@ public class UserDAO implements IUserDAO
 		final List<I_AD_User> users = queryBuilder.create().list();
 		if (users.size() > 1)
 		{
-			logger.info("More then one user found for UserId '{}': {}", new Object[] { userId, users });
+			logger.info("More then one user found for UserId '{}': {}", userId, users);
 			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@");
 		}
 		if (users.size() == 0)
@@ -92,12 +93,25 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public I_AD_User retrieveUserByPasswordResetCode(final Properties ctx, final String passwordResetCode)
+	public I_AD_User getByPasswordResetCode(@NonNull final String passwordResetCode)
 	{
-		String whereClause = I_AD_User.COLUMNNAME_PasswordResetCode + "=?";
-		return new Query(ctx, I_AD_User.Table_Name, whereClause, ITrx.TRXNAME_None)
-				.setParameters(passwordResetCode)
+		final I_AD_User user = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_PasswordResetCode, passwordResetCode)
+				.create()
 				.firstOnly(I_AD_User.class);
+
+		if (user == null)
+		{
+			throw new AdempiereException("@PasswordResetCodeNoLongerValid@");
+		}
+		if (!passwordResetCode.equals(user.getPasswordResetCode()))
+		{
+			throw new AdempiereException("@PasswordResetCodeNoLongerValid@");
+		}
+
+		return user;
 	}
 
 	@Override
