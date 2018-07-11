@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.adempiere.impexp;
+package de.metas.acct.impexp;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -16,6 +16,7 @@ import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_GL_Journal;
