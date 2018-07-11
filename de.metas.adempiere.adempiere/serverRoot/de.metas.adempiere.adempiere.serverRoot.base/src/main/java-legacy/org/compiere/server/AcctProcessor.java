@@ -18,7 +18,6 @@ package org.compiere.server;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.acct.api.IDocFactory;
@@ -89,7 +88,7 @@ public class AcctProcessor extends AdempiereServer
 		m_summary.append("Logs deleted=").append(no);
 		//
 		final MAcctProcessorLog pLog = new MAcctProcessorLog(m_model, m_summary.toString());
-		pLog.setReference("#" + String.valueOf(p_runCount) + " - " + TimeUtil.formatElapsed(new Timestamp(p_startWork)));
+		pLog.setReference("#" + getRunCount() + " - " + TimeUtil.formatElapsed(getStartWork()));
 		pLog.save();
 	}	// doWork
 
@@ -229,8 +228,8 @@ public class AcctProcessor extends AdempiereServer
 	@Override
 	public final String getServerInfo()
 	{
-		final StringBuffer sumary = this.m_summary;
-		return "#" + p_runCount + " - Last=" + (sumary == null ? "-" : sumary.toString());
+		final StringBuffer summary = this.m_summary;
+		return "#" + getRunCount() + " - Last=" + (summary == null ? "-" : summary.toString());
 	}	// getServerInfo
 
 }	// AcctProcessor
