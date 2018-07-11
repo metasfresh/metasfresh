@@ -140,7 +140,6 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 
 	private final ResponseEntity.BodyBuilder newResponse(final HttpStatus status, final String etag)
 	{
-
 		ResponseEntity.BodyBuilder response = ResponseEntity.status(status)
 				.eTag(etag)
 				.cacheControl(CacheControl.maxAge(cacheMaxAgeSec, TimeUnit.SECONDS));
