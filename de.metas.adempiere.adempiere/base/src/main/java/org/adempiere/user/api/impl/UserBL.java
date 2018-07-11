@@ -87,7 +87,7 @@ public class UserBL implements IUserBL
 	public void createResetPasswordByEMailRequest(final String userId)
 	{
 		final IUserDAO usersRepo = Services.get(IUserDAO.class);
-		
+
 		final I_AD_User user = usersRepo.retrieveLoginUserByUserId(userId);
 		if (user.getAD_Client_ID() == Env.CTXVALUE_AD_Client_ID_System)
 		{
@@ -114,37 +114,31 @@ public class UserBL implements IUserBL
 			throw new AdempiereException("Internal Error. Please contact the System Administrator.");
 		}
 
-		final IMailBL mailService = Services.get(IMailBL.class);
-
-		final IMailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(adClient.getPasswordReset_MailText());
-		final String subject = mailTextBuilder.getMailHeader();
-
-		final EMail email = mailService.createEMail(
-				adClient,
-				MAILCONFIG_CUSTOMTYPE_UserPasswordReset // mailCustomType
-				, null // from email
-				, emailTo // to
-				, subject, null // message=null, we will set it later
-				, true // html
-		);
-
-		// NOTE: don't validate at this level. If we validate it here, no error messages will be available
-		// if (!email.isValid())
-		// {
-		// throw new AdempiereException(email.getSentMsg());
-		// }
-
 		// Generate new Activation Code:
 		final String passwordResetCode = generateAndSetPasswordResetCode(user);
 		final String passwordResetURL = WebuiURLs.newInstance()
 				.getResetPasswordUrl(passwordResetCode);
-		mailTextBuilder.setCustomVariable("URL", passwordResetURL);
 
+		
+		final IMailBL mailService = Services.get(IMailBL.class);
+		final IMailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(adClient.getPasswordReset_MailText());
+		mailTextBuilder.setCustomVariable("URL", passwordResetURL);
 		mailTextBuilder.setAD_User(user);
 		if (user.getC_BPartner_ID() > 0)
 		{
 			mailTextBuilder.setC_BPartner(user.getC_BPartner());
 		}
+		
+		final String subject = mailTextBuilder.getMailHeader();
+		final EMail email = mailService.createEMail(
+				adClient,
+				MAILCONFIG_CUSTOMTYPE_UserPasswordReset, // mailCustomType
+				null, // from email
+				emailTo, // to
+				subject,
+				null, // message=null, we will set it later
+				true // html
+		);
 
 		final String message = mailTextBuilder.getFullMailText();
 		if (mailTextBuilder.isHtml())
@@ -227,7 +221,7 @@ public class UserBL implements IUserBL
 
 		assertValidPassword(newPassword);
 		user.setPassword(newPassword);
-		
+
 		InterfaceWrapperHelper.save(user);
 	}
 
