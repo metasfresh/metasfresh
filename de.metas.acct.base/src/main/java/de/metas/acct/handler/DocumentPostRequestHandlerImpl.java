@@ -6,14 +6,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import de.metas.Profiles;
-import de.metas.acct.config.AMQPConfiguration;
 import de.metas.logging.LogManager;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -39,30 +36,12 @@ import lombok.NonNull;
 
 @Component
 @Profile(Profiles.PROFILE_App)
-public class DocumentPostRequestHandler
+public class DocumentPostRequestHandlerImpl implements DocumentPostRequestHandler
 {
-	private static final Logger logger = LogManager.getLogger(DocumentPostRequestHandler.class);
+	private static final Logger logger = LogManager.getLogger(DocumentPostRequestHandlerImpl.class);
 
-	@RabbitListener(queues = AMQPConfiguration.QUEUE_NAME)
-	public DocumentPostResponse onEvent(@NonNull final DocumentPostRequest request)
-	{
-		final boolean responseRequired = request.isResponseRequired();
-
-		try
-		{
-			post(request);
-			return responseRequired ? DocumentPostResponse.ok() : null;
-		}
-		catch (final Exception ex)
-		{
-			// TODO: make sure the document was marked as posting error
-			
-			logger.warn("Failed posting: {}", request, ex);
-			return responseRequired ? DocumentPostResponse.error(ex) : null;
-		}
-	}
-
-	private void post(final DocumentPostRequest request)
+	@Override
+	public void handleRequest(final DocumentPostRequest request)
 	{
 		logger.debug("Posting: {}", request);
 

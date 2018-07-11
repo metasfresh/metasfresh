@@ -49,9 +49,8 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
-import de.metas.acct.client.DocumentPostClient;
 import de.metas.acct.handler.DocumentPostRequest;
-import de.metas.acct.handler.DocumentPostResponse;
+import de.metas.acct.handler.DocumentPostingBusService;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.document.engine.IDocument;
@@ -107,6 +106,7 @@ import lombok.NonNull;
 		if (!isPostImmediate())
 		{
 			postIt_Enqueue();
+			postingComplete();
 			return this;
 		}
 
@@ -136,7 +136,7 @@ import lombok.NonNull;
 			// Post the document, after this transaction is committed, because
 			// there is a big chance the document will not be accessible on server until the transaction is not finished,
 			// so instead of asking the server to post it immediately, we will ask the server after the transaction is completed.
-			postAfterTrxCommit(this::postIt_EnqueueAndWaitResponse);
+			postAfterTrxCommit(this::postIt_Enqueue);
 		}
 		catch (final Exception e)
 		{
@@ -152,41 +152,18 @@ import lombok.NonNull;
 	 */
 	private final void postIt_Enqueue()
 	{
-		// nothing at the moment,
-		// but when we will implement a true posting queue (using de.metas.async or something else),
-		// this is the right place where the document shall be enqueued)
-
-		// NOTE: when you will handle this part, also keep in mind:
-		// * if Client Accounting is Queue => do nothing because there is a manual process which will do the job
-
-		// NOTE: we are reaching this method, also when !postingService.isEnabled()
-
-		final DocumentPostClient documentPostClient = Adempiere.getBean(DocumentPostClient.class);
-		documentPostClient.post(DocumentPostRequest.builder()
-				.record(getDocumentRef())
-				.adClientId(getAD_Client_ID())
-				.force(isForce())
-				.build());
-
-		postingComplete();
-	}
-
-	private final void postIt_EnqueueAndWaitResponse()
-	{
 		final int adClientId = getAD_Client_ID();
 		final TableRecordReference documentRef = getDocumentRef();
 		final boolean force = isForce();
 
 		log.debug("Posting on server: {}", PostingRequestBuilder.this);
 
-		final DocumentPostClient documentPostClient = Adempiere.getBean(DocumentPostClient.class);
-		final DocumentPostResponse response = documentPostClient.postAndGetResponse(DocumentPostRequest.builder()
+		final DocumentPostingBusService postingBusService = Adempiere.getBean(DocumentPostingBusService.class);
+		postingBusService.postRequest(DocumentPostRequest.builder()
 				.record(documentRef)
 				.adClientId(adClientId)
 				.force(force)
 				.build());
-		setPostedError(response);
-		log.info("Posting response from Server: {}", response);
 	}
 
 	/**
@@ -486,23 +463,6 @@ import lombok.NonNull;
 		return _failOnError;
 	}
 
-	private final void setPostedError(final DocumentPostResponse response)
-	{
-		setPostedError(toPostingExecutionExceptionOrNull(response));
-	}
-
-	private static PostingExecutionException toPostingExecutionExceptionOrNull(final DocumentPostResponse response)
-	{
-		if (response == null || response.isOk())
-		{
-			return null;
-		}
-		else
-		{
-			return new PostingExecutionException(response.getErrorMessage(), response.getStackTrace());
-		}
-	}
-
 	private final void setPostedError(final String postedErrorMessage)
 	{
 		final PostingExecutionException postedException = postedErrorMessage != null ? new PostingExecutionException(postedErrorMessage) : null;
@@ -558,7 +518,7 @@ import lombok.NonNull;
 	private final void postAfterTrxCommit(@NonNull final Runnable postRunnable)
 	{
 		final String trxName = getTrxName();
-		
+
 		//
 		// Case: we are running in a transaction.
 		if (!trxManager.isNull(trxName))
