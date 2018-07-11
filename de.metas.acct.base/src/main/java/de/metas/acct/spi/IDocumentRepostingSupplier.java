@@ -1,13 +1,8 @@
-package de.metas.acct.spi.impl;
+package de.metas.acct.spi;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-
-import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.util.Services;
-
-import de.metas.acct.spi.IDocumentRepostingHandler;
 
 /*
  * #%L
@@ -31,19 +26,16 @@ import de.metas.acct.spi.IDocumentRepostingHandler;
  * #L%
  */
 
-/**
- * Document reposting handler for C_Invoice
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public class InvoiceDocumentRepostingHandler implements IDocumentRepostingHandler
+public interface IDocumentRepostingSupplier
 {
 
-	@Override
-	public List<?> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
-	{
-		return Services.get(IInvoiceDAO.class).retrievePostedWithoutFactAcct(ctx, startTime);
-	}
-
+	/**
+	 * Retrieve all the documents that are marked as posted but do not actually have fact accounts.
+	 * The entries that always produce 0 in accounting will be excluded.
+	 * 
+	 * @param ctx
+	 * @param startTime
+	 * @return
+	 */
+	public List<?> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
 }

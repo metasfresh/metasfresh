@@ -4,9 +4,9 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.acct.api.IDocumentRepostingBL;
-import de.metas.acct.spi.IDocumentRepostingHandler;
-import de.metas.acct.spi.impl.CompositeDocumentRepostingHandler;
+import de.metas.acct.api.IDocumentRepostingSupplierService;
+import de.metas.acct.spi.IDocumentRepostingSupplier;
+import de.metas.acct.spi.impl.CompositeDocumentRepostingSupplier;
 import de.metas.document.engine.IDocument;
 
 /*
@@ -31,19 +31,19 @@ import de.metas.document.engine.IDocument;
  * #L%
  */
 
-public class DocumentRepostingBL implements IDocumentRepostingBL
+public class DocumentRepostingSupplierService implements IDocumentRepostingSupplierService
 {
-	private final CompositeDocumentRepostingHandler repostingHandlers = new CompositeDocumentRepostingHandler();
+	private final CompositeDocumentRepostingSupplier repostingSuppliers = new CompositeDocumentRepostingSupplier();
 
 	@Override
-	public void registerHandler(final IDocumentRepostingHandler handler)
+	public void registerSupplier(final IDocumentRepostingSupplier supplier)
 	{
-		repostingHandlers.addHandler(handler);
+		repostingSuppliers.addSupplier(supplier);
 	}
 
 	@Override
 	public List<IDocument> retrievePostedWithoutFactAcct (final Properties ctx, final Timestamp startTime)
 	{
-		return repostingHandlers.retrievePostedWithoutFactAcct(ctx, startTime);
+		return repostingSuppliers.retrievePostedWithoutFactAcct(ctx, startTime);
 	}
 }

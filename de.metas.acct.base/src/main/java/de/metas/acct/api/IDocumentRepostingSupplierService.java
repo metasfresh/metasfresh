@@ -1,17 +1,17 @@
-package de.metas.banking.spi.impl;
+package de.metas.acct.api;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
+import org.adempiere.util.ISingletonService;
 
-import de.metas.acct.spi.IDocumentRepostingHandler;
-import de.metas.banking.service.IBankStatementDAO;
+import de.metas.acct.spi.IDocumentRepostingSupplier;
+import de.metas.document.engine.IDocument;
 
 /*
  * #%L
- * de.metas.banking.base
+ * de.metas.acct.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -31,18 +31,18 @@ import de.metas.banking.service.IBankStatementDAO;
  * #L%
  */
 
-/**
- * * Document reposting handler for C_BankStatement
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public class BankStatementDocumentRepostingHandler implements IDocumentRepostingHandler
+public interface IDocumentRepostingSupplierService extends ISingletonService
 {
+	void registerSupplier(IDocumentRepostingSupplier supplier);
 
-	@Override
-	public List<?> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
-	{
-		return Services.get(IBankStatementDAO.class).retrievePostedWithoutFactAcct(ctx, startTime);
-	}
+	/**
+	 * Retrieve all the documents that are marked as posted but do not actually have fact accounts
+	 * Exclude the documents with no fact accounts that were not supposed to be posted (always 0 in posting)
+	 * 
+	 * @param ctx
+	 * @param startTime
+	 * @return
+	 */
+	List<IDocument> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
+
 }

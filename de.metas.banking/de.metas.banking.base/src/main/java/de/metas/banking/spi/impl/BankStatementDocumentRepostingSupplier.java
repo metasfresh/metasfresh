@@ -1,4 +1,4 @@
-package de.metas.acct.spi.impl;
+package de.metas.banking.spi.impl;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -6,12 +6,12 @@ import java.util.Properties;
 
 import org.adempiere.util.Services;
 
-import de.metas.acct.spi.IDocumentRepostingHandler;
-import de.metas.allocation.api.IAllocationDAO;
+import de.metas.acct.spi.IDocumentRepostingSupplier;
+import de.metas.banking.service.IBankStatementDAO;
 
 /*
  * #%L
- * de.metas.acct.base
+ * de.metas.banking.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -32,18 +32,17 @@ import de.metas.allocation.api.IAllocationDAO;
  */
 
 /**
- * 
- * Document reposting handler for C_Allocation_Hdr
+ * * Document reposting handler for C_BankStatement
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class AllocationHdrDocumentRepostingHandler implements IDocumentRepostingHandler
+public class BankStatementDocumentRepostingSupplier implements IDocumentRepostingSupplier
 {
 
 	@Override
 	public List<?> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
 	{
-		return Services.get(IAllocationDAO.class).retrievePostedWithoutFactAcct(ctx, startTime);
+		return Services.get(IBankStatementDAO.class).retrievePostedWithoutFactAcct(ctx, startTime);
 	}
 }

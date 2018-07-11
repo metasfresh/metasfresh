@@ -1,13 +1,13 @@
-package de.metas.acct.api;
+package de.metas.acct.spi.impl;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import org.adempiere.acct.api.IGLJournalDAO;
+import org.adempiere.util.Services;
 
-import de.metas.acct.spi.IDocumentRepostingHandler;
-import de.metas.document.engine.IDocument;
+import de.metas.acct.spi.IDocumentRepostingSupplier;
 
 /*
  * #%L
@@ -31,24 +31,19 @@ import de.metas.document.engine.IDocument;
  * #L%
  */
 
-public interface IDocumentRepostingBL extends ISingletonService
+/**
+ * Document reposting handler for GL_Journal
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class GLJournalDocumentRepostingSupplier implements IDocumentRepostingSupplier
 {
 
-	/**
-	 * Register the IDocumentRepostingHandler handler so it will be used when the reposting process is called
-	 * 
-	 * @param handler
-	 */
-	void registerHandler(IDocumentRepostingHandler handler);
-
-	/**
-	 * Retrieve all the documents that are marked as posted but do not actually have fact accounts
-	 * Exclude the documents with no fact accounts that were not supposed to be posted (always 0 in posting)
-	 * 
-	 * @param ctx
-	 * @param startTime
-	 * @return
-	 */
-	List<IDocument> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
+	@Override
+	public List<?> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
+	{
+		return Services.get(IGLJournalDAO.class).retrievePostedWithoutFactAcct(ctx, startTime);
+	}
 
 }

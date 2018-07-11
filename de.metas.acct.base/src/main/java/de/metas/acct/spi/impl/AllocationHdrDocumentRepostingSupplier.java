@@ -1,8 +1,13 @@
-package de.metas.acct.spi;
+package de.metas.acct.spi.impl;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+
+import org.adempiere.util.Services;
+
+import de.metas.acct.spi.IDocumentRepostingSupplier;
+import de.metas.allocation.api.IAllocationDAO;
 
 /*
  * #%L
@@ -26,16 +31,19 @@ import java.util.Properties;
  * #L%
  */
 
-public interface IDocumentRepostingHandler
+/**
+ * 
+ * Document reposting handler for C_Allocation_Hdr
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class AllocationHdrDocumentRepostingSupplier implements IDocumentRepostingSupplier
 {
 
-	/**
-	 * Retrieve all the documents that are marked as posted but do not actually have fact accounts.
-	 * The entries that always produce 0 in accounting will be excluded.
-	 * 
-	 * @param ctx
-	 * @param startTime
-	 * @return
-	 */
-	public List<?> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
+	@Override
+	public List<?> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
+	{
+		return Services.get(IAllocationDAO.class).retrievePostedWithoutFactAcct(ctx, startTime);
+	}
 }

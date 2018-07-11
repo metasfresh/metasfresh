@@ -4,10 +4,10 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IGLJournalDAO;
+import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.util.Services;
 
-import de.metas.acct.spi.IDocumentRepostingHandler;
+import de.metas.acct.spi.IDocumentRepostingSupplier;
 
 /*
  * #%L
@@ -32,18 +32,18 @@ import de.metas.acct.spi.IDocumentRepostingHandler;
  */
 
 /**
- * Document reposting handler for GL_Journal
+ * Document reposting handler for C_Invoice
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class GLJournalDocumentRepostingHandler implements IDocumentRepostingHandler
+public class InvoiceDocumentRepostingSupplier implements IDocumentRepostingSupplier
 {
 
 	@Override
 	public List<?> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
 	{
-		return Services.get(IGLJournalDAO.class).retrievePostedWithoutFactAcct(ctx, startTime);
+		return Services.get(IInvoiceDAO.class).retrievePostedWithoutFactAcct(ctx, startTime);
 	}
 
 }

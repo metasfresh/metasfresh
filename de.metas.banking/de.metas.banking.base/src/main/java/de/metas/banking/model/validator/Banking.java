@@ -29,11 +29,11 @@ import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
-import de.metas.acct.api.IDocumentRepostingBL;
+import de.metas.acct.api.IDocumentRepostingSupplierService;
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.payment.impexp.DatevPaymentImportProcess;
 import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.banking.spi.impl.BankStatementDocumentRepostingHandler;
+import de.metas.banking.spi.impl.BankStatementDocumentRepostingSupplier;
 
 /**
  * Banking module activator
@@ -60,8 +60,8 @@ public class Banking extends AbstractModuleInterceptor
 	{
 
 		// Register the Document Reposting Handler
-		final IDocumentRepostingBL documentBL = Services.get(IDocumentRepostingBL.class);
-		documentBL.registerHandler(new BankStatementDocumentRepostingHandler());
+		final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
+		documentBL.registerSupplier(new BankStatementDocumentRepostingSupplier());
 	}
 
 	@Override

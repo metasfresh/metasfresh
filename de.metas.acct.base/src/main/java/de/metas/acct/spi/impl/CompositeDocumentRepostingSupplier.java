@@ -8,7 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.util.Services;
 
-import de.metas.acct.spi.IDocumentRepostingHandler;
+import de.metas.acct.spi.IDocumentRepostingSupplier;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 
@@ -22,12 +22,12 @@ import de.metas.document.engine.IDocumentBL;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,44 +36,43 @@ import de.metas.document.engine.IDocumentBL;
 
 /**
  * Composite Document reposting handler
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class CompositeDocumentRepostingHandler implements IDocumentRepostingHandler
+public class CompositeDocumentRepostingSupplier implements IDocumentRepostingSupplier
 {
 
 	// list of handlers to be used when the reposting process is called
-	private final CopyOnWriteArrayList<IDocumentRepostingHandler> handlers = new CopyOnWriteArrayList<>();
+	private final CopyOnWriteArrayList<IDocumentRepostingSupplier> suppliers = new CopyOnWriteArrayList<>();
 
 	// add the handler in the list
-	public void addHandler(final IDocumentRepostingHandler handler)
+	public void addSupplier(final IDocumentRepostingSupplier supplier)
 	{
-		if (handler == null)
+		if (supplier == null)
 		{
 			return;
 		}
 
-		handlers.addIfAbsent(handler);
+		suppliers.addIfAbsent(supplier);
 	}
 
 	@Override
-	public List<IDocument> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
+	public List<IDocument> retrievePostedWithoutFactAcct(final Properties ctx, final Timestamp startTime)
 	{
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-		
+
 		final List<IDocument> documentsPostedWithoutFactAcct = new ArrayList<>();
 
 		// Retrieve the documents marked as posted but with no fact accounts from all the handlers
-		for (final IDocumentRepostingHandler handler : handlers)
+		for (final IDocumentRepostingSupplier handler : suppliers)
 		{
-			List<?> documents = handler.retrievePostedWithoutFactAcct(ctx, startTime);
-			
-			for(final Object document: documents)
+			final List<?> documents = handler.retrievePostedWithoutFactAcct(ctx, startTime);
+			for (final Object document : documents)
 			{
 				documentsPostedWithoutFactAcct.add(docActionBL.getDocument(document));
 			}
-			
+
 		}
 
 		return documentsPostedWithoutFactAcct;

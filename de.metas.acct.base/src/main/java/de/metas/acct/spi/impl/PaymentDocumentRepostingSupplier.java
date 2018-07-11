@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import org.adempiere.util.Services;
 
-import de.metas.acct.spi.IDocumentRepostingHandler;
+import de.metas.acct.spi.IDocumentRepostingSupplier;
 import de.metas.payment.api.IPaymentDAO;
 
 /*
@@ -37,7 +37,7 @@ import de.metas.payment.api.IPaymentDAO;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PaymentDocumentRepostingHandler implements IDocumentRepostingHandler
+public class PaymentDocumentRepostingSupplier implements IDocumentRepostingSupplier
 {
 
 	@Override
