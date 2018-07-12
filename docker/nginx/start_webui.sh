@@ -46,9 +46,9 @@ echo "MSV3_API_PROXYPASS_PROTOCOL=$msv3_proxypass_protocol"
 echo "MSV3_API_PROXYPASS_HOST=$msv3_proxypass_host"
 echo "MSV3_API_PROXYPASS_PORT=$msv3_proxypass_port"
 echo ""
-echo "DEBUG_NGINX_CONF_FILE=$debug_nginx_conf_file"
+echo "DEBUG_CAT_NGINX_CONF_FILE=$debug_cat_nginx_conf_file"
 
-if [ "$debug_print_bash_cmds" != "n" ];
+if [ "$debug_cat_nginx_conf_file" != "n" ];
 then
     echo "nginx default.conf file:"
     cat config_nginx_file
