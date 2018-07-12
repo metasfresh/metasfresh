@@ -105,7 +105,8 @@ public class ServerBoot implements InitializingBean
 					.profiles(
 							Profiles.PROFILE_App,
 							Profiles.PROFILE_JasperService,
-							Profiles.PROFILE_PrintService)
+							Profiles.PROFILE_PrintService,
+							Profiles.PROFILE_AccountingService)
 					.run(args);
 		}
 

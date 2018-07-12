@@ -39,9 +39,9 @@ import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.acct.IVATCodeDAO;
-import de.metas.acct.VATCode;
-import de.metas.acct.VATCodeMatchingRequest;
+import de.metas.acct.vatcode.IVATCodeDAO;
+import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
