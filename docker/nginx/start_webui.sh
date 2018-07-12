@@ -11,8 +11,10 @@ webapi_proxypass_host=${WEBUI_API_PROXYPASS_OST:-webapi}
 webapi_proxypass_port=${WEBUI_API_PROXYPASS_PORT:-8080}
 
 msv3_proxypass_protocol=${MSV3_API_PROXYPASS_PROTOCOL:-https}
-msv3_proxypass_host=${MSV3_API_PROXYPASS_HOST:-webapi}
+msv3_proxypass_host=${MSV3_API_PROXYPASS_HOST:-msv3}
 msv3_proxypass_port=${MSV3_API_PROXYPASS_PORT:-8080}
+
+debug_cat_nginx_conf_file=${DEBUG_CAT_NGINX_CONF_FILE:-n}
 
 config_js_file='/usr/share/nginx/html/config.js'
 sed -Ei "s/WEBUI_API_CLIENT_PROTOCOL/${webapi_client_protocol}/g" $config_js_file
@@ -28,17 +30,29 @@ sed -Ei "s/MSV3_API_PROXYPASS_PROTOCOL/${msv3_proxypass_protocol}/g" $config_ngi
 sed -Ei "s/MSV3_API_PROXYPASS_HOST/${msv3_proxypass_host}/g" $config_nginx_file
 sed -Ei "s/MSV3_API_PROXYPASS_PORT/${msv3_proxypass_port}/g" $config_nginx_file
 
-echo "WEBUI_API_CLIENT_PROTOCOL=$webapi_protocol"
-echo "WEBUI_API_CLIENT_HOST=$webapi_host"
-echo "WEBUI_API_CLIENT_PORT=$webapi_port"
+echo "*************************************************************"
+echo "Display the variable values we run with"
+echo "*************************************************************"
+echo ""
+echo "WEBUI_API_CLIENT_PROTOCOL=$webapi_client_protocol"
+echo "WEBUI_API_CLIENT_HOST=$webapi_client_host"
+echo "WEBUI_API_CLIENT_PORT=$webapi_client_port"
+echo ""
+echo "WEBUI_API_PROXYPASS_PROTOCOL=$webapi_proxypass_protocol"
+echo "WEBUI_API_PROXYPASS_HOST=$webapi_proxypass_host"
+echo "WEBUI_API_PROXYPASS_PORT=$webapi_proxypass_port"
+echo ""
+echo "MSV3_API_PROXYPASS_PROTOCOL=$msv3_proxypass_protocol"
+echo "MSV3_API_PROXYPASS_HOST=$msv3_proxypass_host"
+echo "MSV3_API_PROXYPASS_PORT=$msv3_proxypass_port"
+echo ""
+echo "DEBUG_NGINX_CONF_FILE=$debug_nginx_conf_file"
 
-echo "WEBUI_API_PROXYPASS_PROTOCOL=$webapi_protocol"
-echo "WEBUI_API_PROXYPASS_HOST=$webapi_host"
-echo "WEBUI_API_PROXYPASS_PORT=$webapi_port"
-
-echo "MSV3_API_PROXYPASS_PROTOCOL=$msv3_protocol"
-echo "MSV3_API_PROXYPASS_HOST=$msv3_host"
-echo "MSV3_API_PROXYPASS_PORT=$msv3_port"
+if [ "$debug_print_bash_cmds" != "n" ];
+then
+    echo "nginx default.conf file:"
+    cat config_nginx_file
+fi
 
 echo "Starting nginx -g 'daemon off;'"
 
