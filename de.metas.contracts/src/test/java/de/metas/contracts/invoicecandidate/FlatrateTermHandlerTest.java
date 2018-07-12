@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -22,6 +21,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -103,7 +103,6 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				productAcctDAO.retrieveActivityForAcct((IContextAware)any, withNotEqual(org), withNotEqual(product1)); minTimes = 0; result = null;
 
 				final Properties ctx = Env.getCtx();
-				final String trxName = ITrx.TRXNAME_None;
 
 				final int taxCategoryId = -1;
 				final I_M_Warehouse warehouse = null;
@@ -114,15 +113,12 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 						, term1
 						, taxCategoryId
 						, term1.getM_Product_ID()
-						, -1 // chargeId
 						, term1.getStartDate()
 						, term1.getStartDate()
 						, term1.getAD_Org_ID()
 						, warehouse
-						, term1.getBill_BPartner_ID()
-						, -1 // ship location ID
-						, isSOTrx
-						, trxName);
+						, Util.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID())
+						, isSOTrx);
 				minTimes = 0;
 				result = 3;
 		}};

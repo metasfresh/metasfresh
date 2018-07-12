@@ -1,5 +1,8 @@
 package de.metas.tax.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -81,15 +84,12 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final Object model,
 			final int taxCategoryId,
 			final int productId,
-			final int chargeId,
 			final Timestamp billDate,
 			final Timestamp shipDate,
 			final int adOrgId,
 			final I_M_Warehouse warehouse,
-			final int billC_BPartner_Location_ID,
 			final int shipC_BPartner_Location_ID,
-			final boolean isSOTrx,
-			final String trxName)
+			final boolean isSOTrx)
 	{
 		if (taxCategoryId > 0)
 		{
@@ -114,9 +114,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				}
 			}
 
-			final I_C_BPartner_Location bpLocTo = InterfaceWrapperHelper.create(ctx, billC_BPartner_Location_ID, I_C_BPartner_Location.class, trxName);
+			final I_C_BPartner_Location bpLocTo = loadOutOfTrx(shipC_BPartner_Location_ID, I_C_BPartner_Location.class);
 
-			final int taxIdForCategory = retrieveTaxIdForCategory(ctx, countryFromId, adOrgId, bpLocTo, billDate, taxCategoryId, isSOTrx, trxName, false);
+			final int taxIdForCategory = retrieveTaxIdForCategory(ctx, countryFromId, adOrgId, bpLocTo, billDate, taxCategoryId, isSOTrx, false);
 			if (taxIdForCategory > 0)
 			{
 				return taxIdForCategory;
@@ -125,20 +125,17 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final AdempiereException ex = new AdempiereException(StringUtils.formatMessage(
 				"Could not retrieve C_Tax_ID; will return the Tax-Not-Found-C_Tax_ID; Method paratmers:"
-						+ "model= {0}, taxCategoryId={1}, productId={2}, chargeId={3}, billDate={4}, shipDate={5}, adOrgId={6}, "
-						+ "warehouse={7}, billC_BPartner_Location_ID={8}, shipC_BPartner_Location_ID={9}, isSOTrx={10}, trxName={11}",
+						+ "model= {}, taxCategoryId={}, productId={}, billDate={}, shipDate={}, adOrgId={}, "
+						+ "warehouse={}, shipC_BPartner_Location_ID={}, isSOTrx={}, trxName={}",
 				model,
 				taxCategoryId,
 				productId,
-				chargeId,
 				billDate,
 				shipDate,
 				adOrgId,
 				warehouse,
-				billC_BPartner_Location_ID,
 				shipC_BPartner_Location_ID,
-				isSOTrx,
-				trxName));
+				isSOTrx));
 		log.warn("getTax - error: ", ex);
 
 		// 07814
@@ -162,14 +159,13 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final Timestamp date,
 			final int taxCategoryId,
 			final boolean isSOTrx,
-			final String trxName,
 			final boolean throwEx)
 	{
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(bpLocTo.getC_BPartner(), I_C_BPartner.class);
+		final I_C_BPartner bPartner = create(bpLocTo.getC_BPartner(), I_C_BPartner.class);
 
 		final boolean hasTaxCertificate = !Check.isEmpty(bPartner.getVATaxID());
 
-		final I_C_Location locationTo = InterfaceWrapperHelper.create(ctx, bpLocTo.getC_Location_ID(), I_C_Location.class, trxName);
+		final I_C_Location locationTo = loadOutOfTrx(bpLocTo.getC_Location_ID(), I_C_Location.class);
 
 		final boolean toEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,
 				ICountryAreaBL.COUNTRYAREAKEY_EU,

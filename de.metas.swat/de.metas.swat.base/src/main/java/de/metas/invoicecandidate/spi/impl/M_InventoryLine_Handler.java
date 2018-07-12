@@ -195,10 +195,16 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, ic, taxCategoryId, productId, -1, billDate, shipDate, adOrgId, inOut.getM_Warehouse(), locationId // billC_BPartner_Location_ID
-				, locationId // shipC_BPartner_Location_ID
-				, false // isSOTrx same as in vendor return
-				, trxName);
+				ctx,
+				ic,
+				taxCategoryId,
+				productId,
+				billDate,
+				shipDate,
+				adOrgId,
+				inOut.getM_Warehouse(),
+				locationId, // shipC_BPartner_Location_ID
+				false); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId);
 
 		//
