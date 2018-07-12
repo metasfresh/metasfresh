@@ -21,6 +21,7 @@ FROM nginx
 COPY dist /usr/share/nginx/html
 
 COPY config.js /usr/share/nginx/html
+COPY default.conf /etc/nginx/conf.d
 
 #add entry-script
 COPY start_webui.sh /
