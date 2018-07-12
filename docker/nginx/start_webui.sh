@@ -6,8 +6,8 @@ webapi_client_protocol=${WEBUI_API_CLIENT_PROTOCOL:-https}
 webapi_client_host=${WEBUI_API_CLIENT_HOST:-webapi}
 webapi_client_port=${WEBUI_API_CLIENT_PORT:-8080}
 
-webapi_proxypass_protocol=${WEBUI_API_PROXYPASS_PORT:-https}
-webapi_proxypass_host=${WEBUI_API_PROXYPASS_OST:-webapi}
+webapi_proxypass_protocol=${WEBUI_API_PROXYPASS_PROTOCOL:-https}
+webapi_proxypass_host=${WEBUI_API_PROXYPASS_HOST:-webapi}
 webapi_proxypass_port=${WEBUI_API_PROXYPASS_PORT:-8080}
 
 msv3_proxypass_protocol=${MSV3_API_PROXYPASS_PROTOCOL:-https}
@@ -50,8 +50,8 @@ echo "DEBUG_CAT_NGINX_CONF_FILE=$debug_cat_nginx_conf_file"
 
 if [ "$debug_cat_nginx_conf_file" != "n" ];
 then
-    echo "nginx default.conf file:"
-    cat config_nginx_file
+    echo "output nginx default.conf file:"
+    cat $config_nginx_file
 fi
 
 echo "Starting nginx -g 'daemon off;'"
