@@ -1,9 +1,15 @@
 package de.metas.ui.web.login.json;
 
+import org.adempiere.util.Check;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Builder;
+import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,31 +33,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE) // cannot use it because of "otherProperties"
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Value
+@ToString(exclude = "password")
 public class JSONLoginAuthRequest
 {
 	@JsonProperty("username")
-	private final String username;
+	String username;
+
 	@JsonProperty("password")
-	private final String password;
+	String password;
 
 	@JsonCreator
-	public JSONLoginAuthRequest( //
-			@JsonProperty("username") final String username //
-			, @JsonProperty("password") final String password //
-	)
+	@Builder
+	private JSONLoginAuthRequest(
+			@JsonProperty("username") final String username,
+			@JsonProperty("password") final String password)
 	{
+		Check.assumeNotEmpty(username, "username is not empty");
+		Check.assumeNotEmpty(password, "password is not empty");
+
 		this.username = username;
 		this.password = password;
-	}
-
-	public String getUsername()
-	{
-		return username;
-	}
-
-	public String getPassword()
-	{
-		return password;
 	}
 }

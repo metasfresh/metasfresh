@@ -1,22 +1,20 @@
 package de.metas.ui.web.login.json;
 
-import java.util.Collection;
-import java.util.Set;
-
 import org.adempiere.util.Check;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
 
+import lombok.Builder;
 import lombok.Value;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,32 +34,27 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JSONLoginAuthResponse
+public class JSONResetPasswordCompleteRequest
 {
-	public static final JSONLoginAuthResponse of(final Collection<JSONLoginRole> roles)
+	@JsonProperty("email")
+	String email;
+	@JsonProperty("token")
+	String token;
+	@JsonProperty("password")
+	String password;
+
+	@Builder
+	@JsonCreator
+	private JSONResetPasswordCompleteRequest(
+			@JsonProperty("email") final String email,
+			@JsonProperty("token") final String token,
+			@JsonProperty("password") final String password)
 	{
-		Check.assumeNotEmpty(roles, "roles is not empty");
-		final boolean loginComplete = false;
-		return new JSONLoginAuthResponse(roles, loginComplete);
-	}
+		Check.assumeNotEmpty(email, "email is not empty");
+		Check.assumeNotEmpty(token, "token is not empty");
 
-	public static final JSONLoginAuthResponse loginComplete(final JSONLoginRole role)
-	{
-		Check.assumeNotNull(role, "Parameter role is not null");
-		final Set<JSONLoginRole> roles = ImmutableSet.of(role);
-		final boolean loginComplete = true;
-		return new JSONLoginAuthResponse(roles, loginComplete);
-	}
-
-	@JsonProperty("roles")
-	Set<JSONLoginRole> roles;
-
-	@JsonProperty("loginComplete")
-	boolean loginComplete;
-
-	private JSONLoginAuthResponse(final Collection<JSONLoginRole> roles, final boolean loginComplete)
-	{
-		this.roles = ImmutableSet.copyOf(roles);
-		this.loginComplete = loginComplete;
+		this.email = email;
+		this.token = token;
+		this.password = password;
 	}
 }
