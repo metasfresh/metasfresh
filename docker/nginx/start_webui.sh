@@ -47,13 +47,16 @@ echo "MSV3_API_PROXYPASS_HOST=$msv3_proxypass_host"
 echo "MSV3_API_PROXYPASS_PORT=$msv3_proxypass_port"
 echo ""
 echo "DEBUG_CAT_NGINX_CONF_FILE=$debug_cat_nginx_conf_file"
+echo ""
 
 if [ "$debug_cat_nginx_conf_file" != "n" ];
 then
-    echo "output nginx default.conf file:"
+    echo "*************************************************************"
+    echo "Output the nginx default.conf file:"
+    echo "*************************************************************"
     cat $config_nginx_file
+    echo ""
 fi
 
-echo "Starting nginx -g 'daemon off;'"
-
+echo "Start nginx -g 'daemon off;'"
 nginx -g 'daemon off;'
