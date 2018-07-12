@@ -35,7 +35,7 @@ import org.compiere.model.I_M_Warehouse;
 public interface ITaxBL extends ISingletonService
 {
 	/**
-	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, int, boolean, String, boolean)} first.<br>
+	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, int, boolean, boolean)} first.<br>
 	 * If that doesn't work, try retrieving the German tax
 	 *
 	 * @param ctx
@@ -47,8 +47,7 @@ public interface ITaxBL extends ISingletonService
 	 * @param shipDate
 	 * @param adOrgId
 	 * @param warehouse
-	 * @param billC_BPartner_Location_ID
-	 * @param shipC_BPartner_Location_ID
+	 * @param shipC_BPartner_Location_ID place where the service is provided
 	 * @param isSOTrx
 	 * @param trxName
 	 * @return taxId
@@ -57,15 +56,12 @@ public interface ITaxBL extends ISingletonService
 			Object model,
 			int taxCategoryId,
 			int productId,
-			int chargeId,
 			Timestamp billDate,
 			Timestamp shipDate,
 			int adOrgId,
 			I_M_Warehouse warehouse,
-			int billC_BPartner_Location_ID,
 			int shipC_BPartner_Location_ID,
-			boolean isSOTrx,
-			String trxName);
+			boolean isSOTrx);
 
 	/**
 	 * Retrieve <code>taxId<code> from the given <code>taxCategoryId</code>
@@ -77,7 +73,6 @@ public interface ITaxBL extends ISingletonService
 	 * @param billDate
 	 * @param taxCategoryId
 	 * @param isSOTrx
-	 * @param trxName
 	 * @param throwEx if <code>true</code>, and no <code>C_Tax</code> record can be found, then throw an exception that contains the failed query. <br>
 	 * 			Otherwise, just log and return <code>-1</code>.
 	 * @return taxId
@@ -89,7 +84,6 @@ public interface ITaxBL extends ISingletonService
 			Timestamp billDate,
 			int taxCategoryId,
 			boolean isSOTrx,
-			String trxName,
 			boolean throwEx);
 
 	/**
