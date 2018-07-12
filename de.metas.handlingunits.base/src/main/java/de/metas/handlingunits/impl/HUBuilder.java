@@ -42,7 +42,7 @@ import org.compiere.model.I_M_Locator;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
@@ -308,7 +308,7 @@ import lombok.NonNull;
 		huBuilder.iterate(hu);
 
 		// Collect the HU (only if physical and unless the collector is disabled) in order to be taken from the empties warehouse into the current warehouse.
-		if (Services.get(IHandlingUnitsBL.class).isPhysicalHU(hu.getHUStatus()))
+		if (Services.get(IHUStatusBL.class).isPhysicalHU(hu))
 		{
 			huContext.getHUPackingMaterialsCollector().requirePackingMaterialForHURecursively(hu);
 		}
@@ -381,7 +381,7 @@ import lombok.NonNull;
 			huStatus = getHUStatus();
 		}
 
-		handlingUnitsBL.setHUStatus(huContext, hu, huStatus);
+		huStatusBL.setHUStatus(huContext, hu, huStatus);
 
 		//
 		// Copy C_BPartner_ID from parent

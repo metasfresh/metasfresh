@@ -51,6 +51,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
@@ -319,7 +320,7 @@ public class HUPickingSlotBL
 	{
 		// services
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
@@ -349,7 +350,7 @@ public class HUPickingSlotBL
 		//
 		// Change HU status to Picked
 		// (the HU will be saved a couple of lines below)
-		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
 
 		// Take it out from it's parent, if any
 		huTrxBL.setParentHU(huContext,

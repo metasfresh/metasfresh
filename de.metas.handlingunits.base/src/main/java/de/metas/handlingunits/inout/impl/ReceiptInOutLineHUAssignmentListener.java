@@ -35,7 +35,7 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.handlingunits.HUAssignmentListenerAdapter;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.Constants;
@@ -128,8 +128,8 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 	{
 		//
 		// Activate HU (i.e. it's not a Planning HU anymore)
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
 
 		//
 		// Update HU's Locator
@@ -211,4 +211,4 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		// Sets the ex-Vendor BPartner ID as SubProducer.
 		huAttributeStorage.setValue(attribute_subProducer, bpartnerId);
 	}
-		}
+}
