@@ -77,21 +77,26 @@ export const getRoutes = (store, auth, plugins) => {
     if (plugins.length) {
       const routes = plugins.map(plugin => {
         const pluginRoutes = [...plugin.routes];
-        const ParentComponent = pluginRoutes[0].component;
 
-        // wrap main plugin component in a HOC that'll render it
-        // inside the app using a Container element
-        if (ParentComponent.name !== 'WrappedPlugin') {
-          const wrapped = pluginWrapper(PluginContainer, ParentComponent);
+        if (pluginRoutes.length) {
+          const ParentComponent = pluginRoutes[0].component;
 
-          pluginRoutes[0].component = wrapped;
+          // wrap main plugin component in a HOC that'll render it
+          // inside the app using a Container element
+          if (ParentComponent.name !== 'WrappedPlugin') {
+            const wrapped = pluginWrapper(PluginContainer, ParentComponent);
 
-          if (pluginRoutes[0].breadcrumb) {
-            setPluginBreadcrumbHandlers(pluginRoutes, []);
+            pluginRoutes[0].component = wrapped;
+
+            if (pluginRoutes[0].breadcrumb) {
+              setPluginBreadcrumbHandlers(pluginRoutes, []);
+            }
           }
+
+          return pluginRoutes[0];
         }
 
-        return pluginRoutes[0];
+        return [];
       });
 
       return routes;
