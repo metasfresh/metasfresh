@@ -29,7 +29,6 @@ import org.compiere.model.AdempiereProcessor2;
 import org.compiere.model.AdempiereProcessorLog;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_IMP_Processor;
-import org.compiere.model.MAcctProcessor;
 import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MRequestProcessor;
 import org.compiere.model.MScheduler;
@@ -65,8 +64,6 @@ public abstract class AdempiereServer extends Thread
 			return new RequestProcessor((MRequestProcessor)model);
 		if (model instanceof MWorkflowProcessor)
 			return new WorkflowProcessor((MWorkflowProcessor)model);
-		if (model instanceof MAcctProcessor)
-			return new AcctProcessor((MAcctProcessor)model);
 		if (model instanceof MAlertProcessor)
 			return new AlertProcessor((MAlertProcessor)model);
 		if (model instanceof MScheduler)

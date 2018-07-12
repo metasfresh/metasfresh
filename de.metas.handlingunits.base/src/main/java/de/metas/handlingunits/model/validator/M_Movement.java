@@ -42,7 +42,7 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
@@ -249,11 +249,11 @@ public class M_Movement
 		// trigger a movement to/from empties warehouse. In this case a movement is already created from a lager to another.
 		// So no HU leftovers.
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
-		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
 
 		// Save changed HU
 		handlingUnitsDAO.saveHU(hu);

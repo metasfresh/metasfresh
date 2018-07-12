@@ -46,7 +46,6 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.acct.api.ClientAccountingStatus;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -944,8 +943,7 @@ public final class AEnv
 	}   // getWindow
 
 	/**
-	 * Post Immediate. This method is usually triggered from the UI. However, the posting might still be executed on the server,
-	 * depending on the {@link ClientAccountingStatus} which can be configured via <code>AD_SysConfig</code> or startup parameter.
+	 * Post Immediate. This method is usually triggered from the UI.
 	 *
 	 * If there is any error, an error dialog will be displayed to user.
 	 *
@@ -960,10 +958,6 @@ public final class AEnv
 	public static void postImmediate(final int WindowNo, final int AD_Client_ID,
 			final int AD_Table_ID, final int Record_ID, final boolean force)
 	{
-		log.info("Window=" + WindowNo
-				+ ", AD_Table_ID=" + AD_Table_ID + "/" + Record_ID
-				+ ", Force=" + force);
-
 		Services.get(IPostingService.class)
 				.newPostingRequest()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_None)

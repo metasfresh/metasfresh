@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -56,9 +57,9 @@ import lombok.NonNull;
 
 /**
  * Unprocess picking candidate.
- * 
+ *
  * The status will be changed from Processed to InProgress.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -198,11 +199,11 @@ public class UnProcessPickingCandidateCommand
 	private void updateHUStatusToActive(@NonNull final I_M_HU hu)
 	{
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
-		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
 		handlingUnitsDAO.saveHU(hu);
 	}
 

@@ -24,7 +24,7 @@ import org.junit.Assert;
 import org.w3c.dom.Node;
 
 import de.metas.handlingunits.HUXmlConverter;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs.TestHUsBuilder;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
@@ -70,14 +70,14 @@ public class HUTransformTestsBase
 	private LUTUProducerDestinationTestSupport data;
 
 	private IHandlingUnitsDAO handlingUnitsDAO;
-	private IHandlingUnitsBL handlingUnitsBL;
+	private IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	public HUTransformTestsBase()
 	{
 		data = new LUTUProducerDestinationTestSupport();
 
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		huStatusBL = Services.get(IHUStatusBL.class);
 	}
 
 	public final TestHUs testCU_To_NewCU_1Tomato_DoIt()
@@ -109,7 +109,7 @@ public class HUTransformTestsBase
 			Assert.assertThat(createdTUs.size(), is(1));
 			sourceTU = createdTUs.get(0);
 
-			handlingUnitsBL.setHUStatus(data.helper.getHUContext(), sourceTU, X_M_HU.HUSTATUS_Active);
+			huStatusBL.setHUStatus(data.helper.getHUContext(), sourceTU, X_M_HU.HUSTATUS_Active);
 			new M_HU().updateChildren(sourceTU);
 			save(sourceTU);
 
@@ -166,9 +166,9 @@ public class HUTransformTestsBase
 
 		return TestHUs.builder().input(cuToSplit).output(newCUs).build();
 	}
-	
-	
-	
+
+
+
 	public final TestHUs testCU_To_NewCU_ExceedMaxValueNoParent_DoIt()
 	{
 		final I_M_HU cuToSplit = data.mkRealStandAloneCuWithCuQty("3");

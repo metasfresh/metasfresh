@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.transfer.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +44,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
@@ -86,7 +86,8 @@ public class LUTUAssignBuilder
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHUJoinBL huJoinBL = Services.get(IHUJoinBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
 
 	//
 	// Parameters
@@ -184,7 +185,7 @@ public class LUTUAssignBuilder
 		// NOTE 1: we expect packing materials to be collected (i.e. fetched from Gebinde lager)
 		// NOTE 2: in case we are dealing with HUStatus Planning (e.g. in Wareneingang POS), no packing materials will be collected because the status is not actually changing.
 		final boolean forceFetchPackingMaterial = true;
-		handlingUnitsBL.setHUStatus(huContext, luHU, getHUStatus(), forceFetchPackingMaterial);
+		huStatusBL.setHUStatus(huContext, luHU, getHUStatus(), forceFetchPackingMaterial);
 		InterfaceWrapperHelper.save(luHU, huContext.getTrxName());
 
 		//
