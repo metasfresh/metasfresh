@@ -11,6 +11,8 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
@@ -51,12 +53,12 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 {
 	private final transient IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
 
-	private Set<Integer> huIdsDestroyed;
+	private Set<HuId> huIdsDestroyed;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if(!isHUEditorView())
+		if (!isHUEditorView())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
@@ -64,6 +66,12 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
+		}
+
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		if (!streamSelectedHUs(Select.ONLY_TOPLEVEL).anyMatch(huStatusBL::isPhysicalHU))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only 'physical' HUs can be disposed");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -81,7 +89,11 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 		final Timestamp movementDate = Env.getDate(getCtx());
 		huInventoryBL.moveToGarbage(husToDestroy, movementDate);
 
-		huIdsDestroyed = husToDestroy.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
+		huIdsDestroyed = husToDestroy
+				.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 
 		return MSG_OK;
 	}

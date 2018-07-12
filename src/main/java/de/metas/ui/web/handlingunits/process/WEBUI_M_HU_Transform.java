@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Profile;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.Profiles;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -293,8 +294,9 @@ public class WEBUI_M_HU_Transform
 		}
 
 		final HUEditorView view = getView();
-		final ImmutableSet<Integer> selectedHUIds = view.streamByIds(selectedRowIds)
+		final ImmutableSet<HuId> selectedHUIds = view.streamByIds(selectedRowIds)
 				.map(row -> row.getM_HU_ID())
+				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return removeHUsIfDestroyed(selectedHUIds);
@@ -303,13 +305,14 @@ public class WEBUI_M_HU_Transform
 	/**
 	 * @return true if at least one HU was removed
 	 */
-	private boolean removeHUsIfDestroyed(final Collection<Integer> huIds)
+	private boolean removeHUsIfDestroyed(final Collection<HuId> huIds)
 	{
-		final ImmutableSet<Integer> destroyedHUIds = huIds.stream()
+		final ImmutableSet<HuId> destroyedHUIds = huIds.stream()
 				.distinct()
 				.map(huId -> load(huId, I_M_HU.class))
 				.filter(Services.get(IHandlingUnitsBL.class)::isDestroyed)
 				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 		if (destroyedHUIds.isEmpty())
 		{

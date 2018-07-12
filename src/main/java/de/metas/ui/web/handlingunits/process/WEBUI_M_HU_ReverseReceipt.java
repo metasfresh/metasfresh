@@ -13,10 +13,14 @@ import org.compiere.model.I_M_InOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.Profiles;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.lang.RepoIdAwares;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -84,7 +88,7 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 	protected String doIt() throws Exception
 	{
 		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
-		final List<Integer> huIdsToReverse = retrieveHUsToReverse();
+		final List<HuId> huIdsToReverse = retrieveHUsToReverse();
 
 		boolean hasChanges = false;
 		try
@@ -100,7 +104,9 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 					continue;
 				}
 
-				final List<I_M_InOut> receiptsToReverse = processor.getReceiptsToReverseFromHUIds(huIdsToReverse);
+				final List<Integer> asRepoIds = RepoIdAwares.asRepoIds(huIdsToReverse);
+				final List<I_M_InOut> receiptsToReverse = processor.getReceiptsToReverseFromHUIds(asRepoIds);
+
 				if (receiptsToReverse.isEmpty())
 				{
 					continue;
@@ -144,7 +150,7 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private List<Integer> retrieveHUsToReverse()
+	private List<HuId> retrieveHUsToReverse()
 	{
 		// gh #1955: prevent an OutOfMemoryError
 		final IQueryFilter<I_M_HU> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
@@ -153,6 +159,9 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 				.filter(processFilter)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds();
+				.listIds()
+				.stream()
+				.map(HuId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

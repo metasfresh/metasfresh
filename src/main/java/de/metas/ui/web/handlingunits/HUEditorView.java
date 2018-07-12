@@ -10,16 +10,17 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -333,13 +334,12 @@ public class HUEditorView implements IView
 		addHUIdsAndInvalidate(extractHUIds(husToAdd));
 	}
 
-	public void addHUIdAndInvalidate(final int huId)
+	public void addHUIdAndInvalidate(@NonNull final HuId huId)
 	{
-		Check.assume(huId > 0, "huId > 0");
 		addHUIdsAndInvalidate(ImmutableSet.of(huId));
 	}
 
-	public void addHUIdsAndInvalidate(final Collection<Integer> huIdsToAdd)
+	public void addHUIdsAndInvalidate(final Collection<HuId> huIdsToAdd)
 	{
 		if (addHUIds(huIdsToAdd))
 		{
@@ -347,18 +347,18 @@ public class HUEditorView implements IView
 		}
 	}
 
-	public boolean addHUIds(final Collection<Integer> huIdsToAdd)
+	public boolean addHUIds(final Collection<HuId> huIdsToAdd)
 	{
 		return rowsBuffer.addHUIds(huIdsToAdd);
 	}
 
 	public void removeHUsAndInvalidate(final Collection<I_M_HU> husToRemove)
 	{
-		final Set<Integer> huIdsToRemove = extractHUIds(husToRemove);
+		final Set<HuId> huIdsToRemove = extractHUIds(husToRemove);
 		removeHUIdsAndInvalidate(huIdsToRemove);
 	}
 
-	public void removeHUIdsAndInvalidate(final Collection<Integer> huIdsToRemove)
+	public void removeHUIdsAndInvalidate(final Collection<HuId> huIdsToRemove)
 	{
 		if (removeHUIds(huIdsToRemove))
 		{
@@ -366,19 +366,23 @@ public class HUEditorView implements IView
 		}
 	}
 
-	public boolean removeHUIds(final Collection<Integer> huIdsToRemove)
+	public boolean removeHUIds(final Collection<HuId> huIdsToRemove)
 	{
 		return rowsBuffer.removeHUIds(huIdsToRemove);
 	}
 
-	private static final Set<Integer> extractHUIds(final Collection<I_M_HU> hus)
+	private static final Set<HuId> extractHUIds(final Collection<I_M_HU> hus)
 	{
 		if (hus == null || hus.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		return hus.stream().filter(hu -> hu != null).map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
+		return hus.stream()
+				.filter(Predicates.notNull())
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(Collectors.toSet());
 	}
 
 	@Override

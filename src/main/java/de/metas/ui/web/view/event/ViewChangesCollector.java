@@ -51,19 +51,6 @@ import lombok.NonNull;
 
 public class ViewChangesCollector implements AutoCloseable
 {
-	public static final ViewChangesCollector newThreadLocalCollector()
-	{
-		final ViewChangesCollector currentCollector = THREADLOCAL.get();
-		if (currentCollector != null && !currentCollector.isClosed())
-		{
-			throw new IllegalStateException("A collector was already created for current thread");
-		}
-
-		final ViewChangesCollector collector = new ViewChangesCollector();
-		THREADLOCAL.set(collector);
-		return collector;
-	}
-
 	public static final ViewChangesCollector getCurrentOrNull()
 	{
 		//
@@ -128,7 +115,6 @@ public class ViewChangesCollector implements AutoCloseable
 
 	private ViewChangesCollector(final boolean autoflush)
 	{
-		super();
 		Adempiere.autowire(this);
 
 		this.autoflush = autoflush;
@@ -145,11 +131,6 @@ public class ViewChangesCollector implements AutoCloseable
 		}
 
 		flush();
-	}
-
-	private boolean isClosed()
-	{
-		return closed.get();
 	}
 
 	private final void assertNotClosed()
@@ -184,7 +165,7 @@ public class ViewChangesCollector implements AutoCloseable
 
 		autoflushIfEnabled();
 	}
-	
+
 	public void collectRowsChanged(@NonNull final IView view, final Collection<DocumentId> rowIds)
 	{
 		viewChanges(view).addChangedRowIds(rowIds);

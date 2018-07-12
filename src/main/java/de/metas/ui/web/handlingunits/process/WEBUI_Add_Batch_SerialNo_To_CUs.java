@@ -18,6 +18,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
@@ -42,12 +43,12 @@ import de.metas.ui.web.window.model.DocumentCollection;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -249,8 +250,9 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		}
 
 		final HUEditorView view = getView();
-		final ImmutableSet<Integer> selectedHUIds = view.streamByIds(selectedRowIds)
-				.map(row -> row.getM_HU_ID())
+		final ImmutableSet<HuId> selectedHUIds = view.streamByIds(selectedRowIds)
+				.map(HUEditorRow::getM_HU_ID)
+				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return removeHUsIfDestroyed(selectedHUIds);
@@ -259,14 +261,16 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 	/**
 	 * @return true if at least one HU was removed
 	 */
-	private boolean removeHUsIfDestroyed(final Collection<Integer> huIds)
+	private boolean removeHUsIfDestroyed(final Collection<HuId> huIds)
 	{
-		final ImmutableSet<Integer> destroyedHUIds = huIds.stream()
+		final ImmutableSet<HuId> destroyedHUIds = huIds.stream()
 				.distinct()
 				.map(huId -> load(huId, I_M_HU.class))
 				.filter(Services.get(IHandlingUnitsBL.class)::isDestroyed)
 				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+
 		if (destroyedHUIds.isEmpty())
 		{
 			return false;

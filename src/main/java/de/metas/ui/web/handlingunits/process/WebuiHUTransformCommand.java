@@ -15,6 +15,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
@@ -230,8 +231,6 @@ public class WebuiHUTransformCommand
 		}
 	}
 
-
-
 	/**
 	 *
 	 * @param row
@@ -246,7 +245,7 @@ public class WebuiHUTransformCommand
 		InterfaceWrapperHelper.save(hu);
 
 		return WebuiHUTransformCommandResult.builder()
-				.huIdChanged(hu.getM_HU_ID())
+				.huIdChanged(HuId.ofRepoId(hu.getM_HU_ID()))
 				.build();
 	}
 
@@ -260,12 +259,23 @@ public class WebuiHUTransformCommand
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_ExistingTU(final HUEditorRow cuRow, final I_M_HU tuHU, final Quantity qtyCU)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 		final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
 
+		final HuId huIdChanged = HuId.ofRepoId(cuRow.getHURowId().getTopLevelHUId());
+		final HuId topLevelHuIdChanged = HuId.ofRepoId(handlingUnitsBL.getTopLevelParent(tuHU).getM_HU_ID());
+
+		final ImmutableList<HuId> huIdsCreated = createdCUs
+				.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+
 		return WebuiHUTransformCommandResult.builder()
-				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
-				.huIdChanged(Services.get(IHandlingUnitsBL.class).getTopLevelParent(tuHU).getM_HU_ID())
-				.huIdsCreated(createdCUs.stream().map(hu -> hu.getM_HU_ID()).collect(ImmutableList.toImmutableList()))
+				.huIdChanged(huIdChanged)
+				.huIdChanged(topLevelHuIdChanged)
+				.huIdsCreated(huIdsCreated)
 				.build();
 	}
 
@@ -284,14 +294,15 @@ public class WebuiHUTransformCommand
 		final Predicate<? super I_M_HU> //
 		newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getM_HU_ID();
 
-		final ImmutableSet<Integer> createdHUIds = createdHUs
+		final ImmutableSet<HuId> createdHUIds = createdHUs
 				.stream()
 				.filter(newCUisDifferentFromInputHU)
 				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return WebuiHUTransformCommandResult.builder()
-				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
+				.huIdChanged(HuId.ofRepoId(cuRow.getHURowId().getTopLevelHUId()))
 				.huIdsToAddToView(createdHUIds)
 				.huIdsCreated(createdHUIds)
 				.build();
@@ -310,9 +321,14 @@ public class WebuiHUTransformCommand
 			final HUEditorRow cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final Quantity qtyCU, final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewTUs(cuRow.getM_HU(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
-		final ImmutableSet<Integer> createdHUIds = createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<HuId> createdHUIds = createdHUs.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
 		return WebuiHUTransformCommandResult.builder()
-				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
+				.huIdChanged(HuId.ofRepoId(cuRow.getHURowId().getTopLevelHUId()))
 				.huIdsToAddToView(createdHUIds)
 				.huIdsCreated(createdHUIds)
 				.build();
@@ -323,9 +339,10 @@ public class WebuiHUTransformCommand
 		newHUTransformation().tuToExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
 		final HUEditorRowId tuRowId = tuRow.getHURowId();
+
 		return WebuiHUTransformCommandResult.builder()
-				.huIdChanged(tuRowId.getTopLevelHUId())
-				.huIdChanged(luHU.getM_HU_ID())
+				.huIdChanged(HuId.ofRepoId(tuRowId.getTopLevelHUId()))
+				.huIdChanged(HuId.ofRepoId(luHU.getM_HU_ID()))
 				.fullViewInvalidation(true) // because it might be that the TU is inside an LU of which we don't know the ID
 				.build();
 	}
@@ -345,9 +362,14 @@ public class WebuiHUTransformCommand
 	{
 		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials);
 
+		final ImmutableSet<HuId> huIdsToAddToView = createdHUs.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
 		return WebuiHUTransformCommandResult.builder()
-				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()))
-				.huIdChanged(tuRow.getHURowId().getTopLevelHUId())
+				.huIdsToAddToView(huIdsToAddToView)
+				.huIdChanged(HuId.ofRepoId(tuRow.getHURowId().getTopLevelHUId()))
 				.fullViewInvalidation(true) // because it might be that the TU is inside an LU of which we don't know the ID
 				.build();
 	}
@@ -370,16 +392,21 @@ public class WebuiHUTransformCommand
 
 		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(fromTU, qtyTU);
 
+		final ImmutableSet<HuId> huIdsToAddToView = createdHUs.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
 		final WebuiHUTransformCommandResultBuilder resultBuilder = WebuiHUTransformCommandResult.builder()
-				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()));
+				.huIdsToAddToView(huIdsToAddToView);
 
 		if (handlingUnitsBL.isDestroyedRefreshFirst(fromTopLevelHU))
 		{
-			resultBuilder.huIdToRemoveFromView(fromTopLevelHU.getM_HU_ID());
+			resultBuilder.huIdToRemoveFromView(HuId.ofRepoId(fromTopLevelHU.getM_HU_ID()));
 		}
 		else
 		{
-			resultBuilder.huIdChanged(fromTopLevelHU.getM_HU_ID());
+			resultBuilder.huIdChanged(HuId.ofRepoId(fromTopLevelHU.getM_HU_ID()));
 		}
 
 		return resultBuilder.build();

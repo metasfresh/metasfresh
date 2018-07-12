@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import org.compiere.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -70,9 +72,9 @@ public class WEBUIHUCreationWithSerialNumberService
 
 	private final HUEditorView view;
 
-	private final Set<Integer> huIDsChanged = new HashSet<>();
-	private final Set<Integer> huIDsAdded = new HashSet<>();
-	private final Set<Integer> huIDsToRemove = new HashSet<>();
+	private final Set<HuId> huIDsChanged = new HashSet<>();
+	private final Set<HuId> huIDsAdded = new HashSet<>();
+	private final Set<HuId> huIDsToRemove = new HashSet<>();
 
 	@Builder
 	private WEBUIHUCreationWithSerialNumberService(
@@ -91,8 +93,8 @@ public class WEBUIHUCreationWithSerialNumberService
 		if (qtyCU == 1)
 		{
 			final String serialNo = availableSerialNumbers.remove(0);
-			assignSerialNumberToCU(selectedCuRow.getM_HU_ID(), serialNo);
-			huIDsChanged.add(selectedCuRow.getM_HU_ID());
+			assignSerialNumberToCU(HuId.ofRepoId(selectedCuRow.getM_HU_ID()), serialNo);
+			huIDsChanged.add(HuId.ofRepoId(selectedCuRow.getM_HU_ID()));
 
 		}
 		else
@@ -100,7 +102,7 @@ public class WEBUIHUCreationWithSerialNumberService
 			final int serialNoCount = availableSerialNumbers.size();
 			final int cusToCreateCount = qtyCU < serialNoCount ? qtyCU : serialNoCount;
 
-			final Set<Integer> splittedCUIDs = splitIntoCUs(huEditorRowHierarchy, cusToCreateCount);
+			final Set<HuId> splittedCUIDs = splitIntoCUs(huEditorRowHierarchy, cusToCreateCount);
 			assignSerialNumbersToCUs(splittedCUIDs, availableSerialNumbers);
 			huIDsAdded.addAll(splittedCUIDs);
 		}
@@ -112,14 +114,14 @@ public class WEBUIHUCreationWithSerialNumberService
 				.build();
 	}
 
-	private Set<Integer> splitIntoCUs(final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy, final int cuNumber)
+	private Set<HuId> splitIntoCUs(final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy, final int cuNumber)
 	{
 		if (cuNumber == 0)
 		{
 			return ImmutableSet.of();
 		}
 
-		final Set<Integer> splitCUs = new HashSet<>();
+		final Set<HuId> splitCUs = new HashSet<>();
 
 		while (cuNumber > splitCUs.size())
 		{
@@ -130,9 +132,9 @@ public class WEBUIHUCreationWithSerialNumberService
 		return splitCUs;
 	}
 
-	private Set<Integer> createCUsBatch(final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy, final int maxCUsAllowedPerBatch)
+	private Set<HuId> createCUsBatch(final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy, final int maxCUsAllowedPerBatch)
 	{
-		final Set<Integer> splitCUIDs = new HashSet<>();
+		final Set<HuId> splitCUIDs = new HashSet<>();
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
@@ -149,7 +151,7 @@ public class WEBUIHUCreationWithSerialNumberService
 		{
 			// The CU will not be split when its qty gets to 1. So make sure the selected CU gets in the list of split CUs
 			final int selectedCUID = huToSplit.getM_HU_ID();
-			splitCUIDs.add(selectedCUID);
+			splitCUIDs.add(HuId.ofRepoId(selectedCUID));
 
 			numberOfCUsToCreate = maxCUsAllowedPerBatch < initialQtyCU ? maxCUsAllowedPerBatch : initialQtyCU;
 
@@ -164,6 +166,7 @@ public class WEBUIHUCreationWithSerialNumberService
 						.stream()
 						.filter(newCUisDifferentFromInputHU)
 						.map(I_M_HU::getM_HU_ID)
+						.map(HuId::ofRepoId)
 						.collect(ImmutableSet.toImmutableSet()));
 			}
 		}
@@ -188,7 +191,11 @@ public class WEBUIHUCreationWithSerialNumberService
 			{
 				final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(huToSplit, Quantity.of(BigDecimal.ONE, cuRow.getC_UOM()), parentHU);
 
-				splitCUIDs.addAll(createdCUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()));
+				splitCUIDs.addAll(createdCUs
+						.stream()
+						.map(I_M_HU::getM_HU_ID)
+						.map(HuId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet()));
 			}
 		}
 
@@ -222,8 +229,8 @@ public class WEBUIHUCreationWithSerialNumberService
 
 				final List<I_M_HU> tuToNewLUs = newHUTransformation().tuToNewLUs(newTU, BigDecimal.ONE, luPIItem, false);
 
-				huIDsToRemove.add(oldLU.getM_HU_ID());
-				huIDsAdded.add(tuToNewLUs.get(0).getM_HU_ID());
+				huIDsToRemove.add(HuId.ofRepoId(oldLU.getM_HU_ID()));
+				huIDsAdded.add(HuId.ofRepoId(tuToNewLUs.get(0).getM_HU_ID()));
 
 			}
 			else
@@ -242,10 +249,10 @@ public class WEBUIHUCreationWithSerialNumberService
 		newHUTransformation().tuToExistingLU(newTU, BigDecimal.ONE, luRow.getM_HU());
 	}
 
-	private void assignSerialNumbersToCUs(final Set<Integer> cuIDs, final List<String> availableSerialNumbers)
+	private void assignSerialNumbersToCUs(final Set<HuId> cuIDs, final List<String> availableSerialNumbers)
 	{
 
-		final List<Integer> listOfCUIDs = cuIDs.stream().collect(ImmutableList.toImmutableList());
+		final List<HuId> listOfCUIDs = ImmutableList.copyOf(cuIDs);
 
 		final int numberOfCUs = listOfCUIDs.size();
 
@@ -260,9 +267,9 @@ public class WEBUIHUCreationWithSerialNumberService
 		}
 	}
 
-	private void assignSerialNumberToCU(final int huId, final String serialNo)
+	private void assignSerialNumberToCU(final HuId huId, final String serialNo)
 	{
-		final I_M_HU hu = create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+		final I_M_HU hu = load(huId, I_M_HU.class);
 
 		final IContextAware ctxAware = getContextAware(hu);
 
@@ -276,7 +283,6 @@ public class WEBUIHUCreationWithSerialNumberService
 
 		attributeStorage.setValue(serialNoAttribute, serialNo.trim());
 		attributeStorage.saveChangesIfNeeded();
-
 	}
 
 	private boolean isAggregateHU(final HUEditorRow huRow)

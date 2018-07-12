@@ -19,6 +19,7 @@ import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.lang.RepoIdAwares;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -210,27 +211,30 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	}
 
 	@Override
-	public boolean addHUIds(final Collection<Integer> huIdsToAdd)
+	public boolean addHUIds(final Collection<HuId> huIdsToAdd)
 	{
 		if (huIdsToAdd.isEmpty())
 		{
 			return false;
 		}
 
-		getHUIdsFilterData().mustHUIds(huIdsToAdd);
-		return getHUIds().addAll(huIdsToAdd);
+		final List<Integer> asRepoIds = RepoIdAwares.asRepoIds(huIdsToAdd);
+
+		getHUIdsFilterData().mustHUIds(asRepoIds);
+		return getHUIds().addAll(asRepoIds);
 	}
 
 	@Override
-	public boolean removeHUIds(final Collection<Integer> huIdsToRemove)
+	public boolean removeHUIds(final Collection<HuId> huIdsToRemove)
 	{
 		if (huIdsToRemove == null || huIdsToRemove.isEmpty())
 		{
 			return false;
 		}
+		final List<Integer> asRepoIds = RepoIdAwares.asRepoIds(huIdsToRemove);
 
-		getHUIdsFilterData().shallNotHUIds(huIdsToRemove);
-		return getHUIds().removeAll(huIdsToRemove);
+		getHUIdsFilterData().shallNotHUIds(asRepoIds);
+		return getHUIds().removeAll(asRepoIds);
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.edi.model.I_M_InOutLine;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -132,7 +133,7 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 
 		//
 		// Assign the split TUs to the receipt line
-		// FIXME: this is a workaround until https://github.com/metasfresh/metasfresh/issues/2392 is implemented 
+		// FIXME: this is a workaround until https://github.com/metasfresh/metasfresh/issues/2392 is implemented
 		tusToReturn.forEach(tu -> huAssignmentBL.createHUAssignmentBuilder()
 				.initializeAssignment(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setM_LU_HU(null)
@@ -146,7 +147,7 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 		final Timestamp movementDate = Env.getDate(getCtx());
 		huInOutBL.createVendorReturnInOutForHUs(tusToReturn, movementDate);
 
-		//
+		invalidateView(); // we split something off the original HUs and therefore need to refresh our view
 		return MSG_OK;
 	}
 
@@ -162,7 +163,12 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 		// Remove the TUs from our view (in case of any top level TUs)
 		if (tusToReturn != null && !tusToReturn.isEmpty())
 		{
-			getView().removeHUIds(tusToReturn.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableList.toImmutableList()));
+			final ImmutableList<HuId> collect = tusToReturn
+					.stream()
+					.map(I_M_HU::getM_HU_ID)
+					.map(HuId::ofRepoId)
+					.collect(ImmutableList.toImmutableList());
+			getView().removeHUIds(collect);
 		}
 
 		// Invalidate the view because the top level LU changed too

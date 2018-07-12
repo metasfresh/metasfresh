@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import de.metas.handlingunits.HuId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewId;
@@ -52,9 +53,9 @@ interface HUEditorViewBuffer
 
 	void invalidateAll();
 
-	boolean addHUIds(Collection<Integer> huIdsToAdd);
+	boolean addHUIds(Collection<HuId> huIdsToAdd);
 
-	boolean removeHUIds(Collection<Integer> huIdsToRemove);
+	boolean removeHUIds(Collection<HuId> huIdsToRemove);
 
 	boolean containsAnyOfHUIds(Collection<Integer> huIdsToCheck);
 

@@ -12,6 +12,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.util.CCache;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
@@ -118,10 +119,12 @@ class HUEditorRowsPagedLoadingIterator implements Iterator<HUEditorRow>
 
 	private Iterator<HUEditorRow> getNextPageIterator()
 	{
+		// the result; part of it will be taken from cache, the, rest will be loaded
 		final HUEditorRow[] rows = new HUEditorRow[bufferSize];
+
+		// HUEditorRowIds that we don't have in the cache and that therefore need to be loaded
 		final Map<HUEditorRowId, Integer> rowIdToLoad2index = new HashMap<>();
 
-		//
 		// Get from cache as much as possible
 		{
 			int idx = 0;
@@ -195,7 +198,7 @@ class HUEditorRowsPagedLoadingIterator implements Iterator<HUEditorRow>
 		}
 
 		return Stream.of(rows)
-				.filter(row -> row != null) // IMPORTANT: just to make sure we won't stream some empty gaps (e.g. missing rows because HU was not a top level one)
+				.filter(Predicates.notNull()) // IMPORTANT: just to make sure we won't stream some empty gaps (e.g. missing rows because HU was not a top level one)
 				.filter(filterPredicate)
 				.iterator();
 	}

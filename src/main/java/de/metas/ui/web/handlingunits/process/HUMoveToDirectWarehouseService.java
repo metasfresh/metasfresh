@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
@@ -224,7 +225,7 @@ public class HUMoveToDirectWarehouseService
 
 	private final void notifyHUMoved(final I_M_HU hu)
 	{
-		final int huId = hu.getM_HU_ID();
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
 		//
 		// Invalidate all documents which are about this HU.
@@ -232,7 +233,7 @@ public class HUMoveToDirectWarehouseService
 		{
 			try
 			{
-				documentsCollection.invalidateDocumentByRecordId(I_M_HU.Table_Name, huId);
+				documentsCollection.invalidateDocumentByRecordId(I_M_HU.Table_Name, huId.getRepoId());
 			}
 			catch (final Exception ex)
 			{

@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingslotsClearing;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.pickingslotsClearing.process.HUExtractedFromPickingSlotEvent;
 import lombok.NonNull;
@@ -61,7 +62,7 @@ import lombok.NonNull;
 				.stream()
 				.filter(entry -> isEventMatchingKey(event, entry.getKey()))
 				.map(entry -> entry.getValue())
-				.forEach(packingHUsView -> packingHUsView.addHUIdAndInvalidate(event.getHuId()));
+				.forEach(packingHUsView -> packingHUsView.addHUIdAndInvalidate(HuId.ofRepoId(event.getHuId())));
 	}
 
 	private static final boolean isEventMatchingKey(final HUExtractedFromPickingSlotEvent event, final PackingHUsViewKey key)

@@ -17,8 +17,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHUWarehouseDAO;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -58,7 +58,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsCleari
 	private final transient IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
@@ -129,7 +129,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsCleari
 			if (!Objects.equal(huStatus, hu.getHUStatus()))
 			{
 				final IHUContext huContext = huContextFactory.createMutableHUContext();
-				handlingUnitsBL.setHUStatus(huContext, hu, huStatus);
+				huStatusBL.setHUStatus(huContext, hu, huStatus);
 				save(hu);
 			}
 		}

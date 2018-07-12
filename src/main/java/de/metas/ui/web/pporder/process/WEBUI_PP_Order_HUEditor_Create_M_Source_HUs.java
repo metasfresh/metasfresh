@@ -9,6 +9,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -54,7 +55,7 @@ public class WEBUI_PP_Order_HUEditor_Create_M_Source_HUs
 	@Autowired
 	private SourceHUsService sourceHuService;
 
-	private final Set<Integer> topLevelHUIdsProcessed = new HashSet<>();
+	private final Set<HuId> topLevelHUIdsProcessed = new HashSet<>();
 
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -84,7 +85,7 @@ public class WEBUI_PP_Order_HUEditor_Create_M_Source_HUs
 
 		final int topLevelHUId = row.getM_HU_ID();
 		sourceHuService.addSourceHuMarker(topLevelHUId);
-		topLevelHUIdsProcessed.add(topLevelHUId);
+		topLevelHUIdsProcessed.add(HuId.ofRepoId(topLevelHUId));
 	}
 
 	@Override

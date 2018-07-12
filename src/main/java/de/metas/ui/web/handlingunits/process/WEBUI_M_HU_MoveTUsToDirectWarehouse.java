@@ -57,7 +57,7 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if(!isHUEditorView())
+		if (!isHUEditorView())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
@@ -85,8 +85,8 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a LU or TU");
 		}
-		
-		if(!huRow.isHUStatusActive())
+
+		if (!huRow.isHUStatusActive())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("HUStatus is not Active");
 		}

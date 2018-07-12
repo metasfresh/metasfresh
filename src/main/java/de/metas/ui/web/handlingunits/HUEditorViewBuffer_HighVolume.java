@@ -22,6 +22,7 @@ import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.lang.RepoIdAwares;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -159,14 +160,15 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	}
 
 	@Override
-	public boolean addHUIds(final Collection<Integer> huIdsToAdd)
+	public boolean addHUIds(final Collection<HuId> huIdsToAdd)
 	{
 		if (huIdsToAdd == null || huIdsToAdd.isEmpty())
 		{
 			return false;
 		}
 
-		final DocumentIdsSelection rowIdsToAdd = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(huIdsToAdd);
+		final List<Integer> asRepoIds = RepoIdAwares.asRepoIds(huIdsToAdd);
+		final DocumentIdsSelection rowIdsToAdd = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(asRepoIds);
 		if (rowIdsToAdd.isEmpty())
 		{
 			return false;
@@ -176,14 +178,15 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	}
 
 	@Override
-	public boolean removeHUIds(final Collection<Integer> huIdsToRemove)
+	public boolean removeHUIds(final Collection<HuId> huIdsToRemove)
 	{
 		if (huIdsToRemove == null || huIdsToRemove.isEmpty())
 		{
 			return false;
 		}
 
-		final DocumentIdsSelection rowIdsToRemove = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(huIdsToRemove);
+		final List<Integer> asRepoIds = RepoIdAwares.asRepoIds(huIdsToRemove);
+		final DocumentIdsSelection rowIdsToRemove = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(asRepoIds);
 
 		rowIdsToRemove.forEach(rowId -> cache_huRowsById.remove(rowId));
 
