@@ -57,6 +57,7 @@ import org.slf4j.Logger;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -147,7 +148,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private void updateHuFromSchedQtyPicked(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
@@ -162,13 +163,13 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// if the TU is contained by an U, it is sufficient to update the HU_Status of the LU, because all its children will be updated afterwards.
 		if (luHU != null)
 		{
-			handlingUnitsBL.setHUStatus(huContext, luHU, X_M_HU.HUSTATUS_Picked);
+			huStatusBL.setHUStatus(huContext, luHU, X_M_HU.HUSTATUS_Picked);
 			handlingUnitsDAO.saveHU(luHU);
 		}
 		// Fallback: set the TU's status as picked if it doesn't have a parent.
 		else
 		{
-			handlingUnitsBL.setHUStatus(huContext, tuHU, X_M_HU.HUSTATUS_Picked);
+			huStatusBL.setHUStatus(huContext, tuHU, X_M_HU.HUSTATUS_Picked);
 		}
 
 		// update HU from sched

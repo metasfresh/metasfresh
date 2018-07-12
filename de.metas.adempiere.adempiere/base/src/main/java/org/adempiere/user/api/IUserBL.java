@@ -34,16 +34,11 @@ import de.metas.i18n.ITranslatableString;
 
 public interface IUserBL extends ISingletonService
 {
-	String PARAM_ACTION = "action";
-	String ACTION_ResetPassword = "ResetPassword";
-	String ACTION_CreateNewUser = "CreateNewUser";
-	String PARAM_AccountPasswordResetCode = "AccountPasswordResetCode";
-
 	void createResetPasswordByEMailRequest(I_AD_User user);
 
 	void createResetPasswordByEMailRequest(String userId);
 
-	I_AD_User resetPassword(Properties ctx, int adUserId, String passwordResetCode, String newPassword);
+	I_AD_User resetPassword(String passwordResetCode, String newPassword);
 
 	/**
 	 * Change given user's password.
