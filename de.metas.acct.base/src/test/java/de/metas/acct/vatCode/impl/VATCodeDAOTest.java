@@ -1,4 +1,4 @@
-package de.metas.acct.vatCode.impl;
+package de.metas.acct.vatcode.impl;
 
 import java.util.Date;
 import java.util.Properties;
@@ -16,9 +16,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import de.metas.acct.vatCode.IVATCodeDAO;
-import de.metas.acct.vatCode.VATCode;
-import de.metas.acct.vatCode.VATCodeMatchingRequest;
+import de.metas.acct.vatcode.IVATCodeDAO;
+import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeMatchingRequest;
 
 /*
  * #%L
@@ -54,9 +54,8 @@ public class VATCodeDAOTest
 	// Master data
 	private int acctSchemaId;
 	private I_C_Tax tax1;
-	@SuppressWarnings("unused")
-	private I_C_Tax tax2;
 	private I_C_Tax tax3;
+
 	private final Date date_1970_01_01 = TimeUtil.getDay(1970, 1, 1);
 	private final Date date_2016_01_01 = TimeUtil.getDay(2016, 1, 1);
 	@SuppressWarnings("unused")
@@ -74,7 +73,7 @@ public class VATCodeDAOTest
 		// Master data
 		acctSchemaId = 12345;
 		tax1 = createTax("tax1");
-		tax2 = createTax("tax2");
+		createTax("tax2");
 		tax3 = createTax("tax3");
 	}
 

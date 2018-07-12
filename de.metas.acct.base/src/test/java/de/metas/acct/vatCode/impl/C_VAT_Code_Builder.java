@@ -1,4 +1,4 @@
-package de.metas.acct.vatCode.impl;
+package de.metas.acct.vatcode.impl;
 
 import java.util.Date;
 
@@ -10,7 +10,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.model.I_C_VAT_Code;
-import de.metas.acct.vatCode.VATCode;
+import de.metas.acct.vatcode.VATCode;
 
 /*
  * #%L

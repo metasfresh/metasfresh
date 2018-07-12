@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.acct.impexp;
 
@@ -9,8 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.impl.AccountDimension;
@@ -39,12 +37,12 @@ import org.compiere.util.TimeUtil;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -571,7 +569,7 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 	}
 
 	@Override
-	protected org.adempiere.impexp.AbstractImportProcess.ImportRecordResult importRecord(IMutable<Object> state, I_I_GLJournal importRecord) throws Exception
+	protected ImportRecordResult importRecord(IMutable<Object> state, I_I_GLJournal importRecord) throws Exception
 	{
 
 		GLJournalImportContext context = (GLJournalImportContext)state.getValue();
@@ -688,7 +686,7 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		//
 		line.setDescription(importRecord.getDescription());
 		line.setCurrency(importRecord.getC_Currency_ID(), importRecord.getC_ConversionType_ID(), importRecord.getCurrencyRate());
-		
+
 		//
 		line.setLine(importRecord.getLine());
 		line.setAmtSourceCr(importRecord.getAmtSourceCr());
@@ -740,24 +738,24 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		line.setC_UOM_ID(importRecord.getC_UOM_ID());
 		line.setQty(importRecord.getQty());
 		//
-		
+
 		if (line.save())
 		{
 			importRecord.setGL_JournalBatch_ID(context.batch.getGL_JournalBatch_ID());
 			importRecord.setGL_Journal_ID(context.journal.getGL_Journal_ID());
 			importRecord.setGL_JournalLine_ID(line.getGL_JournalLine_ID());
-			
+
 			importRecord.setI_IsImported(true);
 			importRecord.setProcessed(true);
 			importRecord.setProcessing(false);
 			InterfaceWrapperHelper.save(importRecord);
 			wasInsert = true;
-			
+
 		}
 
 		return wasInsert ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
-	
+
 	private IAccountDimension newAccountDimension(final I_I_GLJournal importRecord, final int accountId)
 	{
 		return AccountDimension.builder()

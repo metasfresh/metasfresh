@@ -23,7 +23,6 @@ import org.junit.Test;
 import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.aggregation.IFactAcctLogDAO;
 import de.metas.acct.aggregation.IFactAcctSummaryKey;
-import de.metas.acct.aggregation.impl.FactAcctLogDAO;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.acct.model.X_Fact_Acct_Log;
@@ -41,11 +40,11 @@ import de.metas.acct.model.X_Fact_Acct_Log;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -63,16 +62,10 @@ public class FactAcctLogBLTest
 
 	private final int C_AcctSchema_ID1 = 1;
 	private final int C_ElementValue_ID1 = 1;
-	private I_C_Year year2014;
+
 	private I_C_Period year2014_p1;
-	@SuppressWarnings("unused")
-	private I_C_Period year2014_p2;
-	private I_C_Year year2015;
+
 	private I_C_Period year2015_p1;
-	@SuppressWarnings("unused")
-	private I_C_Period year2015_p2;
-
-
 
 	@Before
 	public void init()
@@ -83,14 +76,15 @@ public class FactAcctLogBLTest
 
 		factAcctLogBL = Services.get(IFactAcctLogBL.class);
 		factAcctLogDAO = (FactAcctLogDAO)Services.get(IFactAcctLogDAO.class);
-		
+
 		// Master data:
-		year2014 = createYear(2014);
+		final I_C_Year year2014 = createYear(2014);
 		year2014_p1 = createPeriod(year2014, 1);
-		year2014_p2 = createPeriod(year2014, 2);
-		year2015 = createYear(2015);
+		createPeriod(year2014, 2);
+
+		final I_C_Year year2015 = createYear(2015);
 		year2015_p1 = createPeriod(year2015, 1);
-		year2015_p2 = createPeriod(year2015, 2);
+		createPeriod(year2015, 2);
 	}
 
 	@Test
@@ -218,6 +212,7 @@ public class FactAcctLogBLTest
 	{
 		Assert.assertEquals("Has Logs", true, factAcctLogDAO.hasLogs(ctx, IFactAcctLogDAO.PROCESSINGTAG_NULL));
 	}
+
 	private final void assertNoLogs()
 	{
 		Assert.assertEquals("Has Logs", false, factAcctLogDAO.hasLogs(ctx, IFactAcctLogDAO.PROCESSINGTAG_NULL));

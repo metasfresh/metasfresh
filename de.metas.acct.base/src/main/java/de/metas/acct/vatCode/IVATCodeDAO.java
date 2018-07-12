@@ -1,4 +1,4 @@
-package de.metas.acct.vatCode;
+package de.metas.acct.vatcode;
 
 import org.adempiere.util.ISingletonService;
 

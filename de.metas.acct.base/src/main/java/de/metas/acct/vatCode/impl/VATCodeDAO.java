@@ -1,4 +1,4 @@
-package de.metas.acct.vatCode.impl;
+package de.metas.acct.vatcode.impl;
 
 import java.util.List;
 import java.util.Properties;
@@ -21,9 +21,9 @@ import org.compiere.util.TimeUtil;
 import com.google.common.base.Joiner;
 
 import de.metas.acct.model.I_C_VAT_Code;
-import de.metas.acct.vatCode.IVATCodeDAO;
-import de.metas.acct.vatCode.VATCode;
-import de.metas.acct.vatCode.VATCodeMatchingRequest;
+import de.metas.acct.vatcode.IVATCodeDAO;
+import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.adempiere.util.CacheCtx;
 
 /*
