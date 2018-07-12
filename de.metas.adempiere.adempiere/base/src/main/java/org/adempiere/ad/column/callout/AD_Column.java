@@ -184,6 +184,8 @@ public class AD_Column
 
 		else if (columnName.toUpperCase().startsWith("IS"))
 		{
+			column.setAD_Reference_ID(DisplayType.YesNo);
+
 			updateFlagColumn(column);
 		}
 
@@ -293,9 +295,16 @@ public class AD_Column
 
 	private static void updateFlagColumn(final I_AD_Column column)
 	{
-		column.setAD_Reference_ID(DisplayType.YesNo);
 		column.setFieldLength(1);
 		column.setIsMandatory(true);
+		if (I_AD_Column.COLUMNNAME_IsActive.equals(column.getColumnName()))
+		{
+			column.setDefaultValue("Y");
+		}
+		else
+		{
+			column.setDefaultValue("N");
+		}
 	}
 
 	private static void updateNameOrDocumentNoColumn(final I_AD_Column column)
@@ -337,8 +346,6 @@ public class AD_Column
 
 	private void updateColumnForYesNoReference(final I_AD_Column column)
 	{
-		column.setIsMandatory(true);
-
 		final String columnName = column.getColumnName();
 
 		if (columnName == null)
@@ -347,13 +354,6 @@ public class AD_Column
 			return;
 		}
 
-		if (I_AD_Column.COLUMNNAME_IsActive.equals(columnName))
-		{
-			column.setDefaultValue("Y");
-		}
-		else
-		{
-			column.setDefaultValue("N");
-		}
+		updateFlagColumn(column);
 	}
 }
