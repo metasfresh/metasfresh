@@ -142,10 +142,10 @@ node('agent && linux')
         // sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnJacocoConf.pomFile} --batch-mode ${mvnJacocoConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate"
 
 				// create one single jacoco.exec file, see https://www.eclemma.org/jacoco/trunk/doc/merge-mojo.html
-				sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.8.1:merge"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.8.1:merge"
 
 				// create (among others) the jacoco.xml file to send to codacy, see https://www.eclemma.org/jacoco/trunk/doc/report-mojo.html
-				sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DoutputDirectory=./jacoco-aggregate-report org.jacoco:jacoco-maven-plugin:0.8.1:report"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DoutputDirectory=./jacoco-aggregate-report org.jacoco:jacoco-maven-plugin:0.8.1:report"
         uploadCoverageResultsForCodacy('./jacoco-aggregate-report', 'jacoco.xml')
 
 				// TODO: configure it to only use whe we created with maven, and not collect everything again
@@ -318,7 +318,8 @@ void uploadCoverageResultsForCodacy(final String aggregatedJacocoFilePath, final
       final String classpathParam = "-cp codacy-coverage-reporter-${version}-assembly.jar"
       final String reportFileParam = "-r ${aggregatedJacocoFilePath}/${aggregatedJacocoFilename}"
       final String prefixParam = "--prefix ${aggregatedJacocoFilePath}" // thx to https://github.com/codacy/codacy-coverage-reporter#failed-to-upload-report-not-found
-      sh "wget --quiet https://repo.metasfresh.com/service/local/repositories/mvn-3rdparty/content/com/codacy/codacy-coverage-reporter/${version}/codacy-coverage-reporter-${version}-assembly.jar"
+
+      sh "wget --quiet https://github.com/codacy/codacy-coverage-reporter/releases/download/${version}/codacy-coverage-reporter-${version}-assembly.jar"
       sh "java ${classpathParam} com.codacy.CodacyCoverageReporter -l Java ${reportFileParam} ${prefixParam}"
     }
   }
