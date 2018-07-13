@@ -24,14 +24,14 @@ Here come the actual release notes:
   * [#4220](https://github.com/metasfresh/metasfresh/issues/4220) Lot No. Control without mandatory Product ID
     * Improvement of the Lot No. Control Feature, now possible to record Lot No. without Mandatory Product ID. This allows to use the Feature also with Pharma Repack No.
   * [#4285](https://github.com/metasfresh/metasfresh/issues/4285) Invoice Document Outbound eMail enqueing
-    * Improvement of the Mail enqueueing process via Document Oubount Window.
+    * Improvement of the Mail enqueueing process via Document Outbound Window.
   * [#4308](https://github.com/metasfresh/metasfresh/issues/4308) Zoom from sales order to material dispo should open all referencing records
     * Improvement of the referenced Documents Link from Sales Order to material Disposition.
   * [#4311](https://github.com/metasfresh/metasfresh/issues/4311) Purchase schedules date: consider vendor lead time and non business days
     * New Feature for Purchase Candidate Calculation. Th Purchase Schedule Dates are now calculates based on vendor lead time and non business days.
   * [#4318](https://github.com/metasfresh/metasfresh/issues/4318) Split the current M_ShipmentSchedule_Update async queue processor
     * Performance Improvement for Shipment Schedules creation.
-  * [#4320](https://github.com/metasfresh/metasfresh/issues/4320) improve mass print oversight
+  * [#4320](https://github.com/metasfresh/metasfresh/issues/4320) Improve mass print oversight
     * Improved maintenance functionality for printing, making it much easier to support printing issue cases.
   * [#4340](https://github.com/metasfresh/metasfresh/issues/4340) REST API for creating sales orders and attaching files to them
     * New Endpoint for sales order creation and endpoint for file attachments so sales orders.
