@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
@@ -211,7 +210,7 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 
 	protected final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
-		final int processId = adProcessRepo.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
+		final int processId = adProcessRepo.retriveProcessIdByClassIfUnique(processClass);
 		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
 
 		return RelatedProcessDescriptor.builder()

@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
@@ -152,7 +151,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
+		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(processClass);
 		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
 
 		return RelatedProcessDescriptor.builder()

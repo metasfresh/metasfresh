@@ -170,7 +170,7 @@ public class WebuiHUTransformParametersFiller
 		}
 
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final I_AD_Process_Para processParameter = adProcessDAO.retriveProcessParameter(Env.getCtx(), processId, WEBUI_M_HU_Transform.PARAM_Action);
+		final I_AD_Process_Para processParameter = adProcessDAO.retriveProcessParameter(processId, WEBUI_M_HU_Transform.PARAM_Action);
 		final int actionsReferenceId = processParameter.getAD_Reference_Value_ID();
 		final Collection<ADRefListItem> allActiveActionItems = adReferenceDAO.retrieveListItems(actionsReferenceId);
 

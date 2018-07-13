@@ -8,7 +8,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -170,7 +169,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass))
+				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(processClass))
 				.webuiQuickAction(true)
 				.build();
 	}

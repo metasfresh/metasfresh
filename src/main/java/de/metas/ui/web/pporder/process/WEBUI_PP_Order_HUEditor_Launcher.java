@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
-import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,7 +158,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 	private RelatedProcessDescriptor createIssueTopLevelHusDescriptor()
 	{
 		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_PP_Order_HUEditor_IssueTopLevelHUs.class))
+				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(WEBUI_PP_Order_HUEditor_IssueTopLevelHUs.class))
 				.webuiQuickAction(true)
 				.build();
 	}
@@ -167,7 +166,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 	private RelatedProcessDescriptor createSelectHuAsSourceHuDescriptor()
 	{
 		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_PP_Order_HUEditor_Create_M_Source_HUs.class))
+				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(WEBUI_PP_Order_HUEditor_Create_M_Source_HUs.class))
 				.webuiQuickAction(true)
 				.build();
 	}
@@ -175,7 +174,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 	private RelatedProcessDescriptor createIssueTUsDescriptor()
 	{
 		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_PP_Order_HUEditor_IssueTUs.class))
+				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(WEBUI_PP_Order_HUEditor_IssueTUs.class))
 				.webuiQuickAction(true)
 				.build();
 	}

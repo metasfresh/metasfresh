@@ -125,7 +125,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		final int reportADProcessId = huProcessDescriptor.getProcessId();
 		final ProcessId processId = ProcessId.of(PROCESS_HANDLER_TYPE, reportADProcessId);
 
-		final I_AD_Process adProcess = Services.get(IADProcessDAO.class).retrieveProcessById(reportADProcessId);
+		final I_AD_Process adProcess = Services.get(IADProcessDAO.class).getById(reportADProcessId);
 		final IModelTranslationMap adProcessTrl = InterfaceWrapperHelper.getModelTranslationMap(adProcess);
 		final ITranslatableString caption = adProcessTrl.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName());
 		final ITranslatableString description = adProcessTrl.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription());
