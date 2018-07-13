@@ -29,7 +29,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.adempiere.ad.ui.ITable;
 import org.adempiere.ad.ui.ITableColorProvider;
-import org.adempiere.ad.ui.NullTableColorProvider;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
@@ -42,10 +41,8 @@ import org.compiere.model.Lookup;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -64,7 +61,7 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 	private static final long serialVersionUID = 3135422746697244864L;
 	
 	/** Logger */
-	private static Logger logger = LogManager.getLogger(VCellRenderer.class);
+	private static final Logger logger = LogManager.getLogger(VCellRenderer.class);
 
 	/**
 	 * Constructor for Grid
@@ -382,60 +379,12 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 		super.setValue(retValue);
 	}	// setValue
 
-	/**
-	 * to String
-	 * 
-	 * @return String representation
-	 */
 	@Override
 	public String toString()
 	{
 		return "VCellRenderer[" + m_columnName
 				+ ",DisplayType=" + m_displayType + " - " + m_lookup + "]";
 	}   // toString
-
-	/**
-	 * Dispose
-	 */
-	public void dispose()
-	{
-		if (m_lookup != null)
-			m_lookup.dispose();
-		m_lookup = null;
-	}	// dispose
-
-	public String getColumnName()
-	{
-		return m_columnName;
-	}
-
-	public Lookup getLookup()
-	{
-		return m_lookup;
-	}
-
-	public int getDisplayType()
-	{
-		return m_displayType;
-	}
-
-	public boolean isPassword()
-	{
-		return m_password;
-	}
-	
-	public ITableColorProvider getColorProvider(final JTable table)
-	{
-		if (table instanceof ITable)
-		{
-			final ITableColorProvider colorProvider = ((ITable)table).getColorProvider();
-			return colorProvider;
-		}
-		else
-		{
-			return NullTableColorProvider.instance;
-		}
-	}
 
 	/**
 	 * Sets precision to be used in case we are dealing with a number.
