@@ -4,6 +4,9 @@ import org.adempiere.util.Check;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
+import de.metas.hash.HashableString;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -55,5 +58,10 @@ public class JSONLoginAuthRequest
 
 		this.username = username;
 		this.password = password;
+	}
+
+	public HashableString getPasswordAsEncryptableString()
+	{
+		return HashableString.ofPlainValue(password);
 	}
 }

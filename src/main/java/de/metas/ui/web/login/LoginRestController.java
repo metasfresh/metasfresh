@@ -33,6 +33,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.hash.HashableString;
 import de.metas.i18n.ILanguageBL;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.config.WebConfig;
@@ -108,6 +109,11 @@ public class LoginRestController
 	@PostMapping("/authenticate")
 	public JSONLoginAuthResponse authenticate(@RequestBody final JSONLoginAuthRequest request)
 	{
+		return authenticate(request.getUsername(), request.getPasswordAsEncryptableString());
+	}
+
+	private JSONLoginAuthResponse authenticate(final String username, final HashableString password)
+	{
 		userSession.assertNotLoggedIn();
 
 		final Login loginService = getLoginService();
@@ -115,7 +121,7 @@ public class LoginRestController
 
 		try
 		{
-			final Set<KeyNamePair> availableRoles = loginService.authenticate(request.getUsername(), request.getPassword());
+			final Set<KeyNamePair> availableRoles = loginService.authenticate(username, password);
 
 			//
 			// Create JSON roles
@@ -379,9 +385,8 @@ public class LoginRestController
 		final IUserBL usersService = Services.get(IUserBL.class);
 		final I_AD_User user = usersService.resetPassword(token, request.getPassword());
 
-		return authenticate(JSONLoginAuthRequest.builder()
-				.username(user.getEMail())
-				.password(user.getPassword())
-				.build());
+		final String username = user.getEMail();
+		final HashableString password = usersService.getUserPassword(user);
+		return authenticate(username, password);
 	}
 }
