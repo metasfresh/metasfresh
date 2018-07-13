@@ -18,11 +18,17 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4217](https://github.com/metasfresh/metasfresh/issues/4217) IFA Product Fields in Pharma Product readonly
+    * Improvement of Pharma vertical in Product masterdata, now showing the fields readonly that are set by IFA Product Import.
   * [#4219](https://github.com/metasfresh/metasfresh/issues/4219) Import Datev Primanota for Payments, Allocations
+    * New Import Feature for the German accounting Software DATEV. It's possible to import DATEV Primanota Payments now.
   * [#4220](https://github.com/metasfresh/metasfresh/issues/4220) Lot No. Control without mandatory Product ID
+    * Improvement of the Lot No. Control Feature, now possible to record Lot No. without Mandatory Product ID. This allows to use the Feature also with Pharma Repack No.
   * [#4285](https://github.com/metasfresh/metasfresh/issues/4285) Invoice Document Outbound eMail enqueing
+    * Improvement of the Mail enqueueing process via Document Oubount Window.
   * [#4308](https://github.com/metasfresh/metasfresh/issues/4308) Zoom from sales order to material dispo should open all referencing records
+    * Improvement of the referenced Documents Link from Sales Order to material Disposition.
   * [#4311](https://github.com/metasfresh/metasfresh/issues/4311) Purchase schedules date: consider vendor lead time and non business days
+    * New Feature for Purchase Candidate Calculation. Th Purchase Schedule Dates are now calculates based on vendor lead time and non business days.
   * [#4318](https://github.com/metasfresh/metasfresh/issues/4318) Split the current M_ShipmentSchedule_Update async queue processor
   * [#4320](https://github.com/metasfresh/metasfresh/issues/4320) improve mass print oversight
   * [#4340](https://github.com/metasfresh/metasfresh/issues/4340) REST API for creating sales orders and attaching files to them
