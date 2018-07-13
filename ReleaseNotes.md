@@ -41,9 +41,9 @@ Here come the actual release notes:
     * Pagination Improvement. Now deactivating previous/ next buttons in pagination on fist/ last page.
 
 * metasfresh-dist
-  * [#47](https://github.com/metasfresh/metasfresh-dist/issues/47) provide standalone metasfresh-dist-report docker image
+  * [#47](https://github.com/metasfresh/metasfresh-dist/issues/47) Provide standalone metasfresh-dist-report docker image
     * New Standalone docker image for distribution reports.
-  * [#48](https://github.com/metasfresh/metasfresh-dist/issues/48) provide standalone metasfresh-webui-frontend k8s dev deployment
+  * [#48](https://github.com/metasfresh/metasfresh-dist/issues/48) Provide standalone metasfresh-webui-frontend k8s dev deployment
     * New Standalone docker image for kubernetes webui frontend.
 
 ## Fixes
