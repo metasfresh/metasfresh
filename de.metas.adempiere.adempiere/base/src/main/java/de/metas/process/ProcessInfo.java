@@ -1063,7 +1063,7 @@ public final class ProcessInfo implements Serializable
 
 		public ProcessInfoBuilder setAD_ProcessByClassname(final String processClassname)
 		{
-			final int adProcessId = Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(getCtx(), processClassname);
+			final int adProcessId = Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(processClassname);
 			if (adProcessId <= 0)
 			{
 				throw new AdempiereException("@NotFound@ @AD_Process_ID@ (@Classname@: " + processClassname + ")");
