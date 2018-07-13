@@ -47,13 +47,13 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.IDocumentRepostingBL;
-import de.metas.acct.async.ScheduleFactAcctLogProcessingFactAcctListener;
+import de.metas.acct.aggregation.async.ScheduleFactAcctLogProcessingFactAcctListener;
 import de.metas.acct.model.I_C_VAT_Code;
-import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingHandler;
-import de.metas.acct.spi.impl.GLJournalDocumentRepostingHandler;
-import de.metas.acct.spi.impl.InvoiceDocumentRepostingHandler;
-import de.metas.acct.spi.impl.PaymentDocumentRepostingHandler;
+import de.metas.acct.posting.IDocumentRepostingSupplierService;
+import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
+import de.metas.acct.spi.impl.GLJournalDocumentRepostingSupplier;
+import de.metas.acct.spi.impl.InvoiceDocumentRepostingSupplier;
+import de.metas.acct.spi.impl.PaymentDocumentRepostingSupplier;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 
@@ -74,13 +74,13 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	{
 		Services.get(IFactAcctListenersService.class).registerListener(ScheduleFactAcctLogProcessingFactAcctListener.instance);
 
-		final IDocumentRepostingBL documentBL = Services.get(IDocumentRepostingBL.class);
+		final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
 
 		// FRESH-539: register Reposting Handlers
-		documentBL.registerHandler(new InvoiceDocumentRepostingHandler());
-		documentBL.registerHandler(new PaymentDocumentRepostingHandler());
-		documentBL.registerHandler(new AllocationHdrDocumentRepostingHandler());
-		documentBL.registerHandler(new GLJournalDocumentRepostingHandler());
+		documentBL.registerSupplier(new InvoiceDocumentRepostingSupplier());
+		documentBL.registerSupplier(new PaymentDocumentRepostingSupplier());
+		documentBL.registerSupplier(new AllocationHdrDocumentRepostingSupplier());
+		documentBL.registerSupplier(new GLJournalDocumentRepostingSupplier());
 
 		if (Services.get(IPostingService.class).isEnabled())
 		{

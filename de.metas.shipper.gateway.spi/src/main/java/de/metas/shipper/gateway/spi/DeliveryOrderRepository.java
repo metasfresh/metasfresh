@@ -39,7 +39,7 @@ public interface DeliveryOrderRepository
 	/**
 	 * Assumes that there is a data record for the given {@code deliveryOrderRepoId}.
 	 */
-	DeliveryOrder getByRepoId(int deliveryOrderRepoId);
+	DeliveryOrder getByRepoId(DeliveryOrderId deliveryOrderRepoId);
 
 	/**
 	 * Create or update the internal data record for the given {@code order}. The returned instance shall always have a {@code repoId > 0}.

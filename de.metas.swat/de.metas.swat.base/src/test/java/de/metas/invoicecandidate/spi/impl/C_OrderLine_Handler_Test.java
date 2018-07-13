@@ -167,21 +167,17 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 				result = null;
 
 				final Properties ctx = Env.getCtx();
-				final String trxName = ITrx.TRXNAME_None;
 				taxBL.getTax(
 						ctx
 						, order1
 						, -1 // taxCategoryId
 						, oL1.getM_Product_ID()
-						, -1 // chargeId
 						, order1.getDatePromised()
 						, order1.getDatePromised()
 						, order1.getAD_Org_ID()
 						, order1.getM_Warehouse()
-						, order1.getBill_BPartner_ID()
 						, order1.getC_BPartner_Location_ID()
-						, order1.isSOTrx()
-						, trxName);
+						, order1.isSOTrx());
 				minTimes = 0;
 				result = 3;
 		}};

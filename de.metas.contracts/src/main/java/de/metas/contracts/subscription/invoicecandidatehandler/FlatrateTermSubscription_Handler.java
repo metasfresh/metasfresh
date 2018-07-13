@@ -27,12 +27,12 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
@@ -83,15 +83,12 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				term,
 				taxCategoryId,
 				term.getM_Product_ID(),
-				-1, // chargeId
 				ic.getDateOrdered(), // billDate
 				ic.getDateOrdered(), // shipDate
 				term.getAD_Org_ID(),
 				warehouse,
-				term.getBill_Location_ID(),
-				-1, // ship location id
-				isSOTrx,
-				ITrx.TRXNAME_ThreadInherited);
+				Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID()), // ship location id
+				isSOTrx);
 		ic.setC_Tax_ID(taxId);
 	}
 

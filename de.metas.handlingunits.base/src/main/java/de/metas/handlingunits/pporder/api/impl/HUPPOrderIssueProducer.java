@@ -39,6 +39,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
@@ -62,8 +63,10 @@ import lombok.NonNull;
 public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 {
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private Date movementDate;
 	private List<I_PP_Order_BOMLine> targetOrderBOMLines;
@@ -127,13 +130,12 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		return setTargetOrderBOMLines(ppOrderBOMLines);
 	}
 
-
 	@Override
 	public List<I_PP_Order_Qty> createDraftIssues(@NonNull final Collection<I_M_HU> hus)
 	{
 		return new CreateDraftIssues(targetOrderBOMLines, movementDate).createDraftIssues(hus);
 	}
-	
+
 	@Override
 	public void reverseDraftIssue(@NonNull final I_PP_Order_Qty candidate)
 	{
@@ -147,8 +149,8 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(candidate);
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
 
-		handlingUnitsBL.setHUStatus(huContext, huToIssue, X_M_HU.HUSTATUS_Active);
-		Services.get(IHandlingUnitsDAO.class).saveHU(huToIssue);
+		huStatusBL.setHUStatus(huContext, huToIssue, X_M_HU.HUSTATUS_Active);
+		handlingUnitsDAO.saveHU(huToIssue);
 
 		// Delete PP_Order_ProductAttributes for issue candidate's HU
 		ppOrderProductAttributeDAO.deleteForHU(candidate.getPP_Order_ID(), huToIssue.getM_HU_ID());

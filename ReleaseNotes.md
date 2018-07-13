@@ -18,14 +18,23 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4217](https://github.com/metasfresh/metasfresh/issues/4217) IFA Product Fields in Pharma Product readonly
+    * Improvement of Pharma vertical in Product masterdata, now showing the fields readonly that are set by IFA Product Import.
   * [#4219](https://github.com/metasfresh/metasfresh/issues/4219) Import Datev Primanota for Payments, Allocations
+    * New Import Feature for the German accounting Software DATEV. It's possible to import DATEV Primanota Payments now.
   * [#4220](https://github.com/metasfresh/metasfresh/issues/4220) Lot No. Control without mandatory Product ID
+    * Improvement of the Lot No. Control Feature, now possible to record Lot No. without Mandatory Product ID. This allows to use the Feature also with Pharma Repack No.
   * [#4285](https://github.com/metasfresh/metasfresh/issues/4285) Invoice Document Outbound eMail enqueing
+    * Improvement of the Mail enqueueing process via Document Oubount Window.
   * [#4308](https://github.com/metasfresh/metasfresh/issues/4308) Zoom from sales order to material dispo should open all referencing records
+    * Improvement of the referenced Documents Link from Sales Order to material Disposition.
   * [#4311](https://github.com/metasfresh/metasfresh/issues/4311) Purchase schedules date: consider vendor lead time and non business days
+    * New Feature for Purchase Candidate Calculation. Th Purchase Schedule Dates are now calculates based on vendor lead time and non business days.
   * [#4318](https://github.com/metasfresh/metasfresh/issues/4318) Split the current M_ShipmentSchedule_Update async queue processor
+    * Performance Improvement for Shipment Schedules creation.
   * [#4320](https://github.com/metasfresh/metasfresh/issues/4320) improve mass print oversight
+    * Improved maintenance functionality for printing, making it much easier to support printing issue cases.
   * [#4340](https://github.com/metasfresh/metasfresh/issues/4340) REST API for creating sales orders and attaching files to them
+    * New Endpoint for sales order creation and endpoint for file attachments so sales orders.
 
 * metasfresh-webui-frontend
   * [#1857](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1857) Readonly next and previous page buttons
@@ -33,16 +42,26 @@ Here come the actual release notes:
 
 * metasfresh-dist
   * [#47](https://github.com/metasfresh/metasfresh-dist/issues/47) provide standalone metasfresh-dist-report docker image
+    * New Standalone docker image for distribution reports.
   * [#48](https://github.com/metasfresh/metasfresh-dist/issues/48) provide standalone metasfresh-webui-frontend k8s dev deployment
+    * New Standalone docker image for kubernetes webui frontend.
 
 ## Fixes
 * metasfresh
   * [#4271](https://github.com/metasfresh/metasfresh/issues/4271) Reactivated and completed sales order is considered as new sales order in Material Dispo
+    * Fixes the Material Dispo entry creation after reactivating and completing sales Orders.
   * [#4276](https://github.com/metasfresh/metasfresh/issues/4276) HU Editor in picking terminal shows all HUs: not filtered for product, and HUs with status: Shipped
+    * Fixes the Filtering in the Handling Unit Editor of Picking Terminal. Now only showing Handling Units that fit to the selected Product.
   * [#4284](https://github.com/metasfresh/metasfresh/issues/4284) Document Outbound eMail action
+    * Fixes the Document Outbound eMail Action.
   * [#4307](https://github.com/metasfresh/metasfresh/issues/4307) Reversed material receipt not considered correctly in Material Cockpit
+    * Bugfix for the Material Receipt reversal Handling in Material Cockpit.
   * [#4314](https://github.com/metasfresh/metasfresh/issues/4314) metasfresh-app server startup stalls if no activeMQ broker is available
+    * Fixes the startup of App Server in cases n activeMQ broker is not available.
   * [#4342](https://github.com/metasfresh/metasfresh/issues/4342) ATP in batch entry is wrong after attributes are added
+    * Fixes the Available to Pomise Quantity after adding attribute values to a Handling Unit.
+  * [#4349](https://github.com/metasfresh/metasfresh/issues/4349) Error when creating a bpartner on the fly and not setting a name
+    * Bugfix for the Business Partner creation via Sales Order window.
 
 * metasfresh-webui-frontend
   * [#1467](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1467) Advanced Edit shortcut not working correctly

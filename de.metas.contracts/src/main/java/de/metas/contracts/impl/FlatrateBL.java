@@ -69,6 +69,7 @@ import org.compiere.model.MRefList;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
@@ -428,20 +429,19 @@ public class FlatrateBL implements IFlatrateBL
 		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
+		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
 				term,
 				taxCategoryId,
 				productId,
-				-1, // chargeId
 				dataEntry.getDate_Reported(),// billDate
 				dataEntry.getDate_Reported(),// shipDate
 				orgId,
 				warehouse,
-				billLocationID,
-				-1 // ship location id
-				, isSOTrx,
-				trxName);
+				shipToLocationId,
+				isSOTrx);
 
 		newCand.setC_Tax_ID(taxId);
 
@@ -476,7 +476,6 @@ public class FlatrateBL implements IFlatrateBL
 			final BigDecimal qtyToInvoice)
 	{
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
-
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(fc);
@@ -558,12 +557,18 @@ public class FlatrateBL implements IFlatrateBL
 		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
+		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, term, taxCategoryId, productIdForIc, -1 // chargeId
-				, dataEntry.getDate_Reported() // billDate
-				, dataEntry.getDate_Reported() // shipDate
-				, dataEntry.getAD_Org_ID(), warehouse, term.getBill_BPartner_ID(), -1 // ship location id
-				, isSOTrx, trxName);
+				ctx,
+				term,
+				taxCategoryId,
+				productIdForIc,
+				dataEntry.getDate_Reported(), // billDate
+				dataEntry.getDate_Reported(), // shipDate
+				dataEntry.getAD_Org_ID(),
+				warehouse,
+				shipToLocationId,
+				isSOTrx);
 
 		newCand.setC_Tax_ID(taxId);
 

@@ -82,16 +82,15 @@ public class MImage extends X_AD_Image
 			return new MImage(ctx, AD_Image_ID, null);
 		}
 		//
-		final Integer key = new Integer(AD_Image_ID);
-		MImage retValue = s_cache.get(key);
+		MImage retValue = s_cache.get(AD_Image_ID);
 		if (retValue != null)
 		{
 			return retValue;
 		}
 		retValue = new MImage(ctx, AD_Image_ID, null);
-		if (retValue.get_ID() != 0 && Ini.isClient())
+		if (retValue.getAD_Image_ID() > 0 && Ini.isClient())
 		{
-			s_cache.put(key, retValue);
+			s_cache.put(AD_Image_ID, retValue);
 		}
 		return retValue;
 	} // get

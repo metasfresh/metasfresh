@@ -693,8 +693,9 @@ public class ServerMonitor extends HttpServlet
 				table.addElement(line);
 				line = new tr();
 				line.addElement(new th().addElement("Start - Elapsed"));
-				line.addElement(new td().addElement(WebEnv.getCellContent(server.getStartTime())
-						+ " - " + TimeUtil.formatElapsed(server.getStartTime())));
+				
+				final Timestamp startTime = server.getStartTime();
+				line.addElement(new td().addElement(WebEnv.getCellContent(startTime) + " - " + TimeUtil.formatElapsed(startTime)));
 			}
 			else
 			{

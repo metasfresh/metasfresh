@@ -3454,12 +3454,11 @@ public abstract class PO
 					value = null;
 				}
 
-				if (value == null || value.isEmpty())
+				if (Check.isEmpty(value))
 				{
 					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 
 					value = documentNoFactory.createValueBuilderFor(this)
-
 							.setFailOnError(true) // backward compatiblity: initially here an DBException was thrown
 							.build();
 					set_ValueNoCheck(index, value);

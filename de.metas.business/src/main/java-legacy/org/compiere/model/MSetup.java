@@ -307,9 +307,6 @@ public final class MSetup
 			log.error("UserRole OrgUser+Org NOT inserted");
 
 		//	Processors
-		final MAcctProcessor ap = new MAcctProcessor(m_client, AD_User_ID);
-		ap.save();
-
 		final MRequestProcessor rp = new MRequestProcessor (m_client, AD_User_ID);
 		rp.save();
 

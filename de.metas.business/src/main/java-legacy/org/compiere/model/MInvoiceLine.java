@@ -601,7 +601,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				billDate,
 				taxCategoryId,
 				isSOTrx,
-				get_TrxName(),
 				true); // throwEx
 
 		if (taxId <= 0)

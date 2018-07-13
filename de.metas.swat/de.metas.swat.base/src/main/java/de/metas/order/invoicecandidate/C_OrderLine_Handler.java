@@ -41,6 +41,7 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocumentBL;
@@ -196,15 +197,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				ic,
 				orderLine.getC_TaxCategory_ID(),
 				orderLine.getM_Product_ID(),
-				orderLine.getC_Charge_ID(), // chargeId
 				order.getDatePromised(), // billDate
 				order.getDatePromised(), // shipDate
 				order.getAD_Org_ID(),
 				order.getM_Warehouse(),
-				order.getBill_Location_ID(), // bill location id
-				order.getC_BPartner_Location_ID(), // ship location id
-				order.isSOTrx(), // isSOTrx
-				trxName);
+				Util.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
+				order.isSOTrx());
 		ic.setC_Tax_ID(taxId);
 
 		// set Quality Issue Percentage Override

@@ -10,12 +10,12 @@ package de.metas.document.archive.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,6 +35,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import lombok.NonNull;
 
 /**
  * Handles all jobs related to {@link I_C_Doc_Outbound_Config}:
@@ -42,20 +43,17 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
  * <li>on initialization, it registers all {@link DocOutboundProducerValidator} to {@link IDocOutboundProducerService}, one for each {@link I_C_Doc_Outbound_Config}
  * <li>automatically register/unregister {@link DocOutboundProducerValidator} when a particular {@link I_C_Doc_Outbound_Config} is created, was changed or was deleted
  * </ul>
- * 
+ *
  * @author tsa
- * 
+ *
  */
 @Validator(I_C_Doc_Outbound_Config.class)
 class C_Doc_Outbound_Config
 {
 	private final Archive_Main_Validator parent;
 
-	public C_Doc_Outbound_Config(final Archive_Main_Validator parent)
+	public C_Doc_Outbound_Config(@NonNull final Archive_Main_Validator parent)
 	{
-		super();
-
-		Check.assumeNotNull(parent, "parent is not null");
 		Check.assumeNotNull(parent.getEngine(), "engine is available");
 
 		this.parent = parent;

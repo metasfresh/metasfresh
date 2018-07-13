@@ -23,23 +23,75 @@
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details($P{c_order_id}, $P{ad_language});]]>
 	</queryString>
-	<field name="line" class="java.math.BigDecimal"/>
-	<field name="name" class="java.lang.String"/>
-	<field name="attributes" class="java.lang.String"/>
-	<field name="huqty" class="java.math.BigDecimal"/>
-	<field name="huname" class="java.lang.String"/>
-	<field name="qtyenteredinpriceuom" class="java.math.BigDecimal"/>
-	<field name="priceentered" class="java.math.BigDecimal"/>
-	<field name="uomsymbol" class="java.lang.String"/>
-	<field name="stdprecision" class="java.math.BigDecimal"/>
-	<field name="linenetamt" class="java.math.BigDecimal"/>
-	<field name="discount" class="java.math.BigDecimal"/>
-	<field name="isdiscountprinted" class="java.lang.String"/>
-	<field name="rate" class="java.lang.String"/>
-	<field name="isprinttax" class="java.lang.String"/>
-	<field name="description" class="java.lang.String"/>
-	<field name="bp_product_no" class="java.lang.String"/>
-	<field name="bp_product_name" class="java.lang.String"/>
+	<field name="line" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="line"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
+	</field>
+	<field name="huqty" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="huqty"/>
+	</field>
+	<field name="huname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="huname"/>
+	</field>
+	<field name="qtyenteredinpriceuom" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qtyenteredinpriceuom"/>
+	</field>
+	<field name="priceentered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="priceentered"/>
+	</field>
+	<field name="uomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
+	</field>
+	<field name="stdprecision" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="stdprecision"/>
+	</field>
+	<field name="linenetamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="linenetamt"/>
+	</field>
+	<field name="discount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="discount"/>
+	</field>
+	<field name="isdiscountprinted" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isdiscountprinted"/>
+	</field>
+	<field name="rate" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="rate"/>
+	</field>
+	<field name="isprinttax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isprinttax"/>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="description"/>
+	</field>
+	<field name="bp_product_no" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_product_no"/>
+	</field>
+	<field name="bp_product_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_product_name"/>
+	</field>
+	<field name="cursymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
+	</field>
+	<field name="p_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="p_value"/>
+	</field>
+	<field name="p_description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="p_description"/>
+	</field>
+	<field name="p_documentnote" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="p_documentnote"/>
+	</field>
+	<field name="order_description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="order_description"/>
+	</field>
+	<field name="price_pattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="price_pattern"/>
+	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -327,6 +379,7 @@
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{priceentered}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{price_pattern}]]></patternExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="546" y="0" width="26" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">

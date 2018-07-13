@@ -9,7 +9,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
 /**
- * Document Interface
+ * Document Interface.
+ * <p>
+ * Important: if you want to create new documents, then please don't subclass auto-generated {@code X_*} classes (such as was done with {@code MOrder} or {@code MInvoice}),
+ * but rather implement {@link DocumentHandler}.
  *
  * @author based on initial version of Jorg Janke
  * @author metas-dev <dev@metasfresh.com>
@@ -105,7 +108,7 @@ public interface IDocument
 
 	/** @return true if success */
 	boolean closeIt();
-	
+
 	default void unCloseIt()
 	{
 		throw new UnsupportedOperationException();
@@ -168,7 +171,7 @@ public interface IDocument
 	{
 		return TableRecordReference.of(get_Table_ID(), get_ID());
 	}
-	
+
 	default Object getDocumentModel()
 	{
 		return this;

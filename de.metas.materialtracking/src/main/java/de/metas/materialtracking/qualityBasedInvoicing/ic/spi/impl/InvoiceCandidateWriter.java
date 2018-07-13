@@ -602,8 +602,6 @@ public class InvoiceCandidateWriter
 		final IContextAware contextProvider = getContext();
 
 		final Properties ctx = contextProvider.getCtx();
-		final String trxName = contextProvider.getTrxName();
-
 		final int taxCategoryId = pricingResult.getC_TaxCategory_ID();
 		final I_M_Warehouse warehouse = null; // warehouse: N/A
 		final boolean isSOTrx = false;
@@ -613,14 +611,12 @@ public class InvoiceCandidateWriter
 				ic,
 				taxCategoryId,
 				ic.getM_Product_ID(),
-				-1 // C_Charge_ID
-				, date // bill date
-				, date // ship date
-				, ic.getAD_Org_ID(),
+				date, // bill date
+				date, // ship date
+				ic.getAD_Org_ID(),
 				warehouse,
-				ic.getBill_Location_ID(),
-				-1 // shipPartnerLocation
-				, isSOTrx, trxName);
+				ic.getBill_Location_ID(), // shipPartnerLocation TODO
+				isSOTrx);
 		ic.setC_Tax_ID(taxID);
 	}
 }
