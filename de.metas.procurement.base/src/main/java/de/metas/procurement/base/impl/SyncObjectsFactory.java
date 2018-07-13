@@ -284,7 +284,7 @@ public class SyncObjectsFactory
 		}
 
 		final String email = contact.getEMail();
-		final String password = contact.getPassword();
+		final String password = contact.getProcurementPassword();
 
 		if (Check.isEmpty(email, true))
 		{
@@ -450,7 +450,7 @@ public class SyncObjectsFactory
 				.create()
 				.list();
 
-		final List<SyncProduct> syncProducts = new ArrayList<SyncProduct>(allPmmProducts.size());
+		final List<SyncProduct> syncProducts = new ArrayList<>(allPmmProducts.size());
 		for (final I_PMM_Product pmmProduct : allPmmProducts)
 		{
 			final SyncProduct syncProduct = createSyncProduct(pmmProduct);
