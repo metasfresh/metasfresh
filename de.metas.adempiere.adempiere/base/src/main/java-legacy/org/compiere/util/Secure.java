@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -23,7 +23,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 import org.slf4j.Logger;
@@ -39,24 +38,25 @@ import de.metas.logging.LogManager;
  * <ul>
  * <li>2007-01-27 - teo_sarca - [ 1598095 ] class Secure is not working with UTF8
  * </ul>
- *  
- *  @author     Jorg Janke
- *  @version    $Id: Secure.java,v 1.2 2006/07/30 00:52:23 jjanke Exp $
+ * 
+ * @author Jorg Janke
+ * @version $Id: Secure.java,v 1.2 2006/07/30 00:52:23 jjanke Exp $
  */
 public class Secure implements SecureInterface
 {
 	/**************************************************************************
-	 *	Hash checksum number
-	 *  @param key key
-	 *  @return checksum number
+	 * Hash checksum number
+	 * 
+	 * @param key key
+	 * @return checksum number
 	 */
-	public static int hash (String key)
+	public static int hash(String key)
 	{
 		long tableSize = 2147483647;	// one less than max int
 		long hashValue = 0;
 
 		for (int i = 0; i < key.length(); i++)
-			hashValue = (37 * hashValue) + (key.charAt(i) -31);
+			hashValue = (37 * hashValue) + (key.charAt(i) - 31);
 
 		hashValue %= tableSize;
 		if (hashValue < 0)
@@ -64,20 +64,20 @@ public class Secure implements SecureInterface
 
 		int retValue = (int)hashValue;
 		return retValue;
-	}	//	hash
+	}	// hash
 
-	
 	/**************************************************************************
-	 *  Convert Byte Array to Hex String
-	 *  @param bytes bytes
-	 *  @return HexString
+	 * Convert Byte Array to Hex String
+	 * 
+	 * @param bytes bytes
+	 * @return HexString
 	 */
-	public static String convertToHexString (byte[] bytes)
+	public static String convertToHexString(byte[] bytes)
 	{
-		//	see also Util.toHex
+		// see also Util.toHex
 		int size = bytes.length;
-		StringBuffer buffer = new StringBuffer(size*2);
-		for(int i=0; i<size; i++)
+		StringBuffer buffer = new StringBuffer(size * 2);
+		for (int i = 0; i < size; i++)
 		{
 			// convert byte to an int
 			int x = bytes[i];
@@ -91,19 +91,19 @@ public class Secure implements SecureInterface
 			buffer.append(tmp);
 		}
 		return buffer.toString();
-	}   //  convertToHexString
-
+	}   // convertToHexString
 
 	/**
-	 *  Convert Hex String to Byte Array
-	 *  @param hexString hex string
-	 *  @return byte array
+	 * Convert Hex String to Byte Array
+	 * 
+	 * @param hexString hex string
+	 * @return byte array
 	 */
-	public static byte[] convertHexString (String hexString)
+	public static byte[] convertHexString(String hexString)
 	{
 		if (hexString == null || hexString.length() == 0)
 			return null;
-		int size = hexString.length()/2;
+		int size = hexString.length() / 2;
 		byte[] retValue = new byte[size];
 		String inString = hexString.toLowerCase();
 
@@ -111,8 +111,8 @@ public class Secure implements SecureInterface
 		{
 			for (int i = 0; i < size; i++)
 			{
-				int index = i*2;
-				int ii = Integer.parseInt(inString.substring(index, index+2), 16);
+				int index = i * 2;
+				int ii = Integer.parseInt(inString.substring(index, index + 2), 16);
 				retValue[i] = (byte)ii;
 			}
 			return retValue;
@@ -122,29 +122,28 @@ public class Secure implements SecureInterface
 			log.trace(hexString + " - " + e.getLocalizedMessage());
 		}
 		return null;
-	}   //  convertToHexString
-
+	}   // convertToHexString
 
 	/**************************************************************************
-	 * 	Adempiere Security
+	 * Adempiere Security
 	 */
 	public Secure()
 	{
 		initCipher();
-	}	//	Secure
+	}	// Secure
 
-	/** Adempiere Cipher				*/
-	private Cipher 			m_cipher = null;
-	/** Adempiere Key				*/
-	private SecretKey 		m_key = null;
-	/** Message Digest				*/
-	private MessageDigest	m_md = null;
+	/** Adempiere Cipher */
+	private Cipher m_cipher = null;
+	/** Adempiere Key */
+	private SecretKey m_key = null;
+	/** Message Digest */
+	private MessageDigest m_md = null;
 
-	/**	Logger						*/
-	private static Logger	log	= LogManager.getLogger(Secure.class.getName());
+	/** Logger */
+	private static Logger log = LogManager.getLogger(Secure.class.getName());
 
 	/**
-	 * 	Initialize Cipher & Key
+	 * Initialize Cipher & Key
 	 */
 	private synchronized void initCipher()
 	{
@@ -154,47 +153,31 @@ public class Secure implements SecureInterface
 		try
 		{
 			cc = Cipher.getInstance("DES/ECB/PKCS5Padding");
-			//	Key
-			if (false)
-			{
-				KeyGenerator keygen = KeyGenerator.getInstance("DES");
-				m_key = keygen.generateKey();
-				byte[] key = m_key.getEncoded();
-				StringBuffer sb = new StringBuffer ("Key ")
-					.append(m_key.getAlgorithm())
-					.append("(").append(key.length).append(")= ");
-				for (int i = 0; i < key.length; i++)
-					sb.append(key[i]).append(",");
-				log.info(sb.toString());
-			}
-			else
-				m_key = new javax.crypto.spec.SecretKeySpec
-					(new byte[] {100,25,28,-122,-26,94,-3,-26}, "DES");
+			m_key = new javax.crypto.spec.SecretKeySpec(new byte[] { 100, 25, 28, -122, -26, 94, -3, -26 }, "DES");
 		}
 		catch (Exception ex)
 		{
 			log.error("", ex);
 		}
 		m_cipher = cc;
-	}	//	initCipher
+	}	// initCipher
 
-	
-	
 	/**
-	 *	Encryption.
-	 *  @param value clear value
-	 *  @return encrypted String
+	 * Encryption.
+	 * 
+	 * @param value clear value
+	 * @return encrypted String
 	 */
 	@Override
-	public String encrypt (String value)
+	public String encrypt(String value)
 	{
 		String clearText = value;
 		if (clearText == null)
 			clearText = "";
-		//	Init
+		// Init
 		if (m_cipher == null)
 			initCipher();
-		//	Encrypt
+		// Encrypt
 		if (m_cipher != null)
 		{
 			try
@@ -212,27 +195,28 @@ public class Secure implements SecureInterface
 				log.info("Problem encrypting string", ex);
 			}
 		}
-		//	Fallback
+		// Fallback
 		return CLEARVALUE_START + value + CLEARVALUE_END;
-	}	//	encrypt
+	}	// encrypt
 
 	/**
-	 *	Decryption.
-	 * 	The methods must recognize clear text values
-	 *  @param value encrypted value
-	 *  @return decrypted String
+	 * Decryption.
+	 * The methods must recognize clear text values
+	 * 
+	 * @param value encrypted value
+	 * @return decrypted String
 	 */
 	@Override
-	public String decrypt (String value)
+	public String decrypt(String value)
 	{
 		if (value == null || value.length() == 0)
 			return value;
 		boolean isEncrypted = value.startsWith(ENCRYPTEDVALUE_START) && value.endsWith(ENCRYPTEDVALUE_END);
 		if (isEncrypted)
-			value = value.substring(ENCRYPTEDVALUE_START.length(), value.length()-ENCRYPTEDVALUE_END.length());
-		//	Needs to be hex String	
+			value = value.substring(ENCRYPTEDVALUE_START.length(), value.length() - ENCRYPTEDVALUE_END.length());
+		// Needs to be hex String
 		byte[] data = convertHexString(value);
-		if (data == null)	//	cannot decrypt
+		if (data == null)	// cannot decrypt
 		{
 			if (isEncrypted)
 			{
@@ -240,14 +224,14 @@ public class Secure implements SecureInterface
 				log.info("Failed");
 				return null;
 			}
-			//	assume not encrypted
+			// assume not encrypted
 			return value;
 		}
-		//	Init
+		// Init
 		if (m_cipher == null)
 			initCipher();
 
-		//	Encrypt
+		// Encrypt
 		if (m_cipher != null && value != null && value.length() > 0)
 		{
 			try
@@ -267,134 +251,140 @@ public class Secure implements SecureInterface
 			}
 		}
 		return null;
-	}	//	decrypt
+	}	// decrypt
 
 	/**
-	 *	Encryption.
-	 * 	The methods must recognize clear text values
-	 *  @param value clear value
-	 *  @return encrypted String
+	 * Encryption.
+	 * The methods must recognize clear text values
+	 * 
+	 * @param value clear value
+	 * @return encrypted String
 	 */
 	@Override
-	public Integer encrypt (Integer value)
+	public Integer encrypt(Integer value)
 	{
 		return value;
-	}	//	encrypt
+	}	// encrypt
 
 	/**
-	 *	Decryption.
-	 * 	The methods must recognize clear text values
-	 *  @param value encrypted value
-	 *  @return decrypted String
+	 * Decryption.
+	 * The methods must recognize clear text values
+	 * 
+	 * @param value encrypted value
+	 * @return decrypted String
 	 */
 	@Override
-	public Integer decrypt (Integer value)
+	public Integer decrypt(Integer value)
 	{
 		return value;
-	}	//	decrypt
-	
-	/**
-	 *	Encryption.
-	 * 	The methods must recognize clear text values
-	 *  @param value clear value
-	 *  @return encrypted String
-	 */
-	@Override
-	public BigDecimal encrypt (BigDecimal value)
-	{
-		return value;
-	}	//	encrypt
+	}	// decrypt
 
 	/**
-	 *	Decryption.
-	 * 	The methods must recognize clear text values
-	 *  @param value encrypted value
-	 *  @return decrypted String
+	 * Encryption.
+	 * The methods must recognize clear text values
+	 * 
+	 * @param value clear value
+	 * @return encrypted String
 	 */
 	@Override
-	public BigDecimal decrypt (BigDecimal value)
+	public BigDecimal encrypt(BigDecimal value)
 	{
 		return value;
-	}	//	decrypt
+	}	// encrypt
 
 	/**
-	 *	Encryption.
-	 * 	The methods must recognize clear text values
-	 *  @param value clear value
-	 *  @return encrypted String
+	 * Decryption.
+	 * The methods must recognize clear text values
+	 * 
+	 * @param value encrypted value
+	 * @return decrypted String
 	 */
 	@Override
-	public Timestamp encrypt (Timestamp value)
+	public BigDecimal decrypt(BigDecimal value)
 	{
 		return value;
-	}	//	encrypt
+	}	// decrypt
 
 	/**
-	 *	Decryption.
-	 * 	The methods must recognize clear text values
-	 *  @param value encrypted value
-	 *  @return decrypted String
+	 * Encryption.
+	 * The methods must recognize clear text values
+	 * 
+	 * @param value clear value
+	 * @return encrypted String
 	 */
 	@Override
-	public Timestamp decrypt (Timestamp value)
+	public Timestamp encrypt(Timestamp value)
 	{
 		return value;
-	}	//	decrypt
-	
-	
+	}	// encrypt
+
 	/**
-	 *  Convert String to Digest.
-	 *  JavaScript version see - http://pajhome.org.uk/crypt/md5/index.html
+	 * Decryption.
+	 * The methods must recognize clear text values
+	 * 
+	 * @param value encrypted value
+	 * @return decrypted String
+	 */
+	@Override
+	public Timestamp decrypt(Timestamp value)
+	{
+		return value;
+	}	// decrypt
+
+	/**
+	 * Convert String to Digest.
+	 * JavaScript version see - http://pajhome.org.uk/crypt/md5/index.html
 	 *
-	 *  @param value message
-	 *  @return HexString of message (length = 32 characters)
+	 * @param value message
+	 * @return HexString of message (length = 32 characters)
 	 */
 	@Override
-	public String getDigest (String value)
+	public String getDigest(String value)
 	{
 		if (m_md == null)
 		{
 			try
 			{
 				m_md = MessageDigest.getInstance("MD5");
-			//	m_md = MessageDigest.getInstance("SHA-1");
+				// m_md = MessageDigest.getInstance("SHA-1");
 			}
 			catch (NoSuchAlgorithmException nsae)
 			{
 				nsae.printStackTrace();
 			}
 		}
-		//	Reset MessageDigest object
+		// Reset MessageDigest object
 		m_md.reset();
-		//	Convert String to array of bytes
+		// Convert String to array of bytes
 		byte[] input = value.getBytes();
-		//	feed this array of bytes to the MessageDigest object
+		// feed this array of bytes to the MessageDigest object
 		m_md.update(input);
-		//	 Get the resulting bytes after the encryption process
+		// Get the resulting bytes after the encryption process
 		byte[] output = m_md.digest();
 		m_md.reset();
 		//
 		return convertToHexString(output);
-	}	//	getDigest
-
+	}	// getDigest
 
 	/**
-	 * 	Checks, if value is a valid digest
-	 *  @param value digest string
-	 *  @return true if valid digest
+	 * Checks, if value is a valid digest
+	 * 
+	 * @param value digest string
+	 * @return true if valid digest
 	 */
 	@Override
-	public boolean isDigest (String value)
+	public boolean isDigest(String value)
 	{
 		if (value == null || value.length() != 32)
 			return false;
-		//	needs to be a hex string, so try to convert it
+		// needs to be a hex string, so try to convert it
 		return (convertHexString(value) != null);
-	}	//	isDigest
+	}	// isDigest
 
 	/**
-	 * 	String Representation
-	 *	@return info
+	 * String Representation
+	 * 
+	 * @return info
 	 */
 	@Override
 	public String toString()
@@ -403,5 +393,5 @@ public class Secure implements SecureInterface
 				.add("cipher", m_cipher)
 				.toString();
 	}
-	
-}   //  Secure
+
+}   // Secure
