@@ -27,6 +27,7 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -36,6 +37,7 @@ import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
+import de.metas.hash.HashableString;
 
 public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 {
@@ -242,23 +244,21 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 			throw new TerminalException("@FillMandatory@ @AD_User_ID@");
 		}
 
-		final String password = passwordField.getText();
-		if (Check.isEmpty(password, false))
+		final String passwordPlain = passwordField.getText();
+		if (Check.isEmpty(passwordPlain, false))
 		{
 			throw new WrongValueException(passwordField, "@FillMandatory@");
 		}
 
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
-		final I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), userId);
+		final IUserDAO usersRepo = Services.get(IUserDAO.class);
+		final I_AD_User user = usersRepo.retrieveUserOrNull(getCtx(), userId);
 		if (user == null)
 		{
 			throw new TerminalException("@NotFound@ @AD_User_ID@");
 		}
 
-		//
-		// Because we are in terminal mode, we ignore case
-		// else it would be a little bit harder and annoying for user to enter the password case sensitive
-		if (!password.equalsIgnoreCase(user.getPassword()))
+		final IUserBL userBL = Services.get(IUserBL.class);
+		if (!userBL.isPasswordMatching(user, HashableString.ofPlainValue(passwordPlain)))
 		{
 			throw new WrongValueException(passwordField, "@UserPwdError@");
 		}

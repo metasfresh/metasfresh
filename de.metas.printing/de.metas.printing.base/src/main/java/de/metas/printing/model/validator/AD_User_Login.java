@@ -39,6 +39,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 
+import de.metas.hash.HashableString;
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.printing.model.I_AD_User_Login;
 
@@ -92,7 +93,7 @@ public class AD_User_Login
 		// 1. Get roles
 		// => Context update: AD_Session_ID
 		final String loginUsername = loginRequest.getUserName();
-		final String loginPassword = loginRequest.getPassword();
+		final HashableString loginPassword = HashableString.ofPlainValue(loginRequest.getPassword());
 		final Login login = new Login(loginCtx);
 		final Set<KeyNamePair> userRoles = login.authenticate(loginUsername, loginPassword);
 		if (userRoles.isEmpty())
