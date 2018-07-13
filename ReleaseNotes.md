@@ -60,6 +60,8 @@ Here come the actual release notes:
     * Fixes the startup of App Server in cases n activeMQ broker is not available.
   * [#4342](https://github.com/metasfresh/metasfresh/issues/4342) ATP in batch entry is wrong after attributes are added
     * Fixes the Available to Pomise Quantity after adding attribute values to a Handling Unit.
+  * [#4349](https://github.com/metasfresh/metasfresh/issues/4349) Error when creating a bpartner on the fly and not setting a name
+    * Bugfix for the Business Partner creation via Sales Order window.
 
 * metasfresh-webui-frontend
   * [#1467](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1467) Advanced Edit shortcut not working correctly
