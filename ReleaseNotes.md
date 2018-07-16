@@ -11,8 +11,26 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.66 (2018-29)
 ## Features
+* metasfresh
+  * [#1461](https://github.com/metasfresh/metasfresh/issues/1461) Improve User Password Hashing
+  * [#4009](https://github.com/metasfresh/metasfresh/issues/4009) Improve callout org.compiere.model.Callout_AD_Column
+  * [#4026](https://github.com/metasfresh/metasfresh/issues/4026) Generate and mail the CSV only when Der Kurier shipper transportation is completed
+  * [#4299](https://github.com/metasfresh/metasfresh/issues/4299) Jasper: Translations missing in en_US version
+  * [#4315](https://github.com/metasfresh/metasfresh/issues/4315) metasfresh-app server fails to startup on a dev-machine
+  * [#4345](https://github.com/metasfresh/metasfresh/issues/4345) Make accounting async
+  * [#4346](https://github.com/metasfresh/metasfresh/issues/4346) Individual sequences for products and projects
+  * [#4354](https://github.com/metasfresh/metasfresh/issues/4354) Notify user on error creating document PDF
+  * [#4359](https://github.com/metasfresh/metasfresh/issues/4359) Set default values for new Integer and YesNo AD_Columns
+  * [#4367](https://github.com/metasfresh/metasfresh/issues/4367) HU Transformation for LU, Packing Item and TU Qty default
+
+* metasfresh-webui-api
+  * [#1006](https://github.com/metasfresh/metasfresh-webui-api/issues/1006) Forgot password webui api
+  * [#1009](https://github.com/metasfresh/metasfresh-webui-api/issues/1009) Cleanup ADProcessDAO
 
 ## Fixes
+* metasfresh
+  * [#4356](https://github.com/metasfresh/metasfresh/issues/4356) Sales Orderline:ERROR: duplicate key value violates unique constraint "c_paymentterm_name"
+  * [#4370](https://github.com/metasfresh/metasfresh/issues/4370) M_ReceiptSchedule_Generate_M_InOuts error if M_ReceiptSchedule has Qty = 0
 
 # metasfresh 5.65 (2018-28)
 ## Features

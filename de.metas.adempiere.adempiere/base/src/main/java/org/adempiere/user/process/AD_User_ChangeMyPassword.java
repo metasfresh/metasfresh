@@ -8,6 +8,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 
+import de.metas.hash.HashableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -94,7 +95,7 @@ public class AD_User_ChangeMyPassword extends JavaProcess implements IProcessPre
 
 		//
 		// Actually change it's password
-		Services.get(IUserBL.class).changePassword(ctx, adUserId, oldPassword, newPassword, newPasswordRetype);
+		Services.get(IUserBL.class).changePassword(ctx, adUserId, HashableString.ofPlainValue(oldPassword), newPassword, newPasswordRetype);
 
 		return MSG_OK;
 	}

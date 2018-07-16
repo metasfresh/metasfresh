@@ -165,15 +165,8 @@ public class MColumn extends X_AD_Column
 	 */
 	public boolean isStandardColumn()
 	{
-		String columnName = getColumnName();
-		if (columnName.equals("AD_Client_ID")
-				|| columnName.equals("AD_Org_ID")
-				|| columnName.equals("IsActive")
-				|| columnName.startsWith("Created")
-				|| columnName.startsWith("Updated"))
-			return true;
-
-		return false;
+		final String columnName = getColumnName();
+		return Services.get(IADTableDAO.class).isStandardColumn(columnName);
 	}	// isStandardColumn
 
 	/**
@@ -302,10 +295,10 @@ public class MColumn extends X_AD_Column
 				&& getAD_Element_ID() != 0)
 		{
 			M_Element element = new M_Element(getCtx(), getAD_Element_ID(), get_TrxName());
-			
-			final String elementColumnName = element.getColumnName ();
+
+			final String elementColumnName = element.getColumnName();
 			Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
-			
+
 			setColumnName(elementColumnName);
 			setName(element.getName());
 			setDescription(element.getDescription());

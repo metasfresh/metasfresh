@@ -2563,9 +2563,7 @@ public abstract class PO
 			{
 				continue;
 			}
-
-			final String columnName = p_info.getColumnName(i);
-			if ("Password".equals(columnName))
+			if(p_info.isPasswordColumn(i))
 			{
 				continue;
 			}

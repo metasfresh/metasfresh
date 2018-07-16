@@ -152,7 +152,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
 	}
-	
+
 	@Override
 	public Quantity convertToProductUOM(@NonNull final Quantity quantity, final int productId)
 	{
@@ -251,7 +251,12 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public BigDecimal convertPrice(final int productId, BigDecimal price, I_C_UOM uomFrom, I_C_UOM uomTo, int pricePrecision)
+	public BigDecimal convertPrice(
+			final int productId,
+			BigDecimal price,
+			I_C_UOM uomFrom,
+			I_C_UOM uomTo,
+			int pricePrecision)
 	{
 		BigDecimal priceConv = convertQty(productId, price, uomFrom, uomTo);
 		if (priceConv.scale() > pricePrecision)

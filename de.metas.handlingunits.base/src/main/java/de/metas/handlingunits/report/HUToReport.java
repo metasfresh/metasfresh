@@ -3,6 +3,8 @@ package de.metas.handlingunits.report;
 import java.util.List;
 import java.util.stream.Stream;
 
+import de.metas.handlingunits.HuId;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -27,7 +29,7 @@ import java.util.stream.Stream;
 
 public interface HUToReport
 {
-	int getHUId();
+	HuId getHUId();
 
 	int getBPartnerId();
 
