@@ -79,6 +79,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	
 	I_M_HU getByIdOutOfTrx(HuId huId);
 
+	I_M_HU getById(HuId huId);
+
 	/**
 	 * Save the given {@code hu}
 	 *
