@@ -14,6 +14,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1785](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1785) Search field in Pricing conditions - keyboard selection
     * Improving the selection of Pricing Conditions via Keyboard.
+  * [#1865](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1865) Patch not sent when you delete a text in grid view
+    * Fixes the editing/ patching of content in text fields in grid view editing mode.
 
 
 # metasfresh 5.66 (2018-29)
