@@ -1,6 +1,11 @@
 package de.metas.handlingunits;
 
+import java.util.Collection;
+import java.util.Set;
+
 import org.adempiere.util.Check;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
 import lombok.Value;
@@ -30,12 +35,27 @@ import lombok.Value;
 @Value
 public class HuId implements RepoIdAware
 {
-	int repoId;
-
 	public static HuId ofRepoId(final int repoId)
 	{
 		return new HuId(repoId);
 	}
+
+	public static int toRepoId(final HuId huId)
+	{
+		return huId != null ? huId.getRepoId() : -1;
+	}
+
+	public static Set<HuId> ofRepoIds(final Collection<Integer> repoIds)
+	{
+		return repoIds.stream().map(HuId::ofRepoId).collect(ImmutableSet.toImmutableSet());
+	}
+
+	public static Set<Integer> toRepoIds(final Collection<HuId> huIds)
+	{
+		return huIds.stream().map(HuId::getRepoId).collect(ImmutableSet.toImmutableSet());
+	}
+
+	int repoId;
 
 	private HuId(final int repoId)
 	{
