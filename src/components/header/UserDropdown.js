@@ -51,26 +51,37 @@ class UserDropdown extends Component {
 
   renderPlugins = () => {
     const { handleUDOpen, redirect, toggleTooltip, plugins } = this.props;
+    const ret = { pluginsMenu: null, pluginsMenuLength: 0 };
 
     if (plugins.length) {
-      return plugins.map((plugin, i) => {
-        return (
-          <div
-            key={`menu-item-${i}`}
-            className="user-dropdown-item"
-            onClick={() => {
-              redirect(plugin.userDropdownLink.url);
-              handleUDOpen(false);
-              toggleTooltip('');
-            }}
-            tabIndex={0}
-          >
-            <i className="meta-icon-settings" />
-            {plugin.userDropdownLink.text}
-          </div>
-        );
+      const menuOptions = [];
+
+      plugins.forEach((plugin, i) => {
+        if (plugin.userDropdownLink) {
+          ret.pluginsMenuLength = ret.pluginsMenuLength + 1;
+
+          menuOptions.push(
+            <div
+              key={`menu-item-${i}`}
+              className="user-dropdown-item"
+              onClick={() => {
+                redirect(plugin.userDropdownLink.url);
+                handleUDOpen(false);
+                toggleTooltip('');
+              }}
+              tabIndex={0}
+            >
+              <i className="meta-icon-settings" />
+              {plugin.userDropdownLink.text}
+            </div>
+          );
+        }
       });
+
+      ret.pluginsMenu = menuOptions;
     }
+
+    return ret;
   };
 
   render() {
@@ -82,8 +93,10 @@ class UserDropdown extends Component {
       toggleTooltip,
       tooltipOpen,
       me,
-      plugins,
     } = this.props;
+
+    const { pluginsMenu, pluginsMenuLength } = this.renderPlugins();
+
     return (
       <div
         className={
@@ -131,9 +144,9 @@ class UserDropdown extends Component {
               <i className="meta-icon-settings" />
               {counterpart.translate('window.settings.caption')}
             </div>
-            {plugins.length > 0 && <hr className="context-menu-separator" />}
-            {this.renderPlugins()}
-            {plugins.length > 0 && <hr className="context-menu-separator" />}
+            {pluginsMenuLength > 0 && <hr className="context-menu-separator" />}
+            {pluginsMenu}
+            {pluginsMenuLength > 0 && <hr className="context-menu-separator" />}
             <div
               className="user-dropdown-item"
               onClick={() => {
