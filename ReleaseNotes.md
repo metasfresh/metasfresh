@@ -16,6 +16,8 @@ Here come the actual release notes:
     * Improving the selection of Pricing Conditions via Keyboard.
   * [#1865](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1865) Patch not sent when you delete a text in grid view
     * Fixes the editing/ patching of content in text fields in grid view editing mode.
+  * [#1867](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1867) Set qty to purchase to 0 when removed
+    * Fixes the Purchase Dispo Functionality in Sales Order, now setting the Qty to 0 when removing the Puchased Qty.
 
 
 # metasfresh 5.66 (2018-29)
