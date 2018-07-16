@@ -23,6 +23,7 @@ import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -204,7 +205,7 @@ public class PickingSlotViewRepository
 	static PickingSlotRow createSourceHURow(@NonNull final HUEditorRow sourceHuEditorRow)
 	{
 		final PickingSlotRow pickingSourceHuRow = PickingSlotRow.fromSourceHUBuilder()
-				.huId(sourceHuEditorRow.getM_HU_ID())
+				.huId(sourceHuEditorRow.getHuIdAsInt())
 				.huEditorRowType(sourceHuEditorRow.getType())
 				.huCode(sourceHuEditorRow.getValue())
 				.product(sourceHuEditorRow.getProduct())
@@ -258,8 +259,8 @@ public class PickingSlotViewRepository
 
 		return PickingSlotRow.fromPickedHUBuilder()
 				.pickingSlotId(pickingSlotId)
-				.huId(huEditorRow.getHURowId().getHuId())
-				.huStorageProductId(huEditorRow.getHURowId().getStorageProductId())
+				.huId(huEditorRow.getHURowId().getHuId().getRepoId())
+				.huStorageProductId(ProductId.toRepoId(huEditorRow.getHURowId().getStorageProductId()))
 
 				.huEditorRowType(huEditorRow.getType())
 

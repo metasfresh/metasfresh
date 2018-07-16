@@ -7,7 +7,6 @@ import java.util.List;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.DB;
@@ -15,7 +14,9 @@ import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -69,7 +70,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 
 	@Builder(builderClassName = "DefaultFillerBuilder", builderMethodName = "defaultFillerBuilder")
 	private WEBUI_M_HU_Pick_ParametersFiller(
-			final int huId,
+			final HuId huId,
 			final int salesOrderLineId)
 	{
 		this.salesOrderLineId = salesOrderLineId;
@@ -91,7 +92,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		return result;
 	}
 
-	private static final LookupDataSource createShipmentScheduleDataSource(final int huId)
+	private static final LookupDataSource createShipmentScheduleDataSource(final HuId huId)
 	{
 		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
 				.setCtxTableName(null)
@@ -102,7 +103,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		return LookupDataSourceFactory.instance.createLookupDataSource(lookupDescriptor);
 	}
 
-	private static IValidationRule createShipmentSchedulesValidationRule(final int huId)
+	private static IValidationRule createShipmentSchedulesValidationRule(final HuId huId)
 	{
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		sqlWhereClause.append(I_M_ShipmentSchedule.COLUMNNAME_Processed).append("=").append(DB.TO_BOOLEAN(false));
@@ -127,9 +128,9 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		return Services.get(IValidationRuleFactory.class).createSQLValidationRule(sqlWhereClause.toString());
 	}
 
-	private static final int getSingleProductId(final int huId)
+	private static final int getSingleProductId(final HuId huId)
 	{
-		final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(huId);
 		final List<Integer> productIds = Services.get(IHUContextFactory.class)
 				.createMutableHUContext()
 				.getHUStorageFactory()

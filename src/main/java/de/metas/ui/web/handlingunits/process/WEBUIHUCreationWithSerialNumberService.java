@@ -93,8 +93,8 @@ public class WEBUIHUCreationWithSerialNumberService
 		if (qtyCU == 1)
 		{
 			final String serialNo = availableSerialNumbers.remove(0);
-			assignSerialNumberToCU(HuId.ofRepoId(selectedCuRow.getM_HU_ID()), serialNo);
-			huIDsChanged.add(HuId.ofRepoId(selectedCuRow.getM_HU_ID()));
+			assignSerialNumberToCU(selectedCuRow.getHuId(), serialNo);
+			huIDsChanged.add(selectedCuRow.getHuId());
 
 		}
 		else
@@ -160,7 +160,7 @@ public class WEBUIHUCreationWithSerialNumberService
 				final List<I_M_HU> createdCUs = newHUTransformation().cuToNewCU(huToSplit, Quantity.of(BigDecimal.ONE, cuRow.getC_UOM()));
 
 				final Predicate<? super I_M_HU> //
-				newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getM_HU_ID();
+				newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuIdAsInt();
 
 				splitCUIDs.addAll(createdCUs
 						.stream()

@@ -17,6 +17,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -296,7 +297,7 @@ public class WebuiHUTransformParametersFiller
 							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one TU that 'cu' is already attached to
 							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 							.build())
-					.sorted(Comparator.comparing(HUEditorRow::getM_HU_ID))
+					.sorted(Comparator.comparing(HUEditorRow::getHuIdAsInt))
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}
@@ -352,7 +353,7 @@ public class WebuiHUTransformParametersFiller
 							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one LU that 'tu' is already attached to
 							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 							.build())
-					.sorted(Comparator.comparing(HUEditorRow::getM_HU_ID))
+					.sorted(Comparator.comparing(HUEditorRow::getHuIdAsInt))
 					.map(row -> row.toLookupValue())
 					.collect(LookupValuesList.collect());
 		}
@@ -383,12 +384,12 @@ public class WebuiHUTransformParametersFiller
 		}
 	}
 
-	private int getParentHUIdOfSelectedRow()
+	private HuId getParentHUIdOfSelectedRow()
 	{
 		final HUEditorRow huRow = getSelectedRow();
 		final I_M_HU hu = huRow.getM_HU();
 		final int parentIdOfSelectedHU = handlingUnitsDAO.retrieveParentId(hu);
-		return parentIdOfSelectedHU;
+		return HuId.ofRepoIdOrNull(parentIdOfSelectedHU);
 	}
 
 	public LookupValuesList getM_HU_PI_Item_IDs()

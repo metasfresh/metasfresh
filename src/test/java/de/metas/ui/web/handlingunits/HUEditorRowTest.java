@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import de.metas.handlingunits.HuId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -36,8 +37,8 @@ public class HUEditorRowTest
 	@Test
 	public void testCreateHUEditorRow()
 	{
-		final int huId = 10;
-		final int topLevelHUId = 20;
+		final HuId huId = HuId.ofRepoId(10);
+		final HuId topLevelHUId = HuId.ofRepoId(20);
 		final int windowId = 123;
 
 		final HUEditorRow huEditorRow = HUEditorRow.builder(WindowId.of(windowId))
@@ -45,15 +46,15 @@ public class HUEditorRowTest
 				.setType(HUEditorRowType.TU)
 				.setTopLevel(false)
 				.build();
-		assertThat(huEditorRow.getM_HU_ID()).isEqualTo(huId);
+		assertThat(huEditorRow.getHuId()).isEqualTo(huId);
 
 		final DocumentId documentId = huEditorRow.getHURowId().toDocumentId();
 		assertThat(documentId.isInt()).isFalse();
-		assertThat(documentId.toString()).isEqualTo(huId + "_T" + topLevelHUId); // expecting 10_T20
+		assertThat(documentId.toString()).isEqualTo(huId.getRepoId() + "_T" + topLevelHUId.getRepoId()); // expecting 10_T20
 
 		final DocumentPath documentPath = huEditorRow.getDocumentPath();
 		assertThat(documentPath.getWindowId().toInt()).isEqualTo(windowId);
-		assertThat(documentPath.getDocumentId().toInt()).isEqualTo(huId);
+		assertThat(documentPath.getDocumentId().toInt()).isEqualTo(huId.getRepoId());
 	}
 
 }

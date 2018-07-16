@@ -33,8 +33,8 @@ public abstract class WEBUI_PP_Order_HUEditor_ProcessBase extends HUEditorProces
 
 		return inputStream
 				.filter(huRow -> huRow.isHUStatusActive())
-				.filter(huRow -> !sourceHuService.isHuOrAnyParentSourceHu(huRow.getM_HU_ID()))
-				.filter(huRow -> !huPpOrderQtyDAO.isHuIdIssued(huRow.getM_HU_ID()));
+				.filter(huRow -> !sourceHuService.isHuOrAnyParentSourceHu(huRow.getHuId()))
+				.filter(huRow -> !huPpOrderQtyDAO.isHuIdIssued(huRow.getHuId()));
 	}
 
 	protected Optional<PPOrderLinesView> getPPOrderView()

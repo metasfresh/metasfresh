@@ -169,7 +169,6 @@ class HUEditorRowsPagedLoadingIterator implements Iterator<HUEditorRow>
 					.keys()
 					.stream()
 					.map(HUEditorRowId::getTopLevelHUId)
-					.map(HuId::ofRepoId)
 					.collect(ImmutableSet.toImmutableSet());
 
 			huEditorRepo.retrieveHUEditorRows(topLevelHUIds, filter)

@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -65,7 +66,7 @@ public final class HUIdsFilterHelper
 		 * @param huIds may be empty, but not null. Empty means that <b>no</b> HU will be matched.
 		 * @return
 		 */
-		public static HUIdsFilterData ofHUIds(@NonNull final Collection<Integer> huIds)
+		public static HUIdsFilterData ofHUIds(@NonNull final Collection<HuId> huIds)
 		{
 			final IHUQueryBuilder initialFilter = null;
 			return new HUIdsFilterData(huIds, initialFilter);
@@ -73,13 +74,13 @@ public final class HUIdsFilterHelper
 
 		public static HUIdsFilterData ofHUQuery(@NonNull final IHUQueryBuilder initialHUQuery)
 		{
-			final Collection<Integer> huIds = null;
+			final Collection<HuId> huIds = null;
 			return new HUIdsFilterData(huIds, initialHUQuery);
 		}
 
 		public static HUIdsFilterData newEmpty()
 		{
-			final Collection<Integer> huIds = null;
+			final Collection<HuId> huIds = null;
 			final IHUQueryBuilder initialHUQuery = null;
 			return new HUIdsFilterData(huIds, initialHUQuery);
 		}
@@ -87,18 +88,18 @@ public final class HUIdsFilterHelper
 		/**
 		 * Important: {@code null} means "no restriction" (i.e. we can select allHUs) whereas empty means that no HU matches the filter.
 		 */
-		private final ImmutableSet<Integer> initialHUIds;
+		private final ImmutableSet<HuId> initialHUIds;
 
 		private final IHUQueryBuilder initialHUQuery;
 
 		/**
 		 * Empty list means "no restriction".
 		 */
-		private final Set<Integer> mustHUIds;
-		private final Set<Integer> shallNotHUIds;
+		private final Set<HuId> mustHUIds;
+		private final Set<HuId> shallNotHUIds;
 
 		private HUIdsFilterData(
-				@Nullable final Collection<Integer> initialHUIds,
+				@Nullable final Collection<HuId> initialHUIds,
 				@Nullable final IHUQueryBuilder initialHUQuery)
 		{
 			this.initialHUIds = initialHUIds == null ? null : ImmutableSet.copyOf(initialHUIds);
@@ -121,7 +122,7 @@ public final class HUIdsFilterHelper
 			return new HUIdsFilterData(this);
 		}
 
-		public ImmutableSet<Integer> getInitialHUIds()
+		public ImmutableSet<HuId> getInitialHUIds()
 		{
 			return initialHUIds;
 		}
@@ -131,12 +132,12 @@ public final class HUIdsFilterHelper
 			return initialHUQuery != null ? initialHUQuery.copy() : null;
 		}
 
-		public Set<Integer> getMustHUIds()
+		public Set<HuId> getMustHUIds()
 		{
 			return ImmutableSet.copyOf(mustHUIds);
 		}
 
-		public boolean mustHUIds(final Collection<Integer> mustHUIdsToAdd)
+		public boolean mustHUIds(final Collection<HuId> mustHUIdsToAdd)
 		{
 			if (mustHUIdsToAdd.isEmpty())
 			{
@@ -149,12 +150,12 @@ public final class HUIdsFilterHelper
 			return added;
 		}
 
-		public Set<Integer> getShallNotHUIds()
+		public Set<HuId> getShallNotHUIds()
 		{
 			return ImmutableSet.copyOf(shallNotHUIds);
 		}
 
-		public boolean shallNotHUIds(final Collection<Integer> shallNotHUIdsToAdd)
+		public boolean shallNotHUIds(final Collection<HuId> shallNotHUIdsToAdd)
 		{
 			if (shallNotHUIdsToAdd.isEmpty())
 			{
@@ -201,7 +202,7 @@ public final class HUIdsFilterHelper
 	 * 
 	 * @return
 	 */
-	public static final DocumentFilter createFilter(@NonNull final Collection<Integer> huIds)
+	public static final DocumentFilter createFilter(@NonNull final Collection<HuId> huIds)
 	{
 		final HUIdsFilterData filterData = HUIdsFilterData.ofHUIds(huIds);
 		return DocumentFilter.singleParameterFilter(FILTER_ID, FILTER_PARAM_Data, Operator.EQUAL, filterData);
@@ -256,7 +257,7 @@ public final class HUIdsFilterHelper
 				@NonNull final SqlDocumentFilterConverterContext context)
 		{
 			final HUIdsFilterData huIdsFilter = extractFilterData(filter);
-			final ImmutableList<Integer> onlyHUIds;
+			final ImmutableList<HuId> onlyHUIds;
 
 			final boolean mustHuIdsSpecified = huIdsFilter.getMustHUIds() != null && !huIdsFilter.getMustHUIds().isEmpty();
 			final boolean initialHuIdsSpecified = huIdsFilter.getInitialHUIds() != null;
@@ -295,11 +296,11 @@ public final class HUIdsFilterHelper
 			// Only HUs
 			if (onlyHUIds != null)
 			{
-				huQuery.addOnlyHUIds(onlyHUIds);
+				huQuery.addOnlyHUIds(HuId.toRepoIds(onlyHUIds));
 			}
 
 			// Exclude HUs
-			huQuery.addHUIdsToExclude(huIdsFilter.getShallNotHUIds());
+			huQuery.addHUIdsToExclude(HuId.toRepoIds(huIdsFilter.getShallNotHUIds()));
 
 			final ISqlQueryFilter sqlQueryFilter = ISqlQueryFilter.cast(huQuery.createQueryFilter());
 			final String sql = sqlQueryFilter.getSql();

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableMultimap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -77,12 +78,12 @@ import lombok.NonNull;
 		}
 
 		// may not yet be a source-HU
-		if (sourceHuService.isSourceHu(huRow.getM_HU_ID()))
+		if (sourceHuService.isSourceHu(huRow.getHuId()))
 		{
 			return false;
 		}
 
-		if (huPickingSlotDAO.isHuIdPicked(huRow.getM_HU_ID()))
+		if (huPickingSlotDAO.isHuIdPicked(huRow.getHuId()))
 		{
 			return false;
 		}
@@ -248,13 +249,13 @@ import lombok.NonNull;
 		invalidateView(packablesViewId);
 	}
 
-	protected final void addHUIdToCurrentPickingSlot(final int huId)
+	protected final void addHUIdToCurrentPickingSlot(@NonNull final HuId huId)
 	{
 		final PickingSlotView pickingSlotsView = getPickingSlotView();
 		final PickingSlotRow pickingSlotRow = getPickingSlotRow();
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
 		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
 
-		pickingCandidateService.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
+		pickingCandidateService.addHUToPickingSlot(huId.getRepoId(), pickingSlotId, shipmentScheduleId);
 	}
 }

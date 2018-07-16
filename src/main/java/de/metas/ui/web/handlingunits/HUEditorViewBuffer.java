@@ -57,7 +57,7 @@ interface HUEditorViewBuffer
 
 	boolean removeHUIds(Collection<HuId> huIdsToRemove);
 
-	boolean containsAnyOfHUIds(Collection<Integer> huIdsToCheck);
+	boolean containsAnyOfHUIds(Collection<HuId> huIdsToCheck);
 
 	/** @return top level rows and included rows recursive stream */
 	Stream<HUEditorRow> streamAllRecursive(HUEditorRowFilter filter) throws UnsupportedOperationException;

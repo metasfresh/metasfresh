@@ -263,7 +263,7 @@ public class WebuiHUTransformCommand
 
 		final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
 
-		final HuId huIdChanged = HuId.ofRepoId(cuRow.getHURowId().getTopLevelHUId());
+		final HuId huIdChanged = cuRow.getHURowId().getTopLevelHUId();
 		final HuId topLevelHuIdChanged = HuId.ofRepoId(handlingUnitsBL.getTopLevelParent(tuHU).getM_HU_ID());
 
 		final ImmutableList<HuId> huIdsCreated = createdCUs
@@ -292,7 +292,7 @@ public class WebuiHUTransformCommand
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewCU(cuRow.getM_HU(), qtyCU);
 
 		final Predicate<? super I_M_HU> //
-		newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getM_HU_ID();
+		newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuIdAsInt();
 
 		final ImmutableSet<HuId> createdHUIds = createdHUs
 				.stream()
@@ -302,7 +302,7 @@ public class WebuiHUTransformCommand
 				.collect(ImmutableSet.toImmutableSet());
 
 		return WebuiHUTransformCommandResult.builder()
-				.huIdChanged(HuId.ofRepoId(cuRow.getHURowId().getTopLevelHUId()))
+				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
 				.huIdsToAddToView(createdHUIds)
 				.huIdsCreated(createdHUIds)
 				.build();
@@ -328,7 +328,7 @@ public class WebuiHUTransformCommand
 				.collect(ImmutableSet.toImmutableSet());
 
 		return WebuiHUTransformCommandResult.builder()
-				.huIdChanged(HuId.ofRepoId(cuRow.getHURowId().getTopLevelHUId()))
+				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
 				.huIdsToAddToView(createdHUIds)
 				.huIdsCreated(createdHUIds)
 				.build();
@@ -341,7 +341,7 @@ public class WebuiHUTransformCommand
 		final HUEditorRowId tuRowId = tuRow.getHURowId();
 
 		return WebuiHUTransformCommandResult.builder()
-				.huIdChanged(HuId.ofRepoId(tuRowId.getTopLevelHUId()))
+				.huIdChanged(tuRowId.getTopLevelHUId())
 				.huIdChanged(HuId.ofRepoId(luHU.getM_HU_ID()))
 				.fullViewInvalidation(true) // because it might be that the TU is inside an LU of which we don't know the ID
 				.build();
@@ -369,7 +369,7 @@ public class WebuiHUTransformCommand
 
 		return WebuiHUTransformCommandResult.builder()
 				.huIdsToAddToView(huIdsToAddToView)
-				.huIdChanged(HuId.ofRepoId(tuRow.getHURowId().getTopLevelHUId()))
+				.huIdChanged(tuRow.getHURowId().getTopLevelHUId())
 				.fullViewInvalidation(true) // because it might be that the TU is inside an LU of which we don't know the ID
 				.build();
 	}

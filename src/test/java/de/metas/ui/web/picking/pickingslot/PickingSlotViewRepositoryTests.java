@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -111,12 +112,12 @@ public class PickingSlotViewRepositoryTests
 					new PickedHUEditorRow(
 							HUEditorRow
 									.builder(WindowId.of(423))
-									.setRowId(HUEditorRowId.ofTopLevelHU(100))
+									.setRowId(HUEditorRowId.ofTopLevelHU(HuId.ofRepoId(100)))
 									.setType(HUEditorRowType.TU)
 									.setTopLevel(true)
 									.addIncludedRow(HUEditorRow
 											.builder(WindowId.of(423))
-											.setRowId(HUEditorRowId.ofHU(101, 100))
+											.setRowId(HUEditorRowId.ofHU(HuId.ofRepoId(101), HuId.ofRepoId(100)))
 											.setType(HUEditorRowType.VHU)
 											.setTopLevel(false)
 											.build())
@@ -163,7 +164,7 @@ public class PickingSlotViewRepositoryTests
 	{
 		final HUEditorRow huEditorRow = HUEditorRow
 				.builder(WindowId.of(423))
-				.setRowId(HUEditorRowId.ofTopLevelHU(100))
+				.setRowId(HUEditorRowId.ofTopLevelHU(HuId.ofRepoId(100)))
 				.setType(HUEditorRowType.TU)
 				.setTopLevel(true)
 				.build();

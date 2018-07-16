@@ -8,6 +8,7 @@ import org.adempiere.util.Services;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.printing.esb.base.util.Check;
@@ -83,10 +84,10 @@ public class HUEditorRowFilters
 		}
 
 		// Exclude M_HU_IDs
-		final ImmutableSet<Integer> excludeHUIds = filter.getExcludeHUIds();
+		final ImmutableSet<HuId> excludeHUIds = filter.getExcludeHUIds();
 		if (!excludeHUIds.isEmpty())
 		{
-			predicate = predicate.and(row -> !excludeHUIds.contains(row.getM_HU_ID()));
+			predicate = predicate.and(row -> !excludeHUIds.contains(row.getHuId()));
 		}
 
 		// Include HUStatuses
@@ -139,7 +140,7 @@ public class HUEditorRowFilters
 		// }
 
 		// Exclude M_HU_IDs
-		huQueryBuilder.addHUIdsToExclude(filter.getExcludeHUIds());
+		huQueryBuilder.addHUIdsToExclude(HuId.toRepoIds(filter.getExcludeHUIds()));
 
 		// Include HUStatuses
 		huQueryBuilder.addHUStatusesToInclude(filter.getOnlyHUStatuses());

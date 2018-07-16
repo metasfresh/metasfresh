@@ -53,7 +53,7 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 
 	public void addRow(final HUEditorRow row)
 	{
-		rowsByHUId.put(HuId.ofRepoId(row.getM_HU_ID()), row);
+		rowsByHUId.put(row.getHuId(), row);
 	}
 
 	@Override
@@ -84,13 +84,13 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public List<Integer> retrieveHUIdsEffective(final HUIdsFilterData huIdsFilter, final List<DocumentFilter> filters, final SqlDocumentFilterConverterContext context)
+	public Set<HuId> retrieveHUIdsEffective(final HUIdsFilterData huIdsFilter, final List<DocumentFilter> filters, final SqlDocumentFilterConverterContext context)
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public Page<Integer> retrieveHUIdsPage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
+	public Page<HuId> retrieveHUIdsPage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}

@@ -13,6 +13,7 @@ import org.adempiere.util.GuavaCollectors;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.lang.RepoIdAware;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import lombok.NonNull;
@@ -54,6 +55,11 @@ public final class DocumentPath
 			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
 		}
 		return new DocumentPath(DocumentType.Window, windowId.toDocumentId(), documentId);
+	}
+
+	public static final DocumentPath rootDocumentPath(@NonNull final WindowId windowId, @NonNull final RepoIdAware documentRepoId)
+	{
+		return rootDocumentPath(windowId, documentRepoId.getRepoId());
 	}
 
 	public static final DocumentPath rootDocumentPath(@NonNull final WindowId windowId, final String documentIdStr)

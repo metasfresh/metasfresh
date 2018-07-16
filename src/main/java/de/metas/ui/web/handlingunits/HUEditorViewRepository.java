@@ -58,11 +58,11 @@ public interface HUEditorViewRepository
 	 */
 	HUEditorRow retrieveForHUId(HuId huId);
 
-	List<Integer> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter,
+	Set<HuId> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter,
 			List<DocumentFilter> filters,
 			SqlDocumentFilterConverterContext context);
 
-	Page<Integer> retrieveHUIdsPage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
+	Page<HuId> retrieveHUIdsPage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
 
 	ViewRowIdsOrderedSelection addRowIdsToSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIdsToAdd);
 

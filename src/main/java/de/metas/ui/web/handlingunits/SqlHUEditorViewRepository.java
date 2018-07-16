@@ -52,6 +52,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -164,7 +165,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	{
 		huReservationService.warmup(huIds);
 
-		final int topLevelHUId = -1;
+		final HuId topLevelHUId = null;
 		return retrieveTopLevelHUs(huIds, filter)
 				.stream()
 				.map(hu -> createHUEditorRow(hu, topLevelHUId))
@@ -181,8 +182,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		// TODO: check if the huId is part of our collection
 
-		final I_M_HU hu = loadOutOfTrx(huId, I_M_HU.class);
-		final int topLevelHUId = -1; // assume given huId is a top level HU
+		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getByIdOutOfTrx(huId);
+		final HuId topLevelHUId = null; // assume given huId is a top level HU
 		return createHUEditorRow(hu, topLevelHUId);
 	}
 
@@ -211,7 +212,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private HUEditorRow createHUEditorRow(
 			@NonNull final I_M_HU hu,
-			final int topLevelHUId)
+			final HuId topLevelHUId)
 	{
 		// final Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -234,13 +235,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		final JSONLookupValue huStatusDisplay = createHUStatusDisplayLookupValue(hu);
 		final boolean processed = rowProcessedPredicate.isProcessed(hu);
-		final int huId = hu.getM_HU_ID();
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final HUEditorRowId rowId = HUEditorRowId.ofHU(huId, topLevelHUId);
 
 		final HUEditorRow.Builder huEditorRow = HUEditorRow.builder(windowId)
 				.setRowId(rowId)
 				.setType(huRecordType)
-				.setTopLevel(topLevelHUId <= 0)
+				.setTopLevel(topLevelHUId == null)
 				.setProcessed(processed)
 				.setBPartnerId(hu.getC_BPartner_ID())
 				.setAttributesProvider(attributesProvider)
@@ -280,7 +281,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		//
 		// Included HUs
-		final int topLevelHUIdEffective = topLevelHUId > 0 ? topLevelHUId : huId;
+		final HuId topLevelHUIdEffective = topLevelHUId != null ? topLevelHUId : huId;
 		if (aggregatedTU)
 		{
 			final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
@@ -368,8 +369,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	private HUEditorRow createHUEditorRow(
-			final int parent_HU_ID,
-			final int topLevelHUId,
+			final HuId parentHUId,
+			final HuId topLevelHUId,
 			@NonNull final IHUProductStorage huStorage,
 			final boolean processed)
 	{
@@ -378,12 +379,12 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final I_M_HU hu = huStorage.getM_HU();
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final I_M_Product product = huStorage.getM_Product();
-		final HUEditorRowAttributesProvider attributesProviderEffective = huId.getRepoId() != parent_HU_ID ? attributesProvider : null;
+		final HUEditorRowAttributesProvider attributesProviderEffective = !huId.equals(parentHUId) ? attributesProvider : null;
 
 		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getReservedForOrderLineId(huId);
 
 		final HUEditorRow huEditorRow = HUEditorRow.builder(windowId)
-				.setRowId(HUEditorRowId.ofHUStorage(huId.getRepoId(), topLevelHUId, product.getM_Product_ID()))
+				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, ProductId.ofRepoId(product.getM_Product_ID())))
 				.setType(HUEditorRowType.HUStorage)
 				.setTopLevel(false)
 				.setProcessed(processed)
@@ -482,12 +483,12 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public List<Integer> retrieveHUIdsEffective(
+	public Set<HuId> retrieveHUIdsEffective(
 			@NonNull final HUIdsFilterData huIdsFilter,
 			@NonNull final List<DocumentFilter> filters,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
-		final ImmutableList<Integer> onlyHUIds = extractHUIds(huIdsFilter);
+		final ImmutableSet<HuId> onlyHUIds = extractHUIds(huIdsFilter);
 
 		if (filters.isEmpty() && !huIdsFilter.hasInitialHUQuery() && onlyHUIds != null)
 		{
@@ -506,11 +507,11 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		// Only HUs
 		if (onlyHUIds != null)
 		{
-			huQuery.addOnlyHUIds(onlyHUIds);
+			huQuery.addOnlyHUIds(HuId.toRepoIds(onlyHUIds));
 		}
 
 		// Exclude HUs
-		huQuery.addHUIdsToExclude(huIdsFilter.getShallNotHUIds());
+		huQuery.addHUIdsToExclude(HuId.toRepoIds(huIdsFilter.getShallNotHUIds()));
 
 		//
 		// Convert the "filters" to SQL
@@ -522,30 +523,31 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 					context));
 		}
 
-		return huQuery.createQuery().listIds();
+		final List<Integer> huRepoIds = huQuery.createQuery().listIds();
+		return HuId.ofRepoIds(huRepoIds);
 	}
 
-	private static ImmutableList<Integer> extractHUIds(@NonNull final HUIdsFilterData huIdsFilter)
+	private static ImmutableSet<HuId> extractHUIds(@NonNull final HUIdsFilterData huIdsFilter)
 	{
-		final Set<Integer> initialHUIds = huIdsFilter.getInitialHUIds();
-		final Set<Integer> huIdsToInclude = huIdsFilter.getMustHUIds();
-		final Set<Integer> huIdsToExclude = huIdsFilter.getShallNotHUIds();
+		final Set<HuId> initialHUIds = huIdsFilter.getInitialHUIds();
+		final Set<HuId> huIdsToInclude = huIdsFilter.getMustHUIds();
+		final Set<HuId> huIdsToExclude = huIdsFilter.getShallNotHUIds();
 
 		if (initialHUIds == null && huIdsToInclude.isEmpty() && huIdsToExclude.isEmpty())
 		{
 			return null; // no restrictions
 		}
 
-		final Set<Integer> initialHUIdsOrEmpty = initialHUIds != null ? initialHUIds : ImmutableSet.of();
+		final Set<HuId> initialHUIdsOrEmpty = initialHUIds != null ? initialHUIds : ImmutableSet.of();
 
 		return Stream.concat(initialHUIdsOrEmpty.stream(), huIdsToInclude.stream())
 				.filter(huId -> !huIdsToExclude.contains(huId))
 				.distinct()
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
-	public Page<Integer> retrieveHUIdsPage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
+	public Page<HuId> retrieveHUIdsPage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
 	{
 		final SqlAndParams sqlAndParams = sqlViewSelect.selectByPage()
 				.viewEvalCtx(viewEvalCtx)
@@ -564,7 +566,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 			rs = pstmt.executeQuery();
 
-			final Set<Integer> huIds = new LinkedHashSet<>();
+			final Set<HuId> huIds = new LinkedHashSet<>();
 			int lastRowMax = -1;
 			while (rs.next())
 			{
@@ -573,7 +575,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				{
 					continue;
 				}
-				huIds.add(huId);
+				huIds.add(HuId.ofRepoId(huId));
 
 				final int lastRow = rs.getInt(SqlViewSelectData.COLUMNNAME_Paging_SeqNo_OneBased);
 				lastRowMax = Math.max(lastRowMax, lastRow);

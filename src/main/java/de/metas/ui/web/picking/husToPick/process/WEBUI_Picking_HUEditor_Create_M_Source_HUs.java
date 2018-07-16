@@ -47,10 +47,7 @@ public class WEBUI_Picking_HUEditor_Create_M_Source_HUs
 	{
 		final SourceHUsService sourceHuService = SourceHUsService.get();
 
-		retrieveEligibleHUEditorRows().forEach(
-				huEditorRow -> {
-					sourceHuService.addSourceHuMarker(huEditorRow.getM_HU_ID());
-				});
+		retrieveEligibleHUEditorRows().forEach(huEditorRow -> sourceHuService.addSourceHuMarker(huEditorRow.getHuId()));
 
 		invalidateAndGoBackToPickingSlotsView();
 		return MSG_OK;

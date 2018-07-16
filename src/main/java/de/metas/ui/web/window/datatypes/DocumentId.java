@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.lang.RepoIdAware;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import lombok.NonNull;
@@ -105,6 +106,11 @@ public abstract class DocumentId implements Serializable
 		}
 
 		return new IntDocumentId(idInt);
+	}
+	
+	public static final DocumentId of(@NonNull final RepoIdAware id)
+	{
+		return of(id.getRepoId());
 	}
 
 	public static DocumentId ofString(final String idStr)

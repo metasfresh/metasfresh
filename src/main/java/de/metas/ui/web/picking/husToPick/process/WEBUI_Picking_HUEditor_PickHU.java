@@ -2,6 +2,7 @@ package de.metas.ui.web.picking.husToPick.process;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.handlingunits.HuId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launcher;
@@ -51,7 +52,7 @@ public class WEBUI_Picking_HUEditor_PickHU
 
 	void pickHuRow(final HUEditorRow huRow)
 	{
-		final int huId = huRow.getM_HU_ID();
+		final HuId huId = huRow.getHuId();
 		if (!huRow.isTopLevel())
 		{
 			// TODO: extract as top level

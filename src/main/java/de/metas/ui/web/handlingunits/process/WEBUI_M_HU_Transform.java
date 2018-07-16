@@ -12,6 +12,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.Profiles;
@@ -295,8 +296,8 @@ public class WEBUI_M_HU_Transform
 
 		final HUEditorView view = getView();
 		final ImmutableSet<HuId> selectedHUIds = view.streamByIds(selectedRowIds)
-				.map(row -> row.getM_HU_ID())
-				.map(HuId::ofRepoId)
+				.map(row -> row.getHuId())
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 
 		return removeHUsIfDestroyed(selectedHUIds);

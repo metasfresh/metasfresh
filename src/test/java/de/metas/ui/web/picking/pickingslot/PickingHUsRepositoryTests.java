@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU;
@@ -122,7 +123,7 @@ public class PickingHUsRepositoryTests
 
 		final HUEditorRow huEditorRow = HUEditorRow
 				.builder(WindowId.of(423))
-				.setRowId(HUEditorRowId.ofTopLevelHU(huId))
+				.setRowId(HUEditorRowId.ofTopLevelHU(HuId.ofRepoId(huId)))
 				.setType(HUEditorRowType.LU)
 				.setTopLevel(true)
 				.build();

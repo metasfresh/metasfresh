@@ -1,7 +1,5 @@
 package de.metas.ui.web.handlingunits;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,6 +15,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -26,6 +25,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.report.HUToReport;
@@ -100,7 +101,7 @@ public final class HUEditorRow implements IViewRow
 
 	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
-	private final int huId;
+	private final HuId huId;
 
 	public static final String FIELDNAME_HUCode = I_M_HU.COLUMNNAME_Value;
 	@ViewColumn(fieldName = FIELDNAME_HUCode, captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
@@ -333,13 +334,14 @@ public final class HUEditorRow implements IViewRow
 				.isPresent();
 	}
 
-	/**
-	 *
-	 * @return the ID of the wrapped HU or a value {@code <= 0} if there is none.
-	 */
-	public int getM_HU_ID()
+	public HuId getHuId()
 	{
 		return huId;
+	}
+	
+	public int getHuIdAsInt()
+	{
+		return HuId.toRepoId(getHuId());
 	}
 
 	/**
@@ -348,12 +350,13 @@ public final class HUEditorRow implements IViewRow
 	 */
 	public I_M_HU getM_HU()
 	{
-		final int huId = getM_HU_ID();
-		if (huId <= 0)
+		final HuId huId = getHuId();
+		if (huId == null)
 		{
 			return null;
 		}
-		return load(huId, I_M_HU.class);
+		
+		return Services.get(IHandlingUnitsDAO.class).getById(huId);
 	}
 
 	public HUToReport getAsHUToReport()
@@ -549,7 +552,7 @@ public final class HUEditorRow implements IViewRow
 
 	public LookupValue toLookupValue()
 	{
-		return IntegerLookupValue.of(getM_HU_ID(), getSummary());
+		return IntegerLookupValue.of(HuId.toRepoId(getHuId()), getSummary());
 	}
 
 	/**

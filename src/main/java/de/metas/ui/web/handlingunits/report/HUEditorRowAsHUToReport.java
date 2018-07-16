@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import lombok.EqualsAndHashCode;
@@ -44,7 +45,7 @@ public final class HUEditorRowAsHUToReport implements HUToReport
 
 	private final HUEditorRow row;
 
-	private final int huId;
+	private final HuId huId;
 	private final int partnerId;
 	private final String huUnitType;
 	private final boolean topLevel;
@@ -53,14 +54,14 @@ public final class HUEditorRowAsHUToReport implements HUToReport
 	{
 		this.row = row;
 
-		huId = row.getM_HU_ID();
+		huId = row.getHuId();
 		partnerId = row.getBPartnerId();
 		huUnitType = row.getType().toHUUnitType();
 		topLevel = row.isTopLevel();
 	}
 
 	@Override
-	public int getHUId()
+	public HuId getHUId()
 	{
 		return huId;
 	}
