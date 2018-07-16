@@ -58,8 +58,8 @@ import org.compiere.util.DisplayType;
 import org.compiere.wf.MWorkflow;
 
 import de.metas.process.IADProcessDAO;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * 	Generate ASP entries for a level
@@ -264,7 +264,7 @@ public class ASPGenerateLevel extends JavaProcess
 
 	private void generateProcess(int p_AD_Process_ID) {
 		// Add Process and Parameters
-		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(getCtx(), p_AD_Process_ID);
+		final I_AD_Process process = Services.get(IADProcessDAO.class).getById(p_AD_Process_ID);
 		int asp_process_id = DB.getSQLValueEx(get_TrxName(),
 				"SELECT COUNT(*) FROM ASP_Process WHERE ASP_Level_ID = ? AND AD_Process_ID = ?",
 				p_ASP_Level_ID, process.getAD_Process_ID());

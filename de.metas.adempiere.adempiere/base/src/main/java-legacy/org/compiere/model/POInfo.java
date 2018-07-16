@@ -1457,4 +1457,14 @@ public final class POInfo implements Serializable
 		return trlInfo;
 	}
 
+	public boolean isPasswordColumn(final int index)
+	{
+		if (index < 0 || index >= m_columns.length)
+		{
+			return false;
+		}
+		
+		return m_columns[index].isPasswordColumn();
+		
+	}
 }   // POInfo

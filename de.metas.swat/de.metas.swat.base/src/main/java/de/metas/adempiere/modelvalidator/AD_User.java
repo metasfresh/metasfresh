@@ -22,7 +22,7 @@ import de.metas.adempiere.model.I_AD_User;
  *
  */
 @Interceptor(I_AD_User.class)
-@Callout(value = I_AD_User.class)
+@Callout(I_AD_User.class)
 public class AD_User
 {
 	@Init
@@ -31,36 +31,15 @@ public class AD_User
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
-	// 04270
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_AD_User.COLUMNNAME_Password, I_AD_User.COLUMNNAME_IsSystemUser })
-	public void checkPassword(final I_AD_User user)
-	{
-		if (!user.isSystemUser())
-		{
-			return;
-		}
-
-		final String password = user.getPassword();
-
-		// NOTE: Allow empty passwords because in webui we are not showing the password field so, initially it will be empty
-		if(password == null || password.isEmpty())
-		{
-			return;
-		}
-
-		Services.get(IUserBL.class).assertValidPassword(password);
-	}
-
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_AD_User.COLUMNNAME_Firstname, I_AD_User.COLUMNNAME_Lastname })
-	@CalloutMethod(columnNames = {I_AD_User.COLUMNNAME_Firstname, I_AD_User.COLUMNNAME_Lastname})
+	@CalloutMethod(columnNames = { I_AD_User.COLUMNNAME_Firstname, I_AD_User.COLUMNNAME_Lastname })
 	public void setName(final I_AD_User user)
 	{
-		final String contactName = Services.get(IUserBL.class).buildContactName(user.getFirstname(), user.getLastname());
-		if(Check.isEmpty(contactName))
+		final IUserBL userService = Services.get(IUserBL.class);
+
+		final String contactName = userService.buildContactName(user.getFirstname(), user.getLastname());
+		if (Check.isEmpty(contactName))
 		{
 			return; // make sure not to overwrite an existing name with an empty string!
 		}

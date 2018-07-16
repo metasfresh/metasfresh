@@ -23,12 +23,16 @@ package de.metas.pricing.service.impl;
  */
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
+import org.compiere.util.Util;
 
 import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
@@ -75,9 +79,21 @@ class PricingResult implements IPricingResult
 	@Setter
 	@Getter
 	private PricingConditionsResult pricingConditions;
+
+	@Setter
+	@Getter
 	private int precision = NO_PRECISION;
+
+	@Setter
+	@Getter
 	private BigDecimal priceList = BigDecimal.ZERO;
+
+	@Setter
+	@Getter
 	private BigDecimal priceStd = BigDecimal.ZERO;
+
+	@Setter
+	@Getter
 	private BigDecimal priceLimit = BigDecimal.ZERO;
 	private Percent discount = Percent.ZERO;
 	private boolean enforcePriceLimit = false;
@@ -112,84 +128,12 @@ class PricingResult implements IPricingResult
 	}
 
 	/**
-	 * @return the precision
-	 */
-	@Override
-	public int getPrecision()
-	{
-		return precision;
-	}
-
-	/**
-	 * @param precision the precision to set
-	 */
-	@Override
-	public void setPrecision(final int precision)
-	{
-		this.precision = precision;
-	}
-
-	/**
-	 * @return the priceList
-	 */
-	@Override
-	public BigDecimal getPriceList()
-	{
-		return priceList;
-	}
-
-	/**
-	 * @param priceList the priceList to set
-	 */
-	@Override
-	public void setPriceList(final BigDecimal priceList)
-	{
-		this.priceList = priceList;
-	}
-
-	/**
-	 * @return the priceStd
-	 */
-	@Override
-	public BigDecimal getPriceStd()
-	{
-		return priceStd;
-	}
-
-	/**
-	 * @param priceStd the priceStd to set
-	 */
-	@Override
-	public void setPriceStd(final BigDecimal priceStd)
-	{
-		this.priceStd = priceStd;
-	}
-
-	/**
-	 * @return the priceLimit
-	 */
-	@Override
-	public BigDecimal getPriceLimit()
-	{
-		return priceLimit;
-	}
-
-	/**
-	 * @param priceLimit the priceLimit to set
-	 */
-	@Override
-	public void setPriceLimit(final BigDecimal priceLimit)
-	{
-		this.priceLimit = priceLimit;
-	}
-
-	/**
 	 * @return the discount
 	 */
 	@Override
 	public Percent getDiscount()
 	{
-		return discount != null ? discount : Percent.ZERO;
+		return Util.coalesce(discount, Percent.ZERO);
 	}
 
 	/**
@@ -409,5 +353,26 @@ class PricingResult implements IPricingResult
 	public boolean isDiscountEditable()
 	{
 		return isDiscountEditable;
+	}
+
+	/**
+	 * Supposed to be called by the pricing engine.
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/4376
+	 */
+	public void updatePriceScales()
+	{
+		scaleToPrecision(priceStd);
+		scaleToPrecision(priceLimit);
+		scaleToPrecision(priceList);
+	}
+
+	private BigDecimal scaleToPrecision(@Nullable final BigDecimal priceToRound)
+	{
+		if (priceToRound == null || precision < 0)
+		{
+			return priceToRound;
+		}
+		return priceToRound.setScale(precision, RoundingMode.HALF_UP);
 	}
 }

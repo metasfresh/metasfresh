@@ -164,4 +164,6 @@ public interface IADTableDAO extends ISingletonService
 	 * @return the Table DOcument Template
 	 */
 	I_AD_Table retrieveDocumentTableTemplate(I_AD_Table targetTable);
+
+	boolean isStandardColumn(String columnName);
 }

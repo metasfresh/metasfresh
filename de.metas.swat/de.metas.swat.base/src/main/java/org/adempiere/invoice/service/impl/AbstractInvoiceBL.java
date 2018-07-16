@@ -63,6 +63,7 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Tax;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -83,6 +84,9 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -596,7 +600,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			return;
 		}
-		org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		
+		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 		if(docType == null)
 		{
 			return;
@@ -607,8 +612,20 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 		
-		invoice.setDescription(docType.getDescription());
-		invoice.setDescriptionBottom(docType.getDocumentNote());
+		if(invoice.getC_BPartner() == null)
+		{
+			//nothing to do
+			return;
+		}
+		
+		final String adLanguage = Util.coalesce(invoice.getC_BPartner().getAD_Language(), Env.getAD_Language());
+		
+		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
+		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
+		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+		
+		invoice.setDescription(description.translate(adLanguage));
+		invoice.setDescriptionBottom(documentNote.translate(adLanguage));
 	}
 
 
