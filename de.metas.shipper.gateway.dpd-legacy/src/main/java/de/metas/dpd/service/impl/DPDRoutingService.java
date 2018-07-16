@@ -631,7 +631,7 @@ public class DPDRoutingService implements IDPDRoutingService
 		final IPrintingService printingService = Services.get(IPrinterRoutingBL.class).findPrintingService(
 				ctx,
 				-1, // C_DocType_ID
-				Services.get(IADProcessDAO.class).retriveProcessIdByValue(ctx, jasperProcessValue), // AD_Process_ID
+				Services.get(IADProcessDAO.class).retriveProcessIdByValue(jasperProcessValue), // AD_Process_ID
 				IPrinterRoutingBL.PRINTERTYPE_Label);
 
 		final PrintServiceAttributeSet printServiceAttributeSet = new HashPrintServiceAttributeSet();

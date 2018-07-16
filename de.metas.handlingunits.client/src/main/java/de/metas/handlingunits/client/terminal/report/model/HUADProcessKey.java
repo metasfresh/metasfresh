@@ -56,7 +56,7 @@ public class HUADProcessKey extends TerminalKey
 	{
 		Check.assume(adProcessId > 0, "processId > 0");
 
-		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(adProcessId);
+		final I_AD_Process process = Services.get(IADProcessDAO.class).getById(adProcessId);
 		final I_AD_Process processTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class);
 
 		String caption = processTrl.getName();

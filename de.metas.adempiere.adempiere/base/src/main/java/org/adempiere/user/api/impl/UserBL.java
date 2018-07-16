@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.hash.HashableString;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
@@ -49,9 +50,27 @@ public class UserBL implements IUserBL
 	private static final String MSG_INCORRECT_PASSWORD = "org.compiere.util.Login.IncorrectPassword";
 	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
 
-	public UserBL()
+	@Override
+	public HashableString getUserPassword(final I_AD_User user)
 	{
-		super();
+		return HashableString.fromString(user.getPassword());
+	}
+
+	@Override
+	public boolean isPasswordMatching(final I_AD_User user, final HashableString password)
+	{
+		if (password == null || password.isEmpty())
+		{
+			return false;
+		}
+
+		final HashableString userPassword = getUserPassword(user);
+		if (userPassword == null || userPassword.isEmpty())
+		{
+			return false;
+		}
+
+		return userPassword.isMatching(password);
 	}
 
 	private final String generatePassword()
@@ -78,8 +97,7 @@ public class UserBL implements IUserBL
 	public String generatedAndSetPassword(final I_AD_User user)
 	{
 		final String newPassword = generatePassword();
-		user.setPassword(newPassword);
-		InterfaceWrapperHelper.save(user);
+		changePasswordAndSave(user, newPassword);
 		return newPassword;
 	}
 
@@ -119,7 +137,6 @@ public class UserBL implements IUserBL
 		final String passwordResetURL = WebuiURLs.newInstance()
 				.getResetPasswordUrl(passwordResetCode);
 
-		
 		final IMailBL mailService = Services.get(IMailBL.class);
 		final IMailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(adClient.getPasswordReset_MailText());
 		mailTextBuilder.setCustomVariable("URL", passwordResetURL);
@@ -128,7 +145,7 @@ public class UserBL implements IUserBL
 		{
 			mailTextBuilder.setC_BPartner(user.getC_BPartner());
 		}
-		
+
 		final String subject = mailTextBuilder.getMailHeader();
 		final EMail email = mailService.createEMail(
 				adClient,
@@ -175,21 +192,18 @@ public class UserBL implements IUserBL
 	public I_AD_User resetPassword(final String passwordResetCode, final String newPassword)
 	{
 		Check.assumeNotNull(passwordResetCode, "passwordResetCode not null");
-		assertValidPassword(newPassword);
 
 		final IUserDAO usersRepo = Services.get(IUserDAO.class);
-
 		final I_AD_User user = usersRepo.getByPasswordResetCode(passwordResetCode);
 
-		user.setPassword(newPassword);
 		user.setPasswordResetCode(null);
-		InterfaceWrapperHelper.save(user);
+		changePasswordAndSave(user, newPassword);
 
 		return user;
 	}
 
 	@Override
-	public void changePassword(final Properties ctx, final int adUserId, final String oldPassword, final String newPassword, final String newPasswordRetype)
+	public void changePassword(final Properties ctx, final int adUserId, final HashableString oldPassword, final String newPassword, final String newPasswordRetype)
 	{
 		//
 		// Make sure the new password and new password retype are matching
@@ -206,8 +220,8 @@ public class UserBL implements IUserBL
 		// Make sure the old password is matching (if required)
 		if (isOldPasswordRequired(ctx, adUserId))
 		{
-			final String userPassword = user.getPassword();
-			if (Check.isEmpty(userPassword) && !Check.isEmpty(oldPassword))
+			final HashableString userPassword = getUserPassword(user);
+			if (HashableString.isEmpty(userPassword) && !HashableString.isEmpty(oldPassword))
 			{
 				throw new AdempiereException("@OldPasswordNoMatch@")
 						.setParameter("reason", "User does not have a password set. Please leave empty the OldPassword field.");
@@ -219,8 +233,16 @@ public class UserBL implements IUserBL
 			}
 		}
 
+		changePasswordAndSave(user, newPassword);
+	}
+
+	@Override
+	public void changePasswordAndSave(final I_AD_User user, final String newPassword)
+	{
 		assertValidPassword(newPassword);
-		user.setPassword(newPassword);
+
+		final String newPasswordEncrypted = HashableString.ofPlainValue(newPassword).hash().getValue();
+		user.setPassword(newPasswordEncrypted);
 
 		InterfaceWrapperHelper.save(user);
 	}
@@ -246,22 +268,22 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public void assertValidPassword(final String password)
+	public void assertValidPassword(final String passwordPlain)
 	{
 		final int minPasswordLength = getMinPasswordLength();
-		if (Check.isEmpty(password))
+		if (Check.isEmpty(passwordPlain))
 		{
 			throw new AdempiereException(MSG_INCORRECT_PASSWORD, new Object[] { minPasswordLength })
 					.setParameter("reason", "empty/null password");
 		}
 
-		if (password.contains(" "))
+		if (passwordPlain.contains(" "))
 		{
 			throw new AdempiereException(MSG_INCORRECT_PASSWORD, new Object[] { minPasswordLength })
 					.setParameter("reason", "spaces are not allowed");
 		}
 
-		if (password.length() < minPasswordLength)
+		if (passwordPlain.length() < minPasswordLength)
 		{
 			throw new AdempiereException(MSG_INCORRECT_PASSWORD, new Object[] { minPasswordLength });
 		}
