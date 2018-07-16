@@ -14,9 +14,11 @@ import com.google.common.base.Preconditions;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -98,9 +100,8 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 
 	@Override
 	@Cached(cacheName = I_PP_Order_Qty.Table_Name + "#by#" + I_PP_Order_Qty.COLUMNNAME_M_HU_ID)
-	public boolean isHuIdIssued(int huId)
+	public boolean isHuIdIssued(@NonNull final HuId huId)
 	{
-		Preconditions.checkArgument(huId > 0, "huId shall be > 0");
 		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Qty.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_Qty.COLUMN_M_HU_ID, huId)

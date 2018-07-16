@@ -6,6 +6,7 @@ import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
@@ -45,7 +46,7 @@ public class HUToReportWrapper implements HUToReport
 	}
 
 	private final I_M_HU hu;
-	private final int huId;
+	private final HuId huId;
 	private final int bpartnerId;
 	private final String huUnitType;
 
@@ -54,7 +55,7 @@ public class HUToReportWrapper implements HUToReport
 	private HUToReportWrapper(@NonNull final I_M_HU hu)
 	{
 		this.hu = hu;
-		this.huId = hu.getM_HU_ID();
+		this.huId = HuId.ofRepoId(hu.getM_HU_ID());
 		this.bpartnerId = hu.getC_BPartner_ID();
 		this.huUnitType = extractHUType(hu);
 	}
@@ -82,7 +83,7 @@ public class HUToReportWrapper implements HUToReport
 	}
 
 	@Override
-	public int getHUId()
+	public HuId getHUId()
 	{
 		return huId;
 	}
@@ -98,7 +99,7 @@ public class HUToReportWrapper implements HUToReport
 	{
 		return huUnitType;
 	}
-	
+
 	@Override
 	public boolean isTopLevel()
 	{
