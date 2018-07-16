@@ -142,9 +142,10 @@ node('agent && linux')
         // sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnJacocoConf.pomFile} --batch-mode ${mvnJacocoConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate"
 
 				// create one single jacoco.exec file, see https://www.eclemma.org/jacoco/trunk/doc/merge-mojo.html
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.8.1:merge"
+				// sh "mvn --debug --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.8.1:merge"
 
 				// create (among others) the jacoco.xml file to send to codacy, see https://www.eclemma.org/jacoco/trunk/doc/report-mojo.html
+				// the file ./jacoco-aggregate-report/jacoco.xml' was set in metasfresh-parent's pom.xml, see "jacoco-prepare-agent"
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DoutputDirectory=./jacoco-aggregate-report org.jacoco:jacoco-maven-plugin:0.8.1:report"
         uploadCoverageResultsForCodacy('./jacoco-aggregate-report', 'jacoco.xml')
 
@@ -317,10 +318,10 @@ void uploadCoverageResultsForCodacy(final String aggregatedJacocoFilePath, final
       final String version='4.0.1'
       final String classpathParam = "-cp codacy-coverage-reporter-${version}-assembly.jar"
       final String reportFileParam = "-r ${aggregatedJacocoFilePath}/${aggregatedJacocoFilename}"
-      final String prefixParam = "--prefix ${aggregatedJacocoFilePath}" // thx to https://github.com/codacy/codacy-coverage-reporter#failed-to-upload-report-not-found
+      final String prefixParam = '' // let'S try if this is still useful "--prefix ${aggregatedJacocoFilePath}" // thx to https://github.com/codacy/codacy-coverage-reporter#failed-to-upload-report-not-found
 
       sh "wget --quiet https://github.com/codacy/codacy-coverage-reporter/releases/download/${version}/codacy-coverage-reporter-${version}-assembly.jar"
-      sh "java ${classpathParam} com.codacy.CodacyCoverageReporter -l Java ${reportFileParam} ${prefixParam}"
+      sh "java ${classpathParam} com.codacy.CodacyCoverageReporter report -l Java ${reportFileParam} ${prefixParam}"
     }
   }
 }
