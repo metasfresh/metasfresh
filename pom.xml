@@ -235,14 +235,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 							or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded. 
 						-->
 						<forkCount>1</forkCount>
-						
-						<!-- Hope to solve 
-						Spring boot related tests fail on jenkins sometimes https://github.com/metasfresh/metasfresh/issues/2988 
-						The problem might be related to the static variable Adempiere.instance which holds a SpringContext -->
-						<!-- reuseForks>false</reuseForks -->
-						<!-- reuseForks=false solved the problem, but we can't live with the increase in build time
-						<reuseForks>true</reuseForks> -->
-						
+
 						<!-- random might be a good idea in general, but due to our known problems, prefer determinability 
 						Again, see Spring boot related tests fail on jenkins sometimes https://github.com/metasfresh/metasfresh/issues/2988 -->
 						<runOrder>filesystem</runOrder>
@@ -295,7 +288,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.7.9</version>
+					<version>0.8.1</version>
 				</plugin>
 
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
@@ -682,10 +675,17 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 						<artifactId>jacoco-maven-plugin</artifactId>
 						<executions>
 							<execution>
+								<!-- https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
 								<id>jacoco-prepare-agent</id>
 								<goals>
 									<goal>prepare-agent</goal>
 								</goals>
+								<configuration>
+									<!-- create one aggregated jacoco.exec file for all possible modules -->
+									<!-- thx to https://groups.google.com/forum/#!topic/jacoco/E_YQtRRNNcs -->
+									<!-- thx to https://stackoverflow.com/questions/3084629/finding-the-root-directory-of-a-multi-module-maven-reactor-project -->
+									<destfile>${maven.multiModuleProjectDirectory}/jacoco-aggregate-report/jacoco.exec</destfile>
+								</configuration>
 							</execution>
 							<execution>
 								<id>jacoco-report</id>
