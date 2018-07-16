@@ -59,6 +59,7 @@ import lombok.NonNull;
  * <ul>
  * <li>{@link IProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
  * <li>{@link IProcessDefaultParametersProvider} if you want to provide some default values for parameters, when the UI parameters dialog is loaded
+ * <li>{@link IProcessParametersCallout} if you want to be notified of users' process paramter changes
  * <li>{@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
  * <li>{@link Process} annotation if you add more info or constraints about how the process shall be executed
  * <li>{@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
