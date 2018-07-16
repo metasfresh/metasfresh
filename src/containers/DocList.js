@@ -15,6 +15,7 @@ import DocumentList from '../components/app/DocumentList';
 const mapStateToProps = state => ({
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
+  pluginModal: state.windowHandler.pluginModal,
   latestNewDocument: state.windowHandler.latestNewDocument,
   indicator: state.windowHandler.indicator,
   includedView: state.listHandler.includedView,
@@ -96,6 +97,7 @@ class DocList extends Component {
       query,
       modal,
       rawModal,
+      pluginModal,
       indicator,
       processStatus,
       includedView,
@@ -116,6 +118,7 @@ class DocList extends Component {
         entity="documentView"
         modal={modal}
         rawModal={rawModal}
+        pluginModal={pluginModal}
         breadcrumb={breadcrumb}
         windowType={windowType}
         query={query}

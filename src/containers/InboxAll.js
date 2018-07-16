@@ -10,6 +10,7 @@ const mapStateToProps = state => ({
   processStatus: state.appHandler.processStatus,
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
+  pluginModal: state.windowHandler.pluginModal,
   indicator: state.windowHandler.indicator,
   includedView: state.listHandler.includedView,
 });
@@ -25,6 +26,7 @@ class InboxAll extends Component {
       inbox,
       modal,
       rawModal,
+      pluginModal,
       processStatus,
       indicator,
       includedView,
@@ -35,6 +37,7 @@ class InboxAll extends Component {
         siteName="Inbox"
         modal={modal}
         rawModal={rawModal}
+        pluginModal={pluginModal}
         processStatus={processStatus}
         indicator={indicator}
         includedView={includedView}
