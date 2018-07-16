@@ -113,7 +113,7 @@ public class PricingBL implements IPricingBL
 	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
 	{
 		final IPricingContext pricingCtxToUse = setupPricingContext(pricingCtx);
-		final IPricingResult result = createInitialResult(pricingCtxToUse);
+		final PricingResult result = createInitialResult(pricingCtxToUse);
 
 		//
 		// Do not change anything if the price is manual (task 08908)
@@ -148,7 +148,8 @@ public class PricingBL implements IPricingBL
 
 		// Convert prices to price UOM if required
 		convertResultToContextUOMIfNeeded(result, pricingCtxToUse);
-		setPrecision(pricingCtxToUse, result);
+
+		setPrecisionAndPriceScales(pricingCtxToUse, result);
 
 		if (logger.isDebugEnabled())
 		{
@@ -287,7 +288,9 @@ public class PricingBL implements IPricingBL
 		}
 	}
 
-	private void setPrecision(IPricingContext pricingCtx, IPricingResult result)
+	private void setPrecisionAndPriceScales(
+			@NonNull final IPricingContext pricingCtx,
+			@NonNull final PricingResult result)
 	{
 		if (pricingCtx.getPriceListId() != null && result.getPrecision() == IPricingResult.NO_PRECISION)
 		{
@@ -297,9 +300,12 @@ public class PricingBL implements IPricingBL
 				result.setPrecision(precision);
 			}
 		}
+		result.updatePriceScales();
 	}
 
-	private void convertResultToContextUOMIfNeeded(final IPricingResult result, final IPricingContext pricingCtx)
+	private void convertResultToContextUOMIfNeeded(
+			@NonNull final IPricingResult result,
+			@NonNull final IPricingContext pricingCtx)
 	{
 		// We are asked to keep the prices in context's UOM, so do nothing
 		if (!pricingCtx.isConvertPriceToContextUOM())
@@ -353,9 +359,9 @@ public class PricingBL implements IPricingBL
 	}
 
 	@Override
-	public IPricingResult createInitialResult(final IPricingContext pricingCtx)
+	public PricingResult createInitialResult(@NonNull final IPricingContext pricingCtx)
 	{
-		final IPricingResult result = new PricingResult();
+		final PricingResult result = new PricingResult();
 		result.setPricingSystemId(pricingCtx.getPricingSystemId());
 		result.setPriceListId(pricingCtx.getPriceListId());
 		result.setM_PriceList_Version_ID(pricingCtx.getM_PriceList_Version_ID());
