@@ -45,7 +45,7 @@ public class PurchaseRowTestTools
 				.precision(2)
 				.build();
 	}
-	
+
 	public I_C_UOM createUOM(final String name)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
@@ -59,9 +59,9 @@ public class PurchaseRowTestTools
 	public PurchaseProfitInfo createProfitInfo(@NonNull final Currency currency)
 	{
 		return PurchaseProfitInfo.builder()
-				.salesNetPrice(Money.of(11, currency))
-				.purchaseNetPrice(Money.of(9, currency))
-				.purchaseGrossPrice(Money.of(10, currency))
+				.profitSalesPriceActual(Money.of(11, currency))
+				.profitPurchasePriceActual(Money.of(9, currency))
+				.purchasePriceActual(Money.of(10, currency))
 				.build();
 	}
 }

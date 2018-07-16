@@ -289,7 +289,7 @@ public class PurchaseRowsLoaderTest
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.warehouseId(WarehouseId.ofRepoId(30))
-				.profitInfo(profitInfo)
+				.profitInfoOrNull(profitInfo)
 				.build();
 		return purchaseCandidate;
 	}

@@ -174,7 +174,7 @@ class PurchaseRowsSaver
 			candidate.setQtyToPurchase(qtyToPurchase);
 			candidate.setPrepared(qtyToPurchase.signum() != 0);
 			candidate.setPurchaseDatePromised(purchaseDatePromised);
-			candidate.setProfitInfo(profitInfo);
+			candidate.setProfitInfoOrNull(profitInfo);
 
 			candidatesChanged.add(candidate);
 			qtyToPurchaseRemainingOfGroup = qtyToPurchaseRemainingOfGroup.subtract(qtyToPurchase);

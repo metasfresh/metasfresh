@@ -2,7 +2,6 @@ package de.metas.purchasecandidate.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +9,7 @@ import de.metas.purchasecandidate.PurchaseCandidateReminder;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.reminder.PurchaseCandidateReminderScheduler;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,19 +37,24 @@ import de.metas.purchasecandidate.reminder.PurchaseCandidateReminderScheduler;
 @Component("de.metas.purchasecandidate.interceptor.C_PurchaseCandidate")
 public class C_PurchaseCandidate
 {
+	private final PurchaseCandidateReminderScheduler scheduler;
+
+	public C_PurchaseCandidate(@NonNull final PurchaseCandidateReminderScheduler scheduler)
+	{
+		this.scheduler = scheduler;
+	}
+
 	@ModelChange( //
 			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, //
 			ifColumnsChanged = { I_C_PurchaseCandidate.COLUMNNAME_ReminderDate, I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID }, //
 			afterCommit = true)
-	public void scheduleReminder(final I_C_PurchaseCandidate record)
+	public void scheduleReminderForWebui(final I_C_PurchaseCandidate record)
 	{
 		final PurchaseCandidateReminder reminder = PurchaseCandidateRepository.toPurchaseCandidateReminderOrNull(record);
 		if (reminder == null)
 		{
 			return;
 		}
-
-		final PurchaseCandidateReminderScheduler scheduler = Adempiere.getBean(PurchaseCandidateReminderScheduler.class);
 		scheduler.scheduleNotification(reminder);
 	}
 }

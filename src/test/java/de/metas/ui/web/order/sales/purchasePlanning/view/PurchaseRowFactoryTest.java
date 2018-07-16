@@ -114,9 +114,9 @@ public class PurchaseRowFactoryTest
 	{
 		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo
 				.builder()
-				.salesNetPrice(Money.of(11, currency))
-				.purchaseNetPrice(Money.of(9, currency))
-				.purchaseGrossPrice(Money.of(10, currency))
+				.profitSalesPriceActual(Money.of(11, currency))
+				.profitPurchasePriceActual(Money.of(9, currency))
+				.purchasePriceActual(Money.of(10, currency))
 				.build();
 
 		return PurchaseCandidate.builder()
@@ -132,7 +132,7 @@ public class PurchaseRowFactoryTest
 				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
 				.qtyToPurchase(ONE)
 				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
-				.profitInfo(profitInfo)
+				.profitInfoOrNull(profitInfo)
 				.processed(true) // important in case we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
 				.locked(false)
 				.build();
