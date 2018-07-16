@@ -7,6 +7,17 @@ import * as windowActions from '../../actions/WindowActions';
 import RawWidget from './RawWidget';
 import { DATE_FIELDS, DATE_FORMAT } from '../../constants/Constants';
 
+function isNumberField(widgetType) {
+  switch (widgetType) {
+    case 'Integer':
+    case 'Amount':
+    case 'Quantity':
+      return true;
+    default:
+      return false;
+  }
+}
+
 class MasterWidget extends Component {
   state = {
     updated: false,
@@ -83,6 +94,11 @@ class MasterWidget extends Component {
       isAdvanced = false,
       viewId,
     } = this.props;
+    const numberField = isNumberField(widgetType);
+
+    if (numberField && !value) {
+      value = '0';
+    }
 
     let { entity } = this.props;
     let currRowId = rowId;
@@ -154,6 +170,7 @@ class MasterWidget extends Component {
         if (rowId === 'NEW') {
           currRowId = relativeDocId;
         }
+
         updatePropertyValue(property, val, tabId, currRowId, isModal);
       }
     );
