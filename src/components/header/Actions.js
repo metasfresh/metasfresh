@@ -37,6 +37,7 @@ class Actions extends Component {
       activeTab,
       activeTabSelected,
     } = this.props;
+    const requests = [this.requestActions()];
 
     if (!windowType || docId === 'notfound' || notfound) {
       this.setState({
@@ -53,8 +54,6 @@ class Actions extends Component {
 
       return;
     }
-
-    const requests = [this.requestActions()];
 
     if (activeTab && activeTabSelected && activeTabSelected.length > 0) {
       requests.push(this.requestRowActions());
@@ -223,14 +222,16 @@ class Actions extends Component {
   };
 
   renderPluginAction = identifier => (item, key) => {
-    const { closeSubheader } = this.props;
+    const { closeSubheader, dispatch } = this.props;
     let handleClick = null;
 
     if (!item.disabled) {
       const handleModal = item.clickHandler;
 
       handleClick = () => {
-        handleModal();
+        // we're passing dispatch, so that we don't have to hack around
+        // the header actions trying to connect them to store
+        handleModal(dispatch);
 
         closeSubheader();
       };

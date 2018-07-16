@@ -76,9 +76,8 @@ export const getRoutes = (store, auth, plugins) => {
   const getPluginsRoutes = plugins => {
     if (plugins.length) {
       const routes = plugins.map(plugin => {
-        const pluginRoutes = [...plugin.routes];
-
-        if (pluginRoutes.length) {
+        if (plugin.routes && plugin.routes.length) {
+          const pluginRoutes = [...plugin.routes];
           const ParentComponent = pluginRoutes[0].component;
 
           // wrap main plugin component in a HOC that'll render it
