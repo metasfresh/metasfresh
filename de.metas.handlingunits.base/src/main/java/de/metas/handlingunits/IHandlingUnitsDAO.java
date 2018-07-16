@@ -76,6 +76,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 					item -> ITEM_TYPE_ORDERING.get(Services.get(IHandlingUnitsBL.class).getItemType(item)))
 			.thenComparing(
 					queryOrderBy.getComparator(I_M_HU_Item.class));
+	
+	I_M_HU getByIdOutOfTrx(HuId huId);
 
 	/**
 	 * Save the given {@code hu}

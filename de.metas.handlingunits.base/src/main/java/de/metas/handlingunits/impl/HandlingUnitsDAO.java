@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 
 /*
@@ -115,6 +117,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	private final IHUAndItemsDAO getHUAndItemsDAO()
 	{
 		return defaultHUAndItemsDAO;
+	}
+
+	@Override
+	public I_M_HU getByIdOutOfTrx(@NonNull final HuId huId)
+	{
+		return loadOutOfTrx(huId, I_M_HU.class);
 	}
 
 	@Override
