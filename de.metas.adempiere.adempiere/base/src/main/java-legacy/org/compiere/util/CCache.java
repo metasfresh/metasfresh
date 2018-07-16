@@ -418,6 +418,12 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		cache.invalidate(key);
 		return value;
 	}
+	
+	public void removeAll(final Iterable<K> keys)
+	{
+		cache.invalidateAll(keys);
+	}
+
 
 	/**
 	 * @see java.util.Map#get(java.lang.Object)

@@ -54,6 +54,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.lang.RepoIdAware;
 import lombok.NonNull;
 
 /**
@@ -203,6 +204,11 @@ public final class TableRecordReference implements ITableRecordReference
 	public static final TableRecordReference of(final String tableName, final int recordId)
 	{
 		return new TableRecordReference(tableName, recordId);
+	}
+
+	public static final TableRecordReference of(@NonNull final String tableName, @NonNull final RepoIdAware recordId)
+	{
+		return new TableRecordReference(tableName, recordId.getRepoId());
 	}
 
 	/**
