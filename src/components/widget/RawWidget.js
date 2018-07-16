@@ -1,10 +1,11 @@
 import Moment from 'moment';
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
+import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
+import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 import { DATE_FORMAT } from '../../constants/Constants';
 import ActionButton from './ActionButton';
@@ -21,14 +22,6 @@ import List from './List/List';
 import Lookup from './Lookup/Lookup';
 
 class RawWidget extends Component {
-  static propTypes = {
-    handleZoomInto: PropTypes.func,
-  };
-
-  static defaultProps = {
-    handleZoomInto: () => {},
-  };
-
   constructor(props) {
     super(props);
 
@@ -39,6 +32,9 @@ class RawWidget extends Component {
       tooltipToggled: false,
       clearedFieldWarning: false,
     };
+
+    this.getClassNames = getClassNames.bind(this);
+    this.generateMomentObj = generateMomentObj.bind(this);
   }
 
   componentDidMount() {
@@ -76,13 +72,16 @@ class RawWidget extends Component {
 
   handleFocus = e => {
     const { dispatch, handleFocus, listenOnKeysFalse } = this.props;
+    const el = e.target;
 
     dispatch(disableShortcut());
 
-    this.setState({
-      isEdited: true,
-      cachedValue: e.target.value,
-    });
+    setTimeout(() => {
+      this.setState({
+        isEdited: true,
+        cachedValue: el.value,
+      });
+    }, 0);
 
     listenOnKeysFalse && listenOnKeysFalse();
     handleFocus && handleFocus();
@@ -123,10 +122,11 @@ class RawWidget extends Component {
   // and send a patch request only if date is changed
   handlePatch = (property, value, id, valueTo, isForce) => {
     const { handlePatch } = this.props;
+    const willPatch = this.willPatch(value, valueTo);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if ((isForce || this.willPatch(value, valueTo)) && handlePatch) {
+    if ((isForce || willPatch) && handlePatch) {
       this.setState({
         cachedValue: value,
         clearedFieldWarning: false,
@@ -170,50 +170,6 @@ class RawWidget extends Component {
     );
   };
 
-  generateMomentObj = value => {
-    if (Moment.isMoment(value)) {
-      return value;
-    }
-    return value ? Moment(value).format(DATE_FORMAT) : null;
-  };
-
-  classNames = classObject =>
-    Object.entries(classObject)
-      .filter(([, classActive]) => classActive)
-      .map(([className]) => className)
-      .join(' ');
-
-  getClassNames = ({ icon, forcedPrimary } = {}) => {
-    const { widgetData, gridAlign, type, updated, rowId, isModal } = this.props;
-    const { isEdited } = this.state;
-    const { readonly, value, mandatory, validStatus } = widgetData[0];
-
-    return this.classNames({
-      'input-block': true,
-      'input-icon-container': icon,
-      'input-disabled': readonly,
-      'input-mandatory':
-        mandatory && (value ? value.length === 0 : value !== 0),
-      'input-error':
-        validStatus &&
-        !validStatus.valid &&
-        !validStatus.initialValue &&
-        !isEdited,
-      [`text-xs-${gridAlign}`]: gridAlign,
-      [`input-${
-        type === 'primary' || forcedPrimary ? 'primary' : 'secondary'
-      }`]: true,
-      [`pulse-${updated ? 'on' : 'off'}`]: true,
-      'input-table': rowId && !isModal,
-    });
-  };
-
-  renderErrorPopup = reason => {
-    return (
-      <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
-    );
-  };
-
   clearFieldWarning = warning => {
     if (warning) {
       this.setState({
@@ -226,6 +182,12 @@ class RawWidget extends Component {
     this.setState({
       tooltipToggled: show,
     });
+  };
+
+  renderErrorPopup = reason => {
+    return (
+      <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
+    );
   };
 
   renderWidget = () => {
@@ -974,60 +936,8 @@ class RawWidget extends Component {
   }
 }
 
-RawWidget.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  autoFocus: PropTypes.bool,
-  textSelected: PropTypes.bool,
-  listenOnKeys: PropTypes.bool,
-  listenOnKeysFalse: PropTypes.func,
-  listenOnKeysTrue: PropTypes.func,
-  widgetData: PropTypes.array,
-  handleFocus: PropTypes.func,
-  handlePatch: PropTypes.func,
-  handleBlur: PropTypes.func,
-  handleProcess: PropTypes.func,
-  handleChange: PropTypes.func,
-  handleBackdropLock: PropTypes.func,
-  tabId: PropTypes.string,
-  viewId: PropTypes.string,
-  rowId: PropTypes.string,
-  dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  windowType: PropTypes.string,
-  caption: PropTypes.string,
-  gridAlign: PropTypes.string,
-  type: PropTypes.string,
-  updated: PropTypes.bool,
-  isModal: PropTypes.bool,
-  modalVisible: PropTypes.bool.isRequired,
-  filterWidget: PropTypes.bool,
-  filterId: PropTypes.string,
-  id: PropTypes.number,
-  range: PropTypes.bool,
-  onShow: PropTypes.func,
-  onHide: PropTypes.func,
-  subentity: PropTypes.string,
-  subentityId: PropTypes.string,
-  tabIndex: PropTypes.number,
-  dropdownOpenCallback: PropTypes.func,
-  fullScreen: PropTypes.string,
-  widgetType: PropTypes.string,
-  fields: PropTypes.array,
-  icon: PropTypes.string,
-  entity: PropTypes.string,
-  data: PropTypes.any,
-  closeTableField: PropTypes.func,
-  attribute: PropTypes.bool,
-  allowShowPassword: PropTypes.bool, // NOTE: looks like this wasn't used
-  buttonProcessId: PropTypes.string, // NOTE: looks like this wasn't used
-  onBlurWidget: PropTypes.func,
-  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
-  noLabel: PropTypes.bool,
-  isOpenDatePicker: PropTypes.bool,
-};
-
-RawWidget.defaultProps = {
-  tabIndex: 0,
-};
+RawWidget.propTypes = RawWidgetPropTypes;
+RawWidget.defaultProps = RawWidgetDefaultProps;
 
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
