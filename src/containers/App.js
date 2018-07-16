@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import { browserHistory } from 'react-router';
 import { push, syncHistoryWithStore } from 'react-router-redux';
 
+
 import {
   addNotification,
   languageSuccess,
@@ -152,7 +153,7 @@ export default class App extends Component {
 
         return new Promise(resolve =>
           waitForChunk().then(file => {
-            resolve(file);
+            resolve({ name: plugin, file });
           })
         );
       });
