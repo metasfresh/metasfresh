@@ -73,6 +73,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Throwables;
 
+import de.metas.hash.HashableString;
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.IMsgBL;
@@ -783,7 +784,7 @@ public final class ALogin extends CDialog
 		final Set<KeyNamePair> roles;
 		try
 		{
-			roles = m_login.authenticate(m_user, m_pwd);
+			roles = m_login.authenticate(m_user, HashableString.ofPlainValue(m_pwd));
 		}
 		catch (Throwable e)
 		{

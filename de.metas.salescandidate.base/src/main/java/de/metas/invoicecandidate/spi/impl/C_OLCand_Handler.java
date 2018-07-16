@@ -209,16 +209,12 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				, ic
 				, taxCategoryId
 				, productId
-				, chargeId
 				, olc.getDatePromised()
 				, olc.getDatePromised()
 				, orgId
 				, warehouse
-				, billLocationId
-				, olCandEffectiveValuesBL.getC_BP_Location_Effective_ID(olc)
-				, isSOTrx
-				, trxName
-				);
+				, olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(olc)
+				, isSOTrx);
 		ic.setC_Tax_ID(taxId);
 
 		return ic;

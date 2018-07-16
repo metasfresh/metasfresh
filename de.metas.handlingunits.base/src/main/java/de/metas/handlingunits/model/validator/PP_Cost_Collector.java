@@ -242,7 +242,7 @@ public class PP_Cost_Collector
 		{
 			if(huStatusBL.isStatusIssued(topLevelHU))
 			{
-				handlingUnitsBL.setHUStatus(huContext, topLevelHU, X_M_HU.HUSTATUS_Active);
+				huStatusBL.setHUStatus(huContext, topLevelHU, X_M_HU.HUSTATUS_Active);
 				handlingUnitsDAO.saveHU(topLevelHU);
 			}
 		}

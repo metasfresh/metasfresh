@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
@@ -71,6 +72,7 @@ public class CreateDraftIssues
 	private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
 
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
@@ -127,7 +129,7 @@ public class CreateDraftIssues
 		final I_PP_Order_Qty candidate = createIssueCandidate(hu, productStorage);
 
 		// update the HU's status so that it's not moved somewhere else etc
-		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
 		Services.get(IHandlingUnitsDAO.class).saveHU(hu);
 
 		return candidate;

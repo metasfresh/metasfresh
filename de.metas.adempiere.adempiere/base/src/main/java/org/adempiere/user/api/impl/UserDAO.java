@@ -24,7 +24,6 @@ package org.adempiere.user.api.impl;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -79,17 +78,6 @@ public class UserDAO implements IUserDAO
 		}
 
 		return users.get(0);
-	}
-
-	@Override
-	public I_AD_User retrieveLoginUserByUserIdAndPassword(String userId, final String password)
-	{
-		final I_AD_User user = retrieveLoginUserByUserId(userId);
-		if (!Objects.equals(password, user.getPassword()))
-		{
-			throw new AdempiereException("@UserOrPasswordInvalid@");
-		}
-		return user;
 	}
 
 	@Override

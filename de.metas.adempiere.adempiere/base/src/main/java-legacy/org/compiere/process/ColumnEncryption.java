@@ -1,353 +1,347 @@
-/********************************************************************** 
- * This file is part of Adempiere ERP Bazaar                          * 
- * http://www.adempiere.org                                           * 
- *                                                                    * 
- * Copyright (C) 1999 - 2006 Compiere Inc.                            * 
- * Copyright (C) Contributors                                         * 
- *                                                                    * 
- * This program is free software; you can redistribute it and/or      * 
- * modify it under the terms of the GNU General Public License        * 
- * as published by the Free Software Foundation; either version 2     * 
- * of the License, or (at your option) any later version.             * 
- *                                                                    * 
- * This program is distributed in the hope that it will be useful,    * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of     * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the       * 
- * GNU General Public License for more details.                       * 
- *                                                                    * 
- * You should have received a copy of the GNU General Public License  * 
- * along with this program; if not, write to the Free Software        * 
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,         * 
- * MA 02110-1301, USA.                                                * 
- *                                                                    * 
- * Contributors:                                                      * 
- *  - Bahman Movaqar (bmovaqar AT users.sf.net)                       * 
+/**********************************************************************
+ * This file is part of Adempiere ERP Bazaar *
+ * http://www.adempiere.org *
+ * *
+ * Copyright (C) 1999 - 2006 Compiere Inc. *
+ * Copyright (C) Contributors *
+ * *
+ * This program is free software; you can redistribute it and/or *
+ * modify it under the terms of the GNU General Public License *
+ * as published by the Free Software Foundation; either version 2 *
+ * of the License, or (at your option) any later version. *
+ * *
+ * This program is distributed in the hope that it will be useful, *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the *
+ * GNU General Public License for more details. *
+ * *
+ * You should have received a copy of the GNU General Public License *
+ * along with this program; if not, write to the Free Software *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, *
+ * MA 02110-1301, USA. *
+ * *
+ * Contributors: *
+ * - Bahman Movaqar (bmovaqar AT users.sf.net) *
  **********************************************************************/
 package org.compiere.process;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.compiere.model.MColumn;
+import java.sql.SQLException;
+
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.MTable;
-import org.compiere.util.AdempiereUserError;
+import org.compiere.model.X_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
-import org.compiere.util.Trx;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 
 /**
  * Column Encryption Test
- * 
+ *
  * @author Jorg Janke
  * @version $Id: ColumnEncryption.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ColumnEncryption extends JavaProcess {
+public class ColumnEncryption extends JavaProcess
+{
+	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+
 	/** Enable/Disable Encryption */
+	@Param(parameterName = "IsEncrypted")
 	private boolean p_IsEncrypted = false;
 
 	/** Change Encryption Settings */
+	@Param(parameterName = "ChangeSetting")
 	private boolean p_ChangeSetting = false;
 
 	/** Maximum Length */
+	@Param(parameterName = "MaxLength")
 	private int p_MaxLength = 0;
 
 	/** Test Value */
+	@Param(parameterName = "TestValue")
 	private String p_TestValue = null;
 
-	/** The Column */
-	private int p_AD_Column_ID = 0;
-
-	/**
-	 * All the resizing and encrypting database are managed by this
-	 * transaction.
-	 */
-	private Trx m_trx;
-	
-	/**
-	 * All the resizing and encrypting database work goes through this
-	 * connection.
-	 */
-	private Connection m_conn;
-	
-	/**
-	 * Prepare - e.g., get Parameters.
-	 */
-	protected void prepare() {
-		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++) {
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
-			else if (name.equals("IsEncrypted"))
-				p_IsEncrypted = "Y".equals(para[i].getParameter());
-			else if (name.equals("ChangeSetting"))
-				p_ChangeSetting = "Y".equals(para[i].getParameter());
-			else if (name.equals("MaxLength"))
-				p_MaxLength = para[i].getParameterAsInt();
-			else if (name.equals("TestValue"))
-				p_TestValue = (String) para[i].getParameter();
-			else
-				log.error("Unknown Parameter: " + name);
-		}
-		p_AD_Column_ID = getRecord_ID();
-	} // prepare
-
-	/**
-	 * Process
-	 * 
-	 * @return info
-	 * @throws Exception
-	 */
-	protected String doIt() throws Exception {
-		log.info("AD_Column_ID=" + p_AD_Column_ID + ", IsEncrypted="
-				+ p_IsEncrypted + ", ChangeSetting=" + p_ChangeSetting
-				+ ", MaxLength=" + p_MaxLength);
-		MColumn column = new MColumn(getCtx(), p_AD_Column_ID, get_TrxName());
-		if (column.get_ID() == 0 || column.get_ID() != p_AD_Column_ID)
-			throw new AdempiereUserError("@NotFound@ @AD_Column_ID@ - "
-					+ p_AD_Column_ID);
-		//
-		String columnName = column.getColumnName();
-		int dt = column.getAD_Reference_ID();
+	@Override
+	protected String doIt() throws Exception
+	{
+		final I_AD_Column column = getRecord(I_AD_Column.class);
+		final String columnName = column.getColumnName();
+		final int displayType = column.getAD_Reference_ID();
 
 		// Can it be enabled?
-		if (column.isKey() || column.isParent() || column.isStandardColumn()
-				|| column.isVirtualColumn() || column.isIdentifier()
-				|| column.isTranslated() || DisplayType.isLookup(dt)
-				|| DisplayType.isLOB(dt)
+		if (column.isKey()
+				|| column.isParent()
+				|| adTablesRepo.isStandardColumn(columnName)
+				|| adTablesRepo.isVirtualColumn(column)
+				|| column.isIdentifier()
+				|| column.isTranslated()
+				|| DisplayType.isLookup(displayType)
+				|| DisplayType.isLOB(displayType)
 				|| "DocumentNo".equalsIgnoreCase(column.getColumnName())
 				|| "Value".equalsIgnoreCase(column.getColumnName())
-				|| "Name".equalsIgnoreCase(column.getColumnName())) {
-			if (column.isEncrypted()) {
-				column.setIsEncrypted(false);
-				column.save();
+				|| "Name".equalsIgnoreCase(column.getColumnName()))
+		{
+			if (isEncrypted(column))
+			{
+				setNotEncrypted(column);
+				InterfaceWrapperHelper.save(column);
 			}
-			return columnName + ": cannot be encrypted";
+
+			throw new AdempiereException(columnName + ": cannot be encrypted");
 		}
 
 		// Start
-		addLog(0, null, null, "Encryption Class = "
-				+ SecureEngine.getClassName());
+		addLog("Encryption Class = " + SecureEngine.getClassName());
 		boolean error = false;
 
 		// Test Value
-		if (p_TestValue != null && p_TestValue.length() > 0) {
-			String encString = SecureEngine.encrypt(p_TestValue);
-			addLog(0, null, null, "Encrypted Test Value=" + encString);
-			String clearString = SecureEngine.decrypt(encString);
-			if (p_TestValue.equals(clearString))
-				addLog(0, null, null, "Decrypted=" + clearString
-						+ " (same as test value)");
-			else {
-				addLog(0, null, null, "Decrypted=" + clearString
-						+ " (NOT the same as test value - check algorithm)");
-				error = true;
-			}
-			int encLength = encString.length();
-			addLog(0, null, null, "Test Length=" + p_TestValue.length()
-					+ " -> " + encLength);
-			if (encLength <= column.getFieldLength())
-				addLog(0, null, null, "Encrypted Length (" + encLength
-						+ ") fits into field (" + column.getFieldLength() + ")");
-			else {
-				addLog(0, null, null, "Encrypted Length (" + encLength
-						+ ") does NOT fit into field ("
-						+ column.getFieldLength() + ") - resize field");
-				error = true;
-			}
+		if (!checkTestValue(column))
+		{
+			error = true;
 		}
 
 		// Length Test
-		if (p_MaxLength != 0) {
-			String testClear = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-			while (testClear.length() < p_MaxLength)
-				testClear += testClear;
-			testClear = testClear.substring(0, p_MaxLength);
-			log.info("Test=" + testClear + " (" + p_MaxLength + ")");
-			//
-			String encString = SecureEngine.encrypt(testClear);
-			int encLength = encString.length();
-			addLog(0, null, null, "Test Max Length=" + testClear.length()
-					+ " -> " + encLength);
-			if (encLength <= column.getFieldLength())
-				addLog(0, null, null, "Encrypted Max Length (" + encLength
-						+ ") fits into field (" + column.getFieldLength() + ")");
-			else {
-				addLog(0, null, null, "Encrypted Max Length (" + encLength
-						+ ") does NOT fit into field ("
-						+ column.getFieldLength() + ") - resize field");
-				error = true;
-			}
+		if (!checkMaxLength(column))
+		{
+			error = true;
 		}
 
 		// If only user chooses both encrypt the contents and override current
 		// settings resize the physical column and encrypt all its contents.
-		if (p_IsEncrypted && p_ChangeSetting) {
-			// If the column has already been encrypted, show a warning message
-			// and exit.
-			if (column.isEncrypted()) {
-				log.error("EncryptError: Column already encrypted.");
-				throw new Exception();
+		if (p_IsEncrypted && p_ChangeSetting)
+		{
+			// If the column has already been encrypted, show a warning message and exit.
+			if (isEncrypted(column))
+			{
+				throw new AdempiereException("EncryptError: Column already encrypted.");
 			}
-			// Init the transaction and setup the connection.
-			m_trx = Trx.get(get_TrxName(), true);
-			if ((m_conn = m_trx.getConnection()) == null) {
-				log.warn("EncryptError: No connections available");
-				throw new Exception();
-			}
-			m_conn.setAutoCommit(false);
 
-			int columnID = column.get_ID();
-			MTable table = MTable.get(getCtx(), column.getAD_Table_ID());
-			String tableName = table.getTableName();
+			final int adColumnId = column.getAD_Column_ID();
+			final MTable adTable = MTable.get(getCtx(), column.getAD_Table_ID());
+			final String tableName = adTable.getTableName();
 
 			// Check if the encryption exceeds the current length.
-			int oldLength = column.getFieldLength();
-			int newLength = encryptedColumnLength(oldLength);
+			final int oldLength = column.getFieldLength();
+			final int newLength = encryptedColumnLength(oldLength);
 			if (newLength > oldLength)
-				if (changeFieldLength(columnID, columnName, newLength,
-						tableName) == -1) {
-					log.warn("EncryptError [ChangeFieldLength]: "
-							+ "ColumnID=" + columnID + ", NewLength="
-							+ newLength);
-					throw new Exception();
+			{
+				if (changeFieldLength(adColumnId, columnName, newLength, tableName) == -1)
+				{
+					throw new AdempiereException("EncryptError [ChangeFieldLength]: "
+							+ "AD_Column_ID=" + adColumnId
+							+ ", NewLength=" + newLength);
 				}
+			}
 
 			// Encrypt column contents.
-			if (encryptColumnContents(columnName, column.getAD_Table_ID()) == -1) {
-				log.warn("EncryptError: No records encrypted.");
-				throw new Exception();
-			}
-			
-			if (p_IsEncrypted != column.isEncrypted()) {
+			encryptColumnContents(columnName, column.getAD_Table_ID());
+
+			if (p_IsEncrypted != isEncrypted(column))
+			{
 				if (error || !p_ChangeSetting)
-					addLog(0, null, null, "Encryption NOT changed - Encryption="
-							+ column.isEncrypted());
-				else {
-					column.setIsEncrypted(p_IsEncrypted);
-					if (column.save())
-						addLog(0, null, null, "Encryption CHANGED - Encryption="
-								+ column.isEncrypted());
-					else
-						addLog(0, null, null, "Save Error");
+				{
+					addLog("Encryption NOT changed - Encryption=" + isEncrypted(column));
+				}
+				else
+				{
+					setEncrypted(column, p_IsEncrypted);
 				}
 			}
 		}
-		
-		return "Encryption=" + column.isEncrypted();
-	} // doIt
 
-	/**
-	 * Encrypt all the contents of a database column.
-	 * 
-	 * @param columnName
-	 *            The ID of the column to be encrypted.
-	 * @param tableID
-	 *            The ID of the table which owns the column.
-	 * @return The number of rows effected or -1 in case of errors.
-	 * @throws Exception
-	 */
-	private int encryptColumnContents(String columnName, int tableID)
-			throws Exception {
-		// Find the table name
-		String tableName = MTable.getTableName(getCtx(), tableID);
+		return "Encryption=" + isEncrypted(column);
+	}
 
-		return encryptColumnContents(columnName, tableName);
-	} // encryptColumnContents
+	private static boolean isEncrypted(final I_AD_Column adColumn)
+	{
+		return X_AD_Column.ISENCRYPTED_Encrypted.equals(adColumn.getIsEncrypted());
+	}
 
-	/**
-	 * Encrypt all the contents of a database column.
-	 * 
-	 * @param columnName
-	 *            The ID of the column to be encrypted.
-	 * @param tableName
-	 *            The name of the table which owns the column.
-	 * @return The number of rows effected or -1 in case of errors.
-	 */
-	private int encryptColumnContents(String columnName, String tableName)
-			throws Exception {
-		int recordsEncrypted = 0;
-		String idColumnName = tableName + "_ID";
+	private static void setEncrypted(final I_AD_Column adColumn, final boolean encrypted)
+	{
+		if (encrypted)
+		{
+			setEncrypted(adColumn);
+		}
+		else
+		{
+			setNotEncrypted(adColumn);
+		}
+	}
 
-		StringBuffer selectSql = new StringBuffer();
-		selectSql.append("SELECT " + idColumnName + "," + columnName);
-		selectSql.append(" FROM " + tableName);
-		selectSql.append(" ORDER BY " + idColumnName);
+	private static void setEncrypted(final I_AD_Column adColumn)
+	{
+		adColumn.setIsEncrypted(X_AD_Column.ISENCRYPTED_Encrypted);
+		InterfaceWrapperHelper.save(adColumn);
+	}
 
-		StringBuffer updateSql = new StringBuffer();
-		updateSql.append("UPDATE " + tableName);
-		updateSql.append(" SET " + columnName + "=?");
-		updateSql.append(" WHERE " + idColumnName + "=?");
+	private static void setNotEncrypted(final I_AD_Column adColumn)
+	{
+		adColumn.setIsEncrypted(X_AD_Column.ISENCRYPTED_NichtVerschluesselt);
+		InterfaceWrapperHelper.save(adColumn);
+	}
 
-		PreparedStatement selectStmt = null;
-		PreparedStatement updateStmt = null;
+	private boolean checkTestValue(final I_AD_Column column)
+	{
+		boolean ok = true;
 
-		selectStmt = m_conn.prepareStatement(selectSql.toString(),
-				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-		updateStmt = m_conn.prepareStatement(updateSql.toString());
-
-		ResultSet rs = selectStmt.executeQuery();
-
-		for (recordsEncrypted = 0; rs.next(); ++recordsEncrypted) {
-			// Get the row id and column value
-			int id = rs.getInt(1);
-			String value = rs.getString(2);
-			// Encrypt the value
-			value = SecureEngine.encrypt(value);
-			// Update the row
-			updateStmt.setString(1, value);
-			updateStmt.setInt(2, id);
-			if (updateStmt.executeUpdate() != 1) {
-				log.warn("EncryptError: Table=" + tableName + ", ID=" + id);
-				throw new Exception();
-			}
+		if (p_TestValue == null || p_TestValue.isEmpty())
+		{
+			return ok;
 		}
 
-		rs.close();
-		selectStmt.close();
-		updateStmt.close();
+		final String encString = SecureEngine.encrypt(p_TestValue);
+		addLog("Encrypted Test Value=" + encString);
+		final String clearString = SecureEngine.decrypt(encString);
+		if (p_TestValue.equals(clearString))
+		{
+			addLog("Decrypted=" + clearString + " (same as test value)");
+		}
+		else
+		{
+			addLog("Decrypted=" + clearString + " (NOT the same as test value - check algorithm)");
+			ok = false;
+		}
 
-		return recordsEncrypted;
-	} // encryptColumnContents
+		final int encLength = encString.length();
+		addLog("Test Length=" + p_TestValue.length() + " -> " + encLength);
+		if (encLength <= column.getFieldLength())
+		{
+			addLog("Encrypted Length (" + encLength + ") fits into field (" + column.getFieldLength() + ")");
+		}
+		else
+		{
+			addLog("Encrypted Length (" + encLength + ") does NOT fit into field (" + column.getFieldLength() + ") - resize field");
+			ok = false;
+		}
+
+		return ok;
+	}
+
+	private boolean checkMaxLength(final I_AD_Column column)
+	{
+		boolean ok = true;
+
+		if (p_MaxLength <= 0)
+		{
+			return ok;
+		}
+
+		String testClear = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		while (testClear.length() < p_MaxLength)
+		{
+			testClear += testClear;
+		}
+		testClear = testClear.substring(0, p_MaxLength);
+		log.info("Test=" + testClear + " (" + p_MaxLength + ")");
+		//
+		final String encString = SecureEngine.encrypt(testClear);
+		final int encLength = encString.length();
+		addLog("Test Max Length=" + testClear.length() + " -> " + encLength);
+		if (encLength <= column.getFieldLength())
+		{
+			addLog("Encrypted Max Length (" + encLength + ") fits into field (" + column.getFieldLength() + ")");
+		}
+		else
+		{
+			addLog("Encrypted Max Length (" + encLength + ") does NOT fit into field (" + column.getFieldLength() + ") - resize field");
+			ok = false;
+		}
+
+		return ok;
+	}
+
+	/**
+	 * @return the number of rows effected
+	 */
+	private int encryptColumnContents(final String columnName, final int tableID)
+	{
+		final String tableName = adTablesRepo.retrieveTableName(tableID);
+		return encryptColumnContents(columnName, tableName);
+	}
+
+	/**
+	 * @return the number of rows effected
+	 */
+	private int encryptColumnContents(final String columnName, final String tableName)
+	{
+		final String idColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+
+		final String selectSql = "SELECT " + idColumnName + "," + columnName + " FROM " + tableName + " ORDER BY " + idColumnName;
+		final String updateSql = "UPDATE " + tableName + " SET " + columnName + "=? WHERE " + idColumnName + "=?";
+
+		PreparedStatement selectStmt = null;
+		ResultSet rs = null;
+		PreparedStatement updateStmt = null;
+
+		try
+		{
+			selectStmt = DB.prepareStatement(selectSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE, ITrx.TRXNAME_ThreadInherited);
+			updateStmt = DB.prepareStatement(updateSql, ITrx.TRXNAME_ThreadInherited);
+			rs = selectStmt.executeQuery();
+
+			int recordsEncrypted = 0;
+			while (rs.next())
+			{
+				final int id = rs.getInt(1);
+				final String valuePlain = rs.getString(2);
+				final String valueEncrypted = SecureEngine.encrypt(valuePlain);
+
+				// Update the row
+				try
+				{
+					updateStmt.setString(1, valueEncrypted);
+					updateStmt.setInt(2, id);
+					if (updateStmt.executeUpdate() != 1)
+					{
+						throw new AdempiereException("EncryptError: Table=" + tableName + ", ID=" + id);
+					}
+				}
+				catch (SQLException ex)
+				{
+					throw new DBException(ex, updateSql);
+				}
+
+				//
+				recordsEncrypted++;
+			}
+
+			return recordsEncrypted;
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, selectSql);
+		}
+		finally
+		{
+			DB.close(rs, selectStmt);
+			DB.close(updateStmt);
+		}
+	}
 
 	/**
 	 * Determines the length of the encrypted column.
-	 * 
+	 *
 	 * @param currentColSize
 	 *            Current column size
 	 * @return The length of the encrypted column.
 	 */
-	private int encryptedColumnLength(int colLength) {
+	private int encryptedColumnLength(final int colLength)
+	{
 		String str = "";
 
-		for (int i = 0; i < colLength; i++) {
+		for (int i = 0; i < colLength; i++)
+		{
 			str += "1";
 		}
 		str = SecureEngine.encrypt(str);
@@ -357,8 +351,8 @@ public class ColumnEncryption extends JavaProcess {
 
 	/**
 	 * Change the column length.
-	 * 
-	 * @param columnID
+	 *
+	 * @param adColumnId
 	 *            ID of the column
 	 * @param tableName
 	 *            The name of the table which owns the column
@@ -366,57 +360,39 @@ public class ColumnEncryption extends JavaProcess {
 	 *            New length of the column
 	 * @return The number of rows effected, 1 upon success and -1 for failure.
 	 */
-	private int changeFieldLength(int columnID, String columnName, int length,
-			String tableName) throws Exception {
+	private int changeFieldLength(final int adColumnId, final String columnName, final int length, final String tableName)
+	{
 		int rowsEffected = -1;
 
-		// Select SQL
-		StringBuffer selectSql = new StringBuffer();
-		selectSql.append("SELECT FieldLength");
-		selectSql.append(" FROM AD_Column");
-		selectSql.append(" WHERE AD_Column_ID=?");
-
-		// Alter SQL
-		StringBuffer alterSql = new StringBuffer();
-		alterSql.append("ALTER TABLE " + tableName);
-		alterSql.append(" MODIFY " + columnName);
-		alterSql.append(" NVARCHAR2(");
-		alterSql.append(length + ") ");
-
-		// Update SQL
-		StringBuffer updateSql = new StringBuffer();
-		updateSql.append("UPDATE AD_Column");
-		updateSql.append(" SET FieldLength=" + length);
-		updateSql.append(" WHERE AD_Column_ID=" + columnID);
+		final String selectSql = "SELECT FieldLength FROM AD_Column WHERE AD_Column_ID=" + adColumnId;
+		final String alterSql = "ALTER TABLE " + tableName + " MODIFY " + columnName + " NVARCHAR2(" + length + ") ";
+		final String updateSql = "UPDATE AD_Column SET FieldLength=" + length + " WHERE AD_Column_ID=" + adColumnId;
 
 		PreparedStatement selectStmt = null;
+		ResultSet rs = null;
 
-		selectStmt = m_conn.prepareStatement(selectSql.toString(),
-				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+		try
+		{
+			selectStmt = DB.prepareStatement(selectSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE, ITrx.TRXNAME_ThreadInherited);
+			rs = selectStmt.executeQuery();
 
-		selectStmt.setInt(1, columnID);
-		ResultSet rs = selectStmt.executeQuery();
+			if (rs.next())
+			{
+				// Change the column size physically.
+				DB.executeUpdateEx(alterSql, ITrx.TRXNAME_ThreadInherited);
 
-		if (rs.next()) {
-			// Change the column size physically.
-			if (DB.executeUpdate(alterSql.toString(), false, m_trx
-							.getTrxName()) == -1) {
-				log.warn("EncryptError [ChangeFieldLength]: ColumnID="
-						+ columnID + ", NewLength=" + length);
-				throw new Exception();
-			}
-
-			// Change the column size in AD.
-			if (DB.executeUpdate(updateSql.toString(), false, m_trx
-					.getTrxName()) == -1) {
-				log.warn("EncryptError [ChangeFieldLength]: ColumnID="
-						+ columnID + ", NewLength=" + length);
-				throw new Exception();
+				// Change the column size in AD.
+				DB.executeUpdateEx(updateSql, ITrx.TRXNAME_ThreadInherited);
 			}
 		}
-
-		rs.close();
-		selectStmt.close();
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, selectSql);
+		}
+		finally
+		{
+			DB.close(rs, selectStmt);
+		}
 
 		// Update number of rows effected.
 		rowsEffected++;

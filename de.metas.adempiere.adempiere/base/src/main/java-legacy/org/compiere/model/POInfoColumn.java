@@ -466,4 +466,9 @@ public final class POInfoColumn implements Serializable
 		}
 
 	}
+
+	public boolean isPasswordColumn()
+	{
+		return org.compiere.util.DisplayType.isPassword(ColumnName, DisplayType);
+	}
 }	// POInfoColumn

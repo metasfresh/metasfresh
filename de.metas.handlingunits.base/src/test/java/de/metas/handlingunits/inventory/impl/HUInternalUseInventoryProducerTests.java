@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -53,12 +54,12 @@ import mockit.Mocked;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,7 +70,7 @@ import mockit.Mocked;
  * This test doesn'T really work as it tests nothing. See the {@link #test()} method.
  * It was added to identify bugs in a different person's issue, but the problems were solved by manual testing before I could get to finish this.
  * Feel free to fix and extend it.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -85,6 +86,7 @@ public class HUInternalUseInventoryProducerTests
 	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector;
 
 	private IHandlingUnitsBL handlingUnitsBL;
+	private IHUStatusBL huStatusBL;
 	private IHandlingUnitsDAO handlingUnitsDAO;
 
 	private I_M_Locator locator;
@@ -96,6 +98,7 @@ public class HUInternalUseInventoryProducerTests
 
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		huStatusBL = Services.get(IHUStatusBL.class);
 
 		final I_C_DocType dt = newInstance(I_C_DocType.class);
 		dt.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
@@ -108,11 +111,10 @@ public class HUInternalUseInventoryProducerTests
 		locator = newInstance(I_M_Locator.class);
 		locator.setM_Warehouse(wh);
 		save(locator);
-		
+
 		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, 0);
 	}
 
-	
 	@Test
 	@Ignore // TODO: atm it fails because there is no receipt line found
 	public void test()
@@ -136,7 +138,7 @@ public class HUInternalUseInventoryProducerTests
 			final int qtyCUsPerTU)
 	{
 		final I_M_Product cuProduct = data.helper.pTomato;
-		final I_C_UOM cuUOM =data.helper.uomKg;
+		final I_C_UOM cuUOM = data.helper.uomKg;
 		final BigDecimal totalQtyCU = new BigDecimal(totalQtyCUStr);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
@@ -167,7 +169,7 @@ public class HUInternalUseInventoryProducerTests
 
 		final I_M_HU createdLU = createdLUs.get(0);
 		final IMutableHUContext huContext = data.helper.createMutableHUContextOutOfTransaction();
-		handlingUnitsBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
+		huStatusBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
 		assertThat(createdLU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 		createdLU.setM_Locator(locator);
 
@@ -209,7 +211,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(createdCUs.size(), is(1));
 
 		final I_M_HU cuToSplit = createdCUs.get(0);
-		handlingUnitsBL.setHUStatus(data.helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
+		huStatusBL.setHUStatus(data.helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
 		save(cuToSplit);
 
 		return cuToSplit;
@@ -227,7 +229,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(createdTUs.size(), is(1));
 
 		final I_M_HU createdTU = createdTUs.get(0);
-		handlingUnitsBL.setHUStatus(data.helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
+		huStatusBL.setHUStatus(data.helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
 		createdTU.setM_Locator(locator);
 
 		new M_HU().updateChildren(createdTU);

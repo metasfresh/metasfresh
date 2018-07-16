@@ -6,6 +6,10 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Element;
+import org.compiere.model.I_AD_Table;
+import org.compiere.model.MColumn;
+import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.service.IColumnBL;
 
@@ -43,6 +47,8 @@ public class AD_Column
 
 	public static final AD_Column instance = new AD_Column();
 
+	public static final String ENTITYTYPE_Dictionary = "D";
+
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnName })
 	public void onColumnName(final I_AD_Column column, final ICalloutField field)
 	{
@@ -50,8 +56,304 @@ public class AD_Column
 		{
 			return;
 		}
-		
+
 		final String columnName = column.getColumnName();
 		column.setIsAllowLogging(Services.get(IColumnBL.class).getDefaultAllowLoggingByColumnName(columnName));
+	}
+
+	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnName })
+	public void onColumnName(final I_AD_Column column)
+	{
+		if (MColumn.isSuggestSelectionColumn(column.getColumnName(), true))
+		{
+			column.setIsSelectionColumn(true);
+		}
+	}
+
+	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_AD_Element_ID })
+	public void onAD_Element_ID(final I_AD_Column column)
+	{
+		if (column.getAD_Element_ID() <= 0)
+		{
+			// nothing to do
+			return;
+		}
+
+		final I_AD_Element element = column.getAD_Element();
+
+		final String elementColumnName = element.getColumnName();
+		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
+
+		column.setColumnName(elementColumnName);
+		column.setName(element.getName());
+		column.setDescription(element.getDescription());
+		column.setHelp(element.getHelp());
+		column.setIsCalculated(Services.get(IColumnBL.class).getDefaultIsCalculatedByColumnName(elementColumnName));
+
+		final I_AD_Table table = column.getAD_Table();
+		String entityType = table.getEntityType();
+
+		if (ENTITYTYPE_Dictionary.equals(entityType))
+		{
+			entityType = element.getEntityType();
+		}
+
+		column.setEntityType(entityType);
+		setTypeAndLength(column);
+
+		if ("DocumentNo".equals(elementColumnName)
+				|| "Value".equals(elementColumnName))
+		{
+			column.setIsUseDocSequence(true);
+		}
+
+	}
+
+	/**
+	 *
+	 * @param column
+	 * @see org.compiere.process.TableCreateColumns#addTableColumn
+	 */
+	public static void setTypeAndLength(final I_AD_Column column)
+	{
+		final String columnName = column.getColumnName();
+		final int previousDisplayType = column.getAD_Reference_ID();
+		final I_AD_Table table = column.getAD_Table();
+		final String tableName = table.getTableName();
+
+		if (columnName.equalsIgnoreCase(tableName + "_ID"))
+		{
+			updateTableIdColumn(column);
+		}
+
+		else if (columnName.toUpperCase().endsWith("_ACCT"))
+		{
+			updateAccountColumn(column);
+		}
+
+		else if (columnName.equalsIgnoreCase("C_Location_ID"))
+		{
+			updateLocationColumn(column);
+		}
+
+		else if (columnName.equalsIgnoreCase("M_AttributeSetInstance_ID"))
+		{
+			updateAttributeSetInstanceColumn(column);
+		}
+
+		else if (columnName.equalsIgnoreCase("SalesRep_ID"))
+		{
+			updateSalesRepColumn(column);
+		}
+
+		else if (columnName.toUpperCase().endsWith("_ID"))
+		{
+			updateIdColumn(column);
+		}
+
+		else if (columnName.equalsIgnoreCase("Created")
+				|| columnName.equalsIgnoreCase("Updated"))
+		{
+			updateCreatedOrUpdatedColumn(column);
+		}
+		else if (columnName.indexOf("Date") >= 0)
+		{
+			updateDateColumn(column, previousDisplayType);
+		}
+
+		else if (columnName.equalsIgnoreCase("CreatedBy")
+				|| columnName.equalsIgnoreCase("UpdatedBy"))
+		{
+			updateCreatedByOrUpdatedByColumn(column);
+		}
+
+		else if (columnName.equalsIgnoreCase("EntityType"))
+		{
+			updateEntityTypeColumn(column);
+		}
+
+		else if (columnName.toUpperCase().indexOf("AMT") != -1)
+		{
+			updateAmountColumn(column);
+		}
+
+		else if (columnName.toUpperCase().indexOf("QTY") != -1)
+		{
+			updateQtyColumn(column);
+		}
+
+		else if (columnName.toUpperCase().startsWith("IS"))
+		{
+			column.setAD_Reference_ID(DisplayType.YesNo);
+
+			updateFlagColumn(column);
+		}
+
+		else if ("Name".equalsIgnoreCase(columnName)
+				|| "DocumentNo".equals(columnName))
+		{
+			updateNameOrDocumentNoColumn(column);
+		}
+
+		if (column.getAD_Reference_ID() <= 0)
+		{
+			column.setAD_Reference_ID(DisplayType.String);
+		}
+
+		if (column.isUpdateable()
+				&& (table.isView()
+						|| columnName.equalsIgnoreCase("AD_Client_ID")
+						|| columnName.equalsIgnoreCase("AD_Org_ID")
+						|| columnName.toUpperCase().startsWith("CREATED")
+						|| columnName.toUpperCase().equals("UPDATED")))
+		{
+			column.setIsUpdateable(false);
+		}
+	}
+
+	private static void updateTableIdColumn(final I_AD_Column column)
+	{
+		column.setIsKey(true);
+		column.setAD_Reference_ID(DisplayType.ID);
+		column.setIsUpdateable(false);
+		column.setFieldLength(10);
+	}
+
+	private static void updateAccountColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Account);
+		column.setFieldLength(10);
+	}
+
+	private static void updateLocationColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Location);
+		column.setFieldLength(10);
+	}
+
+	private static void updateAttributeSetInstanceColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.PAttribute);
+		column.setFieldLength(10);
+	}
+
+	private static void updateSalesRepColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Table);
+		column.setAD_Reference_Value_ID(190);
+		column.setFieldLength(10);
+	}
+
+	private static void updateIdColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.TableDir);
+		column.setFieldLength(10);
+	}
+
+	private static void updateCreatedOrUpdatedColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.DateTime);
+		column.setFieldLength(7);
+	}
+
+	private static void updateDateColumn(final I_AD_Column column, final int previousDisplayType)
+	{
+		if (!DisplayType.isDate(previousDisplayType))
+		{
+			column.setAD_Reference_ID(DisplayType.Date);
+		}
+		column.setFieldLength(7);
+	}
+
+	private static void updateCreatedByOrUpdatedByColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Table);
+		column.setAD_Reference_Value_ID(110);
+		column.setIsUpdateable(false);
+		column.setFieldLength(10);
+	}
+
+	private static void updateEntityTypeColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Table);
+		column.setAD_Reference_Value_ID(389);
+	}
+
+	private static void updateAmountColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Amount);
+		column.setFieldLength(10);
+		column.setIsMandatory(true);
+	}
+
+	private static void updateQtyColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Quantity);
+		column.setFieldLength(10);
+
+	}
+
+	private static void updateFlagColumn(final I_AD_Column column)
+	{
+		column.setFieldLength(1);
+		column.setIsMandatory(true);
+		if (I_AD_Column.COLUMNNAME_IsActive.equals(column.getColumnName()))
+		{
+			column.setDefaultValue("Y");
+		}
+		else
+		{
+			column.setDefaultValue("N");
+		}
+	}
+
+	private static void updateNameOrDocumentNoColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.String);
+		column.setIsIdentifier(true);
+		column.setSeqNo(1);
+		column.setFieldLength(40);
+	}
+
+	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_AD_Reference_ID })
+	public void onAD_Reference(final I_AD_Column column)
+	{
+		final int referenceId = column.getAD_Reference_ID();
+
+		if (referenceId == 0)
+		{
+			// not yet set
+			return;
+		}
+
+		if (referenceId == DisplayType.Integer)
+		{
+			updateColumnForReferenceInteger(column);
+		}
+
+		else if (referenceId == DisplayType.YesNo)
+		{
+			updateColumnForYesNoReference(column);
+		}
+	}
+
+	private void updateColumnForReferenceInteger(final I_AD_Column column)
+	{
+		column.setIsMandatory(true);
+
+		column.setDefaultValue("0");
+	}
+
+	private void updateColumnForYesNoReference(final I_AD_Column column)
+	{
+		final String columnName = column.getColumnName();
+
+		if (columnName == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		updateFlagColumn(column);
 	}
 }

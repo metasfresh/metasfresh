@@ -42,6 +42,7 @@ import org.compiere.model.I_M_Locator;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -203,6 +204,8 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 
 	private void setHUStatus(final IHUContext huContext, final I_M_HU hu, final boolean shipped)
 	{
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
 		//
 		// HU was shipped
 		if (shipped)
@@ -214,7 +217,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 			// Calling this method with huContext null
 			// To Be Changed in case the requirements change
 
-			Services.get(IHandlingUnitsBL.class).setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Shipped);
+			huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Shipped);
 			hu.setIsActive(false); // deactivate it because it shall not be available in our system anymore
 		}
 
@@ -222,7 +225,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		// HU was not shipped (i.e. it was shipped before shipment was reversed)
 		else
 		{
-			Services.get(IHandlingUnitsBL.class).setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
+			huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
 			hu.setIsActive(true); // deactivate it because it shall not be available in our system anymore
 
 			//

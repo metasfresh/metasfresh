@@ -129,7 +129,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				shipDate,
 				taxCategoryId,
 				il.getC_Invoice().isSOTrx(),
-				trxName,
 				false);
 
 		if (taxId <= 0)

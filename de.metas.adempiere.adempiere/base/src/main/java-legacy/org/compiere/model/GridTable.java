@@ -122,7 +122,6 @@ public class GridTable extends AbstractTableModel
 		boolean withAccessControl, boolean virtual)
 	{
 		super();
-		log.info(TableName);
 		m_ctx = ctx;
 		m_AD_Table_ID = AD_Table_ID;
 		setTableName(TableName);
@@ -657,7 +656,6 @@ public class GridTable extends AbstractTableModel
 	 */
 	public boolean open (int maxRows)
 	{
-		log.info("MaxRows=" + maxRows);
 		m_maxRows = maxRows;
 		if (m_open)
 		{
@@ -876,7 +874,6 @@ public class GridTable extends AbstractTableModel
 	@SuppressWarnings("unchecked")
 	public void sort (final int col, final boolean ascending)
 	{
-		log.info("#" + col + " " + ascending);
 		if (getRowCount() <= 0)
 		{
 			return;
@@ -901,7 +898,6 @@ public class GridTable extends AbstractTableModel
 			else
 				sort.data = rowData[col];								//	data
 		}
-		log.info(field.toString() + " #" + m_sort.size());
 
 		//	sort it
 		MSort sort = new MSort(0, null);
@@ -932,7 +928,6 @@ public class GridTable extends AbstractTableModel
 	 */
 	public int getKeyID (int row)
 	{
-	//	Log.info("MTable.getKeyID - row=" + row + ", keyColIdx=" + m_indexKeyColumn);
 		if (m_indexKeyColumn != -1)
 		{
 			try
@@ -971,7 +966,6 @@ public class GridTable extends AbstractTableModel
 	@Override
 	public Object getValueAt (int row, int col)
 	{
-	//	log.info( "MTable.getValueAt r=" + row + " c=" + col);
 		if (!m_open || row < 0 || col < 0 || row >= m_rowCount)
 		{
 		//	log.debug( "Out of bounds - Open=" + m_open + ", RowCount=" + m_rowCount);
@@ -1362,7 +1356,6 @@ public class GridTable extends AbstractTableModel
 		//	no need - not changed - row not positioned - no Value changed
 		if (m_rowChanged == -1)
 		{
-			log.info("NoNeed - Changed=" + m_changed + ", Row=" + m_rowChanged);
 		//	return SAVE_ERROR;
 			if (!manualCmd)
 				return SAVE_OK;
@@ -1407,8 +1400,6 @@ public class GridTable extends AbstractTableModel
 			dataIgnore();
 			return SAVE_ACCESS;
 		}
-
-		log.info("Row=" + m_rowChanged);
 
 		//  inform about data save action, if not manually initiated
 		try
@@ -1461,8 +1452,9 @@ public class GridTable extends AbstractTableModel
 			}
 		}
 		
-		/**	Manual Update of Row (i.e. not via PO class)	**/
-		log.info("NonPO");
+		//
+		//	Manual Update of Row (i.e. not via PO class)
+		//
 		
 		boolean error = false;
 		lobReset();
@@ -2009,8 +2001,7 @@ public class GridTable extends AbstractTableModel
 		m_newRow = -1;
 		m_inserting = false;
 		fireDataStatusIEvent("Saved", "");
-		//
-		log.info("fini");
+		
 		return SAVE_OK;
 	}	//	dataSave
 
@@ -2224,8 +2215,7 @@ public class GridTable extends AbstractTableModel
 			}
 			fireDataStatusIEvent(msg, info);
 		}
-		//
-		log.info("fini");
+		
 		return SAVE_OK;
 	}	//	dataSavePO
 	
@@ -2298,7 +2288,7 @@ public class GridTable extends AbstractTableModel
 				Object value = rowData[col]; 
 				if (value == null)
 				{
-					log.info("FK data is null - " + columnName);
+					log.warn("FK data is null - {}", columnName);
 					continue;
 				}
 				//
@@ -2483,8 +2473,6 @@ public class GridTable extends AbstractTableModel
 	 */
 	public boolean dataNew(final int currentRow, final DataNewCopyMode copyMode)
 	{
-		log.info("Current=" + currentRow + ", CopyMode=" + copyMode);
-
 		// Handle copy mode:
 		setDataNewCopyMode(copyMode);
 		
@@ -2668,7 +2656,6 @@ public class GridTable extends AbstractTableModel
 	 */
 	public boolean dataDelete (int row)
 	{
-		log.info("Row=" + row);
 		if (row < 0)
 			return false;
 
@@ -2825,7 +2812,6 @@ public class GridTable extends AbstractTableModel
 			log.debug("Nothing to ignore");
 			return;
 		}
-		log.info("Inserting=" + m_inserting);
 
 		//	Inserting - delete new row
 		if (m_inserting)
@@ -2883,8 +2869,6 @@ public class GridTable extends AbstractTableModel
 	 */
 	public void dataRefresh (int row)
 	{
-		log.info("Row=" + row);
-
 		if (row < 0 || m_sort.size() == 0 || m_inserting)
 			return;
 
@@ -2942,7 +2926,6 @@ public class GridTable extends AbstractTableModel
 	 */
 	public void dataRefreshAll()
 	{
-		log.info("");
 		m_inserting = false;	//	should not happen
 		dataIgnore();
 		close(false);
@@ -2974,7 +2957,6 @@ public class GridTable extends AbstractTableModel
 	public boolean dataRequery(String whereClause, boolean onlyCurrentRows, int onlyCurrentDays, final MQuery newQuery)
 	{
 // metas: end
-		log.info(whereClause + "; OnlyCurrent=" + onlyCurrentRows);
 		close(false);
 		m_onlyCurrentDays = onlyCurrentDays;
 		setSelectWhereClause(whereClause, onlyCurrentRows, m_onlyCurrentDays, newQuery); // metas
@@ -3448,8 +3430,6 @@ public class GridTable extends AbstractTableModel
 		 */
 		protected int open(int maxRows, final MQuery myQuery)
 		{
-			// query = myQuery; // metas
-		//	log.info( "MTable Loader.open");
 			//	Get Number of Rows
 			int rows = 0;
 			PreparedStatement pstmt = null;
@@ -3515,7 +3495,6 @@ public class GridTable extends AbstractTableModel
 		 */
 		private void close()
 		{
-		//	log.info( "MTable Loader.close");
 			DB.close(m_rs, m_pstmt);
 			m_rs = null;
 			m_pstmt = null;
@@ -3532,7 +3511,6 @@ public class GridTable extends AbstractTableModel
 		@Override
 		public void run()
 		{
-			log.info("");
 			if (m_rs == null)
 				return;
 
@@ -3999,7 +3977,6 @@ public class GridTable extends AbstractTableModel
 	
 		public boolean open(final int maxRows, final int oneRow)
 		{
-		log.info("MaxRows=" + maxRows);
 		m_maxRows = maxRows;
 		if (m_open) {
 			log.debug("already open");
