@@ -40,6 +40,11 @@ public class HuId implements RepoIdAware
 		return new HuId(repoId);
 	}
 
+	public static HuId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	public static int toRepoId(final HuId huId)
 	{
 		return huId != null ? huId.getRepoId() : -1;
