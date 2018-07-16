@@ -9,6 +9,13 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.67 (2018-30)
+## Fixes
+* metasfresh-webui-frontend
+  * [#1785](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1785) Search field in Pricing conditions - keyboard selection
+    * Improving the selection of Pricing Conditions via Keyboard.
+
+
 # metasfresh 5.66 (2018-29)
 ## Features
 * metasfresh
