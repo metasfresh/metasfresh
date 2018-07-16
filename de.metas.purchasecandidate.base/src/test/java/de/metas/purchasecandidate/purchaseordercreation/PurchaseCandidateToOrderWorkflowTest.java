@@ -239,7 +239,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.productId(ProductId.ofRepoId(5))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
-				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
+				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(ONE)
 				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)

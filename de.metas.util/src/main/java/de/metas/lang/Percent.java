@@ -225,10 +225,7 @@ public class Percent
 	}
 
 	/**
-	 * Round the nearest {@code .5%} percent value
-	 *
-	 * @param halfUp
-	 * @return
+	 * Round to the nearest {@code .5%} percent value.
 	 */
 	public Percent roundToHalf(@NonNull final RoundingMode roundingMode)
 	{

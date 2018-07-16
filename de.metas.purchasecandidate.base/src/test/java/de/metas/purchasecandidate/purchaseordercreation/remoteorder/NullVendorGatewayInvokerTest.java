@@ -74,7 +74,7 @@ public class NullVendorGatewayInvokerTest
 				.vendorProductNo("vendorProductNo_20")
 				.qtyToPurchase(Quantity.of(TEN, EACH))
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(40, 50))
-				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
+				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();
 
 		final List<PurchaseItem> purchaseItems = NullVendorGatewayInvoker.INSTANCE.placeRemotePurchaseOrder(ImmutableList.of(purchaseCandidate));

@@ -57,6 +57,9 @@ public class OrderLineWithGrossProfitPriceRepository
 		return getProfitMinBasePrice(ImmutableList.of(orderLineId));
 	}
 
+	/**
+	 * Gets the minimum {@link I_C_OrderLine#getPriceGrossProfit()}, more or less
+	 */
 	public Optional<Money> getProfitMinBasePrice(@NonNull final Collection<OrderAndLineId> orderAndLineIds)
 	{
 		if (orderAndLineIds.isEmpty())

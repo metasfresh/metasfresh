@@ -92,7 +92,7 @@ public class PurchaseOrderFromItemFactoryTest
 		this.EACH = createUOM("Ea");
 		this.PURCHASE_CANDIDATE_QTY_TO_PURCHASE = Quantity.of(BigDecimal.TEN, EACH);
 
-		// mock IOrderLineBL.updatePrices() because setting up the required masterdata and testing the pricing engine is out of scope. 
+		// mock IOrderLineBL.updatePrices() because setting up the required masterdata and testing the pricing engine is out of scope.
 		// @formatter:off
 		final OrderLineBL orderLineBL = new OrderLineBL();
 		new Expectations(OrderLineBL.class)
@@ -235,7 +235,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
-				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
+				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)
 				.purchaseDatePromised(PURCHASE_DATE_PROMISED)
 				.processed(false)

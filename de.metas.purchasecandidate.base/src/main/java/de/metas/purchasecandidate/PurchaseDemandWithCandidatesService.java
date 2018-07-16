@@ -331,7 +331,7 @@ public class PurchaseDemandWithCandidatesService
 				//
 				.qtyToPurchase(qtyToPurchase)
 				//
-				.profitInfo(purchaseProfitInfo)
+				.profitInfoOrNull(purchaseProfitInfo)
 				//
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				//

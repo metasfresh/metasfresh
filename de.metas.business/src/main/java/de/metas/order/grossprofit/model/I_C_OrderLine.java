@@ -26,9 +26,17 @@ import java.math.BigDecimal;
 
 public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine
 {
+	@Override
 	void setPriceGrossProfit(BigDecimal PriceGrossProfit);
+	@Override
 	BigDecimal getPriceGrossProfit();
 
-	static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceGrossProfit = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "PriceGrossProfit", null);
-	static final String COLUMNNAME_PriceGrossProfit = "PriceGrossProfit";
+	org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceGrossProfit = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "PriceGrossProfit", null);
+	String COLUMNNAME_PriceGrossProfit = "PriceGrossProfit";
+
+	org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PercentProfit = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "PercentProfit", null);
+	String COLUMNNAME_PercentProfit = "PercentProfit";
+
+	void setPercentProfit(BigDecimal PercentProfit);
+	BigDecimal getPercentProfit();
 }

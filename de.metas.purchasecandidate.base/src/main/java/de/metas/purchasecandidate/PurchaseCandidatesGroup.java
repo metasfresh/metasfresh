@@ -82,7 +82,7 @@ public class PurchaseCandidatesGroup
 				//
 				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
 				//
-				.profitInfo(purchaseCandidate.getProfitInfo())
+				.profitInfo(purchaseCandidate.getProfitInfoOrNull())
 				//
 				.readonly(purchaseCandidate.isProcessedOrLocked());
 

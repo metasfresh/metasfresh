@@ -67,7 +67,7 @@ public final class PurchaseCandidateTestTool
 				.productId(productId)
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
-				.profitInfo(createPurchaseProfitInfo())
+				.profitInfoOrNull(createPurchaseProfitInfo())
 				.vendorId(BPartnerId.ofRepoId(7))
 				.qtyToPurchase(qtyToPurchase)
 				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))

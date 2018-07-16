@@ -310,7 +310,7 @@ public class PurchaseCandidateRepository
 
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
 
-		updateRecordFromPurchaseProfitInfo(record, purchaseCandidate.getProfitInfo());
+		updateRecordFromPurchaseProfitInfo(record, purchaseCandidate.getProfitInfoOrNull());
 
 		record.setIsPrepared(purchaseCandidate.isPrepared());
 		record.setProcessed(purchaseCandidate.isProcessed());
@@ -405,7 +405,7 @@ public class PurchaseCandidateRepository
 				//
 				.qtyToPurchase(qtyToPurchase)
 				//
-				.profitInfo(toPurchaseProfitInfo(record))
+				.profitInfoOrNull(toPurchaseProfitInfo(record))
 				//
 				.aggregatePOs(record.isAggregatePO())
 				//
