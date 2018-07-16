@@ -149,7 +149,9 @@ class Actions extends Component {
 
     if (plugins.length) {
       plugins.forEach(plugin => {
-        actions.push(...plugin.headerActions);
+        if (plugin.headerActions && plugin.headerActions.length) {
+          actions.push(...plugin.headerActions);
+        }
       });
     }
 

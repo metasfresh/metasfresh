@@ -168,11 +168,11 @@ export default class App extends Component {
           store.dispatch(addPlugins(plugins));
         }
 
-        plugins.forEach(plugin => {
-          if (plugin.reducers && plugin.reducers.name) {
+        plugins.forEach(({ file }) => {
+          if (file.reducers && file.reducers.name) {
             store.attachReducers({
               plugins: {
-                [`${plugin.reducers.name}`]: plugin.reducers.reducer,
+                [`${file.reducers.name}`]: file.reducers.reducer,
               },
             });
           }
