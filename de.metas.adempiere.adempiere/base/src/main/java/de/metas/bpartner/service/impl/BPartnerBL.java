@@ -315,6 +315,8 @@ public class BPartnerBL implements IBPartnerBL
 		//
 		InterfaceWrapperHelper.save(bpartner);
 
+		template.setC_BPartner(bpartner);
+
 		//
 		// BPartner location
 		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
@@ -326,32 +328,36 @@ public class BPartnerBL implements IBPartnerBL
 		bpLocation.setIsShipToDefault(true);
 		InterfaceWrapperHelper.save(bpLocation);
 
-		//
-		// BPartner contact
-		final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
-		bpContact.setC_BPartner(bpartner);
-		bpContact.setC_Greeting(template.getC_Greeting());
-		bpContact.setFirstname(template.getFirstname());
-		bpContact.setLastname(template.getLastname());
-		bpContact.setPhone(template.getPhone());
-		bpContact.setEMail(template.getEMail());
-		if (template.isCustomer())
-		{
-			bpContact.setIsSalesContact(true);
-			bpContact.setIsSalesContact_Default(true);
-		}
-		if (template.isVendor())
-		{
-			bpContact.setIsPurchaseContact(true);
-			bpContact.setIsPurchaseContact_Default(true);
-		}
-		InterfaceWrapperHelper.save(bpContact);
-
-		//
-		// Update the template
-		template.setC_BPartner(bpartner);
 		template.setC_BPartner_Location(bpLocation);
-		template.setAD_User(bpContact);
+
+		final boolean isContactInfoProvided = !Check.isEmpty(template.getFirstname()) || !Check.isEmpty(template.getLastname());
+
+		if (isContactInfoProvided)
+		{
+			//
+			// BPartner contact
+			final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
+			bpContact.setC_BPartner(bpartner);
+			bpContact.setC_Greeting(template.getC_Greeting());
+			bpContact.setFirstname(template.getFirstname());
+			bpContact.setLastname(template.getLastname());
+			bpContact.setPhone(template.getPhone());
+			bpContact.setEMail(template.getEMail());
+			if (template.isCustomer())
+			{
+				bpContact.setIsSalesContact(true);
+				bpContact.setIsSalesContact_Default(true);
+			}
+			if (template.isVendor())
+			{
+				bpContact.setIsPurchaseContact(true);
+				bpContact.setIsPurchaseContact_Default(true);
+			}
+			InterfaceWrapperHelper.save(bpContact);
+
+			template.setAD_User(bpContact);
+		}
+
 		template.setProcessed(true);
 		InterfaceWrapperHelper.save(template);
 
