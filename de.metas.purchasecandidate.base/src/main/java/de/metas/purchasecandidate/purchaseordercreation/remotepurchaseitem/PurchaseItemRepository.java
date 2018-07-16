@@ -162,14 +162,14 @@ public class PurchaseItemRepository
 				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_PurchaseCandidate_ID, purchaseCandidateId.getRepoId())
 				.create()
 				.list()
-				.forEach(purchaseItemRecord -> loadPurchaseItem(purchaseCandidate, purchaseItemRecord));
+				.forEach(purchaseCandidateAllocRecord -> loadPurchaseItem(purchaseCandidate, purchaseCandidateAllocRecord));
 	}
 
 	private void loadPurchaseItem(
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final I_C_PurchaseCandidate_Alloc record)
 	{
-		final ITableRecordReference transactionReference = TableRecordReference.ofReferenced(record);
+		final ITableRecordReference transactionReference = TableRecordReference.ofReferencedOrNull(record);
 
 		if (record.getAD_Issue_ID() <= 0)
 		{

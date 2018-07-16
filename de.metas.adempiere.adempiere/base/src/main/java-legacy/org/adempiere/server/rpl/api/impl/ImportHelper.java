@@ -39,6 +39,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -107,8 +108,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.google.common.base.Optional;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.engine.IDocument;

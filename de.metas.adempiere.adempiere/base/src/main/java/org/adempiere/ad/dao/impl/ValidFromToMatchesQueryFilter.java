@@ -10,21 +10,21 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
@@ -32,7 +32,6 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 class ValidFromToMatchesQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
@@ -137,6 +136,6 @@ class ValidFromToMatchesQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilt
 		}
 
 		final Optional<Date> date = InterfaceWrapperHelper.getValue(model, dateColumnName);
-		return date.orNull();
+		return date.orElse(null);
 	}
 }

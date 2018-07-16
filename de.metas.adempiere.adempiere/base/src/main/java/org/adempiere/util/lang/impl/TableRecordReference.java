@@ -4,6 +4,7 @@ import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L
@@ -50,7 +51,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -170,7 +170,7 @@ public final class TableRecordReference implements ITableRecordReference
 		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
 
-		return new TableRecordReference(adTableId.or(-1), recordId.or(-1)); // the -1 shall cause an exception to be thrown
+		return new TableRecordReference(adTableId.orElse(-1), recordId.orElse(-1)); // the -1 shall cause an exception to be thrown
 	}
 
 	/**
@@ -185,7 +185,14 @@ public final class TableRecordReference implements ITableRecordReference
 		{
 			return null;
 		}
-		return ofReferenced(model);
+
+		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
+		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
+		if (!adTableId.isPresent() || !recordId.isPresent())
+		{
+			return null;
+		}
+		return new TableRecordReference(adTableId.get(), recordId.get());
 	}
 
 	public static final TableRecordReference of(final int adTableId, final int recordId)

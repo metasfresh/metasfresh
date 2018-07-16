@@ -79,9 +79,9 @@ public final class PurchaseCandidateTestTool
 	public static PurchaseProfitInfo createPurchaseProfitInfo()
 	{
 		return PurchaseProfitInfo.builder()
-				.salesNetPrice(Money.of(10, CURRENCY))
-				.purchaseNetPrice(Money.of(10, CURRENCY))
-				.purchaseGrossPrice(Money.of(10, CURRENCY))
+				.profitSalesPriceActual(Money.of(10, CURRENCY))
+				.profitPurchasePriceActual(Money.of(10, CURRENCY))
+				.purchasePriceActual(Money.of(10, CURRENCY))
 				.build();
 	}
 }

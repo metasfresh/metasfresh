@@ -155,9 +155,9 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 
 		//
 		return PurchaseProfitInfo.builder()
-				.salesNetPrice(grossProfitPriceRepo.getProfitMinBasePrice(salesOrderAndLineIds))
-				.purchaseGrossPrice(purchaseBasePrice)
-				.purchaseNetPrice(purchaseNetPrice)
+				.profitSalesPriceActual(grossProfitPriceRepo.getProfitMinBasePrice(salesOrderAndLineIds))
+				.purchasePriceActual(purchaseBasePrice)
+				.profitPurchasePriceActual(purchaseNetPrice)
 				.build();
 	}
 
@@ -180,9 +180,9 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 	public PurchaseProfitInfo convertToCurrency(@NonNull final PurchaseProfitInfo profitInfo, @NonNull final Currency currencyTo)
 	{
 		return profitInfo.toBuilder()
-				.salesNetPrice(convertToCurrency(profitInfo.getSalesNetPrice(), currencyTo))
-				.purchaseNetPrice(convertToCurrency(profitInfo.getPurchaseNetPrice(), currencyTo))
-				.purchaseGrossPrice(convertToCurrency(profitInfo.getPurchaseGrossPrice(), currencyTo))
+				.profitSalesPriceActual(convertToCurrency(profitInfo.getProfitSalesPriceActual(), currencyTo))
+				.profitPurchasePriceActual(convertToCurrency(profitInfo.getProfitPurchasePriceActual(), currencyTo))
+				.purchasePriceActual(convertToCurrency(profitInfo.getPurchasePriceActual(), currencyTo))
 				.build();
 	}
 

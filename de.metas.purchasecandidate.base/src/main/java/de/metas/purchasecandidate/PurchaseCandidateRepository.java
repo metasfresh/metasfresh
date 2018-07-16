@@ -426,9 +426,9 @@ public class PurchaseCandidateRepository
 		final Currency currency = currencyRepository.getById(currencyId);
 
 		return PurchaseProfitInfo.builder()
-				.salesNetPrice(Money.of(purchaseCandidateRecord.getCustomerPriceGrossProfit(), currency))
-				.purchaseNetPrice(Money.of(purchaseCandidateRecord.getPriceGrossProfit(), currency))
-				.purchaseGrossPrice(Money.of(purchaseCandidateRecord.getPurchasePriceActual(), currency))
+				.profitSalesPriceActual(Money.of(purchaseCandidateRecord.getProfitSalesPriceActual(), currency))
+				.profitPurchasePriceActual(Money.of(purchaseCandidateRecord.getProfitPurchasePriceActual(), currency))
+				.purchasePriceActual(Money.of(purchaseCandidateRecord.getPriceActual(), currency))
 				.build();
 	}
 
@@ -436,16 +436,16 @@ public class PurchaseCandidateRepository
 	{
 		if (profitInfo != null)
 		{
-			record.setCustomerPriceGrossProfit(profitInfo.getSalesNetPriceAsBigDecimalOr(null));
-			record.setPriceGrossProfit(profitInfo.getPurchaseNetPriceAsBigDecimalOr(null));
-			record.setPurchasePriceActual(profitInfo.getPurchaseGrossPriceAsBigDecimalOr(null));
+			record.setProfitSalesPriceActual(profitInfo.getProfitSalesPriceActualAsBigDecimalOr(null));
+			record.setProfitPurchasePriceActual(profitInfo.getProfitPurchasePriceActualAsBigDecimalOr(null));
+			record.setPriceActual(profitInfo.getPurchasePriceActualAsBigDecimalOr(null));
 			record.setC_Currency_ID(profitInfo.getCommonCurrencyRepoIdOr(-1));
 		}
 		else
 		{
-			record.setCustomerPriceGrossProfit(null);
-			record.setPriceGrossProfit(null);
-			record.setPurchasePriceActual(null);
+			record.setProfitSalesPriceActual(null);
+			record.setProfitPurchasePriceActual(null);
+			record.setPriceActual(null);
 			record.setC_Currency_ID(-1);
 		}
 	}

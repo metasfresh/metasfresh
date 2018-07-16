@@ -59,8 +59,8 @@ public class C_PurchaseCandidate
 
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
-			ifColumnsChanged = I_C_PurchaseCandidate.COLUMNNAME_PriceGrossProfit)
-	public void updateSalesOrderLinePRofit(I_C_PurchaseCandidate purchaseCandidateRecord)
+			ifColumnsChanged = I_C_PurchaseCandidate.COLUMNNAME_ProfitPurchasePriceActual)
+	public void updateSalesOrderLineProfit(I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
 		final PurchaseCandidate purchaseCandidate = purchaseCandidateRepository.getById(PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID()));
 
@@ -71,12 +71,13 @@ public class C_PurchaseCandidate
 		}
 
 		final I_C_OrderLine orderLineRecord = load(orderAndLineId.getOrderLineRepoId(), I_C_OrderLine.class);
+
 		final BigDecimal value = Optional.ofNullable(purchaseCandidate.getProfitInfoOrNull())
 				.flatMap(PurchaseProfitInfo::getProfitPercent)
 				.map(percent -> percent.roundToHalf(RoundingMode.HALF_UP))
 				.map(Percent::getValueAsBigDecimal)
 				.orElse(ZERO);
-		orderLineRecord.setPercentProfit(value);
+		orderLineRecord.setProfitPercent(value);
 		saveRecord(orderLineRecord);
 	}
 }

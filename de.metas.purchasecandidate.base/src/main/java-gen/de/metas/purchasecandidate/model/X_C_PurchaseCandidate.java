@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1878894589L;
+	private static final long serialVersionUID = -2026135105L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 			setM_Product_ID (0);
 			setM_WarehousePO_ID (0);
 			setProcessed (false); // N
+			setPurchaseDateOrdered (new Timestamp( System.currentTimeMillis() ));
 			setPurchaseDatePromised (new Timestamp( System.currentTimeMillis() ));
 			setQtyToPurchase (BigDecimal.ZERO);
 			setVendor_ID (0);
@@ -222,28 +223,6 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Kd-Rohertragspreis.
-		@param CustomerPriceGrossProfit 
-		Effektiver Verkaufspreis minus Skonto und Rückerstattung
-	  */
-	@Override
-	public void setCustomerPriceGrossProfit (java.math.BigDecimal CustomerPriceGrossProfit)
-	{
-		set_Value (COLUMNNAME_CustomerPriceGrossProfit, CustomerPriceGrossProfit);
-	}
-
-	/** Get Kd-Rohertragspreis.
-		@return Effektiver Verkaufspreis minus Skonto und Rückerstattung
-	  */
-	@Override
-	public java.math.BigDecimal getCustomerPriceGrossProfit () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CustomerPriceGrossProfit);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Referenz.
 		@param DemandReference 
 		Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
@@ -420,23 +399,23 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Rohertragspreis.
-		@param PriceGrossProfit 
-		Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	/** Set Einzelpreis.
+		@param PriceActual 
+		Effektiver Preis
 	  */
 	@Override
-	public void setPriceGrossProfit (java.math.BigDecimal PriceGrossProfit)
+	public void setPriceActual (java.math.BigDecimal PriceActual)
 	{
-		set_Value (COLUMNNAME_PriceGrossProfit, PriceGrossProfit);
+		set_Value (COLUMNNAME_PriceActual, PriceActual);
 	}
 
-	/** Get Rohertragspreis.
-		@return Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
+	/** Get Einzelpreis.
+		@return Effektiver Preis
 	  */
 	@Override
-	public java.math.BigDecimal getPriceGrossProfit () 
+	public java.math.BigDecimal getPriceActual () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceGrossProfit);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
@@ -466,6 +445,50 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set EK Ertrag netto.
+		@param ProfitPurchasePriceActual 
+		Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
+	  */
+	@Override
+	public void setProfitPurchasePriceActual (java.math.BigDecimal ProfitPurchasePriceActual)
+	{
+		set_Value (COLUMNNAME_ProfitPurchasePriceActual, ProfitPurchasePriceActual);
+	}
+
+	/** Get EK Ertrag netto.
+		@return Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
+	  */
+	@Override
+	public java.math.BigDecimal getProfitPurchasePriceActual () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ProfitPurchasePriceActual);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set VK Ertrag netto.
+		@param ProfitSalesPriceActual 
+		Effektiver Verkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
+	  */
+	@Override
+	public void setProfitSalesPriceActual (java.math.BigDecimal ProfitSalesPriceActual)
+	{
+		set_Value (COLUMNNAME_ProfitSalesPriceActual, ProfitSalesPriceActual);
+	}
+
+	/** Get VK Ertrag netto.
+		@return Effektiver Verkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
+	  */
+	@Override
+	public java.math.BigDecimal getProfitSalesPriceActual () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ProfitSalesPriceActual);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Bestelldatum.
@@ -514,28 +537,6 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public java.math.BigDecimal getPurchasedQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PurchasedQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set VK Preis netto.
-		@param PurchasePriceActual 
-		Effektiver Verkaufspreis
-	  */
-	@Override
-	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual)
-	{
-		set_Value (COLUMNNAME_PurchasePriceActual, PurchasePriceActual);
-	}
-
-	/** Get VK Preis netto.
-		@return Effektiver Verkaufspreis
-	  */
-	@Override
-	public java.math.BigDecimal getPurchasePriceActual () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PurchasePriceActual);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

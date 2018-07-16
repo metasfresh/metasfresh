@@ -24,6 +24,7 @@ package org.adempiere.ad.dao.cache.impl;
 
 
 import java.lang.ref.WeakReference;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -33,8 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
-
-import com.google.common.base.Optional;
 
 import lombok.NonNull;
 
@@ -97,7 +96,7 @@ public class TableRecordCacheLocal<ParentModelType>
 		TableRecordCacheLocal<ParentModelType> cache = InterfaceWrapperHelper.getDynAttribute(parentModel, DYNATTR_TableRecord);
 		if (cache == null || !cache.hasParentModel())
 		{
-			cache = new TableRecordCacheLocal<ParentModelType>(parentModel);
+			cache = new TableRecordCacheLocal<>(parentModel);
 			InterfaceWrapperHelper.setDynAttribute(parentModel, DYNATTR_TableRecord, cache);
 		}
 		return cache;
@@ -113,7 +112,7 @@ public class TableRecordCacheLocal<ParentModelType>
 		super();
 
 		Check.assumeNotNull(parentModel, "parentModel not null");
-		this._parentModelRef = new WeakReference<ParentModelType>(parentModel);
+		this._parentModelRef = new WeakReference<>(parentModel);
 	}
 
 	/**
