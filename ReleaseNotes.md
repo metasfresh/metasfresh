@@ -13,6 +13,8 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4336](https://github.com/metasfresh/metasfresh/issues/4336) WebUI: add email fields to C_Doc_OutBound
+    * New Fields and Filter criteria in Documentoutbound window in WebUI.
+  * [#4292](https://github.com/metasfresh/metasfresh/issues/4292) Make a Webui-Window for HU Reservation
     * New Window for Handling Unit Reservation in WebUI.
 
 * metasfresh-webui-frontend
