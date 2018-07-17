@@ -1,5 +1,5 @@
 describe('Sales order window widgets test', function() {
-  before(function(){
+  before(function() {
     // login before each test
     cy.loginByForm();
   });
@@ -19,10 +19,10 @@ describe('Sales order window widgets test', function() {
         .type('k');
 
       cy.get('.input-dropdown-list').should('exist');
+      cy.contains('.input-dropdown-list-option', '1000004_kaystest').click();
       cy
-        .contains('.input-dropdown-list-option', '1000004_kaystest')
-        .click();
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+        .get('.input-dropdown-list .input-dropdown-list-header')
+        .should('not.exist');
     });
   });
 });

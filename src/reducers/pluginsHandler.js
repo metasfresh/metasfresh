@@ -19,13 +19,13 @@ export default handleAction(
         });
       }
 
-      files.push(plugin.file)
+      files.push(plugin.file);
     });
 
     return {
       ...state,
       files: [...state.files, ...files],
-      components: { ...state.components, ...components }
+      components: { ...state.components, ...components },
     };
   },
   initialState
