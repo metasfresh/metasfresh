@@ -102,6 +102,8 @@ import lombok.NonNull;
 	@ToStringBuilder(skip = true)
 	private Object _contextProvider;
 
+	private boolean onlyContextClient = true;
+
 	/**
 	 * Shall we select only those HUs which are top level (i.e. not included in other HUs)?
 	 *
@@ -255,6 +257,7 @@ import lombok.NonNull;
 	{
 		return new HashcodeBuilder()
 				// .append(_contextProvider) // nop
+				.append(onlyContextClient)
 				.append(huItemParentNull)
 				.append(parentHUItemId)
 				.append(parentHUId)
@@ -303,6 +306,7 @@ import lombok.NonNull;
 
 		return new EqualsBuilder()
 				// .append(_contextProvider) // nop
+				.append(onlyContextClient, other.onlyContextClient)
 				.append(huItemParentNull, other.huItemParentNull)
 				.append(parentHUItemId, other.parentHUItemId)
 				.append(parentHUId, other.parentHUId)
@@ -375,7 +379,10 @@ import lombok.NonNull;
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, contextProvider);
 
 		// Only those HUs which are from our AD_Client
-		queryBuilder.addOnlyContextClient();
+		if (onlyContextClient)
+		{
+			queryBuilder.addOnlyContextClient();
+		}
 
 		//
 		// Create and add Query Filters
@@ -733,6 +740,7 @@ import lombok.NonNull;
 		return hu;
 	}
 
+	
 	@Override
 	public int count()
 	{
@@ -778,6 +786,13 @@ import lombok.NonNull;
 	private final Properties getCtx()
 	{
 		return InterfaceWrapperHelper.getCtx(getContextProvider());
+	}
+	
+	@Override
+	public IHUQueryBuilder onlyContextClient(final boolean onlyContextClient)
+	{
+		this.onlyContextClient = onlyContextClient;
+		return this;
 	}
 
 	@Override

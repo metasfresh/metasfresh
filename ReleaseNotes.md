@@ -9,6 +9,36 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.67 (2018-30)
+## Features
+* metasfresh
+  * [#4336](https://github.com/metasfresh/metasfresh/issues/4336) WebUI: add email fields to C_Doc_OutBound
+    * New Fields and Filter criteria in Documentoutbound window in WebUI.
+  * [#4292](https://github.com/metasfresh/metasfresh/issues/4292) Make a Webui-Window for HU Reservation
+    * New Window for Handling Unit Reservation in WebUI.
+
+* metasfresh-webui-frontend
+  * [#1859](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1859) Inline rendering filter parameters
+    * New Feature that allows inline rendering of Filter elements. This Feeature is used initially in the Fulltext Search Filter in Businesspartner Window.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1785](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1785) Search field in Pricing conditions - keyboard selection
+    * Improving the selection of Pricing Conditions via Keyboard.
+  * [#1831](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1831) Fields in modal window are copied to the one in the back
+    * Fixes a Bug in modals having modal field content getting copied to the underlying data structure.
+  * [#1865](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1865) Patch not sent when you delete a text in grid view
+    * Fixes the editing/ patching of content in text fields in grid view editing mode.
+  * [#1867](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1867) Set qty to purchase to 0 when removed
+    * Fixes the Purchase Dispo Functionality in Sales Order, now setting the Qty to 0 when removing the Puchased Qty.
+  * [#1871](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1871) alt+Enter not working as before
+    * Improvement of the shortcut [alt]+Enter in different modal views.
+  * [#1876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1876) Action confirmation without tab does not use the set Parms
+    * Fixes the usage of keyboard in process parm windows. Now the parms are also taken when using alt+enter without previous tab usage.
+  * [#1880](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1880) Cannot complete documents
+    * Fixes the Docactions in Documents.
+
+
 # metasfresh 5.66 (2018-29)
 ## Features
 * metasfresh
@@ -42,14 +72,14 @@ Here come the actual release notes:
   * [#4220](https://github.com/metasfresh/metasfresh/issues/4220) Lot No. Control without mandatory Product ID
     * Improvement of the Lot No. Control Feature, now possible to record Lot No. without Mandatory Product ID. This allows to use the Feature also with Pharma Repack No.
   * [#4285](https://github.com/metasfresh/metasfresh/issues/4285) Invoice Document Outbound eMail enqueing
-    * Improvement of the Mail enqueueing process via Document Oubount Window.
+    * Improvement of the Mail enqueueing process via Document Outbound Window.
   * [#4308](https://github.com/metasfresh/metasfresh/issues/4308) Zoom from sales order to material dispo should open all referencing records
     * Improvement of the referenced Documents Link from Sales Order to material Disposition.
   * [#4311](https://github.com/metasfresh/metasfresh/issues/4311) Purchase schedules date: consider vendor lead time and non business days
     * New Feature for Purchase Candidate Calculation. Th Purchase Schedule Dates are now calculates based on vendor lead time and non business days.
   * [#4318](https://github.com/metasfresh/metasfresh/issues/4318) Split the current M_ShipmentSchedule_Update async queue processor
     * Performance Improvement for Shipment Schedules creation.
-  * [#4320](https://github.com/metasfresh/metasfresh/issues/4320) improve mass print oversight
+  * [#4320](https://github.com/metasfresh/metasfresh/issues/4320) Improve mass print oversight
     * Improved maintenance functionality for printing, making it much easier to support printing issue cases.
   * [#4340](https://github.com/metasfresh/metasfresh/issues/4340) REST API for creating sales orders and attaching files to them
     * New Endpoint for sales order creation and endpoint for file attachments so sales orders.
@@ -59,9 +89,9 @@ Here come the actual release notes:
     * Pagination Improvement. Now deactivating previous/ next buttons in pagination on fist/ last page.
 
 * metasfresh-dist
-  * [#47](https://github.com/metasfresh/metasfresh-dist/issues/47) provide standalone metasfresh-dist-report docker image
+  * [#47](https://github.com/metasfresh/metasfresh-dist/issues/47) Provide standalone metasfresh-dist-report docker image
     * New Standalone docker image for distribution reports.
-  * [#48](https://github.com/metasfresh/metasfresh-dist/issues/48) provide standalone metasfresh-webui-frontend k8s dev deployment
+  * [#48](https://github.com/metasfresh/metasfresh-dist/issues/48) Provide standalone metasfresh-webui-frontend k8s dev deployment
     * New Standalone docker image for kubernetes webui frontend.
 
 ## Fixes
