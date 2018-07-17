@@ -21,6 +21,7 @@ class Actions extends Component {
     childViewSelectedIds: PropTypes.array,
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array.isRequired,
+    plugins: PropTypes.any,
   };
 
   state = {

@@ -41,6 +41,7 @@ class DocList extends Component {
     rawModal: PropTypes.object.isRequired,
     indicator: PropTypes.string.isRequired,
     processStatus: PropTypes.string.isRequired,
+    pluginModal: PropTypes.object,
   };
 
   componentDidMount = () => {

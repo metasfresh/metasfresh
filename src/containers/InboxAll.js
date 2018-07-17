@@ -19,6 +19,7 @@ class InboxAll extends Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     inbox: PropTypes.object.isRequired,
+    pluginModal: PropTypes.object,
   };
 
   render() {

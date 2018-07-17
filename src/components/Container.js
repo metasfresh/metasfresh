@@ -9,10 +9,6 @@ import RawModal from './app/RawModal';
 import Header from './header/Header';
 
 class Container extends Component {
-  static propTypes = {
-    connectionError: PropTypes.bool,
-  };
-
   render() {
     const {
       docActionElem,
@@ -223,6 +219,12 @@ class Container extends Component {
     );
   }
 }
+
+Container.propTypes = {
+  connectionError: PropTypes.bool,
+  pluginModal: PropTypes.object,
+  pluginComponents: PropTypes.any,
+};
 
 const mapStateToProps = state => ({
   connectionError: state.windowHandler.connectionError || false,

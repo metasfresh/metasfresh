@@ -262,6 +262,7 @@ Board.propTypes = {
   dispatch: PropTypes.func.isRequired,
   rawModal: PropTypes.object.isRequired,
   indicator: PropTypes.string.isRequired,
+  pluginModal: PropTypes.object,
 };
 
 function mapStateToProps(state) {

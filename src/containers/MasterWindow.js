@@ -46,6 +46,7 @@ class MasterWindow extends Component {
     rawModal: PropTypes.object.isRequired,
     indicator: PropTypes.string.isRequired,
     me: PropTypes.object.isRequired,
+    pluginModal: PropTypes.object,
   };
 
   componentDidMount() {
