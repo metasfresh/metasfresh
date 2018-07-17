@@ -13,6 +13,7 @@ import javax.annotation.PostConstruct;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -37,6 +38,7 @@ import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
@@ -395,13 +397,16 @@ public class ViewsRepository implements IViewsRepository
 			return;
 		}
 
-		final MutableInt notifiedCount = MutableInt.zero();
-		streamAllViews()
-				.forEach(view -> {
-					view.notifyRecordsChanged(recordRefs);
-					notifiedCount.incrementAndGet();
-				});
+		try (final IAutoCloseable c = ViewChangesCollector.currentOrNewThreadLocalCollector())
+		{
+			final MutableInt notifiedCount = MutableInt.zero();
+			streamAllViews()
+					.forEach(view -> {
+						view.notifyRecordsChanged(recordRefs);
+						notifiedCount.incrementAndGet();
+					});
 
-		logger.debug("Notified {} views about changed records: {}", notifiedCount, recordRefs);
+			logger.debug("Notified {} views about changed records: {}", notifiedCount, recordRefs);
+		}
 	}
 }

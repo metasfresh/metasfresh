@@ -431,6 +431,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 			final List<Integer> huIds = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
 					.setContext(PlainContextAware.newOutOfTrx())
+					.onlyContextClient(false) // avoid enforcing context AD_Client_ID because it might be that we are not in a user thread (so no context)
 					.setOnlyWithBarcode(barcode)
 					.createQueryBuilder()
 					.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
