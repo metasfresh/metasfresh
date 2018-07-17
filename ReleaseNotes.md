@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Fixes the editing/ patching of content in text fields in grid view editing mode.
   * [#1867](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1867) Set qty to purchase to 0 when removed
     * Fixes the Purchase Dispo Functionality in Sales Order, now setting the Qty to 0 when removing the Puchased Qty.
+  * [#1871](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1871) alt+Enter not working as before
+    * Improvement of the shortcut [alt]+Enter in different modal views.
 
 
 # metasfresh 5.66 (2018-29)
