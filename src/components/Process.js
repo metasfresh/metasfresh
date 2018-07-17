@@ -1,10 +1,9 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 
 import MasterWidget from './widget/MasterWidget';
 
-export class Process extends Component {
+export default class Process extends Component {
   constructor(props) {
     super(props);
   }
@@ -15,7 +14,7 @@ export class Process extends Component {
     return elements.map((elem, id) => {
       const widgetData = elem.fields.map(item => data[item.field] || -1);
       return (
-        <div key={layout.pinstanceId}>
+        <div key={`${id}-${layout.pinstanceId}`}>
           <MasterWidget
             entity="process"
             key={'element' + id}
@@ -43,7 +42,5 @@ export class Process extends Component {
 }
 
 Process.propTypes = {
-  dispatch: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
 };
-
-export default connect()(Process);

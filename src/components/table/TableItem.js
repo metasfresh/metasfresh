@@ -9,7 +9,7 @@ import {
   VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
 } from '../../constants/Constants';
 import TableCell from './TableCell';
-import { shouldRenderColumn } from './Table';
+import { shouldRenderColumn } from '../../utils/tableHelpers';
 
 class TableItem extends PureComponent {
   constructor(props) {
@@ -82,8 +82,6 @@ class TableItem extends PureComponent {
   };
 
   editProperty = (e, property, callback, item) => {
-    const { changeListenOnTrue, changeListenOnFalse } = this.props;
-
     if (item ? !item.readonly : true) {
       if (this.state.edited === property) e.stopPropagation();
 
@@ -109,10 +107,10 @@ class TableItem extends PureComponent {
             );
 
             if (disabled || readonly) {
-              changeListenOnTrue();
+              this.listenOnKeysTrue();
               this.handleEditProperty(e);
             } else {
-              changeListenOnFalse();
+              this.listenOnKeysFalse();
             }
           }
         }

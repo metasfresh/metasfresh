@@ -581,8 +581,8 @@ export function patch(
       isEdit,
     };
 
-    await dispatch({ type: PATCH_REQUEST, symbol, options });
     await dispatch(indicatorState('pending'));
+    await dispatch({ type: PATCH_REQUEST, symbol, options });
 
     try {
       const response = await patchRequest(options);
@@ -762,18 +762,25 @@ function updateStatus(responseData) {
  * It updates store for single field value modification, like handleChange
  * in MasterWidget
  */
-export function updatePropertyValue(property, value, tabid, rowid, isModal) {
+export function updatePropertyValue(
+  property,
+  value,
+  tabid,
+  rowid,
+  isModal,
+  entity
+) {
   return dispatch => {
     if (tabid && rowid) {
       dispatch(
         updateRowFieldProperty(property, { value }, tabid, rowid, 'master')
       );
-      if (isModal) {
+      if (isModal && entity !== 'process') {
         dispatch(updateDataFieldProperty(property, { value }, 'modal'));
       }
     } else {
       dispatch(updateDataFieldProperty(property, { value }, getScope(isModal)));
-      if (isModal) {
+      if (isModal && entity !== 'process') {
         //update the master field too if exist
         dispatch(updateDataFieldProperty(property, { value }, 'master'));
       }
