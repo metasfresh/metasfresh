@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import lombok.Builder;
@@ -127,6 +128,14 @@ public class CacheInvalidateMultiRequest
 	{
 		return requests.stream()
 				.map(CacheInvalidateRequest::getRecordEffective)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Set<TableRecordReference> getRootRecords()
+	{
+		return requests.stream()
+				.map(CacheInvalidateRequest::getRootRecordOrNull)
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }
