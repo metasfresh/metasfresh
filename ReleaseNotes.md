@@ -18,14 +18,16 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1785](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1785) Search field in Pricing conditions - keyboard selection
     * Improving the selection of Pricing Conditions via Keyboard.
+  * [#1831](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1831) Fields in modal window are copied to the one in the back
+    * Fixes a Bug in modals having modal field content getting copied to the underlying data structure.
   * [#1865](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1865) Patch not sent when you delete a text in grid view
     * Fixes the editing/ patching of content in text fields in grid view editing mode.
   * [#1867](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1867) Set qty to purchase to 0 when removed
     * Fixes the Purchase Dispo Functionality in Sales Order, now setting the Qty to 0 when removing the Puchased Qty.
   * [#1871](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1871) alt+Enter not working as before
     * Improvement of the shortcut [alt]+Enter in different modal views.
-  * [#1831](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1831) Fields in modal window are copied to the one in the back
-    * Fixes a Bug in modals having modal field content getting copied to the underlying data structure.
+  * [#1876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1876) Action confirmation without tab does not use the set Parms
+    * Fixes the usage of keyboard in process parm windows. Now the parms are also taken when using alt+enter without previous tab usage.
 
 
 # metasfresh 5.66 (2018-29)
