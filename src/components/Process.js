@@ -1,10 +1,9 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 
 import MasterWidget from './widget/MasterWidget';
 
-export class Process extends Component {
+export default class Process extends Component {
   constructor(props) {
     super(props);
   }
@@ -43,7 +42,5 @@ export class Process extends Component {
 }
 
 Process.propTypes = {
-  dispatch: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
 };
-
-export default connect()(Process);

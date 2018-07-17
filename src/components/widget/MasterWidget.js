@@ -111,7 +111,7 @@ class MasterWidget extends Component {
     }
 
     if (widgetType !== 'Button') {
-      updatePropertyValue(property, value, tabId, currRowId, isModal);
+      updatePropertyValue(property, value, tabId, currRowId, isModal, entity);
     }
 
     if (viewId) {
@@ -154,6 +154,7 @@ class MasterWidget extends Component {
       isModal,
       relativeDocId,
       widgetType,
+      entity,
     } = this.props;
     const dateParse = ['Date', 'DateTime', 'Time'];
     let currRowId = rowId;
@@ -170,8 +171,7 @@ class MasterWidget extends Component {
         if (rowId === 'NEW') {
           currRowId = relativeDocId;
         }
-
-        updatePropertyValue(property, val, tabId, currRowId, isModal);
+        updatePropertyValue(property, val, tabId, currRowId, isModal, entity);
       }
     );
   };
