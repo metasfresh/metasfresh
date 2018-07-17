@@ -46,7 +46,7 @@ context('Reusable "login" custom command', function() {
       message: user + ' | ' + pass,
     });
 
-    const handleSuccess = function(){
+    const handleSuccess = function() {
       if (redirect) {
         Cypress.reduxStore.dispatch(goBack());
       } else {
@@ -55,59 +55,65 @@ context('Reusable "login" custom command', function() {
     };
 
     const checkIfAlreadyLogged = function() {
-      const error = new Error('Error when checking if user logged in')
+      const error = new Error('Error when checking if user logged in');
 
-      return cy.request({
-        method: 'GET',
-        url: 'http://w101.metasfresh.com:8081/rest/api/login/isLoggedIn',
-        failOnStatusCode: false,
-        followRedirect: false,
-      }).then(response => {
-        if (!response.body.error) {
-          return Cypress.reduxStore.dispatch(push('/'));
-        }
+      return cy
+        .request({
+          method: 'GET',
+          url: 'http://w101.metasfresh.com:8081/rest/api/login/isLoggedIn',
+          failOnStatusCode: false,
+          followRedirect: false,
+        })
+        .then(response => {
+          if (!response.body.error) {
+            return Cypress.reduxStore.dispatch(push('/'));
+          }
 
-        return Promise.reject(error);
-      });
+          return Promise.reject(error);
+        });
     };
 
     const auth = new Auth();
 
-    cy.on("emit:reduxStore", store => {
+    cy.on('emit:reduxStore', store => {
       Cypress.reduxStore = store;
     });
 
     cy.visit('/login');
 
-    return cy.request({
-      method: 'POST',
-      url: 'http://w101.metasfresh.com:8081/rest/api/login/authenticate',
-      failOnStatusCode: false,
-      followRedirect: false,
-      body: {
-        username: user,
-        password: pass,
-      },
-    }).then(response => {
-      if (!response.isOkStatusCode) {
-        return checkIfAlreadyLogged();
-      }
-
-      if (response.body.loginComplete) {
-        return handleSuccess();
-      }
-      const roles = List(response.body.roles);
-
-      return cy.request({
+    return cy
+      .request({
         method: 'POST',
-        url: 'http://w101.metasfresh.com:8081/rest/api/login/loginComplete',
-        body: { ...roles.get(0) },
+        url: 'http://w101.metasfresh.com:8081/rest/api/login/authenticate',
         failOnStatusCode: false,
-      }).then(() => {
-        Cypress.reduxStore.dispatch(loginSuccess(auth));
-        
-        handleSuccess();
+        followRedirect: false,
+        body: {
+          username: user,
+          password: pass,
+        },
+      })
+      .then(response => {
+        if (!response.isOkStatusCode) {
+          return checkIfAlreadyLogged();
+        }
+
+        if (response.body.loginComplete) {
+          return handleSuccess();
+        }
+        const roles = List(response.body.roles);
+
+        return cy
+          .request({
+            method: 'POST',
+            url: 'http://w101.metasfresh.com:8081/rest/api/login/loginComplete',
+            body: { ...roles.get(0) },
+            failOnStatusCode: false,
+          })
+          .then(() => {
+            Cypress.reduxStore.dispatch(loginSuccess(auth));
+
+            handleSuccess();
+          });
       });
-    })
   });
 });
