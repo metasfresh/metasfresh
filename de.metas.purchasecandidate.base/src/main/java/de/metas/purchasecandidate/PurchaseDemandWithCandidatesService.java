@@ -23,6 +23,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -98,11 +99,12 @@ public class PurchaseDemandWithCandidatesService
 		//
 		// create and add new purchase candidates
 		final Set<BPartnerId> alreadySeenVendorIds = extractVendorIds(existingCandidatesGroups.values());
+
 		final ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> //
 		newCandidatesGroups = createMissingPurchaseCandidatesGroups(demands, alreadySeenVendorIds);
 
 		//
-		// Assemble both Multimaps and preserve demands order
+		// Assemble both multimaps and preserve demands order
 		return demands
 				.stream()
 				.map(demand -> PurchaseDemandWithCandidates.builder()
@@ -113,12 +115,17 @@ public class PurchaseDemandWithCandidatesService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ImmutableSet<BPartnerId> extractVendorIds(final Collection<PurchaseCandidatesGroup> candidatesGroups)
+	private static ImmutableSet<BPartnerId> extractVendorIds(@NonNull final Collection<PurchaseCandidatesGroup> candidatesGroups)
 	{
-		return candidatesGroups.stream().map(PurchaseCandidatesGroup::getVendorId).collect(ImmutableSet.toImmutableSet());
+		return candidatesGroups
+				.stream()
+				.filter(g -> !g.isReadonly()) // don't count readOnly, because their respective purchase candidtes are process or locked, than the user won't be able to work with them.
+				.map(PurchaseCandidatesGroup::getVendorId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> getExistingPurchaseCandidatesGroups(
+	@VisibleForTesting
+	ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> getExistingPurchaseCandidatesGroups(
 			@NonNull final Collection<PurchaseDemand> demands)
 	{
 		final ImmutableListMultimap.Builder<PurchaseDemand, PurchaseCandidatesGroup> result = ImmutableListMultimap.builder();
@@ -129,7 +136,7 @@ public class PurchaseDemandWithCandidatesService
 
 			final ListMultimap<PurchaseCandidatesGroupKey, PurchaseCandidate> candidatesByKey = candidates
 					.stream()
-					.filter(candidate -> !candidate.isProcessedOrLocked())
+					// .filter(candidate -> !candidate.isProcessedOrLocked()) we still need to seem them for their purchased-qty infos
 					.collect(GuavaCollectors.toImmutableListMultimap(this::extractPurchaseCandidatesGroupKey));
 
 			final List<PurchaseCandidatesGroup> candidatesGroups = candidatesByKey
@@ -181,20 +188,24 @@ public class PurchaseDemandWithCandidatesService
 		final BPartnerId vendorId = groupKey.getVendorId();
 		final ProductId productId = groupKey.getProductId();
 		final OrgId orgId = groupKey.getOrgId();
+		final boolean readOnly = groupKey.isReadOnly();
 
 		final VendorProductInfo vendorProductInfo = vendorProductInfoService
 				.getVendorProductInfo(vendorId, productId, orgId)
 				.assertThatAttributeSetInstanceIdCompatibleWith(demand.getAttributeSetInstanceId());
 
-		final PurchaseProfitInfo profitInfo = purchaseProfitInfoService.calculateNoFail(PurchaseProfitInfoRequest.builder()
+		final PurchaseProfitInfoRequest purchaseProfitInfoRequest = PurchaseProfitInfoRequest.builder()
 				.salesOrderAndLineIds(salesOrderAndLineIds)
 				.qtyToPurchase(qtyToPurchase)
 				.vendorProductInfo(vendorProductInfo)
-				.build());
+				.build();
+
+		final PurchaseProfitInfo profitInfo = purchaseProfitInfoService.calculateNoFail(purchaseProfitInfoRequest);
 
 		final PurchaseCandidatesGroupBuilder builder = PurchaseCandidatesGroup.builder()
 				.purchaseDemandId(demand.getId())
 				.demandGroupReferences(ImmutableList.copyOf(groupReferences))
+				.readonly(readOnly)
 				//
 				.orgId(orgId)
 				.warehouseId(groupKey.getWarehouseId())
@@ -207,7 +218,7 @@ public class PurchaseDemandWithCandidatesService
 				//
 				.purchaseDatePromised(purchaseDatePromised)
 				//
-				.profitInfo(profitInfo)
+				.profitInfoOrNull(profitInfo)
 				//
 				.purchaseCandidateIds(purchaseCandidateIds)
 				.salesOrderAndLineIds(salesOrderAndLineIds);
@@ -222,6 +233,7 @@ public class PurchaseDemandWithCandidatesService
 				.warehouseId(candidate.getWarehouseId())
 				.vendorId(candidate.getVendorId())
 				.productId(candidate.getProductId())
+				.readOnly(candidate.isProcessedOrLocked())
 				.build();
 	}
 
@@ -233,6 +245,7 @@ public class PurchaseDemandWithCandidatesService
 		WarehouseId warehouseId;
 		BPartnerId vendorId;
 		ProductId productId;
+		boolean readOnly;
 	}
 
 	private ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> createMissingPurchaseCandidatesGroups(

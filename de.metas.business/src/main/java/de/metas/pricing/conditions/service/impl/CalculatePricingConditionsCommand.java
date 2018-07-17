@@ -12,6 +12,7 @@ import org.adempiere.util.Services;
 
 import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -140,23 +141,25 @@ import lombok.NonNull;
 
 	private Optional<PricingConditionsResult> computeBreaksDiscount()
 	{
-		final PricingConditionsBreak breakApplied = findMatchingPricingConditionBreak();
-		if (breakApplied == null)
+		final PricingConditionsBreak breakToApply = findMatchingPricingConditionBreak();
+		if (breakToApply == null)
 		{
 			return Optional.empty();
 		}
 
 		final PricingConditionsResultBuilder result = PricingConditionsResult.builder()
-				.pricingConditionsBreak(breakApplied)
-				.paymentTermId(breakApplied.getDerivedPaymentTermIdOrNull());
+				.pricingConditionsBreak(breakToApply)
+				.paymentTermId(breakToApply.getDerivedPaymentTermIdOrNull());
 
-		computePriceForPricingConditionsBreak(result, breakApplied.getPriceOverride());
-		computeDiscountForPricingConditionsBreak(result, breakApplied);
+		computePriceForPricingConditionsBreak(result, breakToApply.getPriceOverride());
+		computeDiscountForPricingConditionsBreak(result, breakToApply);
 
 		return Optional.of(result.build());
 	}
 
-	private void computePriceForPricingConditionsBreak(final PricingConditionsResultBuilder result, final PriceOverride priceOverride)
+	private void computePriceForPricingConditionsBreak(
+			final PricingConditionsResultBuilder result,
+			@NonNull final PriceOverride priceOverride)
 	{
 		final PriceOverrideType priceOverrideType = priceOverride.getType();
 		if (priceOverrideType == PriceOverrideType.NONE)
@@ -183,8 +186,10 @@ import lombok.NonNull;
 		}
 		else if (priceOverrideType == PriceOverrideType.FIXED_PRICE)
 		{
-			// result.currencyId(currencyId); // TODO set currency from pricing conditions break?!
-			result.priceStdOverride(priceOverride.getFixedPrice());
+			final Money fixedPrice = priceOverride.getFixedPrice();
+
+			result.currencyId(fixedPrice.getCurrencyId());
+			result.priceStdOverride(fixedPrice.getValue());
 		}
 		else
 		{

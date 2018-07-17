@@ -156,13 +156,17 @@ public class PurchaseItemRepository
 			return;
 		}
 
-		Services.get(IQueryBL.class)
+		final List<I_C_PurchaseCandidate_Alloc> purchaseCandidateAllocRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_PurchaseCandidate_ID, purchaseCandidateId.getRepoId())
 				.create()
-				.list()
-				.forEach(purchaseCandidateAllocRecord -> loadPurchaseItem(purchaseCandidate, purchaseCandidateAllocRecord));
+				.list();
+
+		for (final I_C_PurchaseCandidate_Alloc purchaseCandidateAllocRecord : purchaseCandidateAllocRecords)
+		{
+			loadPurchaseItem(purchaseCandidate, purchaseCandidateAllocRecord);
+		}
 	}
 
 	private void loadPurchaseItem(

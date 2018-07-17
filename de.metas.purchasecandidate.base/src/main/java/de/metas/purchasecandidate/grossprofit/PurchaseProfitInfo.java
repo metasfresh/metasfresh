@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.lang.Percent;
-import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import lombok.Builder;
@@ -72,9 +71,9 @@ public class PurchaseProfitInfo
 		this.purchasePriceActual = purchasePriceActual;
 	}
 
-	public Currency getCommonCurrency()
+	public CurrencyId getCommonCurrency()
 	{
-		return Money.getCommonCurrencyOfAll(
+		return Money.getCommonCurrencyIdOfAll(
 				profitSalesPriceActual.orElse(null),
 				profitPurchasePriceActual.orElse(null),
 				purchasePriceActual.orElse(null));
@@ -82,8 +81,7 @@ public class PurchaseProfitInfo
 
 	public int getCommonCurrencyRepoIdOr(final int defaultValue)
 	{
-		final Currency currency = getCommonCurrency();
-		final CurrencyId currencyId = currency.getId();
+		final CurrencyId currencyId = getCommonCurrency();
 		return currencyId != null ? currencyId.getRepoId() : defaultValue;
 	}
 

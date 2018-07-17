@@ -3,9 +3,10 @@ package de.metas.contracts.refund.grossprofit;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.refund.RefundContractRepository;
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
+import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitComponent;
 import de.metas.money.grossprofit.GrossProfitComponentProvider;
+import de.metas.money.grossprofit.GrossProfitComputeRequest;
 import lombok.NonNull;
 
 /*
@@ -33,17 +34,20 @@ import lombok.NonNull;
 @Service
 public class RefundGrossProfitComponentProvider implements GrossProfitComponentProvider
 {
-private final RefundContractRepository refundContractRepository;
+	private final RefundContractRepository refundContractRepository;
+	private final MoneyService moneyService;
 
 	public RefundGrossProfitComponentProvider(
-			@NonNull final RefundContractRepository refundContractRepository)
+			@NonNull final RefundContractRepository refundContractRepository,
+			@NonNull final MoneyService moneyService)
 	{
 		this.refundContractRepository = refundContractRepository;
+		this.moneyService = moneyService;
 	}
 
 	@Override
 	public GrossProfitComponent provideForRequest(@NonNull final GrossProfitComputeRequest request)
 	{
-		return new RefundGrossProfitComponent(request, refundContractRepository);
+		return new RefundGrossProfitComponent(request, refundContractRepository, moneyService);
 	}
 }

@@ -1,17 +1,29 @@
 package de.metas.pricing.conditions.service.impl;
 
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_DiscountSchemaBreak;
+import org.compiere.model.X_M_DiscountSchemaBreak;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
+import de.metas.payment.paymentterm.PaymentTermService;
+import de.metas.pricing.conditions.PriceOverride;
+import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -26,18 +38,20 @@ import de.metas.product.ProductId;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PaymentTermService.class })
 public class PricingConditionsRepositoryTest
 {
 	@Before
@@ -86,5 +100,41 @@ public class PricingConditionsRepositoryTest
 		assertThat(matchingCriteria.getProductCategoryId()).isEqualTo(ProductCategoryId.ofRepoIdOrNull(schemaBreakRecord.getM_Product_Category_ID()));
 		assertThat(matchingCriteria.getProductManufacturerId()).isEqualTo(BPartnerId.ofRepoIdOrNull(schemaBreakRecord.getManufacturer_ID()));
 		assertThat(matchingCriteria.getAttributeValueId()).isEqualTo(schemaBreakRecord.getM_AttributeValue_ID());
+	}
+
+	@Test
+	public void toPricingConditionsBreak_PriceOverride()
+	{
+		final I_M_DiscountSchemaBreak schemaBreakRecord = createDiscountSchemaBreakRecord();
+		saveRecord(schemaBreakRecord);
+
+		// invoke the method under test
+		final PricingConditionsBreak result = PricingConditionsRepository.toPricingConditionsBreak(schemaBreakRecord);
+
+		final PriceOverride priceOverride = result.getPriceOverride();
+		assertThat(priceOverride.getType()).isEqualTo(PriceOverrideType.FIXED_PRICE);
+		assertThat(priceOverride.getFixedPrice().getValue()).isEqualByComparingTo(TEN);
+	}
+
+	@Test
+	public void toPricingConditionsBreak_no_PriceOverride()
+	{
+		final I_M_DiscountSchemaBreak schemaBreakRecord = createDiscountSchemaBreakRecord();
+		schemaBreakRecord.setPriceBase(null);
+		saveRecord(schemaBreakRecord);
+
+		// invoke the method under test
+		final PricingConditionsBreak result = PricingConditionsRepository.toPricingConditionsBreak(schemaBreakRecord);
+
+		assertThat(result.getPriceOverride().getType()).isEqualTo(PriceOverrideType.NONE);
+	}
+
+	private I_M_DiscountSchemaBreak createDiscountSchemaBreakRecord()
+	{
+		final I_M_DiscountSchemaBreak schemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);
+		schemaBreakRecord.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
+		schemaBreakRecord.setPriceStd(TEN);
+		schemaBreakRecord.setM_DiscountSchema_ID(20);
+		return schemaBreakRecord;
 	}
 }

@@ -12,9 +12,10 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
+import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.payment.paymentterm.PaymentTermId;
 
 /*
@@ -41,18 +42,16 @@ import de.metas.payment.paymentterm.PaymentTermId;
 
 public class PaymentTermGrossProfitComponentTest
 {
-	private Currency currency;
+	private CurrencyId currencyId;
+	private MoneyService moneyService;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		currency = Currency
-				.builder()
-				.id(CurrencyId.ofRepoId(10))
-				.precision(2)
-				.build();
+		currencyId = CurrencyId.ofRepoId(10);
+		moneyService = new MoneyService(new CurrencyRepository());
 	}
 
 	@Test
@@ -62,20 +61,22 @@ public class PaymentTermGrossProfitComponentTest
 		paymentTermRecord.setDiscount(new BigDecimal("3"));
 		save(paymentTermRecord);
 
-		final PaymentTermGrossProfitComponent component = new PaymentTermGrossProfitComponent(PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID()));
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID());
+
+		final PaymentTermGrossProfitComponent component = new PaymentTermGrossProfitComponent(paymentTermId, moneyService);
 
 		// invoke the method under test
-		final Money result = component.applyToInput(Money.of(ONE, currency));
+		final Money result = component.applyToInput(Money.of(ONE, currencyId));
 		assertThat(result.getValue()).isEqualByComparingTo("0.97");
 	}
 
 	@Test
 	public void applyToInput_no_paymentterm()
 	{
-		final PaymentTermGrossProfitComponent component = new PaymentTermGrossProfitComponent(null);
+		final PaymentTermGrossProfitComponent component = new PaymentTermGrossProfitComponent(null, moneyService);
 
 		// invoke the method under test
-		final Money result = component.applyToInput(Money.of(ONE, currency));
+		final Money result = component.applyToInput(Money.of(ONE, currencyId));
 		assertThat(result.getValue()).isEqualByComparingTo("1");
 	}
 

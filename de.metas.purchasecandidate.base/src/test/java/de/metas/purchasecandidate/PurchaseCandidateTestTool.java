@@ -8,7 +8,6 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -44,10 +43,7 @@ public final class PurchaseCandidateTestTool
 {
 	public static final OrderLineId SALES_ORDER_LINE_ID = OrderLineId.ofRepoId(2);
 
-	public static final Currency CURRENCY = Currency.builder()
-			.id(CurrencyId.ofRepoId(40))
-			.precision(20)
-			.build();
+	public static final CurrencyId CURRENCY_ID = CurrencyId.ofRepoId(40);
 
 	private PurchaseCandidateTestTool()
 	{
@@ -79,9 +75,9 @@ public final class PurchaseCandidateTestTool
 	public static PurchaseProfitInfo createPurchaseProfitInfo()
 	{
 		return PurchaseProfitInfo.builder()
-				.profitSalesPriceActual(Money.of(10, CURRENCY))
-				.profitPurchasePriceActual(Money.of(10, CURRENCY))
-				.purchasePriceActual(Money.of(10, CURRENCY))
+				.profitSalesPriceActual(Money.of(10, CURRENCY_ID))
+				.profitPurchasePriceActual(Money.of(10, CURRENCY_ID))
+				.purchasePriceActual(Money.of(10, CURRENCY_ID))
 				.build();
 	}
 }

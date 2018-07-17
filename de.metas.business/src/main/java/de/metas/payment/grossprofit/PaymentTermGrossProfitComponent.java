@@ -6,6 +6,7 @@ import org.adempiere.util.Services;
 
 import de.metas.lang.Percent;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.GrossProfitComponent;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -36,11 +37,16 @@ import lombok.NonNull;
 public class PaymentTermGrossProfitComponent implements GrossProfitComponent
 {
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class); // TODO: move service/repo out
-	
-	private PaymentTermId paymentTermId;
 
-	public PaymentTermGrossProfitComponent(@Nullable final PaymentTermId paymentTermId)
+	private final PaymentTermId paymentTermId;
+
+	private final MoneyService moneyService;
+
+	public PaymentTermGrossProfitComponent(
+			@Nullable final PaymentTermId paymentTermId,
+			@NonNull final MoneyService moneyService)
 	{
+		this.moneyService = moneyService;
 		this.paymentTermId = paymentTermId;
 	}
 
@@ -54,7 +60,7 @@ public class PaymentTermGrossProfitComponent implements GrossProfitComponent
 
 		final Percent discount = paymentTermRepository.getPaymentTermDiscount(paymentTermId);
 
-		final Money discountAmt = input.percentage(discount);
+		final Money discountAmt = moneyService.percentage(discount, input);
 		return input.subtract(discountAmt);
 	}
 

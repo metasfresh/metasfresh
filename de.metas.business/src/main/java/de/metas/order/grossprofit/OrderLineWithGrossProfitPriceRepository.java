@@ -9,9 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -45,12 +43,6 @@ public class OrderLineWithGrossProfitPriceRepository
 {
 	// services
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-	private final CurrencyRepository currencyRepository;
-
-	public OrderLineWithGrossProfitPriceRepository(@NonNull final CurrencyRepository currencyRepository)
-	{
-		this.currencyRepository = currencyRepository;
-	}
 
 	public Optional<Money> getProfitBasePrice(@NonNull final OrderAndLineId orderLineId)
 	{
@@ -91,7 +83,7 @@ public class OrderLineWithGrossProfitPriceRepository
 
 	private Money getProfitBasePrice(final I_C_OrderLine orderLineRecord)
 	{
-		final Currency currency = currencyRepository.getById(CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID()));
-		return Money.of(orderLineRecord.getPriceGrossProfit(), currency);
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID());
+		return Money.of(orderLineRecord.getPriceGrossProfit(), currencyId);
 	}
 }
