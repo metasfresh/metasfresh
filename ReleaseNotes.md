@@ -24,6 +24,8 @@ Here come the actual release notes:
     * Fixes the Purchase Dispo Functionality in Sales Order, now setting the Qty to 0 when removing the Puchased Qty.
   * [#1871](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1871) alt+Enter not working as before
     * Improvement of the shortcut [alt]+Enter in different modal views.
+  * [#1831](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1831) Fields in modal window are copied to the one in the back
+    * Fixes a Bug in modals having modal field content getting copied to the underlying data structure.
 
 
 # metasfresh 5.66 (2018-29)
