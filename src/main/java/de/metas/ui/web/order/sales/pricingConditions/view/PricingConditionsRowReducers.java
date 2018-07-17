@@ -8,6 +8,8 @@ import org.compiere.Adempiere;
 import org.compiere.util.Util;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.PricingSystemId;
@@ -164,7 +166,9 @@ class PricingConditionsRowReducers
 
 	}
 
-	private PriceOverride applyPartialPriceChangeTo(final PartialPriceChange changes, final PriceOverride price)
+	private PriceOverride applyPartialPriceChangeTo(
+			@NonNull final PartialPriceChange changes,
+			final PriceOverride price)
 	{
 		final PriceOverrideType priceType = changes.getPriceType() != null ? changes.getPriceType() : price.getType();
 		if (priceType == PriceOverrideType.NONE)
@@ -176,14 +180,18 @@ class PricingConditionsRowReducers
 			final PricingSystemId requestBasePricingSystemId = changes.getBasePricingSystemId() != null ? changes.getBasePricingSystemId().orElse(null) : null;
 			final PricingSystemId basePricingSystemId = Util.coalesce(requestBasePricingSystemId, price.getBasePricingSystemId(), PricingSystemId.NONE);
 			final BigDecimal basePriceAddAmt = changes.getBasePriceAddAmt() != null ? changes.getBasePriceAddAmt() : price.getBasePriceAddAmt();
+
 			return PriceOverride.basePricingSystem(
 					basePricingSystemId,
 					basePriceAddAmt != null ? basePriceAddAmt : BigDecimal.ZERO);
 		}
 		else if (priceType == PriceOverrideType.FIXED_PRICE)
 		{
-			final BigDecimal fixedPrice = Util.coalesce(changes.getFixedPrice(), price.getFixedPrice(), BigDecimal.ZERO);
-			return PriceOverride.fixedPrice(fixedPrice);
+			final BigDecimal fixedPriceValue = Util.coalesce(changes.getFixedPrice(), price.getFixedPrice().getValue());
+			final CurrencyId fixedPriceCurrencyId = Util.coalesce(changes.getFixedPriceCurrencyId(), price.getFixedPrice().getCurrencyId());
+
+			final Money fixedPrice = Money.of(fixedPriceValue, fixedPriceCurrencyId);
+			return PriceOverride.fixedPriceOrNone(fixedPrice);
 		}
 		else
 		{

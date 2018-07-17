@@ -46,6 +46,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -69,6 +70,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@ToString(doNotUseGetters = true)
 public final class PurchaseRow implements IViewRow
 {
 	// services
@@ -85,7 +87,7 @@ public final class PurchaseRow implements IViewRow
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 10)
 	private final LookupValue product;
 
-	/** TODO: show it if/when it's needed and QAed*/
+	/** TODO: show it if/when it's needed and QAed */
 	// @ViewColumn(captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 15)
 	private final LookupValue attributeSetInstance;
 
@@ -416,7 +418,7 @@ public final class PurchaseRow implements IViewRow
 		this.purchaseCandidatesGroup = purchaseCandidatesGroup;
 		setQtyToPurchase(purchaseCandidatesGroup.getQtyToPurchase());
 		setPurchasedQty(purchaseCandidatesGroup.getPurchasedQty());
-		setProfitInfo(purchaseCandidatesGroup.getProfitInfo());
+		setProfitInfo(purchaseCandidatesGroup.getProfitInfoOrNull());
 		setDatePromised(purchaseCandidatesGroup.getPurchaseDatePromised());
 	}
 
@@ -557,7 +559,7 @@ public final class PurchaseRow implements IViewRow
 					.qtyToPurchase(qtyToPurchase)
 					.vendorProductInfo(candidatesGroup.getVendorProductInfo())
 					.build());
-			newCandidatesGroup.profitInfo(profitInfo);
+			newCandidatesGroup.profitInfoOrNull(profitInfo);
 			hasChanges = true;
 		}
 

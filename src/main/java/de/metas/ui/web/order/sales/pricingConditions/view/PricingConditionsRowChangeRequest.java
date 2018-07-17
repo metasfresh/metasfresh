@@ -6,6 +6,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
@@ -67,9 +68,12 @@ public class PricingConditionsRowChangeRequest
 	public static final class PartialPriceChange implements PriceChange
 	{
 		PriceOverrideType priceType;
+
 		Optional<PricingSystemId> basePricingSystemId;
 		BigDecimal basePriceAddAmt;
+
 		BigDecimal fixedPrice;
+		CurrencyId fixedPriceCurrencyId;
 	}
 
 	@lombok.Value(staticConstructor = "of")

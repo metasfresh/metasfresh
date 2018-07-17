@@ -132,7 +132,7 @@ class PurchaseRowsSaver
 			return ImmutableList.of();
 		}
 
-		final PurchaseProfitInfo profitInfo = candidatesGroup.getProfitInfo();
+		final PurchaseProfitInfo profitInfo = candidatesGroup.getProfitInfoOrNull();
 		final LocalDateTime purchaseDatePromised = candidatesGroup.getPurchaseDatePromised();
 		final List<PurchaseCandidate> allCandidates = getPurchaseCandidates(candidatesGroup, existingPurchaseCandidatesById);
 

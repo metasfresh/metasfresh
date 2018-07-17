@@ -11,7 +11,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.CCache;
 import org.compiere.util.Evaluatees;
 
+import de.metas.adempiere.model.I_C_Currency;
 import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -60,17 +62,20 @@ public class PricingConditionsRowLookups
 	private final LookupDataSource priceTypeLookup;
 	private final LookupDataSource pricingSystemLookup;
 	private final LookupDataSource paymentTermLookup;
+	private final LookupDataSource currencyIdLookup;
 
 	private CCache<Integer, String> temporaryPriceConditionsColorCache = CCache.newCache("temporaryPriceConditionsColor", 1, CCache.EXPIREMINUTES_Never);
 
 	private PricingConditionsRowLookups()
 	{
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
+
 		bpartnerLookup = lookupFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 		productLookup = lookupFactory.searchInTableLookup(I_M_Product.Table_Name);
 		priceTypeLookup = lookupFactory.listByAD_Reference_Value_ID(PriceOverrideType.AD_Reference_ID);
 		pricingSystemLookup = lookupFactory.searchInTableLookup(I_M_PricingSystem.Table_Name);
 		paymentTermLookup = lookupFactory.searchByColumn(I_M_DiscountSchemaBreak.Table_Name, I_M_DiscountSchemaBreak.COLUMNNAME_C_PaymentTerm_ID);
+		currencyIdLookup = lookupFactory.searchInTableLookup(I_C_Currency.Table_Name);
 	}
 
 	public LookupValue lookupBPartner(final BPartnerId bpartnerId)
@@ -112,6 +117,16 @@ public class PricingConditionsRowLookups
 			return null;
 		}
 		return paymentTermLookup.findById(paymentTermId.getRepoId());
+	}
+
+
+	public LookupValue lookupCurrency(final CurrencyId currencyId)
+	{
+		if (currencyId == null)
+		{
+			return null;
+		}
+		return currencyIdLookup.findById(currencyId.getRepoId());
 	}
 
 	public LookupValuesList getFieldTypeahead(final String fieldName, final String query)

@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
+import de.metas.money.Money;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -122,6 +123,14 @@ public class PricingConditionsRow implements IViewRow
 	})
 	@Getter
 	private final BigDecimal basePrice;
+
+	static final String FIELDNAME_C_Currency_ID = "basePriceCurrency";
+	@ViewColumn(fieldName = FIELDNAME_C_Currency_ID, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 45),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 45)
+	})
+	@Getter
+	private final LookupValue basePriceCurrency;
 
 	static final String FIELDNAME_BasePriceAddAmt = "basePriceAddAmt";
 	@ViewColumn(fieldName = FIELDNAME_BasePriceAddAmt, captionKey = "Std_AddAmt", widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
@@ -231,11 +240,16 @@ public class PricingConditionsRow implements IViewRow
 		discount = pricingConditionsBreak.getDiscount().getValueAsBigDecimal();
 
 		this.basePricingSystemPriceCalculator = basePricingSystemPriceCalculator;
-		basePrice = calculateBasePrice(basePricingSystemPriceCalculator, BasePricingSystemPriceCalculatorRequest.builder()
-				.pricingConditionsBreak(pricingConditionsBreak)
-				.bpartnerId(BPartnerId.ofRepoId(bpartner.getIdAsInt()))
-				.isSOTrx(customer)
-				.build());
+
+		final Money basePriceAsMoney = calculateBasePrice(
+				basePricingSystemPriceCalculator,
+				BasePricingSystemPriceCalculatorRequest.builder()
+						.pricingConditionsBreak(pricingConditionsBreak)
+						.bpartnerId(BPartnerId.ofRepoId(bpartner.getIdAsInt()))
+						.isSOTrx(customer)
+						.build());
+		basePrice = basePriceAsMoney.getValue();
+		basePriceCurrency = lookups.lookupCurrency(basePriceAsMoney.getCurrencyId());
 
 		netPrice = calculateNetPrice(basePrice, pricingConditionsBreak);
 
@@ -298,7 +312,7 @@ public class PricingConditionsRow implements IViewRow
 		return result.build();
 	}
 
-	private static BigDecimal calculateBasePrice(
+	private static Money calculateBasePrice(
 			@NonNull final BasePricingSystemPriceCalculator basePricingSystemPriceCalculator,
 			@NonNull final BasePricingSystemPriceCalculatorRequest request)
 	{
@@ -313,7 +327,7 @@ public class PricingConditionsRow implements IViewRow
 			}
 			else if (type == PriceOverrideType.BASE_PRICING_SYSTEM)
 			{
-				final BigDecimal basePrice = basePricingSystemPriceCalculator.calculate(request);
+				final Money basePrice = basePricingSystemPriceCalculator.calculate(request);
 				// NOTE: assume BasePriceAddAmt was added
 				// basePrice = basePrice.add(price.getBasePriceAddAmt());
 

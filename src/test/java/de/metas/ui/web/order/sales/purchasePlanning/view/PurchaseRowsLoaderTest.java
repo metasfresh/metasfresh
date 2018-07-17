@@ -35,8 +35,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
-import de.metas.money.Currency;
-import de.metas.money.CurrencyRepository;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.pricing.conditions.PricingConditions;
@@ -109,8 +108,6 @@ public class PurchaseRowsLoaderTest
 
 	private I_AD_Org org;
 
-	private static CurrencyRepository currencyRepository;
-
 	private SalesOrder2PurchaseViewFactory salesOrder2PurchaseViewFactory;
 
 	@Before
@@ -157,11 +154,8 @@ public class PurchaseRowsLoaderTest
 		saveRecord(currency);
 
 		// wire together a SalesOrder2PurchaseViewFactory
-		currencyRepository = new CurrencyRepository();
-
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
-				currencyRepository,
 				new ReferenceGenerator(),
 				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()));
 
@@ -182,13 +176,14 @@ public class PurchaseRowsLoaderTest
 				availabilityCheckService, // mocked
 				purchaseCandidateRepository,
 				purchaseRowFactory,
-				new SalesOrderLineRepository(new OrderLineRepository(currencyRepository)));
-
+				new SalesOrderLineRepository(new OrderLineRepository()));
 	}
 
 	@Test
-	public void load()
+	public void load_and_createAndAddAvailabilityResultRows()
 	{
+		//
+		// set up salesOrderLineRecord
 		final I_C_OrderLine salesOrderLineRecord = newInstance(I_C_OrderLine.class);
 		salesOrderLineRecord.setAD_Org(org);
 		salesOrderLineRecord.setM_Product(product);
@@ -201,9 +196,11 @@ public class PurchaseRowsLoaderTest
 		salesOrderLineRecord.setDatePromised(SystemTime.asTimestamp());
 		save(salesOrderLineRecord);
 
-		final SalesOrderLineRepository salesOrderLineRepository = new SalesOrderLineRepository(new OrderLineRepository(currencyRepository));
+		final SalesOrderLineRepository salesOrderLineRepository = new SalesOrderLineRepository(new OrderLineRepository());
 		final SalesOrderLine salesOrderLine = salesOrderLineRepository.ofRecord(salesOrderLineRecord);
 
+		//
+		// set up vendorProductInfo
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.vendorId(BPartnerId.ofRepoId(bPartnerVendor.getC_BPartner_ID()))
 				.defaultVendor(false)
@@ -211,10 +208,11 @@ public class PurchaseRowsLoaderTest
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.vendorProductNo("bPartnerProduct.VendorProductNo")
 				.vendorProductName("bPartnerProduct.ProductName")
-				.pricingConditions(PricingConditions.builder()
-						.build())
+				.pricingConditions(PricingConditions.builder().build())
 				.build();
 
+		//
+		// create purchaseCandidate from salesOrderLineRecord and vendorProductInfo
 		final PurchaseDemand demand = salesOrder2PurchaseViewFactory.createDemand(salesOrderLine);
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderLineRecord, vendorProductInfo);
 
@@ -233,22 +231,25 @@ public class PurchaseRowsLoaderTest
 				.build();
 
 		//
-		// invoke the method under test
+		// invoke the method under test FIRST PART
 		final PurchaseRowsList rowsList = loader.load();
 
 		//
 		// Check result
 		final List<PurchaseRow> topLevelRows = rowsList.getTopLevelRows();
-
 		assertThat(topLevelRows).hasSize(1);
+
 		final PurchaseRow groupRow = topLevelRows.get(0);
 		assertThat(groupRow.getType()).isEqualTo(PurchaseRowType.GROUP);
+		assertThat(groupRow.getQtyToPurchase().getAsBigDecimal()).isEqualByComparingTo(TEN.getAsBigDecimal());
 		assertThat(groupRow.getIncludedRows()).hasSize(1);
 
 		final PurchaseRow purchaseRow = groupRow.getIncludedRows().iterator().next();
 		assertThat(purchaseRow.getType()).isEqualTo(PurchaseRowType.LINE);
 		assertThat(purchaseRow.getIncludedRows()).isEmpty();
 
+		//
+		// set up availabilityCheckService
 		// @formatter:off
 		new Expectations()
 		{{
@@ -261,7 +262,10 @@ public class PurchaseRowsLoaderTest
 					.build());
 		}};	// @formatter:on
 
+		//
+		// invoke the method under test SECOND PART
 		loader.createAndAddAvailabilityResultRows(rowsList);
+
 		assertThat(purchaseRow.getIncludedRows()).hasSize(1);
 
 		final PurchaseRow availabilityRow = purchaseRow.getIncludedRows().iterator().next();
@@ -273,9 +277,9 @@ public class PurchaseRowsLoaderTest
 			final I_C_OrderLine orderLine,
 			final VendorProductInfo vendorProductInfo)
 	{
-		final Currency currency = currencyRepository.getById(orderLine.getC_Currency_ID());
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 
-		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currency);
+		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currencyId);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.createEmpty())

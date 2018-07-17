@@ -17,12 +17,15 @@ import org.compiere.model.I_M_AttributeInstance;
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.IPricingResult;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
@@ -128,22 +131,24 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 				.build();
 	}
 
-	private final SourceDocumentLine createSourceDocumentLine(final I_C_OrderLine orderLine, final SOTrx soTrx)
+	private final SourceDocumentLine createSourceDocumentLine(final I_C_OrderLine orderLineRecord, final SOTrx soTrx)
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 
+		final Money priceEntered = Money.of(orderLineRecord.getPriceEntered(), CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID()));
+
 		return SourceDocumentLine.builder()
-				.orderLineId(OrderLineId.ofRepoIdOrNull(orderLine.getC_OrderLine_ID()))
+				.orderLineId(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
 				.soTrx(soTrx)
-				.bpartnerId(BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()))
+				.bpartnerId(BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()))
 				.productId(productId)
 				.productCategoryId(productCategoryId)
-				.priceEntered(orderLine.getPriceEntered())
-				.discount(Percent.of(orderLine.getDiscount()))
-				.paymentTermId(PaymentTermId.ofRepoIdOrNull(orderLine.getC_PaymentTerm_Override_ID()))
-				.pricingConditionsBreakId(PricingConditionsBreakId.ofOrNull(orderLine.getM_DiscountSchema_ID(), orderLine.getM_DiscountSchemaBreak_ID()))
+				.priceEntered(priceEntered)
+				.discount(Percent.of(orderLineRecord.getDiscount()))
+				.paymentTermId(PaymentTermId.ofRepoIdOrNull(orderLineRecord.getC_PaymentTerm_Override_ID()))
+				.pricingConditionsBreakId(PricingConditionsBreakId.ofOrNull(orderLineRecord.getM_DiscountSchema_ID(), orderLineRecord.getM_DiscountSchemaBreak_ID()))
 				.build();
 	}
 
@@ -152,7 +157,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		private final I_C_OrderLine orderLine;
 
-		private final ConcurrentHashMap<PricingConditionsBreak, BigDecimal> basePricesCache = new ConcurrentHashMap<>();
+		private final ConcurrentHashMap<PricingConditionsBreak, Money> basePricesCache = new ConcurrentHashMap<>();
 
 		public OrderLineBasePricingSystemPriceCalculator(@NonNull final I_C_OrderLine orderLine)
 		{
@@ -160,21 +165,21 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		}
 
 		@Override
-		public BigDecimal calculate(final BasePricingSystemPriceCalculatorRequest request)
+		public Money calculate(final BasePricingSystemPriceCalculatorRequest request)
 		{
 			final PricingConditionsBreak pricingConditionsBreak = request.getPricingConditionsBreak();
 			return basePricesCache.computeIfAbsent(pricingConditionsBreak, this::calculate);
 		}
 
-		private BigDecimal calculate(final PricingConditionsBreak pricingConditionsBreak)
+		private Money calculate(final PricingConditionsBreak pricingConditionsBreak)
 		{
-			return orderLineBL.computePrices(OrderLinePriceUpdateRequest.builder()
+			final IPricingResult prcingResult = orderLineBL.computePrices(OrderLinePriceUpdateRequest.builder()
 					.orderLine(orderLine)
 					.pricingConditionsBreakOverride(pricingConditionsBreak)
 					.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
-					.build())
-					.getPriceStd();
-		}
+					.build());
 
+			return Money.of(prcingResult.getPriceStd(), prcingResult.getCurrencyId());
+		}
 	}
 }

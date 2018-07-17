@@ -142,7 +142,7 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 				//
 				.qtyToDeliver(qtyToPurchase)
 				//
-				.currencyOrNull(salesOrderLine.getPriceActual().getCurrency())
+				.currencyIdOrNull(salesOrderLine.getPriceActual().getCurrencyId())
 				//
 				.salesPreparationDate(salesOrderLine.getPreparationDate())
 				//

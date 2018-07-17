@@ -127,31 +127,34 @@ class PurchaseRowsCollection
 		return rowIds.stream().map(this::getById);
 	}
 
-	void patchRow(final PurchaseRowId rowId, final PurchaseRowChangeRequest request)
+	void patchRow(
+			@NonNull final PurchaseRowId idOfRowToPatch,
+			@NonNull final PurchaseRowChangeRequest request)
 	{
-		updateRow(rowId, request, PurchaseRow::changeIncludedRow);
+		final PurchaseGroupRowEditor editorToUse = PurchaseRow::changeIncludedRow;
+		updateRow(idOfRowToPatch, request, editorToUse);
 	}
 
 	private void updateRow(
-			@NonNull final PurchaseRowId rowId,
+			@NonNull final PurchaseRowId idOfRowToPatch,
 			@NonNull final PurchaseRowChangeRequest request,
 			@NonNull final PurchaseGroupRowEditor editor)
 	{
-		topLevelRowsById.compute(rowId.toGroupRowId(), (groupRowId, groupRow) -> {
+		topLevelRowsById.compute(idOfRowToPatch.toGroupRowId(), (groupRowId, groupRow) -> {
 			if (groupRow == null)
 			{
 				throw new EntityNotFoundException("Row not found").appendParametersToMessage().setParameter("rowId", groupRowId);
 			}
 
 			final PurchaseRow newGroupRow = groupRow.copy();
-			if (rowId.isGroupRowId())
+			if (idOfRowToPatch.isGroupRowId())
 			{
 				final PurchaseRowId includedRowId = null;
 				editor.edit(newGroupRow, includedRowId, request);
 			}
 			else
 			{
-				final PurchaseRowId includedRowId = rowId;
+				final PurchaseRowId includedRowId = idOfRowToPatch;
 				editor.edit(newGroupRow, includedRowId, request);
 			}
 
