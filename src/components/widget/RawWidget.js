@@ -131,6 +131,7 @@ class RawWidget extends Component {
         cachedValue: value,
         clearedFieldWarning: false,
       });
+
       return handlePatch(property, value, id, valueTo);
     }
 
@@ -163,8 +164,9 @@ class RawWidget extends Component {
     const { cachedValue } = this.state;
 
     return (
-      JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
-      JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
+      (widgetData[0].value !== undefined &&
+        (JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
+          JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo))) ||
       (cachedValue !== undefined &&
         JSON.stringify(cachedValue) !== JSON.stringify(value))
     );
