@@ -103,3 +103,38 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=60,Updated=TO_T
 UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=70,Updated=TO_TIMESTAMP('2018-07-17 15:55:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551500
 ;
 
+-- 2018-07-17T15:59:33.672
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-07-17 15:59:33','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Current eMail Receipient' WHERE AD_Field_ID=565092 AND AD_Language='en_US'
+;
+
+-- 2018-07-17T15:59:44.456
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-07-17 15:59:44','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Current eMail' WHERE AD_Field_ID=565093 AND AD_Language='en_US'
+;
+
+-- 2018-07-17T16:01:53.338
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Mailempfänger',Updated=TO_TIMESTAMP('2018-07-17 16:01:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565092
+;
+
+-- 2018-07-17T16:01:56.461
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Mailadresse',Updated=TO_TIMESTAMP('2018-07-17 16:01:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565093
+;
+
+-- 2018-07-17T16:02:07.121
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-07-17 16:02:07','YYYY-MM-DD HH24:MI:SS'),Name='EMail Receipient' WHERE AD_Field_ID=565092 AND AD_Language='en_US'
+;
+
+-- 2018-07-17T16:02:18.363
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-07-17 16:02:18','YYYY-MM-DD HH24:MI:SS'),Name='eMail' WHERE AD_Field_ID=565093 AND AD_Language='en_US'
+;
+
+-- 2018-07-17T16:02:27.173
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-07-17 16:02:27','YYYY-MM-DD HH24:MI:SS'),Name='eMail Receipient' WHERE AD_Field_ID=565092 AND AD_Language='en_US'
+;
+
