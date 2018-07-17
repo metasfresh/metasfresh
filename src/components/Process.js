@@ -15,7 +15,7 @@ export class Process extends Component {
     return elements.map((elem, id) => {
       const widgetData = elem.fields.map(item => data[item.field] || -1);
       return (
-        <div key={layout.pinstanceId}>
+        <div key={`${id}-${layout.pinstanceId}`}>
           <MasterWidget
             entity="process"
             key={'element' + id}
