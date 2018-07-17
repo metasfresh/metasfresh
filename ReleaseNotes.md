@@ -11,6 +11,10 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.67 (2018-30)
 ## Features
+* metasfresh
+  * [#4336](https://github.com/metasfresh/metasfresh/issues/4336) WebUI: add email fields to C_Doc_OutBound
+    * New Window for Handling Unit Reservation in WebUI.
+
 * metasfresh-webui-frontend
   * [#1859](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1859) Inline rendering filter parameters
     * New Feature that allows inline rendering of Filter elements. This Feeature is used initially in the Fulltext Search Filter in Businesspartner Window.
