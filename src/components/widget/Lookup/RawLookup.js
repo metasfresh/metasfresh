@@ -188,6 +188,7 @@ class RawLookup extends Component {
     setTimeout(() => {
       this.inputSearch.focus();
     }, 0);
+
     this.handleBlur();
   };
 
@@ -220,15 +221,12 @@ class RawLookup extends Component {
   };
 
   handleBlur = () => {
-    const { onBlur } = this.props;
-
     this.setState(
       {
         isFocused: false,
       },
       () => {
         this.props.onDropdownListToggle(false);
-        onBlur && onBlur();
       }
     );
   };
@@ -442,7 +440,6 @@ class RawLookup extends Component {
                 tabIndex={tabIndex}
                 placeholder={placeholder}
                 onChange={this.handleChange}
-                onBlur={this.handleBlur}
                 onFocus={this.handleFocus}
               />
             </div>

@@ -193,18 +193,20 @@ class RawModal extends Component {
           >
             {children}
           </div>
-          <ModalContextShortcuts apply={this.handleClose} />
+          <ModalContextShortcuts
+            apply={modalVisible ? null : () => this.handleClose()}
+          />
         </div>
       </div>
     );
   }
 }
 
-const mapStateToProps = state => ({
-  modalVisible: state.windowHandler.modal.visible || false,
-  rawModalVisible: state.windowHandler.rawModal.visible || false,
-  requests: state.windowHandler.patches.requests,
-  success: state.windowHandler.patches.success,
+const mapStateToProps = ({ windowHandler }) => ({
+  modalVisible: windowHandler.modal.visible || false,
+  rawModalVisible: windowHandler.rawModal.visible || false,
+  requests: windowHandler.patches.requests,
+  success: windowHandler.patches.success,
 });
 
 RawModal.propTypes = {
