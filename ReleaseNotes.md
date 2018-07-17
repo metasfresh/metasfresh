@@ -10,6 +10,10 @@ Additional notes:
 
 Here come the actual release notes:
 # metasfresh 5.67 (2018-30)
+## Features
+  * [#1859](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1859) Inline rendering filter parameters
+    * New Feature that allows inline rendering of Filter elements. This Feeature is used initially in the Fulltext Search Filter in Businesspartner Window.
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#1785](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1785) Search field in Pricing conditions - keyboard selection
