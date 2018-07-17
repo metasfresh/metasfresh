@@ -28,6 +28,8 @@ Here come the actual release notes:
     * Improvement of the shortcut [alt]+Enter in different modal views.
   * [#1876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1876) Action confirmation without tab does not use the set Parms
     * Fixes the usage of keyboard in process parm windows. Now the parms are also taken when using alt+enter without previous tab usage.
+  * [#1880](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1880) Cannot complete documents
+    * Fixes the Docactions in Documents.
 
 
 # metasfresh 5.66 (2018-29)
