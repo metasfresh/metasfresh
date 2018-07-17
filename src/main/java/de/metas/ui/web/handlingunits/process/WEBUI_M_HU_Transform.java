@@ -22,6 +22,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -67,7 +68,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_HU_Transform
 		extends HUEditorProcessTemplate
-		implements IProcessPrecondition, IProcessDefaultParametersProvider
+		implements IProcessPrecondition, IProcessParametersCallout, IProcessDefaultParametersProvider
 {
 	// Services
 	@Autowired
@@ -216,6 +217,7 @@ public class WEBUI_M_HU_Transform
 	@RunOutOfTrx
 	protected final String doIt() throws Exception
 	{
+		System.out.println(p_M_HU_PI_Item);
 		final WebuiHUTransformParameters parameters = WebuiHUTransformParameters.builder()
 				.actionType(p_Action == null ? null : ActionType.valueOf(p_Action))
 				.huPIItemProduct(p_M_HU_PI_Item_Product)
@@ -322,5 +324,26 @@ public class WEBUI_M_HU_Transform
 		final HUEditorView view = getView();
 		final boolean changes = view.removeHUIds(destroyedHUIds);
 		return changes;
+	}
+
+	@Override
+	public void onParameterChanged(final String parameterName)
+	{
+		if (PARAM_Action.equals(parameterName) || PARAM_M_HU_PI_Item_ID.equals(parameterName) || PARAM_QtyTU.equals(parameterName))
+		{
+			final String actionName = p_Action;
+
+			if (ActionType.TU_To_NewLUs.toString().equals(actionName))
+			{
+				final I_M_HU_PI_Item defaultHUPIItem = newParametersFiller().getDefaultM_HU_PI_ItemOrNull();
+				p_M_HU_PI_Item = defaultHUPIItem;
+
+				if (defaultHUPIItem != null)
+				{
+					p_QtyTU = defaultHUPIItem.getQty();
+				}
+			}
+		}
+
 	}
 }
