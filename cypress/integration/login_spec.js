@@ -1,7 +1,6 @@
 describe('Login test', function() {
   context('HTML form submission', function() {
-
-    beforeEach(function(){
+    beforeEach(function() {
       // login before each test
       cy.loginByForm();
     });

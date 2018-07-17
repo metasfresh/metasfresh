@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import { browserHistory } from 'react-router';
 import { push, syncHistoryWithStore } from 'react-router-redux';
 
+import '../assets/css/styles.css';
 import {
   addNotification,
   languageSuccess,
@@ -14,7 +15,7 @@ import {
 import { getAvailableLang } from '../api';
 import { noConnection } from '../actions/WindowActions';
 import { addPlugins } from '../actions/PluginActions';
-import '../assets/css/styles.css';
+import PluginsRegistry from '../services/PluginsRegistry';
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
 import CustomRouter from './CustomRouter';
 import Translation from '../components/Translation';
@@ -39,6 +40,8 @@ export default class App extends Component {
     };
 
     this.auth = new Auth();
+    this.pluginsRegistry = new PluginsRegistry(this);
+    window.META_HOST_APP = this;
 
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -152,7 +155,8 @@ export default class App extends Component {
 
         return new Promise(resolve =>
           waitForChunk().then(file => {
-            resolve(file);
+            this.pluginsRegistry.addEntry(plugin, file);
+            resolve({ name: plugin, file });
           })
         );
       });
@@ -164,11 +168,11 @@ export default class App extends Component {
           store.dispatch(addPlugins(plugins));
         }
 
-        plugins.forEach(plugin => {
-          if (plugin.reducers && plugin.reducers.name) {
+        plugins.forEach(({ file }) => {
+          if (file.reducers && file.reducers.name) {
             store.attachReducers({
               plugins: {
-                [`${plugin.reducers.name}`]: plugin.reducers.reducer,
+                [`${file.reducers.name}`]: file.reducers.reducer,
               },
             });
           }
@@ -179,6 +183,10 @@ export default class App extends Component {
         });
       });
     }
+  }
+
+  getRegistry() {
+    return this.pluginsRegistry;
   }
 
   render() {

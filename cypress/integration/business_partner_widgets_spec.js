@@ -1,5 +1,5 @@
 describe('Business partner window widgets test', function() {
-  before(function(){
+  before(function() {
     // login before each test
     cy.loginByForm();
   });
@@ -14,9 +14,9 @@ describe('Business partner window widgets test', function() {
 
     context('Vendor', function() {
       it('Check if list widget works properly', function() {
-      cy
-        .get('.header-breadcrumb-sitename')
-        .should('contain', 'Cypress Test Partner #1');
+        cy
+          .get('.header-breadcrumb-sitename')
+          .should('contain', 'Cypress Test Partner #1');
 
         cy
           .get('.nav-item[title="Vendor"]')

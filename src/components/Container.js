@@ -8,15 +8,7 @@ import Modal from './app/Modal';
 import RawModal from './app/RawModal';
 import Header from './header/Header';
 
-const mapStateToProps = state => ({
-  connectionError: state.windowHandler.connectionError || false,
-});
-
 class Container extends Component {
-  static propTypes = {
-    connectionError: PropTypes.bool,
-  };
-
   render() {
     const {
       docActionElem,
@@ -46,6 +38,7 @@ class Container extends Component {
       notfound,
       rawModal,
       modal,
+      pluginModal,
       indicator,
       modalTitle,
       setModalTitle,
@@ -57,7 +50,26 @@ class Container extends Component {
       handleEditModeToggle,
       activeTab,
       masterDocumentList,
+      pluginComponents,
     } = this.props;
+    const pluginModalVisible = pluginModal.visible;
+    let PluginModalComponent = null;
+
+    if (pluginModalVisible) {
+      // check if pluginModal's component is saved in the redux state
+      const modalPluginName = pluginComponents[pluginModal.id];
+
+      if (modalPluginName) {
+        // get the plugin holding the required component
+        const parentPlugin = window.META_HOST_APP.getRegistry().getEntry(
+          modalPluginName
+        );
+
+        PluginModalComponent = parentPlugin.components.filter(
+          component => component.id === pluginModal.id
+        )[0].component;
+      }
+    }
 
     return (
       <div>
@@ -191,11 +203,32 @@ class Container extends Component {
             </RawModal>
           )}
 
+          {pluginModalVisible && (
+            <PluginModalComponent
+              docId={docId}
+              windowType={windowType}
+              dataId={dataId}
+              entity={entity}
+              query={query}
+            />
+          )}
+
           {children}
         </div>
       </div>
     );
   }
 }
+
+Container.propTypes = {
+  connectionError: PropTypes.bool,
+  pluginModal: PropTypes.object,
+  pluginComponents: PropTypes.any,
+};
+
+const mapStateToProps = state => ({
+  connectionError: state.windowHandler.connectionError || false,
+  pluginComponents: state.pluginsHandler.components,
+});
 
 export default connect(mapStateToProps)(Container);

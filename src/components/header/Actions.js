@@ -10,29 +10,6 @@ import {
 import Loader from '../app/Loader';
 import { getSelection } from '../../reducers/windowHandler';
 
-const mapStateToProps = (state, props) => {
-  const includedView = state.listHandler.includedView;
-
-  const result = {
-    selected: getSelection({
-      state,
-      windowType: props.windowType,
-      viewId: props.viewId,
-    }),
-  };
-
-  if (includedView && includedView.viewId) {
-    result.childViewId = includedView.viewId;
-    result.childViewSelectedIds = getSelection({
-      state,
-      windowType: includedView.windowType,
-      viewId: includedView.viewId,
-    });
-  }
-
-  return result;
-};
-
 class Actions extends Component {
   static propTypes = {
     // from <SubHeader>
@@ -44,6 +21,7 @@ class Actions extends Component {
     childViewSelectedIds: PropTypes.array,
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array.isRequired,
+    plugins: PropTypes.any,
   };
 
   state = {
@@ -60,6 +38,7 @@ class Actions extends Component {
       activeTab,
       activeTabSelected,
     } = this.props;
+    const requests = [this.requestActions()];
 
     if (!windowType || docId === 'notfound' || notfound) {
       this.setState({
@@ -76,8 +55,6 @@ class Actions extends Component {
 
       return;
     }
-
-    const requests = [this.requestActions()];
 
     if (activeTab && activeTabSelected && activeTabSelected.length > 0) {
       requests.push(this.requestRowActions());
@@ -156,7 +133,6 @@ class Actions extends Component {
       });
 
       const actionsPerTab = await Promise.all(requests);
-
       const actions = Array.prototype.concat.call(...actionsPerTab);
 
       return actions;
@@ -166,6 +142,21 @@ class Actions extends Component {
 
       return [];
     }
+  };
+
+  getPluginsActions = () => {
+    const { plugins } = this.props;
+    const actions = [];
+
+    if (plugins.length) {
+      plugins.forEach(plugin => {
+        if (plugin.headerActions && plugin.headerActions.length) {
+          actions.push(...plugin.headerActions);
+        }
+      });
+    }
+
+    return actions;
   };
 
   renderAction = identifier => (item, key) => {
@@ -233,32 +224,81 @@ class Actions extends Component {
     );
   };
 
-  renderData = () => {
-    const { renderAction } = this;
-    const { actions, rowActions } = this.state;
+  renderPluginAction = identifier => (item, key) => {
+    const { closeSubheader, dispatch } = this.props;
+    let handleClick = null;
 
+    if (!item.disabled) {
+      const handleModal = item.clickHandler;
+
+      handleClick = () => {
+        // we're passing dispatch, so that we don't have to hack around
+        // the header actions trying to connect them to store
+        handleModal(dispatch);
+
+        closeSubheader();
+      };
+    }
+
+    return (
+      <div
+        key={identifier + key}
+        tabIndex={0}
+        className={
+          'subheader-item js-subheader-item' +
+          (item.disabled ? ' subheader-item-disabled' : '')
+        }
+        onClick={handleClick}
+      >
+        {item.caption}
+        {item.disabled &&
+          item.disabledReason && (
+            <p className="one-line">
+              <small>({item.disabledReason})</small>
+            </p>
+          )}
+      </div>
+    );
+  };
+
+  renderData = () => {
+    const { renderAction, renderPluginAction, getPluginsActions } = this;
+    const { actions, rowActions } = this.state;
     const numActions = actions ? actions.length : 0;
     const numRowActions = rowActions ? rowActions.length : 0;
+    const separator = <hr key="separator" tabIndex={0} />;
+    let retItems = [];
 
     if (numActions > 0 && numRowActions > 0) {
-      const separator = <hr key="separator" tabIndex={0} />;
-
-      return [
+      retItems = [
         ...actions.map(renderAction('actions')),
         separator,
         ...rowActions.map(renderAction('rowActions')),
       ];
     } else if (numActions > 0) {
-      return actions.map(renderAction('actions'));
+      retItems = actions.map(renderAction('actions'));
     } else if (numRowActions > 0) {
-      return rowActions.map(renderAction('rowActions'));
-    } else {
-      return (
-        <div className="subheader-item subheader-item-disabled">
-          {counterpart.translate('window.actions.emptyText')}
-        </div>
-      );
+      retItems = rowActions.map(renderAction('rowActions'));
     }
+
+    if (retItems.length) {
+      const pluginActions = getPluginsActions();
+
+      if (pluginActions.length) {
+        retItems.push(
+          separator,
+          ...pluginActions.map(renderPluginAction('plugins'))
+        );
+      }
+
+      return retItems;
+    }
+
+    return (
+      <div className="subheader-item subheader-item-disabled">
+        {counterpart.translate('window.actions.emptyText')}
+      </div>
+    );
   };
 
   render() {
@@ -275,5 +315,29 @@ class Actions extends Component {
     );
   }
 }
+
+const mapStateToProps = (state, props) => {
+  const includedView = state.listHandler.includedView;
+
+  const result = {
+    selected: getSelection({
+      state,
+      windowType: props.windowType,
+      viewId: props.viewId,
+    }),
+    plugins: state.pluginsHandler.files,
+  };
+
+  if (includedView && includedView.viewId) {
+    result.childViewId = includedView.viewId;
+    result.childViewSelectedIds = getSelection({
+      state,
+      windowType: includedView.windowType,
+      viewId: includedView.viewId,
+    });
+  }
+
+  return result;
+};
 
 export default connect(mapStateToProps)(Actions);

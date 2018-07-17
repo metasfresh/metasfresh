@@ -75,8 +75,9 @@ const initialState = {
     viewId: null,
   },
   pluginModal: {
-    visible: true,
+    visible: false,
     type: '',
+    id: null,
   },
   master: {
     layout: {
@@ -155,6 +156,7 @@ export default function windowHandler(state = initialState, action) {
         pluginModal: {
           visible: true,
           type: action.payload.type,
+          id: action.payload.id,
         },
       };
     case UPDATE_MODAL:
@@ -191,6 +193,7 @@ export default function windowHandler(state = initialState, action) {
         pluginModal: {
           visible: false,
           type: '',
+          id: null,
         },
       };
 

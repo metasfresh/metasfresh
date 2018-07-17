@@ -207,7 +207,7 @@ class Board extends Component {
   };
 
   render() {
-    const { modal, rawModal, breadcrumb, indicator } = this.props;
+    const { modal, rawModal, pluginModal, breadcrumb, indicator } = this.props;
 
     const { board, targetIndicator, sidenav, sidenavViewId } = this.state;
 
@@ -216,7 +216,7 @@ class Board extends Component {
         entity="board"
         siteName={board && board.caption}
         windowType={board && board.boardId && String(board.boardId)}
-        {...{ modal, rawModal, breadcrumb, indicator }}
+        {...{ modal, rawModal, pluginModal, breadcrumb, indicator }}
       >
         {sidenav && (
           <Sidenav
@@ -262,14 +262,16 @@ Board.propTypes = {
   dispatch: PropTypes.func.isRequired,
   rawModal: PropTypes.object.isRequired,
   indicator: PropTypes.string.isRequired,
+  pluginModal: PropTypes.object,
 };
 
 function mapStateToProps(state) {
   const { windowHandler, menuHandler } = state;
 
-  const { modal, rawModal, indicator } = windowHandler || {
+  const { modal, rawModal, pluginModal, indicator } = windowHandler || {
     modal: false,
     rawModal: {},
+    pluginModal: {},
     indicator: '',
   };
 
@@ -280,6 +282,7 @@ function mapStateToProps(state) {
   return {
     modal,
     rawModal,
+    pluginModal,
     indicator,
     breadcrumb,
   };

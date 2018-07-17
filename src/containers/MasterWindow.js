@@ -46,6 +46,7 @@ class MasterWindow extends Component {
     rawModal: PropTypes.object.isRequired,
     indicator: PropTypes.string.isRequired,
     me: PropTypes.object.isRequired,
+    pluginModal: PropTypes.object,
   };
 
   componentDidMount() {
@@ -299,6 +300,7 @@ class MasterWindow extends Component {
       breadcrumb,
       params,
       rawModal,
+      pluginModal,
       includedView,
       processStatus,
       enableTutorial,
@@ -313,10 +315,10 @@ class MasterWindow extends Component {
       introHints,
     } = this.state;
     const { docActionElement, documentSummaryElement } = master.layout;
-
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
     let activeTab;
+
     if (master.layout) {
       activeTab = master.layout.activeTab;
     }
@@ -350,6 +352,7 @@ class MasterWindow extends Component {
         docNoData={docNoData}
         isDocumentNotSaved={isDocumentNotSaved}
         rawModal={rawModal}
+        pluginModal={pluginModal}
         modalTitle={modalTitle}
         includedView={includedView}
         processStatus={processStatus}
@@ -407,6 +410,7 @@ const mapStateToProps = state => ({
   master: state.windowHandler.master,
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
+  pluginModal: state.windowHandler.pluginModal,
   indicator: state.windowHandler.indicator,
   includedView: state.listHandler.includedView,
   enableTutorial: state.appHandler.enableTutorial,
