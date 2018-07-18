@@ -1,6 +1,7 @@
 package de.metas.document.sequence.impl;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -12,8 +13,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
-
-import com.google.common.base.Optional;
 
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
@@ -329,6 +328,6 @@ import de.metas.document.IDocumentSequenceDAO;
 	{
 		final Object documentModel = getDocumentModel();
 		final Optional<java.util.Date> date = InterfaceWrapperHelper.getValue(documentModel, dateColumnName);
-		return date.orNull();
+		return date.orElse(null);
 	}
 }

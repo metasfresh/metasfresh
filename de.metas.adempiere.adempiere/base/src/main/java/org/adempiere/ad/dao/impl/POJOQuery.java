@@ -593,7 +593,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		final List<T> models = list(modelClass);
 		for (final T model : models)
 		{
-			final Object valueObj = InterfaceWrapperHelper.getValue(model, columnName).orNull();
+			final Object valueObj = InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
 			if (Aggregate.SUM.equals(aggregateType))
 				if (valueObj == null)
 				{
@@ -811,7 +811,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			countUpdated++;
 		}
 
-		return countUpdated++;
+		return countUpdated;
 	}
 
 	@Override
@@ -857,7 +857,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 			for (final String columnName : columnNames)
 			{
-				final Object value = InterfaceWrapperHelper.getValue(record, columnName).orNull();
+				final Object value = InterfaceWrapperHelper.getValue(record, columnName).orElse(null);
 				row.put(columnName, value);
 			}
 			result.add(row);
@@ -875,8 +875,9 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		for (final T record : records)
 		{
-			final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName)
-					.or(() -> DB.retrieveDefaultValue(valueType));
+			final Object valueObj = InterfaceWrapperHelper
+					.getValue(record, columnName)
+					.orElseGet(() -> DB.retrieveDefaultValue(valueType));
 
 			@SuppressWarnings("unchecked")
 			final AT value = (AT)valueObj;
@@ -903,7 +904,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		final T record = records.get(0);
 
-		final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orNull();
+		final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orElse(null);
 
 		@SuppressWarnings("unchecked")
 		final AT value = (AT)valueObj;

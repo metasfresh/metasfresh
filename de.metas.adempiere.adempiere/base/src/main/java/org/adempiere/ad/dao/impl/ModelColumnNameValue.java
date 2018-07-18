@@ -32,12 +32,12 @@ public final class ModelColumnNameValue<T>
 	public static <ModelType> ModelColumnNameValue<ModelType> forColumn(final ModelColumn<ModelType, ?> column)
 	{
 		Check.assumeNotNull(column, "column not null");
-		return new ModelColumnNameValue<ModelType>(column.getColumnName());
+		return new ModelColumnNameValue<>(column.getColumnName());
 	}
 
 	public static <ModelType> ModelColumnNameValue<ModelType> forColumnName(final String columnName)
 	{
-		return new ModelColumnNameValue<ModelType>(columnName);
+		return new ModelColumnNameValue<>(columnName);
 	}
 
 	/**
@@ -53,7 +53,7 @@ public final class ModelColumnNameValue<T>
 		Check.assumeNotEmpty(columnName, "columnName not empty");
 
 		final String columnNameFQ = tableName + "." + columnName;
-		return new ModelColumnNameValue<ModelType>(columnNameFQ);
+		return new ModelColumnNameValue<>(columnNameFQ);
 	}
 
 	private final String columnName;
@@ -84,7 +84,7 @@ public final class ModelColumnNameValue<T>
 		{
 			return null;
 		}
-		return InterfaceWrapperHelper.getValue(model, columnName).orNull();
+		return InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
 	}
 
 	@Override

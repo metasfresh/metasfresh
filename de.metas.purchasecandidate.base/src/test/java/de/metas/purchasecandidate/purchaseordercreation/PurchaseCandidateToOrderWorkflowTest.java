@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.DemandGroupReference;
@@ -68,7 +68,7 @@ import mockit.Verifications;
  * #L%
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseCandidateToOrderWorkflowTest
 {
 	private static final String SOMETHING_WENT_WRONG = "something went wrong";
@@ -231,7 +231,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 		final ProductId productId = ProductId.ofRepoId(5);
 		return PurchaseCandidate.builder()
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(1, 2))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
@@ -239,7 +239,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.productId(ProductId.ofRepoId(5))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
-				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
+				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(ONE)
 				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)

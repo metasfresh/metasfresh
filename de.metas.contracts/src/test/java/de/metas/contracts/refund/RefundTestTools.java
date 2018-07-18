@@ -131,7 +131,7 @@ public class RefundTestTools
 		invoiceCandidateRecord.setProcessed(false);
 		saveRecord(invoiceCandidateRecord);
 
-		final Money money = Money.of(moneyValue, currency);
+		final Money money = Money.of(moneyValue, currency.getId());
 
 		return RefundInvoiceCandidate.builder()
 				.id(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
@@ -198,7 +198,7 @@ public class RefundTestTools
 	{
 		final I_C_Invoice_Candidate invoiceCandidateRecord = createAssignableInvoiceCandidateRecord();
 
-		final Money money = Money.of(TEN, currency);
+		final Money money = Money.of(TEN, currency.getId());
 
 		return AssignableInvoiceCandidate
 				.builder()
@@ -224,7 +224,7 @@ public class RefundTestTools
 
 		final AssignmentToRefundCandidate assignementToRefundCandidate = new AssignmentToRefundCandidate(
 				refundCandidate,
-				Money.of(TWO, refundCandidate.getMoney().getCurrency()));
+				Money.of(TWO, refundCandidate.getMoney().getCurrencyId()));
 		return assignableInvoiceCandidate
 				.toBuilder()
 				.assignmentToRefundCandidate(assignementToRefundCandidate)

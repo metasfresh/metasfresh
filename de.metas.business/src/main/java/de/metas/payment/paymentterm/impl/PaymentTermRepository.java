@@ -41,7 +41,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	@Override
 	public I_C_PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
 	{
-		return loadOutOfTrx(paymentTermId.getRepoId(), I_C_PaymentTerm.class);
+		return loadOutOfTrx(paymentTermId, I_C_PaymentTerm.class);
 	}
 
 	@Override

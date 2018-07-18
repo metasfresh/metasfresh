@@ -1,10 +1,4 @@
-package de.metas.money;
-
-import java.math.BigDecimal;
-
-import org.springframework.stereotype.Service;
-
-import lombok.NonNull;
+package de.metas.money.grossprofit;
 
 /*
  * #%L
@@ -28,29 +22,8 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
-public class MoneyFactory
+@FunctionalInterface
+public interface ProfitPriceActualComponentProvider
 {
-	private final CurrencyRepository currencyRepository;
-
-	public MoneyFactory(
-			@NonNull final CurrencyRepository currencyRepository)
-	{
-		this.currencyRepository = currencyRepository;
-	}
-
-	public Money forAmountAndCurrencyId(
-			@NonNull final BigDecimal value,
-			@NonNull final CurrencyId currencyId)
-	{
-		final Currency currency = currencyRepository.getById(currencyId);
-		return Money.of(value, currency);
-	}
-
-	public Money zero(
-			@NonNull final CurrencyId currencyId)
-	{
-		final Currency currency = currencyRepository.getById(currencyId);
-		return Money.zero(currency);
-	}
+	ProfitPriceActualComponent provideForRequest(CalculateProfitPriceActualRequest request);
 }

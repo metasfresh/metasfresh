@@ -1,17 +1,18 @@
-package de.metas.contracts.refund;
+package de.metas.money.grossprofit;
 
-import java.time.LocalDate;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.invoicecandidate.InvoiceCandidateId;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -32,26 +33,31 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class RefundInvoiceCandidate implements InvoiceCandidate
+@Builder
+class ProfitPriceActualCalculator
 {
-	public static RefundInvoiceCandidate cast(@NonNull final InvoiceCandidate refundInvoiceCandidate)
+	boolean soTrx;
+
+	@NonNull
+	Money basePrice;
+
+	@Singular
+	ImmutableList<ProfitPriceActualComponent> profitPriceActualComponents;
+
+	ExtendedMemorizingSupplier<Money> netPriceSupplier = ExtendedMemorizingSupplier.of(this::computeProfitPriceActual);
+
+	public Money getProfitPriceActual()
 	{
-		return (RefundInvoiceCandidate)refundInvoiceCandidate;
+		return netPriceSupplier.get();
 	}
 
-	@NonNull
-	InvoiceCandidateId id;
-
-	@NonNull
-	BPartnerId bpartnerId;
-
-	@NonNull
-	LocalDate invoiceableFrom;
-
-	@NonNull
-	RefundContract refundContract;
-
-	@NonNull
-	Money money;
+	private Money computeProfitPriceActual()
+	{
+		Money profitPriceActual = basePrice;
+		for (final ProfitPriceActualComponent profitPriceActualComponent : profitPriceActualComponents)
+		{
+			profitPriceActual = profitPriceActualComponent.applyToInput(profitPriceActual);
+		}
+		return profitPriceActual;
+	}
 }

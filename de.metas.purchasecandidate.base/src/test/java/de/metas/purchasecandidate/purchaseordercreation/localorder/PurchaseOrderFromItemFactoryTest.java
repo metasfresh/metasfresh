@@ -29,7 +29,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.event.OrderUserNotifications;
@@ -73,7 +73,7 @@ import mockit.Verifications;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseOrderFromItemFactoryTest
 {
 	private static final LocalDateTime PURCHASE_DATE_PROMISED = SystemTime.asLocalDateTime();
@@ -92,7 +92,7 @@ public class PurchaseOrderFromItemFactoryTest
 		this.EACH = createUOM("Ea");
 		this.PURCHASE_CANDIDATE_QTY_TO_PURCHASE = Quantity.of(BigDecimal.TEN, EACH);
 
-		// mock IOrderLineBL.updatePrices() because setting up the required masterdata and testing the pricing engine is out of scope. 
+		// mock IOrderLineBL.updatePrices() because setting up the required masterdata and testing the pricing engine is out of scope.
 		// @formatter:off
 		final OrderLineBL orderLineBL = new OrderLineBL();
 		new Expectations(OrderLineBL.class)
@@ -226,7 +226,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.build();
 
 		return PurchaseCandidate.builder()
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
@@ -235,7 +235,7 @@ public class PurchaseOrderFromItemFactoryTest
 				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
-				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
+				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)
 				.purchaseDatePromised(PURCHASE_DATE_PROMISED)
 				.processed(false)

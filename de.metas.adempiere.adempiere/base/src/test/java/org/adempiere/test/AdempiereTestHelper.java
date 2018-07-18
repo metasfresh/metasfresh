@@ -97,7 +97,7 @@ public class AdempiereTestHelper
 
 		//
 		// Make sure cache is empty
-		CacheMgt.get().clear();
+		CacheMgt.get().reset();
 
 		staticInitialized = true;
 	}

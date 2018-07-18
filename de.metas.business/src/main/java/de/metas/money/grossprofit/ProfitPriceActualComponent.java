@@ -1,14 +1,6 @@
 package de.metas.money.grossprofit;
 
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-
-import com.google.common.collect.ImmutableList;
-
 import de.metas.money.Money;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
 
 /*
  * #%L
@@ -32,32 +24,11 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-class NetPriceCalculator
+/**
+ * Note: might be stateful.
+ */
+@FunctionalInterface
+public interface ProfitPriceActualComponent
 {
-	boolean soTrx;
-
-	@NonNull
-	Money basePrice;
-
-	@Singular
-	ImmutableList<GrossProfitComponent> profitCompponents;
-
-	ExtendedMemorizingSupplier<Money> netPriceSupplier = ExtendedMemorizingSupplier.of(this::computeNetPrice);
-
-	public Money getNetPrice()
-	{
-		return netPriceSupplier.get();
-	}
-
-	private Money computeNetPrice()
-	{
-		Money netPrice = basePrice;
-		for (final GrossProfitComponent profitComponent : profitCompponents)
-		{
-			netPrice = profitComponent.applyToInput(netPrice);
-		}
-		return netPrice;
-	}
+	Money applyToInput(Money input);
 }

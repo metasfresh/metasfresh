@@ -201,7 +201,6 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 
 	private void setPricingFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)
 	{
-		schemaBreak.setIsPriceOverride(importRecord.isPriceOverride());
 		schemaBreak.setPriceBase(importRecord.getPriceBase());
 		schemaBreak.setBase_PricingSystem_ID(importRecord.getBase_PricingSystem_ID());
 		schemaBreak.setPriceStd(importRecord.getPriceStd());
