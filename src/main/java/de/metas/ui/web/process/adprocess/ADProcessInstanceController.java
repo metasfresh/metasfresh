@@ -9,6 +9,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
@@ -219,6 +221,51 @@ import lombok.NonNull;
 	{
 		assertNotExecuted();
 		parameters.processValueChanges(events, reason);
+		updateParametersDocumentFromJavaProcessAnnotatedFields();
+	}
+
+	private void updateParametersDocumentFromJavaProcessAnnotatedFields()
+	{
+		final JavaProcess currentProcessInstance = JavaProcess.currentInstance();
+
+		// If the process has no callouts,
+		// there is no point to update the parameters Document from process's annotated fields values,
+		// because nobody will change those process's annotated fields values directly.
+		if (!currentProcessInstance.hasParametersCallout())
+		{
+			return;
+		}
+
+		final IRangeAwareParams parameterFieldValues = currentProcessInstance.getParametersFromAnnotatedFields();
+		final List<JSONDocumentChangedEvent> events = parameterFieldValues.getParameterNames()
+				.stream()
+				.filter(parameters::hasField)
+				.map(parameterName -> createJSONDocumentChangedEventFromFieldValue(parameterFieldValues, parameterName))
+				.collect(ImmutableList.toImmutableList());
+		if (events.isEmpty())
+		{
+			return;
+		}
+
+		parameters.processValueChanges(events, () -> "update from java process annotated fields");
+	}
+
+	private static JSONDocumentChangedEvent createJSONDocumentChangedEventFromFieldValue(final IRangeAwareParams parameterFieldValues, final String parameterName)
+	{
+		final Object fieldValue = parameterFieldValues.getParameterAsObject(parameterName);
+		if (fieldValue == null)
+		{
+			return JSONDocumentChangedEvent.replace(parameterName, null);
+		}
+		else if (InterfaceWrapperHelper.isModelInterface(fieldValue.getClass()))
+		{
+			int id = InterfaceWrapperHelper.getId(fieldValue);
+			return JSONDocumentChangedEvent.replace(parameterName, id);
+		}
+		else
+		{
+			return JSONDocumentChangedEvent.replace(parameterName, fieldValue);
+		}
 	}
 
 	@Override

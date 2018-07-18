@@ -373,28 +373,30 @@ import lombok.NonNull;
 			final JavaProcess processInstance = JavaProcess.currentInstance();
 
 			final String parameterName = calloutField.getColumnName();
+			final IRangeAwareParams source = createSource(calloutField);
 
-			//
-			// Build up our value source
-			final IRangeAwareParams source;
+			// Ask the instance to load the parameter
+			processInstance.loadParameterValueNoFail(parameterName, source);
+		}
+
+		private static IRangeAwareParams createSource(final ICalloutField calloutField)
+		{
+			final String parameterName = calloutField.getColumnName();
 			final Object fieldValue = calloutField.getValue();
 			if (fieldValue instanceof LookupValue)
 			{
 				final Object idObj = ((LookupValue)fieldValue).getId();
-				source = ProcessParams.ofValueObject(parameterName, idObj);
+				return ProcessParams.ofValueObject(parameterName, idObj);
 			}
 			else if (fieldValue instanceof DateRangeValue)
 			{
 				final DateRangeValue dateRange = (DateRangeValue)fieldValue;
-				source = ProcessParams.of(parameterName, dateRange.getFrom(), dateRange.getTo());
+				return ProcessParams.of(parameterName, dateRange.getFrom(), dateRange.getTo());
 			}
 			else
 			{
-				source = ProcessParams.ofValueObject(parameterName, fieldValue);
+				return ProcessParams.ofValueObject(parameterName, fieldValue);
 			}
-
-			// Ask the instance to load the parameter
-			processInstance.loadParameterValueNoFail(parameterName, source);
 		}
 	}
 
