@@ -27,7 +27,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
-import de.metas.money.Currency;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.pricing.conditions.PricingConditions;
@@ -76,7 +76,7 @@ public class PurchaseRowFactoryTest
 	@Autowired
 	private PurchaseRowFactory purchaseRowFactory;
 
-	private Currency currency;
+	private CurrencyId currencyId;
 
 	private Quantity ONE;
 
@@ -85,7 +85,7 @@ public class PurchaseRowFactoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		currency = PurchaseRowTestTools.createCurrency();
+		currencyId = CurrencyId.ofRepoId(30);
 
 		final I_C_UOM each = PurchaseRowTestTools.createUOM("Ea");
 		this.ONE = Quantity.of(BigDecimal.ONE, each);
@@ -100,7 +100,7 @@ public class PurchaseRowFactoryTest
 
 		final PurchaseRow candidateRow = purchaseRowFactory.lineRowBuilder()
 				.purchaseCandidatesGroup(PurchaseCandidatesGroup.of(demandId, purchaseCandidate, vendorProductInfo))
-				.convertAmountsToCurrency(currency)
+				.convertAmountsToCurrencyId(currencyId)
 				.build();
 
 		final DocumentId id = candidateRow.getId();
@@ -114,14 +114,14 @@ public class PurchaseRowFactoryTest
 	{
 		final PurchaseProfitInfo profitInfo = PurchaseProfitInfo
 				.builder()
-				.salesNetPrice(Money.of(11, currency))
-				.purchaseNetPrice(Money.of(9, currency))
-				.purchaseGrossPrice(Money.of(10, currency))
+				.profitSalesPriceActual(Money.of(11, currencyId))
+				.profitPurchasePriceActual(Money.of(9, currencyId))
+				.purchasePriceActual(Money.of(10, currencyId))
 				.build();
 
 		return PurchaseCandidate.builder()
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(1, 2))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
@@ -132,7 +132,7 @@ public class PurchaseRowFactoryTest
 				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
 				.qtyToPurchase(ONE)
 				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
-				.profitInfo(profitInfo)
+				.profitInfoOrNull(profitInfo)
 				.processed(true) // important in case we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
 				.locked(false)
 				.build();

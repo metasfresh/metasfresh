@@ -15,7 +15,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.money.Currency;
+import de.metas.money.CurrencyId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -76,9 +76,11 @@ public class PurchaseRowFactory
 	@Builder(builderMethodName = "lineRowBuilder", builderClassName = "LineRowBuilder")
 	private PurchaseRow createLineRow(
 			@NonNull final PurchaseCandidatesGroup purchaseCandidatesGroup,
-			@Nullable final Currency convertAmountsToCurrency)
+			@Nullable final CurrencyId convertAmountsToCurrencyId)
 	{
-		final PurchaseProfitInfo profitInfo = convertToCurrencyIfPossible(purchaseCandidatesGroup.getProfitInfo(), convertAmountsToCurrency);
+		final PurchaseProfitInfo profitInfo = convertToCurrencyIfPossible(
+				purchaseCandidatesGroup.getProfitInfoOrNull(),
+				convertAmountsToCurrencyId);
 
 		return PurchaseRow.lineRowBuilder()
 				.purchaseProfitInfoService(purchaseProfitInfoService)
@@ -87,24 +89,26 @@ public class PurchaseRowFactory
 				.build();
 	}
 
-	private PurchaseProfitInfo convertToCurrencyIfPossible(final PurchaseProfitInfo profitInfo, final Currency currencyTo)
+	private PurchaseProfitInfo convertToCurrencyIfPossible(
+			final PurchaseProfitInfo profitInfo,
+			final CurrencyId currencyIdTo)
 	{
 		if (profitInfo == null)
 		{
 			return null;
 		}
-		if (currencyTo == null)
+		if (currencyIdTo == null)
 		{
 			return profitInfo;
 		}
 
 		try
 		{
-			return purchaseProfitInfoService.convertToCurrency(profitInfo, currencyTo);
+			return purchaseProfitInfoService.convertToCurrency(profitInfo, currencyIdTo);
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed converting {} to {}. Returning profitInfo as is.", profitInfo, currencyTo, ex);
+			logger.warn("Failed converting {} to {}. Returning profitInfo as is.", profitInfo, currencyIdTo, ex);
 			return profitInfo;
 		}
 	}

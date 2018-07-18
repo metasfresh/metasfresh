@@ -6,12 +6,12 @@ import java.util.Set;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
+import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
-import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
@@ -68,7 +68,7 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 				.load();
 	}
 
-	private BigDecimal calculateBasePricingSystemPrice(final BasePricingSystemPriceCalculatorRequest request)
+	private Money calculateBasePricingSystemPrice(final BasePricingSystemPriceCalculatorRequest request)
 	{
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 
@@ -76,7 +76,7 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 				.forcePricingConditionsBreak(request.getPricingConditionsBreak())
 				.pricingCtx(createPricingContext(request))
 				.build())
-				.map(PricingConditionsResult::getPriceStdOverride)
+				.map(result -> Money.of(result.getPriceStdOverride(), result.getCurrencyId()))
 				.orElse(null);
 	}
 

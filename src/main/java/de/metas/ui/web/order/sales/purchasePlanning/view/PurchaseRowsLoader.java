@@ -118,9 +118,10 @@ class PurchaseRowsLoader
 			final List<TrackingId> trackingIds = new ArrayList<>();
 			for (final PurchaseCandidatesGroup purchaseCandidatesGroup : demandWithCandidates.getPurchaseCandidatesGroups())
 			{
-				final PurchaseRow purchaseCandidateRow = purchaseRowFactory.lineRowBuilder()
+				final PurchaseRow purchaseCandidateRow = purchaseRowFactory
+						.lineRowBuilder()
 						.purchaseCandidatesGroup(purchaseCandidatesGroup)
-						.convertAmountsToCurrency(demand.getCurrencyOrNull())
+						.convertAmountsToCurrencyId(demand.getCurrencyIdOrNull())
 						.build();
 
 				purchaseCandidateRows.add(purchaseCandidateRow);

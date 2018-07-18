@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverrideType;
@@ -109,6 +110,12 @@ public class PricingConditionsRowActions
 			else if (PricingConditionsRow.FIELDNAME_Price.equals(fieldName))
 			{
 				builder.fixedPrice(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
+			}
+			else if (PricingConditionsRow.FIELDNAME_C_Currency_ID.equals(fieldName))
+			{
+				final LookupValue currency = fieldChangeRequest.getValueAsIntegerLookupValue();
+				final CurrencyId currencyId = currency != null ? CurrencyId.ofRepoIdOrNull(currency.getIdAsInt()) : null;
+				builder.fixedPriceCurrencyId(currencyId);
 			}
 		}
 

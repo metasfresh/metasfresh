@@ -32,6 +32,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.money.Money;
 import de.metas.order.OrderLineId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.conditions.PriceOverride;
@@ -335,7 +336,7 @@ class PricingConditionsRowsLoader
 		ProductId productId;
 		ProductCategoryId productCategoryId;
 
-		BigDecimal priceEntered;
+		Money priceEntered;
 
 		@lombok.Builder.Default
 		Percent discount = Percent.ZERO;

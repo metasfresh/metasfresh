@@ -1,6 +1,6 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import de.metas.money.Currency;
+import de.metas.money.CurrencyId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoRequest;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoService;
@@ -43,9 +43,9 @@ public class DoNothingPurchaseProfitInfoServiceImpl implements PurchaseProfitInf
 	}
 
 	@Override
-	public PurchaseProfitInfo convertToCurrency(final PurchaseProfitInfo profitInfo, final Currency currencyTo)
+	public PurchaseProfitInfo convertToCurrency(final PurchaseProfitInfo profitInfo, final CurrencyId currencyIdTo)
 	{
-		throw new UnsupportedOperationException("profitInfo=" + profitInfo + ", currencyTo=" + currencyTo);
+		throw new UnsupportedOperationException("profitInfo=" + profitInfo + ", currencyIdTo=" + currencyIdTo);
 	}
 
 }

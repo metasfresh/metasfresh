@@ -46,6 +46,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -69,6 +70,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@ToString(doNotUseGetters = true)
 public final class PurchaseRow implements IViewRow
 {
 	// services
@@ -85,18 +87,18 @@ public final class PurchaseRow implements IViewRow
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 10)
 	private final LookupValue product;
 
-	/** TODO: show it if/when it's needed and QAed*/
+	/** TODO: show it if/when it's needed and QAed */
 	// @ViewColumn(captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 15)
 	private final LookupValue attributeSetInstance;
 
 	@ViewColumn(captionKey = "Vendor_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 20)
 	private final LookupValue vendorBPartner;
 
-	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_CustomerPriceGrossProfit, widgetType = DocumentFieldWidgetType.Amount, seqNo = 23)
-	private Money salesNetPrice;
+	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_ProfitSalesPriceActual, widgetType = DocumentFieldWidgetType.Amount, seqNo = 23)
+	private Money profitSalesPriceActual;
 
-	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_PurchasePriceActual, widgetType = DocumentFieldWidgetType.Amount, seqNo = 25)
-	private Money purchaseNetPrice;
+	@ViewColumn(captionKey = I_C_PurchaseCandidate.COLUMNNAME_ProfitPurchasePriceActual, widgetType = DocumentFieldWidgetType.Amount, seqNo = 25)
+	private Money profitPurchasePriceActual;
 
 	@ViewColumn(captionKey = "PercentGrossProfit", widgetType = DocumentFieldWidgetType.Amount, seqNo = 25)
 	private BigDecimal profitPercent;
@@ -171,8 +173,8 @@ public final class PurchaseRow implements IViewRow
 		purchasedQty = null;
 
 		purchaseCandidatesGroup = null;
-		salesNetPrice = null;
-		purchaseNetPrice = null;
+		profitSalesPriceActual = null;
+		profitPurchasePriceActual = null;
 		profitPercent = null;
 
 		datePromised = demand.getSalesPreparationDate();
@@ -236,8 +238,8 @@ public final class PurchaseRow implements IViewRow
 		purchasedQty = null;
 
 		purchaseCandidatesGroup = null;
-		salesNetPrice = null;
-		purchaseNetPrice = null;
+		profitSalesPriceActual = null;
+		profitPurchasePriceActual = null;
 		profitPercent = null;
 
 		datePromised = availabilityResult.getDatePromised();
@@ -267,8 +269,8 @@ public final class PurchaseRow implements IViewRow
 		purchasedQty = null;
 
 		purchaseCandidatesGroup = null;
-		salesNetPrice = null;
-		purchaseNetPrice = null;
+		profitSalesPriceActual = null;
+		profitPurchasePriceActual = null;
 		profitPercent = null;
 
 		datePromised = null;
@@ -289,8 +291,8 @@ public final class PurchaseRow implements IViewRow
 		uomOrAvailablility = from.uomOrAvailablility;
 
 		purchaseCandidatesGroup = from.purchaseCandidatesGroup;
-		salesNetPrice = from.salesNetPrice;
-		purchaseNetPrice = from.purchaseNetPrice;
+		profitSalesPriceActual = from.profitSalesPriceActual;
+		profitPurchasePriceActual = from.profitPurchasePriceActual;
 		profitPercent = from.profitPercent;
 
 		qtyToDeliver = from.qtyToDeliver;
@@ -416,7 +418,7 @@ public final class PurchaseRow implements IViewRow
 		this.purchaseCandidatesGroup = purchaseCandidatesGroup;
 		setQtyToPurchase(purchaseCandidatesGroup.getQtyToPurchase());
 		setPurchasedQty(purchaseCandidatesGroup.getPurchasedQty());
-		setProfitInfo(purchaseCandidatesGroup.getProfitInfo());
+		setProfitInfo(purchaseCandidatesGroup.getProfitInfoOrNull());
 		setDatePromised(purchaseCandidatesGroup.getPurchaseDatePromised());
 	}
 
@@ -455,20 +457,20 @@ public final class PurchaseRow implements IViewRow
 		resetFieldNameAndJsonValues();
 	}
 
-	private void setProfitInfo(final PurchaseProfitInfo profitInfo)
+	private void setProfitInfo(@Nullable final PurchaseProfitInfo profitInfo)
 	{
 		if (profitInfo != null)
 		{
-			salesNetPrice = profitInfo.getSalesNetPrice().orElse(null);
-			purchaseNetPrice = profitInfo.getPurchaseNetPrice().orElse(null);
+			profitSalesPriceActual = profitInfo.getProfitSalesPriceActual().orElse(null);
+			profitPurchasePriceActual = profitInfo.getProfitPurchasePriceActual().orElse(null);
 			profitPercent = profitInfo.getProfitPercent()
 					.map(percent -> percent.roundToHalf(RoundingMode.HALF_UP).getValueAsBigDecimal())
 					.orElse(null);
 		}
 		else
 		{
-			salesNetPrice = null;
-			purchaseNetPrice = null;
+			profitSalesPriceActual = null;
+			profitPurchasePriceActual = null;
 			profitPercent = null;
 		}
 
@@ -557,7 +559,7 @@ public final class PurchaseRow implements IViewRow
 					.qtyToPurchase(qtyToPurchase)
 					.vendorProductInfo(candidatesGroup.getVendorProductInfo())
 					.build());
-			newCandidatesGroup.profitInfo(profitInfo);
+			newCandidatesGroup.profitInfoOrNull(profitInfo);
 			hasChanges = true;
 		}
 

@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import org.compiere.model.I_C_UOM;
 
-import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -37,15 +36,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class PurchaseRowTestTools
 {
-	public Currency createCurrency()
-	{
-		return Currency
-				.builder()
-				.id(CurrencyId.ofRepoId(30))
-				.precision(2)
-				.build();
-	}
-	
 	public I_C_UOM createUOM(final String name)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
@@ -55,13 +45,12 @@ public class PurchaseRowTestTools
 		return uom;
 	}
 
-
-	public PurchaseProfitInfo createProfitInfo(@NonNull final Currency currency)
+	public PurchaseProfitInfo createProfitInfo(@NonNull final CurrencyId currencyId)
 	{
 		return PurchaseProfitInfo.builder()
-				.salesNetPrice(Money.of(11, currency))
-				.purchaseNetPrice(Money.of(9, currency))
-				.purchaseGrossPrice(Money.of(10, currency))
+				.profitSalesPriceActual(Money.of(11, currencyId))
+				.profitPurchasePriceActual(Money.of(9, currencyId))
+				.purchasePriceActual(Money.of(10, currencyId))
 				.build();
 	}
 }

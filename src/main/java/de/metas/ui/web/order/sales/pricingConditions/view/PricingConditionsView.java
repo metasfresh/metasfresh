@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
@@ -151,13 +152,13 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 		final PricingConditionsRow editableRow = getEditableRow();
 		final PricingConditionsBreak pricingConditionsBreak = editableRow.getPricingConditionsBreak();
 
-		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(getOrderLineId());
-		orderLine.setIsTempPricingConditions(pricingConditionsBreak.isTemporaryPricingConditionsBreak());
+		final I_C_OrderLine orderLineRecord = ordersRepo.getOrderLineById(getOrderLineId());
+		orderLineRecord.setIsTempPricingConditions(pricingConditionsBreak.isTemporaryPricingConditionsBreak());
 
 		if (pricingConditionsBreak.isTemporaryPricingConditionsBreak())
 		{
-			orderLine.setM_DiscountSchema_ID(-1);
-			orderLine.setM_DiscountSchemaBreak_ID(-1);
+			orderLineRecord.setM_DiscountSchema_ID(-1);
+			orderLineRecord.setM_DiscountSchemaBreak_ID(-1);
 
 			final PriceOverride price = pricingConditionsBreak.getPriceOverride();
 			final PriceOverrideType type = price.getType();
@@ -167,42 +168,45 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			}
 			else if (type == PriceOverrideType.BASE_PRICING_SYSTEM)
 			{
-				orderLine.setIsManualPrice(true);
-				orderLine.setPriceEntered(editableRow.getBasePrice());
-				orderLine.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
+				orderLineRecord.setIsManualPrice(true);
+				orderLineRecord.setPriceEntered(editableRow.getBasePrice());
+				orderLineRecord.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
 
 			}
 			else if (type == PriceOverrideType.FIXED_PRICE)
 			{
-				orderLine.setIsManualPrice(true);
-				orderLine.setPriceEntered(price.getFixedPrice());
+				orderLineRecord.setIsManualPrice(true);
+
+				final Money fixedPrice = price.getFixedPrice();
+				orderLineRecord.setPriceEntered(fixedPrice.getValue());
+				orderLineRecord.setC_Currency_ID(fixedPrice.getCurrencyId().getRepoId());
 			}
 
-			orderLine.setIsManualDiscount(true);
-			orderLine.setDiscount(pricingConditionsBreak.getDiscount().getValueAsBigDecimal());
+			orderLineRecord.setIsManualDiscount(true);
+			orderLineRecord.setDiscount(pricingConditionsBreak.getDiscount().getValueAsBigDecimal());
 
-			orderLine.setIsManualPaymentTerm(true); // make sure it's not overwritten by whatever the system comes up with when we save the orderLine.
+			orderLineRecord.setIsManualPaymentTerm(true); // make sure it's not overwritten by whatever the system comes up with when we save the orderLine.
 			final int paymentTermRepoId = PaymentTermId.getRepoId(pricingConditionsBreak.getDerivedPaymentTermIdOrNull());
-			orderLine.setC_PaymentTerm_Override_ID(paymentTermRepoId);
-			orderLine.setPaymentDiscount(pricingConditionsBreak.getPaymentDiscountOverrideOrNull().getValueAsBigDecimal());
+			orderLineRecord.setC_PaymentTerm_Override_ID(paymentTermRepoId);
+			orderLineRecord.setPaymentDiscount(pricingConditionsBreak.getPaymentDiscountOverrideOrNull().getValueAsBigDecimal());
 		}
 		else
 		{
 			final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
-			orderLine.setM_DiscountSchema_ID(pricingConditionsBreakId.getDiscountSchemaId());
-			orderLine.setM_DiscountSchemaBreak_ID(pricingConditionsBreakId.getDiscountSchemaBreakId());
+			orderLineRecord.setM_DiscountSchema_ID(pricingConditionsBreakId.getDiscountSchemaId());
+			orderLineRecord.setM_DiscountSchemaBreak_ID(pricingConditionsBreakId.getDiscountSchemaBreakId());
 
-			orderLine.setIsManualDiscount(false);
-			orderLine.setIsManualPrice(false);
-			orderLine.setIsManualPaymentTerm(false);
-			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
+			orderLineRecord.setIsManualDiscount(false);
+			orderLineRecord.setIsManualPrice(false);
+			orderLineRecord.setIsManualPaymentTerm(false);
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLineRecord)
 					.pricingConditionsBreakOverride(pricingConditionsBreak)
 					.build());
 		}
 
-		orderLineBL.updateLineNetAmt(orderLine);
-		orderLineBL.setTaxAmtInfo(orderLine);
+		orderLineBL.updateLineNetAmt(orderLineRecord);
+		orderLineBL.setTaxAmtInfo(orderLineRecord);
 
-		InterfaceWrapperHelper.save(orderLine);
+		InterfaceWrapperHelper.save(orderLineRecord);
 	}
 }
