@@ -325,13 +325,6 @@ class Table extends Component {
 
   changeListen = listenOnKeys => {
     this.setState({ listenOnKeys: !!listenOnKeys });
-
-    if (listenOnKeys) {
-      if (this.state.selected[0]) {
-        document.querySelector('.row-selected td').focus();
-        document.querySelector('.row-selected td').click();
-      }
-    }
   };
 
   selectProduct = (id, idFocused, idFocusedDown) => {
