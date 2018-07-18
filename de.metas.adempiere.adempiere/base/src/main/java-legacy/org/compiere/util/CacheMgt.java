@@ -146,7 +146,6 @@ public final class CacheMgt
 			registerWeakEffective = registerWeak == null ? false : registerWeak;
 		}
 
-		System.out.println("Register cache for tablename=" + tableName + "; registerWeakEffective=" + registerWeakEffective + "; cache=" + instance);
 		cacheInstancesLock.lock();
 		try
 		{
@@ -618,7 +617,6 @@ public final class CacheMgt
 	{
 		try
 		{
-			System.out.println("CacheMgt.resetNoFail() - cacheInstance=" + cacheInstance);
 			return cacheInstance.reset();
 		}
 		catch (final Exception e)
