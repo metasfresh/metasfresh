@@ -145,12 +145,6 @@ public class AD_User
 			return true;
 		}
 
-		if (contactPersonEmail.equals(oldContactPersonMail))
-		{
-			return true;
-		}
-
-		return false;
+		return contactPersonEmail.equals(oldContactPersonMail);
 	}
-
 }
