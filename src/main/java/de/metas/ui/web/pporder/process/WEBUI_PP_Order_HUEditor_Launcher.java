@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
@@ -124,7 +125,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 
 		final ViewId ppOrderLineViewId = getView().getViewId();
 
-		final List<Integer> availableHUsIDs = retrieveHuIdsToShowInEditor(ppOrderBomLineId);
+		final List<HuId> availableHUsIDs = retrieveHuIdsToShowInEditor(ppOrderBomLineId);
 
 		final IView husToPickView = viewsRepo.createView(
 				CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
@@ -141,14 +142,17 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		return MSG_OK;
 	}
 
-	private List<Integer> retrieveHuIdsToShowInEditor(final int ppOrderBomLineId)
+	private List<HuId> retrieveHuIdsToShowInEditor(final int ppOrderBomLineId)
 	{
 		final I_PP_Order_BOMLine ppOrderBomLine = load(ppOrderBomLineId, I_PP_Order_BOMLine.class);
 
 		final IHUPPOrderBL huppOrderBL = Services.get(IHUPPOrderBL.class);
 		final IHUQueryBuilder huIdsToAvailableToIssueQuery = huppOrderBL.createHUsAvailableToIssueQuery(ppOrderBomLine);
 
-		final List<Integer> availableHUsIDs = huIdsToAvailableToIssueQuery.createQuery().listIds().stream()
+		final List<HuId> availableHUsIDs = huIdsToAvailableToIssueQuery.createQuery()
+				.listIds()
+				.stream()
+				.map(HuId::ofRepoId)
 				.filter(huId -> !SourceHUsService.get().isHuOrAnyParentSourceHu(huId))
 				.filter(huId -> !Services.get(IHUPPOrderQtyDAO.class).isHuIdIssued(huId))
 				.collect(ImmutableList.toImmutableList());

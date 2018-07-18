@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.model.I_M_HU;
@@ -372,7 +373,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		// Create the sticky filter by HUIds from builder's huIds (if any huIds)
 		if (stickyFilter_HUIds_Existing == null && filterOnlyIds != null && !filterOnlyIds.isEmpty())
 		{
-			final DocumentFilter stickyFilter_HUIds_New = HUIdsFilterHelper.createFilter(filterOnlyIds);
+			final DocumentFilter stickyFilter_HUIds_New = HUIdsFilterHelper.createFilter(HuId.ofRepoIds(filterOnlyIds));
 			stickyFilters.add(0, stickyFilter_HUIds_New);
 		}
 
@@ -430,6 +431,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 			final List<Integer> huIds = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
 					.setContext(PlainContextAware.newOutOfTrx())
+					.onlyContextClient(false) // avoid enforcing context AD_Client_ID because it might be that we are not in a user thread (so no context)
 					.setOnlyWithBarcode(barcode)
 					.createQueryBuilder()
 					.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)

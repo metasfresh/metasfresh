@@ -8,8 +8,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -44,8 +46,9 @@ public abstract class PackingHUsViewBasedProcess extends HUEditorProcessTemplate
 
 	protected final List<I_M_HU> retrieveEligibleHUs()
 	{
-		final Set<Integer> huIds = streamEligibleHURows()
-				.map(HUEditorRow::getM_HU_ID)
+		final Set<HuId> huIds = streamEligibleHURows()
+				.map(HUEditorRow::getHuId)
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 		Check.assumeNotEmpty(huIds, "huIds is not empty"); // shall not happen
 

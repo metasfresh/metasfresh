@@ -16,6 +16,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.ICacheResetListener;
 import org.slf4j.Logger;
@@ -27,7 +28,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import lombok.NonNull;
 
 /*
@@ -122,14 +122,17 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 
 	private void resetNow(final CacheInvalidateMultiRequest request)
 	{
-		final DocumentWebsocketPublisher websocketPublisher = documents.getWebsocketPublisher();
-		try (final IAutoCloseable c = websocketPublisher.temporaryCollectOnThisThread())
+		try (final IAutoCloseable c = documents.getWebsocketPublisher().temporaryCollectOnThisThread())
 		{
-			request.getRequests().forEach(this::resetNow);
+			request.getRequests().forEach(this::resetDocumentNow);
 		}
+
+		//
+		final Set<TableRecordReference> rootRecords = request.getRootRecords();
+		viewsRepository.notifyRecordsChanged(rootRecords);
 	}
 
-	private void resetNow(final CacheInvalidateRequest request)
+	private void resetDocumentNow(final CacheInvalidateRequest request)
 	{
 		logger.debug("Got {}", request);
 
@@ -158,14 +161,12 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 			logger.debug("Invalidating the included document: {}", request);
 			final int childRecordId = request.getChildRecordId();
 			documents.invalidateIncludedDocumentsByRecordId(rootTableName, rootRecordId, childTableName, childRecordId);
-			
+
 			// NOTE: as a workaround to solve the problem of https://github.com/metasfresh/metasfresh-webui-api/issues/851,
 			// we are invalidating the whole root document to make sure that in case there were any virtual columns on header,
 			// those get refreshed too.
 			documents.invalidateDocumentByRecordId(rootTableName, rootRecordId);
 		}
-
-		viewsRepository.notifyRecordChanged(rootTableName, rootRecordId);
 	}
 
 	private static final class CacheInvalidateMultiRequestsCollector

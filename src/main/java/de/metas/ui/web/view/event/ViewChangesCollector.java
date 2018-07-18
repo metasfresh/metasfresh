@@ -11,7 +11,9 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -49,10 +51,27 @@ import lombok.NonNull;
  * #L%
  */
 
-public class ViewChangesCollector implements AutoCloseable
+public class ViewChangesCollector implements IAutoCloseable
 {
 	public static final ViewChangesCollector getCurrentOrNull()
 	{
+		//
+		// Try getting thread level collector
+		ViewChangesCollector threadLocalCollector = THREADLOCAL.get();
+		if (threadLocalCollector != null)
+		{
+			if (threadLocalCollector.isClosed())
+			{
+				// shall not happen
+				THREADLOCAL.remove();
+				threadLocalCollector = null;
+			}
+			else
+			{
+				return threadLocalCollector;
+			}
+		}
+
 		//
 		// Try get/create transaction level collector
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -67,14 +86,6 @@ public class ViewChangesCollector implements AutoCloseable
 								.registerHandlingMethod(innerTrx -> collector.close());
 						return collector;
 					});
-		}
-
-		//
-		// Try getting thread level collector
-		final ViewChangesCollector threadLocalCollector = THREADLOCAL.get();
-		if (threadLocalCollector != null)
-		{
-			return threadLocalCollector;
 		}
 
 		//
@@ -94,6 +105,24 @@ public class ViewChangesCollector implements AutoCloseable
 		return new ViewChangesCollector(autoflush);
 	}
 
+	public static IAutoCloseable currentOrNewThreadLocalCollector()
+	{
+		final ViewChangesCollector currentCollector = THREADLOCAL.get();
+		if (currentCollector != null)
+		{
+			return currentCollector::flush;
+		}
+		else
+		{
+			final ViewChangesCollector newCollector = new ViewChangesCollector(false);
+			THREADLOCAL.set(newCollector);
+			return () -> {
+				newCollector.close();
+				THREADLOCAL.remove();
+			};
+		}
+	}
+
 	private static final transient Logger logger = LogManager.getLogger(ViewChangesCollector.class);
 
 	private static final transient ThreadLocal<ViewChangesCollector> THREADLOCAL = new ThreadLocal<>();
@@ -108,6 +137,9 @@ public class ViewChangesCollector implements AutoCloseable
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final Map<ViewId, ViewChanges> viewChangesMap = new LinkedHashMap<>();
 
+	private final String createdStackTrace;
+	private String closedStackTrace;
+
 	private ViewChangesCollector()
 	{
 		this(false); // autoflush=false
@@ -118,6 +150,8 @@ public class ViewChangesCollector implements AutoCloseable
 		Adempiere.autowire(this);
 
 		this.autoflush = autoflush;
+
+		this.createdStackTrace = Util.dumpStackTraceToString(new Exception());
 	}
 
 	@Override
@@ -130,14 +164,23 @@ public class ViewChangesCollector implements AutoCloseable
 			return;
 		}
 
+		closedStackTrace = Util.dumpStackTraceToString(new Exception());
+
 		flush();
+	}
+
+	private boolean isClosed()
+	{
+		return closed.get();
 	}
 
 	private final void assertNotClosed()
 	{
 		if (closed.get())
 		{
-			throw new IllegalStateException("Collector " + this + " was already closed");
+			throw new IllegalStateException("Collector " + this + " was already closed"
+					+ "\n\nCreated stacktrace: " + createdStackTrace
+					+ "\n\nClosed stacktrace: " + closedStackTrace);
 		}
 	}
 
@@ -212,8 +255,7 @@ public class ViewChangesCollector implements AutoCloseable
 		if (parentCollector != null)
 		{
 			logger.trace("Flushing {} to parent collector: {}", this, parentCollector);
-			changesList
-					.forEach(parentCollector::collectFromChanges);
+			changesList.forEach(parentCollector::collectFromChanges);
 		}
 		//
 		// Fallback: flush to websocket

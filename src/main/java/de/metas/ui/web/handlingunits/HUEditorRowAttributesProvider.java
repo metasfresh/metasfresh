@@ -10,6 +10,7 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -74,7 +75,7 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 		return readonly;
 	}
 
-	public DocumentId createAttributeKey(final int huId)
+	public DocumentId createAttributeKey(final HuId huId)
 	{
 		return DocumentId.of(huId);
 	}

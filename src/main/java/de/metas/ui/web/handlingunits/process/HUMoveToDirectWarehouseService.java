@@ -8,6 +8,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.NonNull;
 
@@ -83,30 +85,33 @@ public class HUMoveToDirectWarehouseService
 	{
 		checkPreconditions();
 
-		//
-		// Move the HUs, one by one
-		int countMoved = 0;
-		while (hus.hasNext())
+		try (final IAutoCloseable c = ViewChangesCollector.currentOrNewThreadLocalCollector())
 		{
-			final I_M_HU hu = hus.next();
-			generateMovement(hu);
-			countMoved++;
-		}
-
-		// Stop here if nothing moved
-		if (countMoved <= 0)
-		{
-			if (isFailIfNoHUs())
+			//
+			// Move the HUs, one by one
+			int countMoved = 0;
+			while (hus.hasNext())
 			{
-				throw new AdempiereException("@NoSelection@");
+				final I_M_HU hu = hus.next();
+				generateMovement(hu);
+				countMoved++;
 			}
-			return;
-		}
 
-		// Invalidate given view, if any
-		if (huView != null)
-		{
-			huView.invalidateAll();
+			// Stop here if nothing moved
+			if (countMoved <= 0)
+			{
+				if (isFailIfNoHUs())
+				{
+					throw new AdempiereException("@NoSelection@");
+				}
+				return;
+			}
+
+			// Invalidate given view, if any
+			if (huView != null)
+			{
+				huView.invalidateAll();
+			}
 		}
 	}
 

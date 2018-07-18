@@ -6,8 +6,10 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
@@ -80,7 +82,7 @@ public final class HUEditorRowFilter
 	 *
 	 * Note: this list is never {@code null}, empty means "no restriction".
 	 */
-	private final ImmutableSet<Integer> excludeHUIds;
+	private final ImmutableSet<HuId> excludeHUIds;
 
 	/** User string filter (e.g. what user typed in the lookup field) */
 	private final String userInputFilter;
@@ -91,7 +93,7 @@ public final class HUEditorRowFilter
 			@NonNull @Singular final Set<HUEditorRowId> onlyRowIds,
 			@NonNull @Singular final ImmutableSet<String> onlyHUStatuses,
 			@NonNull @Singular final ImmutableSet<String> excludeHUStatuses,
-			@NonNull @Singular final ImmutableSet<Integer> excludeHUIds,
+			@NonNull @Singular final Set<HuId> excludeHUIds,
 			@Nullable final String userInputFilter)
 	{
 		this.select = select != null ? select : Select.ALL;
@@ -99,15 +101,7 @@ public final class HUEditorRowFilter
 		this.onlyHUStatuses = onlyHUStatuses;
 		this.excludeHUStatuses = excludeHUStatuses;
 		this.userInputFilter = userInputFilter;
-
-		if (excludeHUIds == null || excludeHUIds.isEmpty())
-		{
-			this.excludeHUIds = ImmutableSet.of();
-		}
-		else
-		{
-			this.excludeHUIds = excludeHUIds.stream().filter(huId -> huId > 0).collect(ImmutableSet.toImmutableSet());
-		}
+		this.excludeHUIds = excludeHUIds.stream().filter(Predicates.notNull()).collect(ImmutableSet.toImmutableSet());
 	}
 
 	public HUEditorRowFilter andOnlyRowIds(final DocumentIdsSelection rowIds)

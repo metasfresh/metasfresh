@@ -5,6 +5,8 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 
+import com.google.common.base.Predicates;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
@@ -79,9 +81,8 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 	protected final Stream<HuId> streamSelectedHUIds(@NonNull final HUEditorRowFilter filter)
 	{
 		return streamSelectedRows(filter)
-				.map(HUEditorRow::getM_HU_ID)
-				.filter(huId -> huId > 0)
-				.map(HuId::ofRepoId);
+				.map(HUEditorRow::getHuId)
+				.filter(Predicates.notNull());
 	}
 
 	/**

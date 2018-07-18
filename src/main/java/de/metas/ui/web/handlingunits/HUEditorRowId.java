@@ -10,13 +10,14 @@ import javax.annotation.concurrent.Immutable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
+import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -42,32 +43,30 @@ import lombok.NonNull;
  */
 
 @Immutable
+@EqualsAndHashCode
 public final class HUEditorRowId
 {
-	public static HUEditorRowId ofTopLevelHU(final int topLevelHUId)
+	public static HUEditorRowId ofTopLevelHU(@NonNull final HuId topLevelHUId)
 	{
-		final int storageProductId = -1;
-		final String json = null; // to be computed when needed
-		final DocumentId documentId = null; // to be computed when needed
-
-		return new HUEditorRowId(topLevelHUId,
-				-1, //  topLevelHUId parameter
-				storageProductId,
-				json, documentId);
+		return new HUEditorRowId(
+				topLevelHUId,
+				(ProductId)null, // storageProductId
+				(HuId)null, // topLevelHUId parameter
+				(String)null, // json, to be computed when needed
+				(DocumentId)null  // to be computed when needed
+		);
 	}
 
-	public static HUEditorRowId ofHU(final int huId, final int topLevelHUId)
+	public static HUEditorRowId ofHU(final HuId huId, final HuId topLevelHUId)
 	{
-		final int storageProductId = -1;
+		final ProductId storageProductId = null;
 		final String json = null; // to be computed when needed
 		final DocumentId documentId = null; // to be computed when needed
 		return new HUEditorRowId(huId, storageProductId, topLevelHUId, json, documentId);
 	}
 
-	public static HUEditorRowId ofHUStorage(final int huId, final int topLevelHUId, final int storageProductId)
+	public static HUEditorRowId ofHUStorage(final HuId huId, final HuId topLevelHUId, @NonNull final ProductId storageProductId)
 	{
-		Preconditions.checkArgument(storageProductId > 0);
-
 		final String json = null; // to be computed when needed
 		final DocumentId documentId = null; // to be computed when needed
 		return new HUEditorRowId(huId, storageProductId, topLevelHUId, json, documentId);
@@ -101,20 +100,20 @@ public final class HUEditorRowId
 
 		//
 		// huId and storageProductId
-		final int huId;
-		final int storageProductId;
+		final HuId huId;
+		final ProductId storageProductId;
 		{
 			final String idStrPart = partsIterator.next();
 			final List<String> idParts = ID_SPLITTER.splitToList(idStrPart);
 			if (idParts.size() == 1)
 			{
-				huId = Integer.parseInt(idParts.get(0));
-				storageProductId = -1;
+				huId = HuId.ofRepoId(Integer.parseInt(idParts.get(0)));
+				storageProductId = null;
 			}
 			else if (idParts.size() == 2)
 			{
-				huId = Integer.parseInt(idParts.get(0));
-				storageProductId = Integer.parseInt(idParts.get(1));
+				huId = HuId.ofRepoId(Integer.parseInt(idParts.get(0)));
+				storageProductId = ProductId.ofRepoId(Integer.parseInt(idParts.get(1)));
 			}
 			else
 			{
@@ -124,14 +123,14 @@ public final class HUEditorRowId
 
 		//
 		// Others
-		int topLevelHUId = -1;
+		HuId topLevelHUId = null;
 		while (partsIterator.hasNext())
 		{
 			final String part = partsIterator.next();
 			if (part.startsWith(PREFIX_TopLevelHUId))
 			{
 				final String topLevelHUIdStr = part.substring(PREFIX_TopLevelHUId.length());
-				topLevelHUId = Integer.parseInt(topLevelHUIdStr);
+				topLevelHUId = HuId.ofRepoId(Integer.parseInt(topLevelHUIdStr));
 			}
 			else
 			{
@@ -142,16 +141,16 @@ public final class HUEditorRowId
 		return new HUEditorRowId(huId, storageProductId, topLevelHUId, json, documentId);
 	}
 
-	public static DocumentIdsSelection rowIdsFromTopLevelM_HU_IDs(final Collection<Integer> huIds)
+	public static DocumentIdsSelection rowIdsFromTopLevelHuIds(final Collection<HuId> huIds)
 	{
-		final int topLevelHUId = -1;
+		final HuId topLevelHUId = null;
 		return huIds.stream()
 				.map(huId -> ofHU(huId, topLevelHUId))
 				.map(HUEditorRowId::toDocumentId)
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 	}
 
-	public static Set<Integer> extractHUIdsOnly(final DocumentIdsSelection rowIds)
+	public static Set<HuId> extractHUIdsOnly(final DocumentIdsSelection rowIds)
 	{
 		return rowIds.stream()
 				.map(HUEditorRowId::ofDocumentId)
@@ -169,19 +168,22 @@ public final class HUEditorRowId
 	private static final Joiner PARTS_JOINER = Joiner.on(PARTS_SEPARATOR).skipNulls();
 	private static final Splitter PARTS_SPLITTER = Splitter.on(PARTS_SEPARATOR).omitEmptyStrings();
 
-	private final int huId;
-	private final int storageProductId;
-	private final int topLevelHUId;
+	private final HuId huId;
+	private final ProductId storageProductId;
+	private final HuId topLevelHUId;
 	private transient String _json; // lazy
 	private transient DocumentId _documentId; // lazy
 
-	private HUEditorRowId(final int huId, final int storageProductId, final int topLevelHUId, final String json, final DocumentId documentId)
+	private HUEditorRowId(
+			@NonNull final HuId huId,
+			final ProductId storageProductId,
+			final HuId topLevelHUId,
+			final String json,
+			final DocumentId documentId)
 	{
-		Preconditions.checkArgument(huId > 0, "huId shall be positive");
-
 		this.huId = huId;
-		this.storageProductId = storageProductId > 0 ? storageProductId : -1;
-		this.topLevelHUId = topLevelHUId > 0 && topLevelHUId != huId ? topLevelHUId : -1;
+		this.storageProductId = storageProductId != null ? storageProductId : null;
+		this.topLevelHUId = topLevelHUId != null && !topLevelHUId.equals(huId) ? topLevelHUId : null;
 
 		_json = json;
 		_documentId = documentId;
@@ -192,32 +194,6 @@ public final class HUEditorRowId
 	{
 		return toJson();
 	}
-
-	@Override
-	public int hashCode()
-	{
-		return Objects.hashCode(huId, storageProductId, topLevelHUId);
-	};
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		if (obj instanceof HUEditorRowId)
-		{
-			final HUEditorRowId other = (HUEditorRowId)obj;
-			return huId == other.huId
-					&& storageProductId == other.storageProductId
-					&& topLevelHUId == other.topLevelHUId;
-		}
-		else
-		{
-			return false;
-		}
-	};
 
 	@JsonValue
 	public String toJson()
@@ -230,21 +206,21 @@ public final class HUEditorRowId
 		return json;
 	}
 
-	private static final String toJson(final int huId, final int storageProductId, final int topLevelHUId)
+	private static final String toJson(final HuId huId, final ProductId storageProductId, final HuId topLevelHUId)
 	{
 		// IMPORTANT: top level row shall be perfectly convertible to integers, else, a lot of APIs could fail
 
 		final String idStrPart;
-		if (storageProductId > 0)
+		if (storageProductId != null)
 		{
-			idStrPart = huId + ID_SEPARATOR + storageProductId;
+			idStrPart = huId.getRepoId() + ID_SEPARATOR + storageProductId.getRepoId();
 		}
 		else
 		{
-			idStrPart = String.valueOf(huId);
+			idStrPart = String.valueOf(huId.getRepoId());
 		}
 
-		final String topLevelHUIdPart = topLevelHUId > 0 ? PREFIX_TopLevelHUId + topLevelHUId : null;
+		final String topLevelHUIdPart = topLevelHUId != null ? PREFIX_TopLevelHUId + topLevelHUId.getRepoId() : null;
 		return PARTS_JOINER.join(idStrPart, topLevelHUIdPart);
 	}
 
@@ -260,15 +236,15 @@ public final class HUEditorRowId
 
 	public boolean isTopLevel()
 	{
-		return huId > 0 && topLevelHUId <= 0 && storageProductId <= 0;
+		return huId != null && topLevelHUId == null && storageProductId == null;
 	}
 
 	public boolean isHU()
 	{
-		return storageProductId <= 0;
+		return storageProductId == null;
 	}
 
-	public int getHuId()
+	public HuId getHuId()
 	{
 		return huId;
 	}
@@ -280,17 +256,17 @@ public final class HUEditorRowId
 			return this;
 		}
 
-		final int huId = getTopLevelHUId();
-		final int storageProductId = -1;
-		final int topLevelHUId = -1;
+		final HuId huId = getTopLevelHUId();
+		final ProductId storageProductId = null;
+		final HuId topLevelHUId = null;
 		final String json = null;
 		final DocumentId documentId = null;
 		return new HUEditorRowId(huId, storageProductId, topLevelHUId, json, documentId);
 	}
 
-	public int getTopLevelHUId()
+	public HuId getTopLevelHUId()
 	{
-		if (topLevelHUId > 0)
+		if (topLevelHUId != null)
 		{
 			return topLevelHUId;
 		}
@@ -298,7 +274,7 @@ public final class HUEditorRowId
 		return huId;
 	}
 
-	public int getStorageProductId()
+	public ProductId getStorageProductId()
 	{
 		return storageProductId;
 	}

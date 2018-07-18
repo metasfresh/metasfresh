@@ -1,6 +1,7 @@
 package de.metas.ui.web.picking.husToPick.process;
 
 import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -19,10 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
@@ -68,13 +68,13 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements IProcessPrecondition, IProcessParametersCallout, IProcessDefaultParametersProvider
 {
-
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 	@Autowired
 	private PickingConfigRepository pickingConfigRepo;
 
 	// services
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	private static final String MSG_InvalidProduct = "de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_PickCU.InvalidProduct";
@@ -229,8 +229,8 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 
 	private void pickCUs()
 	{
-		final I_M_HU splitCU = Services.get(ITrxManager.class).call(this :: performPickCU);
-	
+		final I_M_HU splitCU = Services.get(ITrxManager.class).call(this::performPickCU);
+
 		if (isAutoProcess)
 		{
 			autoProcessPicking(splitCU);
@@ -244,9 +244,9 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		final I_C_UOM uom = productBL.getStockingUOM(product);
 		final Date date = SystemTime.asDate();
 
-		final int huIdToSplit = retrieveHUIdToSplit();
+		final HuId huIdToSplit = retrieveHUIdToSplit();
 		final List<I_M_HU> splitHUs = HUSplitBuilderCoreEngine.builder()
-				.huToSplit(load(huIdToSplit, I_M_HU.class))
+				.huToSplit(handlingUnitsDAO.getById(huIdToSplit))
 				.requestProvider(huContext -> AllocationUtils.createAllocationRequestBuilder()
 						.setHUContext(huContext)
 						.setProduct(product)
@@ -262,7 +262,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 				.performSplit();
 
 		final I_M_HU splitCU = ListUtils.singleElement(splitHUs);
-		addHUIdToCurrentPickingSlot(splitCU.getM_HU_ID());
+		addHUIdToCurrentPickingSlot(HuId.ofRepoId(splitCU.getM_HU_ID()));
 
 		return splitCU;
 	}
@@ -274,10 +274,10 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 
 	}
 
-	private int retrieveHUIdToSplit()
+	private HuId retrieveHUIdToSplit()
 	{
 		return retrieveEligibleHUEditorRows()
-				.map(HUEditorRow::getM_HU_ID)
+				.map(HUEditorRow::getHuId)
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Only one HU shall be selected")));
 	}
 

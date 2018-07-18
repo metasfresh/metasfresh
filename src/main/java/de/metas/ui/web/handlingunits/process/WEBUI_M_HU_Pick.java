@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParameter;
@@ -171,7 +172,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 
 	private void pickHU(final HURow row)
 	{
-		final int huId = row.getHuId();
+		final int huId = row.getHuIdAsInt();
 		pickingCandidateService.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
 		// NOTE: we are not moving the HU to shipment schedule's locator.
 
@@ -195,7 +196,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		{
 			final HUEditorRow huRow = HUEditorRow.cast(row);
 			return HURow.builder()
-					.huId(huRow.getM_HU_ID())
+					.huId(huRow.getHuId())
 					.topLevelHU(huRow.isTopLevel())
 					.huStatusActive(huRow.isHUStatusActive())
 					.build();
@@ -215,7 +216,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 				return null;
 			}
 			return HURow.builder()
-					.huId(ppOrderLineRow.getM_HU_ID())
+					.huId(HuId.ofRepoIdOrNull(ppOrderLineRow.getM_HU_ID()))
 					.topLevelHU(ppOrderLineRow.isTopLevelHU())
 					.huStatusActive(ppOrderLineRow.isHUStatusActive())
 					.build();
@@ -231,8 +232,13 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	@Builder
 	private static final class HURow
 	{
-		private final int huId;
+		private final HuId huId;
 		private final boolean topLevelHU;
 		private final boolean huStatusActive;
+
+		public int getHuIdAsInt()
+		{
+			return HuId.toRepoId(huId);
+		}
 	}
 }

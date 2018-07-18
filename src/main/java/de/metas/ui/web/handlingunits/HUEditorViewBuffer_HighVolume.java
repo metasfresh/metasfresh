@@ -22,7 +22,6 @@ import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.lang.RepoIdAwares;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -167,8 +166,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			return false;
 		}
 
-		final List<Integer> asRepoIds = RepoIdAwares.asRepoIds(huIdsToAdd);
-		final DocumentIdsSelection rowIdsToAdd = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(asRepoIds);
+		final DocumentIdsSelection rowIdsToAdd = HUEditorRowId.rowIdsFromTopLevelHuIds(huIdsToAdd);
 		if (rowIdsToAdd.isEmpty())
 		{
 			return false;
@@ -185,18 +183,17 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			return false;
 		}
 
-		final List<Integer> asRepoIds = RepoIdAwares.asRepoIds(huIdsToRemove);
-		final DocumentIdsSelection rowIdsToRemove = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(asRepoIds);
+		final DocumentIdsSelection rowIdsToRemove = HUEditorRowId.rowIdsFromTopLevelHuIds(huIdsToRemove);
 
-		rowIdsToRemove.forEach(rowId -> cache_huRowsById.remove(rowId));
+		cache_huRowsById.removeAll(rowIdsToRemove.toSet());
 
 		return changeSelection(defaultSelection -> huEditorRepo.removeRowIdsFromSelection(defaultSelection, rowIdsToRemove));
 	}
 
 	@Override
-	public boolean containsAnyOfHUIds(final Collection<Integer> huIdsToCheck)
+	public boolean containsAnyOfHUIds(final Collection<HuId> huIdsToCheck)
 	{
-		final DocumentIdsSelection rowIds = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(huIdsToCheck);
+		final DocumentIdsSelection rowIds = HUEditorRowId.rowIdsFromTopLevelHuIds(huIdsToCheck);
 		return huEditorRepo.containsAnyOfRowIds(getDefaultSelection(), rowIds);
 	}
 
@@ -270,16 +267,16 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 				.stream();
 	}
 
-	private PageFetcher<Integer> huIdsPageFetcher(final List<DocumentQueryOrderBy> orderBys)
+	private PageFetcher<HuId> huIdsPageFetcher(final List<DocumentQueryOrderBy> orderBys)
 	{
 		final ViewEvaluationCtx viewEvalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection selection = getSelection(orderBys);
 		return (firstRow, maxRows) -> huEditorRepo.retrieveHUIdsPage(viewEvalCtx, selection, firstRow, maxRows);
 	}
 
-	private Stream<Integer> streamHUIdsByPage(final int firstRow, final int maxRows, final List<DocumentQueryOrderBy> orderBys)
+	private Stream<HuId> streamHUIdsByPage(final int firstRow, final int maxRows, final List<DocumentQueryOrderBy> orderBys)
 	{
-		return IteratorUtils.<Integer> newPagedIterator()
+		return IteratorUtils.<HuId> newPagedIterator()
 				.firstRow(firstRow)
 				.maxRows(maxRows)
 				.pageSize(100) // fetch 100items/chunk
@@ -293,7 +290,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	{
 		final HUEditorRowId huRowId = HUEditorRowId.ofDocumentId(rowId);
 		final HUEditorRowId topLevelRowId = huRowId.toTopLevelRowId();
-		final HuId topLevelHUId = HuId.ofRepoId(topLevelRowId.getTopLevelHUId());
+		final HuId topLevelHUId = topLevelRowId.getTopLevelHUId();
 
 		final HUEditorRow topLevelRow = cache_huRowsById.getOrLoad(topLevelRowId.toDocumentId(), () -> huEditorRepo.retrieveForHUId(topLevelHUId));
 		if (topLevelRowId.equals(huRowId))
@@ -321,7 +318,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			return true;
 		}
 
-		final Set<Integer> huIds = huIdsFilterData.getInitialHUIds();
+		final Set<HuId> huIds = huIdsFilterData.getInitialHUIds();
 		if (huIds == null)
 		{
 			// null means no restrictions, so we might have a lot of HUs

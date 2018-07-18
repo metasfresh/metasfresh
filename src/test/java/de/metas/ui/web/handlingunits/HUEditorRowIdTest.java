@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import de.metas.handlingunits.HuId;
+import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
@@ -33,11 +35,11 @@ public class HUEditorRowIdTest
 	@Test
 	public void test_topLevelHU()
 	{
-		final HUEditorRowId rowId = HUEditorRowId.ofTopLevelHU(12345);
+		final HUEditorRowId rowId = HUEditorRowId.ofTopLevelHU(HuId.ofRepoId(12345));
 		testToFromJson(rowId);
 
-		assertThat(rowId.getHuId()).as("huId").isEqualTo(12345);;
-		assertThat(rowId.getTopLevelHUId()).as("topLevelHUId").isEqualTo(12345);;
+		assertThat(rowId.getHuId().getRepoId()).as("huId").isEqualTo(12345);
+		assertThat(rowId.getTopLevelHUId().getRepoId()).as("topLevelHUId").isEqualTo(12345);
 
 		// IMPORTANT: top level rowIds shall be perfectly convertible to int.
 		assertThat(Integer.parseInt(rowId.toJson())).as("rowId.toJson() as int").isEqualTo(12345);
@@ -48,11 +50,11 @@ public class HUEditorRowIdTest
 	@Test
 	public void test_includedHU()
 	{
-		final HUEditorRowId rowId = HUEditorRowId.ofHU(2, 1);
+		final HUEditorRowId rowId = HUEditorRowId.ofHU(HuId.ofRepoId(2), HuId.ofRepoId(1));
 		testToFromJson(rowId);
 
-		assertThat(rowId.getHuId()).as("huId").isEqualTo(2);
-		assertThat(rowId.getTopLevelHUId()).as("topLevelHUId").isEqualTo(1);
+		assertThat(rowId.getHuId().getRepoId()).as("huId").isEqualTo(2);
+		assertThat(rowId.getTopLevelHUId().getRepoId()).as("topLevelHUId").isEqualTo(1);
 
 		assertThat(rowId.toDocumentId().toString()).isEqualTo("2_T1");
 	}
@@ -60,16 +62,15 @@ public class HUEditorRowIdTest
 	@Test
 	public void test_productStorage()
 	{
-		final HUEditorRowId rowId = HUEditorRowId.ofHUStorage(2, 1, 123);
+		final HUEditorRowId rowId = HUEditorRowId.ofHUStorage(HuId.ofRepoId(2), HuId.ofRepoId(1), ProductId.ofRepoId(123));
 		testToFromJson(rowId);
 
-		assertThat(rowId.getHuId()).as("huId").isEqualTo(2);
-		assertThat(rowId.getTopLevelHUId()).as("topLevelHUId").isEqualTo(1);
-		assertThat(rowId.getStorageProductId()).as("storageProductId").isEqualTo(123);
+		assertThat(rowId.getHuId().getRepoId()).as("huId").isEqualTo(2);
+		assertThat(rowId.getTopLevelHUId().getRepoId()).as("topLevelHUId").isEqualTo(1);
+		assertThat(rowId.getStorageProductId().getRepoId()).as("storageProductId").isEqualTo(123);
 
 		assertThat(rowId.toDocumentId().toString()).isEqualTo("2-123_T1");
 	}
-
 
 	private static void testToFromJson(final HUEditorRowId rowId)
 	{

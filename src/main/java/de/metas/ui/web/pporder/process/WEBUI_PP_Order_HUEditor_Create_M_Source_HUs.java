@@ -83,9 +83,9 @@ public class WEBUI_PP_Order_HUEditor_Create_M_Source_HUs
 	{
 		Check.assume(row.isTopLevel(), "Only top level rows are allowed"); // shall not happen
 
-		final int topLevelHUId = row.getM_HU_ID();
+		final HuId topLevelHUId = row.getHuId();
 		sourceHuService.addSourceHuMarker(topLevelHUId);
-		topLevelHUIdsProcessed.add(HuId.ofRepoId(topLevelHUId));
+		topLevelHUIdsProcessed.add(topLevelHUId);
 	}
 
 	@Override

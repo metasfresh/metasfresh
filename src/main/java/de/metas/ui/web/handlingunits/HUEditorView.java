@@ -393,9 +393,10 @@ public class HUEditorView implements IView
 		// find the top level records from this view which contain our HUs
 		// invalidate those top levels only
 
-		final Set<Integer> huIdsToCheck = recordRefs.stream()
+		final Set<HuId> huIdsToCheck = recordRefs.stream()
 				.filter(recordRef -> I_M_HU.Table_Name.equals(recordRef.getTableName()))
 				.map(recordRef -> recordRef.getRecord_ID())
+				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 		if (huIdsToCheck.isEmpty())
 		{
@@ -441,10 +442,11 @@ public class HUEditorView implements IView
 	@Override
 	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection rowIds, final Class<T> modelClass)
 	{
-		final Set<Integer> huIds = streamByIds(rowIds)
+		final Set<HuId> huIds = streamByIds(rowIds)
 				.filter(HUEditorRow::isPureHU)
-				.map(HUEditorRow::getM_HU_ID)
-				.collect(GuavaCollectors.toImmutableSet());
+				.map(HUEditorRow::getHuId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
 		if (huIds.isEmpty())
 		{
 			return ImmutableList.of();
