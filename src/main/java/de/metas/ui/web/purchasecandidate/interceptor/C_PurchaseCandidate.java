@@ -1,4 +1,4 @@
-package de.metas.purchasecandidate.interceptor;
+package de.metas.ui.web.purchasecandidate.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -34,7 +34,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_PurchaseCandidate.class)
-@Component("de.metas.purchasecandidate.interceptor.C_PurchaseCandidate")
+@Component("de.metas.ui.web.purchasecandidate.interceptor.C_PurchaseCandidate")
 public class C_PurchaseCandidate
 {
 	private final PurchaseCandidateReminderScheduler scheduler;

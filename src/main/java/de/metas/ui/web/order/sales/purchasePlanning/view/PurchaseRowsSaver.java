@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.adempiere.util.Services;
 
@@ -72,11 +71,15 @@ class PurchaseRowsSaver
 		final Map<PurchaseCandidateId, PurchaseCandidate> existingPurchaseCandidatesById = getExistingPurchaseCandidatesIndexedById(demandIds);
 
 		//
-		// Create/Update purchase candidates
-		final List<PurchaseCandidate> purchaseCandidatesToSave = streamPurchaseCandidatesGroups(groupingRows)
-				.map(candidatesGroup -> createOrUpdatePurchaseCandidate(candidatesGroup, existingPurchaseCandidatesById))
-				.flatMap(List::stream)
-				.collect(ImmutableList.toImmutableList());
+		// Create/Update purchase candidates (this used to be stream-based, but it was too hard to debug)
+		final List<PurchaseCandidate> purchaseCandidatesToSave = new ArrayList<>();
+		final List<PurchaseCandidatesGroup> purchaseCandidatesGroups = extractPurchaseCandidatesGroups(groupingRows);
+		for (final PurchaseCandidatesGroup purchaseCandidatesGroup : purchaseCandidatesGroups)
+		{
+			final List<PurchaseCandidate> purchaseCandidates = createOrUpdatePurchaseCandidate(purchaseCandidatesGroup, existingPurchaseCandidatesById);
+			purchaseCandidatesToSave.addAll(purchaseCandidates);
+		}
+
 		purchaseCandidatesRepo.saveAll(purchaseCandidatesToSave);
 
 		//
@@ -99,9 +102,12 @@ class PurchaseRowsSaver
 		return purchaseCandidatesToSave;
 	}
 
-	private static Stream<PurchaseCandidatesGroup> streamPurchaseCandidatesGroups(final List<PurchaseRow> groupingRows)
+	private static List<PurchaseCandidatesGroup> extractPurchaseCandidatesGroups(final List<PurchaseRow> groupingRows)
 	{
-		return groupingRows.stream().flatMap(PurchaseRow::streamPurchaseCandidatesGroup);
+		return groupingRows
+				.stream()
+				.flatMap(PurchaseRow::streamPurchaseCandidatesGroup)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private ImmutableMap<PurchaseCandidateId, PurchaseCandidate> getExistingPurchaseCandidatesIndexedById(final Set<DemandGroupReference> demandIds)
@@ -209,7 +215,7 @@ class PurchaseRowsSaver
 			final DemandGroupReference groupReference;
 			if (candidatesGroup.getDemandGroupReferences().isEmpty())
 			{
-				groupReference = DemandGroupReference.createEmpty();
+				groupReference = DemandGroupReference.EMPTY;
 			}
 			else
 			{
@@ -236,6 +242,8 @@ class PurchaseRowsSaver
 					.prepared(true)
 					//
 					.aggregatePOs(candidatesGroup.isAggregatePOs())
+					//
+					.profitInfoOrNull(profitInfo)
 					//
 					.build();
 

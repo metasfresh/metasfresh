@@ -166,7 +166,7 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 		}
 		//
 		// If the sales order was already completed, enqueue the purchase candidates
-		if (!isSalesOrderCompleted(purchaseCandidates))
+		if (isSalesOrderCompleted(purchaseCandidates))
 		{
 			final Set<PurchaseCandidateId> purchaseCandidateIds = purchaseCandidates.stream()
 					.filter(purchaseCandidate -> !purchaseCandidate.isProcessedOrLocked())

@@ -282,7 +282,7 @@ public class PurchaseRowsLoaderTest
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currencyId);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(20))
 				.purchaseDatePromised(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
