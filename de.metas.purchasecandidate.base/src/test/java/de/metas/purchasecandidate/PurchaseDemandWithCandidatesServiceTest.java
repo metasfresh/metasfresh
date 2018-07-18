@@ -257,8 +257,6 @@ public class PurchaseDemandWithCandidatesServiceTest
 	@Test
 	public void createMissingPurchaseCandidatesGroups()
 	{
-		//POJOLookupMap.get().delete(purchaseCandidateRecord);
-
 		// invoke the method under test
 		final ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> //
 		result = purchaseDemandWithCandidatesService.createMissingPurchaseCandidatesGroups(ImmutableList.of(purchaseDemand), ImmutableSet.of());
@@ -310,6 +308,12 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		final List<PurchaseCandidatesGroup> purchaseCandidatesGroups = purchaseDemandWithCandidates.getPurchaseCandidatesGroups();
 		assertThat(purchaseCandidatesGroups).isNotNull().hasSize(2); // one group for the "1" we already ordered, one of the 9 we still need to order
+
+		// the new group needs to inherit the older group's reference
+		// TODO
+		// assertThat(purchaseCandidatesGroups.get(0).getDemandGroupReferences()).hasSize(1);
+		// assertThat(purchaseCandidatesGroups.get(1).getDemandGroupReferences()).hasSize(1);
+		// assertThat(purchaseCandidatesGroups.get(0).getDemandGroupReferences().get(0)).isEqualTo(purchaseCandidatesGroups.get(1).getDemandGroupReferences().get(0));
 
 		assertThat(purchaseCandidatesGroups)
 				.filteredOn(g -> g.isReadonly())

@@ -49,7 +49,6 @@ import lombok.NonNull;
 @Component("de.metas.purchasecandidate.interceptor.C_PurchaseCandidate")
 public class C_PurchaseCandidate
 {
-
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 
 	public C_PurchaseCandidate(@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
@@ -60,24 +59,24 @@ public class C_PurchaseCandidate
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
 			ifColumnsChanged = I_C_PurchaseCandidate.COLUMNNAME_ProfitPurchasePriceActual)
-	public void updateSalesOrderLineProfit(I_C_PurchaseCandidate purchaseCandidateRecord)
+	public void updateSalesOrderLineProfit(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
 		final PurchaseCandidate purchaseCandidate = purchaseCandidateRepository.getById(PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID()));
 
-		final OrderAndLineId orderAndLineId = purchaseCandidate.getSalesOrderAndLineIdOrNull();
-		if (orderAndLineId == null)
+		final OrderAndLineId salesOrderAndLineId = purchaseCandidate.getSalesOrderAndLineIdOrNull();
+		if (salesOrderAndLineId == null)
 		{
 			return; // nothing to update
 		}
 
-		final I_C_OrderLine orderLineRecord = load(orderAndLineId.getOrderLineRepoId(), I_C_OrderLine.class);
+		final I_C_OrderLine salesOrderLineRecord = load(salesOrderAndLineId.getOrderLineRepoId(), I_C_OrderLine.class);
 
 		final BigDecimal value = Optional.ofNullable(purchaseCandidate.getProfitInfoOrNull())
 				.flatMap(PurchaseProfitInfo::getProfitPercent)
 				.map(percent -> percent.roundToHalf(RoundingMode.HALF_UP))
 				.map(Percent::getValueAsBigDecimal)
 				.orElse(ZERO);
-		orderLineRecord.setProfitPercent(value);
-		saveRecord(orderLineRecord);
+		salesOrderLineRecord.setProfitPercent(value);
+		saveRecord(salesOrderLineRecord);
 	}
 }

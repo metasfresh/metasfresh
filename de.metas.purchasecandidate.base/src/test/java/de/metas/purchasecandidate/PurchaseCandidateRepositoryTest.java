@@ -181,7 +181,7 @@ public class PurchaseCandidateRepositoryTest
 		purchaseCandidateRecord.setC_Currency(currencyRecord);
 		purchaseCandidateRecord.setProfitPurchasePriceActual(ONE);
 		purchaseCandidateRecord.setProfitSalesPriceActual(TEN);
-		purchaseCandidateRecord.setPriceActual(TWO);
+		purchaseCandidateRecord.setPurchasePriceActual(TWO);
 		saveRecord(purchaseCandidateRecord);
 
 		final PurchaseCandidateId id = PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID());

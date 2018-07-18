@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2026135105L;
+	private static final long serialVersionUID = -1467289912L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -399,28 +399,6 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Einzelpreis.
-		@param PriceActual 
-		Effektiver Preis
-	  */
-	@Override
-	public void setPriceActual (java.math.BigDecimal PriceActual)
-	{
-		set_Value (COLUMNNAME_PriceActual, PriceActual);
-	}
-
-	/** Get Einzelpreis.
-		@return Effektiver Preis
-	  */
-	@Override
-	public java.math.BigDecimal getPriceActual () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
@@ -537,6 +515,28 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public java.math.BigDecimal getPurchasedQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PurchasedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set EK-Preis.
+		@param PurchasePriceActual 
+		Einkaufspreis pro Einheit, nach Abzug des Rabattes.
+	  */
+	@Override
+	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual)
+	{
+		set_Value (COLUMNNAME_PurchasePriceActual, PurchasePriceActual);
+	}
+
+	/** Get EK-Preis.
+		@return Einkaufspreis pro Einheit, nach Abzug des Rabattes.
+	  */
+	@Override
+	public java.math.BigDecimal getPurchasePriceActual () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PurchasePriceActual);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

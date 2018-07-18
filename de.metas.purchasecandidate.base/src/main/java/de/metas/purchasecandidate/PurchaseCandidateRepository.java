@@ -2,6 +2,7 @@ package de.metas.purchasecandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -18,7 +19,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
@@ -284,7 +284,7 @@ public class PurchaseCandidateRepository
 	/**
 	 * Note to dev: keep in sync with {@link #toPurchaseCandidate(I_C_PurchaseCandidate)}
 	 */
-	private final I_C_PurchaseCandidate createOrUpdateRecord(
+	private I_C_PurchaseCandidate createOrUpdateRecord(
 			final PurchaseCandidate purchaseCandidate,
 			final I_C_PurchaseCandidate existingRecord)
 	{
@@ -340,7 +340,7 @@ public class PurchaseCandidateRepository
 		record.setIsPrepared(purchaseCandidate.isPrepared());
 		record.setProcessed(purchaseCandidate.isProcessed());
 
-		InterfaceWrapperHelper.save(record);
+		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
 
 		return record;
@@ -454,7 +454,7 @@ public class PurchaseCandidateRepository
 		return PurchaseProfitInfo.builder()
 				.profitSalesPriceActual(Money.of(purchaseCandidateRecord.getProfitSalesPriceActual(), currencyId))
 				.profitPurchasePriceActual(Money.of(purchaseCandidateRecord.getProfitPurchasePriceActual(), currencyId))
-				.purchasePriceActual(Money.of(purchaseCandidateRecord.getPriceActual(), currencyId))
+				.purchasePriceActual(Money.of(purchaseCandidateRecord.getPurchasePriceActual(), currencyId))
 				.build();
 	}
 
@@ -466,14 +466,14 @@ public class PurchaseCandidateRepository
 		{
 			record.setProfitSalesPriceActual(profitInfo.getProfitSalesPriceActualAsBigDecimalOr(null));
 			record.setProfitPurchasePriceActual(profitInfo.getProfitPurchasePriceActualAsBigDecimalOr(null));
-			record.setPriceActual(profitInfo.getPurchasePriceActualAsBigDecimalOr(null));
+			record.setPurchasePriceActual(profitInfo.getPurchasePriceActualAsBigDecimalOr(null));
 			record.setC_Currency_ID(profitInfo.getCommonCurrencyRepoIdOr(-1));
 		}
 		else
 		{
 			record.setProfitSalesPriceActual(null);
 			record.setProfitPurchasePriceActual(null);
-			record.setPriceActual(null);
+			record.setPurchasePriceActual(null);
 			record.setC_Currency_ID(-1);
 		}
 	}

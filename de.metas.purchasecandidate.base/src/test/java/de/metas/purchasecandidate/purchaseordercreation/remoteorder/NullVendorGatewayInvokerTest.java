@@ -64,7 +64,7 @@ public class NullVendorGatewayInvokerTest
 		final I_C_UOM EACH = createUOM("Ea");
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(10))
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.purchaseDatePromised(SystemTime.asLocalDateTime())

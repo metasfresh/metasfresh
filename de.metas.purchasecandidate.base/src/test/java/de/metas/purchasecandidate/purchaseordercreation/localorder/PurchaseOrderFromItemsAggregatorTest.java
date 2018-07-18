@@ -126,7 +126,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(10))
 				.purchaseDatePromised(SystemTime.asLocalDateTime())
 				.vendorId(vendorProductInfo.getVendorId())

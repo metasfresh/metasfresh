@@ -421,31 +421,6 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
 
 	/**
-	 * Set Einzelpreis.
-	 * Effektiver Preis
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPriceActual (java.math.BigDecimal PriceActual);
-
-	/**
-	 * Get Einzelpreis.
-	 * Effektiver Preis
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getPriceActual();
-
-    /** Column definition for PriceActual */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceActual = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PriceActual", null);
-    /** Column name PriceActual */
-    public static final String COLUMNNAME_PriceActual = "PriceActual";
-
-	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
@@ -474,7 +449,7 @@ public interface I_C_PurchaseCandidate
 	 * Set EK Ertrag netto.
 	 * Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -484,7 +459,7 @@ public interface I_C_PurchaseCandidate
 	 * Get EK Ertrag netto.
 	 * Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -499,7 +474,7 @@ public interface I_C_PurchaseCandidate
 	 * Set VK Ertrag netto.
 	 * Effektiver Verkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -509,7 +484,7 @@ public interface I_C_PurchaseCandidate
 	 * Get VK Ertrag netto.
 	 * Effektiver Verkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -588,6 +563,31 @@ public interface I_C_PurchaseCandidate
     public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchasedQty = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchasedQty", null);
     /** Column name PurchasedQty */
     public static final String COLUMNNAME_PurchasedQty = "PurchasedQty";
+
+	/**
+	 * Set EK-Preis.
+	 * Einkaufspreis pro Einheit, nach Abzug des Rabattes.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual);
+
+	/**
+	 * Get EK-Preis.
+	 * Einkaufspreis pro Einheit, nach Abzug des Rabattes.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPurchasePriceActual();
+
+    /** Column definition for PurchasePriceActual */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchasePriceActual = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchasePriceActual", null);
+    /** Column name PurchasePriceActual */
+    public static final String COLUMNNAME_PurchasePriceActual = "PurchasePriceActual";
 
 	/**
 	 * Set Bestellmenge.

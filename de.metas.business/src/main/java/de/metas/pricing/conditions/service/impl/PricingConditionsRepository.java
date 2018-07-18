@@ -52,6 +52,7 @@ import org.compiere.model.X_M_DiscountSchemaBreak;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -61,7 +62,9 @@ import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.lang.Percent;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -83,6 +86,9 @@ import lombok.NonNull;
 
 public class PricingConditionsRepository implements IPricingConditionsRepository
 {
+
+	private static final Logger logger = LogManager.getLogger(PricingConditionsRepository.class);
+
 	private final CCache<PricingConditionsId, PricingConditions> //
 	pricingConditionsById = CCache.<PricingConditionsId, PricingConditions> newCache(I_M_DiscountSchema.Table_Name, 10, CCache.EXPIREMINUTES_Never)
 			.addResetForTableName(I_M_DiscountSchemaBreak.Table_Name);
@@ -221,7 +227,18 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 		else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
 		{
-			final CurrencyId currencyId = CurrencyId.ofRepoId(discountSchemaBreakRecord.getC_Currency_ID());
+			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(discountSchemaBreakRecord.getC_Currency_ID());
+			if (currencyId == null)
+			{
+				throw new AdempiereException(TranslatableStringBuilder
+						.newInstance()
+						.insertFirstADMessage("discountSchemaBreakRecord with M_DiscountSchemaBreak_ID={0} and M_DiscountSchema_ID={1} has PriceBase=F(ixed), but no C_Currency_ID!",
+								discountSchemaBreakRecord.getM_DiscountSchemaBreak_ID(), discountSchemaBreakRecord.getM_DiscountSchema_ID())
+						.build());
+				// logger.warn("discountSchemaBreakRecord with M_DiscountSchemaBreak_ID={} and M_DiscountSchema_ID={} has PriceBase=F(ixed), but no C_Currency_ID! Returning PriceOverride.none()",
+				// discountSchemaBreakRecord.getM_DiscountSchemaBreak_ID(), discountSchemaBreakRecord.getM_DiscountSchema_ID());
+				// return PriceOverride.none();
+			}
 			final Money fixedPrice = Money.of(discountSchemaBreakRecord.getPriceStd(), currencyId);
 
 			return PriceOverride.fixedPrice(fixedPrice);

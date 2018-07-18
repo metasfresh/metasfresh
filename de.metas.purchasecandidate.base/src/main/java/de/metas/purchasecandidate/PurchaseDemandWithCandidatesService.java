@@ -87,14 +87,10 @@ public class PurchaseDemandWithCandidatesService
 
 	public List<PurchaseDemandWithCandidates> getOrCreatePurchaseCandidatesGroups(@NonNull final List<PurchaseDemand> demands)
 	{
-		final Set<PurchaseDemand> demandsToLoad = demands
-				.stream()
-				.collect(ImmutableSet.toImmutableSet());
-
 		//
 		// Get pre-existing purchase candidates to the result
 		final ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> //
-		existingCandidatesGroups = getExistingPurchaseCandidatesGroups(demandsToLoad);
+		existingCandidatesGroups = getExistingPurchaseCandidatesGroups(demands);
 
 		//
 		// create and add new purchase candidates
@@ -330,7 +326,7 @@ public class PurchaseDemandWithCandidatesService
 		// Assemble the PurchaseCandidate
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.salesOrderAndLineIdOrNull(purchaseDemand.getSalesOrderAndLineIdOrNull())
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				//
 				.purchaseDatePromised(purchaseDatePromised)
 				.reminderTime(reminderTime)
