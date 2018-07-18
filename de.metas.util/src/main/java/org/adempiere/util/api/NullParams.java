@@ -13,15 +13,14 @@ package org.adempiere.util.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -40,41 +39,46 @@ import java.util.Collections;
 
 	private NullParams()
 	{
-		super();
 	}
 
 	@Override
-	public boolean hasParameter(String parameterName)
+	public boolean hasParameter(final String parameterName)
 	{
 		return false;
 	}
 
 	@Override
-	public String getParameterAsString(String parameterName)
+	public Object getParameterAsObject(final String parameterName)
 	{
 		return null;
 	}
 
 	@Override
-	public int getParameterAsInt(String parameterName)
+	public String getParameterAsString(final String parameterName)
+	{
+		return null;
+	}
+
+	@Override
+	public int getParameterAsInt(final String parameterName)
 	{
 		return 0;
 	}
 
 	@Override
-	public boolean getParameterAsBool(String parameterName)
+	public boolean getParameterAsBool(final String parameterName)
 	{
 		return false;
 	}
 
 	@Override
-	public Timestamp getParameterAsTimestamp(String parameterName)
+	public Timestamp getParameterAsTimestamp(final String parameterName)
 	{
 		return null;
 	}
 
 	@Override
-	public BigDecimal getParameterAsBigDecimal(String paraCheckNetamttoinvoice)
+	public BigDecimal getParameterAsBigDecimal(final String paraCheckNetamttoinvoice)
 	{
 		return null;
 	}

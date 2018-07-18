@@ -11,6 +11,13 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.67 (2018-30)
 ## Features
+* metasfresh
+  * [#4336](https://github.com/metasfresh/metasfresh/issues/4336) WebUI: add email fields to C_Doc_OutBound
+    * New Fields and Filter criteria in Documentoutbound window in WebUI.
+  * [#4292](https://github.com/metasfresh/metasfresh/issues/4292) Make a Webui-Window for HU Reservation
+    * New Window for Handling Unit Reservation in WebUI.
+
+* metasfresh-webui-frontend
   * [#1859](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1859) Inline rendering filter parameters
     * New Feature that allows inline rendering of Filter elements. This Feeature is used initially in the Fulltext Search Filter in Businesspartner Window.
 
@@ -28,6 +35,8 @@ Here come the actual release notes:
     * Improvement of the shortcut [alt]+Enter in different modal views.
   * [#1876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1876) Action confirmation without tab does not use the set Parms
     * Fixes the usage of keyboard in process parm windows. Now the parms are also taken when using alt+enter without previous tab usage.
+  * [#1880](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1880) Cannot complete documents
+    * Fixes the Docactions in Documents.
 
 
 # metasfresh 5.66 (2018-29)
