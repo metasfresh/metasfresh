@@ -145,8 +145,8 @@ node('agent && linux')
 				// sh "mvn --debug --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.8.1:merge"
 
 				// create (among others) the jacoco.xml file to send to codacy, see https://www.eclemma.org/jacoco/trunk/doc/report-mojo.html
-				// the file ./jacoco-aggregate-report/jacoco.xml' was set in metasfresh-parent's pom.xml, see "jacoco-prepare-agent"
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DoutputDirectory=./jacoco-aggregate-report org.jacoco:jacoco-maven-plugin:0.8.1:report"
+				// the file input/dataFile './jacoco.exec' was set in metasfresh-parent's pom.xml, see "jacoco-prepare-agent"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DdataFile=./jacoco.exec -DoutputDirectory=./jacoco-aggregate-report org.jacoco:jacoco-maven-plugin:0.8.1:report"
         uploadCoverageResultsForCodacy('./jacoco-aggregate-report', 'jacoco.xml')
 
 				// TODO: configure it to only use whe we created with maven, and not collect everything again
