@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
@@ -92,7 +93,7 @@ public final class HUEditorRowFilter
 			@NonNull @Singular final Set<HUEditorRowId> onlyRowIds,
 			@NonNull @Singular final ImmutableSet<String> onlyHUStatuses,
 			@NonNull @Singular final ImmutableSet<String> excludeHUStatuses,
-			@NonNull @Singular final ImmutableSet<HuId> excludeHUIds,
+			@NonNull @Singular final Set<HuId> excludeHUIds,
 			@Nullable final String userInputFilter)
 	{
 		this.select = select != null ? select : Select.ALL;
@@ -100,7 +101,7 @@ public final class HUEditorRowFilter
 		this.onlyHUStatuses = onlyHUStatuses;
 		this.excludeHUStatuses = excludeHUStatuses;
 		this.userInputFilter = userInputFilter;
-		this.excludeHUIds = excludeHUIds;
+		this.excludeHUIds = excludeHUIds.stream().filter(Predicates.notNull()).collect(ImmutableSet.toImmutableSet());
 	}
 
 	public HUEditorRowFilter andOnlyRowIds(final DocumentIdsSelection rowIds)
