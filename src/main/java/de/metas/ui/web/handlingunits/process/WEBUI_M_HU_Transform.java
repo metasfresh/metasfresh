@@ -218,7 +218,6 @@ public class WEBUI_M_HU_Transform
 	@RunOutOfTrx
 	protected final String doIt() throws Exception
 	{
-		System.out.println(p_M_HU_PI_Item);
 		final WebuiHUTransformParameters parameters = WebuiHUTransformParameters.builder()
 				.actionType(p_Action == null ? null : ActionType.valueOf(p_Action))
 				.huPIItemProduct(p_M_HU_PI_Item_Product)
