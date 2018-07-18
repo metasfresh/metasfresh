@@ -682,21 +682,16 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 									<goal>prepare-agent</goal>
 								</goals>
 								<configuration>
-									<!-- create one aggregated jacoco.exec file for all possible modules -->
-									<!-- thx to https://groups.google.com/forum/#!topic/jacoco/E_YQtRRNNcs -->
-									<!-- thx to https://stackoverflow.com/questions/3084629/finding-the-root-directory-of-a-multi-module-maven-reactor-project -->
+									<!-- Create one aggregated jacoco.exec file for all possible modules.
+									     Thx to https://groups.google.com/forum/#!topic/jacoco/E_YQtRRNNcs
+									     Thx to https://stackoverflow.com/questions/3084629/finding-the-root-directory-of-a-multi-module-maven-reactor-project 
+										 
+										 Note: I tried ${maven.multiModuleProjectDirectory} instead of the jenkins WORKSPACE variable,
+										 but it gave me a different destfile for each module (maven 3.5.2)-->
 									<append>true</append>
-									<destfile>${maven.multiModuleProjectDirectory}/jacoco.exec</destfile>
+									<destfile>${env.WORKSPACE}/jacoco.exec</destfile>
 								</configuration>
 							</execution>
-							<!--
-							<execution>
-								<id>jacoco-report</id>
-								<goals>
-									<goal>report</goal>
-								</goals>
-							</execution>
-							-->
 						</executions>
 					</plugin>
 				</plugins>
