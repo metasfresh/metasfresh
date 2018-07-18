@@ -167,7 +167,7 @@ class RawWidget extends Component {
     // it's a widget for actions (think ActionButton)
     const isValue =
       widgetData[0].value !== undefined ||
-      (widgetData[0].action && widgetData[0].action.value !== undefined);
+      (widgetData[0].status && widgetData[0].status.value !== undefined);
 
     return (
       (isValue &&
