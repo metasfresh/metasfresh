@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.collections.ListUtils;
 
 import com.google.common.base.Predicates;
@@ -47,14 +48,15 @@ import lombok.Value;
 @Value
 public class Money
 {
-	public static final Money of(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
-	{
-		return new Money(value, currencyId);
-	}
 
 	public static final Money of(final int value, @NonNull final CurrencyId currencyId)
 	{
 		return of(BigDecimal.valueOf(value), currencyId);
+	}
+
+	public static final Money of(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
+	{
+		return new Money(value, currencyId);
 	}
 
 	public static final Money zero(@NonNull final CurrencyId currencyId)
@@ -70,7 +72,7 @@ public class Money
 			@NonNull final BigDecimal value,
 			@NonNull final CurrencyId currencyId)
 	{
-		this.value = value;
+		this.value = NumberUtils.stripTrailingDecimalZeros(value); // stripping trailing zeros to make sure that 4 EUR equal 4.00 EUR
 		this.currencyId = currencyId;
 	}
 

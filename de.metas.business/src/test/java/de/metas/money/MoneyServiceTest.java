@@ -1,10 +1,11 @@
 package de.metas.money;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Currency;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,63 +35,65 @@ import de.metas.lang.Percent;
 
 public class MoneyServiceTest
 {
-	private static final AtomicInteger NEXT_CURRENCY_ID = new AtomicInteger(1);
-
-	private static final Currency EUR = createCurrency("EUR");
-
-	private static final Money SEVENTY_EURO = Money.of(70, EUR.getId());
-
-	private static final Money ZERO_EURO = Money.of(0, EUR.getId());
-
-	private static final Money ONEHUNDRET_EURO = Money.of(100, EUR.getId());
-
-	private static final Money TWOHUNDRED_EURO = Money.of(new BigDecimal("200.00"), EUR.getId());
-
 	private MoneyService moneyService;
+
+	private Currency currency;
+
+	private Money zeroEuro;
+
+	private Money seventyEuro;
+
+	private Money oneHundretEuro;
+
+	private Money twoHundredEuro;
 
 	@Before
 	public void init()
 	{
-		moneyService = new MoneyService(new CurrencyRepository());
-	}
+		AdempiereTestHelper.get().init();
 
-	private static Currency createCurrency(final String threeLetterCode)
-	{
-		return Currency
-				.builder()
-				.threeLetterCode(threeLetterCode)
-				.precision(2)
-				.id(CurrencyId.ofRepoId(NEXT_CURRENCY_ID.getAndIncrement()))
-				.build();
+		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		moneyService = new MoneyService(currencyRepository);
+
+		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
+		saveRecord(currencyRecord);
+
+		final CurrencyId currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+		currency = currencyRepository.getById(currencyId);
+
+		zeroEuro = Money.of(0, currencyId);
+		seventyEuro = Money.of(70, currencyId);
+		oneHundretEuro = Money.of(100, currencyId);
+		twoHundredEuro = Money.of(200, currencyId);
 	}
 
 	@Test
 	public void percentage()
 	{
-		final Money result = moneyService.percentage(Percent.of(80), TWOHUNDRED_EURO);
+		final Money result = moneyService.percentage(Percent.of(80), twoHundredEuro);
 
-		assertThat(result.getCurrencyId()).isEqualTo(EUR.getId());
+		assertThat(result.getCurrencyId()).isEqualTo(currency.getId());
 		assertThat(result.getValue()).isEqualByComparingTo("160");
 	}
 
 	@Test
 	public void percentage_zero()
 	{
-		final Money result = moneyService.percentage(Percent.of(0), TWOHUNDRED_EURO);
+		final Money result = moneyService.percentage(Percent.of(0), twoHundredEuro);
 
-		assertThat(result.getCurrencyId()).isEqualTo(EUR);
-		assertThat(result).isEqualTo(ZERO_EURO);
+		assertThat(result.getCurrencyId()).isEqualTo(currency.getId());
+		assertThat(result).isEqualTo(zeroEuro);
 		assertThat(result.isZero()).isTrue();
 	}
 
 	@Test
-	public void testSubtactPercentage()
+	public void subtractPercent()
 	{
-		assertThat(moneyService.subtractPercent(Percent.of(0), ONEHUNDRET_EURO)).isSameAs(ONEHUNDRET_EURO);
+		assertThat(moneyService.subtractPercent(Percent.of(0), oneHundretEuro)).isSameAs(oneHundretEuro);
 
-		assertThat(moneyService.subtractPercent(Percent.of(30), ONEHUNDRET_EURO)).isSameAs(SEVENTY_EURO);
+		assertThat(moneyService.subtractPercent(Percent.of(30), oneHundretEuro)).isEqualTo(seventyEuro);
 
-		assertThat(moneyService.subtractPercent(Percent.of(55), ZERO_EURO)).isSameAs(ZERO_EURO);
+		assertThat(moneyService.subtractPercent(Percent.of(55), zeroEuro)).isSameAs(zeroEuro);
 
 	}
 }

@@ -3,11 +3,13 @@ package de.metas.payment.grossprofit;
 import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,12 +52,16 @@ public class PaymentTermGrossProfitComponentTest
 	{
 		AdempiereTestHelper.get().init();
 
-		currencyId = CurrencyId.ofRepoId(10);
+		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
+		currencyRecord.setStdPrecision(2); // the precision is crucial for the rounding, when we subtract the contract's discount
+		saveRecord(currencyRecord);
+		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+
 		moneyService = new MoneyService(new CurrencyRepository());
 	}
 
 	@Test
-	public void applyToInput()
+	public void applyToInput_subtract_3percent()
 	{
 		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
 		paymentTermRecord.setDiscount(new BigDecimal("3"));

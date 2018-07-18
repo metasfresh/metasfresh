@@ -102,6 +102,7 @@ public class PricingConditionsRepositoryTest
 		assertThat(matchingCriteria.getAttributeValueId()).isEqualTo(schemaBreakRecord.getM_AttributeValue_ID());
 	}
 
+	/** Tests with a schemaBreakRecord that has a fixed base price. */
 	@Test
 	public void toPricingConditionsBreak_PriceOverride()
 	{
@@ -116,6 +117,7 @@ public class PricingConditionsRepositoryTest
 		assertThat(priceOverride.getFixedPrice().getValue()).isEqualByComparingTo(TEN);
 	}
 
+	/** Tests with a schemaBreakRecord that has *no* base price (neither "fixed" nor "pricing-system") */
 	@Test
 	public void toPricingConditionsBreak_no_PriceOverride()
 	{
@@ -132,9 +134,11 @@ public class PricingConditionsRepositoryTest
 	private I_M_DiscountSchemaBreak createDiscountSchemaBreakRecord()
 	{
 		final I_M_DiscountSchemaBreak schemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);
-		schemaBreakRecord.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
-		schemaBreakRecord.setPriceStd(TEN);
 		schemaBreakRecord.setM_DiscountSchema_ID(20);
+
+		schemaBreakRecord.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
+		schemaBreakRecord.setC_Currency_ID(10);
+		schemaBreakRecord.setPriceStd(TEN);
 		return schemaBreakRecord;
 	}
 }
