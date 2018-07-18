@@ -16,7 +16,7 @@ describe('Sales order window widgets test', function() {
         .first()
         .find('input')
         .clear()
-        .type('k');
+        .type('test');
 
       cy.get('.input-dropdown-list').should('exist');
       cy.contains('.input-dropdown-list-option', '1000004_kaystest').click();
