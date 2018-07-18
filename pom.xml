@@ -224,12 +224,12 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 
 				<plugin>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.20</version>
+					<version>2.22.0</version>
 					<configuration>
 					    <!-- Jacoco prepare-agent builds some command-line params without -->
 						<!-- which jacoco will not instrument. Hence it is important to add -->
 						<!-- those command-line params here (${argLine} holds those params) -->
-						<argLine>${argLine} -Xms256m -Xmx2048m</argLine>
+						<argLine>@{argLine} -Xms256m -Xmx2048m</argLine>
 						<!-- From http://www.jacoco.org/jacoco/trunk/doc/maven.html :
 							When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a forkCount of 0 
 							or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded. 
