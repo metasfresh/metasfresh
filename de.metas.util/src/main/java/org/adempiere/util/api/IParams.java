@@ -13,15 +13,14 @@ package org.adempiere.util.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -38,49 +37,30 @@ public interface IParams
 	/** No params */
 	IParams NULL = NullParams.instance;
 
-	/**
-	 * @return true if the parameter exists
-	 */
+	Collection<String> getParameterNames();
+
 	boolean hasParameter(String parameterName);
 
-	/**
-	 * @param parameterName
-	 * @return string value or <code>null</code> if parameter is missing
-	 */
+	Object getParameterAsObject(String parameterName);
+
+	/** @return string value or <code>null</code> if parameter is missing */
 	String getParameterAsString(String parameterName);
-	
-	/**
-	 * @param parameterName
-	 * @return int value or <code>0</code> if parameter is missing or cannot be converted to integer
-	 */
+
+	/** @return int value or <code>0</code> if parameter is missing or cannot be converted to integer */
 	int getParameterAsInt(String parameterName);
-	
-	/**
-	 * @param parameterName
-	 * @return boolean value or <code>false</code> if parameter is missing
-	 */
+
+	/** @return boolean value or <code>false</code> if parameter is missing */
 	boolean getParameterAsBool(String parameterName);
 
-	/**
-	 * @param parameterName
-	 * @return timestamp value or <code>null</code> if parameter is missing
-	 */
+	/** @return timestamp value or <code>null</code> if parameter is missing */
 	Timestamp getParameterAsTimestamp(String parameterName);
-	
-	/**
-	 * @param parameterName
-	 * @return {@link BigDecimal} value or <code>null</code> if parameter is missing or cannot be converted to {@link BigDecimal}
-	 */
+
+	/** @return {@link BigDecimal} value or <code>null</code> if parameter is missing or cannot be converted to {@link BigDecimal} */
 	BigDecimal getParameterAsBigDecimal(String parameterName);
-	
+
 	default <T extends Enum<T>> T getParameterAsEnum(final String parameterName, final Class<T> enumType, final T defaultValueWhenNull)
 	{
 		final String value = getParameterAsString(parameterName);
 		return value != null ? Enum.valueOf(enumType, value) : defaultValueWhenNull;
 	}
-
-	/**
-	 * @return the names of all included parameters.
-	 */
-	Collection<String> getParameterNames();
 }
