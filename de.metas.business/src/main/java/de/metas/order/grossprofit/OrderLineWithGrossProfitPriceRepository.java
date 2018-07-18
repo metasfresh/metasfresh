@@ -81,9 +81,9 @@ public class OrderLineWithGrossProfitPriceRepository
 		}
 	}
 
-	private Money getProfitBasePrice(final I_C_OrderLine orderLineRecord)
+	private Money getProfitBasePrice(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID());
-		return Money.of(orderLineRecord.getPriceGrossProfit(), currencyId);
+		return Money.of(orderLineRecord.getProfitPriceActual(), currencyId);
 	}
 }

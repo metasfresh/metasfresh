@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -651429191L;
+	private static final long serialVersionUID = -1628242771L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -1779,28 +1779,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd;
 	}
 
-	/** Set Rohertragspreis.
-		@param PriceGrossProfit 
-		Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
-	  */
-	@Override
-	public void setPriceGrossProfit (java.math.BigDecimal PriceGrossProfit)
-	{
-		set_Value (COLUMNNAME_PriceGrossProfit, PriceGrossProfit);
-	}
-
-	/** Get Rohertragspreis.
-		@return Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
-	  */
-	@Override
-	public java.math.BigDecimal getPriceGrossProfit () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceGrossProfit);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Mindestpreis.
 		@param PriceLimit 
 		Lowest price for a product
@@ -1910,6 +1888,28 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getProductDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
+	}
+
+	/** Set Ertrag netto.
+		@param ProfitPriceActual 
+		Effektiver Preis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung.
+	  */
+	@Override
+	public void setProfitPriceActual (java.math.BigDecimal ProfitPriceActual)
+	{
+		set_Value (COLUMNNAME_ProfitPriceActual, ProfitPriceActual);
+	}
+
+	/** Get Ertrag netto.
+		@return Effektiver Preis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung.
+	  */
+	@Override
+	public java.math.BigDecimal getProfitPriceActual () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ProfitPriceActual);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Gelieferte Menge.

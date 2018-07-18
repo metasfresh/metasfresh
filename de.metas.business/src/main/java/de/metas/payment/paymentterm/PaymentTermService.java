@@ -41,7 +41,7 @@ import lombok.NonNull;
 @Service
 public class PaymentTermService
 {
-	private static final CCache<ArrayKey, PaymentTermId> CACHE = CCache.newCache(I_C_PaymentTerm.Table_Name, 10, CCache.EXPIREMINUTES_Never);
+	private final CCache<ArrayKey, PaymentTermId> cache = CCache.newCache(I_C_PaymentTerm.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
 	/**
 	 * @param basePaymentTermId may be null
@@ -61,7 +61,7 @@ public class PaymentTermService
 		}
 
 		final ArrayKey key = ArrayKey.of(basePaymentTermId, discount);
-		return CACHE.getOrLoad(key, () -> getOrCreateDerivedPaymentTerm0(basePaymentTermId, discount));
+		return cache.getOrLoad(key, () -> getOrCreateDerivedPaymentTerm0(basePaymentTermId, discount));
 	}
 
 	private PaymentTermId getOrCreateDerivedPaymentTerm0(

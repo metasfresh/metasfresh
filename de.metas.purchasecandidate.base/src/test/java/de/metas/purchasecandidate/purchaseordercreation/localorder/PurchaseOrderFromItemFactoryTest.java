@@ -29,7 +29,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.event.OrderUserNotifications;
@@ -73,7 +73,7 @@ import mockit.Verifications;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseOrderFromItemFactoryTest
 {
 	private static final LocalDateTime PURCHASE_DATE_PROMISED = SystemTime.asLocalDateTime();

@@ -19,6 +19,7 @@ import de.metas.money.MoneyService;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -145,7 +146,8 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 				&& purchaseNetPrice.signum() != 0
 				&& vendorPricingConditionsBreak.getPaymentTermIdOrNull() != null)
 		{
-			final Percent discount = paymentTermRepo.getPaymentTermDiscount(vendorPricingConditionsBreak.getDerivedPaymentTermIdOrNull());
+			final PaymentTermId derivedPaymentTermId = vendorPricingConditionsBreak.getDerivedPaymentTermIdOrNull();
+			final Percent discount = paymentTermRepo.getPaymentTermDiscount(derivedPaymentTermId);
 			purchaseNetPrice = moneyService.subtractPercent(discount, purchaseNetPrice);
 		}
 

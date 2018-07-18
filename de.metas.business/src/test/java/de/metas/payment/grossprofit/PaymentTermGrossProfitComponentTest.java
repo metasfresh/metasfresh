@@ -69,7 +69,7 @@ public class PaymentTermGrossProfitComponentTest
 
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID());
 
-		final PaymentTermGrossProfitComponent component = new PaymentTermGrossProfitComponent(paymentTermId, moneyService);
+		final PaymentProfitPriceActualComponent component = new PaymentProfitPriceActualComponent(paymentTermId, moneyService);
 
 		// invoke the method under test
 		final Money result = component.applyToInput(Money.of(ONE, currencyId));
@@ -79,7 +79,7 @@ public class PaymentTermGrossProfitComponentTest
 	@Test
 	public void applyToInput_no_paymentterm()
 	{
-		final PaymentTermGrossProfitComponent component = new PaymentTermGrossProfitComponent(null, moneyService);
+		final PaymentProfitPriceActualComponent component = new PaymentProfitPriceActualComponent(null, moneyService);
 
 		// invoke the method under test
 		final Money result = component.applyToInput(Money.of(ONE, currencyId));

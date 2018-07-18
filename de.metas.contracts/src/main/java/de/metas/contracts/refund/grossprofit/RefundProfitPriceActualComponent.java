@@ -1,12 +1,15 @@
 package de.metas.contracts.refund.grossprofit;
 
-import org.springframework.stereotype.Service;
+import java.util.Optional;
 
+import de.metas.contracts.refund.RefundContract;
+import de.metas.contracts.refund.RefundContractQuery;
 import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.lang.Percent;
+import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.money.grossprofit.GrossProfitComponent;
-import de.metas.money.grossprofit.GrossProfitComponentProvider;
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
+import de.metas.money.grossprofit.ProfitPriceActualComponent;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import lombok.NonNull;
 
 /*
@@ -31,23 +34,38 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
-public class RefundGrossProfitComponentProvider implements GrossProfitComponentProvider
+public class RefundProfitPriceActualComponent implements ProfitPriceActualComponent
 {
-	private final RefundContractRepository refundContractRepository;
+	private final CalculateProfitPriceActualRequest request;
+	private final RefundContractRepository refundContractRepository; // TODO: take our the repo/service from here !
 	private final MoneyService moneyService;
 
-	public RefundGrossProfitComponentProvider(
+	public RefundProfitPriceActualComponent(
+			@NonNull final CalculateProfitPriceActualRequest request,
 			@NonNull final RefundContractRepository refundContractRepository,
 			@NonNull final MoneyService moneyService)
 	{
+		this.request = request;
 		this.refundContractRepository = refundContractRepository;
 		this.moneyService = moneyService;
 	}
 
 	@Override
-	public GrossProfitComponent provideForRequest(@NonNull final GrossProfitComputeRequest request)
+	public Money applyToInput(@NonNull final Money input)
 	{
-		return new RefundGrossProfitComponent(request, refundContractRepository, moneyService);
+		final RefundContractQuery query = RefundContractQuery.of(request);
+		final Optional<RefundContract> refundContract = refundContractRepository.getByQuery(query);
+
+		if (!refundContract.isPresent())
+		{
+			return input;
+		}
+
+		final Percent percent = refundContract
+				.get()
+				.getRefundConfig()
+				.getPercent();
+
+		return moneyService.subtractPercent(percent, input);
 	}
 }

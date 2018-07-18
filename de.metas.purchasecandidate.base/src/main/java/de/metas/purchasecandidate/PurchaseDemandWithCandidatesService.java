@@ -248,7 +248,8 @@ public class PurchaseDemandWithCandidatesService
 		boolean readOnly;
 	}
 
-	private ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> createMissingPurchaseCandidatesGroups(
+	@VisibleForTesting
+	ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> createMissingPurchaseCandidatesGroups(
 			@NonNull final List<PurchaseDemand> demands,
 			@NonNull final Set<BPartnerId> vendorIdsToExclude)
 	{

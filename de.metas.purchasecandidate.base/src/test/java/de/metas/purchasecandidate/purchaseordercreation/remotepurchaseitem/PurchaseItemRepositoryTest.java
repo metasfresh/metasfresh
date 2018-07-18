@@ -23,7 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
@@ -53,7 +53,7 @@ import de.metas.quantity.Quantity;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseItemRepositoryTest
 {
 	private I_C_UOM EACH;

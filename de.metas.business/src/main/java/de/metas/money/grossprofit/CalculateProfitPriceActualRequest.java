@@ -1,5 +1,16 @@
 package de.metas.money.grossprofit;
 
+import java.time.LocalDate;
+
+import javax.annotation.Nullable;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.Money;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.business
@@ -13,17 +24,27 @@ package de.metas.money.grossprofit;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@FunctionalInterface
-public interface GrossProfitComponentProvider
+@Value
+@Builder
+public class CalculateProfitPriceActualRequest
 {
-	GrossProfitComponent provideForRequest(GrossProfitComputeRequest request);
+	BPartnerId bPartnerId;
+
+	ProductId productId;
+
+	LocalDate date;
+
+	@Nullable
+	PaymentTermId paymentTermId;
+
+	Money baseAmount;
 }
