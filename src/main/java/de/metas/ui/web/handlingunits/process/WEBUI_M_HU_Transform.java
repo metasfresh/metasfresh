@@ -330,20 +330,30 @@ public class WEBUI_M_HU_Transform
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
-		if (PARAM_Action.equals(parameterName) || PARAM_M_HU_PI_Item_ID.equals(parameterName) || PARAM_QtyTU.equals(parameterName))
+
+		final String actionName = p_Action;
+
+		if (!ActionType.TU_To_NewLUs.toString().equals(actionName))
 		{
-			final String actionName = p_Action;
+			// nothing to do
+			return;
+		}
 
-			if (ActionType.TU_To_NewLUs.toString().equals(actionName))
+		if (PARAM_Action.equals(parameterName))
+		{
+
+			final I_M_HU_PI_Item defaultHUPIItem = newParametersFiller().getDefaultM_HU_PI_ItemOrNull();
+			p_M_HU_PI_Item = defaultHUPIItem;
+
+			if (defaultHUPIItem != null)
 			{
-				final I_M_HU_PI_Item defaultHUPIItem = newParametersFiller().getDefaultM_HU_PI_ItemOrNull();
-				p_M_HU_PI_Item = defaultHUPIItem;
-
-				if (defaultHUPIItem != null)
-				{
-					p_QtyTU = defaultHUPIItem.getQty();
-				}
+				p_QtyTU = defaultHUPIItem.getQty();
 			}
+		}
+
+		else if (PARAM_M_HU_PI_Item_ID.equals(parameterName) && p_M_HU_PI_Item != null)
+		{
+			p_QtyTU = p_M_HU_PI_Item.getQty();
 		}
 
 	}
