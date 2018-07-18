@@ -1,12 +1,20 @@
 package de.metas.marketing.base.model.interceptor;
 
 import java.util.Optional;
+import java.util.Set;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.User;
+import org.adempiere.user.UserId;
 import org.adempiere.user.UserRepository;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
@@ -17,6 +25,9 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonRepository;
+import de.metas.marketing.base.model.EmailAddress;
 import de.metas.marketing.base.model.I_AD_User;
 import lombok.NonNull;
 
@@ -42,9 +53,17 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_AD_User.class)
-@Component
+@Callout(I_AD_User.class)
+@Component("de.metas.marketing.base.model.interceptor.AD_User")
 public class AD_User
 {
+	@Init
+	public void registerCallout()
+	{
+		// this class serves as both model validator an callout
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
 	private final static String MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org = "MKTG_Campaign_NewsletterGroup_Missing_For_Org";
 
 	private final UserRepository userRepository;
@@ -89,4 +108,49 @@ public class AD_User
 			converters.removeFromCampaign(user, defaultcampaignId.get());
 		}
 	}
+
+	@CalloutMethod(columnNames = { I_AD_User.COLUMNNAME_EMail })
+	public void onChangeEmail(final I_AD_User userRecord, final ICalloutField field)
+	{
+
+		final ContactPersonRepository contactPersonRepo = Adempiere.getBean(ContactPersonRepository.class);
+
+		final UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
+
+		final Set<ContactPerson> contactPersonsForUser = contactPersonRepo.getByUserId(userId);
+
+		if (contactPersonsForUser.isEmpty())
+		{
+			// no contact person to update email
+			return;
+		}
+
+		final String oldUserEmail = String.valueOf(field.getOldValue());
+
+		final User user = userRepository.ofRecord(userRecord);
+
+		final EmailAddress userNewMailaddress = Check.isEmpty(user.getEmailAddress(), true) ? null : EmailAddress.of(user.getEmailAddress());
+
+		contactPersonsForUser.stream()
+				.filter(contactPerson -> isFitForEmailUpdate(contactPerson, oldUserEmail))
+				.forEach(contactPerson -> contactPersonRepo.updateEmail(contactPerson, userNewMailaddress));
+	}
+
+	private boolean isFitForEmailUpdate(final ContactPerson contactPerson, final String oldContactPersonMail)
+	{
+		final String contactPersonEmail = contactPerson.getEmailAddessStringOrNull();
+
+		if (Check.isEmpty(contactPersonEmail))
+		{
+			return true;
+		}
+
+		if (contactPersonEmail.equals(oldContactPersonMail))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 }
