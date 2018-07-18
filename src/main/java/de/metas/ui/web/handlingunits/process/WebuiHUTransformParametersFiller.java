@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -55,12 +56,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,7 +70,7 @@ import lombok.NonNull;
 
 /**
  * Helper class used to fill {@link WebuiHUTransformParameters} (default values, lookups etc).
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -124,6 +125,7 @@ public class WebuiHUTransformParametersFiller
 
 	public Object getParameterDefaultValue(final String parameterName)
 	{
+
 		if (WEBUI_M_HU_Transform.PARAM_QtyCU.equals(parameterName))
 		{
 			final I_M_HU cu = getSelectedRow().getM_HU(); // should work, because otherwise the param is not even shown.
@@ -370,7 +372,7 @@ public class WebuiHUTransformParametersFiller
 			// TODO: filter by LUs
 			// TODO: search by barcode too
 			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
-					.setCtxTableName(null) //ctxTableName
+					.setCtxTableName(null) // ctxTableName
 					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)
 					.buildForDefaultScope();
@@ -400,6 +402,28 @@ public class WebuiHUTransformParametersFiller
 			return LookupValuesList.EMPTY;
 		}
 
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLUPIItems();
+
+		return luPIItems.stream()
+				.filter(luPIItem -> luPIItem.getM_HU_PI_Version().isCurrent() && luPIItem.getM_HU_PI_Version().isActive() && luPIItem.getM_HU_PI_Version().getM_HU_PI().isActive())
+				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), WEBUI_ProcessHelper.buildHUPIItemString(luPIItem)))
+				.sorted(Comparator.comparing(IntegerLookupValue::getDisplayName))
+				.collect(LookupValuesList.collect());
+	}
+
+	public I_M_HU_PI_Item getDefaultM_HU_PI_ItemOrNull()
+	{
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLUPIItems();
+		final Optional<I_M_HU_PI_Item> defaultHUPIItem = luPIItems.stream()
+				.filter(luPIItem -> luPIItem.getM_HU_PI_Version().isCurrent() && luPIItem.getM_HU_PI_Version().isActive() && luPIItem.getM_HU_PI_Version().getM_HU_PI().isActive())
+				.sorted(Comparator.comparing(I_M_HU_PI_Item::getM_HU_PI_Item_ID)) // TODO what to order by ?
+				.findFirst();
+
+		return defaultHUPIItem.orElse(null);
+	}
+
+	private List<I_M_HU_PI_Item> getAvailableLUPIItems()
+	{
 		final HUEditorRow tuRow = getSelectedRow();
 		final I_M_HU tuHU = tuRow.getM_HU();
 		final I_M_HU_PI_Version effectivePIVersion = handlingUnitsBL.getEffectivePIVersion(tuHU);
@@ -407,10 +431,6 @@ public class WebuiHUTransformParametersFiller
 
 		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(effectivePIVersion.getM_HU_PI(), null, tuHU.getC_BPartner());
 
-		return luPIItems.stream()
-				.filter(luPIItem -> luPIItem.getM_HU_PI_Version().isCurrent() && luPIItem.getM_HU_PI_Version().isActive() && luPIItem.getM_HU_PI_Version().getM_HU_PI().isActive())
-				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), WEBUI_ProcessHelper.buildHUPIItemString(luPIItem)))
-				.sorted(Comparator.comparing(IntegerLookupValue::getDisplayName))
-				.collect(LookupValuesList.collect());
+		return luPIItems;
 	}
 }
