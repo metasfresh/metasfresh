@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -68,7 +69,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -1084,7 +1084,7 @@ public class InterfaceWrapperHelper
 			return true;
 		}
 
-		final Object value = getValue(model, columnName).orNull();
+		final Object value = getValue(model, columnName).orElse(null);
 		if (value instanceof String)
 		{
 			return Check.isEmpty((String)value);
@@ -1168,7 +1168,7 @@ public class InterfaceWrapperHelper
 		final boolean throwExIfColumnNotFound = true;
 		final boolean useOverrideColumnIfAvailable = false;
 		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
-		return Optional.fromNullable(value);
+		return Optional.ofNullable(value);
 	}
 
 	/**

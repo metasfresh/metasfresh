@@ -1,6 +1,7 @@
 package de.metas.fresh.mrp_productinfo.impl;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -10,8 +11,7 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.api.IParams;
-import org.adempiere.util.api.IParamsBL;
-import org.adempiere.util.Services;
+import org.adempiere.util.api.Params;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Transaction;
@@ -133,7 +133,7 @@ public class MRPProductInfoSelectorFactoryTests
 		InterfaceWrapperHelper.save(asi);
 
 		final Timestamp date = SystemTime.asDayTimestamp();
-		final IParams params = Services.get(IParamsBL.class).createParams(ImmutableMap.of(
+		final IParams params = Params.ofMap(ImmutableMap.of(
 				prefix + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX, date,
 				prefix + MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX, 23,
 				prefix + MRPProductInfoSelectorFactory.ASI_PARAM_SUFFIX, asi.getM_AttributeSetInstance_ID()));
@@ -175,7 +175,7 @@ public class MRPProductInfoSelectorFactoryTests
 		InterfaceWrapperHelper.save(asi2);
 
 		final Timestamp date = SystemTime.asDayTimestamp();
-		final IParams params = Services.get(IParamsBL.class).createParams(ImmutableMap.<String, Object> builder()
+		final IParams params = Params.ofMap(ImmutableMap.<String, Object> builder()
 				.put("blah2" + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX, date)
 				.put("blah2" + MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX, 23)
 				.put("blah2" + MRPProductInfoSelectorFactory.ASI_PARAM_SUFFIX, asi1.getM_AttributeSetInstance_ID())

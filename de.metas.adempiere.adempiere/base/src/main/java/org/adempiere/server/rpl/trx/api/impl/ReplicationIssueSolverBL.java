@@ -42,14 +42,14 @@ import org.adempiere.server.rpl.trx.api.IReplicationTrxLinesProcessorResult;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueAware;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueSolver;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IParamsBL;
+import org.adempiere.util.api.Params;
 
 public class ReplicationIssueSolverBL implements IReplicationIssueSolverBL
 {
 	@Override
 	public IReplicationIssueSolverParams createParams(final Map<String, Object> params)
 	{
-		return new ReplicationIssueSolverParams(Services.get(IParamsBL.class).createParams(params));
+		return new ReplicationIssueSolverParams(Params.ofMap(params));
 	}
 
 	@Override

@@ -4,12 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.lang.Percent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -35,26 +34,15 @@ import de.metas.lang.Percent;
 
 public class MoneyTest
 {
-	private final AtomicInteger nextCurrencyId = new AtomicInteger(1);
 
-	private Currency EUR;
-	private Currency CHF;
+	private CurrencyId EUR;
+	private CurrencyId CHF;
 
 	@Before
 	public void init()
 	{
-		EUR = createCurrency("EUR");
-		CHF = createCurrency("CHF");
-	}
-
-	private Currency createCurrency(final String threeLetterCode)
-	{
-		return Currency
-				.builder()
-				.threeLetterCode(threeLetterCode)
-				.precision(2)
-				.id(CurrencyId.ofRepoId(nextCurrencyId.getAndIncrement()))
-				.build();
+		EUR = CurrencyId.ofRepoId(10);
+		CHF = CurrencyId.ofRepoId(20);
 	}
 
 	@Test
@@ -62,24 +50,6 @@ public class MoneyTest
 	{
 		assertThat(Money.of(new BigDecimal("4.00"), EUR))
 				.isEqualTo(Money.of(new BigDecimal("4"), EUR));
-	}
-
-	@Test
-	public void percentage()
-	{
-		final Money result = Money.of(new BigDecimal("200.00"), EUR).percentage(Percent.of(80));
-		assertThat(result.getCurrency()).isEqualTo(EUR);
-		assertThat(result.getValue()).isEqualByComparingTo("160");
-	}
-
-	@Test
-	public void percentage_zero()
-	{
-		final Money result = Money.of(new BigDecimal("200.00"), EUR).percentage(Percent.of(0));
-
-		assertThat(result.getCurrency()).isEqualTo(EUR);
-		assertThat(result.getValue()).isEqualByComparingTo("0");
-		assertThat(result.isZero()).isTrue();
 	}
 
 	@Test
@@ -94,15 +64,17 @@ public class MoneyTest
 		assertGetCommonCurrencyOfAllFails(Money.of(1, EUR), Money.of(1, CHF));
 	}
 
-	public void assertGetCommonCurrencyOfAllReturns(final Currency expectedCurrency, final Money... moneys)
+	private void assertGetCommonCurrencyOfAllReturns(
+			@NonNull final CurrencyId expectedCurrencyId,
+			final Money... moneys)
 	{
-		final Currency actualCurrency = Money.getCommonCurrencyOfAll(moneys);
-		assertThat(actualCurrency).isEqualTo(expectedCurrency);
+		final CurrencyId actualCurrency = Money.getCommonCurrencyIdOfAll(moneys);
+		assertThat(actualCurrency).isEqualTo(expectedCurrencyId);
 	}
 
-	public void assertGetCommonCurrencyOfAllFails(final Money... moneys)
+	private void assertGetCommonCurrencyOfAllFails(final Money... moneys)
 	{
-		assertThatThrownBy(() -> Money.getCommonCurrencyOfAll(moneys))
+		assertThatThrownBy(() -> Money.getCommonCurrencyIdOfAll(moneys))
 				.isNotNull();
 	}
 
@@ -120,16 +92,5 @@ public class MoneyTest
 
 		assertThatThrownBy(() -> money_1EUR.min(money_2CHF)).isNotNull();
 		assertThatThrownBy(() -> money_1EUR.max(money_2CHF)).isNotNull();
-	}
-
-	@Test
-	public void testSubtactPercentage()
-	{
-		final Money money_100EUR = Money.of(100, EUR);
-		assertThat(money_100EUR.subtract(Percent.of(0))).isSameAs(money_100EUR);
-		assertThat(money_100EUR.subtract(Percent.of(30))).isEqualTo(Money.of(70, EUR));
-
-		final Money money_0EUR = Money.of(0, EUR);
-		assertThat(money_0EUR.subtract(Percent.of(55))).isSameAs(money_0EUR);
 	}
 }

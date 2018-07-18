@@ -1671,31 +1671,6 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_PriceEntered = "PriceEntered";
 
 	/**
-	 * Set Rohertragspreis.
-	 * Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPriceGrossProfit (java.math.BigDecimal PriceGrossProfit);
-
-	/**
-	 * Get Rohertragspreis.
-	 * Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getPriceGrossProfit();
-
-    /** Column definition for PriceGrossProfit */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceGrossProfit = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PriceGrossProfit", null);
-    /** Column name PriceGrossProfit */
-    public static final String COLUMNNAME_PriceGrossProfit = "PriceGrossProfit";
-
-	/**
 	 * Set Mindestpreis.
 	 * Lowest price for a product
 	 *
@@ -1819,6 +1794,31 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_ProductDescription = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "ProductDescription", null);
     /** Column name ProductDescription */
     public static final String COLUMNNAME_ProductDescription = "ProductDescription";
+
+	/**
+	 * Set Ertrag netto.
+	 * Effektiver Preis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProfitPriceActual (java.math.BigDecimal ProfitPriceActual);
+
+	/**
+	 * Get Ertrag netto.
+	 * Effektiver Preis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getProfitPriceActual();
+
+    /** Column definition for ProfitPriceActual */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_ProfitPriceActual = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "ProfitPriceActual", null);
+    /** Column name ProfitPriceActual */
+    public static final String COLUMNNAME_ProfitPriceActual = "ProfitPriceActual";
 
 	/**
 	 * Set Gelieferte Menge.

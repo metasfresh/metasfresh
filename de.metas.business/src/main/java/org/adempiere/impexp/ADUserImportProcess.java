@@ -31,6 +31,7 @@ import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -181,9 +182,7 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		}
 		//
 		// set data from the other fields
-		setUserFields(user, importRecord);
-		//
-		InterfaceWrapperHelper.save(user);
+		setUserFieldsAndSave(user, importRecord);
 		//
 		// Assign Role
 		{
@@ -196,17 +195,20 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		return ImportRecordResult.Inserted;
 	}
 	
-	private void setUserFields(@NonNull final I_AD_User user, @NonNull final I_I_User importRecord)
+	private void setUserFieldsAndSave(@NonNull final I_AD_User user, @NonNull final I_I_User importRecord)
 	{
 		user.setFirstname(importRecord.getFirstname());
 		user.setLastname(importRecord.getLastname());
 		// set value after we set first name and last name
 		user.setValue(importRecord.getValue());
 		user.setEMail(importRecord.getEMail());
+		
 		final de.metas.adempiere.model.I_AD_User loginUser = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
 		loginUser.setLogin(importRecord.getLogin());
-		loginUser.setPassword(RandomStringUtils.randomAlphanumeric(8));
 		loginUser.setIsSystemUser(importRecord.isSystemUser());
+		
+		final IUserBL userBL = Services.get(IUserBL.class);
+		userBL.changePasswordAndSave(loginUser, RandomStringUtils.randomAlphanumeric(8));
 	}
 
 	@Override

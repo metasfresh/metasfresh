@@ -3,7 +3,6 @@ package de.metas.money;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -12,6 +11,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.collections.ListUtils;
 
 import com.google.common.base.Predicates;
@@ -19,9 +19,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
-import de.metas.currency.Amount;
-import de.metas.lang.Percent;
-import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -51,40 +48,32 @@ import lombok.Value;
 @Value
 public class Money
 {
-	public static final Money of(@NonNull final BigDecimal value, @NonNull final Currency currency)
+
+	public static final Money of(final int value, @NonNull final CurrencyId currencyId)
 	{
-		return new Money(value, currency);
+		return of(BigDecimal.valueOf(value), currencyId);
 	}
 
-	public static final Money of(final int value, @NonNull final Currency currency)
+	public static final Money of(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
 	{
-		return of(BigDecimal.valueOf(value), currency);
+		return new Money(value, currencyId);
 	}
 
-	public static final Money zero(@NonNull final Currency currency)
+	public static final Money zero(@NonNull final CurrencyId currencyId)
 	{
-		return new Money(ZERO, currency);
+		return new Money(ZERO, currencyId);
 	}
 
 	BigDecimal value;
-	Currency currency;
+	CurrencyId currencyId;
 
 	@Builder
 	private Money(
 			@NonNull final BigDecimal value,
-			@NonNull final Currency currency)
+			@NonNull final CurrencyId currencyId)
 	{
-		this.value = value.setScale(currency.getPrecision(), RoundingMode.HALF_UP);
-		this.currency = currency;
-	}
-
-	private final void assertCurrencyMatching(
-			@NonNull final Money amt)
-	{
-		if (!Objects.equals(currency.getId(), amt.currency.getId()))
-		{
-			throw new AdempiereException("Amount has invalid currency: " + amt + ". Expected: " + currency);
-		}
+		this.value = NumberUtils.stripTrailingDecimalZeros(value); // stripping trailing zeros to make sure that 4 EUR equal 4.00 EUR
+		this.currencyId = currencyId;
 	}
 
 	public int signum()
@@ -104,106 +93,7 @@ public class Money
 			return this;
 		}
 
-		return new Money(value.negate(), currency);
-	}
-
-	public Money multiply(@NonNull final BigDecimal multiplicand)
-	{
-		if (BigDecimal.ONE.compareTo(multiplicand) == 0)
-		{
-			return this;
-		}
-
-		return new Money(value.multiply(multiplicand), currency);
-	}
-
-	public Money multiply(@NonNull final Quantity quantity)
-	{
-		return multiply(quantity.getAsBigDecimal());
-	}
-
-	public Money add(@NonNull final Money amtToAdd)
-	{
-		assertCurrencyMatching(amtToAdd);
-
-		if (amtToAdd.isZero())
-		{
-			return this;
-		}
-		if (isZero())
-		{
-			return amtToAdd;
-		}
-
-		return new Money(value.add(amtToAdd.value), currency);
-	}
-
-	public Money divide(final BigDecimal divisor)
-	{
-		final int precision = currency.getPrecision();
-
-		final BigDecimal valueNew = value.divide(divisor, precision, RoundingMode.HALF_UP);
-		return new Money(valueNew, currency);
-	}
-
-	public Money roundToPrecisionIfNeeded()
-	{
-		if (value.scale() <= currency.getPrecision())
-		{
-			return this;
-		}
-
-		final BigDecimal valueNew = value.setScale(currency.getPrecision(), RoundingMode.HALF_UP);
-		return new Money(valueNew, currency);
-	}
-
-	public Money subtract(@NonNull final Money amtToSubtract)
-	{
-		assertCurrencyMatching(amtToSubtract);
-
-		if (amtToSubtract.isZero())
-		{
-			return this;
-		}
-		return new Money(value.subtract(amtToSubtract.value), currency);
-	}
-
-	public Money subtract(@NonNull final BigDecimal amtToSubtract)
-	{
-		if (amtToSubtract.signum() == 0)
-		{
-			return this;
-		}
-
-		return new Money(value.subtract(amtToSubtract), currency);
-	}
-
-	public Money subtract(@NonNull final Percent percent)
-	{
-		if (percent.isZero())
-		{
-			return this;
-		}
-
-		if (value.signum() == 0)
-		{
-			return this;
-		}
-
-		return new Money(percent.subtractFromBase(value, currency.getPrecision()), currency);
-	}
-
-	/** example: if this instance is 100CHF and {@code percent} is 80%, then the result is 80CHF */
-	public Money percentage(@NonNull final Percent percent)
-	{
-		if (percent.isOneHundred())
-		{
-			return this;
-		}
-
-		final BigDecimal newValue = percent
-				.multiply(value, currency.getPrecision());
-		return new Money(newValue, currency);
+		return new Money(value.negate(), currencyId);
 	}
 
 	public Money toZero()
@@ -212,32 +102,27 @@ public class Money
 		{
 			return this;
 		}
-		return Money.zero(currency);
+		return Money.zero(currencyId);
 	}
 
-	public Amount toAmount()
-	{
-		return Amount.of(getValue(), currency.getThreeLetterCode());
-	}
-
-	public static Currency getCommonCurrencyOfAll(@NonNull final Money... moneys)
+	public static CurrencyId getCommonCurrencyIdOfAll(@NonNull final Money... moneys)
 	{
 		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
 
 		final Iterator<Money> moneysIterator = Stream.of(moneys)
 				.filter(Predicates.notNull())
 				.iterator();
-		final ImmutableListMultimap<Currency, Money> currency2moneys = Multimaps.index(moneysIterator, Money::getCurrency);
+		final ImmutableListMultimap<CurrencyId, Money> currency2moneys = Multimaps.index(moneysIterator, Money::getCurrencyId);
 		if (currency2moneys.isEmpty())
 		{
 			throw new AdempiereException("The given moneys may not be empty");
 		}
 
-		final ImmutableSet<Currency> currencies = currency2moneys.keySet();
-		Check.errorIf(currencies.size() > 1,
+		final ImmutableSet<CurrencyId> currencyIds = currency2moneys.keySet();
+		Check.errorIf(currencyIds.size() > 1,
 				"at least two money instances have different currencies: {}", currency2moneys);
 
-		return ListUtils.singleElement(currencies.asList());
+		return ListUtils.singleElement(currencyIds.asList());
 	}
 
 	public static boolean isSameCurrency(@NonNull final Money... moneys)
@@ -250,19 +135,75 @@ public class Money
 	{
 		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
 
-		final ImmutableSet<Currency> currencies = moneys.stream().map(Money::getCurrency).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<CurrencyId> currencies = moneys.stream().map(Money::getCurrencyId).collect(ImmutableSet.toImmutableSet());
 		return currencies.size() == 1;
+	}
+
+	public Money add(@NonNull final Money amtToAdd)
+	{
+		assertCurrencyIdMatching(amtToAdd);
+
+		if (amtToAdd.isZero())
+		{
+			return this;
+		}
+		if (isZero())
+		{
+			return amtToAdd;
+		}
+
+		return new Money(value.add(amtToAdd.value), currencyId);
+	}
+
+	public Money subtract(@NonNull final Money amtToSubtract)
+	{
+		assertCurrencyIdMatching(amtToSubtract);
+
+		if (amtToSubtract.isZero())
+		{
+			return this;
+		}
+		return new Money(value.subtract(amtToSubtract.value), currencyId);
+	}
+
+	public Money subtract(@NonNull final BigDecimal amtToSubtract)
+	{
+		if (amtToSubtract.signum() == 0)
+		{
+			return this;
+		}
+
+		return new Money(value.subtract(amtToSubtract), currencyId);
+	}
+
+	public Money multiply(@NonNull final BigDecimal multiplicand)
+	{
+		if (BigDecimal.ONE.compareTo(multiplicand) == 0)
+		{
+			return this;
+		}
+
+		return new Money(value.multiply(multiplicand), currencyId);
 	}
 
 	public Money min(@NonNull final Money other)
 	{
-		assertCurrencyMatching(other);
+		assertCurrencyIdMatching(other);
 		return this.value.compareTo(other.value) <= 0 ? this : other;
 	}
 
 	public Money max(@NonNull final Money other)
 	{
-		assertCurrencyMatching(other);
+		assertCurrencyIdMatching(other);
 		return this.value.compareTo(other.value) >= 0 ? this : other;
+	}
+
+	private final void assertCurrencyIdMatching(
+			@NonNull final Money amt)
+	{
+		if (!Objects.equals(currencyId, amt.currencyId))
+		{
+			throw new AdempiereException("Amount has invalid currencyId: " + amt + ". Expected: " + currencyId);
+		}
 	}
 }

@@ -32,8 +32,6 @@ import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.CurrencyRepository;
-import de.metas.money.MoneyFactory;
 
 /*
  * #%L
@@ -138,9 +136,10 @@ public class InvoiceCandidateFactoryTest
 		save(assignmentRecord);
 
 		invoiceCandidateFactory = new InvoiceCandidateRepository(
-				new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository())),
-				new MoneyFactory(new CurrencyRepository()))
-						.getInvoiceCandidateFactory();
+				new RefundContractRepository(
+						new RefundConfigRepository(
+								new InvoiceScheduleRepository())))
+										.getInvoiceCandidateFactory();
 	}
 
 	@Test

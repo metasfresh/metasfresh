@@ -215,7 +215,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Sets Target Document Type and IsSOTrx.
-	 * 
+	 *
 	 * @param invoice
 	 * @param docBaseType
 	 * @return true if document type found and set
@@ -224,7 +224,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice
-	 * 
+	 *
 	 * @param invoice
 	 */
 	void setDocTypeTargetIdIfNotSet(I_C_Invoice invoice);
@@ -419,12 +419,12 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Value set in the system configuration "de.metas.invoice.C_Invoice_PaymentRule".
-	 * 
+	 *
 	 * @return the value if set, {@code X_C_Invoice.PAYMENTRULE_OnCredit} otherwise
 	 */
 	String getDefaultPaymentRule();
 
 	I_C_Invoice voidAndRecreateInvoice(I_C_Invoice invoice);
 
-	void updateDescriptionFromDocTypeTargetId(I_C_Invoice invoice);
+	void updateDescriptionFromDocTypeTargetId(I_C_Invoice invoice, String defaultDescription, String defaultDocumentNote);
 }

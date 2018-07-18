@@ -12,6 +12,9 @@ import com.google.common.base.Objects;
 
 import de.metas.contracts.refund.InvoiceCandidateRepository.DeleteAssignmentsRequest;
 import de.metas.contracts.refund.InvoiceCandidateRepository.RefundInvoiceCandidateQuery;
+import de.metas.lang.Percent;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import lombok.NonNull;
 
 /*
@@ -43,12 +46,16 @@ public class InvoiceCandidateAssignmentService
 
 	private final InvoiceCandidateRepository invoiceCandidateRepository;
 
+	private final MoneyService moneyService;
+
 	public InvoiceCandidateAssignmentService(
 			@NonNull final RefundContractRepository refundConfigRepository,
-			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository)
+			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository,
+			@NonNull final MoneyService moneyService)
 	{
 		this.refundContractRepository = refundConfigRepository;
 		this.invoiceCandidateRepository = invoiceCandidateRepository;
+		this.moneyService = moneyService;
 	}
 
 	public AssignableInvoiceCandidate updateAssignment(
@@ -80,7 +87,9 @@ public class InvoiceCandidateAssignmentService
 					matchingRefundInvoiceCandidate.getId());
 
 			// figure out if the assigned money changes
-			final AssignmentToRefundCandidate newAssigment = matchingRefundInvoiceCandidate.withAddedMoneyAmount(invoiceCandidate);
+			final AssignmentToRefundCandidate newAssigment = addPercentageOfMoney(
+					matchingRefundInvoiceCandidate,
+					invoiceCandidate.getMoney());
 
 			final boolean assignedMoneyChanges = !Objects.equal(
 					reloadedAssigment.getMoneyAssignedToRefundCandidate(),
@@ -136,9 +145,9 @@ public class InvoiceCandidateAssignmentService
 	AssignableInvoiceCandidate assignCandidates(
 			@NonNull final UnassignedPairOfCandidates unAssignedPairOfCandidates)
 	{
-		final AssignmentToRefundCandidate assignmentToRefundCandidate = unAssignedPairOfCandidates
-				.getRefundInvoiceCandidate()
-				.withAddedMoneyAmount(unAssignedPairOfCandidates.getAssignableInvoiceCandidate());
+		final AssignmentToRefundCandidate assignmentToRefundCandidate = addPercentageOfMoney(
+				unAssignedPairOfCandidates.getRefundInvoiceCandidate(),
+				unAssignedPairOfCandidates.getAssignableInvoiceCandidate().getMoney());
 
 		final RefundInvoiceCandidate updatedRefundCandidate = assignmentToRefundCandidate.getRefundInvoiceCandidate();
 		invoiceCandidateRepository.save(updatedRefundCandidate);
@@ -216,12 +225,25 @@ public class InvoiceCandidateAssignmentService
 		while (allAssigned.hasNext())
 		{
 			final AssignableInvoiceCandidate assigned = allAssigned.next();
-			updatedCandidate = updatedCandidate
-					.withAddedMoneyAmount(assigned)
-					.getRefundInvoiceCandidate();
+			updatedCandidate = addPercentageOfMoney(updatedCandidate, assigned.getMoney()).getRefundInvoiceCandidate();
 		}
 
 		invoiceCandidateRepository.save(updatedCandidate);
 		return updatedCandidate;
+	}
+
+	private AssignmentToRefundCandidate addPercentageOfMoney(
+			@NonNull final RefundInvoiceCandidate candidateToUpdate,
+			@NonNull final Money money)
+	{
+		final Percent percent = candidateToUpdate.getRefundContract().getRefundConfig().getPercent();
+
+		final Money augend = moneyService.percentage(percent, money);
+
+		final RefundInvoiceCandidate updatedRefundCandidate = candidateToUpdate.toBuilder()
+				.money(candidateToUpdate.getMoney().add(augend))
+				.build();
+
+		return new AssignmentToRefundCandidate(updatedRefundCandidate, augend);
 	}
 }

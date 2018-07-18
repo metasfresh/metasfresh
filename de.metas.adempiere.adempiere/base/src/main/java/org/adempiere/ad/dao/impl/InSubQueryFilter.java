@@ -341,7 +341,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 			final String columnName = matcher.getColumnName();
 			final IQueryFilterModifier modifier = matcher.getModifier();
 
-			final Object modelValue0 = InterfaceWrapperHelper.getValue(model, columnName).orNull();
+			final Object modelValue0 = InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
 			final Object modelValue = modifier.convertValue(columnName, modelValue0, model);
 
 			modelValues.put(matcher, modelValue);
@@ -368,7 +368,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 				final String subQueryColumnName = matcher.getSubQueryColumnName();
 				final IQueryFilterModifier modifier = matcher.getModifier();
 
-				final Object value0 = InterfaceWrapperHelper.getValue(subModel, subQueryColumnName).orNull();
+				final Object value0 = InterfaceWrapperHelper.getValue(subModel, subQueryColumnName).orElse(null);
 				final Object value = modifier.convertValue(IQueryFilterModifier.COLUMNNAME_Constant, value0, contextModel);
 
 				subModelValues.put(matcher, value);

@@ -34,7 +34,7 @@ import lombok.Value;
 
 @Value
 @Builder
-class NetPriceCalculator
+class ProfitPriceActualCalculator
 {
 	boolean soTrx;
 
@@ -42,22 +42,22 @@ class NetPriceCalculator
 	Money basePrice;
 
 	@Singular
-	ImmutableList<GrossProfitComponent> profitCompponents;
+	ImmutableList<ProfitPriceActualComponent> profitPriceActualComponents;
 
-	ExtendedMemorizingSupplier<Money> netPriceSupplier = ExtendedMemorizingSupplier.of(this::computeNetPrice);
+	ExtendedMemorizingSupplier<Money> netPriceSupplier = ExtendedMemorizingSupplier.of(this::computeProfitPriceActual);
 
-	public Money getNetPrice()
+	public Money getProfitPriceActual()
 	{
 		return netPriceSupplier.get();
 	}
 
-	private Money computeNetPrice()
+	private Money computeProfitPriceActual()
 	{
-		Money netPrice = basePrice;
-		for (final GrossProfitComponent profitComponent : profitCompponents)
+		Money profitPriceActual = basePrice;
+		for (final ProfitPriceActualComponent profitPriceActualComponent : profitPriceActualComponents)
 		{
-			netPrice = profitComponent.applyToInput(netPrice);
+			profitPriceActual = profitPriceActualComponent.applyToInput(profitPriceActual);
 		}
-		return netPrice;
+		return profitPriceActual;
 	}
 }

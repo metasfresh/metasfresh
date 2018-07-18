@@ -2,9 +2,10 @@ package de.metas.payment.grossprofit;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.money.grossprofit.GrossProfitComponent;
-import de.metas.money.grossprofit.GrossProfitComponentProvider;
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
+import de.metas.money.MoneyService;
+import de.metas.money.grossprofit.ProfitPriceActualComponent;
+import de.metas.money.grossprofit.ProfitPriceActualComponentProvider;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import lombok.NonNull;
 
 /*
@@ -30,11 +31,19 @@ import lombok.NonNull;
  */
 
 @Service
-public class PaymentTermGrossProfitComponentProvider implements GrossProfitComponentProvider
+public class PaymentProfitPriceActualComponentProvider implements ProfitPriceActualComponentProvider
 {
-	@Override
-	public GrossProfitComponent provideForRequest(@NonNull final GrossProfitComputeRequest request)
+	private final MoneyService moneyService;
+
+	public PaymentProfitPriceActualComponentProvider(MoneyService moneyService)
 	{
-		return new PaymentTermGrossProfitComponent(request.getPaymentTermId());
+		this.moneyService = moneyService;
+
+	}
+
+	@Override
+	public ProfitPriceActualComponent provideForRequest(@NonNull final CalculateProfitPriceActualRequest request)
+	{
+		return new PaymentProfitPriceActualComponent(request.getPaymentTermId(), moneyService);
 	}
 }

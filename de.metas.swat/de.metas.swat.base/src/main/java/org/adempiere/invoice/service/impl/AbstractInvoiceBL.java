@@ -63,6 +63,7 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Tax;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -83,6 +84,8 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -516,7 +519,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		invoice.setPaymentRule(order.getPaymentRule());
 		invoice.setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
 		invoice.setPOReference(order.getPOReference());
-		invoice.setDescription(order.getDescription());
+
 		invoice.setDateOrdered(order.getDateOrdered());
 		//
 		invoice.setAD_OrgTrx_ID(order.getAD_OrgTrx_ID());
@@ -532,7 +535,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		invoice2.setIncoterm(order2.getIncoterm());
 		invoice2.setIncotermLocation(order2.getIncotermLocation());
-		invoice2.setDescriptionBottom(order2.getDescriptionBottom());
 
 		invoice2.setBPartnerAddress(order2.getBillToAddress());
 		invoice2.setIsUseBPartnerAddress(order2.isUseBillToAddress());
@@ -540,6 +542,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		// metas (2009-0027-G5)
 		invoice.setC_Payment_ID(order.getC_Payment_ID());
+
+		// #4185: take description from doctype, if exists
+		updateDescriptionFromDocTypeTargetId(invoice, order.getDescription(), order.getDescriptionBottom());
 	}
 
 	@Override
@@ -576,7 +581,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			return;
 		}
-		
+
 		final String docBaseType = invoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARInvoice : X_C_DocType.DOCBASETYPE_APInvoice;
 		setDocTypeTargetId(invoice, docBaseType);
 	}
@@ -585,32 +590,61 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public void setDocTypeTargetIdAndUpdateDescription(org.compiere.model.I_C_Invoice invoice, int docTypeId)
 	{
 		invoice.setC_DocTypeTarget_ID(docTypeId);
-		updateDescriptionFromDocTypeTargetId(invoice);
-	}
-	
-	@Override
-	public void updateDescriptionFromDocTypeTargetId(final org.compiere.model.I_C_Invoice invoice)
-	{
-		final int docTypeId = invoice.getC_DocTypeTarget_ID();
-		if(docTypeId <= 0)
-		{
-			return;
-		}
-		org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
-		if(docType == null)
-		{
-			return;
-		}
-		
-		if(!docType.isCopyDescriptionToDocument())
-		{
-			return;
-		}
-		
-		invoice.setDescription(docType.getDescription());
-		invoice.setDescriptionBottom(docType.getDocumentNote());
+		updateDescriptionFromDocTypeTargetId(invoice, null, null);
 	}
 
+	@Override
+	public void updateDescriptionFromDocTypeTargetId(final org.compiere.model.I_C_Invoice invoice, final String defaultDescription, final String defaultDocumentNote)
+	{
+		final int docTypeId = invoice.getC_DocTypeTarget_ID();
+		if (docTypeId <= 0)
+		{
+			return;
+		}
+
+		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		if (docType == null)
+		{
+			return;
+		}
+
+		if (!docType.isCopyDescriptionToDocument())
+		{
+			return;
+		}
+
+		if (invoice.getC_BPartner() == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		final String adLanguage = Util.coalesce(invoice.getC_BPartner().getAD_Language(), Env.getAD_Language());
+
+		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
+		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
+
+		if (!Check.isEmpty(description.toString()))
+		{
+			invoice.setDescription(description.translate(adLanguage));
+		}
+		else
+		{
+			invoice.setDescription(defaultDescription);
+		}
+
+		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+
+		if (!Check.isEmpty(documentNote.toString()))
+		{
+
+			invoice.setDescriptionBottom(documentNote.translate(adLanguage));
+		}
+		else
+		{
+			invoice.setDescriptionBottom(defaultDocumentNote);
+		}
+	}
 
 	@Override
 	public final void renumberLines(final I_C_Invoice invoice, final int step)
@@ -1239,7 +1273,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		adjustmentCharge.setRef_Invoice_ID(invoice.getC_Invoice_ID());
 		InterfaceWrapperHelper.save(adjustmentCharge);
-				
+
 		return adjustmentCharge;
 	}
 

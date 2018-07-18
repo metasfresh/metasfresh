@@ -534,7 +534,7 @@ public final class CacheMgt
 					final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
 					if (itemsRemoved > 0)
 					{
-						log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
+						log.debug("Reset cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
 						total += itemsRemoved;
 						counter++;
 					}
@@ -612,36 +612,6 @@ public final class CacheMgt
 				.append("]");
 		return sb.toString();
 	}	// toString
-
-	/**
-	 * Reset cache and clear ALL registered {@link CacheInterface}s.
-	 */
-	public void clear()
-	{
-		cacheInstancesLock.lock();
-		try
-		{
-			reset();
-
-			// Make sure all cache instances are reset
-			for (final CacheInterface cacheInstance : cacheInstances)
-			{
-				if (cacheInstance == null)
-				{
-					continue;
-				}
-				resetNoFail(cacheInstance);
-			}
-
-			cacheInstances.clear();
-			tableNames.clear();
-		}
-		finally
-		{
-			cacheInstancesLock.unlock();
-		}
-
-	}
 
 	private int resetNoFail(final CacheInterface cacheInstance)
 	{

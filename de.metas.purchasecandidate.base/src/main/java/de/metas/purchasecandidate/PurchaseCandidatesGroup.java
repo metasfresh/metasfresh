@@ -82,7 +82,7 @@ public class PurchaseCandidatesGroup
 				//
 				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
 				//
-				.profitInfo(purchaseCandidate.getProfitInfo())
+				.profitInfoOrNull(purchaseCandidate.getProfitInfoOrNull())
 				//
 				.readonly(purchaseCandidate.isProcessedOrLocked());
 
@@ -118,9 +118,11 @@ public class PurchaseCandidatesGroup
 	@NonNull
 	AttributeSetInstanceId attributeSetInstanceId;
 
+	/** quantity the shall be ordered; initially often zero, can be set to >0 be the user */
 	@NonNull
 	Quantity qtyToPurchase;
 
+	/** quantity where we know that is was already ordered in purchase order lines */
 	@NonNull
 	Quantity purchasedQty;
 
@@ -128,7 +130,7 @@ public class PurchaseCandidatesGroup
 	LocalDateTime purchaseDatePromised;
 
 	@Nullable
-	PurchaseProfitInfo profitInfo;
+	PurchaseProfitInfo profitInfoOrNull;
 
 	@NonNull
 	@Singular
@@ -152,12 +154,11 @@ public class PurchaseCandidatesGroup
 
 	public PurchaseCandidatesGroup withProfitInfo(@Nullable final PurchaseProfitInfo newProfitInfo)
 	{
-		if (Objects.equals(getProfitInfo(), newProfitInfo))
+		if (Objects.equals(getProfitInfoOrNull(), newProfitInfo))
 		{
 			return this;
 		}
-
-		return toBuilder().profitInfo(newProfitInfo).build();
+		return toBuilder().profitInfoOrNull(newProfitInfo).build();
 	}
 
 	public BPartnerId getVendorId()

@@ -135,6 +135,8 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder setContext(final Object contextProvider);
 
+	IHUQueryBuilder onlyContextClient(boolean onlyContextClient);
+
 	/**
 	 * Filter only those HUs which have any of the given product(s) in their storages.
 	 *

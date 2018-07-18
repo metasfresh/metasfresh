@@ -15,7 +15,7 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -329589689L;
+	private static final long serialVersionUID = 430952688L;
 
     /** Standard Constructor */
     public X_M_DiscountSchemaBreak (Properties ctx, int M_DiscountSchemaBreak_ID, String trxName)
@@ -26,7 +26,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 			setBreakDiscount (BigDecimal.ZERO);
 			setBreakValue (BigDecimal.ZERO);
 			setIsBPartnerFlatDiscount (false); // N
-			setIsPriceOverride (false); // N
 			setIsValid (true); // Y
 			setM_DiscountSchemaBreak_ID (0);
 			setM_DiscountSchema_ID (0);
@@ -128,6 +127,43 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
@@ -181,29 +217,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	public boolean isBPartnerFlatDiscount () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsBPartnerFlatDiscount);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set IsPriceOverride.
-		@param IsPriceOverride IsPriceOverride	  */
-	@Override
-	public void setIsPriceOverride (boolean IsPriceOverride)
-	{
-		set_Value (COLUMNNAME_IsPriceOverride, Boolean.valueOf(IsPriceOverride));
-	}
-
-	/** Get IsPriceOverride.
-		@return IsPriceOverride	  */
-	@Override
-	public boolean isPriceOverride () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsPriceOverride);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

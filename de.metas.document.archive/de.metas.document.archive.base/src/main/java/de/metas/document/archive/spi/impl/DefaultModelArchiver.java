@@ -310,7 +310,7 @@ public class DefaultModelArchiver
 		if (language == null)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(record);
-			final Integer adClientId = InterfaceWrapperHelper.<Integer> getValue(record, COLUMNNAME_AD_Client_ID).or(-1);
+			final Integer adClientId = InterfaceWrapperHelper.<Integer> getValue(record, COLUMNNAME_AD_Client_ID).orElse(-1);
 			if (adClientId != null && adClientId >= 0)
 			{
 				final MClient adClient = MClient.get(ctx, adClientId);

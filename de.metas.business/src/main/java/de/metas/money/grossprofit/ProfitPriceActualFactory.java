@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.money.Money;
+import de.metas.money.grossprofit.ProfitPriceActualCalculator.ProfitPriceActualCalculatorBuilder;
 import lombok.NonNull;
 
 /*
@@ -33,27 +34,28 @@ import lombok.NonNull;
  */
 
 @Service
-public class GrossProfitPriceFactory
+public class ProfitPriceActualFactory
 {
-	private final ImmutableList<GrossProfitComponentProvider> providers;
+	private final ImmutableList<ProfitPriceActualComponentProvider> providers;
 
-	public GrossProfitPriceFactory(@NonNull final Optional<List<GrossProfitComponentProvider>> providers)
+	public ProfitPriceActualFactory(@NonNull final Optional<List<ProfitPriceActualComponentProvider>> providers)
 	{
 		this.providers = ImmutableList.copyOf(providers.orElseGet(ImmutableList::of));
 	}
 
-	public Money calculateNetPrice(@NonNull final GrossProfitComputeRequest request)
+	public Money calculateProfitPriceActual(@NonNull final CalculateProfitPriceActualRequest request)
 	{
-		final NetPriceCalculator.NetPriceCalculatorBuilder builder = NetPriceCalculator.builder()
+		final ProfitPriceActualCalculatorBuilder builder = ProfitPriceActualCalculator
+				.builder()
 				.basePrice(request.getBaseAmount());
 
-		for (final GrossProfitComponentProvider provider : providers)
+		for (final ProfitPriceActualComponentProvider provider : providers)
 		{
-			builder.profitCompponent(provider.provideForRequest(request));
+			builder.profitPriceActualComponent(provider.provideForRequest(request));
 		}
 
-		final NetPriceCalculator netPriceCalculator = builder.build();
+		final ProfitPriceActualCalculator calculator = builder.build();
 
-		return netPriceCalculator.getNetPrice();
+		return calculator.getProfitPriceActual();
 	}
 }

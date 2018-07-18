@@ -25,9 +25,6 @@ package de.metas.document.archive.interceptor;
 
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.IADProcessDAO;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -46,11 +43,14 @@ import org.compiere.model.Query;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.process.ExportArchivePDF;
 import de.metas.document.archive.spi.impl.DocOutboundArchiveEventListener;
 import de.metas.document.archive.spi.impl.RemoteArchiveStorage;
+import de.metas.logging.LogManager;
+import de.metas.process.IADProcessDAO;
 
 /**
  * Main de.metas.document.document-archive module's entry point
@@ -159,7 +159,7 @@ public class Archive_Main_Validator implements ModelValidator
 		// Services
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(ctx, ExportArchivePDF.class);
+		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(ExportArchivePDF.class);
 		if (processId <= 0)
 		{
 			final AdempiereException ex = new AdempiereException("No AD_Process_ID found for " + ExportArchivePDF.class);

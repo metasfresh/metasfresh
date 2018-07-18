@@ -1,14 +1,13 @@
 package de.metas.dlm.coordinator.impl;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.TimeUtil;
-
-import com.google.common.base.Optional;
 
 import de.metas.dlm.coordinator.IRecordInspector;
 import de.metas.dlm.migrator.IMigratorService;

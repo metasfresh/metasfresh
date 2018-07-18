@@ -5,9 +5,11 @@ import java.util.Optional;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundContractQuery;
 import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.lang.Percent;
 import de.metas.money.Money;
-import de.metas.money.grossprofit.GrossProfitComponent;
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
+import de.metas.money.MoneyService;
+import de.metas.money.grossprofit.ProfitPriceActualComponent;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import lombok.NonNull;
 
 /*
@@ -32,17 +34,20 @@ import lombok.NonNull;
  * #L%
  */
 
-public class RefundGrossProfitComponent implements GrossProfitComponent
+public class RefundProfitPriceActualComponent implements ProfitPriceActualComponent
 {
-	private final GrossProfitComputeRequest request;
+	private final CalculateProfitPriceActualRequest request;
 	private final RefundContractRepository refundContractRepository; // TODO: take our the repo/service from here !
+	private final MoneyService moneyService;
 
-	public RefundGrossProfitComponent(
-			@NonNull final GrossProfitComputeRequest request,
-			@NonNull final RefundContractRepository refundContractRepository)
+	public RefundProfitPriceActualComponent(
+			@NonNull final CalculateProfitPriceActualRequest request,
+			@NonNull final RefundContractRepository refundContractRepository,
+			@NonNull final MoneyService moneyService)
 	{
 		this.request = request;
 		this.refundContractRepository = refundContractRepository;
+		this.moneyService = moneyService;
 	}
 
 	@Override
@@ -56,12 +61,11 @@ public class RefundGrossProfitComponent implements GrossProfitComponent
 			return input;
 		}
 
-		final Money percentage = input.percentage(refundContract
+		final Percent percent = refundContract
 				.get()
 				.getRefundConfig()
-				.getPercent());
+				.getPercent();
 
-		return input.subtract(percentage);
+		return moneyService.subtractPercent(percent, input);
 	}
-
 }

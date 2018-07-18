@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.DemandGroupReference;
@@ -55,7 +55,7 @@ import de.metas.quantity.Quantity;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class NullVendorGatewayInvokerTest
 {
 	@Test
@@ -64,7 +64,7 @@ public class NullVendorGatewayInvokerTest
 		final I_C_UOM EACH = createUOM("Ea");
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(10))
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.purchaseDatePromised(SystemTime.asLocalDateTime())
@@ -74,7 +74,7 @@ public class NullVendorGatewayInvokerTest
 				.vendorProductNo("vendorProductNo_20")
 				.qtyToPurchase(Quantity.of(TEN, EACH))
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(40, 50))
-				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
+				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();
 
 		final List<PurchaseItem> purchaseItems = NullVendorGatewayInvoker.INSTANCE.placeRemotePurchaseOrder(ImmutableList.of(purchaseCandidate));

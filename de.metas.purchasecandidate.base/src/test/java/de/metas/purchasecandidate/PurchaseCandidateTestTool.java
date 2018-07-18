@@ -8,7 +8,6 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -44,10 +43,7 @@ public final class PurchaseCandidateTestTool
 {
 	public static final OrderLineId SALES_ORDER_LINE_ID = OrderLineId.ofRepoId(2);
 
-	public static final Currency CURRENCY = Currency.builder()
-			.id(CurrencyId.ofRepoId(40))
-			.precision(20)
-			.build();
+	public static final CurrencyId CURRENCY_ID = CurrencyId.ofRepoId(40);
 
 	private PurchaseCandidateTestTool()
 	{
@@ -60,14 +56,14 @@ public final class PurchaseCandidateTestTool
 
 		return PurchaseCandidate.builder()
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.of(OrderId.ofRepoId(1), SALES_ORDER_LINE_ID))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(productId)
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
-				.profitInfo(createPurchaseProfitInfo())
+				.profitInfoOrNull(createPurchaseProfitInfo())
 				.vendorId(BPartnerId.ofRepoId(7))
 				.qtyToPurchase(qtyToPurchase)
 				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
@@ -79,9 +75,9 @@ public final class PurchaseCandidateTestTool
 	public static PurchaseProfitInfo createPurchaseProfitInfo()
 	{
 		return PurchaseProfitInfo.builder()
-				.salesNetPrice(Money.of(10, CURRENCY))
-				.purchaseNetPrice(Money.of(10, CURRENCY))
-				.purchaseGrossPrice(Money.of(10, CURRENCY))
+				.profitSalesPriceActual(Money.of(10, CURRENCY_ID))
+				.profitPurchasePriceActual(Money.of(10, CURRENCY_ID))
+				.purchasePriceActual(Money.of(10, CURRENCY_ID))
 				.build();
 	}
 }

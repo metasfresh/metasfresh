@@ -13,12 +13,12 @@ package de.metas.adempiere.form.terminal.lookup;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,6 +29,7 @@ package de.metas.adempiere.form.terminal.lookup;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -51,8 +52,6 @@ import org.compiere.model.POInfoColumn;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-
-import com.google.common.base.Optional;
 
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 
@@ -113,7 +112,7 @@ public class SimpleTableLookup<T> implements ITerminalLookup
 
 	private void init()
 	{
-		this.searchColumns = new ArrayList<SearchColumn>();
+		this.searchColumns = new ArrayList<>();
 
 		final IQueryOrderByBuilder<T> orderByBuilder = queryBL.createQueryOrderByBuilder(modelClass);
 		orderByBuilder.addColumn(displayColumnName, Direction.Ascending, Nulls.Last);
@@ -193,7 +192,7 @@ public class SimpleTableLookup<T> implements ITerminalLookup
 		{
 		}
 
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder();
 		final StringBuilder orderByClause = new StringBuilder();
 		for (final SearchColumn sc : searchColumns)
@@ -207,7 +206,7 @@ public class SimpleTableLookup<T> implements ITerminalLookup
 				// task 07599:
 				//  * make sure to append '%' so that substrings are searched for properly
 				//  * unaccenting the string to also find stuff with accents, umlauts and other special letters that are unavailable on a local keyboard
-				clause = "UPPER(" + DBConstants.FUNC_unaccent_string(columnName) + ") LIKE '%' || UPPER(" + DBConstants.FUNC_unaccent_string("?") + ") || '%'"; 
+				clause = "UPPER(" + DBConstants.FUNC_unaccent_string(columnName) + ") LIKE '%' || UPPER(" + DBConstants.FUNC_unaccent_string("?") + ") || '%'";
 				params.add(getFindParameter(sc, textToUse));
 			}
 			else if (displayType == DisplayType.Integer && isInteger)
@@ -313,7 +312,7 @@ public class SimpleTableLookup<T> implements ITerminalLookup
 	public KeyNamePair resolveById(final int id)
 	{
 		final String whereClause = keyColumnName + "=?";
-		final T result = new TypedSqlQuery<T>(getCtx(), modelClass, whereClause, ITrx.TRXNAME_None)
+		final T result = new TypedSqlQuery<>(getCtx(), modelClass, whereClause, ITrx.TRXNAME_None)
 				.setParameters(id)
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
@@ -333,7 +332,7 @@ public class SimpleTableLookup<T> implements ITerminalLookup
 			return null;
 		}
 
-		final Object name = InterfaceWrapperHelper.getValue(model, displayColumnName).orNull();
+		final Object name = InterfaceWrapperHelper.getValue(model, displayColumnName).orElse(null);
 		final String nameStr = name == null ? "" : name.toString();
 		return new KeyNamePair(id.get(), nameStr);
 	}
@@ -358,7 +357,7 @@ public class SimpleTableLookup<T> implements ITerminalLookup
 	@Override
 	public List<KeyNamePair> suggest(final String text, final int maxItems)
 	{
-		final List<KeyNamePair> result = new ArrayList<KeyNamePair>();
+		final List<KeyNamePair> result = new ArrayList<>();
 		final IQuery<T> query = createSearchQuery(text);
 		if (query == null)
 		{

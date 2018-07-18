@@ -1,38 +1,34 @@
-package org.adempiere.util.api.impl;
+package de.metas.money.grossprofit;
+
+import de.metas.money.Money;
 
 /*
  * #%L
- * de.metas.util
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Map;
-
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.api.IParamsBL;
-
-public class ParamsBL implements IParamsBL
+/**
+ * Note: might be stateful.
+ */
+@FunctionalInterface
+public interface ProfitPriceActualComponent
 {
-	@Override
-	public IParams createParams(Map<String, Object> map)
-	{
-		return new Params(map);
-	}
+	Money applyToInput(Money input);
 }
