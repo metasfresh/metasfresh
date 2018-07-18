@@ -163,8 +163,14 @@ class RawWidget extends Component {
     const { widgetData } = this.props;
     const { cachedValue } = this.state;
 
+    // if there's no widget value, then nothing could've changed. Unless
+    // it's a widget for actions (think ActionButton)
+    const isValue =
+      widgetData[0].value !== undefined ||
+      (widgetData[0].action && widgetData[0].action.value !== undefined);
+
     return (
-      (widgetData[0].value !== undefined &&
+      (isValue &&
         (JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
           JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo))) ||
       (cachedValue !== undefined &&
