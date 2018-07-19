@@ -681,17 +681,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 								<goals>
 									<goal>prepare-agent</goal>
 								</goals>
-								<!-- create one aggregated jacoco.exec file for all possible modules.
-								     Thx to https://groups.google.com/forum/#!topic/jacoco/E_YQtRRNNcs
-								     Thx to https://stackoverflow.com/questions/3084629/finding-the-root-directory-of-a-multi-module-maven-reactor-project -->
-								<!--
-								Turns out that having the jacoco.exec file doesn't suffice :-(
-								Also the acutal clasys files are required in order to generate a report
-								<configuration>
-									<append>true</append>
-									<destFile>${maven.multiModuleProjectDirectory}/target/jacoco.exec</destFile>
-								</configuration>
-								-->
 							</execution>
 							<execution>
 								<id>jacoco-report</id>
