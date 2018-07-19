@@ -25,7 +25,7 @@ export default class PasswordRecovery extends Component {
   }
 
   handleKeyPress = e => {
-    console.log('keypressed: ', e.key)
+    // console.log('keypressed: ', e.key)
     // if (e.key === 'Enter') {
     //   this.handleLogin();
     // }
@@ -50,8 +50,6 @@ export default class PasswordRecovery extends Component {
     const { form } = this.state;
     const resetPassword = path === 'resetPassword' ? true : false;
 
-    console.log('submit');
-
     this.setState(
       {
         pending: true,
@@ -63,8 +61,7 @@ export default class PasswordRecovery extends Component {
             console.log('response from reset !: ', response);
           })
           .catch(error => {
-            console.log('ERROR ! ', error)
-            this.setState({ err: error.message });
+            this.setState({ err: error.data.message, pending: false });
           });
       }
     );
@@ -154,10 +151,11 @@ export default class PasswordRecovery extends Component {
   // };
 
   renderForgottenPasswordForm = () => {
-    const { pending } = this.props;
+    const { pending, err } = this.state;
 
     return (
       <div>
+        {err && <div className="input-error">{err}</div>}
         <div>
           <div className="form-control-label">
             <small>
@@ -169,6 +167,7 @@ export default class PasswordRecovery extends Component {
             name="email"
             onChange={e => this.handleChange(e, 'email')}
             className={classnames('input-primary input-block', {
+              'input-error': err,
               'input-disabled': pending,
             })}
             disabled={pending}

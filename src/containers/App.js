@@ -112,6 +112,11 @@ export default class App extends Component {
           }
         }
 
+        //reset password errors
+        if (error.response.request.responseURL.includes('resetPassword')) {
+          return Promise.reject(error.response);
+        }
+
         if (error.response.request.responseURL.includes('showError=true')) {
           const { data } = error.response;
 
