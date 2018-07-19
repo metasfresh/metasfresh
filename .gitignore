@@ -22,3 +22,4 @@ package-lock.json
 cypress/config.js
 cypress.json
 yarn-error.log
+/cypress.json
