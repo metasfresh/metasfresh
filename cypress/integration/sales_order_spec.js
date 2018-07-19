@@ -8,8 +8,7 @@ describe('New sales order test', function() {
   context('Create a new sales order', function() {
     before(function() {
       cy.get('.header-breadcrumb')
-        .find('.header-item')
-        .contains('Sales')
+        .contains('.header-item', 'Sales', { timeout: 10000 })
         .click();
 
       cy.get('.header-breadcrumb')
@@ -41,7 +40,7 @@ describe('New sales order test', function() {
     it('Fill order reference to differentiate cypress tests', function() {
       cy.get('.form-field-POReference')
         .find('input')
-        .type('Cyress Test{enter}');
+        .type(`Cypress Test ${new Date().getTime()}{enter}`);
 
       cy.get('.indicator-pending').should('exist');
       cy.wait(100);
