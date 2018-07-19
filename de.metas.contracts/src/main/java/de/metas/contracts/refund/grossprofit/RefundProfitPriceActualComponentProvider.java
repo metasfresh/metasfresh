@@ -3,9 +3,10 @@ package de.metas.contracts.refund.grossprofit;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.refund.RefundContractRepository;
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
-import de.metas.money.grossprofit.GrossProfitComponent;
-import de.metas.money.grossprofit.GrossProfitComponentProvider;
+import de.metas.money.MoneyService;
+import de.metas.money.grossprofit.ProfitPriceActualComponent;
+import de.metas.money.grossprofit.ProfitPriceActualComponentProvider;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import lombok.NonNull;
 
 /*
@@ -31,19 +32,22 @@ import lombok.NonNull;
  */
 
 @Service
-public class RefundGrossProfitComponentProvider implements GrossProfitComponentProvider
+public class RefundProfitPriceActualComponentProvider implements ProfitPriceActualComponentProvider
 {
-private final RefundContractRepository refundContractRepository;
+	private final RefundContractRepository refundContractRepository;
+	private final MoneyService moneyService;
 
-	public RefundGrossProfitComponentProvider(
-			@NonNull final RefundContractRepository refundContractRepository)
+	public RefundProfitPriceActualComponentProvider(
+			@NonNull final RefundContractRepository refundContractRepository,
+			@NonNull final MoneyService moneyService)
 	{
 		this.refundContractRepository = refundContractRepository;
+		this.moneyService = moneyService;
 	}
 
 	@Override
-	public GrossProfitComponent provideForRequest(@NonNull final GrossProfitComputeRequest request)
+	public ProfitPriceActualComponent provideForRequest(@NonNull final CalculateProfitPriceActualRequest request)
 	{
-		return new RefundGrossProfitComponent(request, refundContractRepository);
+		return new RefundProfitPriceActualComponent(request, refundContractRepository, moneyService);
 	}
 }

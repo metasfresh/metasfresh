@@ -33,7 +33,6 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
-import de.metas.money.MoneyFactory;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -69,14 +68,11 @@ public class InvoiceCandidateRepository
 	@Getter(AccessLevel.PACKAGE)
 	private final InvoiceCandidateFactory invoiceCandidateFactory;
 
-	public InvoiceCandidateRepository(
-			@NonNull final RefundContractRepository refundContractRepository,
-			@NonNull final MoneyFactory moneyFactory)
+	public InvoiceCandidateRepository(@NonNull final RefundContractRepository refundContractRepository)
 	{
 		this.invoiceCandidateFactory = new InvoiceCandidateFactory(
 				this,
-				refundContractRepository,
-				moneyFactory);
+				refundContractRepository);
 	}
 
 	public <T extends InvoiceCandidate> T ofRecord(@NonNull final I_C_Invoice_Candidate record)
@@ -223,7 +219,7 @@ public class InvoiceCandidateRepository
 
 			this.refundContract = refundContract;
 			this.invoicableFrom = Util.coalesce(invoicableFrom, refundContract.getStartDate());
-	}
+		}
 	}
 
 	public void deleteAssignments(@Nullable final DeleteAssignmentsRequest request)
@@ -321,11 +317,11 @@ public class InvoiceCandidateRepository
 		if (!refundCandidate.isPresent())
 		{
 			return Optional.empty();
-	}
+		}
 
 		final Money assignedMoney = Money.of(
 				assignmentRecord.getAssignedAmount(),
-				refundCandidate.get().getMoney().getCurrency());
+				refundCandidate.get().getMoney().getCurrencyId());
 
 		final AssignmentToRefundCandidate assignmentToRefundCandidate = new AssignmentToRefundCandidate(
 				refundCandidate.get(),
@@ -340,7 +336,7 @@ public class InvoiceCandidateRepository
 
 		invoiceCandidateRecord.setPriceActual(money.getValue());
 		invoiceCandidateRecord.setPriceEntered(money.getValue());
-		invoiceCandidateRecord.setC_Currency_ID(money.getCurrency().getId().getRepoId());
+		invoiceCandidateRecord.setC_Currency_ID(money.getCurrencyId().getRepoId());
 		saveRecord(invoiceCandidateRecord);
 	}
 
@@ -387,7 +383,7 @@ public class InvoiceCandidateRepository
 				.addFilter(overrideFilter);
 
 		return dateToInvoiceEffectiveFilter;
-}
+	}
 
 	public RefundInvoiceCandidate createRefundInvoiceCandidate(
 			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,

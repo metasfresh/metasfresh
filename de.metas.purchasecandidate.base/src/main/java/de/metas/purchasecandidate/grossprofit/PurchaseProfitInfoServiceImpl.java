@@ -13,14 +13,13 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
-import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -60,7 +59,6 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(PurchaseProfitInfoService.class);
-	private final CurrencyRepository currencyRepo;
 	private final MoneyService moneyService;
 	private final OrderLineWithGrossProfitPriceRepository grossProfitPriceRepo;
 	//
@@ -70,11 +68,9 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 
 	public PurchaseProfitInfoServiceImpl(
-			@NonNull final CurrencyRepository currencyRepo,
 			@NonNull final MoneyService moneyService,
 			@NonNull final OrderLineWithGrossProfitPriceRepository grossProfitPriceRepo)
 	{
-		this.currencyRepo = currencyRepo;
 		this.moneyService = moneyService;
 		this.grossProfitPriceRepo = grossProfitPriceRepo;
 	}
@@ -102,45 +98,46 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 
 		final BPartnerId vendorId = vendorProductInfo.getVendorId();
 		final Percent vendorFlatDiscount = vendorProductInfo.getVendorFlatDiscount();
+
 		final PricingConditionsBreak vendorPricingConditionsBreak = vendorProductInfo.getPricingConditionsBreakOrNull(qtyToPurchase);
 
-		//
 		// Compute price (gross and net) from pricing conditions break
-		final Money purchaseBasePrice;
+		final CalculatePricingConditionsRequest calculatePricingConditionsRequest = CalculatePricingConditionsRequest.builder()
+				.forcePricingConditionsBreak(vendorPricingConditionsBreak) // maybe be null
+				.pricingConditionsId(vendorProductInfo.getPricingConditions().getId())
+				.bpartnerFlatDiscount(vendorFlatDiscount)
+				.pricingCtx(createPricingContext(vendorProductInfo.getProductId(), vendorId))
+				.build();
+
+		final PricingConditionsResult vendorPricingConditionsResult = pricingConditionsService
+				.calculatePricingConditions(calculatePricingConditionsRequest)
+				.orElse(null);
+		if (vendorPricingConditionsResult == null)
+		{
+			return null;
+		}
+
+		final BigDecimal purchaseBasePriceValue = vendorPricingConditionsResult.getPriceStdOverride();
+		final CurrencyId currencyId = vendorPricingConditionsResult.getCurrencyId();
+		if (purchaseBasePriceValue == null || currencyId == null)
+		{
+			if (currencyId == null && purchaseBasePriceValue != null)
+			{
+				logger.warn("Returning null because currency is not set, even though price is set: {}", vendorPricingConditionsResult);
+			}
+			return null;
+		}
+
+		final Money purchaseBasePrice = Money.of(purchaseBasePriceValue, currencyId);
+
 		Money purchaseNetPrice;
 		if (vendorPricingConditionsBreak != null)
 		{
-			final PricingConditionsResult vendorPricingConditionsResult = pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
-					.forcePricingConditionsBreak(vendorPricingConditionsBreak)
-					.bpartnerFlatDiscount(vendorFlatDiscount)
-					.pricingCtx(createPricingContext(vendorPricingConditionsBreak, vendorId))
-					.build())
-					.orElse(null);
-			if(vendorPricingConditionsResult == null)
-			{
-				return null;
-			}
-
-			final BigDecimal purchaseBasePriceValue = vendorPricingConditionsResult.getPriceStdOverride();
-			final CurrencyId currencyId = vendorPricingConditionsResult.getCurrencyId();
-			if (purchaseBasePriceValue == null || currencyId == null)
-			{
-				if (currencyId == null && purchaseBasePriceValue != null)
-				{
-					logger.warn("Returning null because currency is not set, even though price is set: {}", vendorPricingConditionsResult);
-				}
-				return null;
-			}
-
-			final Currency currency = currencyRepo.getById(currencyId);
-			purchaseBasePrice = Money.of(purchaseBasePriceValue, currency);
-
-			purchaseNetPrice = purchaseBasePrice.subtract(vendorPricingConditionsBreak.getDiscount());
+			purchaseNetPrice = moneyService.subtractPercent(vendorPricingConditionsBreak.getDiscount(), purchaseBasePrice);
 		}
 		else
 		{
-			purchaseBasePrice = null;
-			purchaseNetPrice = null;
+			purchaseNetPrice = moneyService.subtractPercent(vendorPricingConditionsResult.getDiscount(), purchaseBasePrice);
 		}
 
 		//
@@ -149,24 +146,26 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 				&& purchaseNetPrice.signum() != 0
 				&& vendorPricingConditionsBreak.getPaymentTermIdOrNull() != null)
 		{
-			final Percent discount = paymentTermRepo.getPaymentTermDiscount(vendorPricingConditionsBreak.getDerivedPaymentTermIdOrNull());
-			purchaseNetPrice = purchaseNetPrice.subtract(discount);
+			final PaymentTermId derivedPaymentTermId = vendorPricingConditionsBreak.getDerivedPaymentTermIdOrNull();
+			final Percent discount = paymentTermRepo.getPaymentTermDiscount(derivedPaymentTermId);
+			purchaseNetPrice = moneyService.subtractPercent(discount, purchaseNetPrice);
 		}
 
 		//
 		return PurchaseProfitInfo.builder()
-				.salesNetPrice(grossProfitPriceRepo.getProfitMinBasePrice(salesOrderAndLineIds))
-				.purchaseGrossPrice(purchaseBasePrice)
-				.purchaseNetPrice(purchaseNetPrice)
+				.profitSalesPriceActual(grossProfitPriceRepo.getProfitMinBasePrice(salesOrderAndLineIds))
+				.purchasePriceActual(purchaseBasePrice)
+				.profitPurchasePriceActual(purchaseNetPrice)
 				.build();
 	}
 
-	private IPricingContext createPricingContext(final PricingConditionsBreak pricingConditionsBreak, final BPartnerId vendorId)
+	private IPricingContext createPricingContext(
+			@NonNull final ProductId productId,
+			@NonNull final BPartnerId vendorId)
 	{
 		final int countryId = bpartnersRepo.getDefaultShipToLocationCountryId(vendorId);
 
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
-		final ProductId productId = pricingConditionsBreak.getMatchCriteria().getProductId();
 		pricingCtx.setM_Product_ID(ProductId.toRepoId(productId));
 		pricingCtx.setQty(BigDecimal.ONE);
 		pricingCtx.setBPartnerId(vendorId);
@@ -177,17 +176,17 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 	}
 
 	@Override
-	public PurchaseProfitInfo convertToCurrency(@NonNull final PurchaseProfitInfo profitInfo, @NonNull final Currency currencyTo)
+	public PurchaseProfitInfo convertToCurrency(@NonNull final PurchaseProfitInfo profitInfo, @NonNull final CurrencyId currencyIdTo)
 	{
 		return profitInfo.toBuilder()
-				.salesNetPrice(convertToCurrency(profitInfo.getSalesNetPrice(), currencyTo))
-				.purchaseNetPrice(convertToCurrency(profitInfo.getPurchaseNetPrice(), currencyTo))
-				.purchaseGrossPrice(convertToCurrency(profitInfo.getPurchaseGrossPrice(), currencyTo))
+				.profitSalesPriceActual(convertToCurrency(profitInfo.getProfitSalesPriceActual(), currencyIdTo))
+				.profitPurchasePriceActual(convertToCurrency(profitInfo.getProfitPurchasePriceActual(), currencyIdTo))
+				.purchasePriceActual(convertToCurrency(profitInfo.getPurchasePriceActual(), currencyIdTo))
 				.build();
 	}
 
-	private final Optional<Money> convertToCurrency(final Optional<Money> optionalPrice, final Currency currencyTo)
+	private final Optional<Money> convertToCurrency(final Optional<Money> optionalPrice, final CurrencyId currencyIdTo)
 	{
-		return optionalPrice.map(price -> moneyService.convertMoneyToCurrency(price, currencyTo));
+		return optionalPrice.map(price -> moneyService.convertMoneyToCurrency(price, currencyIdTo));
 	}
 }

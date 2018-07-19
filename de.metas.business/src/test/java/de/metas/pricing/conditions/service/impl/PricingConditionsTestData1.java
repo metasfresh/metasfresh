@@ -55,7 +55,7 @@ public class PricingConditionsTestData1
 
 	private final I_M_Product product;
 
-	public final I_M_DiscountSchema schema;
+	public final I_M_DiscountSchema discountSchemaRecord;
 
 	public final List<I_M_DiscountSchemaBreak> breaks;
 	public final I_M_DiscountSchemaBreak break10;
@@ -68,17 +68,17 @@ public class PricingConditionsTestData1
 		final I_M_Product_Category productCategory = PricingConditionsTestUtils.createM_ProductCategory("Category1");
 		product = PricingConditionsTestUtils.createM_Product("Product1", productCategory);
 
-		schema = PricingConditionsTestUtils.createSchema();
+		discountSchemaRecord = PricingConditionsTestUtils.createSchema();
 		breaks = new ArrayList<>();
 
-		break10 = PricingConditionsTestUtils.createBreak(schema, 10);
+		break10 = PricingConditionsTestUtils.createBreak(discountSchemaRecord, 10);
 		break10.setM_Product_ID(product.getM_Product_ID());
 		break10.setBreakValue(BigDecimal.valueOf(10));
 		break10.setBreakDiscount(BigDecimal.valueOf(10));
 		save(break10);
 		breaks.add(break10);
 
-		break20 = PricingConditionsTestUtils.createBreak(schema, 20);
+		break20 = PricingConditionsTestUtils.createBreak(discountSchemaRecord, 20);
 		break20.setM_Product_ID(product.getM_Product_ID());
 		break20.setBreakValue(BigDecimal.valueOf(20));
 		break20.setBreakDiscount(BigDecimal.valueOf(20));
@@ -88,7 +88,7 @@ public class PricingConditionsTestData1
 
 	public PricingConditions getPricingConditions()
 	{
-		return pricingConditionsRepo.retrievePricingConditionsById(id(schema));
+		return pricingConditionsRepo.retrievePricingConditionsById(idOf(discountSchemaRecord));
 	}
 
 	public PricingConditionsBreakQuery createQueryForQty(final int qty)
@@ -105,7 +105,7 @@ public class PricingConditionsTestData1
 		return assertThat(actualSchemaBreak.getId().getDiscountSchemaBreakId());
 	}
 
-	private static PricingConditionsId id(final I_M_DiscountSchema record)
+	private static PricingConditionsId idOf(final I_M_DiscountSchema record)
 	{
 		return PricingConditionsId.ofDiscountSchemaId(record.getM_DiscountSchema_ID());
 	}

@@ -66,7 +66,7 @@ SELECT
 	p.description AS p_description,
 	p.documentnote AS p_documentnote,
 	o.description AS order_description,
-	COALESCE('###,###.' || (repeat('#', (length(substring(ol.PriceEntered::text,'(\.[0-9]*)'))-1))), '###,###') AS price_pattern
+	COALESCE('#,##0.' || (repeat('0', (length(substring(ol.PriceEntered::text,'(\.[0-9]*)'))-1))), '#,##0') AS price_pattern
 
 FROM
 	C_OrderLine ol

@@ -9,7 +9,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.money.Currency;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -67,7 +67,7 @@ public class PurchaseDemand
 	Quantity qtyToDeliver;
 
 	@Nullable
-	Currency currencyOrNull;
+	CurrencyId currencyIdOrNull;
 
 	@NonNull
 	LocalDateTime salesPreparationDate;

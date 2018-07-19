@@ -25,14 +25,13 @@ package org.adempiere.ad.dao.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 import org.compiere.util.TimeUtil;
-
-import com.google.common.base.Optional;
 
 /**
  * Column Value Modifier which adds hours (from specified SQL Column) to the main column value.

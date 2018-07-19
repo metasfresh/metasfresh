@@ -1,5 +1,7 @@
 package org.adempiere.acct.api.impl;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -44,8 +46,6 @@ import org.compiere.acct.PostingExecutionException;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MAcctSchema;
 import org.slf4j.Logger;
-
-import com.google.common.base.Optional;
 
 import de.metas.Profiles;
 import de.metas.acct.posting.DocumentPostRequest;

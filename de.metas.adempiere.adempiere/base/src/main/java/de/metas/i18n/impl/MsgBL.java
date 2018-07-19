@@ -204,7 +204,6 @@ public class MsgBL implements IMsgBL
 
 		private ADMessageTranslatableString(final String adMessage, final Object... msgParameters)
 		{
-			super();
 			this.adMessage = adMessage;
 			if (msgParameters == null || msgParameters.length == 0)
 			{
@@ -243,7 +242,7 @@ public class MsgBL implements IMsgBL
 
 	/**
 	 * Wraps a given <code>text</code> and will call {@link Msg#translate(Properties, String, boolean)}.
-	 * 
+	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 */
 	@lombok.EqualsAndHashCode

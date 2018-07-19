@@ -51,7 +51,7 @@ public class UnassignedPairOfCandidates
 				"The given assignableInvoiceCandidate may not have an assignment; assignableInvoiceCandidate={}; refundInvoiceCandidate={}",
 				assignableInvoiceCandidate, refundInvoiceCandidate);
 		Check.assume(
-				moneyToAssign == null || moneyToAssign.getCurrency().equals(refundInvoiceCandidate.getMoney().getCurrency()),
+				moneyToAssign == null || moneyToAssign.getCurrencyId().equals(refundInvoiceCandidate.getMoney().getCurrencyId()),
 				"The given moneyToAssign needs to be in the given refundInvoiceCandidate's currency; moneyToAssign={}; refundInvoiceCandidate={}",
 				moneyToAssign, refundInvoiceCandidate);
 

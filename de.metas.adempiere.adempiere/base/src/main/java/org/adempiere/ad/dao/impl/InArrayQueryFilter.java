@@ -177,7 +177,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 			return defaultReturnWhenEmpty;
 		}
 
-		final Object modelValue = InterfaceWrapperHelper.getValue(model, columnName).orNull();
+		final Object modelValue = InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
 		final boolean modelValueIsNull = InterfaceWrapperHelper.isNull(model, columnName);
 
 		for (final Object value : values)

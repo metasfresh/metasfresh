@@ -102,7 +102,6 @@ public class HUAccessService
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
-		final String huStatus = hu.getHUStatus();
 		if (huStatusBL.isPhysicalHU(hu) || huStatusBL.isStatusShipped(hu))
 		{
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);

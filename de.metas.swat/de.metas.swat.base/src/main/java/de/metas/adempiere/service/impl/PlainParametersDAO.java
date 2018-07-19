@@ -10,12 +10,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,13 +25,12 @@ package de.metas.adempiere.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-
-import com.google.common.base.Optional;
 
 public class PlainParametersDAO extends AbstractParametersDAO
 {
@@ -58,7 +57,7 @@ public class PlainParametersDAO extends AbstractParametersDAO
 	{
 		final String parentLinkColumnName = parentTable + "_ID";
 
-		final List<IParameterPO> paramPOs = new ArrayList<IParameterPO>();
+		final List<IParameterPO> paramPOs = new ArrayList<>();
 
 		final List<Object> rawRecords = POJOLookupMap.get().getRawRecords(parameterTable);
 		for (final Object rawRecord : rawRecords)
