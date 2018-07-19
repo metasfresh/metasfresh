@@ -101,7 +101,7 @@ node('agent && linux')
 
 				// create (among others) the jacoco.xml file to send to codacy, see https://www.eclemma.org/jacoco/trunk/doc/report-mojo.html
 				// the file input/dataFile './jacoco.exec' was set in metasfresh-parent's pom.xml, see "jacoco-prepare-agent"
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --non-recursive --batch-mode ${mvnConf.resolveParams} -Djacoco.dataFile.=./jacoco.exec org.jacoco:jacoco-maven-plugin:0.8.1:report"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --non-recursive --batch-mode ${mvnConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.8.1:report"
 				uploadCoverageResultsForCodacy('./target', 'jacoco.xml')
 
 				// TODO: configure it to only use whe we created with maven, and not collect everything again
