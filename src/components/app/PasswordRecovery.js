@@ -1,35 +1,22 @@
 import counterpart from 'counterpart';
-// import Moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-// import { List } from 'immutable';
-// import { connect } from 'react-redux';
 import { goBack, push } from 'react-router-redux';
 import classnames from 'classnames';
 
 import {
-  // getUserLang,
-  // localLoginRequest,
-  // loginCompletionRequest,
-  // loginRequest,
-  resetPassword,
-  
+  resetPasswordRequest,
+
 } from '../../api';
-// import { loginSuccess } from '../../actions/AppActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
-// import RawList from '../widget/List/RawList';
 
 export default class PasswordRecovery extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      // role: '',
-      // roleSelect: false,
       err: '',
       pending: false,
-      // dropdownToggled: false,
-      // dropdownFocused: false,
     };
   }
 
@@ -37,24 +24,50 @@ export default class PasswordRecovery extends Component {
     this.focusField.focus();
   }
 
-  // componentWillUpdate(nextProps, nextState) {
-  //   if (this.roleSelector && nextState.roleSelect) {
-  //     this.roleSelector.instanceRef.dropdown.focus();
-  //   }
-  // }
-
   handleKeyPress = e => {
+    console.log('keypressed: ', e.key)
     // if (e.key === 'Enter') {
     //   this.handleLogin();
     // }
   };
 
-  handleOnChange = e => {
+  handleChange = (e, name) => {
     e.preventDefault();
 
     this.setState({
       err: '',
+      form: {
+        ...this.state.form,
+        [`${name}`]: e.target.value,
+      },
     });
+  };
+
+  handleSubmit = e => {
+    e.preventDefault();
+
+    const { path } = this.props;
+    const { form } = this.state;
+    const resetPassword = path === 'resetPassword' ? true : false;
+
+    console.log('submit');
+
+    this.setState(
+      {
+        pending: true,
+      },
+      () => {
+        console.log('pending: ', form);
+        resetPasswordRequest(form)
+          .then(response => {
+            console.log('response from reset !: ', response);
+          })
+          .catch(error => {
+            console.log('ERROR ! ', error)
+            this.setState({ err: error.message });
+          });
+      }
+    );
   };
 
   // handleSuccess = () => {
@@ -71,25 +84,6 @@ export default class PasswordRecovery extends Component {
   //     }
   //   });
   // };
-
-  // checkIfAlreadyLogged(err) {
-  //   const { router } = this.context;
-
-  //   return localLoginRequest().then(response => {
-  //     if (response.data) {
-  //       return router.push('/');
-  //     }
-
-  //     return Promise.reject(err);
-  //   });
-  // }
-
-  handleSubmit = () => {
-    const { path } = this.props;
-    const resetPassword = path === 'resetPassword' ? true : false;
-
-    console.log('submit');
-  }
 
   // handleLogin = () => {
   //   const { dispatch, auth } = this.props;
@@ -149,28 +143,6 @@ export default class PasswordRecovery extends Component {
   //   );
   // };
 
-  // handleRoleSelect = option => {
-  //   this.setState({
-  //     role: option,
-  //   });
-  // };
-
-  // handleForgotPassword = () => {
-  //   console.log('clicked')
-  // }
-
-  // openDropdown = () => {
-  //   this.setState({
-  //     dropdownToggled: true,
-  //   });
-  // };
-
-  // closeDropdown = () => {
-  //   this.setState({
-  //     dropdownToggled: false,
-  //   });
-  // };
-
   // onFocus = () => {
   //   this.setState({
   //     dropdownFocused: true,
@@ -195,6 +167,7 @@ export default class PasswordRecovery extends Component {
           <input
             type="email"
             name="email"
+            onChange={e => this.handleChange(e, 'email')}
             className={classnames('input-primary input-block', {
               'input-disabled': pending,
             })}
@@ -220,7 +193,7 @@ export default class PasswordRecovery extends Component {
           </div>
           <input
             type="text"
-            onChange={this.handleOnChange}
+            onChange={e => this.handleChange(e, 'email')}
             name="username"
             className={classnames('input-primary input-block', {
               'input-error': err,
@@ -237,6 +210,7 @@ export default class PasswordRecovery extends Component {
           <input
             type="password"
             name="password"
+            onChange={e => this.handleChange(e, 'password')}
             className={classnames('input-primary input-block', {
               'input-disabled': pending,
             })}
@@ -260,24 +234,23 @@ export default class PasswordRecovery extends Component {
         <div className="text-center">
           <img src={logo} className="header-logo mt-2 mb-2" />
         </div>
-        {resetPassword
-          ? this.renderResetPasswordForm()
-          : this.renderForgottenPasswordForm()}
-        <div className="mt-2">
-          <button
-            className="btn btn-sm btn-block btn-meta-success"
-            onClick={this.handleSubmit}
-            disabled={pending}
-          >
-            {resetPassword
-              ? counterpart.translate(
-                  'forgotPassword.changePassword.caption'
-                )
-              : counterpart.translate(
-                  'forgotPassword.sendResetCode.caption'
-                )}
-          </button>
-        </div>
+        <form ref={c => (this.form = c)} onSubmit={this.handleSubmit}>
+          {resetPassword
+            ? this.renderResetPasswordForm()
+            : this.renderForgottenPasswordForm()}
+          <div className="mt-2">
+            <button
+              className="btn btn-sm btn-block btn-meta-success"
+              _onClick={this.handleSubmit}
+              disabled={pending}
+              type="submit"
+            >
+              {resetPassword
+                ? counterpart.translate('forgotPassword.changePassword.caption')
+                : counterpart.translate('forgotPassword.sendResetCode.caption')}
+            </button>
+          </div>
+        </form>
       </div>
     );
   }
