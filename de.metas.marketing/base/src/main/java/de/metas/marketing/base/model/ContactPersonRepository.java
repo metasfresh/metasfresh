@@ -341,15 +341,4 @@ public class ContactPersonRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public ContactPerson updateEmail(final ContactPerson contactPerson, final EmailAddress emailaddress)
-	{
-		final ContactPerson updatedContactPerson = contactPerson.toBuilder()
-				.address(emailaddress)
-				.build();
-
-		save(updatedContactPerson);
-
-		return updatedContactPerson;
-
-	}
 }

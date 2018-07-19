@@ -74,17 +74,4 @@ public class UserRepository
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
 				.build();
 	}
-
-	public User updateEmail(final User user, final String newMail)
-	{
-		final User updatedUser = user.toBuilder()
-				.emailAddress(newMail)
-				.build();
-
-		save(updatedUser);
-
-		return updatedUser;
-
-	}
-
 }

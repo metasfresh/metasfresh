@@ -1,24 +1,16 @@
 package de.metas.marketing.base.interceptor;
 
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.user.User;
-import org.adempiere.user.UserId;
-import org.adempiere.user.UserRepository;
-import org.adempiere.util.Check;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.marketing.base.UserService;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
@@ -48,21 +40,17 @@ import lombok.NonNull;
  */
 
 @Component("de.metas.marketing.base.interceptor.MKTG_ContactPerson")
-@Callout(I_MKTG_ContactPerson.class)
 @Interceptor(I_MKTG_ContactPerson.class)
 public class MKTG_ContactPerson
 {
-	public static final MKTG_ContactPerson INSTANCE = new MKTG_ContactPerson();
+	private final UserService userService;
 
-	private MKTG_ContactPerson()
-	{
-	}
+	private final ContactPersonRepository contactPersonRepo;
 
-	@Init
-	public void registerCallout()
+	private MKTG_ContactPerson(@NonNull final UserService userService, @NonNull final ContactPersonRepository contactPersonRepo)
 	{
-		// this class serves as both model validator an callout
-		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+		this.userService = userService;
+		this.contactPersonRepo = contactPersonRepo;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID)
@@ -98,44 +86,15 @@ public class MKTG_ContactPerson
 				.create();
 	}
 
-	@CalloutMethod(columnNames = { I_MKTG_ContactPerson.COLUMNNAME_EMail })
-	public void onChangeEmail(final I_MKTG_ContactPerson contactPersonRecord, final ICalloutField field)
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
+	}, ifColumnsChanged = I_MKTG_ContactPerson.COLUMNNAME_EMail)
+	public void onChangeEmail(final I_MKTG_ContactPerson contactPersonRecord)
 	{
+		final I_MKTG_ContactPerson oldContactPerson = InterfaceWrapperHelper.createOld(contactPersonRecord, I_MKTG_ContactPerson.class);
 
-		final ContactPersonRepository contactPersonRepo = Adempiere.getBean(ContactPersonRepository.class);
-		final UserRepository userRepo = Adempiere.getBean(UserRepository.class);
-
+		final String oldContactPersonMail = oldContactPerson.getEMail();
 		final ContactPerson contactPerson = contactPersonRepo.asContactPerson(contactPersonRecord);
-
-		final UserId userId = contactPerson.getUserId();
-
-		if (userId.getRepoId() <= 0)
-		{
-			// no user to update the email
-			return;
-		}
-		final User user = userRepo.getById(userId);
-
-		final String oldContactPersonMail = String.valueOf(field.getOldValue());
-		final String newContactPersonMail = contactPerson.getEmailAddessStringOrNull();
-
-		final boolean isFitForEmailUpdate = isFitForEmailUpdate(user, oldContactPersonMail);
-
-		if (isFitForEmailUpdate)
-		{
-			userRepo.updateEmail(user, newContactPersonMail);
-		}
-	}
-
-	private boolean isFitForEmailUpdate(final User user, final String oldContactPersonMail)
-	{
-		final String userEmailAddress = user.getEmailAddress();
-
-		if (Check.isEmpty(userEmailAddress))
-		{
-			return true;
-		}
-
-		return userEmailAddress.equals(oldContactPersonMail);
+		userService.updateUserEmailFromContactPerson(contactPerson, oldContactPersonMail);
 	}
 }
