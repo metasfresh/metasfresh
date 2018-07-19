@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 
 import LoginForm from '../components/app/LoginForm';
+import PasswordRecovery from '../components/app/PasswordRecovery';
 
 class Login extends Component {
   constructor(props) {
@@ -66,12 +67,18 @@ class Login extends Component {
   };
 
   render() {
-    const { redirect, auth } = this.props;
+    const { redirect, auth, splat } = this.props;
     const isYourBrowserSupported = this.browserSupport('chrome');
+    const component = splat ? (
+      <PasswordRecovery path={splat} />
+    ) : (
+      <LoginForm {...{ redirect, auth }} />
+    );
+
     return (
       <div className="fullscreen">
         <div className="login-container">
-          <LoginForm {...{ redirect, auth }} />
+          {component}
           {!isYourBrowserSupported && (
             <div className="browser-warning">
               <p>Your browser might be not fully supported.</p>
