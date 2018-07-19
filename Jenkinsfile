@@ -98,62 +98,53 @@ node('agent && linux')
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
-				} // if(params.MF_SKIP_TO_DIST)
-			}
-			stage('Build metasfresh docker image(s)')
-			{
-
-				if(params.MF_SKIP_TO_DIST)
-				{
-					echo "params.MF_SKIP_TO_DIST=true so don't create docker images"
-				}
-				else
-				{
-					final DockerConf materialDispoDockerConf = new DockerConf(
-						'metasfresh-material-dispo', // artifactName
-						MF_UPSTREAM_BRANCH, // branchName
-						MF_VERSION, // versionSuffix
-						'de.metas.material/dispo-service/target/docker' // workDir
-					);
-					dockerBuildAndPush(materialDispoDockerConf)
-				
-					final DockerConf reportDockerConf = materialDispoDockerConf
-						.withArtifactName('metasfresh-report')
-						.withWorkDir('de.metas.report/report-service/target/docker');
-					dockerBuildAndPush(reportDockerConf)
-
-					final DockerConf printDockerConf = materialDispoDockerConf
-						.withArtifactName('metasfresh-print')
-						.withWorkDir('de.metas.printing.rest-api-impl/target/docker');
-					dockerBuildAndPush(printDockerConf)
-
-					final DockerConf msv3ServerDockerConf = materialDispoDockerConf
-						.withArtifactName('de.metas.vertical.pharma.msv3.server')
-						.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
-					dockerBuildAndPush(msv3ServerDockerConf)
-
-				} // if(params.MF_SKIP_TO_DIST)
-      } // stage
-
-			if(!params.MF_SKIP_TO_DIST)
-			{
-
-        // creating one aggregated jacoco.xml and uploading it to codacy doesn't work right now :-(
-        // sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnJacocoConf.pomFile} --batch-mode ${mvnJacocoConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate"
-
-				// create one single jacoco.exec file, see https://www.eclemma.org/jacoco/trunk/doc/merge-mojo.html
-				// sh "mvn --debug --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.8.1:merge"
 
 				// create (among others) the jacoco.xml file to send to codacy, see https://www.eclemma.org/jacoco/trunk/doc/report-mojo.html
 				// the file input/dataFile './jacoco.exec' was set in metasfresh-parent's pom.xml, see "jacoco-prepare-agent"
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DdataFile=./jacoco.exec -DoutputDirectory=./jacoco-aggregate-report org.jacoco:jacoco-maven-plugin:0.8.1:report"
-        uploadCoverageResultsForCodacy('./jacoco-aggregate-report', 'jacoco.xml')
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --non-recursive --batch-mode ${mvnConf.resolveParams} -Djacoco.dataFile.=./jacoco.exec org.jacoco:jacoco-maven-plugin:0.8.1:report"
+				uploadCoverageResultsForCodacy('./target', 'jacoco.xml')
 
 				// TODO: configure it to only use whe we created with maven, and not collect everything again
-        collectTestResultsAndReportCoverage()
+				collectTestResultsAndReportCoverage()
+
+				} // if(params.MF_SKIP_TO_DIST)
 			}
 		} // withMaven
-    } // withEnv
+	} // withEnv
+
+	stage('Build metasfresh docker image(s)')
+	{
+		if(params.MF_SKIP_TO_DIST)
+		{
+			echo "params.MF_SKIP_TO_DIST=true so don't create docker images"
+		}
+		else
+		{
+			final DockerConf materialDispoDockerConf = new DockerConf(
+				'metasfresh-material-dispo', // artifactName
+				MF_UPSTREAM_BRANCH, // branchName
+				MF_VERSION, // versionSuffix
+				'de.metas.material/dispo-service/target/docker' // workDir
+			);
+			dockerBuildAndPush(materialDispoDockerConf)
+		
+			final DockerConf reportDockerConf = materialDispoDockerConf
+				.withArtifactName('metasfresh-report')
+				.withWorkDir('de.metas.report/report-service/target/docker');
+			dockerBuildAndPush(reportDockerConf)
+
+			final DockerConf printDockerConf = materialDispoDockerConf
+				.withArtifactName('metasfresh-print')
+				.withWorkDir('de.metas.printing.rest-api-impl/target/docker');
+			dockerBuildAndPush(printDockerConf)
+
+				final DockerConf msv3ServerDockerConf = materialDispoDockerConf
+				.withArtifactName('de.metas.vertical.pharma.msv3.server')
+				.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
+			dockerBuildAndPush(msv3ServerDockerConf)
+
+		} // if(params.MF_SKIP_TO_DIST)
+	} // stage
 	} // configFileProvider
 
 	// clean up the workspace after (successfull) builds
