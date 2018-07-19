@@ -63,6 +63,11 @@ node('agent && linux')
 		)
 		echo "mvnConf=${mvnConf}"
 
+		def scmVars = checkout scm; // i hope this to do all the magic we need
+		def gitCommitHash = scmVars.GIT_COMMIT
+
+		sh 'git clean -d --force -x' // clean the workspace
+
 		// we need to provide MF_VERSION because otherwise  the profile "MF_VERSION-env-missing" would be activated from the metasfresh-parent pom.xml
 		// and therefore, the jenkins information would not be added to the build.properties info file.
 		withEnv(["MF_VERSION=${MF_VERSION}"])
@@ -80,8 +85,6 @@ node('agent && linux')
 				{
         nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-				checkout scm; // i hope this to do all the magic we need
-				sh 'git clean -d --force -x' // clean the workspace
 
 				// update the parent pom version
  				mvnUpdateParentPomVersion mvnConf
@@ -99,13 +102,8 @@ node('agent && linux')
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-				// create (among others) the jacoco.xml file to send to codacy, see https://www.eclemma.org/jacoco/trunk/doc/report-mojo.html
-				// the file input/dataFile './jacoco.exec' was set in metasfresh-parent's pom.xml, see "jacoco-prepare-agent"
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --non-recursive --batch-mode ${mvnConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.8.1:report"
-				uploadCoverageResultsForCodacy('./target', 'jacoco.xml')
-
 				// TODO: configure it to only use whe we created with maven, and not collect everything again
-				collectTestResultsAndReportCoverage()
+				collectTestResultsAndReportCoverage(gitCommitHash)
 
 				} // if(params.MF_SKIP_TO_DIST)
 			}
@@ -291,29 +289,30 @@ stage('Invoke downstream jobs')
 /**
   *	collect the test results for the two preceeding stages. call this once to avoid counting the tests twice.
   */
-void collectTestResultsAndReportCoverage()
+void collectTestResultsAndReportCoverage(final String gitCommitHash)
 {
-	// after upgrading the "Pipeline Maven Integration Plugin" from 0.7 to 3.1.0, collecting the tests is now done by that plugin.
-	// comment it out to avoid all tests being counted twice
-  // junit '**/target/surefire-reports/*.xml'
-
+	// get the report for jenkins
   jacoco exclusionPattern: '**/src/main/java-gen' // collect coverage results for jenkins
+
+	uploadCoverageResultsForCodacy(gitCommitHash)
 }
 
-void uploadCoverageResultsForCodacy(final String aggregatedJacocoFilePath, final String aggregatedJacocoFilename)
+void uploadCoverageResultsForCodacy(final String gitCommitHash)
 {
+  final String version='4.0.1'
+	sh "wget --quiet https://github.com/codacy/codacy-coverage-reporter/releases/download/${version}/codacy-coverage-reporter-${version}-assembly.jar"
+
+	final String jacocoReportGlob='**/jacoco.xml' // by default, the files would be in **/target/site/jacoco/jacoco.xml, but why make assumptions here..
+  final String classpathParam = "-cp codacy-coverage-reporter-${version}-assembly.jar"
+
   withCredentials([string(credentialsId: 'codacy_project_token_for_metasfresh_repo', variable: 'CODACY_PROJECT_TOKEN')])
   {
-    withEnv(['CODACY_PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}'])
-    {
-      final String version='4.0.1'
-      final String classpathParam = "-cp codacy-coverage-reporter-${version}-assembly.jar"
-      final String reportFileParam = "-r ${aggregatedJacocoFilePath}/${aggregatedJacocoFilename}"
-      final String prefixParam = '' // let'S try if this is still useful "--prefix ${aggregatedJacocoFilePath}" // thx to https://github.com/codacy/codacy-coverage-reporter#failed-to-upload-report-not-found
-
-      sh "wget --quiet https://github.com/codacy/codacy-coverage-reporter/releases/download/${version}/codacy-coverage-reporter-${version}-assembly.jar"
-      sh "java ${classpathParam} com.codacy.CodacyCoverageReporter report -l Java ${reportFileParam} ${prefixParam}"
+    def jacocoReportFiles = findFiles(glob: jacocoReportGlob)
+		for (int i = 0; i < jacocoReportFiles.size(); i++) 
+		{
+     	sh "java ${classpathParam} com.codacy.CodacyCoverageReporter report -l Java --project-token ${CODACY_PROJECT_TOKEN} --commit-uuid ${gitCommitHash} -r ${jacocoReportFiles[i]} --partial"
     }
+    sh "java ${classpathParam} com.codacy.CodacyCoverageReporter final --project-token ${CODACY_PROJECT_TOKEN} --commit-uuid ${gitCommitHash}"
   }
 }
 
