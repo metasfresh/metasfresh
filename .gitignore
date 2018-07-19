@@ -23,3 +23,4 @@ test_setup
 src/__tests__  
 cypress
 yarn-error.log
+/cypress.json
