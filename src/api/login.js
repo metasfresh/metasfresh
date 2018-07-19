@@ -40,9 +40,9 @@ export function getUserSession() {
   return axios.get(`${config.API_URL}/userSession`);
 }
 
-export function resetPassword(form) {
+export function resetPasswordRequest(form) {
   console.log('resetPassword form: ', form)
   return axios.post(`${config.API_URL}/login/resetPassword`, {
-    ...form
+    ...form,
   });
 }

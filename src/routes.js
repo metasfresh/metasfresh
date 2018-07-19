@@ -151,18 +151,30 @@ export const getRoutes = (store, auth, plugins) => {
         <IndexRoute component={Dashboard} />
       </Route>
       <Route
-        path="/login*"
-        component={({ location, routeParams }) => {
-          console.log('NEXTSTATE: ', location, routeParams)
-          return (<Login
-            splat={routeParams.splat.replace('/', '')}
+        path="/login"
+        component={({ location }) => (
+          <Login
             redirect={location.query.redirect}
             logged={localStorage.isLogged}
             {...{ auth }}
+          />
+        )}
+      />
+      <Route
+        path="/forgottenPassword"
+        component={({ location }) => (
+          <Login splat={location.pathname.replace('/', '')} />
+        )}
+      />
+      <Route
+        path="/resetPassword/:token"
+        component={(nextState) => {
+          console.log('RESET PASSWORD: ', nextState)
+          return (<Login
+            splat={nextState.location.pathname.replace('/', '')}
           />);
         }}
-      >
-      </Route>
+      />
       <Route path="*" component={NoMatch} />
     </Route>
   );

@@ -147,7 +147,7 @@ class LoginForm extends Component {
 
   handleForgotPassword = () => {
     const { dispatch } = this.props;
-    dispatch(push('/login/forgottenPassword'));
+    dispatch(push('/forgottenPassword'));
   };
 
   openDropdown = () => {
