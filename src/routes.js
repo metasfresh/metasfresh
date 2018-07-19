@@ -151,15 +151,18 @@ export const getRoutes = (store, auth, plugins) => {
         <IndexRoute component={Dashboard} />
       </Route>
       <Route
-        path="/login"
-        component={nextState => (
-          <Login
-            redirect={nextState.location.query.redirect}
+        path="/login*"
+        component={({ location, routeParams }) => {
+          console.log('NEXTSTATE: ', location, routeParams)
+          return (<Login
+            splat={routeParams.splat.replace('/', '')}
+            redirect={location.query.redirect}
             logged={localStorage.isLogged}
             {...{ auth }}
-          />
-        )}
-      />
+          />);
+        }}
+      >
+      </Route>
       <Route path="*" component={NoMatch} />
     </Route>
   );

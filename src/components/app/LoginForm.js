@@ -146,8 +146,9 @@ class LoginForm extends Component {
   };
 
   handleForgotPassword = () => {
-    console.log('clicked')
-  }
+    const { dispatch } = this.props;
+    dispatch(push('/login/forgottenPassword'));
+  };
 
   openDropdown = () => {
     this.setState({
