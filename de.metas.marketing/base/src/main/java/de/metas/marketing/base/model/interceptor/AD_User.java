@@ -18,7 +18,6 @@ import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.ContactPersonService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
-import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_AD_User;
 import lombok.NonNull;
 
@@ -58,8 +57,7 @@ public class AD_User
 	private AD_User(@NonNull final ContactPersonService contactPersonService,
 			@NonNull final UserRepository userRepository,
 			@NonNull final CampaignRepository campaignRepository,
-			@NonNull final CampaignService converters,
-			@NonNull final ContactPersonRepository contactPersonRepo)
+			@NonNull final CampaignService converters)
 	{
 		this.contactPersonService = contactPersonService;
 		this.userRepository = userRepository;

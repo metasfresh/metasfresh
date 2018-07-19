@@ -3,7 +3,6 @@ package de.metas.marketing.base;
 import java.util.Set;
 
 import org.adempiere.user.User;
-import org.adempiere.user.UserRepository;
 import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +39,7 @@ public class ContactPersonService
 
 	private final ContactPersonRepository contactPersonRepo;
 
-	public ContactPersonService(@NonNull final UserRepository userRepo, @NonNull final ContactPersonRepository contactPersonRepo)
+	public ContactPersonService(@NonNull final ContactPersonRepository contactPersonRepo)
 	{
 		this.contactPersonRepo = contactPersonRepo;
 	}
