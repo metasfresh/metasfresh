@@ -145,6 +145,10 @@ class LoginForm extends Component {
     });
   };
 
+  handleForgotPassword = () => {
+    console.log('clicked')
+  }
+
   openDropdown = () => {
     this.setState({
       dropdownToggled: true,
@@ -256,6 +260,14 @@ class LoginForm extends Component {
               ? counterpart.translate('login.send.caption')
               : counterpart.translate('login.callToAction')}
           </button>
+        </div>
+        <div className="mt-2">
+          <a
+            className="forgot-password-link"
+            onClick={this.handleForgotPassword}
+          >
+            {counterpart.translate('login.forgotPassword.caption')}
+          </a>
         </div>
       </div>
     );

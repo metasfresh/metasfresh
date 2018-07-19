@@ -17,6 +17,7 @@ class Login extends Component {
     }
   }
 
+  // TODO: We could use current-device lib for this
   userBrowser = () => {
     const isChrome = !!window.chrome && !!window.chrome.webstore;
 
