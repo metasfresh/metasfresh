@@ -686,7 +686,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 									     Thx to https://groups.google.com/forum/#!topic/jacoco/E_YQtRRNNcs
 									     Thx to https://stackoverflow.com/questions/3084629/finding-the-root-directory-of-a-multi-module-maven-reactor-project -->
 									<append>true</append>
-									<destFile>${maven.multiModuleProjectDirectory}/jacoco.exec</destFile>
+									<destFile>${maven.multiModuleProjectDirectory}/target/jacoco.exec</destFile>
 								</configuration>
 							</execution>
 						</executions>
