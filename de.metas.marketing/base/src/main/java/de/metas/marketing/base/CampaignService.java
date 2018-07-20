@@ -2,17 +2,13 @@ package de.metas.marketing.base;
 
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.user.User;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.DefaultAddressType;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
@@ -63,11 +59,10 @@ public class CampaignService
 
 	public void addAsContactPersonsToCampaign(
 			@NonNull final Stream<User> users,
-			@NonNull final CampaignId campaignId,
-			@Nullable final DefaultAddressType defaultAddressType)
+			@NonNull final CampaignId campaignId)
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
-		users.forEach(user -> addToCampaignIfHasMaillAddressOrLocation(user, campaign, defaultAddressType));
+		users.forEach(user -> addToCampaignIfHasMaillAddressOrLocation(user, campaign));
 	}
 
 	public void addToCampaignIfHasEmailAddress(
@@ -75,67 +70,41 @@ public class CampaignService
 			@NonNull final CampaignId campaignId)
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
-		addToCampaignIfHasMaillAddressOrLocation(user, campaign, null);
+		addToCampaignIfHasMaillAddressOrLocation(user, campaign);
 	}
 
 	private void addToCampaignIfHasMaillAddressOrLocation(
 			@NonNull final User user,
-			@NonNull final Campaign campaign,
-			DefaultAddressType defaultAddressType)
+			@NonNull final Campaign campaign)
 	{
 
 		final Platform platform = platformRepository.getById(campaign.getPlatformId());
-
-		final boolean isRequiredMailAddres = platform.isRequiredMailAddress();
+		final boolean isRequiredLocation = platform.isRequiredLocation();
+		final boolean isRequiredMailAddres =  platform.isRequiredMailAddress();
 
 		if (isRequiredMailAddres && Check.isEmpty(user.getEmailAddress(), true))
 		{
-			Loggables.get().addLog("Skip user because it has no email address or campaign does not require mail address; user={}", user);
+			Loggables.get().addLog("Skip user because it has no email address or campaign does not reuquires mail adddress; user={}", user);
 			return;
 		}
 
-		final boolean isRequiredLocation = platform.isRequiredLocation();
 
-		final BPartnerLocationId addressToUse = computeAddressToUse(user, defaultAddressType);
-
-		if (isRequiredLocation && addressToUse == null)
+		BPartnerLocationId billToDefaultLocationId = null;
+		if (user.getBpartnerId() != null)
 		{
-			Loggables.get().addLog("Skip user because it has no bill to default location or campaign does not require location; user={}", user);
+			billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByBpartnerId(user.getBpartnerId());
+		}
+		if (isRequiredLocation && billToDefaultLocationId == null )
+		{
+			Loggables.get().addLog("Skip user because it has no bill to default location or campaign does not requires location; user={}", user);
 			return;
 		}
 
-		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), addressToUse);
+		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), billToDefaultLocationId);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
 		campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaign.getCampaignId());
 		contactPersonRepository.createUpdateConsent(savedContactPerson);
-	}
-
-	private BPartnerLocationId computeAddressToUse(final User user, final DefaultAddressType defaultAddressType)
-	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final BPartnerId bpartnerId = user.getBpartnerId();
-
-		if (bpartnerId == null)
-		{
-			// no address found
-			return null;
-		}
-
-		final BPartnerLocationId addressToUse;
-
-		if (DefaultAddressType.ShipToDefault.equals(defaultAddressType))
-		{
-			addressToUse = bpartnerDAO.getShiptoDefaultLocationIdByBpartnerId(bpartnerId);
-		}
-		else
-		{
-			// Keep as before, and consider Bill address as default
-			addressToUse = bpartnerDAO.getBilltoDefaultLocationIdByBpartnerId(bpartnerId);
-		}
-
-		return addressToUse;
-
 	}
 
 	public void removeFromCampaign(
