@@ -72,7 +72,9 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#4356](https://github.com/metasfresh/metasfresh/issues/4356) Sales Orderline:ERROR: duplicate key value violates unique constraint "c_paymentterm_name"
+    * Fixes a Bug when creating a new Line in Sales Order.
   * [#4370](https://github.com/metasfresh/metasfresh/issues/4370) M_ReceiptSchedule_Generate_M_InOuts error if M_ReceiptSchedule has Qty = 0
+    * Fixes a Bug in the generation Process of Receipts in case the Receipt Schedule has a quantity of 0.
 
 # metasfresh 5.65 (2018-28)
 ## Features
