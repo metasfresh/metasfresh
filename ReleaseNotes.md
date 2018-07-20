@@ -59,11 +59,15 @@ Here come the actual release notes:
   * [#4354](https://github.com/metasfresh/metasfresh/issues/4354) Notify user on error creating document PDF
     * New Feature that informs the user via Notification when a PDF cannot be created.
   * [#4359](https://github.com/metasfresh/metasfresh/issues/4359) Set default values for new Integer and YesNo AD_Columns
+    * Improvement in Applcation Dictionary, now setting default values for all Integer and Yes No Fields
   * [#4367](https://github.com/metasfresh/metasfresh/issues/4367) HU Transformation for LU, Packing Item and TU Qty default
+    * Improvement of the HU Transformation Action, now setting default Parms for Transformation.
 
 * metasfresh-webui-api
   * [#1006](https://github.com/metasfresh/metasfresh-webui-api/issues/1006) Forgot password webui api
+    * New Feature via API that allows to trigger a workflow for forgotton user passwords.
   * [#1009](https://github.com/metasfresh/metasfresh-webui-api/issues/1009) Cleanup ADProcessDAO
+    * New internal improvement on API side that is needed for the Transformation Action improvement.
 
 ## Fixes
 * metasfresh
