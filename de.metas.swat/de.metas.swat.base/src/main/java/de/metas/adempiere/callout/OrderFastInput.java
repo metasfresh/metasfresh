@@ -42,7 +42,6 @@ import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
 import org.compiere.apps.search.impl.InfoWindowGridRowBuilders;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridTab;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.X_C_Order;
@@ -50,9 +49,12 @@ import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
@@ -60,6 +62,8 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
 
@@ -79,10 +83,11 @@ public class OrderFastInput extends CalloutEngine
 {
 	public static final String OL_DONT_UPDATE_ORDER = "OrderFastInput_DontUpdateOrder_ID_";
 
-	public static final String ZERO_WEIGHT_PRODUCT_ADDED = "OrderFastInput.ZeroWeightProductAdded";
+	private static final String ZERO_WEIGHT_PRODUCT_ADDED = "OrderFastInput.ZeroWeightProductAdded";
 
 	private static final CompositeOrderFastInputHandler handlers = new CompositeOrderFastInputHandler(new ProductQtyOrderFastInputHandler());
 
+	@VisibleForTesting
 	static final Logger logger = LogManager.getLogger(OrderFastInput.class);
 
 	public static void addOrderFastInputHandler(final IOrderFastInputHandler handler)
@@ -256,7 +261,7 @@ public class OrderFastInput extends CalloutEngine
 		Services.get(IClientUI.class).invokeLater(calloutField.getWindowNo(), () -> clearFields(calloutField, save));
 	}
 
-	public static I_C_OrderLine addOrderLine(final Properties ctx, final I_C_Order order, final Consumer<Object> orderLineCustomizer)
+	public static I_C_OrderLine addOrderLine(final Properties ctx, final I_C_Order order, final Consumer<I_C_OrderLine> orderLineCustomizer)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
@@ -267,7 +272,8 @@ public class OrderFastInput extends CalloutEngine
 		if (ol.getC_UOM_ID() <= 0 && ol.getM_Product_ID() > 0)
 		{
 			// the builders did provide a product, but no UOM, so we take the product's stocking UOM
-			ol.setC_UOM_ID(ol.getM_Product().getC_UOM_ID());
+			final int stockingUOMId = Services.get(IProductBL.class).getStockingUOMId(ol.getM_Product_ID());
+			ol.setC_UOM_ID(stockingUOMId);
 		}
 
 		// start: cg: 01717
@@ -277,8 +283,8 @@ public class OrderFastInput extends CalloutEngine
 			final int C_BPartner_ID = order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
 			ol.setC_BPartner_ID(C_BPartner_ID);
 
-			final I_C_BPartner_Location bpLocation = Services.get(IOrderBL.class).getShipToLocation(order);
-			ol.setC_BPartner_Location_ID(bpLocation != null ? bpLocation.getC_BPartner_Location_ID() : -1);
+			final BPartnerLocationId bpLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
+			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoIdOr(bpLocationId, -1));
 
 			final int AD_User_ID = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
 			ol.setAD_User_ID(AD_User_ID);
@@ -338,7 +344,7 @@ public class OrderFastInput extends CalloutEngine
 				continue;
 			}
 
-			final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, ITrx.TRXNAME_None);
+			final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 
 			//
 			// 07074: Switch off weight check for all Products which are not "Artikel" (type = item)

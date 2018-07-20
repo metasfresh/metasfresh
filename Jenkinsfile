@@ -83,28 +83,25 @@ node('agent && linux')
 				}
 				else
 				{
-        nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
+					nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
+					// update the parent pom version
+					mvnUpdateParentPomVersion mvnConf
 
-				// update the parent pom version
- 				mvnUpdateParentPomVersion mvnConf
+					// set the artifact version of everything below ${mvnConf.pomFile}
+					// processAllModules=true: also update those modules that have a parent version range!
+					sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
 
-				// set the artifact version of everything below ${mvnConf.pomFile}
-				// processAllModules=true: also update those modules that have a parent version range!
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
+					// Set the metasfresh.version property from [1,10.0.0] to our current build version
+					// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
+					sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
 
-				// Set the metasfresh.version property from [1,10.0.0] to our current build version
-				// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
+					// build and deploy
+					// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
+					// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+					sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-				// build and deploy
-				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
-
-				// TODO: configure it to only use whe we created with maven, and not collect everything again
-				collectTestResultsAndReportCoverage(gitCommitHash)
-
+					publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
 				} // if(params.MF_SKIP_TO_DIST)
 			}
 		} // withMaven
@@ -284,36 +281,6 @@ stage('Invoke downstream jobs')
     }
   }
   throw all
-}
-
-/**
-  *	collect the test results for the two preceeding stages. call this once to avoid counting the tests twice.
-  */
-void collectTestResultsAndReportCoverage(final String gitCommitHash)
-{
-	// get the report for jenkins
-  jacoco exclusionPattern: '**/src/main/java-gen' // collect coverage results for jenkins
-
-	uploadCoverageResultsForCodacy(gitCommitHash)
-}
-
-void uploadCoverageResultsForCodacy(final String gitCommitHash)
-{
-  final String version='4.0.1'
-	sh "wget --quiet https://github.com/codacy/codacy-coverage-reporter/releases/download/${version}/codacy-coverage-reporter-${version}-assembly.jar"
-
-	final String jacocoReportGlob='**/jacoco.xml' // by default, the files would be in **/target/site/jacoco/jacoco.xml, but why make assumptions here..
-  final String classpathParam = "-cp codacy-coverage-reporter-${version}-assembly.jar"
-
-  withCredentials([string(credentialsId: 'codacy_project_token_for_metasfresh_repo', variable: 'CODACY_PROJECT_TOKEN')])
-  {
-    def jacocoReportFiles = findFiles(glob: jacocoReportGlob)
-		for (int i = 0; i < jacocoReportFiles.size(); i++) 
-		{
-     	sh "java ${classpathParam} com.codacy.CodacyCoverageReporter report -l Java --project-token ${CODACY_PROJECT_TOKEN} --commit-uuid ${gitCommitHash} -r ${jacocoReportFiles[i]} --partial"
-    }
-    sh "java ${classpathParam} com.codacy.CodacyCoverageReporter final --project-token ${CODACY_PROJECT_TOKEN} --commit-uuid ${gitCommitHash}"
-  }
 }
 
 /**
