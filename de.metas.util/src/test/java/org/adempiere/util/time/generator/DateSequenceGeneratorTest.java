@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
@@ -441,31 +442,22 @@ public class DateSequenceGeneratorTest
 				.dateTo(date_2014_08_31)
 				.incrementor(new WeekDayCalendarIncrementor(2, DayOfWeek.MONDAY))
 				.exploder(DaysOfWeekExploder.ALL_DAYS_OF_WEEK)
-				.enforceDateToAfterShift(true) // don't shift after end date
 				.shifter(new IDateShifter()
 				{
 
 					@Override
-					public LocalDate shiftForward(final LocalDate date)
+					public LocalDateTime shiftForward(final LocalDateTime date)
 					{
 						return date.getDayOfWeek() == DayOfWeek.SATURDAY ? date.plusDays(2) : date;
 					}
 
 					@Override
-					public LocalDate shiftBackward(final LocalDate date)
+					public LocalDateTime shiftBackward(final LocalDateTime date)
 					{
 						throw new UnsupportedOperationException();
 					}
 				})
 				.build();
-		testGenerate(generator, expectedDates);
-
-		//
-		// Test with "enforceDateToAfterShift" deactivated
-		generator = generator.toBuilder()
-				.enforceDateToAfterShift(false) // now we allow the shifted date to be after the "to()" date
-				.build();
-		expectedDates.add(LocalDate.of(2014, 9, 1)); // we expected 30.Aug(Sat) to be shifted to 1.Sep
 		testGenerate(generator, expectedDates);
 	}
 
@@ -489,7 +481,7 @@ public class DateSequenceGeneratorTest
 		LocalDate date = firstDate;
 		while (actualDates.size() < count)
 		{
-			final LocalDate prevDate = generator.generateCurrentPrevious(date).orElse(null);
+			final LocalDate prevDate = generator.calculatePrevious(date).orElse(null);
 			if (prevDate == null)
 			{
 				break;

@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -44,6 +43,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
+import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -60,6 +60,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.hash.HashableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -99,6 +100,7 @@ public class Login
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	private final transient IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final transient IUserBL userBL = Services.get(IUserBL.class);
 	private final transient IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
@@ -191,7 +193,7 @@ public class Login
 	 * @return available roles; never null or empty
 	 * @throws AdempiereException in case of any error (including no roles found)
 	 */
-	public Set<KeyNamePair> authenticate(final String username, final String password)
+	public Set<KeyNamePair> authenticate(final String username, final HashableString password)
 	{
 		log.debug("User={}", username);
 
@@ -199,10 +201,7 @@ public class Login
 		{
 			throw new AdempiereException("@UserOrPasswordInvalid@");
 		}
-
-		//
-		// Authentification
-		if (Check.isEmpty(password, false))
+		if (HashableString.isEmpty(password))
 		{
 			throw new AdempiereException("@UserOrPasswordInvalid@");
 		}
@@ -247,12 +246,11 @@ public class Login
 			}
 		}
 
-		final boolean isPasswordValid = Objects.equals(password, user.getPassword());
-		if (!isPasswordValid)
+		if (!userBL.isPasswordMatching(user, password))
 		{
 			loginFailureCount++;
 			user.setLoginFailureCount(loginFailureCount);
-			user.setLoginFailureDate(new Timestamp(System.currentTimeMillis()));
+			user.setLoginFailureDate(SystemTime.asTimestamp());
 			if (user.getLoginFailureCount() >= maxLoginFailure)
 			{
 				user.setIsAccountLocked(true);
@@ -284,11 +282,20 @@ public class Login
 			final ISystemBL systemBL = Services.get(ISystemBL.class);
 
 			if (systemBL.isRememberUserAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME"))
+			{
 				Ini.setProperty(Ini.P_UID, username);
+			}
 			else
+			{
 				Ini.setProperty(Ini.P_UID, "");
-			if (Ini.isPropertyBool(Ini.P_STORE_PWD) && systemBL.isRememberPasswordAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME"))
-				Ini.setProperty(Ini.P_PWD, password);
+			}
+			
+			if (Ini.isPropertyBool(Ini.P_STORE_PWD)
+					&& systemBL.isRememberPasswordAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME")
+					&& password.isPlain())
+			{
+				Ini.setProperty(Ini.P_PWD, password.getValue());
+			}
 		}
 
 		//
@@ -325,7 +332,7 @@ public class Login
 			throw new AdempiereException("No roles"); // TODO: specific exception
 		}
 
-		log.debug("User={} - roles #{}", username, roles);
+		log.debug("User={}, roles={}", username, roles);
 		return roles;
 	}
 

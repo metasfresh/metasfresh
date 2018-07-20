@@ -10,12 +10,12 @@ package de.metas.handlingunits.pporder.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,29 +32,28 @@ import org.adempiere.util.lang.IContextAware;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
+import lombok.NonNull;
 
 public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 {
 	@Override
-	public I_PP_Cost_Collector createReceipt(final IReceiptCostCollectorCandidate candidate, final I_M_HU hu)
+	public I_PP_Cost_Collector createReceipt(
+			@NonNull final IReceiptCostCollectorCandidate candidate,
+			@NonNull final I_M_HU hu)
 	{
-		Preconditions.checkNotNull(candidate, "candidate is null");
-		Preconditions.checkNotNull(hu, "hu is null");
-
 		// services
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		//
 		// Create & process the receipt cost collector
@@ -65,7 +64,7 @@ public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 
 		//
 		// Activate the HU (assuming it was Planning)
-		handlingUnitsBL.setHUStatusActive(ImmutableList.of(hu));
+		huStatusBL.setHUStatusActive(ImmutableList.of(hu));
 
 		return cc;
 	}

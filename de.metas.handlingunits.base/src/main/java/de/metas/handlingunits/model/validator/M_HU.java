@@ -127,7 +127,8 @@ public class M_HU
 		// Iterate children and update relevant fields from parent
 		for (final I_M_HU childHU : childHUs)
 		{
-			Services.get(IHandlingUnitsBL.class).setHUStatus(huContext, childHU, parentHUStatus);
+			Services.get(IHUStatusBL.class).setHUStatus(huContext, childHU, parentHUStatus);
+
 			childHU.setIsActive(parentIsActive);
 			childHU.setC_BPartner_ID(parentBPartnerId);
 			childHU.setC_BPartner_Location_ID(parentBPLocationId);

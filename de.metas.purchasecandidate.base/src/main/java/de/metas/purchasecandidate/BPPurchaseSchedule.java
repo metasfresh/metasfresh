@@ -7,12 +7,15 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.time.generator.Frequency;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.CalendarId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -63,6 +66,9 @@ public class BPPurchaseSchedule
 	@Getter
 	private final BPartnerId bpartnerId;
 
+	@Getter
+	private final CalendarId nonBusinessDaysCalendarId;
+
 	/** might be null, if the BPPurchaseSchedule wasn't stored yet */
 	@Getter
 	BPPurchaseScheduleId bpPurchaseScheduleId;
@@ -75,7 +81,8 @@ public class BPPurchaseSchedule
 			@Singular @NonNull final ImmutableMap<DayOfWeek, LocalTime> dailyPreparationTimes,
 			@NonNull final Duration reminderTime,
 			@NonNull final Duration leadTimeOffset,
-			@NonNull final BPartnerId bpartnerId)
+			@NonNull final BPartnerId bpartnerId,
+			@Nullable final CalendarId nonBusinessDaysCalendarId)
 	{
 		Check.assume(!reminderTime.isNegative(), "reminderTime shall be >= 0 but it was {}", reminderTime);
 		Check.assume(!leadTimeOffset.isNegative(), "leadTimeOffset shall be >= 0 but it was {}", leadTimeOffset);
@@ -87,6 +94,7 @@ public class BPPurchaseSchedule
 		this.leadTimeOffset = leadTimeOffset;
 		this.bpPurchaseScheduleId = bpPurchaseScheduleId;
 		this.bpartnerId = bpartnerId;
+		this.nonBusinessDaysCalendarId = nonBusinessDaysCalendarId;
 	}
 
 	public LocalTime getPreparationTime(final DayOfWeek dayOfWeek)

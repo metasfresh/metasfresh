@@ -30,7 +30,7 @@ import lombok.Value;
  */
 
 /**
- * Purchase candidates with the same reference belong to the same sales order line or the some other.
+ * Purchase candidates with the same reference belong to the same document line (e.g. sales order line).
  */
 @Value
 public class DemandGroupReference
@@ -38,17 +38,14 @@ public class DemandGroupReference
 	@VisibleForTesting
 	public static final String REFERENCE_NOT_YET_SET = "reference-not-yet-set";
 
-	public static DemandGroupReference createEmpty()
-	{
-		return new DemandGroupReference(REFERENCE_NOT_YET_SET);
-	}
+	public static final DemandGroupReference EMPTY = new DemandGroupReference(REFERENCE_NOT_YET_SET);
 
 	public static DemandGroupReference ofReference(@NonNull final String demandReference)
 	{
 		return new DemandGroupReference(demandReference);
 	}
 
-	private final String demandReference;
+	String demandReference;
 
 	private DemandGroupReference(@NonNull final String demandReference)
 	{

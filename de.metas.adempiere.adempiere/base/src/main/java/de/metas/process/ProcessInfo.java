@@ -175,8 +175,8 @@ public final class ProcessInfo implements Serializable
 	private Boolean async = null;
 
 	/** Parameters */
-	private List<ProcessInfoParameter> parameters = null; // lazy loaded
-	private final List<ProcessInfoParameter> parametersOverride;
+	private ImmutableList<ProcessInfoParameter> parameters = null; // lazy loaded
+	private final ImmutableList<ProcessInfoParameter> parametersOverride;
 
 	//
 	// Reporting related
@@ -498,16 +498,16 @@ public final class ProcessInfo implements Serializable
 		return adWindowId;
 	}
 
-	private static final List<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
+	private static final ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
 		if (parametersOverride == null || parametersOverride.isEmpty())
 		{
-			return parameters == null ? ImmutableList.of() : parameters;
+			return parameters == null ? ImmutableList.of() : ImmutableList.copyOf(parameters);
 		}
 
 		if (parameters == null || parameters.isEmpty())
 		{
-			return parametersOverride == null ? ImmutableList.of() : parametersOverride;
+			return parametersOverride == null ? ImmutableList.of() : ImmutableList.copyOf(parametersOverride);
 		}
 
 		final Map<String, ProcessInfoParameter> parametersEffective = new HashMap<>();
@@ -1063,7 +1063,7 @@ public final class ProcessInfo implements Serializable
 
 		public ProcessInfoBuilder setAD_ProcessByClassname(final String processClassname)
 		{
-			final int adProcessId = Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(getCtx(), processClassname);
+			final int adProcessId = Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(processClassname);
 			if (adProcessId <= 0)
 			{
 				throw new AdempiereException("@NotFound@ @AD_Process_ID@ (@Classname@: " + processClassname + ")");

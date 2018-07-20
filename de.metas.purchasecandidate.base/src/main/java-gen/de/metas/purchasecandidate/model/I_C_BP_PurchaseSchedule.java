@@ -121,6 +121,35 @@ public interface I_C_BP_PurchaseSchedule
     public static final String COLUMNNAME_C_BP_PurchaseSchedule_ID = "C_BP_PurchaseSchedule_ID";
 
 	/**
+	 * Set Kalender.
+	 * Bezeichnung des Buchführungs-Kalenders
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Calendar_ID (int C_Calendar_ID);
+
+	/**
+	 * Get Kalender.
+	 * Bezeichnung des Buchführungs-Kalenders
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Calendar_ID();
+
+	public org.compiere.model.I_C_Calendar getC_Calendar();
+
+	public void setC_Calendar(org.compiere.model.I_C_Calendar C_Calendar);
+
+    /** Column definition for C_Calendar_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_C_Calendar> COLUMN_C_Calendar_ID = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_C_Calendar>(I_C_BP_PurchaseSchedule.class, "C_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+    /** Column name C_Calendar_ID */
+    public static final String COLUMNNAME_C_Calendar_ID = "C_Calendar_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *

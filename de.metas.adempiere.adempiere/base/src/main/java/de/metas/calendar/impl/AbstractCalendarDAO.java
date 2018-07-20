@@ -13,31 +13,44 @@ package de.metas.calendar.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_NonBusinessDay;
 import org.compiere.model.I_C_Period;
+import org.compiere.util.CCache;
+import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.calendar.CalendarId;
+import de.metas.calendar.CalendarNonBusinessDays;
+import de.metas.calendar.FixedNonBusinessDay;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.NonBusinessDay;
+import de.metas.calendar.RecurrentNonBusinessDay;
+import de.metas.calendar.RecurrentNonBusinessDayFrequency;
+import lombok.NonNull;
 
 public abstract class AbstractCalendarDAO implements ICalendarDAO
 {
-	// private final transient Logger logger = CLogMgt.getLogger(getClass());
+	private final CCache<CalendarId, CalendarNonBusinessDays> nonBusinessDaysByCalendarId = CCache.newCache(I_C_NonBusinessDay.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
 	protected abstract List<I_C_Period> retrievePeriods(
 			final Properties ctx,
@@ -45,7 +58,7 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 			final Timestamp begin,
 			final Timestamp end,
 			final String trxName);
-	
+
 	@Override
 	public List<I_C_Period> retrievePeriods(
 			final Properties ctx,
@@ -59,7 +72,6 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 		return retrievePeriods(ctx, calendarId, begin, end, trxName);
 
 	}
-
 
 	@Override
 	public I_C_Period findByCalendar(final Properties ctx, final Timestamp date, final int calendarId, final String trxName)
@@ -78,4 +90,63 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 		return null;
 	}
 
+	@Override
+	public CalendarNonBusinessDays getCalendarNonBusinessDays(@NonNull final CalendarId calendarId)
+	{
+		return nonBusinessDaysByCalendarId.getOrLoad(calendarId, this::retrieveCalendarNonBusinessDays);
+	}
+
+	private CalendarNonBusinessDays retrieveCalendarNonBusinessDays(final CalendarId calendarId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final List<NonBusinessDay> nonBusinessDaysList = queryBL.createQueryBuilderOutOfTrx(I_C_NonBusinessDay.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_NonBusinessDay.COLUMNNAME_C_Calendar_ID, calendarId)
+				.create()
+				.list()
+				.stream()
+				.map(record -> toNonBusinessDay(record))
+				.collect(ImmutableList.toImmutableList());
+
+		return CalendarNonBusinessDays.builder()
+				.nonBusinessDays(nonBusinessDaysList)
+				.build();
+	}
+
+	private static final NonBusinessDay toNonBusinessDay(final I_C_NonBusinessDay record)
+	{
+		if (record.isRepeat())
+		{
+			final String frequency = record.getFrequency();
+			if (Check.isEmpty(frequency, true))
+			{
+				throw new FillMandatoryException(I_C_NonBusinessDay.COLUMNNAME_Frequency);
+			}
+
+			return RecurrentNonBusinessDay.builder()
+					.frequency(RecurrentNonBusinessDayFrequency.forCode(frequency))
+					.startDate(TimeUtil.asLocalDate(record.getDate1()))
+					.endDate(TimeUtil.asLocalDate(record.getEndDate()))
+					.name(record.getName())
+					.build();
+		}
+		else
+		{
+			return FixedNonBusinessDay.builder()
+					.fixedDate(TimeUtil.asLocalDate(record.getDate1()))
+					.name(record.getName())
+					.build();
+		}
+	}
+
+	@Override
+	public void validate(@NonNull final I_C_NonBusinessDay record)
+	{
+		if (!record.isActive())
+		{
+			return;
+		}
+
+		toNonBusinessDay(record);
+	}
 }

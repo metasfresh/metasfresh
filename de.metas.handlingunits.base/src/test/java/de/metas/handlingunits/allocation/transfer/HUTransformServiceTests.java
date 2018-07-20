@@ -36,6 +36,7 @@ import org.w3c.dom.Node;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -92,7 +93,7 @@ public class HUTransformServiceTests
 	public static boolean[] isOwnPackingMaterials = { true, false };
 
 	private IHandlingUnitsBL handlingUnitsBL;
-
+	private IHUStatusBL huStatusBL;
 	private HUTransformTestsBase testsBase;
 
 	private HUTransformService huTransformService;
@@ -102,6 +103,7 @@ public class HUTransformServiceTests
 	{
 		AdempiereTestHelper.get().init();
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		huStatusBL = Services.get(IHUStatusBL.class);
 		testsBase = new HUTransformTestsBase();
 
 		huTransformService = HUTransformService.newInstance(testsBase.getData().helper.getHUContext());
@@ -116,8 +118,8 @@ public class HUTransformServiceTests
 	{
 		testsBase.testCU_To_NewCU_MaxValueNoParent_DoIt();
 	}
-	
-	
+
+
 	/**
 	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)}
 	 * and verifies that the method does nothing if the given CU has no parent and if the given qty is equal or greater than the CU's full quantity.
@@ -874,7 +876,7 @@ public class HUTransformServiceTests
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
 		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"), data.helper.uomKg);
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
-		handlingUnitsBL.setHUStatus(data.helper.getHUContext(), cu2, X_M_HU.HUSTATUS_Active);
+		huStatusBL.setHUStatus(data.helper.getHUContext(), cu2, X_M_HU.HUSTATUS_Active);
 		save(cu2);
 
 		// invoke the method under test.

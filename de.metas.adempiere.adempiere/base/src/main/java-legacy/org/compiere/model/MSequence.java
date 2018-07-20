@@ -40,6 +40,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
+import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.logging.LogManager;
 
 /**
@@ -367,7 +368,7 @@ public class MSequence extends X_AD_Sequence
 				+ " AND AD_Table_ID IN "
 				+ "(SELECT AD_Table_ID FROM AD_Column " + "WHERE ColumnName = 'DocumentNo' OR ColumnName = 'Value')"
 				// Ability to run multiple times
-				+ " AND 'DocumentNo_' || TableName NOT IN (SELECT Name FROM AD_Sequence s " + "WHERE s.AD_Client_ID=?)";
+				+ " AND '" + IDocumentNoBuilder.PREFIX_DOCSEQ + "' || TableName NOT IN (SELECT Name FROM AD_Sequence s " + "WHERE s.AD_Client_ID=?)";
 		int counter = 0;
 		boolean success = true;
 		//
@@ -440,8 +441,6 @@ public class MSequence extends X_AD_Sequence
 		return seqPO;
 	}	// get
 
-	/** Sequence for Table Document No's */
-	public static final String PREFIX_DOCSEQ = "DocumentNo_";
 	/** Start Number */
 	public static final int INIT_NO = 1000000;	// 1 Mio
 	/** Start System Number */
@@ -499,7 +498,7 @@ public class MSequence extends X_AD_Sequence
 	{
 		this(ctx, 0, trxName);
 		setClientOrg(AD_Client_ID, 0);			// Client Ownership
-		setName(PREFIX_DOCSEQ + tableName);
+		setName(IDocumentNoBuilder.PREFIX_DOCSEQ + tableName);
 		setDescription("DocumentNo/Value for Table " + tableName);
 	}	// MSequence;
 
@@ -522,18 +521,6 @@ public class MSequence extends X_AD_Sequence
 		setCurrentNext(StartNo);
 		setCurrentNextSys(StartNo / 10);
 	}	// MSequence;
-
-	/**************************************************************************
-	 * Get Next No and increase current next
-	 *
-	 * @return next no to use
-	 */
-	public int getNextID()
-	{
-		int retValue = getCurrentNext();
-		setCurrentNext(retValue + getIncrementNo());
-		return retValue;
-	}	// getNextNo
 
 	/**
 	 * Get next number for Key column
@@ -643,7 +630,6 @@ public class MSequence extends X_AD_Sequence
 				"AD_ALERTPROCESSORLOG",
 				"AD_CHANGELOG",
 				"AD_ISSUE",
-				"AD_LDAPPROCESSORLOG",
 				"AD_MIGRATION",
 				"AD_MIGRATIONSTEP",
 				"AD_MIGRATIONDATA",
@@ -660,7 +646,6 @@ public class MSequence extends X_AD_Sequence
 				"AD_SESSION",
 				"AD_WORKFLOWPROCESSORLOG",
 				"CM_WEBACCESSLOG",
-				"C_ACCTPROCESSORLOG",
 				"IMP_ProcessorLog",
 				"K_INDEXLOG",
 				"R_REQUESTPROCESSORLOG",
@@ -678,9 +663,9 @@ public class MSequence extends X_AD_Sequence
 				"T_TRANSACTION",
 				"T_TRIALBALANCE"
 		};
-		for (int i = 0; i < exceptionTables.length; i++)
+		for (String exceptionTable : exceptionTables)
 		{
-			if (tableName.equalsIgnoreCase(exceptionTables[i]))
+			if (tableName.equalsIgnoreCase(exceptionTable))
 				return true;
 		}
 

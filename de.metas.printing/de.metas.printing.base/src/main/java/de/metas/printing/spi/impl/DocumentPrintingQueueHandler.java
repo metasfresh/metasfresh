@@ -10,12 +10,12 @@ package de.metas.printing.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,7 @@ package de.metas.printing.spi.impl;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.archive.api.IArchiveDAO;
@@ -34,8 +35,6 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.slf4j.Logger;
-
-import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.archive.model.I_AD_Archive;
@@ -52,13 +51,13 @@ import de.metas.printing.model.X_C_Printing_Queue;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
 
 /**
- * 
+ *
  * This handler adds <code>DocAction</code> specific info to a given queueItem, if that item's printOut references a DocAction PO.
  * <ul>
  * <li>C_DocType_ID: the DocAction's doc type</li>
  * <li>AD_User_ID: the DocAction's Doc_User_ID (DocAction interface method)</li>
  * </ul>
- * 
+ *
  */
 public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 {
@@ -138,7 +137,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			final I_M_InOut inout = InterfaceWrapperHelper.create(archiveRerencedModel, I_M_InOut.class);
 			handleInOuts(queueItem, inout);
 		}
-		
+
 		handleItemName(queueItem, archiveRerencedModel);
 	}
 
@@ -173,7 +172,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Sofort_DruckPDF);
 		}
 	}
-	
+
 	private void handleInOuts(final I_C_Printing_Queue queueItem, final I_M_InOut inout)
 	{
 		// services
@@ -249,7 +248,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	{
 		return ObjectUtils.toString(this);
 	}
-	
+
 	private DocumentPrintingQueueHandler()
 	{
 		super();

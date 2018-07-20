@@ -38,8 +38,8 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IDocumentNoInfo;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
@@ -116,7 +116,7 @@ public class C_Invoice
 		invoice.setM_PriceList_ID(priceListNew.getM_PriceList_ID());
 	}
 
-	@CalloutMethod(columnNames = { I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, I_C_Invoice.COLUMNNAME_AD_Org_ID})
+	@CalloutMethod(columnNames = { I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, I_C_Invoice.COLUMNNAME_AD_Org_ID })
 	public void updateFromDocType(final I_C_Invoice invoice, final ICalloutField field)
 	{
 
@@ -150,6 +150,6 @@ public class C_Invoice
 		invoice.setPaymentRule(paymentRuleToUse);
 
 		//
-		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice);
+		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice, null, null);
 	}
 }

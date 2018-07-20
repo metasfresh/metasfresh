@@ -53,28 +53,35 @@ public class ADProcessDAO implements IADProcessDAO
 	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
 	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
+	
+	@Override
+	public I_AD_Process getById(final int processId)
+	{
+		Check.assumeGreaterThanZero(processId, "processId");
+		return InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
+	}
 
 	@Override
 	public int retrieveProcessIdByClass(final Class<?> processClass)
 	{
-		final int processId = retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
+		final int processId = retriveProcessIdByClassIfUnique(processClass);
 		Check.errorIf(processId <= 0, "Could not retrieve a singe AD_Process_ID for processClass={}", processClass);
 		return processId;
 	}
 
 	@Override
-	public int retriveProcessIdByClassIfUnique(final Properties ctx, final Class<?> processClass)
+	public int retriveProcessIdByClassIfUnique(final Class<?> processClass)
 	{
 		final String processClassname = processClass.getName();
-		return retriveProcessIdByClassIfUnique(ctx, processClassname);
+		return retriveProcessIdByClassIfUnique(processClassname);
 	}
 
 	@Override
 	@Cached(cacheName = I_AD_Process.Table_Name + "#by#Classname", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public int retriveProcessIdByClassIfUnique(@CacheCtx final Properties ctx, final String processClassname)
+	public int retriveProcessIdByClassIfUnique(final String processClassname)
 	{
 		final List<Integer> processIds = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Process.class)
 				.addEqualsFilter(I_AD_Process.COLUMN_Classname, processClassname)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -101,38 +108,27 @@ public class ADProcessDAO implements IADProcessDAO
 	@Override
 	public Optional<ITranslatableString> retrieveProcessNameByClassIfUnique(final Class<?> processClass)
 	{
-		final Properties ctx = Env.getCtx();
-		final int processId = retriveProcessIdByClassIfUnique(ctx, processClass);
+		final int processId = retriveProcessIdByClassIfUnique(processClass);
 		if (processId <= 0)
 		{
 			return Optional.empty();
 		}
 
-		final I_AD_Process process = retrieveProcessById(ctx, processId);
+		final I_AD_Process process = getById(processId);
 		final ITranslatableString name = InterfaceWrapperHelper.getModelTranslationMap(process)
 				.getColumnTrl(I_AD_Process.COLUMNNAME_Name, process.getName());
 		return Optional.of(name);
 	}
 
 	@Override
-	public int retriveProcessIdByValue(final Properties ctx, final String processValue)
+	public int retriveProcessIdByValue(final String processValue)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Process.class)
 				.addEqualsFilter(I_AD_Process.COLUMN_Value, processValue)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly();
-	}
-
-	@Override
-	public I_AD_Process retrieveProcessById(final Properties ctx, final int adProcessId)
-	{
-		// NOTE: we assume IModelCacheService is activated
-		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, adProcessId, I_AD_Process.class, ITrx.TRXNAME_None);
-		Check.assumeNotNull(process, "Process shall exist for AD_Process_ID={}", adProcessId);
-		return process;
-
 	}
 
 	@Override
@@ -306,9 +302,9 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
-	public I_AD_Process_Para retriveProcessParameter(final Properties ctx, final int adProcessId, final String parameterName)
+	public I_AD_Process_Para retriveProcessParameter(final int adProcessId, final String parameterName)
 	{
-		return retrieveProcessParameters(ctx, adProcessId, ITrx.TRXNAME_None).get(parameterName);
+		return retrieveProcessParameters(Env.getCtx(), adProcessId, ITrx.TRXNAME_None).get(parameterName);
 	}
 
 	@Cached(cacheName = I_AD_Process_Para.Table_Name + "#by#" + I_AD_Process_Para.COLUMNNAME_AD_Process_ID)
@@ -317,9 +313,7 @@ public class ADProcessDAO implements IADProcessDAO
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Process_Para.class, ctx, trxName)
 				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, adProcessId)
 				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_AD_Process_Para.COLUMNNAME_SeqNo)
-				.endOrderBy()
+				.orderBy(I_AD_Process_Para.COLUMNNAME_SeqNo)
 				.create()
 				.map(I_AD_Process_Para.class, I_AD_Process_Para::getColumnName);
 	}

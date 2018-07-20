@@ -17,9 +17,7 @@ import org.junit.Test;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.refund.InvoiceCandidateRepository.RefundInvoiceCandidateQuery;
 import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
-import de.metas.money.MoneyFactory;
 
 /*
  * #%L
@@ -58,8 +56,9 @@ public class InvoiceCandidateRepositoryTest
 		AdempiereTestHelper.get().init();
 
 		invoiceCandidateRepository = new InvoiceCandidateRepository(
-				new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository())),
-				new MoneyFactory(new CurrencyRepository()));
+				new RefundContractRepository(
+						new RefundConfigRepository(
+								new InvoiceScheduleRepository())));
 
 		refundTestTools = new RefundTestTools();
 	}
@@ -74,7 +73,7 @@ public class InvoiceCandidateRepositoryTest
 		final UnassignedPairOfCandidates unAssignedPairOfCandidates = UnassignedPairOfCandidates.builder()
 				.assignableInvoiceCandidate(assignableInvoiceCandidate)
 				.refundInvoiceCandidate(refundInvoiceCandidate)
-				.moneyToAssign(Money.of(new BigDecimal("3"), refundInvoiceCandidate.getMoney().getCurrency()))
+				.moneyToAssign(Money.of(new BigDecimal("3"), refundInvoiceCandidate.getMoney().getCurrencyId()))
 				.build();
 
 		// invoke the method under test

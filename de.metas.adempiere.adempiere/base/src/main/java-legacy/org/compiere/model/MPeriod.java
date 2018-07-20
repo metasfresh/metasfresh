@@ -380,11 +380,15 @@ public class MPeriod extends X_C_Period
 	 *	@param startDate start
 	 *	@param endDate end
 	 */
-	public MPeriod (MYear year, int PeriodNo, String name, 
-		Timestamp startDate,Timestamp endDate)
+	public MPeriod (
+			final I_C_Year year,
+			final int PeriodNo,
+			final String name, 
+			final Timestamp startDate,
+			final Timestamp endDate)
 	{
-		this (year.getCtx(), 0, year.get_TrxName());
-		setClientOrg(year);
+		this (InterfaceWrapperHelper.getCtx(year), 0, InterfaceWrapperHelper.getTrxName(year));
+		setClientOrgFromModel(year);
 		setC_Year_ID(year.getC_Year_ID());
 		setPeriodNo(PeriodNo);
 		setName(name);

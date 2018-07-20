@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -223,12 +224,12 @@ public final class MLookup extends Lookup implements Serializable
 	private boolean m_refreshing = false;
 	/** Next Read for Parent */
 	private long m_nextRead = 0;
-	
+
 	private Properties getCtx()
 	{
 		return ctx;
 	}
-	
+
 	public void setCtx(final Properties ctx)
 	{
 		Check.assumeNotNull(ctx, "ctxNew not null");
@@ -261,7 +262,7 @@ public final class MLookup extends Lookup implements Serializable
 	}   // dispose
 
 	private Future<ILookupData> _futureLookupData = null;
-	private static final Future<ILookupData> FUTURELOOKUPDATA_HIGHVOLUME = new InstantFuture<ILookupData>(LOOKUPDATA_HIGHVOLUME);
+	private static final Future<ILookupData> FUTURELOOKUPDATA_HIGHVOLUME = new InstantFuture<>(LOOKUPDATA_HIGHVOLUME);
 
 	private void interruptLoading()
 	{
@@ -657,7 +658,7 @@ public final class MLookup extends Lookup implements Serializable
 
 		final Object parentValidationKey = Services.get(ILookupDAO.class).createValidationKey(validationCtx, m_info);
 		final ArrayKey validationKeyNow = createValidationKey(validationCtx, m_info, parentValidationKey);
-		if (!Check.equals(dataValidationKey, validationKeyNow))
+		if (!Objects.equals(dataValidationKey, validationKeyNow))
 		{
 			return false;
 		}
@@ -683,7 +684,7 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return "";
 		}
-		
+
 		return validation;
 	}   // getValidation
 
@@ -745,7 +746,7 @@ public final class MLookup extends Lookup implements Serializable
 		// create list
 		final ILookupData data = getData(onlyValidated, true); // loadParent=true
 
-		final List<Object> list = new ArrayList<Object>(data.getValues());
+		final List<Object> list = new ArrayList<>(data.getValues());
 
 		// Remove inactive values
 		if (onlyActive && data.hasInactiveValues())
@@ -870,7 +871,7 @@ public final class MLookup extends Lookup implements Serializable
 		if (cacheLocal && directValue != null)
 		{
 			if (m_lookupDirect == null)
-				m_lookupDirect = new HashMap<Object, NamePair>();
+				m_lookupDirect = new HashMap<>();
 			m_lookupDirect.put(key, directValue);
 		}
 
@@ -879,7 +880,7 @@ public final class MLookup extends Lookup implements Serializable
 			if (m_lookupDirectContextCache == null)
 			{
 				// FIXME: please note this is a HUGE memory consumer because nobody is reseting this cache
-				m_lookupDirectContextCache = new LinkedHashMap<Object, NamePair>();
+				m_lookupDirectContextCache = new LinkedHashMap<>();
 			}
 			m_lookupDirectContextCache.put(contextCacheKey, directValue);
 		}
@@ -1045,7 +1046,7 @@ public final class MLookup extends Lookup implements Serializable
 
 	static ArrayKey createValidationKey(final IValidationContext validationCtx, final MLookupInfo lookupInfo, final Object parentValidationKey)
 	{
-		final List<Object> keys = new ArrayList<Object>();
+		final List<Object> keys = new ArrayList<>();
 
 		// final String rowIndexStr = validationCtx.get_ValueAsString(GridTab.CTX_CurrentRow);
 		// keys.add(rowIndexStr);

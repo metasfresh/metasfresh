@@ -25,7 +25,11 @@ SELECT
 	ppi.AD_PrinterHW_MediaTray_ID,
 	pwh.Name AS PrintServiceName,
 	phwt.TrayNumber AS TrayNumber,
-	phwt.Name AS PrintServiceTray
+	phwt.Name AS PrintServiceTray,
+	o_wh.created,
+	o_wh.createdby,
+	o_wh.updated,
+	o_wh.updatedby
 
 FROM C_Order_MFGWarehouse_Report o_wh
 	LEFT JOIN C_Queue_Element wpe ON wpe.Record_ID=o_wh.C_Order_MFGWarehouse_Report_ID and wpe.AD_Table_ID=get_table_id('C_Order_MFGWarehouse_Report')

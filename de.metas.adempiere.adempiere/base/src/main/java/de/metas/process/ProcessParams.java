@@ -28,17 +28,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.ImmutableReference;
-import org.adempiere.util.lang.ObjectUtils;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * {@link IParams} implementation for {@link ProcessInfoParameter}.
@@ -46,6 +46,7 @@ import com.google.common.collect.Maps;
  * @author tsa
  *
  */
+@ToString
 public class ProcessParams implements IRangeAwareParams
 {
 	public static final ProcessParams of(final ProcessInfoParameter parameter)
@@ -68,11 +69,8 @@ public class ProcessParams implements IRangeAwareParams
 	private final IReference<List<ProcessInfoParameter>> _parametersLoader;
 	private Map<String, ProcessInfoParameter> _parameterName2parameter;
 
-	public ProcessParams(final List<ProcessInfoParameter> parameters)
+	public ProcessParams(@NonNull final List<ProcessInfoParameter> parameters)
 	{
-		super();
-
-		Check.assumeNotNull(parameters, "parameters not null");
 		_parametersLoader = ImmutableReference.valueOf(parameters);
 	}
 
@@ -81,38 +79,20 @@ public class ProcessParams implements IRangeAwareParams
 	 *
 	 * @param parametersLoader loader which will provide the paramaters. It will be called ONLY when needed
 	 */
-	public ProcessParams(final IReference<List<ProcessInfoParameter>> parametersLoader)
+	public ProcessParams(@NonNull final IReference<List<ProcessInfoParameter>> parametersLoader)
 	{
-		super();
-
-		Check.assumeNotNull(parametersLoader, "parametersLoader not null");
 		_parametersLoader = parametersLoader;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	private final Map<String, ProcessInfoParameter> getParametersMap()
 	{
-		if (_parameterName2parameter == null)
+		Map<String, ProcessInfoParameter> parameterName2parameter = _parameterName2parameter;
+		if (parameterName2parameter == null)
 		{
 			final List<ProcessInfoParameter> processInfoParameters = _parametersLoader.getValue();
-			_parameterName2parameter = Maps.uniqueIndex(
-					processInfoParameters.iterator(), new Function<ProcessInfoParameter, String>()
-					{
-
-						@Override
-						public String apply(final ProcessInfoParameter parameter)
-						{
-							return parameter.getParameterName();
-						}
-
-					});
+			parameterName2parameter = _parameterName2parameter = Maps.uniqueIndex(processInfoParameters.iterator(), ProcessInfoParameter::getParameterName);
 		}
-		return _parameterName2parameter;
+		return parameterName2parameter;
 	}
 
 	private final ProcessInfoParameter getProcessInfoParameterOrNull(final String parameterName)
@@ -124,6 +104,28 @@ public class ProcessParams implements IRangeAwareParams
 	public final boolean hasParameter(final String parameterName)
 	{
 		return getProcessInfoParameterOrNull(parameterName) != null;
+	}
+
+	@Override
+	public Object getParameterAsObject(final String parameterName)
+	{
+		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
+		if (processInfoParameter == null)
+		{
+			return null;
+		}
+		return processInfoParameter.getParameter();
+	}
+
+	@Override
+	public Object getParameter_ToAsObject(final String parameterName)
+	{
+		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
+		if (processInfoParameter == null)
+		{
+			return null;
+		}
+		return processInfoParameter.getParameter_To();
 	}
 
 	@Override

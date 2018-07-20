@@ -2,14 +2,13 @@ package de.metas.testsupport;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.assertj.core.api.AbstractAssert;
-
-import com.google.common.base.Optional;
 
 import lombok.NonNull;
 

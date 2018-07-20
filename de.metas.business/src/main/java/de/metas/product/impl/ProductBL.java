@@ -97,7 +97,7 @@ public final class ProductBL implements IProductBL
 	public I_C_UOM getStockingUOM(final int productId)
 	{
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		return getStockingUOM(product);
+		return Check.assumeNotNull(getStockingUOM(product), "The uom for productId={} may not be null", productId);
 	}
 
 	/**

@@ -1,7 +1,10 @@
 package de.metas.handlingunits.material.interceptor;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -18,6 +21,10 @@ import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUAssignmentDAO.HuAssignment;
@@ -30,6 +37,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.HUDescriptor.HUDescriptorBuilder;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
@@ -118,7 +126,7 @@ public class M_Transaction_HuDescriptor
 		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 		final IHUStorage storage = huContext.getHUStorageFactory().getStorage(hu);
 
-		// Important note:  we could have the AttributesKey without making an ASI, but we need the ASI-ID for display reasons in the material dispo window.
+		// Important note: we could have the AttributesKey without making an ASI, but we need the ASI-ID for display reasons in the material dispo window.
 		final IPair<AttributesKey, Integer> attributesKeyAndAsiId = createAttributesKeyAndAsiId(hu);
 
 		final List<IHUProductStorage> productStorages = storage.getProductStorages();
@@ -159,6 +167,40 @@ public class M_Transaction_HuDescriptor
 				.orElse(AttributesKey.NONE);
 
 		return ImmutablePair.of(attributesKey, asi.getM_AttributeSetInstance_ID());
+	}
+
+	public Map<MaterialDescriptor, Collection<HUDescriptor>> createMaterialDescriptors(
+			@NonNull final TransactionDescriptor transaction,
+			final int customerId,
+			@NonNull final Collection<HUDescriptor> huDescriptors)
+	{
+		// aggregate HUDescriptors based on their product & attributes
+		final ImmutableListMultimap<ProductDescriptor, HUDescriptor> productDescriptor2huDescriptor = //
+				Multimaps.index(huDescriptors, HUDescriptor::getProductDescriptor);
+
+		final ImmutableSet<Entry<ProductDescriptor, Collection<HUDescriptor>>> entrySet = productDescriptor2huDescriptor.asMap().entrySet();
+
+		final ImmutableMap.Builder<MaterialDescriptor, Collection<HUDescriptor>> result = ImmutableMap.builder();
+
+		for (final Entry<ProductDescriptor, Collection<HUDescriptor>> entry : entrySet)
+		{
+			final BigDecimal quantity = entry.getValue()
+					.stream()
+					.map(HUDescriptor::getQuantity)
+					.map(qty -> transaction.getMovementQty().signum() >= 0 ? qty : qty.negate()) // set signum according to transaction.movementQty
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+					.warehouseId(transaction.getWarehouseId())
+					.date(transaction.getMovementDate())
+					.productDescriptor(entry.getKey())
+					.customerId(customerId)
+					.quantity(quantity)
+					.build();
+
+			result.put(materialDescriptor, entry.getValue());
+		}
+		return result.build();
 	}
 
 }

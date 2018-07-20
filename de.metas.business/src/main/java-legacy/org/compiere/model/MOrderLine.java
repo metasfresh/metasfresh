@@ -302,7 +302,6 @@ public class MOrderLine extends X_C_OrderLine
 				getDateOrdered(),
 				taxCategoryId,
 				getParent().isSOTrx(),
-				get_TrxName(),
 				true); // throwEx
 
 		setC_Tax_ID(taxId);

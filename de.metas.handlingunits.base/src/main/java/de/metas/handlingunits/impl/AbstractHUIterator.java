@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,6 +45,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
 import de.metas.handlingunits.IHUIteratorListener;
 import de.metas.handlingunits.IHUIteratorListener.Result;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -60,8 +61,9 @@ public abstract class AbstractHUIterator implements IHUIterator
 {
 	//
 	// Services
-	protected final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	protected final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	protected final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	protected final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	//
 	// Context
@@ -77,7 +79,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 
 	//
 	// Node Iterators
-	private final Map<Class<?>, AbstractNodeIterator<?>> nodeIterators = new HashMap<Class<?>, AbstractNodeIterator<?>>();
+	private final Map<Class<?>, AbstractNodeIterator<?>> nodeIterators = new HashMap<>();
 
 	//
 	// Status
@@ -188,7 +190,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 		return date;
 	}
 
-	private final Set<Object> seenObjects = new HashSet<Object>();
+	private final Set<Object> seenObjects = new HashSet<>();
 
 	/**
 	 * Checks if given node was already visited. If node was not already visited, add it to internal visited queue
@@ -358,7 +360,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 			setCurrentNode(node);
 
 			depth++;
-			final IMutable<T> nodeMutable = new Mutable<T>(node);
+			final IMutable<T> nodeMutable = new Mutable<>(node);
 			final Result beforeResult = beforeIterate(nodeMutable);
 
 			final T nodeToUse = nodeMutable.getValue();
@@ -573,7 +575,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 			{
 				case X_M_HU_Item.ITEMTYPE_HandlingUnit:
 					return getNodeIteratorOrNull(I_M_HU.class);
-					
+
 				case X_M_HU_Item.ITEMTYPE_HUAggregate:
 					return getNodeIteratorOrNull(I_M_HU.class); // same as ITEMTYPE_HandlingUnit because in the end it's just a special kind of M_HU
 
@@ -588,7 +590,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 					// so instead of navigating through Item Storages (which is just an aggregation of VHUs storages)
 					// better navigate through its VHUs and then on VHU level we will navigate through it's Item Storages
 					return getNodeIteratorOrNull(I_M_HU.class);
-	
+
 				case X_M_HU_PI_Item.ITEMTYPE_PackingMaterial:
 					// nothing to navigate downstream of this node
 					return NULL_NODE_ITERATOR;
@@ -605,10 +607,10 @@ public abstract class AbstractHUIterator implements IHUIterator
 			if (X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType))
 			{
 				final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(node);
-				return new ArrayList<Object>(includedHUs);
+				return new ArrayList<>(includedHUs);
 			}
 
-			else if (X_M_HU_Item.ITEMTYPE_Material.equals(itemType) 
+			else if (X_M_HU_Item.ITEMTYPE_Material.equals(itemType)
 					|| X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType)) // gh #1099: this is the actual fix. Also load VHUs that are below HA items.
 
 			{
@@ -621,7 +623,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 				{
 					// Navigate included Virtual HUs
 					final List<I_M_HU> vhus = handlingUnitsDAO.retrieveVirtualHUs(node);
-					return new ArrayList<Object>(vhus);
+					return new ArrayList<>(vhus);
 				}
 			}
 			else

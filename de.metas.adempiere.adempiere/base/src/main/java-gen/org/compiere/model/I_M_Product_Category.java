@@ -127,6 +127,35 @@ public interface I_M_Product_Category
     public static final String COLUMNNAME_AD_PrintColor_ID = "AD_PrintColor_ID";
 
 	/**
+	 * Set Produkt-Nummerfolge.
+	 * Nummerfolge für Produkt-Suchschlüssel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Sequence_ProductValue_ID (int AD_Sequence_ProductValue_ID);
+
+	/**
+	 * Get Produkt-Nummerfolge.
+	 * Nummerfolge für Produkt-Suchschlüssel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Sequence_ProductValue_ID();
+
+	public org.compiere.model.I_AD_Sequence getAD_Sequence_ProductValue();
+
+	public void setAD_Sequence_ProductValue(org.compiere.model.I_AD_Sequence AD_Sequence_ProductValue);
+
+    /** Column definition for AD_Sequence_ProductValue_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Product_Category, org.compiere.model.I_AD_Sequence> COLUMN_AD_Sequence_ProductValue_ID = new org.adempiere.model.ModelColumn<I_M_Product_Category, org.compiere.model.I_AD_Sequence>(I_M_Product_Category.class, "AD_Sequence_ProductValue_ID", org.compiere.model.I_AD_Sequence.class);
+    /** Column name AD_Sequence_ProductValue_ID */
+    public static final String COLUMNNAME_AD_Sequence_ProductValue_ID = "AD_Sequence_ProductValue_ID";
+
+	/**
 	 * Set Compensation Group Schema.
 	 *
 	 * <br>Type: TableDir
@@ -413,6 +442,31 @@ public interface I_M_Product_Category
     public static final String COLUMNNAME_M_AttributeSet_ID = "M_AttributeSet_ID";
 
 	/**
+	 * Set Materialfluß.
+	 * Material Movement Policy
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMMPolicy (java.lang.String MMPolicy);
+
+	/**
+	 * Get Materialfluß.
+	 * Material Movement Policy
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMMPolicy();
+
+    /** Column definition for MMPolicy */
+    public static final org.adempiere.model.ModelColumn<I_M_Product_Category, Object> COLUMN_MMPolicy = new org.adempiere.model.ModelColumn<I_M_Product_Category, Object>(I_M_Product_Category.class, "MMPolicy", null);
+    /** Column name MMPolicy */
+    public static final String COLUMNNAME_MMPolicy = "MMPolicy";
+
+	/**
 	 * Set Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
@@ -463,31 +517,6 @@ public interface I_M_Product_Category
     public static final org.adempiere.model.ModelColumn<I_M_Product_Category, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_Parent_ID = new org.adempiere.model.ModelColumn<I_M_Product_Category, org.compiere.model.I_M_Product_Category>(I_M_Product_Category.class, "M_Product_Category_Parent_ID", org.compiere.model.I_M_Product_Category.class);
     /** Column name M_Product_Category_Parent_ID */
     public static final String COLUMNNAME_M_Product_Category_Parent_ID = "M_Product_Category_Parent_ID";
-
-	/**
-	 * Set Materialfluß.
-	 * Material Movement Policy
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMMPolicy (java.lang.String MMPolicy);
-
-	/**
-	 * Get Materialfluß.
-	 * Material Movement Policy
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMMPolicy();
-
-    /** Column definition for MMPolicy */
-    public static final org.adempiere.model.ModelColumn<I_M_Product_Category, Object> COLUMN_MMPolicy = new org.adempiere.model.ModelColumn<I_M_Product_Category, Object>(I_M_Product_Category.class, "MMPolicy", null);
-    /** Column name MMPolicy */
-    public static final String COLUMNNAME_MMPolicy = "MMPolicy";
 
 	/**
 	 * Set MRP ausschliessen.

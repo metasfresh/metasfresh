@@ -187,7 +187,7 @@ public class AbstractTestSupport
 	protected I_M_AttributeInstance attributeInstance(final int setId, final String value)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_M_AttributeInstance attributeInstance = db.getFirstOnly(I_M_AttributeInstance.class, pojo -> Objects.equals(pojo.getM_AttributeValue(), value) && Objects.equals(pojo.getM_AttributeSetInstance_ID(), setId));
+		I_M_AttributeInstance attributeInstance = db.getFirstOnly(I_M_AttributeInstance.class, pojo -> Objects.equals(pojo.getM_AttributeValue().getValue(), value) && Objects.equals(pojo.getM_AttributeSetInstance_ID(), setId));
 
 		if (attributeInstance == null)
 		{

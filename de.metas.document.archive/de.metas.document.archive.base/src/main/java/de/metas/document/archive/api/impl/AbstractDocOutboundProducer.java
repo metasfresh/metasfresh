@@ -13,15 +13,14 @@ package de.metas.document.archive.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -29,10 +28,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.api.IDocOutboundProducer;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
@@ -40,6 +40,7 @@ import de.metas.document.archive.async.spi.impl.ProcessPrintingQueueWorkpackageP
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * {@link IDocOutboundProducer} base implementation.
@@ -156,19 +157,32 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 	}
 
 	@Override
-	public void createDocOutbound(final Object model)
+	public void createDocOutbound(@NonNull final Object model)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final IWorkPackageQueue packageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, DocOutboundWorkpackageProcessor.class);
-		packageQueue.enqueueElement(model);
+		enqueueModelForWorkpackageProcessor(model, DocOutboundWorkpackageProcessor.class);
 	}
 
 	@Override
-	public void voidDocOutbound(final Object model)
+	public void voidDocOutbound(@NonNull final Object model)
+	{
+		enqueueModelForWorkpackageProcessor(model, ProcessPrintingQueueWorkpackageProcessor.class);
+	}
+
+	private void enqueueModelForWorkpackageProcessor(
+			@NonNull final Object model,
+			@NonNull final Class<? extends IWorkpackageProcessor> packageProcessorClass)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 
-		final IWorkPackageQueue packageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, ProcessPrintingQueueWorkpackageProcessor.class);
-		packageQueue.enqueueElement(model);
+		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+
+		workPackageQueueFactory
+				.getQueueForEnqueuing(ctx, packageProcessorClass)
+				.newBlock()
+				.newWorkpackage()
+				.bindToThreadInheritedTrx()
+				.addElement(model)
+				.setUserInChargeId(Env.getAD_User_ID())
+				.build();
 	}
 }
