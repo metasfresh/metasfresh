@@ -41,8 +41,19 @@ export function getUserSession() {
 }
 
 export function resetPasswordRequest(form) {
-  console.log('resetPassword form: ', form)
   return axios.post(`${config.API_URL}/login/resetPassword`, {
     ...form,
   });
+}
+
+export function getResetPasswordInfo(token) {
+  return axios.get(`${config.API_URL}/login/resetPassword/${token}`);
+}
+
+export function resetPasswordComplete(token) {
+  return axios.post(`${config.API_URL}/login/resetPassword/${token}`);
+}
+
+export function resetPasswordGetAvatar(token) {
+  return axios.get(`${config.API_URL}/login/resetPassword/${token}/avatar`);
 }
