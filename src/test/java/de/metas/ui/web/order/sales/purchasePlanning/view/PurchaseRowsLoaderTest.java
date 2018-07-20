@@ -11,6 +11,7 @@ import java.util.List;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.user.UserRepository;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
@@ -34,6 +35,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
@@ -164,7 +166,7 @@ public class PurchaseRowsLoaderTest
 		final PurchaseDemandWithCandidatesService purchaseDemandWithCandidatesService = new PurchaseDemandWithCandidatesService(
 				purchaseCandidateRepository,
 				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()),
-				new VendorProductInfoService(),
+				new VendorProductInfoService(new BPartnerBL(new UserRepository())),
 				purchaseProfitInfoService);
 
 		final PurchaseRowFactory purchaseRowFactory = new PurchaseRowFactory(
