@@ -50,11 +50,11 @@ public class AD_User
 	private final static String MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org = "MKTG_Campaign_NewsletterGroup_Missing_For_Org";
 
 	private final CampaignRepository campaignRepository;
-	private final CampaignService converters;
+	private final CampaignService campaignService;
 	private final UserRepository userRepository;
 	private final ContactPersonService contactPersonService;
 
-	private AD_User(@NonNull final ContactPersonService contactPersonService,
+	public AD_User(@NonNull final ContactPersonService contactPersonService,
 			@NonNull final UserRepository userRepository,
 			@NonNull final CampaignRepository campaignRepository,
 			@NonNull final CampaignService converters)
@@ -62,7 +62,7 @@ public class AD_User
 		this.contactPersonService = contactPersonService;
 		this.userRepository = userRepository;
 		this.campaignRepository = campaignRepository;
-		this.converters = converters;
+		this.campaignService = converters;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_AD_User.COLUMNNAME_IsNewsletter })
@@ -85,7 +85,7 @@ public class AD_User
 				throw new AdempiereException(translatableMsgText);
 			}
 			final User user = userRepository.ofRecord(userRecord);
-			converters.addToCampaignIfHasEmailAddress(user, defaultcampaignId.get());
+			campaignService.addToCampaignIfHasEmailAddress(user, defaultcampaignId.get());
 		}
 		else
 		{
@@ -94,7 +94,7 @@ public class AD_User
 				return; // nothing to do
 			}
 			final User user = userRepository.ofRecord(userRecord);
-			converters.removeFromCampaign(user, defaultcampaignId.get());
+			campaignService.removeFromCampaign(user, defaultcampaignId.get());
 		}
 	}
 
