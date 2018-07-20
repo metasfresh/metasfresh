@@ -57,12 +57,12 @@ public class AD_User
 	public AD_User(@NonNull final ContactPersonService contactPersonService,
 			@NonNull final UserRepository userRepository,
 			@NonNull final CampaignRepository campaignRepository,
-			@NonNull final CampaignService converters)
+			@NonNull final CampaignService campaignService)
 	{
 		this.contactPersonService = contactPersonService;
 		this.userRepository = userRepository;
 		this.campaignRepository = campaignRepository;
-		this.campaignService = converters;
+		this.campaignService = campaignService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_AD_User.COLUMNNAME_IsNewsletter })
