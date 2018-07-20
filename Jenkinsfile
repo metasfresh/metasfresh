@@ -122,12 +122,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 <code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${publishedDockerImageName}</code></li>
 </ul>"""
 
-				// after upgrading the "Pipeline Maven Integration Plugin" from 0.7 to 3.1.0, collecting the tests is now done by that plugin.
-				// comment it out to avoid all tests being counted twice
-				// junit '**/target/surefire-reports/*.xml'
+			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh-webui-api_repo')
 
-				// thx to https://github.com/jenkinsci/jacoco-plugin/pull/83
-				jacoco exclusionPattern: '**/src/main/java-gen'
       } // stage
 		  } // withMaven
 			} // withEnv
