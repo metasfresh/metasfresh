@@ -16,6 +16,7 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.report.IJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -27,6 +28,10 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.Language;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.Recipient;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import lombok.NonNull;
@@ -100,7 +105,7 @@ public class HUReportExecutor
 		this.numberOfCopies = numberOfCopies;
 		return this;
 	}
-	
+
 	public HUReportExecutor printPreview(final boolean printPreview)
 	{
 		this.printPreview = printPreview;
@@ -326,7 +331,7 @@ public class HUReportExecutor
 				return;
 			}
 
-			executeNow(HUReportRequest.builder()
+			final HUReportExecutorResult result = executeNow(HUReportRequest.builder()
 					.ctx(ctx)
 					.adProcessId(adProcessId)
 					.windowNo(windowNo)
@@ -334,6 +339,25 @@ public class HUReportExecutor
 					.adLanguage(adLanguage)
 					.huIdsToProcess(ImmutableSet.copyOf(huIdsToProcess))
 					.build());
+
+			final ProcessExecutionResult processExecutionResult = result.getProcessExecutionResult();
+			if (processExecutionResult.isError() && !processExecutionResult.isErrorWasReportedToUser())
+			{
+				final ProcessInfo processInfo = result.getProcessInfo();
+				final Recipient recipient = Recipient.userAndRole(processInfo.getAD_User_ID(), processInfo.getAD_Role_ID());
+
+				final String plainMessage = StringUtils.formatMessage("AD_PInstance_ID={}\n Summary:\n{}", processInfo.getAD_PInstance_ID(), processExecutionResult.getSummary());
+
+				final INotificationBL notificationBL = Services.get(INotificationBL.class);
+				final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
+						.contentPlain(plainMessage)
+						.important(true)
+						.recipient(recipient)
+						.build();
+
+				notificationBL.send(userNotificationRequest);
+				processExecutionResult.setErrorWasReportedToUser();
+			}
 		}
 	}
 
