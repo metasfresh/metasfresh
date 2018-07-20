@@ -245,8 +245,6 @@ public interface IBPartnerDAO extends ISingletonService
 	BPartnerLocationId getBilltoDefaultLocationIdByBpartnerId(@NonNull final BPartnerId bpartnerId);
 
 	String getBPartnerNameById(BPartnerId bpartnerId);
-
+	
 	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
-
-	BPartnerLocationId getShiptoDefaultLocationIdByBpartnerId(BPartnerId bpartnerId);
 }
