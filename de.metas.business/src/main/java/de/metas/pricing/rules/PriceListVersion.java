@@ -42,9 +42,6 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		// !!IMPORTANT!! with this change of implementation, we loose the bomPriceList calculation.
 		// Should bomPricing be needed in future, please consider adding a dedicated pricing rule
 		final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
-
-		//
-		//
 		if (productPrice == null)
 		{
 			log.trace("Not found (PLV)");
