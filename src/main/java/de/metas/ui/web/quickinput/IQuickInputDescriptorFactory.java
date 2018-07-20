@@ -49,7 +49,7 @@ public interface IQuickInputDescriptorFactory
 	 */
 	Set<MatchingKey> getMatchingKeys();
 
-	QuickInputDescriptor createQuickInputEntityDescriptor(
+	QuickInputDescriptor createQuickInputDescriptor(
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,

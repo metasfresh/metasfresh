@@ -33,7 +33,6 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
@@ -76,7 +75,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public QuickInputDescriptor createQuickInputEntityDescriptor(
+	public QuickInputDescriptor createQuickInputDescriptor(
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,
@@ -88,8 +87,7 @@ import lombok.NonNull;
 				detailId,
 				soTrx);
 
-		final QuickInputLayoutDescriptor layout = createLayout(
-				entityDescriptor);
+		final QuickInputLayoutDescriptor layout = createLayout(entityDescriptor);
 
 		return QuickInputDescriptor.of(
 				entityDescriptor,
@@ -115,24 +113,23 @@ import lombok.NonNull;
 			final DetailId detailId,
 			@NonNull final Optional<Boolean> soTrx)
 	{
-		final DocumentEntityDescriptor.Builder entityDescriptor = DocumentEntityDescriptor.builder()
+		return DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.QuickInput, documentTypeId)
 				.setIsSOTrx(soTrx)
 				.disableDefaultTableCallouts()
 				// Defaults:
 				.setDetailId(detailId)
-				.setTableName(I_C_OrderLine.Table_Name) // TODO: figure out if it's needed
-		;
-		return entityDescriptor;
+				.setTableName(I_C_OrderLine.Table_Name); // TODO: figure out if it's needed
 	}
 
-	private Builder createProductFieldBuilder(
-			@NonNull final Optional<Boolean> soTrx)
+	private DocumentFieldDescriptor.Builder createProductFieldBuilder(@NonNull final Optional<Boolean> soTrx)
 	{
-		final ProductLookupDescriptor productLookupDescriptor = createProductLookupDescriptor(soTrx);
-		final ITranslatableString caption = Services.get(IMsgBL.class).translatable(IOrderLineQuickInput.COLUMNNAME_M_Product_ID);
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		final Builder productFieldBuilder = DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_Product_ID)
+		final ProductLookupDescriptor productLookupDescriptor = createProductLookupDescriptor(soTrx);
+		final ITranslatableString caption = msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_Product_ID);
+
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_Product_ID)
 				.setLookupDescriptorProvider(productLookupDescriptor)
 				.setCaption(caption)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
@@ -142,15 +139,13 @@ import lombok.NonNull;
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCallout(OrderLineQuickInputDescriptorFactory::onProductChangedCallout)
 				.addCharacteristic(Characteristic.PublicField);
-		return productFieldBuilder;
 	}
 
 	private ProductLookupDescriptor createProductLookupDescriptor(@NonNull final Optional<Boolean> soTrx)
 	{
-		final ProductLookupDescriptor productLookupDescriptor;
 		if (soTrx.orElse(false))
 		{
-			productLookupDescriptor = ProductLookupDescriptor
+			return ProductLookupDescriptor
 					.builderWithStockInfo()
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
@@ -160,7 +155,7 @@ import lombok.NonNull;
 		}
 		else
 		{
-			productLookupDescriptor = ProductLookupDescriptor
+			return ProductLookupDescriptor
 					.builderWithStockInfo()
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
@@ -168,7 +163,6 @@ import lombok.NonNull;
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.build();
 		}
-		return productLookupDescriptor;
 	}
 
 	private static void onProductChangedCallout(final ICalloutField calloutField)
@@ -193,10 +187,12 @@ import lombok.NonNull;
 		Services.get(IHUOrderBL.class).findM_HU_PI_Item_Product(order, quickInputProduct, quickInputModel::setM_HU_PI_Item_Product);
 	}
 
-	private static Builder createPackingInstructionFieldBuilder()
+	private static DocumentFieldDescriptor.Builder createPackingInstructionFieldBuilder()
 	{
-		final Builder packingInstructionFieldBuilder = DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
-				.setCaption(Services.get(IMsgBL.class).translatable(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
@@ -211,12 +207,11 @@ import lombok.NonNull;
 				.setMandatoryLogic(ConstantLogicExpression.FALSE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField);
-		return packingInstructionFieldBuilder;
 	}
 
-	private static Builder createQuantityFieldBuilder()
+	private static DocumentFieldDescriptor.Builder createQuantityFieldBuilder()
 	{
-		final Builder qtyFieldBuilder = DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_Qty)
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_Qty)
 				.setCaption(Services.get(IMsgBL.class).translatable(IOrderLineQuickInput.COLUMNNAME_Qty))
 				.setWidgetType(DocumentFieldWidgetType.Quantity)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
@@ -224,14 +219,13 @@ import lombok.NonNull;
 				.setMandatoryLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField);
-		return qtyFieldBuilder;
 	}
 
 	private static QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
 		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
-				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" } //
-				, { "Qty" }
+				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" },
+				{ "Qty" }
 		});
 	}
 }

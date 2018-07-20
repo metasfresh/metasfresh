@@ -75,7 +75,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 	}
 
 	@Override
-	public QuickInputDescriptor createQuickInputEntityDescriptor(
+	public QuickInputDescriptor createQuickInputDescriptor(
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,

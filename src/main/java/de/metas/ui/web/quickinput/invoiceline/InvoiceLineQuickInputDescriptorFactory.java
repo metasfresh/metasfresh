@@ -57,7 +57,7 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 	}
 
 	@Override
-	public QuickInputDescriptor createQuickInputEntityDescriptor(
+	public QuickInputDescriptor createQuickInputDescriptor(
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,

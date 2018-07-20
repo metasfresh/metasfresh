@@ -1,7 +1,5 @@
 package de.metas.ui.web.quickinput.orderline;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -14,8 +12,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -33,6 +31,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineInputValidator;
 import de.metas.order.OrderLineInputValidatorResults;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
@@ -69,11 +68,10 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private static final transient Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
 	private final transient IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 
-	final Collection<IOrderLineInputValidator> validators = Adempiere.getBeansOfType(IOrderLineInputValidator.class);
+	private final Collection<IOrderLineInputValidator> validators = Adempiere.getBeansOfType(IOrderLineInputValidator.class);
 
 	public OrderLineQuickInputProcessor()
 	{
-		super();
 	}
 
 	@Override
@@ -84,15 +82,19 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		validateInput(quickInput);
 
-		final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLineObj -> updateOrderLine(orderLineObj, quickInput));
+		final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLine -> updateOrderLine(orderLine, quickInput));
 		final int newOrderLineId = newOrderLine.getC_OrderLine_ID();
 		return DocumentId.of(newOrderLineId);
 	}
 
 	private void validateInput(final QuickInput quickInput)
 	{
-		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		validateInput(quickInput, validators);
+	}
 
+	private static void validateInput(final QuickInput quickInput, final Collection<IOrderLineInputValidator> validators)
+	{
+		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		if (!order.isSOTrx())
 		{
 			return;
@@ -125,14 +127,13 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 	}
 
-	private final void updateOrderLine(final Object orderLineObj, final QuickInput fromQuickInput)
+	private final void updateOrderLine(final I_C_OrderLine newOrderLine, final QuickInput fromQuickInput)
 	{
 		final I_C_Order order = fromQuickInput.getRootDocumentAs(I_C_Order.class);
 		final IOrderLineQuickInput fromOrderLineQuickInput = fromQuickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 		final IHUPackingAware quickInputPackingAware = createQuickInputPackingAware(order, fromOrderLineQuickInput);
 
-		final I_C_OrderLine orderLineToUpdate = InterfaceWrapperHelper.create(orderLineObj, I_C_OrderLine.class);
-		final IHUPackingAware orderLinePackingAware = OrderLineHUPackingAware.of(orderLineToUpdate);
+		final IHUPackingAware orderLinePackingAware = OrderLineHUPackingAware.of(newOrderLine);
 
 		huPackingAwareBL.prepareCopyFrom(quickInputPackingAware)
 				.overridePartner(false)
@@ -163,15 +164,17 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			@NonNull final I_C_Order order,
 			@NonNull final IOrderLineQuickInput quickInput)
 	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
 		huPackingAware.setC_BPartner(order.getC_BPartner());
 		huPackingAware.setDateOrdered(order.getDateOrdered());
 		huPackingAware.setInDispute(false);
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInput.getM_Product_ID());
-		final I_M_Product product = load(productAndAttributes.getProductId(), I_M_Product.class);
-		huPackingAware.setM_Product_ID(product.getM_Product_ID());
-		huPackingAware.setC_UOM(product.getC_UOM());
+		final I_C_UOM uom = productBL.getStockingUOM(productAndAttributes.getProductId());
+		huPackingAware.setM_Product_ID(productAndAttributes.getProductId());
+		huPackingAware.setC_UOM(uom);
 		huPackingAware.setM_AttributeSetInstance_ID(createASI(productAndAttributes));
 
 		final I_M_HU_PI_Item_Product piItemProduct = quickInput.getM_HU_PI_Item_Product();

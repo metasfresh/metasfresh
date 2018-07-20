@@ -65,7 +65,7 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 	}
 
 	@Override
-	public QuickInputDescriptor createQuickInputEntityDescriptor(
+	public QuickInputDescriptor createQuickInputDescriptor(
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,
