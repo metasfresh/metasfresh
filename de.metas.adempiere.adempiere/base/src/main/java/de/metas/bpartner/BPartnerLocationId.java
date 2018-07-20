@@ -41,10 +41,15 @@ public class BPartnerLocationId implements RepoIdAware
 		return new BPartnerLocationId(bpartnerId, bpartnerLocationId);
 	}
 
-	private BPartnerLocationId(@NonNull final BPartnerId bpartnerID, final int bpartnerLocationId)
+	public static BPartnerLocationId ofRepoId(final int bpartnerId, final int bpartnerLocationId)
+	{
+		return new BPartnerLocationId(BPartnerId.ofRepoId(bpartnerId), bpartnerLocationId);
+	}
+
+	private BPartnerLocationId(@NonNull final BPartnerId bpartnerId, final int bpartnerLocationId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(bpartnerLocationId, "bpartnerLocationId");
-		this.bpartnerId = bpartnerID;
+		this.bpartnerId = bpartnerId;
 	}
 
 	public static int toRepoIdOr(final BPartnerLocationId bpLocationId, final int defaultValue)
@@ -52,7 +57,7 @@ public class BPartnerLocationId implements RepoIdAware
 		return bpLocationId != null ? bpLocationId.getRepoId() : defaultValue;
 	}
 
-	public static int getBPartnerRepoId(final BPartnerLocationId bpartnerLocationId,  final int defaultValue)
+	public static int getBPartnerRepoId(final BPartnerLocationId bpartnerLocationId, final int defaultValue)
 	{
 		return bpartnerLocationId != null ? bpartnerLocationId.getBpartnerId().getRepoId() : defaultValue;
 	}
@@ -62,4 +67,3 @@ public class BPartnerLocationId implements RepoIdAware
 		return bpartnerLocationId != null ? bpartnerLocationId.getRepoId() : defaultValue;
 	}
 }
-
