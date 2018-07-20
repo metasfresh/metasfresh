@@ -42,7 +42,6 @@ import de.metas.order.model.I_C_BPartner;
 
 public class InvoiceDocOutboundLogMailRecipientProviderTest
 {
-	private I_C_Invoice invoiceRecord;
 	private I_C_Doc_Outbound_Log docOutboundLogRecord;
 	private InvoiceDocOutboundLogMailRecipientProvider invoiceDocOutboundLogMailRecipientProvider;
 	private I_C_BPartner bPartnerRecord;
@@ -55,7 +54,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		bPartnerRecord = newInstance(I_C_BPartner.class);
 		saveRecord(bPartnerRecord);
 
-		invoiceRecord = newInstance(I_C_Invoice.class);
+		final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);
 		invoiceRecord.setC_BPartner(bPartnerRecord);
 		saveRecord(invoiceRecord);
 
@@ -84,8 +83,6 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		final Optional<DocOutBoundRecipient> result = invoiceDocOutboundLogMailRecipientProvider.provideMailRecipient(docOutboundLogRecord);
 		assertThat(result).isPresent();
 		assertThat(result.get().getEmailAddress()).isEqualTo("userRecord.EMail");
-
-
 	}
 
 }
