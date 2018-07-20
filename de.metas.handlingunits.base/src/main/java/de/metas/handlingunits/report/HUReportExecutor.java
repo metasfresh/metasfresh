@@ -16,6 +16,7 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.report.IJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -345,9 +346,11 @@ public class HUReportExecutor
 				final ProcessInfo processInfo = result.getProcessInfo();
 				final Recipient recipient = Recipient.userAndRole(processInfo.getAD_User_ID(), processInfo.getAD_Role_ID());
 
+				final String plainMessage = StringUtils.formatMessage("AD_PInstance_ID={}\n Summary:\n{}", processInfo.getAD_PInstance_ID(), processExecutionResult.getSummary());
+
 				final INotificationBL notificationBL = Services.get(INotificationBL.class);
 				final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
-						.contentPlain(processExecutionResult.getSummary())
+						.contentPlain(plainMessage)
 						.important(true)
 						.recipient(recipient)
 						.build();

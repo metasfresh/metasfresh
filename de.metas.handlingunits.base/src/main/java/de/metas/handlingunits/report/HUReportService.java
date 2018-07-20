@@ -288,9 +288,9 @@ public class HUReportService
 	}
 
 	/**
-	 * @param isAutoPrintRequired if {@code false}, then do the printing even if {@link #isPickingLabelAutoPrintEnabled()} is {@code false}.
+	 * @param onlyIfAutoPrintIsEnabled if {@code false}, then do the printing even if {@link #isPickingLabelAutoPrintEnabled()} is {@code false}.
 	 */
-	public void printPickingLabel(@Nullable final HUToReportWrapper huToReport, final boolean isAutoPrintRequired)
+	public void printPickingLabel(@Nullable final HUToReportWrapper huToReport, final boolean onlyIfAutoPrintIsEnabled)
 	{
 		final ILoggable loggable = Loggables.get().withLogger(logger, Level.INFO);
 
@@ -300,7 +300,7 @@ public class HUReportService
 			return;
 		}
 
-		if (isAutoPrintRequired && !isPickingLabelAutoPrintEnabled())
+		if (onlyIfAutoPrintIsEnabled && !isPickingLabelAutoPrintEnabled())
 		{
 			loggable.addLog("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
 			return;
