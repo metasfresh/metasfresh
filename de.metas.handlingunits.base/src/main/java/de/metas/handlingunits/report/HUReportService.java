@@ -5,8 +5,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -14,6 +18,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
@@ -282,23 +287,28 @@ public class HUReportService
 		}
 	}
 
-	public void printPickingLabel(final HUToReportWrapper huToReport, final boolean isAutoPrintRequired)
+	/**
+	 * @param isAutoPrintRequired if {@code false}, then do the printing even if {@link #isPickingLabelAutoPrintEnabled()} is {@code false}.
+	 */
+	public void printPickingLabel(@Nullable final HUToReportWrapper huToReport, final boolean isAutoPrintRequired)
 	{
+		final ILoggable loggable = Loggables.get().withLogger(logger, Level.INFO);
+
 		if (huToReport == null)
 		{
-			logger.info("Param 'hu'==null; nothing to do");
+			loggable.addLog("Param 'huToReport'==null; nothing to do");
 			return;
 		}
 
 		if (isAutoPrintRequired && !isPickingLabelAutoPrintEnabled())
 		{
-			logger.info("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
+			loggable.addLog("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
 			return;
 		}
 
 		if (!huToReport.isTopLevel())
 		{
-			logger.info("We only print top level HUs; nothing to do; hu={}", huToReport);
+			loggable.addLog("We only print top level HUs; nothing to do; huToReport={}", huToReport);
 			return;
 		}
 
@@ -306,27 +316,25 @@ public class HUReportService
 
 		if (adProcessId <= 0)
 		{
-			logger.info("No process configured via SysConfig {}; nothing to do", SYSCONFIG_PICKING_LABEL_PROCESS_ID);
+			loggable.addLog("No process configured via SysConfig {}; nothing to do", SYSCONFIG_PICKING_LABEL_PROCESS_ID);
 			return;
 		}
 
-		final List<HUToReport> husToProcess = getHUsToProcess(huToReport, adProcessId)
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-
+		final List<HUToReport> husToProcess = getHUsToProcess(huToReport, adProcessId);
 		if (husToProcess.isEmpty())
 		{
-			logger.info("the selected hu does not match process {}; nothing to do; hu={}", adProcessId, huToReport);
+			loggable.addLog("The selected hu does not match AD_Process_ID={}; nothing to do; huToReport={}", adProcessId, huToReport);
 			return;
 		}
 
 		final int copies = getPickingLabelAutoPrintCopyCount();
 
+		loggable.addLog("Going to invoke HUReportExecutor to run AD_Process_ID={} with copies={} on husToProcess={}", adProcessId, copies, husToProcess);
+
 		final Properties ctx = Env.getCtx();
 		HUReportExecutor.newInstance(ctx)
 				.numberOfCopies(copies)
 				.executeHUReportAfterCommit(adProcessId, husToProcess);
-
 	}
 
 }
