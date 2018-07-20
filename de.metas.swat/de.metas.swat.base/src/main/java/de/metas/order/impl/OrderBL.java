@@ -58,6 +58,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
@@ -405,7 +406,7 @@ public class OrderBL implements IOrderBL
 
 		final int bpartnerId = order.getC_BPartner_ID();
 
-		if(bpartnerId <= 0)
+		if (bpartnerId <= 0)
 		{
 			return;
 		}
@@ -427,7 +428,6 @@ public class OrderBL implements IOrderBL
 		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
 		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
 		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
-
 
 		order.setDescription(description.translate(adLanguage));
 		order.setDescriptionBottom(documentNote.translate(adLanguage));
@@ -926,6 +926,17 @@ public class OrderBL implements IOrderBL
 			return order.getDropShip_Location_ID() > 0 ? order.getDropShip_Location() : order.getC_BPartner_Location();
 		}
 		return order.getC_BPartner_Location();
+	}
+
+	@Override
+	public BPartnerLocationId getShipToLocationId(final I_C_Order order)
+	{
+		if (order.isDropShip() && order.getDropShip_BPartner_ID() > 0 && order.getDropShip_Location_ID() > 0)
+		{
+			return BPartnerLocationId.ofRepoId(order.getDropShip_BPartner_ID(), order.getDropShip_Location_ID());
+		}
+
+		return BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
 	}
 
 	@Override
