@@ -401,36 +401,29 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public boolean existsDefaultAddressInTable(final I_C_BPartner_Location address, final String trxName, final String columnName)
 	{
-		final String whereClause = columnName + " = ? AND "
-				+ I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + " = ?";
-		final int rows = new Query(Env.getCtx(), I_C_BPartner_Location.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(true, address.getC_BPartner_ID())
-				.setClient_ID()
+
+		final int rows = Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(columnName, true)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMN_C_BPartner_ID, address.getC_BPartner_ID())
+				.create()
 				.count();
-		if (rows == 0)
-		{
-			return false;
-		}
-		return true;
+		return rows > 0;
 	}
 
 	@Override
 	public boolean existsDefaultContactInTable(final de.metas.adempiere.model.I_AD_User user, final String trxName)
 	{
-		final String whereClause = de.metas.adempiere.model.I_AD_User.COLUMNNAME_IsDefaultContact + " = ? AND "
-				+ org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID + " = ?";
-		final int rows = new Query(Env.getCtx(), org.compiere.model.I_AD_User.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(true, user.getC_BPartner_ID())
-				.setClient_ID()
+		final int rows = Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, user.getC_BPartner_ID())
+				.addOnlyContextClient()
+				.create()
 				.count();
-		if (0 == rows)
-		{
-			return false;
-		}
 
-		return true;
+		return rows > 0;
 	}
 
 	@Override
@@ -712,6 +705,17 @@ public class BPartnerDAO implements IBPartnerDAO
 		return retrieveBPartnerLocations(bpartnerId)
 				.stream()
 				.filter(I_C_BPartner_Location::isBillToDefault)
+				.findFirst()
+				.map(bpLocation -> BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID()))
+				.orElse(null);
+	}
+
+	@Override
+	public BPartnerLocationId getShiptoDefaultLocationIdByBpartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveBPartnerLocations(bpartnerId)
+				.stream()
+				.filter(I_C_BPartner_Location::isShipToDefault)
 				.findFirst()
 				.map(bpLocation -> BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID()))
 				.orElse(null);
