@@ -43,13 +43,21 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#1461](https://github.com/metasfresh/metasfresh/issues/1461) Improve User Password Hashing
+    * Improvement of the Password Hashing Feature. Nown Hashing with SHA512.
   * [#4009](https://github.com/metasfresh/metasfresh/issues/4009) Improve callout org.compiere.model.Callout_AD_Column
+    * Improvement of Callout_AD_Column, making it WebUI friendly.
   * [#4026](https://github.com/metasfresh/metasfresh/issues/4026) Generate and mail the CSV only when Der Kurier shipper transportation is completed
+    * Adjustment of the Shipper Transportation workflow for "Der Kurier". Now generating and mailing the csv aggregation only when the transportation order is completed.
   * [#4299](https://github.com/metasfresh/metasfresh/issues/4299) Jasper: Translations missing in en_US version
+    * New en_US Translations added to Jasper Documents.
   * [#4315](https://github.com/metasfresh/metasfresh/issues/4315) metasfresh-app server fails to startup on a dev-machine
+    * Internal improvement of the startup of the metasfresh-app server for development purposes.
   * [#4345](https://github.com/metasfresh/metasfresh/issues/4345) Make accounting async
+    * Improvement of accounting, making it asynch. Needed for new Costing Engine.
   * [#4346](https://github.com/metasfresh/metasfresh/issues/4346) Individual sequences for products and projects
+    * New Feature that allows to use Sequence No. for Projects and Products.
   * [#4354](https://github.com/metasfresh/metasfresh/issues/4354) Notify user on error creating document PDF
+    * New Feature that informs the user via Notification when a PDF cannot be created.
   * [#4359](https://github.com/metasfresh/metasfresh/issues/4359) Set default values for new Integer and YesNo AD_Columns
   * [#4367](https://github.com/metasfresh/metasfresh/issues/4367) HU Transformation for LU, Packing Item and TU Qty default
 
