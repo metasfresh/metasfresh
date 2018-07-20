@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.adempiere.user.User;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
@@ -48,10 +47,14 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 {
 
 	private final DocOutBoundRecipientRepository recipientRepository;
+	private final IBPartnerBL bpartnerBL;
 
-	public InvoiceDocOutboundLogMailRecipientProvider(@NonNull final DocOutBoundRecipientRepository recipientRepository)
+	public InvoiceDocOutboundLogMailRecipientProvider(
+			@NonNull final DocOutBoundRecipientRepository recipientRepository,
+			@NonNull final IBPartnerBL bpartnerBL)
 	{
 		this.recipientRepository = recipientRepository;
+		this.bpartnerBL = bpartnerBL;
 	}
 
 	@Override
@@ -89,7 +92,6 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 				.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
 				.build();
 
-		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final User billContact = bpartnerBL.retrieveBillContactOrNull(request);
 		if (billContact != null)
 		{

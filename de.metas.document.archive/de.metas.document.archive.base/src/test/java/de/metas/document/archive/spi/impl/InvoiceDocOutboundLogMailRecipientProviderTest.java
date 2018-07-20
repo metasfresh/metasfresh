@@ -2,17 +2,21 @@ package de.metas.document.archive.spi.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.user.UserRepository;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.archive.DocOutBoundRecipient;
 import de.metas.document.archive.DocOutBoundRecipientRepository;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -54,8 +58,13 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		bPartnerRecord = newInstance(I_C_BPartner.class);
 		saveRecord(bPartnerRecord);
 
+		final I_C_BPartner_Location bPartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
+		bPartnerLocationRecord.setC_BPartner(bPartnerRecord);
+		save(bPartnerLocationRecord);
+
 		final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);
 		invoiceRecord.setC_BPartner(bPartnerRecord);
+		invoiceRecord.setC_BPartner_Location(bPartnerLocationRecord);
 		saveRecord(invoiceRecord);
 
 		docOutboundLogRecord = newInstance(I_C_Doc_Outbound_Log.class);
@@ -63,18 +72,20 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		docOutboundLogRecord.setRecord_ID(invoiceRecord.getC_Invoice_ID());
 		saveRecord(docOutboundLogRecord);
 
-		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(new DocOutBoundRecipientRepository());
+		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(new DocOutBoundRecipientRepository(), new BPartnerBL(new UserRepository()));
 	}
 
 	@Test
 	public void provideMailRecipient()
 	{
 		final I_AD_User userRecord2 = newInstance(I_AD_User.class);
+		userRecord2.setName("userRecord2");
 		userRecord2.setEMail(null);
 		userRecord2.setIsBillToContact_Default(true);
 		userRecord2.setC_BPartner(bPartnerRecord);
 
 		final I_AD_User userRecord = newInstance(I_AD_User.class);
+		userRecord.setName("userRecord");
 		userRecord.setEMail("userRecord.EMail");
 		userRecord.setC_BPartner(bPartnerRecord);
 		saveRecord(userRecord);
@@ -84,5 +95,4 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		assertThat(result).isPresent();
 		assertThat(result.get().getEmailAddress()).isEqualTo("userRecord.EMail");
 	}
-
 }
