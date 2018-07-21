@@ -3,15 +3,18 @@ package de.metas.document.archive.async.spi.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.Adempiere;
+import org.adempiere.user.UserRepository;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_Test;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 
 /*
  * #%L
@@ -39,12 +42,6 @@ import org.junit.Test;
 
 public class DocOutboundWorkpackageProcessorTest
 {
-	@BeforeClass
-	public static void staticInit()
-	{
-		Adempiere.enableUnitTestMode();
-	}
-
 	private DocOutboundWorkpackageProcessor processor;
 
 	@Before
@@ -52,6 +49,8 @@ public class DocOutboundWorkpackageProcessorTest
 	{
 		AdempiereTestHelper.get().init();
 		processor = new DocOutboundWorkpackageProcessor();
+
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	private PrintInfo createPrintInfo(final Object record)

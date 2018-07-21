@@ -3,7 +3,7 @@ package de.metas.adempiere.service.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
+import org.adempiere.user.UserRepository;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -18,12 +18,14 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.interfaces.I_C_BPartner;
 
 public class AddressBuilderTest
 {
 	private AddressBuilder builder;
 	I_AD_Org org;
+	private IBPartnerBL bpartnerBL;
 
 	@BeforeClass
 	public static void staticInit()
@@ -39,6 +41,8 @@ public class AddressBuilderTest
 		org = prepareAD_Org();
 
 		builder = new AddressBuilder(org);
+
+		bpartnerBL = new BPartnerBL(new UserRepository());
 	}
 
 	@Test
@@ -512,7 +516,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL:  \nHerr\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	@Test
@@ -528,7 +532,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL: \nName1\nName2\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	@Test
@@ -544,7 +548,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL:    \nz.L. Herr\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	/**
@@ -564,7 +568,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL:    \nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	/**
@@ -585,7 +589,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL:    \nGR Frau\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	/**
@@ -606,7 +610,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL:  (test)   \nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	/**
@@ -627,7 +631,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL: \nName1\nName2\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	/**
@@ -648,7 +652,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL: \nCompanyAG\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	/**
@@ -669,7 +673,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL:     \nFrau\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	/**
@@ -690,7 +694,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL:  \nz.L. Frau\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	/**
@@ -711,7 +715,7 @@ public class AddressBuilderTest
 
 		Assert.assertEquals(
 				"LOCAL:  \nFrau\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				Services.get(IBPartnerBL.class).mkFullAddress(bPartner, bpLocation, user, null));
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
 	// prepraring methods
