@@ -29,16 +29,14 @@ import de.metas.bpartner.service.impl.BPartnerBL;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
 
 public class DocOutboundWorkpackageProcessorTest
 {
@@ -51,11 +49,6 @@ public class DocOutboundWorkpackageProcessorTest
 		processor = new DocOutboundWorkpackageProcessor();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
-	}
-
-	private PrintInfo createPrintInfo(final Object record)
-	{
-		return processor.createModelArchiver(record).createPrintInfo();
 	}
 
 	@Test
@@ -88,4 +81,8 @@ public class DocOutboundWorkpackageProcessorTest
 		Assert.assertEquals("Invalid C_BPartner_ID", record.getC_BPartner_ID(), printInfo.getC_BPartner_ID());
 	}
 
+	private PrintInfo createPrintInfo(final Object record)
+	{
+		return processor.createModelArchiver(record).createPrintInfo();
+	}
 }
