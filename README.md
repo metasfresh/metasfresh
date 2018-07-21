@@ -51,12 +51,17 @@ Now open your browser and go to `localhost:8080` to see the application running.
 Application comes with a set of tests, both unit as well as functional.
 
 #### Cypress e2e tests
-First you'll need to configure the base url of the app, as well as login credentials/API endpoints. Two files are responsible for this:
+
+Note that you might need to first install cypress; [this documentation](https://docs.cypress.io/guides/getting-started/installing-cypress.html#npm-install) tells you how.
+Also note that in additiona you might also need to do a full `npm install` afterwards.
+
+Also, you'll need to configure the base url of the app, as well as login credentials/API endpoints. Two files are responsible for this:
 
 - cypress.json - stores the baseUrl of the app
 - cypress/config.js - stores API endpoints and login credentials
 
-To run the tests, type this in the terminal:
+To run the tests, navigate to this repository's root folder type this in the terminal:
+
 > npm run cypress:open
 
 Then you can select particular test suites, or the whole suite to run. 
