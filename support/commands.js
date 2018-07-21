@@ -60,7 +60,7 @@ context('Reusable "login" custom command', function() {
       return cy
         .request({
           method: 'GET',
-          url: (config.API_URL + '/login/authenticate'),
+          url: (config.API_URL + '/login/isLoggedIn'),
           failOnStatusCode: false,
           followRedirect: false,
         })
@@ -105,7 +105,7 @@ context('Reusable "login" custom command', function() {
         return cy
           .request({
             method: 'POST',
-            url: (config.API_URL + '/login/authenticate'),
+            url: (config.API_URL + '/login/loginComplete'),
             body: { ...roles.get(0) },
             failOnStatusCode: false,
           })
