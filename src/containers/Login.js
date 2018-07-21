@@ -67,10 +67,10 @@ class Login extends Component {
   };
 
   render() {
-    const { redirect, auth, splat } = this.props;
+    const { redirect, auth, splat, token } = this.props;
     const isYourBrowserSupported = this.browserSupport('chrome');
     const component = splat ? (
-      <PasswordRecovery path={splat} />
+      <PasswordRecovery path={splat} token={token} />
     ) : (
       <LoginForm {...{ redirect, auth }} />
     );

@@ -1,26 +1,31 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { goBack, push } from 'react-router-redux';
+import { connect } from 'react-redux';
+import { goBack } from 'react-router-redux';
 import classnames from 'classnames';
 
 import {
   resetPasswordRequest,
-
+  getResetPasswordInfo,
+  resetPasswordComplete,
+  resetPasswordGetAvatar,
 } from '../../api';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
-export default class PasswordRecovery extends Component {
+class PasswordRecovery extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       err: '',
       pending: false,
+      resetEmailSent: false,
     };
   }
 
   componentDidMount() {
+    console.log('this.props when mounting: ', this.props)
     this.focusField.focus();
   }
 
@@ -46,25 +51,37 @@ export default class PasswordRecovery extends Component {
   handleSubmit = e => {
     e.preventDefault();
 
-    const { path } = this.props;
-    const { form } = this.state;
+    const { path, dispatch } = this.props;
+    const { form, resetEmailSent } = this.state;
     const resetPassword = path === 'resetPassword' ? true : false;
 
-    this.setState(
-      {
-        pending: true,
-      },
-      () => {
-        console.log('pending: ', form);
-        resetPasswordRequest(form)
-          .then(response => {
-            console.log('response from reset !: ', response);
-          })
-          .catch(error => {
-            this.setState({ err: error.data.message, pending: false });
-          });
-      }
-    );
+    if (resetEmailSent) {
+      return;
+    }
+
+    if (resetPassword) {
+      // add email (so we need to save it when loading page)
+    } else {
+      this.setState(
+        {
+          pending: true,
+        },
+        () => {
+          console.log('pending: ', form);
+          resetPasswordRequest(form)
+            .then(response => {
+              console.log('response from reset !: ', response);
+              this.setState({
+                resetEmailSent: true,
+                pending: false,
+              });
+            })
+            .catch(error => {
+              this.setState({ err: error.data.message, pending: false });
+            });
+        }
+      );
+    }
   };
 
   // handleSuccess = () => {
@@ -187,13 +204,13 @@ export default class PasswordRecovery extends Component {
         <div>
           <div className="form-control-label">
             <small>
-              {counterpart.translate('forgotPassword.email.caption')}
+              {counterpart.translate('forgotPassword.newPassword.caption')}
             </small>
           </div>
           <input
             type="text"
-            onChange={e => this.handleChange(e, 'email')}
-            name="username"
+            onChange={e => this.handleChange(e, 'password')}
+            name="password"
             className={classnames('input-primary input-block', {
               'input-error': err,
               'input-disabled': pending,
@@ -208,8 +225,8 @@ export default class PasswordRecovery extends Component {
           </div>
           <input
             type="password"
-            name="password"
-            onChange={e => this.handleChange(e, 'password')}
+            name="re_password"
+            onChange={e => this.handleChange(e, 're_password')}
             className={classnames('input-primary input-block', {
               'input-disabled': pending,
             })}
@@ -222,8 +239,24 @@ export default class PasswordRecovery extends Component {
 
   render() {
     const { path } = this.props;
-    const { pending } = this.state;
+    const { pending, resetEmailSent } = this.state;
+    const avatar = '';
     const resetPassword = path === 'resetPassword' ? true : false;
+    let buttonMessage = counterpart.translate(
+      'forgotPassword.changePassword.caption'
+    );
+
+    if (!resetPassword) {
+      if (resetEmailSent) {
+        buttonMessage = counterpart.translate(
+          'forgotPassword.resetCodeSent.caption'
+        );
+      } else {
+        buttonMessage = counterpart.translate(
+          'forgotPassword.sendResetCode.caption'
+        );
+      }
+    }
 
     return (
       <div
@@ -233,20 +266,22 @@ export default class PasswordRecovery extends Component {
         <div className="text-center">
           <img src={logo} className="header-logo mt-2 mb-2" />
         </div>
+        {avatar && (
+          <div className="text-conter">
+            <img src={logo} className="avatar mt-2 mb-2" />
+          </div>
+        )}
         <form ref={c => (this.form = c)} onSubmit={this.handleSubmit}>
-          {resetPassword
+          {!resetEmailSent && resetPassword
             ? this.renderResetPasswordForm()
             : this.renderForgottenPasswordForm()}
           <div className="mt-2">
             <button
               className="btn btn-sm btn-block btn-meta-success"
-              _onClick={this.handleSubmit}
               disabled={pending}
               type="submit"
             >
-              {resetPassword
-                ? counterpart.translate('forgotPassword.changePassword.caption')
-                : counterpart.translate('forgotPassword.sendResetCode.caption')}
+              {buttonMessage}
             </button>
           </div>
         </form>
@@ -255,12 +290,12 @@ export default class PasswordRecovery extends Component {
   }
 }
 
-// LoginForm.propTypes = {
+// LoginPasswordRecoveryForm.propTypes = {
 //   dispatch: PropTypes.func.isRequired,
 // };
 
-// LoginForm.contextTypes = {
+// LogiPasswordRecoverynForm.contextTypes = {
 //   router: PropTypes.object.isRequired,
 // };
 
-// export default connect()(LoginForm);
+export default connect()(PasswordRecovery);
