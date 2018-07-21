@@ -29,7 +29,7 @@ describe('New sales order test', function() {
         .type('G0001');
 
       cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', 'G0001345a0_Test Kunde 1')
+      cy.contains('.input-dropdown-list-option', 'Test Kunde 1')
         .click();
       cy.get('.input-dropdown-list .input-dropdown-list-header')
         .should('not.exist');
