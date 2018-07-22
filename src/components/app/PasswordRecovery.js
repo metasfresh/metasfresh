@@ -1,8 +1,9 @@
+import React, { Component } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import Moment from 'moment';
 import { connect } from 'react-redux';
-import { goBack } from 'react-router-redux';
+import { push } from 'react-router-redux';
 import classnames from 'classnames';
 
 import {
@@ -10,6 +11,7 @@ import {
   getResetPasswordInfo,
   resetPasswordComplete,
   resetPasswordGetAvatar,
+  getUserLang,
 } from '../../api';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
@@ -42,7 +44,6 @@ class PasswordRecovery extends Component {
     const { token } = this.props;
 
     resetPasswordGetAvatar(token).then(({ data }) => {
-      console.log('DATA: ', data)
       this.setState({
         avatarSrc: data,
       });
@@ -65,10 +66,9 @@ class PasswordRecovery extends Component {
   };
 
   handleKeyPress = e => {
-    // console.log('keypressed: ', e.key)
-    // if (e.key === 'Enter') {
-    //   this.handleLogin();
-    // }
+    if (e.key === 'Enter') {
+      this.form.submit();
+    }
   };
 
   handleChange = (e, name) => {
@@ -85,23 +85,35 @@ class PasswordRecovery extends Component {
       },
       () => {
         const { password, re_password } = this.state.form;
-        if (token) {
-          if (password !== re_password) {
-            this.setState({
-              err: counterpart.translate(
-                'forgotPassword.error.retypedNewPasswordNotMatch'
-              ),
-            });
+
+        setTimeout(() => {
+          if (token) {
+            if (password !== re_password) {
+              this.setState({
+                err: counterpart.translate(
+                  'forgotPassword.error.retypedNewPasswordNotMatch'
+                ),
+              });
+            }
           }
-        }
+        }, 200);
       }
     );
+  };
+
+  handleLoginSuccess = () => {
+    const { dispatch } = this.props;
+
+    getUserLang().then(response => {
+      Moment.locale(response.data['key']);
+      dispatch(push('/'));
+    });
   };
 
   handleSubmit = e => {
     e.preventDefault();
 
-    const { dispatch, token } = this.props;
+    const { token } = this.props;
     const { form, resetEmailSent } = this.state;
     const resetPassword = token ? true : false;
 
@@ -123,13 +135,15 @@ class PasswordRecovery extends Component {
             token,
           })
             .then(() => {
+              return this.handleSuccess();
+            })
+            .catch(err => {
               this.setState({
-                resetEmailSent: true,
+                err: err.response
+                  ? err.response.data.message
+                  : counterpart.translate('login.error.fallback'),
                 pending: false,
               });
-            })
-            .catch(error => {
-              this.setState({ err: error.data.message, pending: false });
             });
         }
       );
@@ -154,21 +168,6 @@ class PasswordRecovery extends Component {
       );
     }
   };
-
-  // handleSuccess = () => {
-  //   const { redirect, dispatch } = this.props;
-
-  //   getUserLang().then(response => {
-  //     //GET language shall always return a result
-  //     Moment.locale(response.data['key']);
-
-  //     if (redirect) {
-  //       dispatch(goBack());
-  //     } else {
-  //       dispatch(push('/'));
-  //     }
-  //   });
-  // };
 
   renderForgottenPasswordForm = () => {
     const { pending, err } = this.state;
