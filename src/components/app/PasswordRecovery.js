@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import Moment from 'moment';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import classnames from 'classnames';
 
 import {
@@ -11,7 +9,6 @@ import {
   getResetPasswordInfo,
   resetPasswordComplete,
   resetPasswordGetAvatar,
-  getUserLang,
 } from '../../api';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
@@ -33,7 +30,7 @@ class PasswordRecovery extends Component {
     const resetPassword = token ? true : false;
 
     if (resetPassword) {
-      this.getAvatar();
+      // this.getAvatar();
       this.getUserData();
     }
 
@@ -94,26 +91,22 @@ class PasswordRecovery extends Component {
                   'forgotPassword.error.retypedNewPasswordNotMatch'
                 ),
               });
+            } else {
+              // because timeout
+              this.setState({
+                err: '',
+              });
             }
           }
-        }, 200);
+        }, 500);
       }
     );
-  };
-
-  handleLoginSuccess = () => {
-    const { dispatch } = this.props;
-
-    getUserLang().then(response => {
-      Moment.locale(response.data['key']);
-      dispatch(push('/'));
-    });
   };
 
   handleSubmit = e => {
     e.preventDefault();
 
-    const { token } = this.props;
+    const { token, onResetOk } = this.props;
     const { form, resetEmailSent } = this.state;
     const resetPassword = token ? true : false;
 
@@ -129,14 +122,12 @@ class PasswordRecovery extends Component {
           err: '',
         },
         () => {
-          resetPasswordComplete({
+          resetPasswordComplete(token, {
             email: form.email,
             password: form.password,
             token,
           })
-            .then(() => {
-              return this.handleSuccess();
-            })
+            .then(response => onResetOk(response))
             .catch(err => {
               this.setState({
                 err: err.response
@@ -210,7 +201,7 @@ class PasswordRecovery extends Component {
             </small>
           </div>
           <input
-            type="text"
+            type="password"
             onChange={e => this.handleChange(e, 'password')}
             name="password"
             className={classnames('input-primary input-block', {
@@ -272,13 +263,13 @@ class PasswordRecovery extends Component {
           <img src={logo} className="header-logo mt-2 mb-2" />
         </div>
         {avatarSrc && (
-          <div>
-            <div className="text-center">
-              <img src={`data:image/*;base64,${avatarSrc}`} className="avatar mt-2 mb-2" />
-            </div>
-            <div className="text-center">
-              <span className="user-data">{form.fullname}</span>
-            </div>
+          <div className="text-center">
+            <img src={`data:image/*;base64,${avatarSrc}`} className="avatar mt-2 mb-2" />
+          </div>
+        )}
+        {form.fullname && (
+          <div className="text-center">
+            <span className="user-data">{form.fullname}</span>
           </div>
         )}
         <form ref={c => (this.form = c)} onSubmit={this.handleSubmit}>
