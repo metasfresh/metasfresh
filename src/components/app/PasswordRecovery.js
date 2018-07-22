@@ -30,7 +30,7 @@ class PasswordRecovery extends Component {
     const resetPassword = token ? true : false;
 
     if (resetPassword) {
-      // this.getAvatar();
+      this.getAvatar();
       this.getUserData();
     }
 

@@ -163,7 +163,7 @@ export const getRoutes = (store, auth, plugins) => {
       <Route
         path="/forgottenPassword"
         component={({ location }) => (
-          <Login splat={location.pathname.replace('/', '')} />
+          <Login splat={location.pathname.replace('/', '')} {...{ auth }} />
         )}
       />
       <Route
@@ -172,6 +172,7 @@ export const getRoutes = (store, auth, plugins) => {
           <Login
             splat={location.pathname.replace('/', '')}
             token={location.query.token}
+            {...{ auth }}
           />
         )}
       />
