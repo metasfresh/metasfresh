@@ -42,6 +42,7 @@ class PasswordRecovery extends Component {
     const { token } = this.props;
 
     resetPasswordGetAvatar(token).then(({ data }) => {
+      console.log('DATA: ', data)
       this.setState({
         avatarSrc: data,
       });
@@ -52,12 +53,12 @@ class PasswordRecovery extends Component {
     const { token } = this.props;
     const { form } = this.state;
 
-    getResetPasswordInfo(token).then(resp => {
+    getResetPasswordInfo(token).then(({ data }) => {
       this.setState({
         form: {
           ...form,
-          email: resp.data.email,
-          fullname: resp.data.fullname
+          email: data.email,
+          fullname: data.fullname,
         },
       });
     });
@@ -72,14 +73,29 @@ class PasswordRecovery extends Component {
 
   handleChange = (e, name) => {
     e.preventDefault();
+    const { token } = this.props;
 
-    this.setState({
-      err: '',
-      form: {
-        ...this.state.form,
-        [`${name}`]: e.target.value,
+    this.setState(
+      {
+        err: '',
+        form: {
+          ...this.state.form,
+          [`${name}`]: e.target.value,
+        },
       },
-    });
+      () => {
+        const { password, re_password } = this.state.form;
+        if (token) {
+          if (password !== re_password) {
+            this.setState({
+              err: counterpart.translate(
+                'forgotPassword.error.retypedNewPasswordNotMatch'
+              ),
+            });
+          }
+        }
+      }
+    );
   };
 
   handleSubmit = e => {
@@ -95,14 +111,37 @@ class PasswordRecovery extends Component {
 
     if (resetPassword) {
       // add email (so we need to save it when loading page)
+      this.setState(
+        {
+          pending: true,
+          err: '',
+        },
+        () => {
+          resetPasswordComplete({
+            email: form.email,
+            password: form.password,
+            token,
+          })
+            .then(() => {
+              this.setState({
+                resetEmailSent: true,
+                pending: false,
+              });
+            })
+            .catch(error => {
+              this.setState({ err: error.data.message, pending: false });
+            });
+        }
+      );
     } else {
       this.setState(
         {
           pending: true,
+          err: '',
         },
         () => {
           resetPasswordRequest(form)
-            .then(response => {
+            .then(() => {
               this.setState({
                 resetEmailSent: true,
                 pending: false,
@@ -129,74 +168,6 @@ class PasswordRecovery extends Component {
   //       dispatch(push('/'));
   //     }
   //   });
-  // };
-
-  // handleLogin = () => {
-  //   const { dispatch, auth } = this.props;
-  //   const { roleSelect, role } = this.state;
-
-  //   this.setState(
-  //     {
-  //       pending: true,
-  //     },
-  //     () => {
-  //       if (roleSelect) {
-  //         return loginCompletionRequest(role)
-  //           .then(() => {
-  //             dispatch(loginSuccess(auth));
-  //             this.handleSuccess();
-  //           })
-  //           .catch(err => {
-  //             this.setState({
-  //               err: err.response
-  //                 ? err.response.data.message
-  //                 : counterpart.translate('login.error.fallback'),
-  //               pending: false,
-  //             });
-  //           });
-  //       }
-
-  //       loginRequest(this.login.value, this.passwd.value)
-  //         .then(response => {
-  //           if (response.data.loginComplete) {
-  //             return this.handleSuccess();
-  //           }
-  //           const roles = List(response.data.roles);
-
-  //           this.setState({
-  //             roleSelect: true,
-  //             roles,
-  //             role: roles.get(0),
-  //           });
-  //         })
-  //         .then(() => {
-  //           this.setState({
-  //             pending: false,
-  //           });
-  //         })
-  //         .catch(err => {
-  //           return this.checkIfAlreadyLogged(err);
-  //         })
-  //         .catch(err => {
-  //           this.setState({
-  //             err: err.response
-  //               ? err.response.data.message
-  //               : counterpart.translate('login.error.fallback'),
-  //             pending: false,
-  //           });
-  //         });
-  //     }
-  //   );
-  // };
-
-  // onFocus = () => {
-  //   this.setState({
-  //     dropdownFocused: true,
-  //   });
-  // };
-
-  // onBlur = () => {
-  //   this.setState({ dropdownFocused: false });
   // };
 
   renderForgottenPasswordForm = () => {
@@ -253,7 +224,11 @@ class PasswordRecovery extends Component {
         </div>
         <div>
           <div className="form-control-label">
-            <small>{counterpart.translate('login.password.caption')}</small>
+            <small>
+              {counterpart.translate(
+                'forgotPassword.retypeNewPassword.caption'
+              )}
+            </small>
           </div>
           <input
             type="password"
@@ -300,7 +275,7 @@ class PasswordRecovery extends Component {
         {avatarSrc && (
           <div>
             <div className="text-center">
-              <img src={avatarSrc} className="avatar mt-2 mb-2" />
+              <img src={`data:image/*;base64,${avatarSrc}`} className="avatar mt-2 mb-2" />
             </div>
             <div className="text-center">
               <span className="user-data">{form.fullname}</span>
@@ -325,5 +300,11 @@ class PasswordRecovery extends Component {
     );
   }
 }
+
+PasswordRecovery.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  path: PropTypes.string.isRequired,
+  token: PropTypes.string,
+};
 
 export default connect()(PasswordRecovery);
