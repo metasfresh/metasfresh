@@ -21,13 +21,47 @@ class PasswordRecovery extends Component {
       err: '',
       pending: false,
       resetEmailSent: false,
+      avatarSrc: '',
+      form: {},
     };
   }
 
   componentDidMount() {
-    console.log('this.props when mounting: ', this.props)
+    const { token } = this.props;
+    const resetPassword = token ? true : false;
+
+    if (resetPassword) {
+      this.getAvatar();
+      this.getUserData();
+    }
+
     this.focusField.focus();
   }
+
+  getAvatar = () => {
+    const { token } = this.props;
+
+    resetPasswordGetAvatar(token).then(({ data }) => {
+      this.setState({
+        avatarSrc: data,
+      });
+    });
+  };
+
+  getUserData = () => {
+    const { token } = this.props;
+    const { form } = this.state;
+
+    getResetPasswordInfo(token).then(resp => {
+      this.setState({
+        form: {
+          ...form,
+          email: resp.data.email,
+          fullname: resp.data.fullname
+        },
+      });
+    });
+  };
 
   handleKeyPress = e => {
     // console.log('keypressed: ', e.key)
@@ -51,9 +85,9 @@ class PasswordRecovery extends Component {
   handleSubmit = e => {
     e.preventDefault();
 
-    const { path, dispatch } = this.props;
+    const { dispatch, token } = this.props;
     const { form, resetEmailSent } = this.state;
-    const resetPassword = path === 'resetPassword' ? true : false;
+    const resetPassword = token ? true : false;
 
     if (resetEmailSent) {
       return;
@@ -67,10 +101,8 @@ class PasswordRecovery extends Component {
           pending: true,
         },
         () => {
-          console.log('pending: ', form);
           resetPasswordRequest(form)
             .then(response => {
-              console.log('response from reset !: ', response);
               this.setState({
                 resetEmailSent: true,
                 pending: false,
@@ -238,10 +270,9 @@ class PasswordRecovery extends Component {
   };
 
   render() {
-    const { path } = this.props;
-    const { pending, resetEmailSent } = this.state;
-    const avatar = '';
-    const resetPassword = path === 'resetPassword' ? true : false;
+    const { token } = this.props;
+    const { pending, resetEmailSent, avatarSrc, form } = this.state;
+    const resetPassword = token ? true : false;
     let buttonMessage = counterpart.translate(
       'forgotPassword.changePassword.caption'
     );
@@ -266,9 +297,14 @@ class PasswordRecovery extends Component {
         <div className="text-center">
           <img src={logo} className="header-logo mt-2 mb-2" />
         </div>
-        {avatar && (
-          <div className="text-conter">
-            <img src={logo} className="avatar mt-2 mb-2" />
+        {avatarSrc && (
+          <div>
+            <div className="text-center">
+              <img src={avatarSrc} className="avatar mt-2 mb-2" />
+            </div>
+            <div className="text-center">
+              <span className="user-data">{form.fullname}</span>
+            </div>
           </div>
         )}
         <form ref={c => (this.form = c)} onSubmit={this.handleSubmit}>
@@ -289,13 +325,5 @@ class PasswordRecovery extends Component {
     );
   }
 }
-
-// LoginPasswordRecoveryForm.propTypes = {
-//   dispatch: PropTypes.func.isRequired,
-// };
-
-// LogiPasswordRecoverynForm.contextTypes = {
-//   router: PropTypes.object.isRequired,
-// };
 
 export default connect()(PasswordRecovery);
