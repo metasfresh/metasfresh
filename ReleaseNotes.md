@@ -9,6 +9,11 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.68
+## Features
+  * [#4323](https://github.com/metasfresh/metasfresh/issues/4323) Window Payment Allocations not editable
+    * Making the Window for Payment Allocation now editable in webui.
+
 # metasfresh 5.67 (2018-30)
 ## Features
 * metasfresh
@@ -43,7 +48,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#1461](https://github.com/metasfresh/metasfresh/issues/1461) Improve User Password Hashing
-    * Improvement of the Password Hashing Feature. Nown Hashing with SHA512.
+    * Improvement of the Password Hashing Feature. Now Hashing with SHA512.
   * [#4009](https://github.com/metasfresh/metasfresh/issues/4009) Improve callout org.compiere.model.Callout_AD_Column
     * Improvement of Callout_AD_Column, making it WebUI friendly.
   * [#4026](https://github.com/metasfresh/metasfresh/issues/4026) Generate and mail the CSV only when Der Kurier shipper transportation is completed
@@ -65,7 +70,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1006](https://github.com/metasfresh/metasfresh-webui-api/issues/1006) Forgot password webui api
-    * New Feature via API that allows to trigger a workflow for forgotton user passwords.
+    * New Feature via API that allows to trigger a workflow for forgotten user passwords.
   * [#1009](https://github.com/metasfresh/metasfresh-webui-api/issues/1009) Cleanup ADProcessDAO
     * New internal improvement on API side that is needed for the Transformation Action improvement.
 
