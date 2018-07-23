@@ -18,15 +18,11 @@
 package org.eevolution.model;
 
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.MProduct;
-import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 
 /**
@@ -37,93 +33,14 @@ import org.eevolution.api.IProductBOMDAO;
  */
 public class MPPProductBOM extends X_PP_Product_BOM
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5770988975738210823L;
-//	/** Cache */
-//	private static CCache<Integer, MPPProductBOM> s_cache = new CCache<Integer, MPPProductBOM>(Table_Name, 40, 5);
 
-	// /** BOM Lines */
-	// private List<MPPProductBOMLine> m_lines = null;
-
-	/**
-	 * Get Product BOM by ID (cached)
-	 * 
-	 * @param ctx
-	 * @param PP_Product_BOM_ID
-	 * @return product bom
-	 */
 	@Deprecated
 	public static MPPProductBOM get(Properties ctx, int PP_Product_BOM_ID)
 	{
 		final I_PP_Product_BOM bom = Services.get(IProductBOMDAO.class).retrieveBOMById(ctx, PP_Product_BOM_ID);
 		final MPPProductBOM bomPO = LegacyAdapters.convertToPO(bom);
 		return bomPO;
-	}
-
-	/**
-	 * Get BOM with Default Logic (Product = BOM Product and BOM Value = Product Value)
-	 * 
-	 * @param product
-	 * @param trxName
-	 * @return product BOM
-	 */
-	@Deprecated
-	public static MPPProductBOM getDefault(I_M_Product product, String trxName)
-	{
-		final I_PP_Product_BOM bom = Services.get(IProductBOMDAO.class).retrieveDefaultBOM(product);
-		final MPPProductBOM bomPO = LegacyAdapters.convertToPO(bom);
-		return bomPO;
-	}
-
-	/**
-	 * Get BOM for Product
-	 * 
-	 * @param product product
-	 * @param ad_org_id Organization ID
-	 * @param trxName Transaction Name
-	 * @return BOM
-	 */
-	public static MPPProductBOM get(MProduct product, int ad_org_id, String trxName)
-	{
-		MPPProductBOM bom = null;
-		Properties ctx = product.getCtx();
-		// find Default BOM in Product Data Planning
-		if (ad_org_id > 0)
-		{
-			MPPProductPlanning pp = MPPProductPlanning.get(ctx, product.getAD_Client_ID(), ad_org_id, product.getM_Product_ID(), trxName);
-			if (pp != null && pp.getPP_Product_BOM_ID() > 0)
-			{
-				bom = new MPPProductBOM(ctx, pp.getPP_Product_BOM_ID(), trxName);
-			}
-		}
-		if (bom == null)
-		{
-			// Find BOM with Default Logic where product = bom product and bom value = value
-			bom = getDefault(product, trxName);
-		}
-
-		return bom;
-	}
-
-	/**
-	 * Get BOM with valid dates for Product
-	 * 
-	 * @param product product
-	 * @param ad_org_id Organization ID
-	 * @param valid Date to Validate
-	 * @param trxName Transaction Name
-	 * @return BOM
-	 */
-	public static MPPProductBOM get(MProduct product, int ad_org_id, Timestamp valid, String trxName)
-	{
-		MPPProductBOM bom = get(product, ad_org_id, trxName);
-		if (bom != null && bom.isValidFromTo(valid))
-		{
-			return bom;
-		}
-		return null;
 	}
 
 	public MPPProductBOM(Properties ctx, int PP_Product_BOM_ID, String trxName)
@@ -136,54 +53,18 @@ public class MPPProductBOM extends X_PP_Product_BOM
 		super(ctx, rs, trxName);
 	}
 
-	/**
-	 * Get BOM Lines valid date for Product BOM
-	 * 
-	 * @param valid Date to Validate
-	 * @return BOM Lines
-	 */
-	@Deprecated
-	public MPPProductBOMLine[] getLines(Timestamp valid)
-	{
-		List<I_PP_Product_BOMLine> lines = Services.get(IProductBOMDAO.class).retrieveLines(this, valid);
-		final MPPProductBOMLine[] linesArr = LegacyAdapters.convertToPOArray(lines, MPPProductBOMLine.class);
-		return linesArr;
-	}	// getLines
-
-	/**
-	 * Get BOM Lines for Product BOM from cache
-	 * 
-	 * @return BOM Lines
-	 */
 	@Deprecated
 	public MPPProductBOMLine[] getLines()
 	{
-		return getLines(false);
-	}
-
-	/**
-	 * Get BOM Lines for Product BOM
-	 * 
-	 * @return BOM Lines
-	 */
-	@Deprecated
-	public MPPProductBOMLine[] getLines(boolean reload)
-	{
-		List<I_PP_Product_BOMLine> lines = Services.get(IProductBOMDAO.class).retrieveLines(this);
+		final List<I_PP_Product_BOMLine> lines = Services.get(IProductBOMDAO.class).retrieveLines(this);
 		final MPPProductBOMLine[] linesArr = LegacyAdapters.convertToPOArray(lines, MPPProductBOMLine.class);
 		return linesArr;
-	}	// getLines
-
-	@Deprecated
-	public boolean isValidFromTo(Timestamp date)
-	{
-		return Services.get(IProductBOMBL.class).isValidFromTo(this, date);
 	}
 
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MPPProductBOM[")
+		StringBuilder sb = new StringBuilder("MPPProductBOM[")
 				.append(get_ID()).append("-").append(getDocumentNo())
 				.append(", Value=").append(getValue())
 				.append("]");

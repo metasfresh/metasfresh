@@ -20,7 +20,9 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.model.MPPProductBOM;
+import org.adempiere.util.Services;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.model.I_PP_Product_BOM;
 
 import de.metas.i18n.Msg;
 
@@ -110,8 +112,8 @@ public class MChangeRequest extends X_M_ChangeRequest
 		//	Derive ChangeNotice from BOM if defined
 		if (newRecord && getPP_Product_BOM_ID() != 0 && getM_ChangeNotice_ID() == 0)
 		{
-			MPPProductBOM bom = MPPProductBOM.get(getCtx(), getPP_Product_BOM_ID());
-			if (bom.getM_ChangeNotice_ID() != 0)
+			final I_PP_Product_BOM bom = Services.get(IProductBOMDAO.class).retrieveBOMById(getCtx(), getPP_Product_BOM_ID());
+			if (bom.getM_ChangeNotice_ID() > 0)
 			{
 				setM_ChangeNotice_ID(bom.getM_ChangeNotice_ID());
 			}

@@ -13,6 +13,7 @@ import java.util.List;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.user.UserRepository;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Currency;
@@ -37,6 +38,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
@@ -196,7 +198,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 				new MoneyService(currencyRepository),
 				new OrderLineWithGrossProfitPriceRepository());
 
-		final VendorProductInfoService vendorProductInfoService = new VendorProductInfoService();
+		final VendorProductInfoService vendorProductInfoService = new VendorProductInfoService(new BPartnerBL(new UserRepository()));
 
 		purchaseDemandWithCandidatesService = new PurchaseDemandWithCandidatesService(
 				purchaseCandidateRepository,
