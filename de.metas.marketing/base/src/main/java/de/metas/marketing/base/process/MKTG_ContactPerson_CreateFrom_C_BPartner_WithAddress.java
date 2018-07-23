@@ -5,6 +5,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 
+import de.metas.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.process.JavaProcess;
@@ -12,7 +13,7 @@ import de.metas.process.Param;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -32,11 +33,14 @@ import de.metas.process.Param;
  * #L%
  */
 
-public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
+public class MKTG_ContactPerson_CreateFrom_C_BPartner_WithAddress extends JavaProcess
 {
 
 	@Param(mandatory = true, parameterName = I_MKTG_Campaign.COLUMNNAME_MKTG_Campaign_ID)
 	private int campaignRecordId;
+
+	@Param(mandatory = true, parameterName = "DefaultAddressType")
+	private String defaultAddresType;
 
 	@Override
 	protected String doIt() throws Exception
@@ -47,8 +51,9 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
 		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecordId);
 
 		final MKTG_ContactPerson_ProcessBase contactPersonProcessBase = Adempiere.getBean(MKTG_ContactPerson_ProcessBase.class);
-		contactPersonProcessBase.createContactPersonsForPartner(currentSelectionFilter, campaignId, null);
+		contactPersonProcessBase.createContactPersonsForPartner(currentSelectionFilter, campaignId, DefaultAddressType.forCode(defaultAddresType));
 
 		return MSG_OK;
 	}
+
 }
