@@ -3,13 +3,16 @@ package de.metas.bpartner.impexp;
 import java.util.Properties;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.user.UserRepository;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.bpartner.impexp.BPartnerImportProcess;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 
 /*
  * #%L
@@ -42,10 +45,12 @@ public class BPartnerImportProcess_SimpleCase_Test
 	{
 		AdempiereTestHelper.get().init();
 		ctx = Env.getCtx();
+
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	@Test
-	public void testSingleBpartner() 
+	public void testSingleBpartner()
 	{
 		final I_I_BPartner ibpartner = prepareImportSingleBPartner();
 
