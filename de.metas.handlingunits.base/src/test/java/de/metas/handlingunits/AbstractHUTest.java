@@ -26,6 +26,8 @@ package de.metas.handlingunits;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.user.UserRepository;
+import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -36,6 +38,8 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 
 public abstract class AbstractHUTest
@@ -145,6 +149,7 @@ public abstract class AbstractHUTest
 	{
 		setupMasterData();
 
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		initialize();
 	}
 
