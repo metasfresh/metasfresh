@@ -3,15 +3,18 @@ package de.metas.document.archive.async.spi.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.Adempiere;
+import org.adempiere.user.UserRepository;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_Test;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 
 /*
  * #%L
@@ -26,25 +29,17 @@ import org.junit.Test;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-
 public class DocOutboundWorkpackageProcessorTest
 {
-	@BeforeClass
-	public static void staticInit()
-	{
-		Adempiere.enableUnitTestMode();
-	}
-
 	private DocOutboundWorkpackageProcessor processor;
 
 	@Before
@@ -52,11 +47,8 @@ public class DocOutboundWorkpackageProcessorTest
 	{
 		AdempiereTestHelper.get().init();
 		processor = new DocOutboundWorkpackageProcessor();
-	}
 
-	private PrintInfo createPrintInfo(final Object record)
-	{
-		return processor.createModelArchiver(record).createPrintInfo();
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	@Test
@@ -89,4 +81,8 @@ public class DocOutboundWorkpackageProcessorTest
 		Assert.assertEquals("Invalid C_BPartner_ID", record.getC_BPartner_ID(), printInfo.getC_BPartner_ID());
 	}
 
+	private PrintInfo createPrintInfo(final Object record)
+	{
+		return processor.createModelArchiver(record).createPrintInfo();
+	}
 }

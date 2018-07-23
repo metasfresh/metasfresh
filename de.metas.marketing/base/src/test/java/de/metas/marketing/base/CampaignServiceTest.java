@@ -8,21 +8,15 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.location.LocationRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.FixedTimeSource;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.Adempiere;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.StartupListener;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPersonRepository;
@@ -53,28 +47,24 @@ import de.metas.marketing.base.model.PlatformRepository;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,
-		UserRepository.class,
-		CampaignService.class,
-		CampaignRepository.class,
-		ContactPersonRepository.class,
-		LocationRepository.class,
-		PlatformRepository.class
-		})
+
 public class CampaignServiceTest
 {
+	private CampaignService campaignService;
+	private UserRepository userRepository;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		userRepository = new UserRepository();
+		campaignService = new CampaignService(new ContactPersonRepository(), new CampaignRepository(), new PlatformRepository());
 	}
 
 	@Test
 	public void addToNewsletter()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final User user = createUser("User1", "mail@mail.mail");
 
 		final I_MKTG_Campaign campaignRecord = createCampaign();
@@ -86,15 +76,12 @@ public class CampaignServiceTest
 
 		assertNotNull(consentRecord);
 		assertNotNull(contactPerson);
-
 	}
 
 	@Test
 	public void removeFromNewsletter_ExistingConsent()
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 4, 4));
-
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
 
 		final User user = createUser("User1", "mail@mail.mail");
 
@@ -113,8 +100,6 @@ public class CampaignServiceTest
 	@Test
 	public void removeFromNewsletter_NoConsent()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final User user = createUser("User1", "mail@mail.mail");
 
 		final I_MKTG_Campaign campaignRecord = createCampaign();
@@ -126,7 +111,6 @@ public class CampaignServiceTest
 
 		assertNull(consentRecord);
 		assertNull(contactPerson);
-
 	}
 
 	private I_MKTG_Consent getConsentRecord()
@@ -151,9 +135,6 @@ public class CampaignServiceTest
 				.name(name)
 				.emailAddress(mail)
 				.build();
-
-		final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
-
 		return userRepository.save(user);
 	}
 
